@@ -1,0 +1,3 @@
+cython
+nuitka
+pip-licenses
