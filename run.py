@@ -3,7 +3,11 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List
 
-import each_cpp_forwarder
+try:
+    import each_cpp_forwarder
+except:
+    from voicevox_engine.dev import each_cpp_forwarder
+
 import romkan
 import soundfile
 import uvicorn
