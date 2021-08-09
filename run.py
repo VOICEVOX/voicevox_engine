@@ -38,7 +38,11 @@ def mora_to_text(mora: str):
 def generate_app(use_gpu: bool):
     root_dir = Path(__file__).parent
 
-    app = FastAPI()
+    app = FastAPI(
+        title="VOICEVOX ENGINE",
+        description="VOICEVOXの音声合成エンジンです。",
+        version=(root_dir / "VERSION.txt").read_text(),
+    )
 
     app.add_middleware(
         CORSMiddleware,
@@ -81,13 +85,12 @@ def generate_app(use_gpu: bool):
                                 else None
                             ),
                             vowel=mora.vowel.phoneme,
-                            pitch=0,  # TODO: 設計が汚い
                         )
                         for mora in accent_phrase.moras
                     ],
                     accent=accent_phrase.accent,
                     pause_mora=(
-                        Mora(text="、", consonant=None, vowel="pau", pitch=0)
+                        Mora(text="、", consonant=None, vowel="pau")
                         if (
                             i_accent_phrase == len(breath_group.accent_phrases) - 1
                             and i_breath_group != len(utterance.breath_groups) - 1
@@ -103,26 +106,37 @@ def generate_app(use_gpu: bool):
             speaker_id=speaker_id,
         )
 
-    @app.post("/accent_phrases", response_model=List[AccentPhrase])
+    @app.post(
+        "/audio_query",
+        response_model=AudioQuery,
+        tags=["クエリ作成"],
+        summary="音声合成用のクエリを作成する",
+    )
+    def audio_query(text: str, speaker: int):
+        """
+        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        """
+        return AudioQuery(
+            accent_phrases=create_accent_phrases(text, speaker_id=speaker)
+        )
+
+    @app.post(
+        "/accent_phrases",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="テキストからアクセント句を得る",
+    )
     def accent_phrases(text: str, speaker: int):
         return create_accent_phrases(text, speaker_id=speaker)
 
-    @app.post("/mora_pitch", response_model=List[AccentPhrase])
+    @app.post(
+        "/mora_pitch",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音高を得る",
+    )
     def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
         return replace_mora_pitch(accent_phrases, speaker_id=speaker)
-
-    @app.post("/audio_query", response_model=AudioQuery)
-    def audio_query(text: str, speaker: int):
-        return AudioQuery(
-            accent_phrases=create_accent_phrases(text, speaker_id=speaker),
-            speedScale=1,
-            pitchScale=0,
-            intonationScale=1,
-        )
-
-    @app.get("/version")
-    def version() -> str:
-        return (root_dir / "VERSION.txt").read_text()
 
     @app.post(
         "/synthesis",
@@ -134,6 +148,8 @@ def generate_app(use_gpu: bool):
                 },
             }
         },
+        tags=["音声合成"],
+        summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int):
         # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
@@ -144,6 +160,10 @@ def generate_app(use_gpu: bool):
             soundfile.write(file=f, data=wave, samplerate=sr, format="WAV")
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.get("/version", tags=["その他"])
+    def version() -> str:
+        return (root_dir / "VERSION.txt").read_text()
 
     return app
 
