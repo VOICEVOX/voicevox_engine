@@ -85,13 +85,12 @@ def generate_app(use_gpu: bool):
                                 else None
                             ),
                             vowel=mora.vowel.phoneme,
-                            pitch=0,  # TODO: 設計が汚い
                         )
                         for mora in accent_phrase.moras
                     ],
                     accent=accent_phrase.accent,
                     pause_mora=(
-                        Mora(text="、", consonant=None, vowel="pau", pitch=0)
+                        Mora(text="、", consonant=None, vowel="pau")
                         if (
                             i_accent_phrase == len(breath_group.accent_phrases) - 1
                             and i_breath_group != len(utterance.breath_groups) - 1
@@ -118,10 +117,7 @@ def generate_app(use_gpu: bool):
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         return AudioQuery(
-            accent_phrases=create_accent_phrases(text, speaker_id=speaker),
-            speedScale=1,
-            pitchScale=0,
-            intonationScale=1,
+            accent_phrases=create_accent_phrases(text, speaker_id=speaker)
         )
 
     @app.post(

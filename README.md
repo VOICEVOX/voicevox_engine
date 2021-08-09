@@ -1,6 +1,11 @@
 # VOICEVOX ENGINE
 
-[VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン
+[VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
+ただのHTTPサーバーなので、リクエストを送信すればテキスト音声合成できます。
+
+## APIドキュメント
+
+VOICEVOXソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。
 
 ## 環境構築
 

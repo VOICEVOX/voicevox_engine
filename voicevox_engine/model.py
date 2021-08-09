@@ -11,7 +11,7 @@ class Mora(BaseModel):
     text: str = Field(title="文字")
     consonant: Optional[str] = Field(title="子音の音素")
     vowel: str = Field(title="母音の音素")
-    pitch: float = Field(title="音高")
+    pitch: float = Field(0, title="音高")
 
 
 class AccentPhrase(BaseModel):
