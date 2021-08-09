@@ -1,7 +1,7 @@
 # VOICEVOX ENGINE
 
 [VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
-ただのHTTPサーバーなので、リクエストを送信すればテキスト音声合成できます。
+実態はHTTPサーバーなので、リクエストを送信すればテキスト音声合成できます。
 
 ## APIドキュメント
 
