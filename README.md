@@ -7,6 +7,24 @@
 
 VOICEVOXソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。
 
+### HTTPリクエストで音声合成するサンプルコード
+
+```bash
+text="ABCDEFG"
+
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query?text=$text&speaker=1"\
+    > query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    localhost:50021/synthesis?speaker=1 \
+    > audio.wav
+```
+
 ## 環境構築
 
 ```bash
