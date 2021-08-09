@@ -1,3 +1,8 @@
 *.dist
 *.build
 .venv-release
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
