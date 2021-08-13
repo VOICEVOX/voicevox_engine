@@ -4,5 +4,5 @@ python-multipart
 uvicorn
 aiofiles
 soundfile
-git+https://github.com/r9y9/pyopenjtalk@59a33c04f81fab636e0f570708efea39bcd6b511
+git+https://github.com/Hiroshiba/pyopenjtalk@69e5f354634f98098113f9cac5a6ea736443f9c9
 git+https://github.com/Hiroshiba/python-romkan
