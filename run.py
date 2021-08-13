@@ -91,7 +91,7 @@ def generate_app(use_gpu: bool):
                     ],
                     accent=accent_phrase.accent,
                     pause_mora=(
-                        Mora(text="、", consonant=None, vowel="pau")
+                        Mora(text="、", consonant=None, vowel="pau", pitch=0)
                         if (
                             i_accent_phrase == len(breath_group.accent_phrases) - 1
                             and i_breath_group != len(utterance.breath_groups) - 1
