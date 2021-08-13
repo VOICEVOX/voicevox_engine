@@ -85,6 +85,7 @@ def generate_app(use_gpu: bool):
                                 else None
                             ),
                             vowel=mora.vowel.phoneme,
+                            pitch=0,
                         )
                         for mora in accent_phrase.moras
                     ],
@@ -117,7 +118,10 @@ def generate_app(use_gpu: bool):
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         return AudioQuery(
-            accent_phrases=create_accent_phrases(text, speaker_id=speaker)
+            accent_phrases=create_accent_phrases(text, speaker_id=speaker),
+            speedScale=1,
+            pitchScale=0,
+            intonationScale=1,
         )
 
     @app.post(
