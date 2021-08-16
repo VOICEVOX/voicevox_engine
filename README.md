@@ -1,13 +1,13 @@
 # VOICEVOX ENGINE
 
 [VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
-実態はHTTPサーバーなので、リクエストを送信すればテキスト音声合成できます。
+実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
-## APIドキュメント
+## API ドキュメント
 
-VOICEVOXソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。
+VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。
 
-### HTTPリクエストで音声合成するサンプルコード
+### HTTP リクエストで音声合成するサンプルコード
 
 ```bash
 text="ABCDEFG"
@@ -28,15 +28,23 @@ curl -s \
 ## 環境構築
 
 ```bash
+# 必要なライブラリのインストール
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ## 実行
 
-TODO: `each_cpp_forwarder`のインターフェースを載せる
+```bash
+# 製品版 VOICEVOX でサーバーを起動
+VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+CODE_DIRECTORY=$(pwd) # コードがあるディレクトリのパス
+cd $VOICEVOX_DIR
+PYTHONPATH=$CODE_DIRECTORY python $CODE_DIRECTORY/run.py
+```
 
 ```bash
-python run.py  # 2021/08/08 17:50現在、実行はできますが音声合成はできません。
+# モックでサーバー起動
+python run.py
 ```
 
 ## ビルド
