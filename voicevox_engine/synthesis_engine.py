@@ -293,4 +293,8 @@ class SynthesisEngine:
             phoneme=phoneme,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
+
+        # volume
+        if query.volumeScale != 1:
+            wave *= query.volumeScale
         return wave
