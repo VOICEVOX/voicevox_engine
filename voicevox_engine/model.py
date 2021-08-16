@@ -33,3 +33,4 @@ class AudioQuery(BaseModel):
     speedScale: float = Field(title="全体の話速")
     pitchScale: float = Field(title="全体の音高")
     intonationScale: float = Field(title="全体の抑揚")
+    volumeScale: float = Field(title="全体の音量")

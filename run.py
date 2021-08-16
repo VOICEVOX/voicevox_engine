@@ -122,6 +122,7 @@ def generate_app(use_gpu: bool):
             speedScale=1,
             pitchScale=0,
             intonationScale=1,
+            volumeScale=1,
         )
 
     @app.post(
