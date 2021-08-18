@@ -11,7 +11,7 @@ except:
 import romkan
 import soundfile
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
@@ -169,6 +169,10 @@ def generate_app(use_gpu: bool):
     @app.get("/version", tags=["その他"])
     def version() -> str:
         return (root_dir / "VERSION.txt").read_text()
+
+    @app.get("/speakers", tags=["その他"])
+    def speakers():
+        return Response(content=(root_dir / "speakers.json").read_text(), media_type="application/json")
 
     return app
 
