@@ -172,7 +172,8 @@ def generate_app(use_gpu: bool):
 
     @app.get("/speakers", tags=["その他"])
     def speakers():
-        return Response(content=(root_dir / "speakers.json").read_text(), media_type="application/json")
+        # TODO 音声ライブラリのAPIが出来たら差し替える
+        return Response(content=(root_dir / "speakers.json").read_text("utf-8"), media_type="application/json")
 
     return app
 
