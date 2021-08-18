@@ -39,7 +39,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
 CODE_DIRECTORY=$(pwd) # コードがあるディレクトリのパス
 cd $VOICEVOX_DIR
-PYTHONPATH=$CODE_DIRECTORY python $CODE_DIRECTORY/run.py
+PYTHONPATH=$VOICEVOX_DIR python $CODE_DIRECTORY/run.py
 ```
 
 ```bash
