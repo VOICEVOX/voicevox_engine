@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
@@ -170,7 +170,11 @@ def generate_app(use_gpu: bool):
     def version() -> str:
         return (root_dir / "VERSION.txt").read_text()
 
-    @app.get("/speakers", tags=["その他"])
+    @app.get(
+        "/speakers",
+        response_model=List[Speaker],
+        tags=["その他"]
+    )
     def speakers():
         # TODO 音声ライブラリのAPIが出来たら差し替える
         return Response(content=(root_dir / "speakers.json").read_text("utf-8"), media_type="application/json")
