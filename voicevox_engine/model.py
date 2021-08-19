@@ -34,3 +34,11 @@ class AudioQuery(BaseModel):
     pitchScale: float = Field(title="全体の音高")
     intonationScale: float = Field(title="全体の抑揚")
     volumeScale: float = Field(title="全体の音量")
+
+class Speaker(BaseModel):
+    """
+    スピーカー情報
+    """
+
+    name: str = Field(title="名前")
+    speaker_id: int = Field(title="スピーカーID")
