@@ -123,6 +123,7 @@ def generate_app(use_gpu: bool):
             pitchScale=0,
             intonationScale=1,
             volumeScale=1,
+            phonemeLength=0.1,
         )
 
     @app.post(
