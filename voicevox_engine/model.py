@@ -37,6 +37,7 @@ class AudioQuery(BaseModel):
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
 
+
 class Speaker(BaseModel):
     """
     スピーカー情報

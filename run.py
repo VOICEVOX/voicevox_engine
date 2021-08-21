@@ -5,7 +5,7 @@ from typing import List
 
 try:
     import each_cpp_forwarder
-except:
+except ImportError:
     from voicevox_engine.dev import each_cpp_forwarder
 
 import romkan
@@ -172,14 +172,13 @@ def generate_app(use_gpu: bool):
     def version() -> str:
         return (root_dir / "VERSION.txt").read_text()
 
-    @app.get(
-        "/speakers",
-        response_model=List[Speaker],
-        tags=["その他"]
-    )
+    @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers():
         # TODO 音声ライブラリのAPIが出来たら差し替える
-        return Response(content=(root_dir / "speakers.json").read_text("utf-8"), media_type="application/json")
+        return Response(
+            content=(root_dir / "speakers.json").read_text("utf-8"),
+            media_type="application/json",
+        )
 
     return app
 

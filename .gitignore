@@ -6,3 +6,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# test artifacts
+.mypy_cache/
