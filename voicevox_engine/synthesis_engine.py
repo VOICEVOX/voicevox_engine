@@ -231,7 +231,6 @@ class SynthesisEngine:
 
     def synthesis(self, query: AudioQuery, speaker_id: int):
         rate = 200
-        pre_phoneme_length = post_phoneme_length = 0.1
 
         # phoneme
         flatten_moras = to_flatten_moras(query.accent_phrases)
@@ -254,12 +253,9 @@ class SynthesisEngine:
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
 
-        if query.prePhonemeLength != pre_phoneme_length:
-            phoneme_length[0] = pre_phoneme_length
 
-        if query.postPhonemeLength != post_phoneme_length:
-            phoneme_length[-1] = post_phoneme_length
-
+        phoneme_length[0] = query.prePhonemeLength
+        phoneme_length[-1] = query.postPhonemeLength
         phoneme_length = numpy.round(phoneme_length * rate) / rate
 
         phoneme_length /= query.speedScale
