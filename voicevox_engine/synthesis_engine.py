@@ -252,7 +252,10 @@ class SynthesisEngine:
             phoneme_list=phoneme_list_s,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
-        phoneme_length[0] = phoneme_length[-1] = 0.1
+
+
+        phoneme_length[0] = query.prePhonemeLength
+        phoneme_length[-1] = query.postPhonemeLength
         phoneme_length = numpy.round(phoneme_length * rate) / rate
 
         phoneme_length /= query.speedScale
