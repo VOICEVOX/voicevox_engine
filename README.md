@@ -32,6 +32,14 @@ curl -s \
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
+## コードフォーマット
+
+コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
+
+```bash
+pysen run format lint
+```
+
 ## 実行
 
 ```bash
