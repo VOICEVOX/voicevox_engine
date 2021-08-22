@@ -8,6 +8,7 @@ try:
 except ImportError:
     from voicevox_engine.dev import each_cpp_forwarder
 
+import numpy as np
 import resampy
 import romkan
 import soundfile
@@ -128,6 +129,7 @@ def generate_app(use_gpu: bool):
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
             outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
         )
 
     @app.post(
@@ -173,6 +175,10 @@ def generate_app(use_gpu: bool):
                 query.outputSamplingRate,
                 filter="kaiser_fast",
             )
+
+        # ステレオ変換
+        if query.outputStereo:
+            wave = np.array([wave, wave]).T
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
