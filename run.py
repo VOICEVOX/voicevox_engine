@@ -162,10 +162,9 @@ def generate_app(use_gpu: bool):
     def synthesis(query: AudioQuery, speaker: int):
         # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
         wave = engine.synthesis(query=query, speaker_id=speaker)
-        sr = 24000
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=sr, format="WAV")
+            soundfile.write(file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV")
 
         return FileResponse(f.name, media_type="audio/wav")
 
