@@ -8,6 +8,7 @@ try:
 except ImportError:
     from voicevox_engine.dev import each_cpp_forwarder
 
+import resampy
 import romkan
 import soundfile
 import uvicorn
@@ -162,6 +163,12 @@ def generate_app(use_gpu: bool):
     def synthesis(query: AudioQuery, speaker: int):
         # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
         wave = engine.synthesis(query=query, speaker_id=speaker)
+
+        # サンプリングレートの変更
+        if query.outputSamplingRate != 24000:
+            wave = resampy.resample(
+                wave, 24000, query.outputSamplingRate, filter="kaiser_fast"
+            )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(

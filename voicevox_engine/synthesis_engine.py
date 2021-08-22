@@ -2,7 +2,6 @@ from itertools import chain
 from typing import List, Optional
 
 import numpy
-import resampy
 
 from voicevox_engine.acoustic_feature_extractor import (
     BasePhoneme,
@@ -300,11 +299,5 @@ class SynthesisEngine:
         # volume
         if query.volumeScale != 1:
             wave *= query.volumeScale
-
-        # sampling rate
-        if query.outputSamplingRate != 24000:
-            wave = resampy.resample(
-                wave, 24000, query.outputSamplingRate, filter="kaiser_fast"
-            )
 
         return wave
