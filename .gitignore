@@ -9,3 +9,8 @@ __pycache__/
 
 # test artifacts
 .mypy_cache/
+
+# virtual environment
+venv/
+# JetBrains IDE project settings folder
+.idea/

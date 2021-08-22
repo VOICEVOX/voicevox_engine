@@ -299,4 +299,5 @@ class SynthesisEngine:
         # volume
         if query.volumeScale != 1:
             wave *= query.volumeScale
+
         return wave
