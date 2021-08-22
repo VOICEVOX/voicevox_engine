@@ -1,4 +1,4 @@
+-r requirements.txt
 cython
 nuitka
 pip-licenses
-pysen[lint]
