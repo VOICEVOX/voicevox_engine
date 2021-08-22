@@ -38,6 +38,7 @@ def mora_to_text(mora: str):
 
 def generate_app(use_gpu: bool):
     root_dir = Path(__file__).parent
+    default_sampling_rate = 24000
 
     app = FastAPI(
         title="VOICEVOX ENGINE",
@@ -126,7 +127,7 @@ def generate_app(use_gpu: bool):
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            outputSamplingRate=24000,
+            outputSamplingRate=default_sampling_rate,
         )
 
     @app.post(
@@ -165,9 +166,9 @@ def generate_app(use_gpu: bool):
         wave = engine.synthesis(query=query, speaker_id=speaker)
 
         # サンプリングレートの変更
-        if query.outputSamplingRate != 24000:
+        if query.outputSamplingRate != default_sampling_rate:
             wave = resampy.resample(
-                wave, 24000, query.outputSamplingRate, filter="kaiser_fast"
+                wave, default_sampling_rate, query.outputSamplingRate, filter="kaiser_fast"
             )
 
         with NamedTemporaryFile(delete=False) as f:
