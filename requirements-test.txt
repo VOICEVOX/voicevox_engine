@@ -1,0 +1,8 @@
+-r requirements.txt
+# from pysen's setup.py and ext/ (0.9.1)
+black>=19.10b0,<=20.8
+flake8-bugbear
+flake8>=3.7,<4
+isort>=5            #
+mypy>=0.770,<1      #
+pysen
