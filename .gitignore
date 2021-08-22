@@ -11,6 +11,6 @@ __pycache__/
 .mypy_cache/
 
 # virtual environment
-/venv
+venv/
 # JetBrains IDE project settings folder
-/.idea
+.idea/
