@@ -164,7 +164,9 @@ def generate_app(use_gpu: bool):
         wave = engine.synthesis(query=query, speaker_id=speaker)
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV")
+            soundfile.write(
+                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+            )
 
         return FileResponse(f.name, media_type="audio/wav")
 
