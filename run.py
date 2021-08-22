@@ -125,6 +125,7 @@ def generate_app(use_gpu: bool):
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
+            outputSamplingRate=24000,
         )
 
     @app.post(
