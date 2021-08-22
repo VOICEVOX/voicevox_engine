@@ -28,16 +28,11 @@ curl -s \
 ## 環境構築
 
 ```bash
-# 必要なライブラリのインストール
-pip install -r requirements.txt -r requirements-dev.txt
-```
+# 開発に必要なライブラリのインストール
+pip install -r requirements-test.txt
 
-## コードフォーマット
-
-コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
-
-```bash
-pysen run format lint
+# とりあえず実行したいだけなら代わりにこちら
+pip install -r requirements.txt
 ```
 
 ## 実行
@@ -55,11 +50,21 @@ PYTHONPATH=$VOICEVOX_DIR python $CODE_DIRECTORY/run.py
 python run.py
 ```
 
+## コードフォーマット
+
+コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
+
+```bash
+pysen run format lint
+```
+
 ## ビルド
 
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
+pip install -r requirements-dev.txt
+
 python -m nuitka \
     --standalone \
     --plugin-enable=numpy \
