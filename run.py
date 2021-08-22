@@ -168,7 +168,10 @@ def generate_app(use_gpu: bool):
         # サンプリングレートの変更
         if query.outputSamplingRate != default_sampling_rate:
             wave = resampy.resample(
-                wave, default_sampling_rate, query.outputSamplingRate, filter="kaiser_fast"
+                wave,
+                default_sampling_rate,
+                query.outputSamplingRate,
+                filter="kaiser_fast",
             )
 
         with NamedTemporaryFile(delete=False) as f:
