@@ -253,7 +253,6 @@ class SynthesisEngine:
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
 
-
         phoneme_length[0] = query.prePhonemeLength
         phoneme_length[-1] = query.postPhonemeLength
         phoneme_length = numpy.round(phoneme_length * rate) / rate
@@ -300,4 +299,5 @@ class SynthesisEngine:
         # volume
         if query.volumeScale != 1:
             wave *= query.volumeScale
+
         return wave

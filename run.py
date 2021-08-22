@@ -8,6 +8,7 @@ try:
 except ImportError:
     from voicevox_engine.dev import each_cpp_forwarder
 
+import resampy
 import romkan
 import soundfile
 import uvicorn
@@ -37,6 +38,7 @@ def mora_to_text(mora: str):
 
 def generate_app(use_gpu: bool):
     root_dir = Path(__file__).parent
+    default_sampling_rate = 24000
 
     app = FastAPI(
         title="VOICEVOX ENGINE",
@@ -125,6 +127,7 @@ def generate_app(use_gpu: bool):
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
+            outputSamplingRate=default_sampling_rate,
         )
 
     @app.post(
@@ -161,10 +164,20 @@ def generate_app(use_gpu: bool):
     def synthesis(query: AudioQuery, speaker: int):
         # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
         wave = engine.synthesis(query=query, speaker_id=speaker)
-        sr = 24000
+
+        # サンプリングレートの変更
+        if query.outputSamplingRate != default_sampling_rate:
+            wave = resampy.resample(
+                wave,
+                default_sampling_rate,
+                query.outputSamplingRate,
+                filter="kaiser_fast",
+            )
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=sr, format="WAV")
+            soundfile.write(
+                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+            )
 
         return FileResponse(f.name, media_type="audio/wav")
 
