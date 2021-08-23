@@ -54,7 +54,7 @@ def generate_app(use_gpu: bool):
         allow_headers=["*"],
     )
 
-    each_cpp_forwarder.initialize("1", "2", "3", use_gpu)
+    each_cpp_forwarder.initialize("./", "1", "2", "3", use_gpu)
     engine = SynthesisEngine(
         yukarin_s_forwarder=each_cpp_forwarder.yukarin_s_forward,
         yukarin_sa_forwarder=each_cpp_forwarder.yukarin_sa_forward,
