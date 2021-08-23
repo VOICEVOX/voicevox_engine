@@ -17,7 +17,7 @@ def run(
     f0_speaker_id: Optional[int],
     f0_correct: float,
 ):
-    each_cpp_forwarder.initialize("1", "2", "3", use_gpu)
+    each_cpp_forwarder.initialize("./", "1", "2", "3", use_gpu)
 
     forwarder = Forwarder(
         yukarin_s_forwarder=each_cpp_forwarder.yukarin_s_forward,

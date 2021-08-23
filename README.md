@@ -25,19 +25,19 @@ curl -s \
     > audio.wav
 ```
 
+## 貢献者の方へ
+
+Issueを解決するプルリクエストを作成される際は、別の方と同じIssueに取り組むことを避けるため、
+Issue側で取り組み始めたことを伝えるか、最初にDraftプルリクエストを作成してください。
+
 ## 環境構築
 
 ```bash
-# 必要なライブラリのインストール
-pip install -r requirements.txt -r requirements-dev.txt
-```
+# 開発に必要なライブラリのインストール
+pip install -r requirements-test.txt
 
-## コードフォーマット
-
-コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
-
-```bash
-pysen run format lint
+# とりあえず実行したいだけなら代わりにこちら
+pip install -r requirements.txt
 ```
 
 ## 実行
@@ -55,11 +55,21 @@ PYTHONPATH=$VOICEVOX_DIR python $CODE_DIRECTORY/run.py
 python run.py
 ```
 
+## コードフォーマット
+
+コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
+
+```bash
+pysen run format lint
+```
+
 ## ビルド
 
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
+pip install -r requirements-dev.txt
+
 python -m nuitka \
     --standalone \
     --plugin-enable=numpy \
