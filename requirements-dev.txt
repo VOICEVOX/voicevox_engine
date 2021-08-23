@@ -2,3 +2,5 @@ cython
 nuitka
 pip-licenses
 pysen[lint]
+pytest
+requests
