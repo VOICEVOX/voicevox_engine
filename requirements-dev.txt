@@ -2,4 +2,3 @@
 cython
 nuitka
 pip-licenses
-pre-commit
