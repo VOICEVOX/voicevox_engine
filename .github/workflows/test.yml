@@ -43,3 +43,5 @@ jobs:
           pip install -r requirements-test.txt
 
       - run: pysen run lint
+
+      - run: pytest
