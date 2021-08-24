@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.full_context_label import Phoneme
+from voicevox_engine.full_context_label import Mora, Phoneme
 
 
 class TestBasePhonemes(TestCase):
@@ -37,3 +37,28 @@ class TestPhoneme(TestBasePhonemes):
 
     def test_label(self) -> None:
         self.assertEqual([phoneme.label for phoneme in self.phonemes], self.test_case_A)
+
+
+class TestMora(TestBasePhonemes):
+    def setUp(self) -> None:
+        super().setUp()
+        # TODO: consonantを使うテストケースの追加
+        # contexts["a2"] == "1"
+        self.test_case_1 = Mora(consonant=None, vowel=self.phonemes[1])
+        # contexts["a2"] == "2"
+        self.test_case_2 = Mora(consonant=None, vowel=self.phonemes[2])
+
+    def test_phonemes(self) -> None:
+        self.assertEqual(self.test_case_1.phonemes[0].phoneme, "e")
+        self.assertEqual(self.test_case_2.phonemes[0].phoneme, "i")
+
+    def test_labels(self) -> None:
+        self.assertEqual(self.test_case_1.labels, self.test_case_A[1:2])
+        self.assertEqual(self.test_case_2.labels, self.test_case_A[2:3])
+
+    def test_set_context(self):
+        # phonemeにあたる"p3"を書き換える
+        self.test_case_1.set_context("p3", "a")
+        self.assertEqual(self.test_case_1.vowel.phoneme, "a")
+        # 元に戻す
+        self.test_case_1.set_context("p3", "e")
