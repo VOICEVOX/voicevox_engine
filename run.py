@@ -40,6 +40,7 @@ def make_synthesis_engine(
 
     # Python モジュール検索パスへ追加
     if voicevox_dir is not None:
+        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
         if voicevox_dir.exists():
             sys.path.insert(0, str(voicevox_dir))
 
@@ -47,6 +48,12 @@ def make_synthesis_engine(
         import each_cpp_forwarder
     except ImportError:
         from voicevox_engine.dev import each_cpp_forwarder
+
+        # 音声ライブラリの Python モジュールをロードできなかった
+        print(
+            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
+            file=sys.stderr,
+        )
 
     if voicelib_dir is None:
         voicelib_dir = Path(each_cpp_forwarder.__file__).parent
