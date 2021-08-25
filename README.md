@@ -46,10 +46,16 @@ pip install -r requirements.txt
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-CODE_DIRECTORY=$(pwd) # コードがあるディレクトリのパス
-cd $VOICEVOX_DIR
-PYTHONPATH=$VOICEVOX_DIR python $CODE_DIRECTORY/run.py
+python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
+
+<!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
+```bash
+# 音声ライブラリを差し替える
+VOICELIB_DIR="C:/path/to/your/tts-model"
+python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+```
+-->
 
 ```bash
 # モックでサーバー起動
