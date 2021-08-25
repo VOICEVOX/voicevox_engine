@@ -7,4 +7,5 @@ repos:
         name: pysen
         entry: pysen run format lint
         language: python
+        pass_filenames: false
         types: [file, python]
