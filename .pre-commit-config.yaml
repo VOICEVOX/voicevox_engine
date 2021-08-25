@@ -6,5 +6,5 @@ repos:
     -   id: pysen
         name: pysen
         entry: pysen run format lint
-        language: python_venv
+        language: python
         types: [file, python]
