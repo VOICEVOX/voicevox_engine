@@ -28,14 +28,14 @@ def make_synthesis_engine(
 
     Parameters
     ----------
-    use_gpu : bool
+    use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
-    voicevox_dir : Optional[Path], default None
-        音声ライブラリのドライバ (Python モジュール) があるディレクトリ
-        default: Python 標準のモジュール検索パスのどれかにある
-    voicelib_dir : Optional[Path], default None
+    voicevox_dir: Path, optional, default=None
+        音声ライブラリの Python モジュールがあるディレクトリ
+        None のとき、Python 標準のモジュール検索パスのどれかにあるとする
+    voicelib_dir: Path, optional, default=None
         音声ライブラリ自体があるディレクトリ
-        default: 音声ライブラリのドライバと同じディレクトリに音声ライブラリ自体もある
+        None のとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     """
 
     # Python モジュール検索パスへ追加
