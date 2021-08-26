@@ -21,22 +21,22 @@ class TestBasePhonemes(TestCase):
             + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_2/I:xx-xx"
             + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:1+1-2",
         ]
-        self.phonemes = [Phoneme.from_label(label) for label in self.test_case_A]
+        self.phonemes_A = [Phoneme.from_label(label) for label in self.test_case_A]
 
 
 class TestPhoneme(TestBasePhonemes):
     def test_phoneme(self):
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.phonemes], ["sil", "e", "i", "sil"]
+            [phoneme.phoneme for phoneme in self.phonemes_A], ["sil", "e", "i", "sil"]
         )
 
     def test_is_pose(self):
         self.assertEqual(
-            [phoneme.is_pose() for phoneme in self.phonemes], [True, False, False, True]
+            [phoneme.is_pose() for phoneme in self.phonemes_A], [True, False, False, True]
         )
 
     def test_label(self) -> None:
-        self.assertEqual([phoneme.label for phoneme in self.phonemes], self.test_case_A)
+        self.assertEqual([phoneme.label for phoneme in self.phonemes_A], self.test_case_A)
 
 
 class TestMora(TestBasePhonemes):
@@ -44,9 +44,9 @@ class TestMora(TestBasePhonemes):
         super().setUp()
         # TODO: consonantを使うテストケースの追加
         # contexts["a2"] == "1"
-        self.test_case_1 = Mora(consonant=None, vowel=self.phonemes[1])
+        self.test_case_1 = Mora(consonant=None, vowel=self.phonemes_A[1])
         # contexts["a2"] == "2"
-        self.test_case_2 = Mora(consonant=None, vowel=self.phonemes[2])
+        self.test_case_2 = Mora(consonant=None, vowel=self.phonemes_A[2])
 
     def test_phonemes(self) -> None:
         self.assertEqual(self.test_case_1.phonemes[0].phoneme, "e")
