@@ -106,10 +106,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         allow_headers=["*"],
     )
 
-    def replace_mora_pitch(
+    def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
-        return engine.extract_phoneme_f0(
+        return engine.replace_phoneme_data(
             accent_phrases=accent_phrases, speaker_id=speaker_id
         )
 
@@ -118,7 +118,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return []
 
         utterance = extract_full_context_label(text)
-        return replace_mora_pitch(
+        return replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
                     moras=[
@@ -194,7 +194,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="アクセント句から音高を得る",
     )
     def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
-        return replace_mora_pitch(accent_phrases, speaker_id=speaker)
+        return replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
         "/synthesis",

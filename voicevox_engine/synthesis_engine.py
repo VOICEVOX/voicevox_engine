@@ -97,7 +97,7 @@ class SynthesisEngine:
         self.yukarin_s_phoneme_class = OjtPhoneme
         self.yukarin_soso_phoneme_class = OjtPhoneme
 
-    def extract_phoneme_f0(self, accent_phrases: List[AccentPhrase], speaker_id: int):
+    def replace_phoneme_data(self, accent_phrases: List[AccentPhrase], speaker_id: int):
         # phoneme
         flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -266,9 +266,9 @@ class SynthesisEngine:
         phoneme_length_list = (
             [query.prePhonemeLength]
             + [
-                len
+                length
                 for mora in flatten_moras
-                for len in (
+                for length in (
                     [mora.consonant_length] if mora.consonant is not None else []
                 )
                 + [mora.vowel_length]
