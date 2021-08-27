@@ -140,7 +140,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                     ],
                     accent=accent_phrase.accent,
                     pause_mora=(
-                        Mora(text="、", consonant=None, vowel="pau", pitch=0)
+                        Mora(text="、", consonant=None, consonant_length=None, vowel="pau", vowel_length=0, pitch=0)
                         if (
                             i_accent_phrase == len(breath_group.accent_phrases) - 1
                             and i_breath_group != len(utterance.breath_groups) - 1
