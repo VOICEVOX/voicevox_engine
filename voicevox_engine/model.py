@@ -10,9 +10,9 @@ class Mora(BaseModel):
 
     text: str = Field(title="文字")
     consonant: Optional[str] = Field(title="子音の音素")
-    consonant_length: Optional[float] = Field(text="子音の音長")
+    consonant_length: Optional[float] = Field(title="子音の音長")
     vowel: str = Field(title="母音の音素")
-    vowel_length: float = Field(text="母音の音長")
+    vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
 
