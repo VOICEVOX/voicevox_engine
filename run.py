@@ -106,10 +106,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         allow_headers=["*"],
     )
 
-    def replace_mora_pitch(
+    def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
-        return engine.extract_phoneme_f0(
+        return engine.replace_phoneme_data(
             accent_phrases=accent_phrases, speaker_id=speaker_id
         )
 
@@ -118,7 +118,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return []
 
         utterance = extract_full_context_label(text)
-        return replace_mora_pitch(
+        return replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
                     moras=[
@@ -131,14 +131,23 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                                 if mora.consonant is not None
                                 else None
                             ),
+                            consonant_length=0 if mora.consonant is not None else None,
                             vowel=mora.vowel.phoneme,
+                            vowel_length=0,
                             pitch=0,
                         )
                         for mora in accent_phrase.moras
                     ],
                     accent=accent_phrase.accent,
                     pause_mora=(
-                        Mora(text="、", consonant=None, vowel="pau", pitch=0)
+                        Mora(
+                            text="、",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="pau",
+                            vowel_length=0,
+                            pitch=0,
+                        )
                         if (
                             i_accent_phrase == len(breath_group.accent_phrases) - 1
                             and i_breath_group != len(utterance.breath_groups) - 1
@@ -192,7 +201,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="アクセント句から音高を得る",
     )
     def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
-        return replace_mora_pitch(accent_phrases, speaker_id=speaker)
+        return replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
         "/synthesis",
