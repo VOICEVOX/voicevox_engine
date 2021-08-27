@@ -131,7 +131,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                                 if mora.consonant is not None
                                 else None
                             ),
+                            consonant_length=0 if mora.consonant is not None else None,
                             vowel=mora.vowel.phoneme,
+                            vowel_length=0,
                             pitch=0,
                         )
                         for mora in accent_phrase.moras

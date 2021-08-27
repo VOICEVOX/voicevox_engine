@@ -186,7 +186,6 @@ class SynthesisEngine:
         )
         end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
 
-        # yukarin_sa
         phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
         (
             consonant_phoneme_data_list,
@@ -194,6 +193,17 @@ class SynthesisEngine:
             vowel_indexes_data,
         ) = split_mora(phoneme_data_list)
 
+        # yukarin_s
+        phoneme_list_s = numpy.array(
+            [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
+        )
+        phoneme_length = self.yukarin_s_forwarder(
+            length=len(phoneme_list_s),
+            phoneme_list=phoneme_list_s,
+            speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+        )
+
+        # yukarin_sa
         vowel_indexes = numpy.array(vowel_indexes_data, dtype=numpy.int64)
 
         vowel_phoneme_list = numpy.array(
@@ -226,6 +236,12 @@ class SynthesisEngine:
 
         for i, mora in enumerate(flatten_moras):
             mora.pitch = f0_list[i + 1]
+            mora.consonant_length = (
+                phoneme_length[vowel_indexes_data[i + 1] - 1]
+                if mora.consonant is not None
+                else None
+            )
+            mora.vowel_length = phoneme_length[vowel_indexes_data[i + 1]]
 
         return accent_phrases
 
@@ -247,14 +263,19 @@ class SynthesisEngine:
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
 
-        phoneme_length = self.yukarin_s_forwarder(
-            length=len(phoneme_list_s),
-            phoneme_list=phoneme_list_s,
-            speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+        phoneme_length_list = (
+            [query.prePhonemeLength]
+            + [
+                len
+                for mora in flatten_moras
+                for len in (
+                    [mora.consonant_length] if mora.consonant is not None else []
+                )
+                + [mora.vowel_length]
+            ]
+            + [query.postPhonemeLength]
         )
-
-        phoneme_length[0] = query.prePhonemeLength
-        phoneme_length[-1] = query.postPhonemeLength
+        phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
         phoneme_length = numpy.round(phoneme_length * rate) / rate
 
         phoneme_length /= query.speedScale
