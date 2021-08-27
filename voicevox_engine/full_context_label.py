@@ -12,6 +12,18 @@ class Phoneme:
 
     @classmethod
     def from_label(cls, label: str):
+        """
+        pyopenjtalk.extract_fullcontextで得られる音素の元(ラベル)から、音素を作成する
+        Parameters
+        ----------
+        label : str
+            pyopenjtalk.extract_fullcontextで得られるラベルを入れる
+
+        Returns
+        -------
+        phoneme: Phoneme
+            Phoneme(音素)クラスを返す
+        """
         contexts = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
             r"/A\:(?P<a1>.+?)\+(?P<a2>.+?)\+(?P<a3>.+?)"
@@ -31,6 +43,13 @@ class Phoneme:
 
     @property
     def label(self):
+        """
+        pyopenjtalk.extract_fullcontextで得られるラベルと等しい
+        Returns
+        -------
+        lebel: str
+            ラベルを返す
+        """
         return (
             "{p1}^{p2}-{p3}+{p4}={p5}"
             "/A:{a1}+{a2}+{a3}"
@@ -48,9 +67,23 @@ class Phoneme:
 
     @property
     def phoneme(self):
+        """
+        音素クラスの中で、発音すべきものを返す
+        Returns
+        -------
+        phonome : str
+            発音すべきものを返す
+        """
         return self.contexts["p3"]
 
     def is_pose(self):
+        """
+        音素がポーズ(無音/silent)であるかを返す
+        Returns
+        -------
+        is_pose : bool
+            音素がポーズ(無音/silent)であるか(True)否か(False)
+        """
         return self.contexts["f1"] == "xx"
 
     def __repr__(self):
@@ -63,12 +96,29 @@ class Mora:
     vowel: Phoneme
 
     def set_context(self, key: str, value: str):
+        """
+        Mora(音韻)内に含まれるPhonemeのcontextを変更する
+        consonant(子音)が存在する場合は、vowel(母音)と同じようにcontextを変更する
+        Parameters
+        ----------
+        key : str
+            変更したいcontextのキー
+        value : str
+            変更したいcontextの値
+        """
         self.vowel.contexts[key] = value
         if self.consonant is not None:
             self.consonant.contexts[key] = value
 
     @property
     def phonemes(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        phonemes : List[Phoneme]
+            母音しかない場合は母音のみ、子音もある場合は子音、母音の順番でPhonemeのリストを返す
+        """
         if self.consonant is not None:
             return [self.consonant, self.vowel]
         else:
@@ -76,6 +126,13 @@ class Mora:
 
     @property
     def labels(self):
+        """
+        ラベル群を返す
+        Returns
+        -------
+        labels : List[str]
+            Moraに含まれるすべてのラベルを返す
+        """
         return [p.label for p in self.phonemes]
 
 
