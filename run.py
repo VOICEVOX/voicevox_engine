@@ -1,12 +1,8 @@
 import argparse
+import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List
-
-try:
-    import each_cpp_forwarder
-except ImportError:
-    from voicevox_engine.dev import each_cpp_forwarder
+from typing import List, Optional
 
 import numpy as np
 import resampy
@@ -20,6 +16,61 @@ from starlette.responses import FileResponse
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
 from voicevox_engine.synthesis_engine import SynthesisEngine
+
+
+def make_synthesis_engine(
+    use_gpu: bool,
+    voicevox_dir: Optional[Path] = None,
+    voicelib_dir: Optional[Path] = None,
+) -> SynthesisEngine:
+    """
+    音声ライブラリをロードして、音声合成エンジンを生成
+
+    Parameters
+    ----------
+    use_gpu: bool
+        音声ライブラリに GPU を使わせるか否か
+    voicevox_dir: Path, optional, default=None
+        音声ライブラリの Python モジュールがあるディレクトリ
+        None のとき、Python 標準のモジュール検索パスのどれかにあるとする
+    voicelib_dir: Path, optional, default=None
+        音声ライブラリ自体があるディレクトリ
+        None のとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
+    """
+
+    # Python モジュール検索パスへ追加
+    if voicevox_dir is not None:
+        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
+        if voicevox_dir.exists():
+            sys.path.insert(0, str(voicevox_dir))
+
+    try:
+        import each_cpp_forwarder
+    except ImportError:
+        from voicevox_engine.dev import each_cpp_forwarder
+
+        # 音声ライブラリの Python モジュールをロードできなかった
+        print(
+            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
+            file=sys.stderr,
+        )
+
+    if voicelib_dir is None:
+        voicelib_dir = Path(each_cpp_forwarder.__file__).parent
+
+    each_cpp_forwarder.initialize(
+        voicelib_dir.as_posix() + "/",
+        "1",
+        "2",
+        "3",
+        use_gpu,
+    )
+
+    return SynthesisEngine(
+        yukarin_s_forwarder=each_cpp_forwarder.yukarin_s_forward,
+        yukarin_sa_forwarder=each_cpp_forwarder.yukarin_sa_forward,
+        decode_forwarder=each_cpp_forwarder.decode_forward,
+    )
 
 
 def mora_to_text(mora: str):
@@ -37,7 +88,7 @@ def mora_to_text(mora: str):
         return romkan.to_katakana(mora)
 
 
-def generate_app(use_gpu: bool):
+def generate_app(engine: SynthesisEngine) -> FastAPI:
     root_dir = Path(__file__).parent
     default_sampling_rate = 24000
 
@@ -53,13 +104,6 @@ def generate_app(use_gpu: bool):
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
-    )
-
-    each_cpp_forwarder.initialize("./", "1", "2", "3", use_gpu)
-    engine = SynthesisEngine(
-        yukarin_s_forwarder=each_cpp_forwarder.yukarin_s_forward,
-        yukarin_sa_forwarder=each_cpp_forwarder.yukarin_sa_forward,
-        decode_forwarder=each_cpp_forwarder.decode_forward,
     )
 
     def replace_mora_pitch(
@@ -207,5 +251,17 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50021)
     parser.add_argument("--use_gpu", action="store_true")
+    parser.add_argument("--voicevox_dir", type=Path, default=None)
+    parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
-    uvicorn.run(generate_app(use_gpu=args.use_gpu), host=args.host, port=args.port)
+    uvicorn.run(
+        generate_app(
+            make_synthesis_engine(
+                use_gpu=args.use_gpu,
+                voicevox_dir=args.voicevox_dir,
+                voicelib_dir=args.voicelib_dir,
+            )
+        ),
+        host=args.host,
+        port=args.port,
+    )

@@ -5,7 +5,8 @@
 
 ## API ドキュメント
 
-VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。
+VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。  
+[VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md)も参考になるかもしれません。
 
 ### HTTP リクエストで音声合成するサンプルコード
 
@@ -27,8 +28,8 @@ curl -s \
 
 ## 貢献者の方へ
 
-Issueを解決するプルリクエストを作成される際は、別の方と同じIssueに取り組むことを避けるため、
-Issue側で取り組み始めたことを伝えるか、最初にDraftプルリクエストを作成してください。
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
 
 ## 環境構築
 
@@ -45,10 +46,16 @@ pip install -r requirements.txt
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-CODE_DIRECTORY=$(pwd) # コードがあるディレクトリのパス
-cd $VOICEVOX_DIR
-PYTHONPATH=$VOICEVOX_DIR python $CODE_DIRECTORY/run.py
+python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
+
+<!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
+```bash
+# 音声ライブラリを差し替える
+VOICELIB_DIR="C:/path/to/your/tts-model"
+python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+```
+-->
 
 ```bash
 # モックでサーバー起動
@@ -78,6 +85,7 @@ python -m nuitka \
     --include-package=uvicorn \
     --include-package-data=pyopenjtalk \
     --include-data-file=VERSION.txt=./ \
+    --include-data-file=speakers.json=./ \
     --include-data-file=C:/音声ライブラリへのパス/Release/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
