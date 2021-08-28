@@ -17,6 +17,7 @@ class Phoneme:
     contexts: Dict[str, str]
         音素の元
     """
+
     contexts: Dict[str, str]
 
     @classmethod
@@ -112,6 +113,7 @@ class Mora:
     vowel : Phoneme
         母音
     """
+
     consonant: Optional[Phoneme]
     vowel: Phoneme
 
@@ -168,6 +170,7 @@ class AccentPhrase:
     accent : int
         アクセント
     """
+
     moras: List[Mora]
     accent: int
 
@@ -272,6 +275,7 @@ class BreathGroup:
     accent_phrases: List[AccentPhrase]
         アクセント句のリスト
     """
+
     accent_phrases: List[AccentPhrase]
 
     @classmethod
