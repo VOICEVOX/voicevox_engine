@@ -268,7 +268,7 @@ class AccentPhrase:
 @dataclass
 class BreathGroup:
     """
-    息の区切りクラス
+    発声の区切りクラス
     アクセントの異なるアクセント句を複数保持する
     Attributes
     ----------
