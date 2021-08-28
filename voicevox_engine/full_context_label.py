@@ -178,6 +178,15 @@ class AccentPhrase:
         return cls(moras=moras, accent=int(moras[0].vowel.contexts["f2"]))
 
     def set_context(self, key: str, value: str):
+        """
+        AccentPhraseクラス内に含まれるmoras内の、Phonemeのcontextを全て変更する
+        Parameters
+        ----------
+        key : str
+            変更したいcontextのキー
+        value : str
+            変更したいcontextの値
+        """
         for mora in self.moras:
             mora.set_context(key, value)
 
