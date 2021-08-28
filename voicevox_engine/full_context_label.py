@@ -119,7 +119,7 @@ class Mora:
 
     def set_context(self, key: str, value: str):
         """
-        Moraクラス内に含まれるPhonemeのcontextを変更する
+        Moraクラス内に含まれるPhonemeのcontextのうち、指定されたキーの値を変更する
         consonantが存在する場合は、vowelと同じようにcontextを変更する
         Parameters
         ----------
@@ -212,7 +212,7 @@ class AccentPhrase:
 
     def set_context(self, key: str, value: str):
         """
-        AccentPhraseクラス内に含まれるmoras内の、Phonemeのcontextを全て変更する
+        AccentPhraseに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -230,7 +230,7 @@ class AccentPhrase:
         Returns
         -------
         phonemes : List[Phoneme]
-            AccentPhraseが持つ、全てのMoraの中に含まれるPhonemeを返す
+            AccentPhraseに間接的に含まれる全てのPhonemeを返す
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
@@ -241,7 +241,7 @@ class AccentPhrase:
         Returns
         -------
         labels : List[str]
-            AccentPhraseが持つ、全てのMoraの中に含まれるラベルを返す
+            AccentPhraseに間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
 
@@ -310,8 +310,7 @@ class BreathGroup:
 
     def set_context(self, key: str, value: str):
         """
-        BreathGroupクラス内に含まれるaccent_phrases内の、
-        morasに含まれるPhonemeのcontextを全て変更する
+        BreathGroupに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -329,7 +328,7 @@ class BreathGroup:
         Returns
         -------
         phonemes : List[Phoneme]
-            BreathGroupが持つ、全てのAccentPhraseの中に含まれる全てのMoraの中のPhonemeを返す
+            BreathGroupに間接的に含まれる全てのPhonemeを返す
         """
         return list(
             chain.from_iterable(
@@ -344,7 +343,7 @@ class BreathGroup:
         Returns
         -------
         labels : List[str]
-            BreathGroupが持つ、全てのAccentPhraseの中に含まれる全てのMoraの中のラベルを返す
+            BreathGroupに間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
 
