@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.full_context_label import Mora, Phoneme
+from voicevox_engine.full_context_label import AccentPhrase, Mora, Phoneme
 
 
 class TestBasePhonemes(TestCase):
@@ -115,3 +115,43 @@ class TestMora(TestBasePhonemes):
         self.assertEqual(self.mora_A_1.vowel.phoneme, "a")
         # 元に戻す
         self.mora_A_1.set_context("p3", "e")
+
+
+class TestAccentPhrase(TestBasePhonemes):
+    def setUp(self) -> None:
+        super().setUp()
+        self.accent_phrase_A = AccentPhrase.from_phonemes(self.phonemes_A[1:3])
+        self.accent_phrase_aka = AccentPhrase.from_phonemes(self.phonemes_aka[1:4])
+
+    def test_accent(self):
+        self.assertEqual(self.accent_phrase_A.accent, 1)
+        self.assertEqual(self.accent_phrase_aka.accent, 1)
+
+    def test_phonemes(self):
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.accent_phrase_A.phonemes], ["e", "i"]
+        )
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.accent_phrase_aka.phonemes],
+            ["a", "k", "a"],
+        )
+
+    def test_labels(self):
+        self.assertEqual(self.accent_phrase_A.labels, self.test_case_A[1:3])
+        self.assertEqual(
+            self.accent_phrase_aka.labels,
+            self.test_case_aka[1:4],
+        )
+
+    def test_merge(self):
+        # aka + ei = アカエイ
+        merged_accent_phrase = self.accent_phrase_aka.merge(self.accent_phrase_A)
+        self.assertEqual(merged_accent_phrase.accent, 1)
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in merged_accent_phrase.phonemes],
+            ["a", "k", "a", "e", "i"],
+        )
+        self.assertEqual(
+            merged_accent_phrase.labels,
+            self.test_case_aka[1:4] + self.test_case_A[1:3],
+        )

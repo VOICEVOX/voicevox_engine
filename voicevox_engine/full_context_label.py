@@ -143,6 +143,18 @@ class AccentPhrase:
 
     @classmethod
     def from_phonemes(cls, phonemes: List[Phoneme]):
+        """
+        PhonemeのリストからAccentPhraseクラスを作成する
+        Parameters
+        ----------
+        phonemes : List[Phoneme]
+            phonemeのリストを渡す
+
+        Returns
+        -------
+        accent_phrase : AccentPhrase
+            AccentPhraseクラスを返す
+        """
         moras: List[Mora] = []
 
         mora_phonemes: List[Phoneme] = []
@@ -171,13 +183,40 @@ class AccentPhrase:
 
     @property
     def phonemes(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        phonemes : List[Phoneme]
+            AccentPhraseが持つ、全てのMoraの中に含まれるPhonemeを返す
+        """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
     @property
     def labels(self):
+        """
+        ラベル群を返す
+        Returns
+        -------
+        labels : List[str]
+            AccentPhraseが持つ、全てのMoraの中に含まれるラベルを返す
+        """
         return [p.label for p in self.phonemes]
 
     def merge(self, accent_phrase: "AccentPhrase"):
+        """
+        AccentPhraseを合成する
+        (このクラスが保持するmorasの後ろに、引数として渡されたAccentPhraseのmorasを合成する)
+        Parameters
+        ----------
+        accent_phrase : AccentPhrase
+            合成したいAccentPhraseを渡す
+
+        Returns
+        -------
+        accent_phrase : AccentPhrase
+            合成されたAccentPhraseを返す
+        """
         return AccentPhrase(
             moras=self.moras + accent_phrase.moras,
             accent=self.accent,
