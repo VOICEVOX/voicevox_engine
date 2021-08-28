@@ -127,6 +127,13 @@ class TestAccentPhrase(TestBasePhonemes):
         self.assertEqual(self.accent_phrase_A.accent, 1)
         self.assertEqual(self.accent_phrase_aka.accent, 1)
 
+    def test_set_context(self):
+        # phonemeにあたる"p3"を書き換える
+        self.accent_phrase_A.set_context("p3", "a")
+        self.assertEqual([phoneme.contexts["p3"] for phoneme in self.accent_phrase_A.phonemes], ["a", "a"])
+        # 元に戻す
+        self.accent_phrase_A = AccentPhrase.from_phonemes(self.phonemes_A[1:3])
+
     def test_phonemes(self):
         self.assertEqual(
             [phoneme.phoneme for phoneme in self.accent_phrase_A.phonemes], ["e", "i"]
