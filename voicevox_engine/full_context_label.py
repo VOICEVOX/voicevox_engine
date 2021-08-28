@@ -8,12 +8,21 @@ import pyopenjtalk
 
 @dataclass
 class Phoneme:
+    """
+    音素(母音・子音)クラス、音素の元となるcontextを保持する
+    音素には、母音や子音以外にも無音(silent)も含まれる
+
+    Attributes
+    ----------
+    contexts: Dict[str, str]
+        音素の元
+    """
     contexts: Dict[str, str]
 
     @classmethod
     def from_label(cls, label: str):
         """
-        pyopenjtalk.extract_fullcontextで得られる音素の元(ラベル)から、音素を作成する
+        pyopenjtalk.extract_fullcontextで得られる音素の元(ラベル)から、Phonemeクラスを作成する
         Parameters
         ----------
         label : str
@@ -22,7 +31,7 @@ class Phoneme:
         Returns
         -------
         phoneme: Phoneme
-            Phoneme(音素)クラスを返す
+            Phonemeクラスを返す
         """
         contexts = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
@@ -68,11 +77,11 @@ class Phoneme:
     @property
     def phoneme(self):
         """
-        音素クラスの中で、発音すべきものを返す
+        音素クラスの中で、発声に必要な要素を返す
         Returns
         -------
         phonome : str
-            発音すべきものを返す
+            発声に必要な要素を返す
         """
         return self.contexts["p3"]
 
@@ -92,13 +101,24 @@ class Phoneme:
 
 @dataclass
 class Mora:
+    """
+    音韻クラス
+    音韻は母音のみか、母音と子音の組み合わせで成り立つ
+
+    Attributes
+    ----------
+    consonant : Optional[Phoneme]
+        子音
+    vowel : Phoneme
+        母音
+    """
     consonant: Optional[Phoneme]
     vowel: Phoneme
 
     def set_context(self, key: str, value: str):
         """
-        Mora(音韻)内に含まれるPhonemeのcontextを変更する
-        consonant(子音)が存在する場合は、vowel(母音)と同じようにcontextを変更する
+        Moraクラス内に含まれるPhonemeのcontextを変更する
+        consonantが存在する場合は、vowelと同じようにcontextを変更する
         Parameters
         ----------
         key : str
@@ -138,6 +158,16 @@ class Mora:
 
 @dataclass
 class AccentPhrase:
+    """
+    アクセント句クラス
+    同じアクセントのMoraを複数保持する
+    Attributes
+    ----------
+    moras : List[Mora]
+        音韻のリスト
+    accent : int
+        アクセント
+    """
     moras: List[Mora]
     accent: int
 
@@ -234,6 +264,14 @@ class AccentPhrase:
 
 @dataclass
 class BreathGroup:
+    """
+    息の区切りクラス
+    アクセントの異なるアクセント句を複数保持する
+    Attributes
+    ----------
+    accent_phrases: List[AccentPhrase]
+        アクセント句のリスト
+    """
     accent_phrases: List[AccentPhrase]
 
     @classmethod
