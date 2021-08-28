@@ -86,32 +86,32 @@ class TestMora(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
         # contexts["a2"] == "1"
-        self.test_case_A_1 = Mora(consonant=None, vowel=self.phonemes_A[1])
+        self.mora_A_1 = Mora(consonant=None, vowel=self.phonemes_A[1])
         # contexts["a2"] == "2"
-        self.test_case_A_2 = Mora(consonant=None, vowel=self.phonemes_A[2])
+        self.mora_A_2 = Mora(consonant=None, vowel=self.phonemes_A[2])
         # contexts["a2"] == "1"
-        self.test_case_aka_1 = Mora(consonant=None, vowel=self.phonemes_aka[1])
+        self.mora_aka_1 = Mora(consonant=None, vowel=self.phonemes_aka[1])
         # contexts["a2"] == "2"
-        self.test_case_aka_2 = Mora(
+        self.mora_aka_2 = Mora(
             consonant=self.phonemes_aka[2], vowel=self.phonemes_aka[3]
         )
 
     def test_phonemes(self) -> None:
-        self.assertEqual(self.test_case_A_1.phonemes[0].phoneme, "e")
-        self.assertEqual(self.test_case_A_2.phonemes[0].phoneme, "i")
-        self.assertEqual(self.test_case_aka_1.phonemes[0].phoneme, "a")
-        self.assertEqual(self.test_case_aka_2.phonemes[0].phoneme, "k")
-        self.assertEqual(self.test_case_aka_2.phonemes[1].phoneme, "a")
+        self.assertEqual(self.mora_A_1.phonemes[0].phoneme, "e")
+        self.assertEqual(self.mora_A_2.phonemes[0].phoneme, "i")
+        self.assertEqual(self.mora_aka_1.phonemes[0].phoneme, "a")
+        self.assertEqual(self.mora_aka_2.phonemes[0].phoneme, "k")
+        self.assertEqual(self.mora_aka_2.phonemes[1].phoneme, "a")
 
     def test_labels(self) -> None:
-        self.assertEqual(self.test_case_A_1.labels, self.test_case_A[1:2])
-        self.assertEqual(self.test_case_A_2.labels, self.test_case_A[2:3])
-        self.assertEqual(self.test_case_aka_1.labels, self.test_case_aka[1:2])
-        self.assertEqual(self.test_case_aka_2.labels, self.test_case_aka[2:4])
+        self.assertEqual(self.mora_A_1.labels, self.test_case_A[1:2])
+        self.assertEqual(self.mora_A_2.labels, self.test_case_A[2:3])
+        self.assertEqual(self.mora_aka_1.labels, self.test_case_aka[1:2])
+        self.assertEqual(self.mora_aka_2.labels, self.test_case_aka[2:4])
 
     def test_set_context(self):
         # phonemeにあたる"p3"を書き換える
-        self.test_case_A_1.set_context("p3", "a")
-        self.assertEqual(self.test_case_A_1.vowel.phoneme, "a")
+        self.mora_A_1.set_context("p3", "a")
+        self.assertEqual(self.mora_A_1.vowel.phoneme, "a")
         # 元に戻す
-        self.test_case_A_1.set_context("p3", "e")
+        self.mora_A_1.set_context("p3", "e")
