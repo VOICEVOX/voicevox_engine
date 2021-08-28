@@ -6,6 +6,7 @@ from voicevox_engine.full_context_label import AccentPhrase, BreathGroup, Mora, 
 class TestBasePhonemes(TestCase):
     def setUp(self):
         super().setUp()
+        # TODO: もっと適したテストケースの模索
         # pyopenjtalk.extract_fullcontext("A")の結果
         # 出来る限りテスト内で他のライブラリに依存しないために、テストケースを生成している
         self.test_case_A = [
