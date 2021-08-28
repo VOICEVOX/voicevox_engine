@@ -272,7 +272,7 @@ class BreathGroup:
     アクセントの異なるアクセント句を複数保持する
     Attributes
     ----------
-    accent_phrases: List[AccentPhrase]
+    accent_phrases : List[AccentPhrase]
         アクセント句のリスト
     """
 
