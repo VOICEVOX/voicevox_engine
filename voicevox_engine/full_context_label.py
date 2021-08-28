@@ -17,7 +17,7 @@ class Phoneme:
         Parameters
         ----------
         label : str
-            pyopenjtalk.extract_fullcontextで得られるラベルを入れる
+            pyopenjtalk.extract_fullcontextで得られるラベルを渡す
 
         Returns
         -------
