@@ -1,6 +1,12 @@
 from unittest import TestCase
 
-from voicevox_engine.full_context_label import AccentPhrase, BreathGroup, Mora, Phoneme
+from voicevox_engine.full_context_label import (
+    AccentPhrase,
+    BreathGroup,
+    Mora,
+    Phoneme,
+    Utterance,
+)
 
 
 class TestBasePhonemes(TestCase):
@@ -199,3 +205,25 @@ class TestBreathGroup(TestBasePhonemes):
             self.breath_group_aka.labels,
             self.test_case_aka[1:4],
         )
+
+
+class TestUtterance(TestBasePhonemes):
+    def setUp(self) -> None:
+        super().setUp()
+        self.utterance_A = Utterance.from_phonemes(self.phonemes_A)
+        self.utterance_aka = Utterance.from_phonemes(self.phonemes_aka)
+
+    def test_phonemes(self):
+        # TODO: Utterance内では結構な処理を行っているので、もっと詳細なテストを書きたい
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.utterance_A.phonemes],
+            ["sil", "e", "i", "sil"],
+        )
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.utterance_aka.phonemes],
+            ["sil", "a", "k", "a", "sil"],
+        )
+
+    def test_labels(self):
+        self.assertEqual(self.utterance_A.labels, self.test_case_A)
+        self.assertEqual(self.utterance_aka.labels, self.test_case_aka)

@@ -350,11 +350,34 @@ class BreathGroup:
 
 @dataclass
 class Utterance:
+    """
+    発声クラス
+    発声の区切りと無音を複数保持する
+    Attributes
+    ----------
+    breath_groups : List[BreathGroup]
+        発声の区切りのリスト
+    pauses : List[Phoneme]
+        無音のリスト
+    """
+
     breath_groups: List[BreathGroup]
     pauses: List[Phoneme]
 
     @classmethod
     def from_phonemes(cls, phonemes: List[Phoneme]):
+        """
+        Phonemeの完全なリストからUtteranceクラスを作成する
+        Parameters
+        ----------
+        phonemes : List[Phoneme]
+            phonemeのリストを渡す
+
+        Returns
+        -------
+        utterance : Utterance
+            Utteranceクラスを返す
+        """
         pauses: List[Phoneme] = []
 
         breath_groups: List[BreathGroup] = []
@@ -374,11 +397,27 @@ class Utterance:
         return cls(breath_groups=breath_groups, pauses=pauses)
 
     def set_context(self, key: str, value: str):
+        """
+        Utteranceに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
+        Parameters
+        ----------
+        key : str
+            変更したいcontextのキー
+        value : str
+            変更したいcontextの値
+        """
         for breath_group in self.breath_groups:
             breath_group.set_context(key, value)
 
     @property
     def phonemes(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        phonemes : List[Phoneme]
+            Utteranceクラスに直接的・間接的に含まれる、全てのPhonemeを返す
+        """
         accent_phrases = list(
             chain.from_iterable(
                 breath_group.accent_phrases for breath_group in self.breath_groups
@@ -453,6 +492,13 @@ class Utterance:
 
     @property
     def labels(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        phonemes : List[Phoneme]
+            Utteranceクラスに直接的・間接的に含まれる全てのラベルを返す
+        """
         return [p.label for p in self.phonemes]
 
 
