@@ -238,6 +238,18 @@ class BreathGroup:
 
     @classmethod
     def from_phonemes(cls, phonemes: List[Phoneme]):
+        """
+        PhonemeのリストからBreathGroupクラスを作成する
+        Parameters
+        ----------
+        phonemes : List[Phoneme]
+            phonemeのリストを渡す
+
+        Returns
+        -------
+        breath_group : BreathGroup
+            BreathGroupクラスを返す
+        """
         accent_phrases: List[AccentPhrase] = []
         accent_phonemes: List[Phoneme] = []
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
@@ -255,11 +267,28 @@ class BreathGroup:
         return cls(accent_phrases=accent_phrases)
 
     def set_context(self, key: str, value: str):
+        """
+        BreathGroupクラス内に含まれるaccent_phrases内の、
+        morasに含まれるPhonemeのcontextを全て変更する
+        Parameters
+        ----------
+        key : str
+            変更したいcontextのキー
+        value : str
+            変更したいcontextの値
+        """
         for accent_phrase in self.accent_phrases:
             accent_phrase.set_context(key, value)
 
     @property
     def phonemes(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        phonemes : List[Phoneme]
+            BreathGroupが持つ、全てのAccentPhraseの中に含まれる全てのMoraの中のPhonemeを返す
+        """
         return list(
             chain.from_iterable(
                 accent_phrase.phonemes for accent_phrase in self.accent_phrases
@@ -268,6 +297,13 @@ class BreathGroup:
 
     @property
     def labels(self):
+        """
+        音素群を返す
+        Returns
+        -------
+        labels : List[str]
+            BreathGroupが持つ、全てのAccentPhraseの中に含まれる全てのMoraの中のラベルを返す
+        """
         return [p.label for p in self.phonemes]
 
 

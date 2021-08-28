@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.full_context_label import AccentPhrase, Mora, Phoneme
+from voicevox_engine.full_context_label import AccentPhrase, BreathGroup, Mora, Phoneme
 
 
 class TestBasePhonemes(TestCase):
@@ -164,4 +164,37 @@ class TestAccentPhrase(TestBasePhonemes):
         self.assertEqual(
             merged_accent_phrase.labels,
             self.test_case_aka[1:4] + self.test_case_A[1:3],
+        )
+
+
+class TestBreathGroup(TestBasePhonemes):
+    def setUp(self) -> None:
+        super().setUp()
+        self.breath_group_A = BreathGroup.from_phonemes(self.phonemes_A[1:3])
+        self.breath_group_aka = BreathGroup.from_phonemes(self.phonemes_aka[1:4])
+
+    def test_set_context(self):
+        # phonemeにあたる"p3"を書き換える
+        self.breath_group_A.set_context("p3", "a")
+        self.assertEqual(
+            [phoneme.contexts["p3"] for phoneme in self.breath_group_A.phonemes],
+            ["a", "a"],
+        )
+        # 元に戻す
+        self.breath_group_A = BreathGroup.from_phonemes(self.phonemes_A[1:3])
+
+    def test_phonemes(self):
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.breath_group_A.phonemes], ["e", "i"]
+        )
+        self.assertEqual(
+            [phoneme.phoneme for phoneme in self.breath_group_aka.phonemes],
+            ["a", "k", "a"],
+        )
+
+    def test_labels(self):
+        self.assertEqual(self.breath_group_A.labels, self.test_case_A[1:3])
+        self.assertEqual(
+            self.breath_group_aka.labels,
+            self.test_case_aka[1:4],
         )
