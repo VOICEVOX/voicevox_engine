@@ -339,7 +339,7 @@ class BreathGroup:
     @property
     def labels(self):
         """
-        音素群を返す
+        ラベル群を返す
         Returns
         -------
         labels : List[str]
@@ -493,7 +493,7 @@ class Utterance:
     @property
     def labels(self):
         """
-        音素群を返す
+        ラベル群を返す
         Returns
         -------
         phonemes : List[Phoneme]
