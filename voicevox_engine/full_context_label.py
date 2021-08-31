@@ -81,7 +81,7 @@ class Phoneme:
         音素クラスの中で、発声に必要な要素を返す
         Returns
         -------
-        phonome : str
+        phoneme : str
             発声に必要な要素を返す
         """
         return self.contexts["p3"]
