@@ -496,7 +496,7 @@ class Utterance:
         ラベル群を返す
         Returns
         -------
-        phonemes : List[Phoneme]
+        labels : List[str]
             Utteranceクラスに直接的・間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
