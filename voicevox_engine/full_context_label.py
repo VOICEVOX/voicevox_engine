@@ -88,11 +88,11 @@ class Phoneme:
 
     def is_pose(self):
         """
-        音素がポーズ(無音/silent)であるかを返す
+        音素がポーズ(無音、silent/pause)であるかを返す
         Returns
         -------
         is_pose : bool
-            音素がポーズ(無音/silent)であるか(True)否か(False)
+            音素がポーズ(無音、silent/pause)であるか(True)否か(False)
         """
         return self.contexts["f1"] == "xx"
 
