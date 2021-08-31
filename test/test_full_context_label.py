@@ -114,7 +114,7 @@ class TestPhoneme(TestBasePhonemes):
         self.assertEqual(
             [phoneme.is_pose() for phoneme in self.phonemes_hello_hiho],
             [
-                True,   # sil
+                True,  # sil
                 False,  # k
                 False,  # o
                 False,  # N
@@ -124,7 +124,7 @@ class TestPhoneme(TestBasePhonemes):
                 False,  # i
                 False,  # w
                 False,  # a
-                True,   # pau
+                True,  # pau
                 False,  # h
                 False,  # i
                 False,  # h
@@ -133,7 +133,7 @@ class TestPhoneme(TestBasePhonemes):
                 False,  # e
                 False,  # s
                 False,  # u
-                True,   # sil
+                True,  # sil
             ],
         )
 
@@ -152,9 +152,7 @@ class TestMora(TestBasePhonemes):
             consonant=self.phonemes_hello_hiho[1], vowel=self.phonemes_hello_hiho[2]
         )
         # contexts["a2"] == "2" N
-        self.mora_hello_2 = Mora(
-            consonant=None, vowel=self.phonemes_hello_hiho[3]
-        )
+        self.mora_hello_2 = Mora(consonant=None, vowel=self.phonemes_hello_hiho[3])
         # contexts["a2"] == "3" ni
         self.mora_hello_3 = Mora(
             consonant=self.phonemes_hello_hiho[4], vowel=self.phonemes_hello_hiho[5]
@@ -190,9 +188,7 @@ class TestMora(TestBasePhonemes):
         )
 
     def assert_labels(self, mora: Mora, label_start: int, label_end: int) -> None:
-        self.assertEqual(
-            mora.labels, self.test_case_hello_hiho[label_start:label_end]
-        )
+        self.assertEqual(mora.labels, self.test_case_hello_hiho[label_start:label_end])
 
     def test_phonemes(self) -> None:
         self.assert_phonemes(self.mora_hello_1, "ko")
@@ -242,10 +238,7 @@ class TestAccentPhrase(TestBasePhonemes):
         # phonemeにあたる"p3"を書き換える
         self.accent_phrase_hello.set_context("p3", "a")
         self.assertEqual(
-            "".join([
-                phoneme.phoneme
-                for phoneme in self.accent_phrase_hello.phonemes
-            ]),
+            "".join([phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]),
             "aaaaaaaaa",
         )
         # 元に戻す
@@ -255,7 +248,9 @@ class TestAccentPhrase(TestBasePhonemes):
 
     def test_phonemes(self):
         self.assertEqual(
-            " ".join([phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]),
+            " ".join(
+                [phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]
+            ),
             "k o N n i ch i w a",
         )
         self.assertEqual(
@@ -278,7 +273,7 @@ class TestAccentPhrase(TestBasePhonemes):
         self.assertEqual(merged_accent_phrase.accent, 5)
         self.assertEqual(
             " ".join([phoneme.phoneme for phoneme in merged_accent_phrase.phonemes]),
-            "k o N n i ch i w a h i h o d e s U"
+            "k o N n i ch i w a h i h o d e s U",
         )
         self.assertEqual(
             merged_accent_phrase.labels,
@@ -300,10 +295,7 @@ class TestBreathGroup(TestBasePhonemes):
         # phonemeにあたる"p3"を書き換える
         self.breath_group_hello.set_context("p3", "a")
         self.assertEqual(
-            "".join([
-                phoneme.phoneme
-                for phoneme in self.breath_group_hello.phonemes
-            ]),
+            "".join([phoneme.phoneme for phoneme in self.breath_group_hello.phonemes]),
             "aaaaaaaaa",
         )
         # 元に戻す
