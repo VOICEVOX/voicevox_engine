@@ -12,218 +12,334 @@ from voicevox_engine.full_context_label import (
 class TestBasePhonemes(TestCase):
     def setUp(self):
         super().setUp()
-        # TODO: もっと適したテストケースの模索
-        # pyopenjtalk.extract_fullcontext("A")の結果
-        # 出来る限りテスト内で他のライブラリに依存しないために、テストケースを生成している
-        self.test_case_A = [
-            # 無音
-            "xx^xx-sil+e=i/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:xx+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:2_1%0_xx_xx/H:xx_xx/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:1_2/K:1+1-2",
-            # e
-            "xx^sil-e+i=sil/A:0+1+2/B:xx-xx_xx/C:xx_xx+xx/D:xx+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:2_1#0_xx@1_1|1_2/G:xx_xx%xx_xx_xx/H:xx_xx/I:1-2"
-            + "@1+1&1-1|1+2/J:xx_xx/K:1+1-2",
-            # i
-            "sil^e-i+sil=xx/A:1+2+1/B:xx-xx_xx/C:xx_xx+xx/D:xx+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:2_1#0_xx@1_1|1_2/G:xx_xx%xx_xx_xx/H:xx_xx/I:1-2"
-            + "@1+1&1-1|1+2/J:xx_xx/K:1+1-2",
-            # 無音
-            "e^i-sil+xx=xx/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:xx+xx_xx/E:2_1!0_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_2/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:1+1-2",
-        ]
-        # pyopenjtalk.extract_fullcontext("あか")の結果
-        self.test_case_aka = [
-            # 無音
-            "xx^xx-sil+a=k/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:2_1%0_xx_xx/H:xx_xx/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:1_2/K:1+1-2",
-            # a
-            "xx^sil-a+k=a/A:0+1+2/B:xx-xx_xx/C:09_xx+xx/D:23+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:2_1#0_xx@1_1|1_2/G:xx_xx%xx_xx_xx/H:xx_xx/I:1-2"
-            + "@1+1&1-1|1+2/J:xx_xx/K:1+1-2",
+        # pyopenjtalk.extract_fullcontext("こんにちは、ヒホです。")の結果
+        # 出来る限りテスト内で他のライブラリに依存しないため、
+        # またテスト内容を透明化するために、テストケースを生成している
+        self.test_case_hello_hiho = [
+            # sil (無音)
+            "xx^xx-sil+k=o/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:xx_xx#xx_x@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
+            + "@xx+xx&xx-xx|xx+xx/J:1_5/K:2+2-9",
             # k
-            "sil^a-k+a=sil/A:1+2+1/B:09-xx_xx/C:23_xx+xx/D:xx+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:2_1#0_xx@1_1|1_2/G:xx_xx%xx_xx_xx/H:xx_xx/I:1-2"
-            + "@1+1&1-1|1+2/J:xx_xx/K:1+1-2",
+            "xx^sil-k+o=N/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # o
+            "sil^k-o+N=n/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # N (ん)
+            "k^o-N+n=i/A:-3+2+4/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # n
+            "o^N-n+i=ch/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # i
+            "N^n-i+ch=i/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # ch
+            "n^i-ch+i=w/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # i
+            "i^ch-i+w=a/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # w
+            "ch^i-w+a=pau/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
             # a
-            "a^k-a+sil=xx/A:1+2+1/B:09-xx_xx/C:23_xx+xx/D:xx+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:2_1#0_xx@1_1|1_2/G:xx_xx%xx_xx_xx/H:xx_xx/I:1-2"
-            + "@1+1&1-1|1+2/J:xx_xx/K:1+1-2",
-            # 無音
-            "k^a-sil+xx=xx/A:xx+xx+xx/B:23-xx_xx/C:xx_xx+xx/D:xx+xx_xx/E:2_1!0_xx-xx/"
-            + "F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_2/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:1+1-2",
+            "i^w-a+pau=h/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+            # pau (読点)
+            "w^a-pau+h=i/A:xx+xx+xx/B:09-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:5_5!0_xx-xx"
+            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:4_1%0_xx_xx/H:1_5/I:xx-xx"
+            + "@xx+xx&xx-xx|xx+xx/J:1_4/K:2+2-9",
+            # h
+            "a^pau-h+i=h/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # i
+            "pau^h-i+h=o/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # h
+            "h^i-h+o=d/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # o
+            "i^h-o+d=e/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # d
+            "h^o-d+e=s/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # e
+            "o^d-e+s=U/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # s
+            "d^e-s+U=sil/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # U (無声母音)
+            "e^s-U+sil=xx/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+            # sil (無音)
+            "s^U-sil+xx=xx/A:xx+xx+xx/B:10-7_2/C:xx_xx+xx/D:xx+xx_xx/E:4_1!0_xx-xx"
+            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_4/I:xx-xx"
+            + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:2+2-9",
         ]
-        self.phonemes_A = [Phoneme.from_label(label) for label in self.test_case_A]
-        self.phonemes_aka = [Phoneme.from_label(label) for label in self.test_case_aka]
+        self.phonemes_hello_hiho = [
+            Phoneme.from_label(label) for label in self.test_case_hello_hiho
+        ]
 
 
 class TestPhoneme(TestBasePhonemes):
     def test_phoneme(self):
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.phonemes_A], ["sil", "e", "i", "sil"]
-        )
-        self.assertEqual(
-            [phoneme.phoneme for phoneme in self.phonemes_aka],
-            ["sil", "a", "k", "a", "sil"],
+            " ".join([phoneme.phoneme for phoneme in self.phonemes_hello_hiho]),
+            "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
 
     def test_is_pose(self):
         self.assertEqual(
-            [phoneme.is_pose() for phoneme in self.phonemes_A],
-            [True, False, False, True],
-        )
-        self.assertEqual(
-            [phoneme.is_pose() for phoneme in self.phonemes_aka],
-            [True, False, False, False, True],
+            [phoneme.is_pose() for phoneme in self.phonemes_hello_hiho],
+            [
+                True,   # sil
+                False,  # k
+                False,  # o
+                False,  # N
+                False,  # n
+                False,  # i
+                False,  # ch
+                False,  # i
+                False,  # w
+                False,  # a
+                True,   # pau
+                False,  # h
+                False,  # i
+                False,  # h
+                False,  # o
+                False,  # d
+                False,  # e
+                False,  # s
+                False,  # u
+                True,   # sil
+            ],
         )
 
     def test_label(self) -> None:
         self.assertEqual(
-            [phoneme.label for phoneme in self.phonemes_A], self.test_case_A
-        )
-        self.assertEqual(
-            [phoneme.label for phoneme in self.phonemes_aka], self.test_case_aka
+            [phoneme.label for phoneme in self.phonemes_hello_hiho],
+            self.test_case_hello_hiho,
         )
 
 
 class TestMora(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        # contexts["a2"] == "1"
-        self.mora_A_1 = Mora(consonant=None, vowel=self.phonemes_A[1])
-        # contexts["a2"] == "2"
-        self.mora_A_2 = Mora(consonant=None, vowel=self.phonemes_A[2])
-        # contexts["a2"] == "1"
-        self.mora_aka_1 = Mora(consonant=None, vowel=self.phonemes_aka[1])
-        # contexts["a2"] == "2"
-        self.mora_aka_2 = Mora(
-            consonant=self.phonemes_aka[2], vowel=self.phonemes_aka[3]
+        # contexts["a2"] == "1" ko
+        self.mora_hello_1 = Mora(
+            consonant=self.phonemes_hello_hiho[1], vowel=self.phonemes_hello_hiho[2]
+        )
+        # contexts["a2"] == "2" N
+        self.mora_hello_2 = Mora(
+            consonant=None, vowel=self.phonemes_hello_hiho[3]
+        )
+        # contexts["a2"] == "3" ni
+        self.mora_hello_3 = Mora(
+            consonant=self.phonemes_hello_hiho[4], vowel=self.phonemes_hello_hiho[5]
+        )
+        # contexts["a2"] == "4" chi
+        self.mora_hello_4 = Mora(
+            consonant=self.phonemes_hello_hiho[6], vowel=self.phonemes_hello_hiho[7]
+        )
+        # contexts["a2"] == "5" wa
+        self.mora_hello_5 = Mora(
+            consonant=self.phonemes_hello_hiho[8], vowel=self.phonemes_hello_hiho[9]
+        )
+        # contexts["a2"] == "1" hi
+        self.mora_hiho_1 = Mora(
+            consonant=self.phonemes_hello_hiho[11], vowel=self.phonemes_hello_hiho[12]
+        )
+        # contexts["a2"] == "2" ho
+        self.mora_hiho_2 = Mora(
+            consonant=self.phonemes_hello_hiho[13], vowel=self.phonemes_hello_hiho[14]
+        )
+        # contexts["a2"] == "3" de
+        self.mora_hiho_3 = Mora(
+            consonant=self.phonemes_hello_hiho[15], vowel=self.phonemes_hello_hiho[16]
+        )
+        # contexts["a2"] == "1" sU
+        self.mora_hiho_4 = Mora(
+            consonant=self.phonemes_hello_hiho[17], vowel=self.phonemes_hello_hiho[18]
+        )
+
+    def assert_phonemes(self, mora: Mora, mora_str: str) -> None:
+        self.assertEqual(
+            "".join([phoneme.phoneme for phoneme in mora.phonemes]), mora_str
+        )
+
+    def assert_labels(self, mora: Mora, label_start: int, label_end: int) -> None:
+        self.assertEqual(
+            mora.labels, self.test_case_hello_hiho[label_start:label_end]
         )
 
     def test_phonemes(self) -> None:
-        self.assertEqual(self.mora_A_1.phonemes[0].phoneme, "e")
-        self.assertEqual(self.mora_A_2.phonemes[0].phoneme, "i")
-        self.assertEqual(self.mora_aka_1.phonemes[0].phoneme, "a")
-        self.assertEqual(self.mora_aka_2.phonemes[0].phoneme, "k")
-        self.assertEqual(self.mora_aka_2.phonemes[1].phoneme, "a")
+        self.assert_phonemes(self.mora_hello_1, "ko")
+        self.assert_phonemes(self.mora_hello_2, "N")
+        self.assert_phonemes(self.mora_hello_3, "ni")
+        self.assert_phonemes(self.mora_hello_4, "chi")
+        self.assert_phonemes(self.mora_hello_5, "wa")
+        self.assert_phonemes(self.mora_hiho_1, "hi")
+        self.assert_phonemes(self.mora_hiho_2, "ho")
+        self.assert_phonemes(self.mora_hiho_3, "de")
+        self.assert_phonemes(self.mora_hiho_4, "sU")
 
     def test_labels(self) -> None:
-        self.assertEqual(self.mora_A_1.labels, self.test_case_A[1:2])
-        self.assertEqual(self.mora_A_2.labels, self.test_case_A[2:3])
-        self.assertEqual(self.mora_aka_1.labels, self.test_case_aka[1:2])
-        self.assertEqual(self.mora_aka_2.labels, self.test_case_aka[2:4])
+        self.assert_labels(self.mora_hello_1, 1, 3)
+        self.assert_labels(self.mora_hello_2, 3, 4)
+        self.assert_labels(self.mora_hello_3, 4, 6)
+        self.assert_labels(self.mora_hello_4, 6, 8)
+        self.assert_labels(self.mora_hello_5, 8, 10)
+        self.assert_labels(self.mora_hiho_1, 11, 13)
+        self.assert_labels(self.mora_hiho_2, 13, 15)
+        self.assert_labels(self.mora_hiho_3, 15, 17)
+        self.assert_labels(self.mora_hiho_4, 17, 19)
 
     def test_set_context(self):
         # phonemeにあたる"p3"を書き換える
-        self.mora_A_1.set_context("p3", "a")
-        self.assertEqual(self.mora_A_1.vowel.phoneme, "a")
+        self.mora_hello_1.set_context("p3", "a")
+        self.assert_phonemes(self.mora_hello_1, "aa")
         # 元に戻す
-        self.mora_A_1.set_context("p3", "e")
+        self.mora_hello_1.set_context("p3", "e")
 
 
 class TestAccentPhrase(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.accent_phrase_A = AccentPhrase.from_phonemes(self.phonemes_A[1:3])
-        self.accent_phrase_aka = AccentPhrase.from_phonemes(self.phonemes_aka[1:4])
+        self.accent_phrase_hello = AccentPhrase.from_phonemes(
+            self.phonemes_hello_hiho[1:10]
+        )
+        self.accent_phrase_hiho = AccentPhrase.from_phonemes(
+            self.phonemes_hello_hiho[11:19]
+        )
 
     def test_accent(self):
-        self.assertEqual(self.accent_phrase_A.accent, 1)
-        self.assertEqual(self.accent_phrase_aka.accent, 1)
+        self.assertEqual(self.accent_phrase_hello.accent, 5)
+        self.assertEqual(self.accent_phrase_hiho.accent, 1)
 
     def test_set_context(self):
         # phonemeにあたる"p3"を書き換える
-        self.accent_phrase_A.set_context("p3", "a")
+        self.accent_phrase_hello.set_context("p3", "a")
         self.assertEqual(
-            [phoneme.contexts["p3"] for phoneme in self.accent_phrase_A.phonemes],
-            ["a", "a"],
+            "".join([
+                phoneme.phoneme
+                for phoneme in self.accent_phrase_hello.phonemes
+            ]),
+            "aaaaaaaaa",
         )
         # 元に戻す
-        self.accent_phrase_A = AccentPhrase.from_phonemes(self.phonemes_A[1:3])
+        self.accent_phrase_hello = AccentPhrase.from_phonemes(
+            self.phonemes_hello_hiho[1:10]
+        )
 
     def test_phonemes(self):
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.accent_phrase_A.phonemes], ["e", "i"]
+            " ".join([phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]),
+            "k o N n i ch i w a",
         )
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.accent_phrase_aka.phonemes],
-            ["a", "k", "a"],
+            " ".join([phoneme.phoneme for phoneme in self.accent_phrase_hiho.phonemes]),
+            "h i h o d e s U",
         )
 
     def test_labels(self):
-        self.assertEqual(self.accent_phrase_A.labels, self.test_case_A[1:3])
         self.assertEqual(
-            self.accent_phrase_aka.labels,
-            self.test_case_aka[1:4],
+            self.accent_phrase_hello.labels, self.test_case_hello_hiho[1:10]
+        )
+        self.assertEqual(
+            self.accent_phrase_hiho.labels, self.test_case_hello_hiho[11:19]
         )
 
     def test_merge(self):
-        # aka + ei = アカエイ
-        merged_accent_phrase = self.accent_phrase_aka.merge(self.accent_phrase_A)
-        self.assertEqual(merged_accent_phrase.accent, 1)
+        # 「こんにちはヒホです」
+        # 読点を無くしたものと同等
+        merged_accent_phrase = self.accent_phrase_hello.merge(self.accent_phrase_hiho)
+        self.assertEqual(merged_accent_phrase.accent, 5)
         self.assertEqual(
-            [phoneme.phoneme for phoneme in merged_accent_phrase.phonemes],
-            ["a", "k", "a", "e", "i"],
+            " ".join([phoneme.phoneme for phoneme in merged_accent_phrase.phonemes]),
+            "k o N n i ch i w a h i h o d e s U"
         )
         self.assertEqual(
             merged_accent_phrase.labels,
-            self.test_case_aka[1:4] + self.test_case_A[1:3],
+            self.test_case_hello_hiho[1:10] + self.test_case_hello_hiho[11:19],
         )
 
 
 class TestBreathGroup(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.breath_group_A = BreathGroup.from_phonemes(self.phonemes_A[1:3])
-        self.breath_group_aka = BreathGroup.from_phonemes(self.phonemes_aka[1:4])
+        self.breath_group_hello = BreathGroup.from_phonemes(
+            self.phonemes_hello_hiho[1:10]
+        )
+        self.breath_group_hiho = BreathGroup.from_phonemes(
+            self.phonemes_hello_hiho[11:19]
+        )
 
     def test_set_context(self):
         # phonemeにあたる"p3"を書き換える
-        self.breath_group_A.set_context("p3", "a")
+        self.breath_group_hello.set_context("p3", "a")
         self.assertEqual(
-            [phoneme.contexts["p3"] for phoneme in self.breath_group_A.phonemes],
-            ["a", "a"],
+            "".join([
+                phoneme.phoneme
+                for phoneme in self.breath_group_hello.phonemes
+            ]),
+            "aaaaaaaaa",
         )
         # 元に戻す
-        self.breath_group_A = BreathGroup.from_phonemes(self.phonemes_A[1:3])
+        self.breath_group_hello = BreathGroup.from_phonemes(
+            self.phonemes_hello_hiho[1:10]
+        )
 
     def test_phonemes(self):
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.breath_group_A.phonemes], ["e", "i"]
+            " ".join([phoneme.phoneme for phoneme in self.breath_group_hello.phonemes]),
+            "k o N n i ch i w a",
         )
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.breath_group_aka.phonemes],
-            ["a", "k", "a"],
+            " ".join([phoneme.phoneme for phoneme in self.breath_group_hiho.phonemes]),
+            "h i h o d e s U",
         )
 
     def test_labels(self):
-        self.assertEqual(self.breath_group_A.labels, self.test_case_A[1:3])
         self.assertEqual(
-            self.breath_group_aka.labels,
-            self.test_case_aka[1:4],
+            self.breath_group_hello.labels, self.test_case_hello_hiho[1:10]
+        )
+        self.assertEqual(
+            self.breath_group_hiho.labels, self.test_case_hello_hiho[11:19]
         )
 
 
 class TestUtterance(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.utterance_A = Utterance.from_phonemes(self.phonemes_A)
-        self.utterance_aka = Utterance.from_phonemes(self.phonemes_aka)
+        self.utterance_hello_hiho = Utterance.from_phonemes(self.phonemes_hello_hiho)
 
     def test_phonemes(self):
         # TODO: Utterance内では結構な処理を行っているので、もっと詳細なテストを書きたい
         self.assertEqual(
-            [phoneme.phoneme for phoneme in self.utterance_A.phonemes],
-            ["sil", "e", "i", "sil"],
-        )
-        self.assertEqual(
-            [phoneme.phoneme for phoneme in self.utterance_aka.phonemes],
-            ["sil", "a", "k", "a", "sil"],
+            " ".join([phoneme.phoneme for phoneme in self.utterance_hello_hiho.phonemes]),
+            "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
 
     def test_labels(self):
-        self.assertEqual(self.utterance_A.labels, self.test_case_A)
-        self.assertEqual(self.utterance_aka.labels, self.test_case_aka)
+        self.assertEqual(self.utterance_hello_hiho.labels, self.test_case_hello_hiho)
