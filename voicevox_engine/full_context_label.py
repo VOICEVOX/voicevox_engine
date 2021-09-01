@@ -86,7 +86,7 @@ class Phoneme:
         """
         return self.contexts["p3"]
 
-    def is_pose(self):
+    def is_pause(self):
         """
         音素がポーズ(無音、silent/pause)であるかを返す
         Returns
@@ -383,7 +383,7 @@ class Utterance:
         breath_groups: List[BreathGroup] = []
         group_phonemes: List[Phoneme] = []
         for phoneme in phonemes:
-            if not phoneme.is_pose():
+            if not phoneme.is_pause():
                 group_phonemes.append(phoneme)
 
             else:

@@ -110,9 +110,9 @@ class TestPhoneme(TestBasePhonemes):
             "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
 
-    def test_is_pose(self):
+    def test_is_pause(self):
         self.assertEqual(
-            [phoneme.is_pose() for phoneme in self.phonemes_hello_hiho],
+            [phoneme.is_pause() for phoneme in self.phonemes_hello_hiho],
             [
                 True,  # sil
                 False,  # k
