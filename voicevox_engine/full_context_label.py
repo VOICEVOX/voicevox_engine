@@ -10,7 +10,7 @@ import pyopenjtalk
 class Phoneme:
     """
     音素(母音・子音)クラス、音素の元となるcontextを保持する
-    音素には、母音や子音以外にも無音(silent)も含まれる
+    音素には、母音や子音以外にも無音(silent/pause)も含まれる
 
     Attributes
     ----------
