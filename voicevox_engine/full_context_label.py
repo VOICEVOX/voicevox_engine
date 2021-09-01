@@ -195,7 +195,7 @@ class AccentPhrase:
             # workaround for Hihosiba/voicevox_engine#57
             # (py)openjtalk によるアクセント句内のモーラへの附番は 49 番目まで
             # 49 番目のモーラについて、続く音素のモーラ番号を単一モーラの特定に使えない
-            if(int(phoneme.contexts["a2"]) == 49):
+            if int(phoneme.contexts["a2"]) == 49:
                 break
 
             mora_phonemes.append(phoneme)
