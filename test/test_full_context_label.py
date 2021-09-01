@@ -224,6 +224,8 @@ class TestMora(TestBasePhonemes):
 class TestAccentPhrase(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
+        # TODO: ValueErrorを吐く作為的ではない自然な例の模索
+        # 存在しないなら放置でよい
         self.accent_phrase_hello = AccentPhrase.from_phonemes(
             self.phonemes_hello_hiho[1:10]
         )
