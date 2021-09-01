@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import chain
 from unittest import TestCase
 
@@ -213,11 +214,11 @@ class TestMora(TestBasePhonemes):
         self.assert_labels(self.mora_hiho_4, 17, 19)
 
     def test_set_context(self):
+        # 値を書き換えるので、他のテストに影響を出さないためにdeepcopyする
+        mora_hello_1 = deepcopy(self.mora_hello_1)
         # phonemeにあたる"p3"を書き換える
-        self.mora_hello_1.set_context("p3", "a")
-        self.assert_phonemes(self.mora_hello_1, "aa")
-        # 元に戻す
-        self.mora_hello_1.set_context("p3", "e")
+        mora_hello_1.set_context("p3", "a")
+        self.assert_phonemes(mora_hello_1, "aa")
 
 
 class TestAccentPhrase(TestBasePhonemes):
@@ -235,15 +236,12 @@ class TestAccentPhrase(TestBasePhonemes):
         self.assertEqual(self.accent_phrase_hiho.accent, 1)
 
     def test_set_context(self):
+        accent_phrase_hello = deepcopy(self.accent_phrase_hello)
         # phonemeにあたる"p3"を書き換える
-        self.accent_phrase_hello.set_context("p3", "a")
+        accent_phrase_hello.set_context("p3", "a")
         self.assertEqual(
-            "".join([phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]),
+            "".join([phoneme.phoneme for phoneme in accent_phrase_hello.phonemes]),
             "aaaaaaaaa",
-        )
-        # 元に戻す
-        self.accent_phrase_hello = AccentPhrase.from_phonemes(
-            self.phonemes_hello_hiho[1:10]
         )
 
     def test_phonemes(self):
@@ -292,15 +290,13 @@ class TestBreathGroup(TestBasePhonemes):
         )
 
     def test_set_context(self):
+        # 値を書き換えるので、他のテストに影響を出さないためにdeepcopyする
+        breath_group_hello = deepcopy(self.breath_group_hello)
         # phonemeにあたる"p3"を書き換える
-        self.breath_group_hello.set_context("p3", "a")
+        breath_group_hello.set_context("p3", "a")
         self.assertEqual(
-            "".join([phoneme.phoneme for phoneme in self.breath_group_hello.phonemes]),
+            "".join([phoneme.phoneme for phoneme in breath_group_hello.phonemes]),
             "aaaaaaaaa",
-        )
-        # 元に戻す
-        self.breath_group_hello = BreathGroup.from_phonemes(
-            self.phonemes_hello_hiho[1:10]
         )
 
     def test_phonemes(self):
