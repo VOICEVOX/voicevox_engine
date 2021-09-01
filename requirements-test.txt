@@ -1,2 +1,3 @@
 -r requirements.txt
 pysen[lint]
+pytest
