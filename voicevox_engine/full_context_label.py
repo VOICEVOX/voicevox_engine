@@ -192,6 +192,12 @@ class AccentPhrase:
 
         mora_phonemes: List[Phoneme] = []
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
+            # workaround for Hihosiba/voicevox_engine#57
+            # (py)openjtalk によるアクセント句内のモーラへの附番は 49 番目まで
+            # 49 番目のモーラについて、続く音素のモーラ番号を単一モーラの特定に使えない
+            if int(phoneme.contexts["a2"]) == 49:
+                break
+
             mora_phonemes.append(phoneme)
 
             if (
@@ -208,7 +214,11 @@ class AccentPhrase:
                 moras.append(mora)
                 mora_phonemes = []
 
-        return cls(moras=moras, accent=int(moras[0].vowel.contexts["f2"]))
+        accent = int(moras[0].vowel.contexts["f2"])
+        # workaround for Hihosiba/voicevox_engine#55
+        # アクセント位置とするキー f2 の値がアクセント句内のモーラ数を超える場合がある
+        accent = accent if accent <= len(moras) else len(moras)
+        return cls(moras=moras, accent=accent)
 
     def set_context(self, key: str, value: str):
         """
