@@ -86,7 +86,7 @@ def mora_to_text(mora: str):
         return "ドゥ"
     else:
         katakana = romkan.to_katakana(mora)
-        if len(katakana) > 2 and katakana[1] == "y":
+        if katakana.find("y") != -1:
             katakana = romkan.to_katakana(mora.replace("y", "i"))
         return katakana
 
