@@ -85,7 +85,10 @@ def mora_to_text(mora: str):
     elif mora == "du":
         return "ドゥ"
     else:
-        return romkan.to_katakana(mora)
+        katakana = romkan.to_katakana(mora)
+        if len(katakana) > 2 and katakana[1] == "y":
+            katakana = romkan.to_katakana(mora.replace("y", "i"))
+        return katakana
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
