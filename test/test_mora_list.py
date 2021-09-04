@@ -16,12 +16,11 @@ class TestOpenJTalkMoraList(TestCase):
         self.assertEqual("イェ", openjtalk_mora2text["ye"])
 
     def test_text2mora(self):
-        self.assertEqual("cl", openjtalk_text2mora["ッ"])
-        self.assertEqual("ti", openjtalk_text2mora["ティ"])
-        self.assertEqual("tu", openjtalk_text2mora["トゥ"])
-        self.assertEqual("di", openjtalk_text2mora["ディ"])
-        self.assertEqual("gye", openjtalk_text2mora["ギェ"])
-        self.assertEqual("ye", openjtalk_text2mora["イェ"])
+        # GitHub issue #62
+        self.assertEqual("shi", openjtalk_text2mora["シ"])
+        self.assertEqual("si", openjtalk_text2mora["スィ"])
+        self.assertEqual("zi", openjtalk_text2mora["ズィ"])
+        self.assertEqual("ji", openjtalk_text2mora["ジ"])
 
     def test_bijection(self):
         # mora -> text -> mora
