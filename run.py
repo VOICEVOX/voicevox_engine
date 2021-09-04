@@ -6,7 +6,6 @@ from typing import List, Optional
 
 import numpy as np
 import resampy
-import romkan
 import soundfile
 import uvicorn
 from fastapi import FastAPI, Response
@@ -16,6 +15,7 @@ from starlette.responses import FileResponse
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
 from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.mora_list import openjtalk_mora2text
 
 
 def make_synthesis_engine(
@@ -74,18 +74,10 @@ def make_synthesis_engine(
 
 
 def mora_to_text(mora: str):
-    if mora == "cl":
-        return "ッ"
-    elif mora == "ti":
-        return "ティ"
-    elif mora == "tu":
-        return "トゥ"
-    elif mora == "di":
-        return "ディ"
-    elif mora == "du":
-        return "ドゥ"
+    if mora in openjtalk_mora2text:
+        return openjtalk_mora2text[mora]
     else:
-        return romkan.to_katakana(mora)
+        return mora
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
