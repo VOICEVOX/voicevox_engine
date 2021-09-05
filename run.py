@@ -14,8 +14,8 @@ from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
-from voicevox_engine.synthesis_engine import SynthesisEngine
 from voicevox_engine.mora_list import openjtalk_mora2text
+from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
 def make_synthesis_engine(

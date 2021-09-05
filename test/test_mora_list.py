@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from voicevox_engine.mora_list import openjtalk_mora2text
 
+
 class TestOpenJTalkMoraList(TestCase):
     def test_mora2text(self):
         self.assertEqual("ッ", openjtalk_mora2text["cl"])
