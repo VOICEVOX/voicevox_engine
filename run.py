@@ -8,11 +8,12 @@ import numpy as np
 import resampy
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
-from voicevox_engine.full_context_label import extract_full_context_label
+from voicevox_engine.full_context_label import Utterance, extract_full_context_label
+from voicevox_engine.kana_parser import parse_kana, ParseKanaError
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
@@ -105,13 +106,17 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             accent_phrases=accent_phrases, speaker_id=speaker_id
         )
 
-    def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
+    def create_accent_phrases(
+        text: str, speaker_id: int, is_kana: bool
+    ) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
-        utterance = extract_full_context_label(text)
-        return replace_mora_data(
-            accent_phrases=[
+        if is_kana:
+            accent_phrases = parse_kana(text)
+        else:
+            utterance = extract_full_context_label(text)
+            accent_phrases = [
                 AccentPhrase(
                     moras=[
                         Mora(
@@ -151,7 +156,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 for i_accent_phrase, accent_phrase in enumerate(
                     breath_group.accent_phrases
                 )
-            ],
+            ]
+        return replace_mora_data(
+            accent_phrases=accent_phrases,
             speaker_id=speaker_id,
         )
 
@@ -161,12 +168,30 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int):
+    def audio_query(text: str, speaker: int, is_kana: bool = False):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        is_kanaが`true`のとき、文章は次のようなSoftalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
+        * 全てのカナはカタカナで記述される
+        * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
+        * カナの手前に`_`を入れるとそのカナは無声化される
+        * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         """
+        try:
+            accent_phrases = create_accent_phrases(
+                text,
+                speaker_id=speaker,
+                is_kana=is_kana,
+            )
+        except ParseKanaError as err:
+            raise HTTPException(status_code=400, detail={
+                "text": err.text,
+                "err_code": err.errcode,
+                "error_args": err.args
+            })
+
         return AudioQuery(
-            accent_phrases=create_accent_phrases(text, speaker_id=speaker),
+            accent_phrases=accent_phrases,
             speedScale=1,
             pitchScale=0,
             intonationScale=1,
