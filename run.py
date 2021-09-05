@@ -187,12 +187,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         return create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
-        "/mora_pitch",
+        "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
-        summary="アクセント句から音高を得る",
+        summary="アクセント句から音高・音素長を得る",
     )
-    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+    def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
         return replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
