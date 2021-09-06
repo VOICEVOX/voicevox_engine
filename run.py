@@ -73,9 +73,9 @@ def make_synthesis_engine(
     )
 
 
-def mora_to_text(mora: str):
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
+def mora_to_text(mora: str) -> str:
+    if mora.lower() in openjtalk_mora2text:
+        return openjtalk_mora2text[mora.lower()]
     else:
         return mora
 
