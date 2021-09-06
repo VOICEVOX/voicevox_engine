@@ -42,6 +42,12 @@ class AudioQuery(BaseModel):
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
 
 
+class AudioQueryResponse400(BaseModel):
+    text: str = Field(title="エラーメッセージ")
+    error_code: str = Field(title="エラーコード")
+    error_args: List[str] = Field(title="エラーを起こした箇所")
+
+
 class Speaker(BaseModel):
     """
     スピーカー情報

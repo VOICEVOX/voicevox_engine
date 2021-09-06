@@ -56,7 +56,7 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
 
     base_index = 0 # パース開始位置。ここから右の文字列をstackに詰めていく。
     stack = "" # 保留中の文字列
-    matched_mora: Optional[Mora] = None # 保留中の文字列内で最後にマッチしたモーラ
+    matched_text: Optional[str] = None # 保留中の文字列内で最後にマッチした仮名
 
     outer_loop = 0
     while base_index < len(phrase):
@@ -75,15 +75,15 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
             # 普通の文字の場合
             stack += phrase[watch_index]
             if stack in text2mora_with_unvoice:
-                matched_mora = text2mora_with_unvoice[stack]
+                matched_text = stack
         # push mora
-        if matched_mora is None:
+        if matched_text is None:
             raise ParseKanaError(Error.UNKNOWN_TEXT, stack)
         else:
-            moras.append(matched_mora)
-            base_index += len(matched_mora)
+            moras.append(text2mora_with_unvoice[matched_text])
+            base_index += len(matched_text)
             stack = ""
-            matched_mora = None
+            matched_text = None
         if outer_loop > LOOP_LIMIT:
             raise ParseKanaError(Error.INFINITE_LOOP)
     if accent_index is None:
