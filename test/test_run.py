@@ -25,3 +25,4 @@ class TestMoraToText(TestCase):
     def test_invalid_mora(self):
         """変なモーラが来ても例外を投げない"""
         self.assertEqual(mora_to_text("x"), "x")
+        self.assertEqual(mora_to_text(""), "")
