@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-from pydantic import parse
-
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import ParseKanaError, ParseKanaErrorCode
 
