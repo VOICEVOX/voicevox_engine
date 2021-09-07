@@ -82,6 +82,9 @@ def make_synthesis_engine(
 
 
 def mora_to_text(mora: str):
+    if mora[-1:] in ["A", "I", "U", "E", "O"]:
+        # 無声化母音を小文字に
+        mora = mora[:-1] + mora[-1].lower()
     if mora in openjtalk_mora2text:
         return openjtalk_mora2text[mora]
     else:
@@ -237,12 +240,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
     @app.post(
-        "/mora_pitch",
+        "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
-        summary="アクセント句から音高を得る",
+        summary="アクセント句から音高・音素長を得る",
     )
-    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+    def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
         return replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
