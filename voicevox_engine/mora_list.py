@@ -210,8 +210,7 @@ _mora_list_additional = [
 ]
 
 openjtalk_mora2text = {
-    consonant + vowel: text
-    for [text, consonant, vowel] in _mora_list_minimum
+    consonant + vowel: text for [text, consonant, vowel] in _mora_list_minimum
 }
 openjtalk_text2mora = {
     text: (consonant, vowel)

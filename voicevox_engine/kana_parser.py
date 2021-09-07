@@ -1,15 +1,13 @@
-from enum import Enum
-from dataclasses import dataclass
 from typing import List, Optional
 
 from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from voicevox_engine.mora_list import openjtalk_text2mora, openjtalk_mora2text
+from voicevox_engine.mora_list import openjtalk_text2mora
 
 LOOP_LIMIT = 300
-UNVOICE_SYMBOL = "_";
-ACCENT_SYMBOL = "'";
-NOPAUSE_DELIMITER = "/";
-PAUSE_DELIMITER = "、";
+UNVOICE_SYMBOL = "_"
+ACCENT_SYMBOL = "'"
+NOPAUSE_DELIMITER = "/"
+PAUSE_DELIMITER = "、"
 
 text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
@@ -31,6 +29,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
             pitch=0,
         )
 
+
 def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
     """
     longest matchにより読み仮名からAccentPhraseを生成
@@ -39,9 +38,9 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
     accent_index: Optional[int] = None
     moras: List[Mora] = []
 
-    base_index = 0 # パース開始位置。ここから右の文字列をstackに詰めていく。
-    stack = "" # 保留中の文字列
-    matched_text: Optional[str] = None # 保留中の文字列内で最後にマッチした仮名
+    base_index = 0  # パース開始位置。ここから右の文字列をstackに詰めていく。
+    stack = ""  # 保留中の文字列
+    matched_text: Optional[str] = None  # 保留中の文字列内で最後にマッチした仮名
 
     outer_loop = 0
     while base_index < len(phrase):
@@ -76,6 +75,7 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
     else:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
+
 def parse_kana(text: str) -> List[AccentPhrase]:
     """
     Softalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
@@ -84,9 +84,12 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     phrase_base = 0
     for i in range(len(text) + 1):
         if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
-            phrase = text[phrase_base:max(0, i)]
+            phrase = text[phrase_base : max(0, i)]
             if len(phrase) == 0:
-                raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=str(len(parsed_results) + 1))
+                raise ParseKanaError(
+                    ParseKanaErrorCode.EMPTY_PHRASE,
+                    position=str(len(parsed_results) + 1),
+                )
             phrase_base = i + 1
             accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
             if i < len(text) and text[i] == PAUSE_DELIMITER:
@@ -100,6 +103,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                 )
             parsed_results.append(accent_phrase)
     return parsed_results
+
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     text = ""

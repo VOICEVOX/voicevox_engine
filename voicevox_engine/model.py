@@ -1,5 +1,5 @@
-from typing import Dict, List, Optional
 from enum import Enum
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -52,6 +52,7 @@ class ParseKanaErrorCode(Enum):
     EMPTY_PHRASE = "{position}番目のアクセント句が空白です"
     INFINITE_LOOP = "処理時に無限ループになってしまいました...バグ報告をお願いします。"
 
+
 class ParseKanaError(Exception):
     def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
         self.errcode = errcode.name
@@ -59,18 +60,23 @@ class ParseKanaError(Exception):
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
 
+
 class AudioQueryBadRequest(BaseModel):
     text: str = Field(title="エラーメッセージ")
-    error_code: str = Field(title="エラーコード", description="|name|description|\n|---|---|\n" + "\n".join(
-        ["| {} | {} |".format(err.name, err.value) for err in list(ParseKanaErrorCode)]
-    ))
+    error_code: str = Field(
+        title="エラーコード",
+        description="|name|description|\n|---|---|\n"
+        + "\n".join(
+            [
+                "| {} | {} |".format(err.name, err.value)
+                for err in list(ParseKanaErrorCode)
+            ]
+        ),
+    )
     error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
+
     def __init__(self, err: ParseKanaError):
-        super().__init__(
-            text=err.text,
-            error_code=err.errcode,
-            error_args=err.kwargs
-        )
+        super().__init__(text=err.text, error_code=err.errcode, error_args=err.kwargs)
 
 
 class Speaker(BaseModel):

@@ -8,13 +8,20 @@ import numpy as np
 import resampy
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Response, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
-from voicevox_engine.full_context_label import Utterance, extract_full_context_label
-from voicevox_engine.kana_parser import parse_kana, create_kana
-from voicevox_engine.model import AccentPhrase, AudioQuery, AudioQueryBadRequest, ParseKanaError, Mora, Speaker
+from voicevox_engine.full_context_label import extract_full_context_label
+from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.model import (
+    AccentPhrase,
+    AudioQuery,
+    AudioQueryBadRequest,
+    Mora,
+    ParseKanaError,
+    Speaker,
+)
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
