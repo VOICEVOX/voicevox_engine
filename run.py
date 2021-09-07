@@ -74,9 +74,14 @@ def make_synthesis_engine(
 
 
 def mora_to_text(mora: str) -> str:
-    if mora.lower() in openjtalk_mora2text:
+    if mora in openjtalk_mora2text:
+        # 通常の子音と母音、あるいは「ん」"N"
+        return openjtalk_mora2text[mora]
+    elif mora.lower() in openjtalk_mora2text:
+        # 無声化される母音 ["A", "I", "U", "E", "O"] を含む
         return openjtalk_mora2text[mora.lower()]
     else:
+        # 既知のモーラでない
         return mora
 
 
