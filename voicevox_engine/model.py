@@ -55,7 +55,8 @@ class ParseKanaErrorCode(Enum):
 
 class ParseKanaError(Exception):
     def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
-        self.errcode = errcode.name
+        self.errcode = errcode
+        self.errname = errcode.name
         self.kwargs: Dict[str, str] = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
@@ -63,8 +64,8 @@ class ParseKanaError(Exception):
 
 class AudioQueryBadRequest(BaseModel):
     text: str = Field(title="エラーメッセージ")
-    error_code: str = Field(
-        title="エラーコード",
+    error_name: str = Field(
+        title="エラー名",
         description="|name|description|\n|---|---|\n"
         + "\n".join(
             [
@@ -76,7 +77,7 @@ class AudioQueryBadRequest(BaseModel):
     error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
 
     def __init__(self, err: ParseKanaError):
-        super().__init__(text=err.text, error_code=err.errcode, error_args=err.kwargs)
+        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 class Speaker(BaseModel):
