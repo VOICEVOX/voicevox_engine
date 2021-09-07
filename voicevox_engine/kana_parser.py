@@ -2,8 +2,8 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import List, Optional
 
-from voicevox_engine.model import AccentPhrase, Mora
-from voicevox_engine.mora_list import openjtalk_text2mora
+from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from voicevox_engine.mora_list import openjtalk_text2mora, openjtalk_mora2text
 
 LOOP_LIMIT = 300
 UNVOICE_SYMBOL = "_";
@@ -31,21 +31,6 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
             pitch=0,
         )
 
-class Error(Enum):
-    UNKNOWN_TEXT = "判別できない読み仮名があります: {}"
-    ACCENT_TOP = "句頭にアクセントは置けません: {}"
-    ACCENT_TWICE = "1つのアクセント句に二つ以上のアクセントは置けません: {}"
-    ACCENT_NOTFOUND = "アクセントを指定していないアクセント句があります: {}"
-    EMPTY_PHRASE = "{}番目のアクセント句が空白です"
-    INFINITE_LOOP = "処理時に無限ループになってしまいました...バグ報告をお願いします。"
-
-class ParseKanaError(Exception):
-    def __init__(self, errcode: Error, *args):
-        self.errcode = errcode.name
-        self.args: List[str] = list(args)
-        err_fmt: str = errcode.value
-        self.text = err_fmt.format(*args)
-
 def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
     """
     longest matchにより読み仮名からAccentPhraseを生成
@@ -63,9 +48,9 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
         outer_loop += 1
         if phrase[base_index] == ACCENT_SYMBOL:
             if len(moras) == 0:
-                raise ParseKanaError(Error.ACCENT_TOP, phrase)
+                raise ParseKanaError(ParseKanaErrorCode.ACCENT_TOP, text=phrase)
             if accent_index is not None:
-                raise ParseKanaError(Error.ACCENT_TWICE, phrase)
+                raise ParseKanaError(ParseKanaErrorCode.ACCENT_TWICE, text=phrase)
             accent_index = len(moras)
             base_index += 1
             continue
@@ -78,16 +63,16 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
                 matched_text = stack
         # push mora
         if matched_text is None:
-            raise ParseKanaError(Error.UNKNOWN_TEXT, stack)
+            raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
         else:
             moras.append(text2mora_with_unvoice[matched_text])
             base_index += len(matched_text)
             stack = ""
             matched_text = None
         if outer_loop > LOOP_LIMIT:
-            raise ParseKanaError(Error.INFINITE_LOOP)
+            raise ParseKanaError(ParseKanaErrorCode.INFINITE_LOOP)
     if accent_index is None:
-        raise ParseKanaError(Error.ACCENT_NOTFOUND, phrase)
+        raise ParseKanaError(ParseKanaErrorCode.ACCENT_NOTFOUND, text=phrase)
     else:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
@@ -101,7 +86,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
         if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
             phrase = text[phrase_base:max(0, i)]
             if len(phrase) == 0:
-                raise ParseKanaError(Error.EMPTY_PHRASE, str(len(parsed_results) + 1))
+                raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=str(len(parsed_results) + 1))
             phrase_base = i + 1
             accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
             if i < len(text) and text[i] == PAUSE_DELIMITER:
@@ -115,3 +100,19 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                 )
             parsed_results.append(accent_phrase)
     return parsed_results
+
+def create_kana(accent_phrases: List[AccentPhrase]) -> str:
+    text = ""
+    for i, phrase in enumerate(accent_phrases):
+        for j, mora in enumerate(phrase.moras):
+            if mora.consonant in ["A", "I", "U", "E", "O"]:
+                text += UNVOICE_SYMBOL
+            text += mora.text
+            if j + 1 == phrase.accent:
+                text += ACCENT_SYMBOL
+        if i < len(accent_phrases) - 1:
+            if phrase.pause_mora is None:
+                text += NOPAUSE_DELIMITER
+            else:
+                text += PAUSE_DELIMITER
+    return text

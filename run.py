@@ -13,8 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import Utterance, extract_full_context_label
-from voicevox_engine.kana_parser import parse_kana, ParseKanaError
-from voicevox_engine.model import AccentPhrase, AudioQuery, AudioQueryResponse400, Mora, Speaker
+from voicevox_engine.kana_parser import parse_kana, create_kana
+from voicevox_engine.model import AccentPhrase, AudioQuery, AudioQueryBadRequest, ParseKanaError, Mora, Speaker
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
@@ -170,7 +170,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         responses={
             400: {
                 "description": "読み仮名のパースに失敗",
-                "model": AudioQueryResponse400,
+                "model": AudioQueryBadRequest,
             }
         },
     )
@@ -190,11 +190,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 is_kana=is_kana,
             )
         except ParseKanaError as err:
-            raise HTTPException(status_code=400, detail=AudioQueryResponse400(
-                text=err.text,
-                error_code=err.errcode,
-                error_args=err.args
-            ).dict())
+            raise HTTPException(
+                status_code=400,
+                detail=AudioQueryBadRequest(err).dict(),
+            )
 
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -206,6 +205,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             postPhonemeLength=0.1,
             outputSamplingRate=default_sampling_rate,
             outputStereo=False,
+            kana=create_kana(accent_phrases),
         )
 
     @app.post(
