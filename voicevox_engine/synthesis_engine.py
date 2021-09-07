@@ -97,7 +97,45 @@ class SynthesisEngine:
         self.yukarin_s_phoneme_class = OjtPhoneme
         self.yukarin_soso_phoneme_class = OjtPhoneme
 
-    def replace_phoneme_data(self, accent_phrases: List[AccentPhrase], speaker_id: int):
+    def replace_phoneme_length(
+        self, accent_phrases: List[AccentPhrase], speaker_id: int
+    ) -> List[AccentPhrase]:
+        # phoneme
+        flatten_moras = to_flatten_moras(accent_phrases)
+
+        phoneme_each_mora = [
+            ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
+            for mora in flatten_moras
+        ]
+        phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
+        phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
+
+        phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
+        _, _, vowel_indexes_data = split_mora(phoneme_data_list)
+
+        # yukarin_s
+        phoneme_list_s = numpy.array(
+            [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
+        )
+        phoneme_length = self.yukarin_s_forwarder(
+            length=len(phoneme_list_s),
+            phoneme_list=phoneme_list_s,
+            speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+        )
+
+        for i, mora in enumerate(flatten_moras):
+            mora.consonant_length = (
+                phoneme_length[vowel_indexes_data[i + 1] - 1]
+                if mora.consonant is not None
+                else None
+            )
+            mora.vowel_length = phoneme_length[vowel_indexes_data[i + 1]]
+
+        return accent_phrases
+
+    def replace_mora_pitch(
+        self, accent_phrases: List[AccentPhrase], speaker_id: int
+    ) -> List[AccentPhrase]:
         # phoneme
         flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -193,16 +231,6 @@ class SynthesisEngine:
             vowel_indexes_data,
         ) = split_mora(phoneme_data_list)
 
-        # yukarin_s
-        phoneme_list_s = numpy.array(
-            [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
-        )
-        phoneme_length = self.yukarin_s_forwarder(
-            length=len(phoneme_list_s),
-            phoneme_list=phoneme_list_s,
-            speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
-        )
-
         # yukarin_sa
         vowel_indexes = numpy.array(vowel_indexes_data, dtype=numpy.int64)
 
@@ -236,12 +264,6 @@ class SynthesisEngine:
 
         for i, mora in enumerate(flatten_moras):
             mora.pitch = f0_list[i + 1]
-            mora.consonant_length = (
-                phoneme_length[vowel_indexes_data[i + 1] - 1]
-                if mora.consonant is not None
-                else None
-            )
-            mora.vowel_length = phoneme_length[vowel_indexes_data[i + 1]]
 
         return accent_phrases
 
@@ -257,12 +279,12 @@ class SynthesisEngine:
         phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
         phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
 
-        # yukarin_s
         phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
         phoneme_list_s = numpy.array(
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
 
+        # length
         phoneme_length_list = (
             [query.prePhonemeLength]
             + [

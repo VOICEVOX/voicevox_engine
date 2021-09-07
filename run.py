@@ -15,7 +15,7 @@ from starlette.responses import FileResponse
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
 from voicevox_engine.mora_list import openjtalk_mora2text
-from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.synthesis_engine import SynthesisEngine, to_flatten_moras
 
 
 def make_synthesis_engine(
@@ -101,8 +101,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
-        return engine.replace_phoneme_data(
-            accent_phrases=accent_phrases, speaker_id=speaker_id
+        return engine.replace_mora_pitch(
+            accent_phrases=engine.replace_phoneme_length(
+                accent_phrases=accent_phrases,
+                speaker_id=speaker_id,
+            ),
+            speaker_id=speaker_id,
         )
 
     def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
@@ -196,6 +200,28 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         return replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
+        "/mora_length",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音素長を得る",
+    )
+    def mora_length(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_phoneme_length(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
+
+    @app.post(
+        "/mora_pitch",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音高を得る",
+    )
+    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_mora_pitch(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
+
+    @app.post(
         "/synthesis",
         response_class=FileResponse,
         responses={
@@ -209,6 +235,20 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int):
+        # NOTE: VOICEVOX 0.4.1 -> 0.5.0 マイグレーション対応
+        # 入力の音素長が 0 にされているならばアクセント句から推定させる
+        moras_length = sum(
+            [
+                (mora.consonant_length if mora.consonant_length is not None else 0)
+                + mora.vowel_length
+                for mora in to_flatten_moras(query.accent_phrases)
+            ]
+        )
+        if round(moras_length, 3) == 0:
+            query.accent_phrases = engine.replace_phoneme_length(
+                accent_phrases=query.accent_phrases, speaker_id=speaker
+            )
+
         # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
         wave = engine.synthesis(query=query, speaker_id=speaker)
 
