@@ -213,9 +213,21 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
+        responses={
+            400: {
+                "description": "読み仮名のパースに失敗",
+                "model": AudioQueryBadRequest,
+            }
+        },
     )
-    def accent_phrases(text: str, speaker: int):
-        return create_accent_phrases(text, speaker_id=speaker)
+    def accent_phrases(text: str, speaker: int, is_kana: bool = False):
+        try:
+            return create_accent_phrases(text, speaker_id=speaker, is_kana=is_kana)
+        except ParseKanaError as err:
+            raise HTTPException(
+                status_code=400,
+                detail=AudioQueryBadRequest(err).dict(),
+            )
 
     @app.post(
         "/mora_pitch",
