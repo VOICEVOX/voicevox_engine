@@ -109,7 +109,7 @@ def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     text = ""
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
-            if mora.consonant in ["A", "I", "U", "E", "O"]:
+            if mora.vowel in ["A", "I", "U", "E", "O"]:
                 text += UNVOICE_SYMBOL
             text += mora.text
             if j + 1 == phrase.accent:
