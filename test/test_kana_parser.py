@@ -2,8 +2,9 @@ from unittest import TestCase
 
 from pydantic import parse
 
-from voicevox_engine.kana_parser import parse_kana, create_kana
-from voicevox_engine.model import ParseKanaErrorCode, ParseKanaError
+from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.model import ParseKanaError, ParseKanaErrorCode
+
 
 class TestParseKana(TestCase):
     def test_phrase_length(self):
@@ -32,13 +33,13 @@ class TestParseKana(TestCase):
         self.assertEqual(len(parse_kana("シャ_シ'シュシェショ")[0].moras), 5)
         self.assertEqual(len(parse_kana("シャシシュシェショ'")[0].moras), 5)
         self.assertEqual(len(parse_kana("シャ_シシュシェショ'")[0].moras), 5)
-    
+
     def test_pause(self):
         self.assertIsNone(parse_kana("ア'/ア'")[0].pause_mora)
         self.assertIsNone(parse_kana("ア'/ア'")[1].pause_mora)
         self.assertIsNotNone(parse_kana("ア'、ア'")[0].pause_mora)
         self.assertIsNone(parse_kana("ア'、ア'")[1].pause_mora)
-    
+
     def test_unvoice(self):
         self.assertEqual(parse_kana("ス'")[0].moras[0].vowel, "u")
         self.assertEqual(parse_kana("_ス'")[0].moras[0].vowel, "U")
@@ -49,6 +50,7 @@ class TestParseKana(TestCase):
 
         for text in ["ヲ'", "ェ'"]:
             self.assertEqual(create_kana(parse_kana(text)), text)
+
 
 class TestParseKanaException(TestCase):
     def _assert_error_code(self, kana: str, code: ParseKanaErrorCode):
