@@ -84,7 +84,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     app = FastAPI(
         title="VOICEVOX ENGINE",
         description="VOICEVOXの音声合成エンジンです。",
-        version=(root_dir / "VERSION.txt").read_text(),
+        version=(root_dir / "VERSION.txt").read_text().strip(),
     )
 
     app.add_middleware(
