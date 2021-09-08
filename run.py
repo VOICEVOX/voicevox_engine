@@ -98,8 +98,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
-        return engine.replace_phoneme_data(
-            accent_phrases=accent_phrases, speaker_id=speaker_id
+        return engine.replace_mora_pitch(
+            accent_phrases=engine.replace_phoneme_length(
+                accent_phrases=accent_phrases,
+                speaker_id=speaker_id,
+            ),
+            speaker_id=speaker_id,
         )
 
     def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
@@ -191,6 +195,28 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
     def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
         return replace_mora_data(accent_phrases, speaker_id=speaker)
+
+    @app.post(
+        "/mora_length",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音素長を得る",
+    )
+    def mora_length(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_phoneme_length(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
+
+    @app.post(
+        "/mora_pitch",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音高を得る",
+    )
+    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_mora_pitch(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
 
     @app.post(
         "/synthesis",
