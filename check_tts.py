@@ -36,7 +36,7 @@ def run(
         )
 
     if voicelib_dir is None:
-        voicelib_dir = Path(core.__file__).parent
+        voicelib_dir = Path(__file__).parent
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
 
