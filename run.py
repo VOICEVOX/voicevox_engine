@@ -44,10 +44,13 @@ def make_synthesis_engine(
         if voicevox_dir.exists():
             sys.path.insert(0, str(voicevox_dir))
 
+    disable_core = False
     try:
         import core
     except ImportError:
         from voicevox_engine.dev import core
+
+        disable_core = True
 
         # 音声ライブラリの Python モジュールをロードできなかった
         print(
@@ -59,6 +62,14 @@ def make_synthesis_engine(
         voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
+
+    if disable_core:
+        from voicevox_engine.dev.synthesis_engine import (
+            SynthesisEngine as mock_synthesis_engine,
+        )
+
+        # モックで置き換える
+        return mock_synthesis_engine()
 
     return SynthesisEngine(
         yukarin_s_forwarder=core.yukarin_s_forward,
