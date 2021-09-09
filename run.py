@@ -213,12 +213,13 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         if is_kana:
             try:
-                return parse_kana(text)
+                accent_phrases = parse_kana(text)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
                     detail=AudioQueryBadRequest(err).dict(),
                 )
+            return replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
         else:
             return create_accent_phrases(text, speaker_id=speaker)
 
