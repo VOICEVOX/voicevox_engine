@@ -9,10 +9,11 @@ from voicevox_engine.model import AccentPhrase, AudioQuery
 from voicevox_engine.synthesis_engine import to_flatten_moras
 
 
-class SynthesisEngine():
+class SynthesisEngine:
     """
     SynthesisEngine [Mock]
     """
+
     def __init__(self, **kwargs):
         """
         __init__ [Mock]
