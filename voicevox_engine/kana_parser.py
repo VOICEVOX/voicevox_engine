@@ -84,7 +84,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     phrase_base = 0
     for i in range(len(text) + 1):
         if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
-            phrase = text[phrase_base : max(0, i)]
+            phrase = text[phrase_base:i]
             if len(phrase) == 0:
                 raise ParseKanaError(
                     ParseKanaErrorCode.EMPTY_PHRASE,

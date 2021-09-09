@@ -122,7 +122,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
         utterance = extract_full_context_label(text)
         return replace_mora_data(
-            accent_phrases = [
+            accent_phrases=[
                 AccentPhrase(
                     moras=[
                         Mora(
@@ -176,10 +176,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        accent_phrases = create_accent_phrases(
-            text,
-            speaker_id=speaker
-        )
+        accent_phrases = create_accent_phrases(text, speaker_id=speaker)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
