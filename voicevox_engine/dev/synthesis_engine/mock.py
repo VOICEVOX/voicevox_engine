@@ -2,6 +2,7 @@ from logging import getLogger
 from typing import Any, Dict, List
 
 import numpy as np
+import numpy.typing as npt
 from pyopenjtalk import tts
 from resampy import resample
 
@@ -60,7 +61,7 @@ class SynthesisEngine:
         """
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
+    def synthesis(self, query: AudioQuery, speaker_id: int) -> npt.NDArray[np.int16]:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
 
@@ -73,7 +74,7 @@ class SynthesisEngine:
 
         Returns
         -------
-        wave [np.ndarray]
+        wave [npt.NDArray[np.int16]]
             音声波形データをNumPy配列で返します
         """
         # recall text in katakana
@@ -86,11 +87,11 @@ class SynthesisEngine:
         if query.volumeScale != 1:
             wave *= query.volumeScale
 
-        return wave
+        return wave.astype("int16")
 
-    def forward(self, text: str, **kwargs: Dict[str, Any]) -> np.ndarray:
+    def forward(self, text: str, **kwargs: Dict[str, Any]) -> npt.NDArray[np.int16]:
         """
-        decode_forward tts via pyopenjtalk.tts()
+        forward tts via pyopenjtalk.tts()
         参照→SynthesisEngine のdocstring [Mock]
 
         Parameters
@@ -100,7 +101,7 @@ class SynthesisEngine:
 
         Returns
         -------
-        wave [np.ndarray]
+        wave [npt.NDArray[np.int16]]
             音声波形データをNumPy配列で返します
 
         Note
@@ -124,4 +125,4 @@ class SynthesisEngine:
             24000,
             filter="kaiser_fast",
         )
-        return wave
+        return wave.astype("int16")
