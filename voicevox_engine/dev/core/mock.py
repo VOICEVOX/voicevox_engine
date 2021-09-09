@@ -30,6 +30,7 @@ def yukarin_sa_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
 
 def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     """
+    合成音声の波形データをNumPy配列で返します。ただし、常に固定の文言を読み上げます（DUMMY_TEXT）
     参照→SynthesisEngine のdocstring [Mock]
 
     Parameters
@@ -45,6 +46,7 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     Note
     -------
         ここで行う音声合成では、調声（ピッチ等）を反映しない
+        また、入力内容によらず常に固定の文言を読み上げる
 
         # pyopenjtalk.tts()の出力仕様
         dtype=np.float64, 16 bit, mono 48000 Hz
