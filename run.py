@@ -17,8 +17,8 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    AudioQueryBadRequest,
     Mora,
+    ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
 )
@@ -198,7 +198,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         responses={
             400: {
                 "description": "読み仮名のパースに失敗",
-                "model": AudioQueryBadRequest,
+                "model": ParseKanaBadRequest,
             }
         },
     )
@@ -217,7 +217,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
-                    detail=AudioQueryBadRequest(err).dict(),
+                    detail=ParseKanaBadRequest(err).dict(),
                 )
             return replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
         else:

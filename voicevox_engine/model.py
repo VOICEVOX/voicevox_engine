@@ -62,7 +62,7 @@ class ParseKanaError(Exception):
         self.text = err_fmt.format(**kwargs)
 
 
-class AudioQueryBadRequest(BaseModel):
+class ParseKanaBadRequest(BaseModel):
     text: str = Field(title="エラーメッセージ")
     error_name: str = Field(
         title="エラー名",
