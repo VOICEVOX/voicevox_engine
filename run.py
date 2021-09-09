@@ -116,16 +116,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             accent_phrases=accent_phrases, speaker_id=speaker_id
         )
 
-    def create_accent_phrases(
-        text: str, speaker_id: int, is_kana: bool
-    ) -> List[AccentPhrase]:
+    def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
-        if is_kana:
-            accent_phrases = parse_kana(text)
-        else:
-            utterance = extract_full_context_label(text)
+        utterance = extract_full_context_label(text)
+        return replace_mora_data(
             accent_phrases = [
                 AccentPhrase(
                     moras=[
@@ -166,9 +162,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 for i_accent_phrase, accent_phrase in enumerate(
                     breath_group.accent_phrases
                 )
-            ]
-        return replace_mora_data(
-            accent_phrases=accent_phrases,
+            ],
             speaker_id=speaker_id,
         )
 
@@ -177,34 +171,15 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
-        responses={
-            400: {
-                "description": "読み仮名のパースに失敗",
-                "model": AudioQueryBadRequest,
-            }
-        },
     )
-    def audio_query(text: str, speaker: int, is_kana: bool = False):
+    def audio_query(text: str, speaker: int):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        is_kanaが`true`のとき、文章は次のようなSoftalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
-        * 全てのカナはカタカナで記述される
-        * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
-        * カナの手前に`_`を入れるとそのカナは無声化される
-        * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         """
-        try:
-            accent_phrases = create_accent_phrases(
-                text,
-                speaker_id=speaker,
-                is_kana=is_kana,
-            )
-        except ParseKanaError as err:
-            raise HTTPException(
-                status_code=400,
-                detail=AudioQueryBadRequest(err).dict(),
-            )
-
+        accent_phrases = create_accent_phrases(
+            text,
+            speaker_id=speaker
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -231,13 +206,24 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         },
     )
     def accent_phrases(text: str, speaker: int, is_kana: bool = False):
-        try:
-            return create_accent_phrases(text, speaker_id=speaker, is_kana=is_kana)
-        except ParseKanaError as err:
-            raise HTTPException(
-                status_code=400,
-                detail=AudioQueryBadRequest(err).dict(),
-            )
+        """
+        テキストからアクセント句を得ます。
+        is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
+        * 全てのカナはカタカナで記述される
+        * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
+        * カナの手前に`_`を入れるとそのカナは無声化される
+        * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
+        """
+        if is_kana:
+            try:
+                return parse_kana(text)
+            except ParseKanaError as err:
+                raise HTTPException(
+                    status_code=400,
+                    detail=AudioQueryBadRequest(err).dict(),
+                )
+        else:
+            return create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
         "/mora_data",

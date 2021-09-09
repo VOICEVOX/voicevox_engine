@@ -41,7 +41,7 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
-    kana: Optional[str] = Field(title="[読み取り専用]Softalkライクな読み仮名。音声合成クエリとしては無視される")
+    kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
 
 
 class ParseKanaErrorCode(Enum):
