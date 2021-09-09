@@ -44,13 +44,13 @@ def make_synthesis_engine(
         if voicevox_dir.exists():
             sys.path.insert(0, str(voicevox_dir))
 
-    disable_core = False
+    has_voicevox_core = True
     try:
         import core
     except ImportError:
         from voicevox_engine.dev import core
 
-        disable_core = True
+        has_voicevox_core = False
 
         # 音声ライブラリの Python モジュールをロードできなかった
         print(
@@ -63,19 +63,19 @@ def make_synthesis_engine(
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
 
-    if disable_core:
-        from voicevox_engine.dev.synthesis_engine import (
-            SynthesisEngine as mock_synthesis_engine,
+    if has_voicevox_core:
+        return SynthesisEngine(
+            yukarin_s_forwarder=core.yukarin_s_forward,
+            yukarin_sa_forwarder=core.yukarin_sa_forward,
+            decode_forwarder=core.decode_forward,
         )
 
-        # モックで置き換える
-        return mock_synthesis_engine()
-
-    return SynthesisEngine(
-        yukarin_s_forwarder=core.yukarin_s_forward,
-        yukarin_sa_forwarder=core.yukarin_sa_forward,
-        decode_forwarder=core.decode_forward,
+    from voicevox_engine.dev.synthesis_engine import (
+        SynthesisEngine as mock_synthesis_engine,
     )
+
+    # モックで置き換える
+    return mock_synthesis_engine()
 
 
 def mora_to_text(mora: str):
