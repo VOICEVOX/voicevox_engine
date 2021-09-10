@@ -130,7 +130,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return []
 
         utterance = extract_full_context_label(text)
-        if utterance.breath_groups == []:
+        if len(utterance.breath_groups) == 0:
             return []
 
         return replace_mora_data(
