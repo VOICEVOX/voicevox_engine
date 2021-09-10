@@ -2,7 +2,6 @@ from logging import getLogger
 from typing import Any, Dict, List
 
 import numpy as np
-import numpy.typing as npt
 from pyopenjtalk import tts
 from resampy import resample
 
@@ -61,7 +60,7 @@ class SynthesisEngine:
         """
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int) -> npt.NDArray[np.int16]:
+    def synthesis(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
 
@@ -89,7 +88,7 @@ class SynthesisEngine:
 
         return wave.astype("int16")
 
-    def forward(self, text: str, **kwargs: Dict[str, Any]) -> npt.NDArray[np.int16]:
+    def forward(self, text: str, **kwargs: Dict[str, Any]) -> np.ndarray:
         """
         forward tts via pyopenjtalk.tts()
         参照→SynthesisEngine のdocstring [Mock]
