@@ -130,6 +130,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return []
 
         utterance = extract_full_context_label(text)
+        if len(utterance.breath_groups) == 0:
+            return []
+
         return replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
