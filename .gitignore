@@ -14,3 +14,6 @@ __pycache__/
 venv/
 # JetBrains IDE project settings folder
 .idea/
+
+/build
+/cache

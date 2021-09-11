@@ -41,3 +41,19 @@ build-linux-docker-compile-python-env:
 run-linux-docker-compile-python-env:
 	docker run --rm -it \
 		hiroshiba/voicevox_engine:compile-python-env $(CMD)
+
+# Build linux binary in Docker
+.PHONY: build-linux-docker-build-env
+build-linux-docker-build-env:
+	docker buildx build . \
+		-t hiroshiba/voicevox_engine:build-env-cpu-ubuntu20.04-latest \
+		--target build-env \
+		--progress plain \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal
+
+.PHONY: run-linux-docker-build-env
+run-linux-docker-build-env:
+	docker run --rm -it \
+		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
+		-v "$(shell pwd)/build:/opt/voicevox_engine_build" \
+		hiroshiba/voicevox_engine:build-env-cpu-ubuntu20.04-latest $(CMD)
