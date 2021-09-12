@@ -57,6 +57,7 @@ def make_synthesis_engine(
         import core
     except ImportError:
         import traceback
+
         from voicevox_engine.dev import core
 
         has_voicevox_core = False
