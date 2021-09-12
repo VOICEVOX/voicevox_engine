@@ -56,11 +56,16 @@ def make_synthesis_engine(
     try:
         import core
     except ImportError:
+        import traceback
         from voicevox_engine.dev import core
 
         has_voicevox_core = False
 
         # 音声ライブラリの Python モジュールをロードできなかった
+        print(
+            traceback.format_exc(),
+            file=sys.stderr,
+        )
         print(
             "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
             file=sys.stderr,
