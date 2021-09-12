@@ -26,7 +26,7 @@ curl -s \
     > audio.wav
 ```
 
-## Dockerイメージ
+## Docker イメージ
 
 ### CPU
 ```bash
