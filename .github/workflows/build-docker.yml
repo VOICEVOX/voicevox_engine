@@ -2,7 +2,7 @@ name: build-docker
 on:
   push:
     branches:
-      # - master
+      - master
   release:
     types:
       - created
