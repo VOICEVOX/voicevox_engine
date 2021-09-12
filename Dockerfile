@@ -139,10 +139,10 @@ COPY --from=compile-python-env /opt/python /opt/python
 
 # temporary override PATH for convenience during the image building
 ARG PATH=/opt/python/bin:$PATH
-ADD ./requirements.txt ./requirements-dev.txt /tmp/
+ADD ./requirements.txt /tmp/
 RUN <<EOF
     python3 -m pip install --upgrade pip setuptools wheel
-    pip3 install -r /tmp/requirements-dev.txt
+    pip3 install -r /tmp/requirements.txt
 EOF
 
 # Copy VOICEVOX Core shared object
