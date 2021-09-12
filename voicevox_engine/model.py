@@ -1,4 +1,5 @@
-from typing import List, Optional
+from enum import Enum
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -40,6 +41,43 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
+    kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+
+
+class ParseKanaErrorCode(Enum):
+    UNKNOWN_TEXT = "判別できない読み仮名があります: {text}"
+    ACCENT_TOP = "句頭にアクセントは置けません: {text}"
+    ACCENT_TWICE = "1つのアクセント句に二つ以上のアクセントは置けません: {text}"
+    ACCENT_NOTFOUND = "アクセントを指定していないアクセント句があります: {text}"
+    EMPTY_PHRASE = "{position}番目のアクセント句が空白です"
+    INFINITE_LOOP = "処理時に無限ループになってしまいました...バグ報告をお願いします。"
+
+
+class ParseKanaError(Exception):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
+        self.errcode = errcode
+        self.errname = errcode.name
+        self.kwargs: Dict[str, str] = kwargs
+        err_fmt: str = errcode.value
+        self.text = err_fmt.format(**kwargs)
+
+
+class ParseKanaBadRequest(BaseModel):
+    text: str = Field(title="エラーメッセージ")
+    error_name: str = Field(
+        title="エラー名",
+        description="|name|description|\n|---|---|\n"
+        + "\n".join(
+            [
+                "| {} | {} |".format(err.name, err.value)
+                for err in list(ParseKanaErrorCode)
+            ]
+        ),
+    )
+    error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
+
+    def __init__(self, err: ParseKanaError):
+        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 class Speaker(BaseModel):

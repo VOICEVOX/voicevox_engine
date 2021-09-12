@@ -8,12 +8,20 @@ import numpy as np
 import resampy
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, Speaker
+from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.model import (
+    AccentPhrase,
+    AudioQuery,
+    Mora,
+    ParseKanaBadRequest,
+    ParseKanaError,
+    Speaker,
+)
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
@@ -44,10 +52,13 @@ def make_synthesis_engine(
         if voicevox_dir.exists():
             sys.path.insert(0, str(voicevox_dir))
 
+    has_voicevox_core = True
     try:
         import core
     except ImportError:
         from voicevox_engine.dev import core
+
+        has_voicevox_core = False
 
         # 音声ライブラリの Python モジュールをロードできなかった
         print(
@@ -60,11 +71,19 @@ def make_synthesis_engine(
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
 
-    return SynthesisEngine(
-        yukarin_s_forwarder=core.yukarin_s_forward,
-        yukarin_sa_forwarder=core.yukarin_sa_forward,
-        decode_forwarder=core.decode_forward,
+    if has_voicevox_core:
+        return SynthesisEngine(
+            yukarin_s_forwarder=core.yukarin_s_forward,
+            yukarin_sa_forwarder=core.yukarin_sa_forward,
+            decode_forwarder=core.decode_forward,
+        )
+
+    from voicevox_engine.dev.synthesis_engine import (
+        SynthesisEngine as mock_synthesis_engine,
     )
+
+    # モックで置き換える
+    return mock_synthesis_engine()
 
 
 def mora_to_text(mora: str):
@@ -98,8 +117,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
-        return engine.replace_phoneme_data(
-            accent_phrases=accent_phrases, speaker_id=speaker_id
+        return engine.replace_mora_pitch(
+            accent_phrases=engine.replace_phoneme_length(
+                accent_phrases=accent_phrases,
+                speaker_id=speaker_id,
+            ),
+            speaker_id=speaker_id,
         )
 
     def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
@@ -107,6 +130,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return []
 
         utterance = extract_full_context_label(text)
+        if len(utterance.breath_groups) == 0:
+            return []
+
         return replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
@@ -162,8 +188,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
+        accent_phrases = create_accent_phrases(text, speaker_id=speaker)
         return AudioQuery(
-            accent_phrases=create_accent_phrases(text, speaker_id=speaker),
+            accent_phrases=accent_phrases,
             speedScale=1,
             pitchScale=0,
             intonationScale=1,
@@ -172,6 +199,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             postPhonemeLength=0.1,
             outputSamplingRate=default_sampling_rate,
             outputStereo=False,
+            kana=create_kana(accent_phrases),
         )
 
     @app.post(
@@ -179,9 +207,33 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
+        responses={
+            400: {
+                "description": "読み仮名のパースに失敗",
+                "model": ParseKanaBadRequest,
+            }
+        },
     )
-    def accent_phrases(text: str, speaker: int):
-        return create_accent_phrases(text, speaker_id=speaker)
+    def accent_phrases(text: str, speaker: int, is_kana: bool = False):
+        """
+        テキストからアクセント句を得ます。
+        is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
+        * 全てのカナはカタカナで記述される
+        * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
+        * カナの手前に`_`を入れるとそのカナは無声化される
+        * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
+        """
+        if is_kana:
+            try:
+                accent_phrases = parse_kana(text)
+            except ParseKanaError as err:
+                raise HTTPException(
+                    status_code=400,
+                    detail=ParseKanaBadRequest(err).dict(),
+                )
+            return replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
+        else:
+            return create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
         "/mora_data",
@@ -191,6 +243,28 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
     def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
         return replace_mora_data(accent_phrases, speaker_id=speaker)
+
+    @app.post(
+        "/mora_length",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音素長を得る",
+    )
+    def mora_length(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_phoneme_length(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
+
+    @app.post(
+        "/mora_pitch",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="アクセント句から音高を得る",
+    )
+    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+        return engine.replace_mora_pitch(
+            accent_phrases=accent_phrases, speaker_id=speaker
+        )
 
     @app.post(
         "/synthesis",
