@@ -30,14 +30,14 @@ curl -s \
 
 ### CPU
 ```bash
-docker pull aoirint/voicevox_engine:cpu-ubuntu20.04
-docker run --rm -it -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:cpu-ubuntu20.04
+docker pull aoirint/voicevox_engine:cpu-ubuntu20.04-latest
+docker run --rm -it -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:cpu-ubuntu20.04-latest
 ```
 
 ### GPU
 ```bash
-docker pull aoirint/voicevox_engine:nvidia-ubuntu20.04
-docker run --rm --gpus all -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:nvidia-ubuntu20.04
+docker pull aoirint/voicevox_engine:nvidia-ubuntu20.04-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
 
 ## 貢献者の方へ
