@@ -26,6 +26,20 @@ curl -s \
     > audio.wav
 ```
 
+## Dockerイメージ
+
+### CPU
+```bash
+docker pull aoirint/voicevox_engine:cpu-ubuntu20.04
+docker run --rm -it -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:cpu-ubuntu20.04
+```
+
+### GPU
+```bash
+docker pull aoirint/voicevox_engine:nvidia-ubuntu20.04
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' aoirint/voicevox_engine:nvidia-ubuntu20.04
+```
+
 ## 貢献者の方へ
 
 Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、

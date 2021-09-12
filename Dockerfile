@@ -56,10 +56,21 @@ RUN <<EOF
     pip3 install -r /tmp/requirements-dev.txt
 EOF
 
-COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
+COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 RUN <<EOF
     ldconfig
+EOF
+
+# TODO: install libtorch
+
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
+RUN <<EOF
+  git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
+  cd /opt/voicevox_core_example
+  cp ./core.h ./example/python/
+  cd example/python
+  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" pip3 install .
 EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
@@ -70,4 +81,4 @@ RUN <<EOF
     python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 EOF
 
-CMD [ "python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core", "--host", "0.0.0.0" ]
+CMD [ "python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
