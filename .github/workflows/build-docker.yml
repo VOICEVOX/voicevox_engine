@@ -72,13 +72,7 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-
-      # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      - name: Move cache (reduce cache size)
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       - name: Build and Deploy versioned Docker image
         if: success() && github.event.release.tag_name != ''
@@ -92,8 +86,8 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ (matrix.tag == 'latest' && '') || matrix.tag }}${{ (matrix.tag == 'latest' && '') || '-' }}${{ github.event.release.tag_name }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: type=local,src=/tmp/.buildx-cache-new
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       - name: Move cache (reduce cache size)
         run: |
