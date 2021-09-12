@@ -85,7 +85,7 @@ jobs:
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ (matrix.tag == 'latest' && github.event.release.tag_name) || (join([matrix.tag, github.event.release.tag_name], '-') }}
+          tags: ${{ env.IMAGE_NAME }}:${{ (matrix.tag == 'latest' && '') || '${{ matrix.tag }}-' }}${{ github.event.release.tag_name }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
