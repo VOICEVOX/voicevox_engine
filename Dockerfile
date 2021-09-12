@@ -193,7 +193,7 @@ RUN <<EOF
       rm -f /etc/ld.so.cache
       ldconfig
 
-      cat /opt/voicevox_core/README.txt
+      cat /opt/voicevox_core/README.txt > /dev/stderr
 
       exec "\$@"
   EOT
