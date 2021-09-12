@@ -20,18 +20,23 @@ jobs:
         include:
           - os: ubuntu-latest
             tag: latest
+            target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
             tag: cpu-latest
+            target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
             tag: cpu-ubuntu20.04
+            target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
             tag: nvidia-latest
+            target: runtime-nvidia-env
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
           - os: ubuntu-latest
             tag: nvidia-ubuntu20.04
+            target: runtime-nvidia-env
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
 
     steps:
@@ -63,6 +68,7 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
+          target: ${{ matrix.target }}
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}
           cache-from: type=local,src=/tmp/.buildx-cache
