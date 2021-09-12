@@ -84,11 +84,15 @@ python -m nuitka \
     --follow-import-to=aiofiles \
     --include-package=uvicorn \
     --include-package-data=pyopenjtalk \
+    --include-package-data=resampy \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=speakers.json=./ \
-    --include-data-file=C:/音声ライブラリへのパス/Release/*.dll=./ \
+    --include-data-file=C:/path/to/cuda/*.dll=./ \
+    --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
+    --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
+    --include-data-file=.venv-release/Lib/site-packages/llvmlite/binding/llvmlite.dll=./ \
     --msvc=14.2 \
     --follow-imports \
     --no-prefer-source-code \
