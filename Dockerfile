@@ -193,6 +193,8 @@ RUN <<EOF
       rm -f /etc/ld.so.cache
       ldconfig
 
+      cat /opt/voicevox_core/README.txt
+
       exec "\$@"
   EOT
   chmod +x /entrypoint.sh
