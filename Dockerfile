@@ -51,8 +51,8 @@ EOF
 
 ADD ./requirements.txt ./requirements-dev.txt /tmp/
 RUN <<EOF
-    python -m pip install --upgrade pip setuptools wheel
-    pip install -r /tmp/requirements-dev.txt
+    python3 -m pip install --upgrade pip setuptools wheel
+    pip3 install -r /tmp/requirements-dev.txt
 EOF
 
 COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
@@ -62,6 +62,8 @@ ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
 # Download openjtalk dictionary
-RUN python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+RUN <<EOF
+    python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOF
 
 CMD [ "python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core", "--host", "0.0.0.0" ]
