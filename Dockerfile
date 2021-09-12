@@ -27,6 +27,7 @@ EOF
 
 RUN <<EOF
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
+    rm -f /etc/ld.so.cache
     ldconfig
 EOF
 
@@ -56,6 +57,7 @@ EOF
 
 RUN <<EOF
     echo "/opt/libtorch/lib" > /etc/ld.so.conf.d/libtorch.conf
+    rm -f /etc/ld.so.cache
     ldconfig
 EOF
 
@@ -94,9 +96,6 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 # Copy LibTorch
 COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
-RUN <<EOF
-    ldconfig
-EOF
 
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
@@ -113,6 +112,12 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICEN
 # Download openjtalk dictionary
 RUN <<EOF
     python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOF
+
+# force update ldconfig cache
+RUN <<EOF
+    rm -f /etc/ld.so.cache
+    ldconfig
 EOF
 
 CMD [ "python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
