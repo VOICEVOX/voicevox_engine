@@ -56,12 +56,22 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ matrix.base_runtime_image }}-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ matrix.tag || 'latest' }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-${{ matrix.base_runtime_image }}
+            ${{ runner.os }}-buildx-${{ matrix.tag || 'latest' }}
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v2
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
+          VERSIONED_IMAGE_TAG: |
+            ${{ (
+              github.event.release.tag_name != '' && (
+                matrix.tag != '' && (
+                  format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, github.event.release.tag_name)
+                ) || format('{0}:{1}', env.IMAGE_NAME, github.event.release.tag_name)
+              )
+            ) || '' }}
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -70,23 +80,10 @@ jobs:
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
+          tags: |
+            ${{ env.IMAGE_TAG }}
+            ${{ env.VERSIONED_IMAGE_TAG }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-
-      - name: Build and Deploy versioned Docker image
-        if: success() && github.event.release.tag_name != ''
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          builder: ${{ steps.buildx.outputs.name }}
-          file: ./Dockerfile
-          build-args: |
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-          target: ${{ matrix.target }}
-          push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}${{ github.event.release.tag_name }}
-          cache-from: type=local,src=/tmp/.buildx-cache-new
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
 
       - name: Move cache (reduce cache size)
