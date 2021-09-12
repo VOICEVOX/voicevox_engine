@@ -23,7 +23,7 @@ jobs:
             target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
-            tag: cpu-latest
+            tag: cpu
             target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
             target: runtime-env
             base_runtime_image: ubuntu:focal
           - os: ubuntu-latest
-            tag: nvidia-latest
+            tag: nvidia
             target: runtime-nvidia-env
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
           - os: ubuntu-latest
@@ -71,6 +71,21 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Build and Deploy versioned Docker image
+        if: success() && github.event.release.tag_name != ''
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: ./Dockerfile
+          build-args: |
+            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ (matrix.tag == 'latest' && github.event.release.tag_name) || (join([matrix.tag, github.event.release.tag_name], '-') }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
