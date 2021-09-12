@@ -24,3 +24,14 @@ run-linux-docker-nvidia:
 		--gpus all \
 		-p '127.0.0.1:50021:50021' \
 		aoirint/voicevox_engine:nvidia-ubuntu20.04 $(CMD)
+
+build-linux-docker-compile-python-env:
+	docker buildx build . \
+		-t aoirint/voicevox_engine:compile-python-env \
+		--target compile-python-env \
+		--progress plain \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal
+
+run-linux-docker-compile-python-env:
+	docker run --rm -it \
+		aoirint/voicevox_engine:compile-python-env $(CMD)
