@@ -109,6 +109,14 @@ python -m nuitka \
     run.py
 ```
 
+## GitHub Actions
+
+### Secrets
+|name|description|
+|:--|:--|
+|DOCKERHUB_USERNAME|Docker Hub ユーザ名|
+|DOCKERHUB_TOKEN|[Docker Hub アクセストークン](https://hub.docker.com/settings/security)|
+
 ## ライセンス
 
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
