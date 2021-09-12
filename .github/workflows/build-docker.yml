@@ -68,12 +68,6 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-      - name: Update Docker Hub description with README.md
-        uses: peter-evans/dockerhub-description@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       # https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
       - name: Move cache (reduce cache size)
         run: |
