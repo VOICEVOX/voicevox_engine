@@ -66,9 +66,6 @@ EOF
 FROM ubuntu:focal AS compile-python-env
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG PYTHON_VERSION=3.7.12
-ARG PYENV_ROOT=/tmp/.pyenv
-ARG PYBUILD_ROOT=/tmp/python-build
 
 RUN <<EOF
     apt-get update
@@ -94,13 +91,21 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+ARG PYTHON_VERSION=3.7.12
+# FIXME: Lock pyenv version with git tag
+# 90d0d20508a91e7ea1e609e8aa9f9d1a28bb563e (including 3.7.12) not released yet (2021-09-12)
+ARG PYENV_VERSION=master
+ARG PYENV_ROOT=/tmp/.pyenv
+ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
-    git clone https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
+    set -e
+    git clone -b "${PYENV_VERSION}" https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
     PREFIX="$PYBUILD_ROOT" "$PYENV_ROOT"/plugins/python-build/install.sh
     "$PYBUILD_ROOT/bin/python-build" -v "$PYTHON_VERSION" /opt/python
     rm -rf "$PYBUILD_ROOT" "$PYENV_ROOT"
 EOF
 
+# FIXME: add /opt/python to PATH
 # not working: /etc/profile read only on login shell
 # not working: /etc/environment is the same
 # not suitable: `ENV` is ignored by docker-compose
@@ -135,14 +140,26 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+# gosu: general user execution
+ARG GOSU_VERSION=1.14
+ADD "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" /usr/local/bin/gosu
+RUN <<EOF
+    chmod +x /usr/local/bin/gosu
+EOF
+
+# Create a general user
+RUN <<EOF
+    useradd --create-home user
+EOF
+
 COPY --from=compile-python-env /opt/python /opt/python
 
-# temporary override PATH for convenience during the image building
-ARG PATH=/opt/python/bin:$PATH
+# Temporary override PATH for convenience during the image building
+# ARG PATH=/opt/python/bin:$PATH
 ADD ./requirements.txt /tmp/
 RUN <<EOF
-    python3 -m pip install --upgrade pip setuptools wheel
-    pip3 install -r /tmp/requirements.txt
+    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools wheel
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
 EOF
 
 # Copy VOICEVOX Core shared object
@@ -159,7 +176,7 @@ RUN <<EOF
   cd /opt/voicevox_core_example
   cp ./core.h ./example/python/
   cd example/python
-  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" pip3 install .
+  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
 EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
@@ -167,17 +184,17 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICEN
 
 # Download openjtalk dictionary
 RUN <<EOF
-    python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 EOF
 
-# force update ldconfig cache
+# Force update ldconfig cache
 RUN <<EOF
     rm -f /etc/ld.so.cache
     ldconfig
 EOF
 
-CMD [ "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
-# enable use_gpu
+# Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
