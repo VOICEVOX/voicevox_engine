@@ -187,12 +187,18 @@ RUN <<EOF
     gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 EOF
 
-# Force update ldconfig cache
+# Update ldconfig on container start
 RUN <<EOF
-    rm -f /etc/ld.so.cache
-    ldconfig
+  cat <<EOT > /entrypoint.sh
+      rm -f /etc/ld.so.cache
+      ldconfig
+
+      exec "\$@"
+  EOT
+  chmod +x /entrypoint.sh
 EOF
 
+ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
