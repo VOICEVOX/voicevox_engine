@@ -26,6 +26,7 @@ EOF
 
 RUN <<EOF
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
+    ldconfig
 EOF
 
 
@@ -57,6 +58,9 @@ EOF
 
 COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
+RUN <<EOF
+    ldconfig
+EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
