@@ -62,10 +62,7 @@ def make_synthesis_engine(
         has_voicevox_core = False
 
         # 音声ライブラリの Python モジュールをロードできなかった
-        print(
-            traceback.format_exc(),
-            file=sys.stderr,
-        )
+        traceback.print_exc()
         print(
             "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
             file=sys.stderr,
