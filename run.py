@@ -312,9 +312,16 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers():
-        # TODO 音声ライブラリのAPIが出来たら差し替える
+        # TODO ここで import するのは避けたい
+        try:
+            import core
+        except ImportError:
+            import traceback
+
+            from voicevox_engine.dev import core
+
         return Response(
-            content=(root_dir / "speakers.json").read_text("utf-8"),
+            content=core.metas(),
             media_type="application/json",
         )
 
