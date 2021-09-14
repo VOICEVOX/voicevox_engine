@@ -37,6 +37,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-test.txt') }}
 
+      - name: Install libraries for ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install libsndfile1-dev
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
