@@ -79,6 +79,7 @@ def make_synthesis_engine(
             yukarin_s_forwarder=core.yukarin_s_forward,
             yukarin_sa_forwarder=core.yukarin_sa_forward,
             decode_forwarder=core.decode_forward,
+            speakers=core.metas(),
         )
 
     from voicevox_engine.dev.synthesis_engine import (
@@ -312,9 +313,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers():
-        # TODO 音声ライブラリのAPIが出来たら差し替える
         return Response(
-            content=(root_dir / "speakers.json").read_text("utf-8"),
+            content=engine.speakers,
             media_type="application/json",
         )
 

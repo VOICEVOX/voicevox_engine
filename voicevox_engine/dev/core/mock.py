@@ -68,3 +68,6 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
         filter="kaiser_fast",
     )
     return wave
+
+def metas() -> str:
+    return "[]"

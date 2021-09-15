@@ -63,6 +63,7 @@ class SynthesisEngine:
         yukarin_s_forwarder,
         yukarin_sa_forwarder,
         decode_forwarder,
+        speakers,
     ):
         """
         yukarin_s_forwarder: 音素列から、音素ごとの長さを求める関数
@@ -89,6 +90,8 @@ class SynthesisEngine:
             phoneme: フレームごとの音素
             speaker_id: 話者番号
             return: 音声波形
+
+        speakers: coreから取得したspeakersに関するjsonデータの文字列
         """
         super().__init__()
         self.yukarin_s_forwarder = yukarin_s_forwarder
@@ -96,6 +99,7 @@ class SynthesisEngine:
         self.decode_forwarder = decode_forwarder
         self.yukarin_s_phoneme_class = OjtPhoneme
         self.yukarin_soso_phoneme_class = OjtPhoneme
+        self.speakers = speakers
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

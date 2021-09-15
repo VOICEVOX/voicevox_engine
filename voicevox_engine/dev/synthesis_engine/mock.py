@@ -19,6 +19,7 @@ class SynthesisEngine:
         __init__ [Mock]
         """
         super().__init__()
+        self.speakers = "[]"
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
