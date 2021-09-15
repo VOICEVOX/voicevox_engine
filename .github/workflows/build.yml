@@ -38,6 +38,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
+      # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
       - name: Create binary build environment with Docker
         uses: docker/build-push-action@v2
         env:
