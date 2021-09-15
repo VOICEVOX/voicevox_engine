@@ -172,11 +172,11 @@ COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
-  git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
-  cd /opt/voicevox_core_example
-  cp ./core.h ./example/python/
-  cd example/python
-  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
+    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
+    cd /opt/voicevox_core_example
+    cp ./core.h ./example/python/
+    cd example/python
+    LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
 EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
@@ -189,15 +189,15 @@ EOF
 
 # Update ldconfig on container start
 RUN <<EOF
-  cat <<EOT > /entrypoint.sh
-      rm -f /etc/ld.so.cache
-      ldconfig
+    cat <<EOT > /entrypoint.sh
+        rm -f /etc/ld.so.cache
+        ldconfig
 
-      cat /opt/voicevox_core/README.txt > /dev/stderr
+        cat /opt/voicevox_core/README.txt > /dev/stderr
 
-      exec "\$@"
-  EOT
-  chmod +x /entrypoint.sh
+        exec "\$@"
+EOT
+    chmod +x /entrypoint.sh
 EOF
 
 ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
