@@ -128,6 +128,27 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             speaker_id=speaker_id,
         )
 
+    def _synthesis(
+        query: AudioQuery, speaker: int
+    ) -> np.array:
+        # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
+        wave = engine.synthesis(query=query, speaker_id=speaker)
+
+        # サンプリングレートの変更
+        if query.outputSamplingRate != default_sampling_rate:
+            wave = resampy.resample(
+                wave,
+                default_sampling_rate,
+                query.outputSamplingRate,
+                filter="kaiser_fast",
+            )
+
+        # ステレオ変換
+        if query.outputStereo:
+            wave = np.array([wave, wave]).T
+
+        return wave
+
     def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
@@ -283,21 +304,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int):
-        # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
-        wave = engine.synthesis(query=query, speaker_id=speaker)
-
-        # サンプリングレートの変更
-        if query.outputSamplingRate != default_sampling_rate:
-            wave = resampy.resample(
-                wave,
-                default_sampling_rate,
-                query.outputSamplingRate,
-                filter="kaiser_fast",
-            )
-
-        # ステレオ変換
-        if query.outputStereo:
-            wave = np.array([wave, wave]).T
+        wave = _synthesis(query, speaker)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -305,6 +312,39 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/multi_synthesis",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="複数まとめて音声合成する",
+    )
+    def multi_synthesis(queries: List[AudioQuery], speaker: int):
+        waves = []
+        samplingrate = queries[0].outputSamplingRate
+
+        for query in queries:
+
+            if query.outputSamplingRate != samplingrate:
+                raise HTTPException(status_code=422, detail="all samplingrate must be the same")
+
+            wave = _synthesis(query, speaker)
+
+            waves.append(wave)
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f, data=np.concatenate(waves), samplerate=samplingrate, format="WAV"
+            )
+
+            return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
