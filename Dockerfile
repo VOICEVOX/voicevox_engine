@@ -190,6 +190,7 @@ EOF
 # Update ldconfig on container start
 RUN <<EOF
     cat <<EOT > /entrypoint.sh
+        #!/bin/bash
         rm -f /etc/ld.so.cache
         ldconfig
 
