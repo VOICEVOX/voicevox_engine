@@ -314,7 +314,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def speakers():
         # TODO 音声ライブラリのAPIが出来たら差し替える
         return Response(
-            content=(root_dir / "speakers.json").read_text("utf-8"),
+            content=core.metas(),
             media_type="application/json",
         )
 

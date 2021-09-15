@@ -180,7 +180,7 @@ RUN <<EOF
 EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
 # Download openjtalk dictionary
 RUN <<EOF
