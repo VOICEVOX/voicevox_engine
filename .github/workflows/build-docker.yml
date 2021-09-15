@@ -46,27 +46,12 @@ jobs:
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
           # Ubuntu 18.04
           - os: ubuntu-latest
-            tag: ''
-            target: runtime-env
-            base_image: ubuntu:bionic
-            base_runtime_image: ubuntu:bionic
-          - os: ubuntu-latest
-            tag: cpu
-            target: runtime-env
-            base_image: ubuntu:bionic
-            base_runtime_image: ubuntu:bionic
-          - os: ubuntu-latest
             tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
           - os: ubuntu-latest
-            tag: nvidia
-            target: runtime-nvidia-env
-            base_image: ubuntu:bionic
-            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
-          - os: ubuntu-latest
-            tag: nvidia-ubuntu20.04
+            tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
