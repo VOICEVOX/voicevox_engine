@@ -211,7 +211,7 @@ CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voi
 FROM runtime-env AS build-env
 
 # Install ccache for Nuitka cache
-# chrpath: required for nuitka build; 'RPATH' seetings in used shared
+# chrpath: required for nuitka build; 'RPATH' settings in used shared
 RUN <<EOF
     apt-get update
     apt-get install -y \
