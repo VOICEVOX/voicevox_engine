@@ -344,7 +344,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 file=f, data=np.concatenate(waves), samplerate=samplingrate, format="WAV"
             )
 
-            return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
