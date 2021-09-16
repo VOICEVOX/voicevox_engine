@@ -187,7 +187,7 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICEN
 # Download openjtalk dictionary
 RUN <<EOF
     # FIXME: remove first execution delay
-    # try 5 times, delay 5 seconds before execution.
+    # try 5 times, delay 5 seconds before each execution.
     # if all tries are failed, `docker build` will be failed.
     parallel --retries 5 --delay 5 --ungroup <<EOT
         gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
