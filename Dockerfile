@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1.3-labs
 
+ARG BASE_IMAGE=ubuntu:focal
 ARG BASE_RUNTIME_IMAGE=ubuntu:focal
 
 # Download VOICEVOX Core shared object
-FROM ubuntu:focal AS download-core-env
+FROM ${BASE_IMAGE} AS download-core-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -33,7 +34,7 @@ EOF
 
 
 # Download LibTorch
-FROM ubuntu:focal AS download-libtorch-env
+FROM ${BASE_IMAGE} AS download-libtorch-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -63,7 +64,7 @@ EOF
 
 
 # Compile Python (version locked)
-FROM ubuntu:focal AS compile-python-env
+FROM ${BASE_IMAGE} AS compile-python-env
 
 ARG DEBIAN_FRONTEND=noninteractive
 
