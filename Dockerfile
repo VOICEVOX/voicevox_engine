@@ -34,7 +34,7 @@ EOF
 # Temporary workaround: modify libcore link for cpu
 # Remove CUDA/LibTorchGPU dependencies from libcore
 RUN <<EOF
-    if [ "${BASE_RUNTIME_IMAGE:0:11}" != nvidia/cuda ]; then
+    if [ "$(echo ${BASE_RUNTIME_IMAGE} | cut -c 1-11)" != nvidia/cuda ]; then
         apt-get update
         apt-get install -y \
             patchelf
@@ -44,7 +44,7 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
-    if [ "${BASE_RUNTIME_IMAGE:0:11}" != nvidia/cuda ]; then
+    if [ "$(echo ${BASE_RUNTIME_IMAGE} | cut -c 1-11)" != nvidia/cuda ]; then
         cd /opt/voicevox_core/
 
         patchelf --remove-needed libtorch_cuda.so libcore.so
