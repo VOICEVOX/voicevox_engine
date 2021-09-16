@@ -64,7 +64,7 @@ class SynthesisEngine:
         yukarin_s_forwarder,
         yukarin_sa_forwarder,
         decode_forwarder,
-        speakers,
+        speakers: str,
     ):
         """
         yukarin_s_forwarder: 音素列から、音素ごとの長さを求める関数
