@@ -140,27 +140,8 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# gosu: general user execution
-ARG GOSU_VERSION=1.14
-ADD "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" /usr/local/bin/gosu
-RUN <<EOF
-    chmod +x /usr/local/bin/gosu
-EOF
-
-# Create a general user
-RUN <<EOF
-    useradd --create-home user
-EOF
-
+# Copy Python
 COPY --from=compile-python-env /opt/python /opt/python
-
-# Temporary override PATH for convenience during the image building
-# ARG PATH=/opt/python/bin:$PATH
-ADD ./requirements.txt /tmp/
-RUN <<EOF
-    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools wheel
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
-EOF
 
 # Copy VOICEVOX Core shared object
 COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
@@ -170,39 +151,62 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
+# Copy Localfile
+ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
+ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./requirements.txt /tmp/
+
+# Clone core source
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
   git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
   cd /opt/voicevox_core_example
   cp ./core.h ./example/python/
-  cd example/python
-  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
 EOF
 
-ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
-
-# Download openjtalk dictionary
+# Create entrypoint.sh
 RUN <<EOF
-    gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    cat <<- EOT > /entrypoint.sh
+		#!/usr/bin/env bash
+		cat /opt/voicevox_core/README.txt > /dev/stderr
+		exec "\$@"
+	EOT
+    chmod +x /entrypoint.sh
 EOF
 
-# Update ldconfig on container start
+# Create a general user
 RUN <<EOF
-  cat <<EOT > /entrypoint.sh
-      rm -f /etc/ld.so.cache
-      ldconfig
-
-      cat /opt/voicevox_core/README.txt > /dev/stderr
-
-      exec "\$@"
-  EOT
-  chmod +x /entrypoint.sh
+    useradd --create-home user
 EOF
 
-ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+# Work as user
+USER user
+RUN <<EOF
+  # Add Enviroment values
+  export PATH="/opt/python/bin/:$PATH"
+  export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
+
+  # Install requirements
+  python3 -m pip install --upgrade pip setuptools wheel
+  pip3 install -r /tmp/requirements.txt
+
+  # Install example/python
+  cd /opt/voicevox_core_example/example/python
+  pip3 install .
+
+  # Download openjtalk dictionary
+  /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOF
+
+# Update ldconfig
+USER root
+RUN rm -f /etc/ld.so.cache && ldconfig
+
+# Defin entrypoint
+USER user
+ENTRYPOINT [ "/entrypoint.sh"  ]
+CMD [ "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
