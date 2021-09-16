@@ -7,6 +7,7 @@ FROM ubuntu:focal AS download-core-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
+SHELL [ "/bin/bash" ]
 
 RUN <<EOF
     apt-get update
