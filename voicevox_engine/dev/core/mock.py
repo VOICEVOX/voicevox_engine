@@ -69,5 +69,6 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     )
     return wave
 
+
 def metas() -> str:
-    return "[]"
+    return "[{\"name\": \"dummy1\", \"speaker_id\": 0},{\"name\": \"dummy2\", \"speaker_id\": 1}]"
