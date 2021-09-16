@@ -128,6 +128,7 @@ WORKDIR /opt/voicevox_engine
 # libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# parallel: retry download pyopenjtalk dictionary
 RUN <<EOF
     apt-get update
     apt-get install -y \
@@ -135,7 +136,8 @@ RUN <<EOF
         cmake \
         libsndfile1 \
         ca-certificates \
-        build-essential
+        build-essential \
+        parallel
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -184,7 +186,12 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICEN
 
 # Download openjtalk dictionary
 RUN <<EOF
-    gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    # FIXME: remove first execution delay
+    # try 5 times, delay 5 seconds before execution.
+    # if all tries are failed, `docker build` will be failed.
+    parallel --retries 5 --delay 5 --ungroup <<EOT
+        gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOT
 EOF
 
 # Update ldconfig on container start
