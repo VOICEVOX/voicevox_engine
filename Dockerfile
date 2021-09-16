@@ -32,6 +32,31 @@ RUN <<EOF
     ldconfig
 EOF
 
+# Temporary workaround: modify libcore link for cpu
+# Remove CUDA/LibTorchGPU dependencies from libcore
+ARG INFERENCE_DEVICE=cpu
+RUN <<EOF
+    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
+        apt-get update
+        apt-get install -y \
+            patchelf
+        apt-get clean
+        rm -rf /var/lib/apt/lists/*
+    fi
+EOF
+
+RUN <<EOF
+    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
+        cd /opt/voicevox_core/
+
+        patchelf --remove-needed libtorch_cuda.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cu.so libcore.so
+        patchelf --remove-needed libnvToolsExt.so.1 libcore.so
+        patchelf --remove-needed libcudart.so.11.0 libcore.so
+    fi
+EOF
+
 
 # Download LibTorch
 FROM ${BASE_IMAGE} AS download-libtorch-env
@@ -48,7 +73,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
 RUN <<EOF
     wget -nv --show-progress -c -O "./libtorch.zip" "${LIBTORCH_URL}"
     unzip "./libtorch.zip"
