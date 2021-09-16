@@ -7,7 +7,6 @@ FROM ubuntu:focal AS download-core-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
-SHELL [ "/bin/bash" ]
 
 RUN <<EOF
     apt-get update
@@ -35,7 +34,7 @@ EOF
 # Temporary workaround: modify libcore link for cpu
 # Remove CUDA/LibTorchGPU dependencies from libcore
 RUN <<EOF
-    if [[ ! "${BASE_RUNTIME_IMAGE}" ~= '^nvidia/cuda.*' ]]; then
+    if [ "${BASE_RUNTIME_IMAGE:0:11}" != nvidia/cuda ]; then
         apt-get update
         apt-get install -y \
             patchelf
@@ -45,15 +44,15 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
-  if [[ ! "${BASE_RUNTIME_IMAGE}" ~= '^nvidia/cuda.*' ]]; then
-    cd /opt/voicevox_core/
+    if [ "${BASE_RUNTIME_IMAGE:0:11}" != nvidia/cuda ]; then
+        cd /opt/voicevox_core/
 
-    patchelf --remove-needed libtorch_cuda.so libcore.so
-    patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
-    patchelf --remove-needed libtorch_cuda_cu.so libcore.so
-    patchelf --remove-needed libnvToolsExt.so.1 libcore.so
-    patchelf --remove-needed libcudart.so.11.0 libcore.so
-  fi
+        patchelf --remove-needed libtorch_cuda.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cu.so libcore.so
+        patchelf --remove-needed libnvToolsExt.so.1 libcore.so
+        patchelf --remove-needed libcudart.so.11.0 libcore.so
+    fi
 EOF
 
 
