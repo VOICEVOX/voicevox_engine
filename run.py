@@ -1,11 +1,10 @@
 import argparse
 import sys
+import zipfile
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
-import numpy as np
-import resampy
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
@@ -102,7 +101,8 @@ def mora_to_text(mora: str):
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
     root_dir = Path(__file__).parent
-    default_sampling_rate = 24000
+
+    default_sampling_rate = engine.default_sampling_rate
 
     app = FastAPI(
         title="VOICEVOX ENGINE",
@@ -284,21 +284,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int):
-        # StreamResponseだとnuiktaビルド後の実行でエラーが発生するのでFileResponse
         wave = engine.synthesis(query=query, speaker_id=speaker)
-
-        # サンプリングレートの変更
-        if query.outputSamplingRate != default_sampling_rate:
-            wave = resampy.resample(
-                wave,
-                default_sampling_rate,
-                query.outputSamplingRate,
-                filter="kaiser_fast",
-            )
-
-        # ステレオ変換
-        if query.outputStereo:
-            wave = np.array([wave, wave]).T
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -306,6 +292,49 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/multi_synthesis",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "application/zip": {
+                        "schema": {"type": "string", "format": "binary"}
+                    }
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="複数まとめて音声合成する",
+    )
+    def multi_synthesis(queries: List[AudioQuery], speaker: int):
+        sampling_rate = queries[0].outputSamplingRate
+
+        with NamedTemporaryFile(delete=False) as f:
+
+            with zipfile.ZipFile(f, mode="a") as zip_file:
+
+                for i in range(len(queries)):
+
+                    if queries[i].outputSamplingRate != sampling_rate:
+                        raise HTTPException(
+                            status_code=422, detail="サンプリングレートが異なるクエリがあります"
+                        )
+
+                    with TemporaryFile() as wav_file:
+
+                        wave = engine.synthesis(query=queries[i], speaker_id=speaker)
+                        soundfile.write(
+                            file=wav_file,
+                            data=wave,
+                            samplerate=sampling_rate,
+                            format="WAV",
+                        )
+                        wav_file.seek(0)
+                        zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
+
+        return FileResponse(f.name, media_type="application/zip")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:

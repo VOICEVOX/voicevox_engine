@@ -2,6 +2,7 @@ from itertools import chain
 from typing import List, Optional
 
 import numpy
+import resampy
 
 from voicevox_engine.acoustic_feature_extractor import (
     BasePhoneme,
@@ -99,7 +100,10 @@ class SynthesisEngine:
         self.decode_forwarder = decode_forwarder
         self.yukarin_s_phoneme_class = OjtPhoneme
         self.yukarin_soso_phoneme_class = OjtPhoneme
+
         self.speakers = speakers
+        self.default_sampling_rate = 24000
+
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -346,5 +350,17 @@ class SynthesisEngine:
         # volume
         if query.volumeScale != 1:
             wave *= query.volumeScale
+
+        if query.outputSamplingRate != self.default_sampling_rate:
+            wave = resampy.resample(
+                wave,
+                self.default_sampling_rate,
+                query.outputSamplingRate,
+                filter="kaiser_fast",
+            )
+
+        # ステレオ変換
+        if query.outputStereo:
+            wave = numpy.array([wave, wave]).T
 
         return wave

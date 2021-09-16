@@ -19,7 +19,10 @@ class SynthesisEngine:
         __init__ [Mock]
         """
         super().__init__()
+
         self.speakers = "[{\"name\": \"dummy1\", \"speaker_id\": 0},{\"name\": \"dummy2\", \"speaker_id\": 1}]"
+        self.default_sampling_rate = 24000
+
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
