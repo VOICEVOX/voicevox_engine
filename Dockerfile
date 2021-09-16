@@ -191,10 +191,10 @@ EOF
 RUN <<EOF
     cat <<EOT > /entrypoint.sh
         #!/bin/bash
+        cat /opt/voicevox_core/README.txt > /dev/stderr
+
         rm -f /etc/ld.so.cache
         ldconfig
-
-        cat /opt/voicevox_core/README.txt > /dev/stderr
 
         exec "\$@"
 EOT
