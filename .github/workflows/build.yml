@@ -20,7 +20,10 @@ jobs:
           tag: build-env-cpu-ubuntu20.04
           runtime_tag: cpu-ubuntu20.04 # for cache use
           target: build-env
+          base_image: ubuntu:focal
           base_runtime_image: ubuntu:focal
+          inference_device: cpu
+          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
           nuitka_cache_path: nuitka_cache
 
     runs-on: ${{ matrix.os }}
@@ -50,7 +53,10 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           file: ./Dockerfile
           build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
+            INFERENCE_DEVICE=${{ matrix.inference_device }}
+            LIBTORCH_URL=${{ matrix.libtorch_url }}
           target: ${{ matrix.target }}
           load: true
           tags: |
