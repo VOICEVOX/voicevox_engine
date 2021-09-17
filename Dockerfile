@@ -164,16 +164,6 @@ RUN <<EOF
   cp ./core.h ./example/python/
 EOF
 
-# Create entrypoint.sh
-RUN <<EOF
-    cat <<- EOT > /entrypoint.sh
-		#!/usr/bin/env bash
-		cat /opt/voicevox_core/README.txt > /dev/stderr
-		exec "\$@"
-	EOT
-    chmod +x /entrypoint.sh
-EOF
-
 # Create a general user
 RUN <<EOF
     useradd --create-home user
@@ -202,9 +192,20 @@ EOF
 USER root
 RUN rm -f /etc/ld.so.cache && ldconfig
 
+# Create entrypoint.sh
+RUN <<EOF
+  cat <<EOT > /entrypoint.sh
+
+      cat /opt/voicevox_core/README.txt > /dev/stderr
+
+      exec "\$@"
+  EOT
+  chmod +x /entrypoint.sh
+EOF
+
 # Defin entrypoint
 USER user
-ENTRYPOINT [ "/entrypoint.sh"  ]
+ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
 CMD [ "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
