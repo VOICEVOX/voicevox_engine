@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1.3-labs
 
+ARG BASE_IMAGE=ubuntu:focal
 ARG BASE_RUNTIME_IMAGE=ubuntu:focal
 
 # Download VOICEVOX Core shared object
-FROM ubuntu:focal AS download-core-env
+FROM ${BASE_IMAGE} AS download-core-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -31,9 +32,34 @@ RUN <<EOF
     ldconfig
 EOF
 
+# Temporary workaround: modify libcore link for cpu
+# Remove CUDA/LibTorchGPU dependencies from libcore
+ARG INFERENCE_DEVICE=cpu
+RUN <<EOF
+    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
+        apt-get update
+        apt-get install -y \
+            patchelf
+        apt-get clean
+        rm -rf /var/lib/apt/lists/*
+    fi
+EOF
+
+RUN <<EOF
+    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
+        cd /opt/voicevox_core/
+
+        patchelf --remove-needed libtorch_cuda.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
+        patchelf --remove-needed libtorch_cuda_cu.so libcore.so
+        patchelf --remove-needed libnvToolsExt.so.1 libcore.so
+        patchelf --remove-needed libcudart.so.11.0 libcore.so
+    fi
+EOF
+
 
 # Download LibTorch
-FROM ubuntu:focal AS download-libtorch-env
+FROM ${BASE_IMAGE} AS download-libtorch-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -47,7 +73,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
 RUN <<EOF
     wget -nv --show-progress -c -O "./libtorch.zip" "${LIBTORCH_URL}"
     unzip "./libtorch.zip"
@@ -63,7 +89,7 @@ EOF
 
 
 # Compile Python (version locked)
-FROM ubuntu:focal AS compile-python-env
+FROM ${BASE_IMAGE} AS compile-python-env
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -128,6 +154,7 @@ WORKDIR /opt/voicevox_engine
 # libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# parallel: retry download pyopenjtalk dictionary
 RUN <<EOF
     apt-get update
     apt-get install -y \
@@ -135,7 +162,8 @@ RUN <<EOF
         cmake \
         libsndfile1 \
         ca-certificates \
-        build-essential
+        build-essential \
+        parallel
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -172,32 +200,38 @@ COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
-  git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
-  cd /opt/voicevox_core_example
-  cp ./core.h ./example/python/
-  cd example/python
-  LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
+    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
+    cd /opt/voicevox_core_example
+    cp ./core.h ./example/python/
+    cd example/python
+    LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
 EOF
 
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
 # Download openjtalk dictionary
 RUN <<EOF
-    gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    # FIXME: remove first execution delay
+    # try 5 times, delay 5 seconds before each execution.
+    # if all tries are failed, `docker build` will be failed.
+    parallel --retries 5 --delay 5 --ungroup <<EOT
+        gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOT
 EOF
 
 # Update ldconfig on container start
 RUN <<EOF
-  cat <<EOT > /entrypoint.sh
-      rm -f /etc/ld.so.cache
-      ldconfig
+    cat <<EOT > /entrypoint.sh
+        #!/bin/bash
+        cat /opt/voicevox_core/README.txt > /dev/stderr
 
-      cat /opt/voicevox_core/README.txt > /dev/stderr
+        rm -f /etc/ld.so.cache
+        ldconfig
 
-      exec "\$@"
-  EOT
-  chmod +x /entrypoint.sh
+        exec "\$@"
+EOT
+    chmod +x /entrypoint.sh
 EOF
 
 ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
