@@ -218,7 +218,7 @@ RUN <<EOF
     gosu user pip3 install -r /tmp/requirements.txt
 
     # Install voicevox_core
-    cd /opt/voicevox_core_example/example/python 
+    cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
 
     # FIXME: remove first execution delay
@@ -296,7 +296,7 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/libcore.so
+        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/run.dist/libcore.so
             libc10.so
             libtorch_cuda.so
             libtorch_cuda_cpp.so
