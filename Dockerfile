@@ -289,6 +289,7 @@ RUN <<EOF
                 --include-package-data=pyopenjtalk \
                 --include-package-data=resampy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+                --include-data-file=/opt/libtorch/lib/*.so=./ \
                 --include-data-file=/opt/libtorch/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
