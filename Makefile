@@ -50,18 +50,39 @@ run-linux-docker-compile-python-env:
 		hiroshiba/voicevox_engine:compile-python-env $(CMD)
 
 # Build linux binary in Docker
-.PHONY: build-linux-docker-build-env
-build-linux-docker-build-env:
+.PHONY: build-linux-docker-build
+build-linux-docker-build:
 	docker buildx build . \
-		-t hiroshiba/voicevox_engine:build-env-cpu-ubuntu20.04-latest \
+		-t hiroshiba/voicevox_engine:build-cpu-ubuntu20.04-latest \
 		--target build-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
-		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
+		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
+		--build-arg INFERENCE_DEVICE=cpu
+
+.PHONY: run-linux-docker-build
+run-linux-docker-build:
+	docker run --rm -it \
+		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
+		-v "$(shell pwd)/build:/opt/voicevox_engine_build" \
+		hiroshiba/voicevox_engine:build-cpu-ubuntu20.04-latest $(CMD)
+
+
+.PHONY: build-linux-docker-build-nvidia
+build-linux-docker-build-nvidia:
+	docker buildx build . \
+		-t hiroshiba/voicevox_engine:build-nvidia-ubuntu20.04-latest \
+		--target build-env \
+		--progress plain \
+		--build-arg BASE_IMAGE=ubuntu:focal \
+		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04 \
+		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
+		--build-arg INFERENCE_DEVICE=nvidia
 
 .PHONY: run-linux-docker-build-env
 run-linux-docker-build-env:
 	docker run --rm -it \
 		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" \
-		hiroshiba/voicevox_engine:build-env-cpu-ubuntu20.04-latest $(CMD)
+		hiroshiba/voicevox_engine:build-nvidia-ubuntu20.04-latest $(CMD)
