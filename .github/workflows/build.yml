@@ -96,5 +96,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: dist-${{ matrix.tag }}
+          name: ${{ matrix.tag }}-${{ github.sha }}
           path: build/run.dist/
