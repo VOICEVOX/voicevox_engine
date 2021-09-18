@@ -265,7 +265,7 @@ EOF
 RUN <<EOF
     set -eux
 
-    cat <<EOT > /build.sh
+    cat <<EOD > /build.sh
         #!/bin/bash
         set -eux
 
@@ -298,7 +298,16 @@ RUN <<EOF
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
+
+        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/libcore.so
+            libc10.so
+            libtorch_cuda.so
+            libtorch_cuda_cpp.so
+            libtorch_cpu.so
+            libtorch_cuda_cu.so
+            libtorch.so
 EOT
+EOD
     chmod +x /build.sh
 EOF
 
