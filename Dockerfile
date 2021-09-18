@@ -296,6 +296,7 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
+        # replace libcore.so link for libtorch to relative path
         cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/run.dist/libcore.so
             libc10.so
             libtorch_cuda.so
@@ -304,6 +305,8 @@ RUN <<EOF
             libtorch_cuda_cu.so
             libtorch.so
 EOT
+
+        chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
     chmod +x /build.sh
 EOF
