@@ -95,6 +95,9 @@ jobs:
             "${{ env.IMAGE_TAG }}"
 
       - uses: actions/upload-artifact@v2
+        env:
+          VERSIONED_ARTIFACT_NAME: |
+            format('{0}-{1}', matrix.tag, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha)
         with:
-          name: ${{ matrix.tag }}-${{ github.sha }}
+          name: ${{ env.VERSIONED_ARTIFACT_NAME }}
           path: build/run.dist/
