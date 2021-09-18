@@ -207,7 +207,7 @@ RUN <<EOF
     # Create a general user
     useradd --create-home user
     # Update ld
-    rm -f /etc/ld.so.cache && ldconfig
+    ldconfig
 
     # Const environment
     export PATH="$PATH:/opt/python/bin/"
@@ -226,9 +226,8 @@ RUN <<EOF
     # if all tries are failed, `docker build` will be failed.
 
     # Download openjtalk dictionary
-    parallel --retries 5 --delay 5 --ungroup <<- EOT
-		gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
-	EOT
+    parallel --retries 5 --delay 5 --ungroup \
+      gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
