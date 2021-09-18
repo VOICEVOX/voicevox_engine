@@ -250,7 +250,8 @@ RUN <<EOF
     apt-get update
     apt-get install -y \
         ccache \
-        chrpath
+        chrpath \
+        patchelf
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
