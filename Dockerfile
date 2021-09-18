@@ -163,7 +163,8 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
-        parallel
+        parallel \
+        gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
@@ -195,32 +196,30 @@ ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
 # Create container start shell
+COPY <<EOF /entrypoint.sh
+#!/bin/bash
+cat /opt/voicevox_core/README.txt > /dev/stderr
+exec "\$@"
+EOF
+
 RUN <<EOF
-    cat <<- EOT > /entrypoint.sh
-		#!/bin/bash
-		cat /opt/voicevox_core/README.txt > /dev/stderr
-		exec "\$@"
-	EOT
     chmod +x /entrypoint.sh
     # Create a general user
     useradd --create-home user
     # Update ld
     rm -f /etc/ld.so.cache && ldconfig
-EOF
 
-# Change work user
-USER user
-RUN <<EOF
+    # Const environment
     export PATH="$PATH:/opt/python/bin/"
     export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
 
     # Install requirements
-    python3 -m pip install --upgrade pip setuptools wheel
-    pip3 install -r /tmp/requirements.txt
+    gosu user python3 -m pip install --upgrade pip setuptools wheel
+    gosu user pip3 install -r /tmp/requirements.txt
 
     # Install voicevox_core
-    cd /opt/voicevox_core_example/example/python
-    pip3 install .
+    cd /opt/voicevox_core_example/example/python 
+    gosu user pip3 install .
 
     # FIXME: remove first execution delay
     # try 5 times, delay 5 seconds before each execution.
@@ -228,13 +227,13 @@ RUN <<EOF
 
     # Download openjtalk dictionary
     parallel --retries 5 --delay 5 --ungroup <<- EOT
-		/opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+		gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 	EOT
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
