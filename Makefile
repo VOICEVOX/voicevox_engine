@@ -80,8 +80,8 @@ build-linux-docker-build-nvidia:
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg INFERENCE_DEVICE=nvidia
 
-.PHONY: run-linux-docker-build-env
-run-linux-docker-build-env:
+.PHONY: run-linux-docker-build-nvidia
+run-linux-docker-build-nvidia:
 	docker run --rm -it \
 		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" \
