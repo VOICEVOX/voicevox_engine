@@ -327,6 +327,7 @@ jobs:
             ${{ (matrix.device == 'nvidia' && env.CUDA_ARGS) || '' }}
             --include-data-file="download/libtorch/lib/*.dll=./"
             --include-data-file="download/core/*.bin=./"
+            --include-data-file="download/voicevox_core_example/example/python/*.dll=./"
             --include-data-file="download/core/metas.json=./"
             --include-data-dir="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/_soundfile_data=./_soundfile_data"
             --include-data-file="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/llvmlite/binding/llvmlite.dll=./"
