@@ -24,7 +24,7 @@ jobs:
           base_runtime_image: ubuntu:focal
           inference_device: cpu
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-          artifact_name: cpu
+          artifact_name: linux-cpu
           nuitka_cache_path: nuitka_cache
         - os: ubuntu-latest
           tag: build-nvidia-ubuntu20.04
@@ -34,7 +34,7 @@ jobs:
           base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
           inference_device: nvidia
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
-          artifact_name: nvidia
+          artifact_name: linux-nvidia
           nuitka_cache_path: nuitka_cache
 
     runs-on: ${{ matrix.os }}
