@@ -259,8 +259,8 @@ jobs:
         shell: bash
         env:
           CUDA_ARGS:
-            --include-data-file=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/*.dll=./
-            --include-data-file=download/cudnn/cuda/*.dll=./
+            --include-data-file="${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/*.dll=./"
+            --include-data-file="download/cudnn/cuda/*.dll=./"
         run:
           python -m nuitka
             --standalone
@@ -270,13 +270,13 @@ jobs:
             --include-package=uvicorn
             --include-package-data=pyopenjtalk
             --include-package-data=resampy
-            --include-data-file=VERSION.txt=./
+            --include-data-file="VERSION.txt=./"
             ${{ (matrix.device == 'nvidia' && env.CUDA_ARGS) || '' }}
-            --include-data-file=download/libtorch/lib/*.dll=./
-            --include-data-file=download/core/*.bin=./
-            --include-data-file=download/core/metas.json=./
-            --include-data-dir=C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/_soundfile_data=./_soundfile_data
-            --include-data-file=C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/llvmlite/binding/llvmlite.dll=./
+            --include-data-file="download/libtorch/lib/*.dll=./"
+            --include-data-file="download/core/*.bin=./"
+            --include-data-file="download/core/metas.json=./"
+            --include-data-dir="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/_soundfile_data=./_soundfile_data"
+            --include-data-file="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/llvmlite/binding/llvmlite.dll=./"
             --msvc=14.2
             --follow-imports
             --no-prefer-source-code
