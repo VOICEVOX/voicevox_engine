@@ -218,7 +218,7 @@ RUN <<EOF
     gosu user pip3 install -r /tmp/requirements.txt
 
     # Install voicevox_core
-    cd /opt/voicevox_core_example/example/python 
+    cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
 
     # FIXME: remove first execution delay
@@ -236,3 +236,79 @@ CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+
+# Binary build environment (common to CPU, GPU)
+FROM runtime-env AS build-env
+
+# Install ccache for Nuitka cache
+# chrpath: required for nuitka build; 'RPATH' settings in used shared
+RUN <<EOF
+    apt-get update
+    apt-get install -y \
+        ccache \
+        chrpath \
+        patchelf
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+# Install Python build dependencies
+ADD ./requirements-dev.txt /tmp/
+RUN <<EOF
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
+EOF
+
+# Create build script
+RUN <<EOF
+    set -eux
+
+    cat <<EOD > /build.sh
+        #!/bin/bash
+        set -eux
+
+        # chown general user c.z. mounted directory may be owned by root
+        mkdir -p /opt/voicevox_engine_build
+        chown -R user:user /opt/voicevox_engine_build
+
+        mkdir -p /home/user/.cache/Nuitka
+        chown -R user:user /home/user/.cache/Nuitka
+
+        cd /opt/voicevox_engine_build
+
+        LIBRARY_PATH="/opt/voicevox_core:\${LIBRARY_PATH:-}" \
+            gosu user /opt/python/bin/python3 -m nuitka \
+                --output-dir=/opt/voicevox_engine_build \
+                --standalone \
+                --plugin-enable=numpy \
+                --follow-import-to=numpy \
+                --follow-import-to=aiofiles \
+                --include-package=uvicorn \
+                --include-package-data=pyopenjtalk \
+                --include-package-data=resampy \
+                --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+                --include-data-file=/opt/libtorch/lib/*.so=./ \
+                --include-data-file=/opt/libtorch/lib/*.so.*=./ \
+                --include-data-file=/opt/voicevox_core/*.so=./ \
+                --include-data-file=/opt/voicevox_core/*.bin=./ \
+                --include-data-file=/opt/voicevox_core/metas.json=./ \
+                --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
+                --follow-imports \
+                --no-prefer-source-code \
+                /opt/voicevox_engine/run.py
+
+        # replace libcore.so link for libtorch to relative path
+        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/run.dist/libcore.so
+            libc10.so
+            libtorch_cuda.so
+            libtorch_cuda_cpp.so
+            libtorch_cpu.so
+            libtorch_cuda_cu.so
+            libtorch.so
+EOT
+
+        chmod +x /opt/voicevox_engine_build/run.dist/run
+EOD
+    chmod +x /build.sh
+EOF
+
+CMD [ "bash", "/build.sh" ]
