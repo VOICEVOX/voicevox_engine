@@ -271,7 +271,7 @@ jobs:
             --include-package-data=resampy
             --include-data-file=VERSION.txt=./
             ${{ (matrix.device == 'nvidia' && env.CUDA_ARGS) || '' }}
-            --include-data-file=download/libtorch/*.dll=./
+            --include-data-file=download/libtorch/lib/*.dll=./
             --include-data-file=download/core/*.bin=./
             --include-data-file=download/core/metas.json=./
             --include-data-dir=C:/hostedtoolcache/windows/Python/Lib/site-packages/_soundfile_data=./_soundfile_data
