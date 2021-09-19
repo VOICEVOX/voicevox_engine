@@ -317,6 +317,7 @@ jobs:
         run:
           python -m nuitka
             --standalone
+            --assume-yes-for-downloads
             --plugin-enable=numpy
             --follow-import-to=numpy
             --follow-import-to=aiofiles
