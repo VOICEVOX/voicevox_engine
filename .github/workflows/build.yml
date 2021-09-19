@@ -258,8 +258,8 @@ jobs:
         shell: bash
         env:
           CUDA_ARGS:
-            --include-data-file="${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/*.dll=./"
-            --include-data-file="download/cudnn/cuda/*.dll=./"
+            --include-data-file="${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/*.dll=./"
+            --include-data-file="download/cudnn/cuda/bin/*.dll=./"
         run:
           python -m nuitka
             --standalone
