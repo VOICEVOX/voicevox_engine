@@ -41,8 +41,7 @@ build-linux-docker-compile-python-env:
 		-t hiroshiba/voicevox_engine:compile-python-env \
 		--target compile-python-env \
 		--progress plain \
-		--build-arg BASE_IMAGE=ubuntu:focal \
-		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal
+		--build-arg BASE_IMAGE=ubuntu:focal
 
 .PHONY: run-linux-docker-compile-python-env
 run-linux-docker-compile-python-env:
