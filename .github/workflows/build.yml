@@ -1,8 +1,8 @@
 name: build
 on:
   push:
-    branches:
-      - master
+    # branches:
+    #   - master
   release:
     types:
       - created
@@ -220,7 +220,7 @@ jobs:
           cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
 
           cd download/voicevox_core_example/example/python
-          cmd /C makelib.bat core
+          makelib.bat core
 
           pip install .
 
