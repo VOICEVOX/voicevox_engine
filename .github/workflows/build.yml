@@ -126,7 +126,8 @@ jobs:
         include:
         - os: windows-latest
           device: cpu
-          voicevox_core_url: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
+          voicevox_core_version: '0.5.2'
+          voicevox_core_example_version: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
@@ -166,6 +167,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
@@ -190,9 +192,32 @@ jobs:
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.voicevox_core_url }}" > download/core.zip
+          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           unzip download/core.zip -d download/
           rm download/core.zip
+
+      # Install VOICEVOX Core example
+      - name: Prepare VOICEVOX Core example cache
+        uses: actions/cache@v2
+        id: voicevox-core-example-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
+          path: download/voicevox_core_example
+
+      - name: Clone VOICEVOX Core example
+        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+
+      - name: Install VOICEVOX Core Python package
+        shell: bash
+        run: |
+          cd download/voicevox_core_example
+          cp core.h example/python/
+
+          cd example/python
+          pip install .
 
       # Setup CUDA
       - name: Setup CUDA
