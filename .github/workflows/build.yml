@@ -186,15 +186,15 @@ jobs:
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ hashFiles('download/voicevox_core_url.txt') }}
-          path: download/voicevox_core
+          path: download/core
 
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.voicevox_core_url }}" > download/voicevox_core.zip
-          unzip download/voicevox_core.zip -d download/
-          rm download/voicevox_core.zip
+          curl -L "${{ matrix.voicevox_core_url }}" > download/core.zip
+          unzip download/core.zip -d download/
+          rm download/core.zip
 
       # Setup CUDA
       - name: Setup CUDA
