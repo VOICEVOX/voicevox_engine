@@ -197,7 +197,7 @@ jobs:
         if: steps.ccache-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ ccache_url }}" > download/ccache.zip
+          curl -L "${{ matrix.ccache_url }}" > download/ccache.zip
           unzip download/ccache.zip -d download/
           rm download/ccache.zip
           mv download/ccache-*/ download/ccache
