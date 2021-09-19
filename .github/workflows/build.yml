@@ -127,7 +127,7 @@ jobs:
         - os: windows-latest
           device: cpu
           voicevox_core_url: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.0.5/cudnn-11.1-windows-x64-v8.0.5.39.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
@@ -135,7 +135,7 @@ jobs:
         - os: windows-latest
           device: nvidia
           voicevox_core_url: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
-          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.0.5/cudnn-11.1-windows-x64-v8.0.5.39.zip
           artifact_name: windows-nvidia
           nuitka_cache_path: nuitka_cache
@@ -245,3 +245,52 @@ jobs:
           curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
           unzip download/libtorch.zip -d download/
           rm download/libtorch.zip
+
+      - name: Cache Nuitka (ccache, module-cache)
+        uses: actions/cache@v2
+        id: nuitka-cache
+        with:
+          path: ${{ matrix.nuitka_cache_path }}
+          key: ${{ runner.os }}-nuitka-${{ matrix.target }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-${{ matrix.target }}-
+
+      - name: Build run.py with Nuitka
+        env:
+          CUDA_ARGS:
+            --include-data-file=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/*.dll=./
+            --include-data-file=download/cudnn/cuda/*.dll=./
+        run:
+          python -m nuitka
+            --standalone
+            --plugin-enable=numpy
+            --follow-import-to=numpy
+            --follow-import-to=aiofiles
+            --include-package=uvicorn
+            --include-package-data=pyopenjtalk
+            --include-package-data=resampy
+            --include-data-file=VERSION.txt=./
+            ${{ (matrix.device == 'nvidia' && env.CUDA_ARGS) || '' }}
+            --include-data-file=download/libtorch/*.dll=./
+            --include-data-file=download/core/*.bin=./
+            --include-data-file=download/core/metas.json=./
+            --include-data-dir=C:/hostedtoolcache/windows/Python/Lib/site-packages/_soundfile_data=./_soundfile_data
+            --include-data-file=C:/hostedtoolcache/windows/Python/Lib/site-packages/llvmlite/binding/llvmlite.dll=./
+            --msvc=14.2
+            --follow-imports
+            --no-prefer-source-code
+            run.py
+
+      # FIXME: versioned name may be useful; but
+      # actions/download-artifact and dawidd6/download-artifact do not support
+      # wildcard / forward-matching yet.
+      # Currently, It is good to use static artifact name for future binary test workflow.
+      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
+      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
+      - uses: actions/upload-artifact@v2
+        # env:
+        #   VERSIONED_ARTIFACT_NAME: |
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: run.dist/
