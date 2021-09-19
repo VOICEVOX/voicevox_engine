@@ -208,15 +208,11 @@ jobs:
           echo "$HOME/download/ccache" >> $GITHUB_PATH
 
       # Download VOICEVOX Core
-      - name: Export VOICEVOX Core url to calc hash
-        shell: bash
-        run: echo "${{ matrix.voicevox_core_url }}" > download/voicevox_core_url.txt
-
       - name: Prepare VOICEVOX Core cache
         uses: actions/cache@v2
         id: voicevox-core-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-${{ hashFiles('download/voicevox_core_url.txt') }}
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
           path: download/core
 
       - name: Download VOICEVOX Core
