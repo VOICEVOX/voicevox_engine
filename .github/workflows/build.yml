@@ -96,7 +96,16 @@ jobs:
             -v "$(readlink -f "build"):/opt/voicevox_engine_build" \
             "${{ env.IMAGE_TAG }}"
 
+      # FIXME: versioned name may be useful; but
+      # actions/download-artifact and dawidd6/download-artifact do not support
+      # wildcard / forward-matching yet.
+      # Currently, It is good to use static artifact name for future binary test workflow.
+      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
+      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
       - uses: actions/upload-artifact@v2
+        # env:
+        #   VERSIONED_ARTIFACT_NAME: |
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
