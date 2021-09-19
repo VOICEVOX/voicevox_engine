@@ -127,14 +127,15 @@ jobs:
         - os: windows-latest
           device: cpu
           voicevox_core_version: '0.5.2'
-          voicevox_core_example_version: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
+          voicevox_core_example_version: '0.5.2'
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
           pip_cache_path: ~\AppData\Local\pip\Cache
         - os: windows-latest
           device: nvidia
-          voicevox_core_url: https://github.com/Hiroshiba/voicevox_core/releases/download/0.5.2/core.zip
+          voicevox_core_version: '0.5.2'
+          voicevox_core_example_version: '0.5.2'
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.0.5/cudnn-11.1-windows-x64-v8.0.5.39.zip
           artifact_name: windows-nvidia
