@@ -1,5 +1,8 @@
 import argparse
+import base64
+import io
 import sys
+import wave
 import zipfile
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
@@ -335,6 +338,56 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                         zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
 
         return FileResponse(f.name, media_type="application/zip")
+
+    @app.post(
+        "/connect_waves",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["その他"],
+        summary="複数の音声を一つに結合する",
+    )
+    def connect_waves(waves: List[str]):
+        """
+        base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
+        """
+        waves_frames = []
+        for i in range(len(waves)):
+            try:
+                wav_bin = base64.standard_b64decode(waves[i])
+            except ValueError:
+                raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
+            try:
+                with wave.open(io.BytesIO(wav_bin), mode="rb") as read_obj:
+                    if i == 0:
+                        channel = read_obj.getnchannels()
+                        samp_width = read_obj.getsampwidth()
+                        frame_rate = read_obj.getframerate()
+                    else:
+                        if (
+                            channel != read_obj.getnchannels()
+                            or samp_width != read_obj.getsampwidth()
+                            or frame_rate != read_obj.getframerate()
+                        ):
+                            raise HTTPException(
+                                status_code=422, detail="ファイル間で音声の形式が異なります"
+                            )
+                        waves_frames.append(read_obj.readframes(read_obj.getnframes()))
+            except Exception:
+                raise HTTPException(status_code=422, detail="不正なwavフォーマットです")
+        with NamedTemporaryFile(delete=False) as f:
+            with wave.open(f, mode="wb") as write_obj:
+                write_obj.setnchannels(channel)
+                write_obj.setsampwidth(samp_width)
+                write_obj.setframerate(frame_rate)
+                for i in range(len(waves_frames)):
+                    write_obj.writeframes(waves_frames[i])
+        return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
