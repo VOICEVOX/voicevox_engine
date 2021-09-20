@@ -185,6 +185,10 @@ jobs:
             sleep 5
           done
 
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
       - name: Create download directory
         shell: bash
         run: mkdir -p download/
