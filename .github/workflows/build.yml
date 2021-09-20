@@ -114,17 +114,11 @@ jobs:
   build-windows:
     strategy:
       matrix:
-        os:
-          - windows-2019
-        device:
-          - cpu
-          - nvidia
-        python:
-          - '3.7'
-        python_architecture:
-          - 'x64'
-        cuda_version:
-          - '11.1.1'
+        os: [windows-2019]
+        device: [cpu, nvidia]
+        python: [3.7]
+        python_architecture: ['x64']
+        cuda_version: ['11.1.1']
         include:
         - os: windows-2019
           device: cpu
