@@ -375,6 +375,8 @@ jobs:
         env:
           PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
         run: |
+          set -eux
+
           mkdir -p artifact
           ln -s "$(pwd)/run.dist/*" artifact/
 
