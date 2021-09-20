@@ -270,7 +270,7 @@ jobs:
         if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          mkdir -p download/cuda
+          mkdir -p download/cuda/bin
           cp "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/*.dll" download/cuda/bin/
           rm -rf "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}"
 
