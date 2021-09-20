@@ -297,7 +297,7 @@ jobs:
           key: ${{ matrix.os }}-libtorch-dll-${{ hashFiles('download/libtorch_url.txt') }}
           path: download/libtorch
 
-      - name: Download LibTorch
+      - name: Download LibTorch (CUDA, cuDNN included)
         if: steps.libtorch-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
