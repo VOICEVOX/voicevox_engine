@@ -325,6 +325,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuitka-${{ matrix.target }}-
 
+      - name: Show disk space (debug info)
+        shell: bashs
+        run: |
+          df -h
+
       - name: Build run.py with Nuitka
         shell: bash
         env:
