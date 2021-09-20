@@ -377,6 +377,10 @@ jobs:
         run: |
           set -eux
 
+          # create symlink instead of copy (Git Bash)
+          # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
+          setx MSYS winsymlinks:nativestrict
+
           mkdir -p artifact
           ln -s "$(pwd)/run.dist"/* artifact/
 
