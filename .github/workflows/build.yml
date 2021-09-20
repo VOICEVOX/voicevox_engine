@@ -195,7 +195,8 @@ jobs:
         shell: bash
         run: |
           curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
-          unzip download/libtorch.zip -d download/
+          # extract only dlls
+          unzip download/libtorch.zip libtorch/lib/*.dll -d download/
           rm download/libtorch.zip
 
       # Setup CUDA
