@@ -335,6 +335,7 @@ jobs:
             --include-data-file="download/cuda/bin/*.dll=./"
             --include-data-file="download/cudnn/cuda/bin/*.dll=./"
         run:
+          NUITKA_CACHE_DIR="${{ matrix.nuitka_cache_path }}"
           python -m nuitka
             --standalone
             --assume-yes-for-downloads
