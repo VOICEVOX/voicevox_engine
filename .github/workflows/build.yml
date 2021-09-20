@@ -279,6 +279,11 @@ jobs:
             --no-prefer-source-code
             run.py
 
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
       # Download LibTorch
       - name: Export LibTorch url to calc hash
         shell: bash
@@ -299,6 +304,8 @@ jobs:
           # extract only dlls
           unzip download/libtorch.zip libtorch/lib/*.dll -d download/
           rm download/libtorch.zip
+
+          df -h
 
       # Setup CUDA
       - name: Prepare CUDA DLL cache
@@ -328,6 +335,8 @@ jobs:
           cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
           rm -rf "${CUDA_SLASH_PATH}"
 
+          df -h
+
       # Download cuDNN
       - name: Export cuDNN url to calc hash
         if: matrix.device == 'nvidia'
@@ -349,6 +358,8 @@ jobs:
           curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
           unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn
           rm download/cudnn.zip
+
+          df -h
 
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
