@@ -305,6 +305,9 @@ jobs:
           unzip download/libtorch.zip libtorch/lib/*.dll -d download/
           rm download/libtorch.zip
 
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
           df -h
 
       # Setup CUDA
@@ -335,6 +338,9 @@ jobs:
           cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
           rm -rf "${CUDA_SLASH_PATH}"
 
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
           df -h
 
       # Download cuDNN
@@ -359,6 +365,9 @@ jobs:
           unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn
           rm download/cudnn.zip
 
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
           df -h
 
       # FIXME: versioned name may be useful; but
