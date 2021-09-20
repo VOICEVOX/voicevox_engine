@@ -381,20 +381,20 @@ jobs:
           set -eux
 
           mkdir -p artifact
-          ln -s "$(pwd)/run.dist"/* artifact/
+          ln -sf "$(pwd)/run.dist"/* artifact/
 
           if [ "${{ matrix.device }}" = "nvidia" ]; then
-            ln -s "$(pwd)/download/cuda/bin"/*.dll artifact/
-            ln -s "$(pwd)/download/cudnn/cuda/bin"/*.dll artifact/
+            ln -sv "$(pwd)/download/cuda/bin"/*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/cuda/bin"/*.dll artifact/
           fi
 
-          ln -s "$(pwd)/download/libtorch/lib"/*.dll artifact/
-          ln -s "$(pwd)/download/core"/*.bin artifact/
-          ln -s "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
-          ln -s "$(pwd)/download/core/metas.json" artifact/
+          ln -sf "$(pwd)/download/libtorch/lib"/*.dll artifact/
+          ln -sf "$(pwd)/download/core"/*.bin artifact/
+          ln -sf "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
+          ln -sf "$(pwd)/download/core/metas.json" artifact/
 
-          ln -s "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
-          ln -s "${{ env.PYTHON_SITE_PACKAGES_DIR }}/llvmlite/binding/llvmlite.dll" artifact/
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/llvmlite/binding/llvmlite.dll" artifact/
 
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
