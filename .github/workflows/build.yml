@@ -372,6 +372,8 @@ jobs:
 
       - name: Create artifact directory with symlink
         shell: bash
+        env:
+          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
         run: |
           mkdir -p artifact
           ln -s "$(pwd)/run.dist/*" artifact/
@@ -396,11 +398,7 @@ jobs:
       # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
       # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
       - uses: actions/upload-artifact@v2
-        env:
-          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
-          CUDA_FILES:
-            download/cuda/bin/*.dll
-            download/cudnn/cuda/bin/*.dll
+        # env:
         #   VERSIONED_ARTIFACT_NAME: |
         #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
         with:
