@@ -326,7 +326,7 @@ jobs:
             ${{ runner.os }}-nuitka-${{ matrix.target }}-
 
       - name: Show disk space (debug info)
-        shell: bashs
+        shell: bash
         run: |
           df -h
 
