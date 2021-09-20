@@ -291,7 +291,7 @@ jobs:
 
       - name: Prepare LibTorch cache
         uses: actions/cache@v2
-        id: libtorch-cache
+        id: libtorch-dll-cache
         with:
           key: ${{ matrix.os }}-libtorch-dll-${{ hashFiles('download/libtorch_url.txt') }}
           path: download/libtorch
@@ -352,7 +352,7 @@ jobs:
       - name: Prepare cuDNN cache
         if: matrix.device == 'nvidia'
         uses: actions/cache@v2
-        id: cudnn-cache
+        id: cudnn-dll-cache
         with:
           key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}
           path: download/cudnn
