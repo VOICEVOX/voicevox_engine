@@ -272,9 +272,12 @@ jobs:
         if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
+          set -eux
           mkdir -p download/cuda/bin
-          cp "$(echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/')"/bin/*.dll download/cuda/bin/
-          rm -rf "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}"
+
+          echo "CUDA_SLASH_PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' >> $GITHUB_ENV
+          cp "${{ env.CUDA_SLASH_PATH }}"/bin/*.dll download/cuda/bin/
+          rm -rf "${{ env.CUDA_SLASH_PATH }}"
 
       # Download cuDNN
       - name: Export cuDNN url to calc hash
