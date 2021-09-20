@@ -172,6 +172,19 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
 
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
       - name: Create download directory
         shell: bash
         run: mkdir -p download/
