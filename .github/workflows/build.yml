@@ -378,16 +378,16 @@ jobs:
           set -eux
 
           mkdir -p artifact
-          ln -s "$(pwd)/run.dist/*" artifact/
+          ln -s "$(pwd)/run.dist"/* artifact/
 
           if [ "${{ matrix.device }}" = "nvidia" ]; then
-            ln -s "$(pwd)/download/cuda/bin/*.dll" artifact/
-            ln -s "$(pwd)/download/cudnn/cuda/bin/*.dll" artifact/
+            ln -s "$(pwd)/download/cuda/bin"/*.dll artifact/
+            ln -s "$(pwd)/download/cudnn/cuda/bin"/*.dll artifact/
           fi
 
-          ln -s "$(pwd)/download/libtorch/lib/*.dll" artifact/
-          ln -s "$(pwd)/download/core/*.bin" artifact/
-          ln -s "$(pwd)/download/voicevox_core_example/example/python/*.dll" artifact/
+          ln -s "$(pwd)/download/libtorch/lib"/*.dll artifact/
+          ln -s "$(pwd)/download/core"/*.bin artifact/
+          ln -s "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
           ln -s "$(pwd)/download/core/metas.json" artifact/
 
           ln -s "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
