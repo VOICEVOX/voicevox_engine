@@ -328,7 +328,7 @@ jobs:
       - name: Build run.py with Nuitka
         shell: bash
         env:
-          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python_version }}/x64/lib/site-packages
+          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
           CUDA_ARGS:
             --include-data-file="download/cuda/bin/*.dll=./"
             --include-data-file="download/cudnn/cuda/bin/*.dll=./"
