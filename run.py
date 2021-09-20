@@ -378,6 +378,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                                 status_code=422, detail="ファイル間で音声の形式が異なります"
                             )
                         waves_frames.append(read_obj.readframes(read_obj.getnframes()))
+            except HTTPException:
+                raise
             except Exception:
                 raise HTTPException(status_code=422, detail="不正なwavフォーマットです")
         with NamedTemporaryFile(delete=False) as f:
