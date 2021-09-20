@@ -273,7 +273,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p download/cuda/bin
-          cp "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/*.dll" download/cuda/bin/
+          cp "$(echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/')/bin/*.dll" download/cuda/bin/
           rm -rf "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}"
 
       # Download cuDNN
