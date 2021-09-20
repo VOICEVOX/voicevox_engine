@@ -275,9 +275,9 @@ jobs:
           set -eux
           mkdir -p download/cuda/bin
 
-          echo "CUDA_SLASH_PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' >> $GITHUB_ENV
-          cp "${{ env.CUDA_SLASH_PATH }}"/bin/*.dll download/cuda/bin/
-          rm -rf "${{ env.CUDA_SLASH_PATH }}"
+          CUDA_SLASH_PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/'
+          cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
+          rm -rf "${CUDA_SLASH_PATH}"
 
       # Download cuDNN
       - name: Export cuDNN url to calc hash
