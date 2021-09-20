@@ -156,6 +156,7 @@ jobs:
 
       # Python install path: C:/hostedtoolcache/windows/Python
       - name: Setup Python
+        id: setup-python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
@@ -311,6 +312,7 @@ jobs:
       - name: Build run.py with Nuitka
         shell: bash
         env:
+          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python_version }}/x64/lib/site-packages
           CUDA_ARGS:
             --include-data-file="${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/*.dll=./"
             --include-data-file="download/cudnn/cuda/bin/*.dll=./"
@@ -330,8 +332,8 @@ jobs:
             --include-data-file="download/core/*.bin=./"
             --include-data-file="download/voicevox_core_example/example/python/*.dll=./"
             --include-data-file="download/core/metas.json=./"
-            --include-data-dir="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/_soundfile_data=./_soundfile_data"
-            --include-data-file="C:/hostedtoolcache/windows/python/3.7.9/x64/lib/site-packages/llvmlite/binding/llvmlite.dll=./"
+            --include-data-dir="${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data=./_soundfile_data"
+            --include-data-file="${{ env.PYTHON_SITE_PACKAGES_DIR }}/llvmlite/binding/llvmlite.dll=./"
             --msvc=14.2
             --follow-imports
             --no-prefer-source-code
