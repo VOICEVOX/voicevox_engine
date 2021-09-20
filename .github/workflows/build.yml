@@ -275,7 +275,7 @@ jobs:
           set -eux
           mkdir -p download/cuda/bin
 
-          CUDA_SLASH_PATH=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/'
+          CUDA_SLASH_PATH=$( ${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
           cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
           rm -rf "${CUDA_SLASH_PATH}"
 
