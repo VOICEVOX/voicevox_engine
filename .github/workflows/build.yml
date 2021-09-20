@@ -178,6 +178,76 @@ jobs:
         shell: bash
         run: mkdir -p download/
 
+      # Download LibTorch
+      - name: Export LibTorch url to calc hash
+        shell: bash
+        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+
+      - name: Prepare LibTorch cache
+        uses: actions/cache@v2
+        id: libtorch-cache
+        with:
+          key: ${{ matrix.os }}-libtorch-${{ hashFiles('download/libtorch_url.txt') }}
+          path: download/libtorch
+
+      - name: Download LibTorch
+        if: steps.libtorch-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          unzip download/libtorch.zip -d download/
+          rm download/libtorch.zip
+
+      # Setup CUDA
+      - name: Prepare CUDA DLL cache
+        if: matrix.device == 'nvidia'
+        uses: actions/cache@v2
+        id: cuda-dll-cache
+        with:
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        uses: Jimver/cuda-toolkit@v0.2.4
+        id: cuda-toolkit
+        with:
+          method: network
+          cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA DLL (reduce disk usage)
+        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+          mkdir -p download/cuda/bin
+
+          CUDA_SLASH_PATH=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
+          cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
+          rm -rf "${CUDA_SLASH_PATH}"
+
+      # Download cuDNN
+      - name: Export cuDNN url to calc hash
+        if: matrix.device == 'nvidia'
+        shell: bash
+        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
+
+      - name: Prepare cuDNN cache
+        if: matrix.device == 'nvidia'
+        uses: actions/cache@v2
+        id: cudnn-cache
+        with:
+          key: ${{ matrix.os }}-cudnn-${{ hashFiles('download/cudnn_url.txt') }}
+          path: download/cudnn
+
+      - name: Download cuDNN
+        if: matrix.device == 'nvidia' && steps.cudnn-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+          unzip download/cudnn.zip -d download/cudnn
+          rm download/cudnn.zip
+
       # Install Ccache
       - name: Export Ccache url to calc hash
         shell: bash
@@ -244,76 +314,6 @@ jobs:
           ./makelib.bat core
 
           pip install .
-
-      # Setup CUDA
-      - name: Prepare CUDA DLL cache
-        if: matrix.device == 'nvidia'
-        uses: actions/cache@v2
-        id: cuda-dll-cache
-        with:
-          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}
-          path: download/cuda
-
-      - name: Setup CUDA
-        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.4
-        id: cuda-toolkit
-        with:
-          method: network
-          cuda: ${{ matrix.cuda_version }}
-
-      - name: Extract CUDA DLL (reduce disk usage)
-        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -eux
-          mkdir -p download/cuda/bin
-
-          CUDA_SLASH_PATH=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
-          cp "${CUDA_SLASH_PATH}"/bin/*.dll download/cuda/bin/
-          rm -rf "${CUDA_SLASH_PATH}"
-
-      # Download cuDNN
-      - name: Export cuDNN url to calc hash
-        if: matrix.device == 'nvidia'
-        shell: bash
-        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
-
-      - name: Prepare cuDNN cache
-        if: matrix.device == 'nvidia'
-        uses: actions/cache@v2
-        id: cudnn-cache
-        with:
-          key: ${{ matrix.os }}-cudnn-${{ hashFiles('download/cudnn_url.txt') }}
-          path: download/cudnn
-
-      - name: Download cuDNN
-        if: matrix.device == 'nvidia' && steps.cudnn-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
-          unzip download/cudnn.zip -d download/cudnn
-          rm download/cudnn.zip
-
-      # Download LibTorch
-      - name: Export LibTorch url to calc hash
-        shell: bash
-        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
-
-      - name: Prepare LibTorch cache
-        uses: actions/cache@v2
-        id: libtorch-cache
-        with:
-          key: ${{ matrix.os }}-libtorch-${{ hashFiles('download/libtorch_url.txt') }}
-          path: download/libtorch
-
-      - name: Download LibTorch
-        if: steps.libtorch-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
-          unzip download/libtorch.zip -d download/
-          rm download/libtorch.zip
 
       - name: Cache Nuitka (ccache, module-cache)
         uses: actions/cache@v2
