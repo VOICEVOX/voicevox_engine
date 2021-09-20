@@ -250,13 +250,29 @@ jobs:
           pip install .
 
       # Setup CUDA
-      - name: Setup CUDA
+      - name: Prepare CUDA DLL cache
         if: matrix.device == 'nvidia'
+        uses: actions/cache@v2
+        id: cuda-dll-cache
+        with:
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         uses: Jimver/cuda-toolkit@v0.2.4
         id: cuda-toolkit
         with:
           method: network
           cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA DLL (reduce disk usage)
+        if: matrix.device == 'nvidia' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p download/cuda
+          cp "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/*.dll" download/cuda/bin/
+          rm -rf "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}"
 
       # Download cuDNN
       - name: Export cuDNN url to calc hash
