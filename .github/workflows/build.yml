@@ -374,12 +374,11 @@ jobs:
         shell: bash
         env:
           PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
-        run: |
-          set -eux
-
           # create symlink instead of copy (Git Bash)
           # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
-          setx MSYS winsymlinks:nativestrict
+          MSYS: winsymlinks:nativestrict
+        run: |
+          set -eux
 
           mkdir -p artifact
           ln -s "$(pwd)/run.dist"/* artifact/
