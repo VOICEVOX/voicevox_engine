@@ -378,7 +378,7 @@ jobs:
           mkdir -p artifact
           ln -s "$(pwd)/run.dist/*" artifact/
 
-          if [ "${{ env.device }}" = "nvidia" ]; then
+          if [ "${{ matrix.device }}" = "nvidia" ]; then
             ln -s "$(pwd)/download/cuda/bin/*.dll" artifact/
             ln -s "$(pwd)/download/cudnn/cuda/bin/*.dll" artifact/
           fi
