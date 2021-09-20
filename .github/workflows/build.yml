@@ -114,11 +114,11 @@ jobs:
   build-windows:
     strategy:
       matrix:
-        os: [windows-2019]
-        python: [3.7]
-        python_architecture: ['x64']
         include:
+        # Windows CPU
         - os: windows-2019
+          python: '3.7'
+          python_architecture: 'x64'
           voicevox_core_version: '0.5.4'
           voicevox_core_dll_name: core_cpu.dll
           voicevox_core_example_version: '0.5.4'
@@ -127,7 +127,10 @@ jobs:
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
           pip_cache_path: ~\AppData\Local\pip\Cache
+        # Windows NVIDIA GPU
         - os: windows-2019
+          python: '3.7'
+          python_architecture: 'x64'
           voicevox_core_version: '0.5.4'
           voicevox_core_dll_name: core.dll
           voicevox_core_example_version: '0.5.4'
