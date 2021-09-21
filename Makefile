@@ -48,7 +48,7 @@ build-linux-docker-ubuntu18.04:
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core_cpu \
-		--build-arg USE_GLIBC_229_WORKAROUND=1
+		--build-arg USE_GLIBC_231_WORKAROUND=1
 
 .PHONY: run-linux-docker-ubuntu18.04
 run-linux-docker-ubuntu18.04:
@@ -66,7 +66,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04 \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core \
-		--build-arg USE_GLIBC_229_WORKAROUND=1
+		--build-arg USE_GLIBC_231_WORKAROUND=1
 
 .PHONY: run-linux-docker-nvidia-ubuntu18.04
 run-linux-docker-nvidia-ubuntu18.04:

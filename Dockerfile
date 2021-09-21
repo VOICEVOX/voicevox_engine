@@ -214,15 +214,15 @@ RUN <<EOF
 EOF
 
 # Create container start shell
-ARG USE_GLIBC_229_WORKAROUND=0
+ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
 
-# Workaround: ldconfig fail to load LibTorch if glibc <= 2.29.
-# For isolating problems and simplifing script, use flag USE_GLIBC_229_WORKAROUND
+# Workaround: ldconfig fail to load LibTorch if glibc < 2.31.
+# For isolating problems and simplifing script, use flag USE_GLIBC_231_WORKAROUND
 # instead of implementing version check logic.
-if [ "${USE_GLIBC_229_WORKAROUND}" = "1" ]; then
+if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
   export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
 fi
 
