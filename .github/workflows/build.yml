@@ -15,27 +15,27 @@ jobs:
   build-linux:
     strategy:
       matrix:
+        os: [ubuntu-latest]
+        tag:
+          - build-cpu-ubuntu20.04
+          - build-nvidia-ubuntu20.04
+        voicevox_core_version: [0.6.0]
+        voicevox_core_example_version: [0.6.0]
         include:
-        - os: ubuntu-latest
-          tag: build-cpu-ubuntu20.04
+        - tag: build-cpu-ubuntu20.04
           runtime_tag: cpu-ubuntu20.04 # for cache use
           target: build-env
           base_image: ubuntu:focal
           base_runtime_image: ubuntu:focal
-          voicevox_core_version: 0.6.0
-          voicevox_core_example_version: 0.6.0
           voicevox_core_library_name: core_cpu
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
           artifact_name: linux-cpu
           nuitka_cache_path: nuitka_cache
-        - os: ubuntu-latest
-          tag: build-nvidia-ubuntu20.04
+        - tag: build-nvidia-ubuntu20.04
           runtime_tag: nvidia-ubuntu20.04 # for cache use
           target: build-env
           base_image: ubuntu:focal
           base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
-          voicevox_core_version: 0.6.0
-          voicevox_core_example_version: 0.6.0
           voicevox_core_library_name: core
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           artifact_name: linux-nvidia
