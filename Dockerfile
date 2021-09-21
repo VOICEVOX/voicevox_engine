@@ -180,7 +180,7 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
-# Clone voicevox_core
+# Clone VOICEVOX Core example
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
