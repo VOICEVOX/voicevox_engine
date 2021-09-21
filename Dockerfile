@@ -35,7 +35,7 @@ RUN <<EOF
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
         rm /opt/voicevox_core/libcore_cpu.so
     elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
-        rm /opt/voicevox_core/libcore.so
+        mv /opt/voicevox_core/libcore_cpu.so /opt/voicevox_core/libcore.so
     else
         echo "Invalid VOICEVOX CORE library name: ${VOICEVOX_CORE_LIBRARY_NAME}" >> /dev/stderr
         exit 1
@@ -177,13 +177,6 @@ RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
     cp ./core.h ./example/python/
-EOF
-
-# Workaround: replace shared object name in setup.py
-ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
-RUN <<EOF
-  set -eux
-  sed -i 's/libraries=\["core"\]/libraries=["'${VOICEVOX_CORE_LIBRARY_NAME}'"]/' /opt/voicevox_core_example/example/python/setup.py
 EOF
 
 # Add local files
