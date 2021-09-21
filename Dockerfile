@@ -217,7 +217,7 @@ RUN <<EOF
     done
 
     if [ "$EXIT_CODE" != "0" ]; then
-      exit "$EXIT_CODE"
+        exit "$EXIT_CODE"
     fi
 
     # Update ld
