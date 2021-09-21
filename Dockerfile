@@ -33,7 +33,7 @@ RUN <<EOF
     # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
     set -eux
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
-        rm /opt/voicevox_core/libcore_cpu.so
+        rm -f /opt/voicevox_core/libcore_cpu.so
     elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
         mv /opt/voicevox_core/libcore_cpu.so /opt/voicevox_core/libcore.so
     else
