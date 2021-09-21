@@ -214,19 +214,15 @@ RUN <<EOF
 EOF
 
 # Create container start shell
+ARG USE_GLIBC_229_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
 
-# Workaround: ldconfig fail to manage LibTorch if glibc <= 2.29
-GLIBC_VERSION_LINE=($(/lib/x86_64-linux-gnu/libc.so.6 | head -n1 | sed 's/.$//'))
-GLIBC_VERSION="\${GLIBC_VERSION_LINE[-1]}"
-GLIBC_VERSION_THRESHOLD="2.29"
-
-GLIBC_VERSION_OLDER=$(echo "\${GLIBC_VERSION} \${GLIBC_VERSION_THRESHOLD}" | xargs -n1 | sort --version-sort | head -n1)
-
-# if GLIBC_VERSION < 2.29
-if [ "\${GLIBC_VERSION_OLDER}" != "\${GLIBC_VERSION_THRESHOLD}" ]; then
+# Workaround: ldconfig fail to load LibTorch if glibc <= 2.29.
+# For isolating problems and simplifing script, use flag USE_GLIBC_229_WORKAROUND
+# instead of implementing version check logic.
+if [ "${USE_GLIBC_229_WORKAROUND}" = "1" ]; then
   export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
 fi
 
