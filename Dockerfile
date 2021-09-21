@@ -18,6 +18,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+# assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
 ARG VOICEVOX_CORE_VERSION=0.6.0
 RUN <<EOF
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
@@ -32,28 +33,12 @@ RUN <<EOF
     ldconfig
 EOF
 
-# Temporary workaround: modify libcore link for cpu
-# Remove CUDA/LibTorchGPU dependencies from libcore
-ARG INFERENCE_DEVICE=cpu
+# Workaround: overwrite libcore.so with libcore_cpu.so for cpu image
+ARG VOICEVOX_CORE_SO_NAME=cpu
 RUN <<EOF
-    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
-        apt-get update
-        apt-get install -y \
-            patchelf
-        apt-get clean
-        rm -rf /var/lib/apt/lists/*
-    fi
-EOF
-
-RUN <<EOF
-    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
-        cd /opt/voicevox_core/
-
-        patchelf --remove-needed libtorch_cuda.so libcore.so
-        patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
-        patchelf --remove-needed libtorch_cuda_cu.so libcore.so
-        patchelf --remove-needed libnvToolsExt.so.1 libcore.so
-        patchelf --remove-needed libcudart.so.11.0 libcore.so
+    cd /opt/voicevox_core/
+    if [ "${VOICEVOX_CORE_SO_NAME}" != "libcore.so" ]; then
+      mv "${VOICEVOX_CORE_SO_NAME}" "libcore.so"
     fi
 EOF
 
