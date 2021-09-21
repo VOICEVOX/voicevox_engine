@@ -19,8 +19,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         base_image: [ubuntu:focal]
-        voicevox_core_version: [0.5.2]
-        voicevox_core_example_version: [0.5.2]
+        voicevox_core_version: [0.6.0]
+        voicevox_core_example_version: [0.6.0]
         include:
           - tag: ''
             target: runtime-env

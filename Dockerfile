@@ -18,7 +18,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG VOICEVOX_CORE_VERSION=0.5.2
+ARG VOICEVOX_CORE_VERSION=0.6.0
 RUN <<EOF
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
@@ -181,7 +181,7 @@ COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.con
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
 # Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.6.0
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
