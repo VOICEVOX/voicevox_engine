@@ -186,15 +186,7 @@ ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
-# Create container start shell
-COPY <<EOF /entrypoint.sh
-#!/bin/bash
-cat /opt/voicevox_core/README.txt > /dev/stderr
-exec "\$@"
-EOF
-
 RUN <<EOF
-    chmod +x /entrypoint.sh
     # Create a general user
     useradd --create-home user
     # Update ld
@@ -219,6 +211,13 @@ RUN <<EOF
     # Download openjtalk dictionary
     parallel --retries 5 --delay 5 --ungroup \
       gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+EOF
+
+# Create container start shell
+COPY --chmod=775 <<EOF /entrypoint.sh
+#!/bin/bash
+cat /opt/voicevox_core/README.txt > /dev/stderr
+exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
