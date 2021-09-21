@@ -65,8 +65,6 @@ jobs:
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
-            voicevox_core_version: 0.6.0
-            voicevox_core_example_version: 0.6.0
             voicevox_core_library_name: core_cpu
             libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
             use_glibc_231_workaround: 1
@@ -74,8 +72,6 @@ jobs:
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
-            voicevox_core_version: 0.6.0
-            voicevox_core_example_version: 0.6.0
             voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
             use_glibc_231_workaround: 1
