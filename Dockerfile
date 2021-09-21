@@ -20,11 +20,24 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
 ARG VOICEVOX_CORE_VERSION=0.6.0
+ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 RUN <<EOF
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
     mv ./core /opt/voicevox_core
     rm ./core.zip
+
+    # Workaround: remove unused libcore (cpu, gpu)
+    # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
+    set -eux
+    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
+        rm /opt/voicevox_core/libcore_cpu.so
+    elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
+        rm /opt/voicevox_core/libcore.so
+    else
+        echo "Invalid VOICEVOX CORE library name: ${VOICEVOX_CORE_LIBRARY_NAME}" >> /dev/stderr
+        exit 1
+    fi
 EOF
 
 RUN <<EOF
@@ -164,8 +177,7 @@ RUN <<EOF
     cp ./core.h ./example/python/
 EOF
 
-
-# Workaround: overwrite libcore.so with libcore_cpu.so for cpu image
+# Workaround: replace shared object name in setup.py
 ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 RUN <<EOF
   set -eux
