@@ -37,25 +37,27 @@ curl -s \
 
 
 ```bash
-# "ディープラーニングは万能薬ではありません"をURLエンコード
-text="%E3%83%87%E3%82%A3%E3%83%BC%E3%83%97%E3%83%A9%E3%83%BC%E3%83%8B%E3%83%B3%E3%82%B0%E3%81%AF%E4%B8%87%E8%83%BD%E8%96%AC%E3%81%A7%E3%81%AF%E3%81%82%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93"
+# 読ませたい文章をutf-8でtext.txtに書き出す
+echo -n "ディープラーニングは万能薬ではありません" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?text=$text&speaker=1"\
+    "localhost:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
     > query.json
-    
+
 cat query.json | grep -o -E "\"kana\":\".*\""
 # 結果... "kana":"ディ'イプ/ラ'アニングワ/バンノオヤクデワアリマセ'ン"
 
-# "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン"に修正しURLエンコード
-kana="%E3%83%87%E3%82%A3%E3%82%A4%E3%83%97%E3%83%A9'%E3%82%A2%E3%83%8B%E3%83%B3%E3%82%B0%E3%83%AF%2F%E3%83%90%E3%83%B3%E3%83%8E'%E3%82%AA%E3%83%A4%E3%82%AF%E3%83%87%E3%83%AF%2F%E3%82%A2%E3%83%AA%E3%83%9E%E3%82%BB'%E3%83%B3"
-
+# "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン"と読ませたいので、
+# is_kana=trueをつけてイントネーションを取得しnewphrases.jsonに保存
+echo -n "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン" > kana.txt
 curl -s \
     -X POST \
-    "localhost:50021/accent_phrases?text=$kana&speaker=1&is_kana=true"\
+    "localhost:50021/accent_phrases?speaker=1&is_kana=true" \
+    --get --data-urlencode text@kana.txt \
     > newphrases.json
-    
+
 # query.jsonの"accent_phrases"の内容をnewphrases.jsonの内容に置き換える
 cat query.json | sed -e "s/\[{.*}\]/$(cat newphrases.json)/g" > newquery.json
 
