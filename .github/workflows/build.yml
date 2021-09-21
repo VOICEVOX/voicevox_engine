@@ -66,8 +66,8 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
-            VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
+            VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
             LIBTORCH_URL=${{ matrix.libtorch_url }}
           target: ${{ matrix.target }}
           load: true
