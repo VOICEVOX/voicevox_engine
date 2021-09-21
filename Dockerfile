@@ -187,6 +187,8 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox
 RUN <<EOF
     # Create a general user
     useradd --create-home user
+    # Update ld
+    ldconfig
 
     # Const environment
     export PATH="$PATH:/opt/python/bin/"
@@ -219,9 +221,6 @@ RUN <<EOF
     if [ "$EXIT_CODE" != "0" ]; then
         exit "$EXIT_CODE"
     fi
-
-    # Update ld
-    ldconfig
 EOF
 
 # Create container start shell
