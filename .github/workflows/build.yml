@@ -1,0 +1,111 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - created
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
+
+jobs:
+  # Build Linux binary (push only buildcache image)
+  build-linux:
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          tag: build-cpu-ubuntu20.04
+          runtime_tag: cpu-ubuntu20.04 # for cache use
+          target: build-env
+          base_image: ubuntu:focal
+          base_runtime_image: ubuntu:focal
+          inference_device: cpu
+          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+          artifact_name: linux-cpu
+          nuitka_cache_path: nuitka_cache
+        - os: ubuntu-latest
+          tag: build-nvidia-ubuntu20.04
+          runtime_tag: nvidia-ubuntu20.04 # for cache use
+          target: build-env
+          base_image: ubuntu:focal
+          base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
+          inference_device: nvidia
+          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+          artifact_name: linux-nvidia
+          nuitka_cache_path: nuitka_cache
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
+      # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+      - name: Create binary build environment with Docker
+        uses: docker/build-push-action@v2
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
+          RUNTIME_IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.runtime_tag }}${{ (matrix.runtime_tag != '' && '-') || '' }}latest
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          file: ./Dockerfile
+          build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
+            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
+            INFERENCE_DEVICE=${{ matrix.inference_device }}
+            LIBTORCH_URL=${{ matrix.libtorch_url }}
+          target: ${{ matrix.target }}
+          load: true
+          tags: |
+            ${{ env.IMAGE_TAG }}
+          cache-from: |
+            type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
+            type=registry,ref=${{ env.RUNTIME_IMAGE_TAG }}-buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
+
+      # Build run.py with Nuitka in Docker
+      - name: Cache Nuitka (ccache, module-cache)
+        uses: actions/cache@v2
+        id: nuitka-cache
+        with:
+          path: ${{ matrix.nuitka_cache_path }}
+          key: ${{ runner.os }}-nuitka-${{ matrix.target }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-${{ matrix.target }}-
+
+      - name: Build run.py with Nuitka in Docker
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
+        run: |
+          docker run --rm \
+            -v "$(readlink -f "${{ matrix.nuitka_cache_path }}"):/home/user/.cache/Nuitka" \
+            -v "$(readlink -f "build"):/opt/voicevox_engine_build" \
+            "${{ env.IMAGE_TAG }}"
+
+      # FIXME: versioned name may be useful; but
+      # actions/download-artifact and dawidd6/download-artifact do not support
+      # wildcard / forward-matching yet.
+      # Currently, It is good to use static artifact name for future binary test workflow.
+      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
+      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
+      - uses: actions/upload-artifact@v2
+        # env:
+        #   VERSIONED_ARTIFACT_NAME: |
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: build/run.dist/

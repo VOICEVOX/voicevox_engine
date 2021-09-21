@@ -163,32 +163,14 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
-        parallel
+        parallel \
+        gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# gosu: general user execution
-ARG GOSU_VERSION=1.14
-ADD "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" /usr/local/bin/gosu
-RUN <<EOF
-    chmod +x /usr/local/bin/gosu
-EOF
-
-# Create a general user
-RUN <<EOF
-    useradd --create-home user
-EOF
-
+# Copy python env
 COPY --from=compile-python-env /opt/python /opt/python
-
-# Temporary override PATH for convenience during the image building
-# ARG PATH=/opt/python/bin:$PATH
-ADD ./requirements.txt /tmp/
-RUN <<EOF
-    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools wheel
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
-EOF
 
 # Copy VOICEVOX Core shared object
 COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
@@ -198,45 +180,135 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
+# Clone voicevox_core
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
-    cd /opt/voicevox_core_example
+    cd /opt/voicevox_core_example/
     cp ./core.h ./example/python/
-    cd example/python
-    LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH" gosu user /opt/python/bin/pip3 install .
 EOF
 
+# Add local files
+# Temporary override PATH for convenience during the image building
+# ARG PATH=/opt/python/bin:$PATH
+ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./speakers.json ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
-# Download openjtalk dictionary
+# Create container start shell
+COPY <<EOF /entrypoint.sh
+#!/bin/bash
+cat /opt/voicevox_core/README.txt > /dev/stderr
+exec "\$@"
+EOF
+
 RUN <<EOF
+    chmod +x /entrypoint.sh
+    # Create a general user
+    useradd --create-home user
+    # Update ld
+    ldconfig
+
+    # Const environment
+    export PATH="$PATH:/opt/python/bin/"
+    export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
+
+    # Install requirements
+    gosu user python3 -m pip install --upgrade pip setuptools wheel
+    gosu user pip3 install -r /tmp/requirements.txt
+
+    # Install voicevox_core
+    cd /opt/voicevox_core_example/example/python
+    gosu user pip3 install .
+
     # FIXME: remove first execution delay
     # try 5 times, delay 5 seconds before each execution.
     # if all tries are failed, `docker build` will be failed.
-    parallel --retries 5 --delay 5 --ungroup <<EOT
-        gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
-EOT
+
+    # Download openjtalk dictionary
+    parallel --retries 5 --delay 5 --ungroup \
+      gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
 EOF
 
-# Update ldconfig on container start
-RUN <<EOF
-    cat <<EOT > /entrypoint.sh
-        #!/bin/bash
-        cat /opt/voicevox_core/README.txt > /dev/stderr
-
-        rm -f /etc/ld.so.cache
-        ldconfig
-
-        exec "\$@"
-EOT
-    chmod +x /entrypoint.sh
-EOF
-
-ENTRYPOINT [ "bash", "/entrypoint.sh"  ]
+ENTRYPOINT [ "/entrypoint.sh"  ]
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+
+# Binary build environment (common to CPU, GPU)
+FROM runtime-env AS build-env
+
+# Install ccache for Nuitka cache
+# chrpath: required for nuitka build; 'RPATH' settings in used shared
+RUN <<EOF
+    apt-get update
+    apt-get install -y \
+        ccache \
+        chrpath \
+        patchelf
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+# Install Python build dependencies
+ADD ./requirements-dev.txt /tmp/
+RUN <<EOF
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
+EOF
+
+# Create build script
+RUN <<EOF
+    set -eux
+
+    cat <<EOD > /build.sh
+        #!/bin/bash
+        set -eux
+
+        # chown general user c.z. mounted directory may be owned by root
+        mkdir -p /opt/voicevox_engine_build
+        chown -R user:user /opt/voicevox_engine_build
+
+        mkdir -p /home/user/.cache/Nuitka
+        chown -R user:user /home/user/.cache/Nuitka
+
+        cd /opt/voicevox_engine_build
+
+        LIBRARY_PATH="/opt/voicevox_core:\${LIBRARY_PATH:-}" \
+            gosu user /opt/python/bin/python3 -m nuitka \
+                --output-dir=/opt/voicevox_engine_build \
+                --standalone \
+                --plugin-enable=numpy \
+                --follow-import-to=numpy \
+                --follow-import-to=aiofiles \
+                --include-package=uvicorn \
+                --include-package-data=pyopenjtalk \
+                --include-package-data=resampy \
+                --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+                --include-data-file=/opt/libtorch/lib/*.so=./ \
+                --include-data-file=/opt/libtorch/lib/*.so.*=./ \
+                --include-data-file=/opt/voicevox_core/*.so=./ \
+                --include-data-file=/opt/voicevox_core/*.bin=./ \
+                --include-data-file=/opt/voicevox_core/metas.json=./ \
+                --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
+                --follow-imports \
+                --no-prefer-source-code \
+                /opt/voicevox_engine/run.py
+
+        # replace libcore.so link for libtorch to relative path
+        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/run.dist/libcore.so
+            libc10.so
+            libtorch_cuda.so
+            libtorch_cuda_cpp.so
+            libtorch_cpu.so
+            libtorch_cuda_cu.so
+            libtorch.so
+EOT
+
+        chmod +x /opt/voicevox_engine_build/run.dist/run
+EOD
+    chmod +x /build.sh
+EOF
+
+CMD [ "bash", "/build.sh" ]
