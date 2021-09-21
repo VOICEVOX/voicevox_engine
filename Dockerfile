@@ -33,15 +33,6 @@ RUN <<EOF
     ldconfig
 EOF
 
-# Workaround: overwrite libcore.so with libcore_cpu.so for cpu image
-ARG VOICEVOX_CORE_SO_NAME=cpu
-RUN <<EOF
-    cd /opt/voicevox_core/
-    if [ "${VOICEVOX_CORE_SO_NAME}" != "libcore.so" ]; then
-      mv "${VOICEVOX_CORE_SO_NAME}" "libcore.so"
-    fi
-EOF
-
 
 # Download LibTorch
 FROM ${BASE_IMAGE} AS download-libtorch-env
@@ -171,6 +162,14 @@ RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
     cp ./core.h ./example/python/
+EOF
+
+
+# Workaround: overwrite libcore.so with libcore_cpu.so for cpu image
+ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
+RUN <<EOF
+  set -eux
+  sed -i 's/libraries=\["core"\]/libraries=["'${VOICEVOX_CORE_LIBRARY_NAME}'"]/' /opt/voicevox_core_example/example/python/setup.py
 EOF
 
 # Add local files
