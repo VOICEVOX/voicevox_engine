@@ -18,7 +18,9 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG VOICEVOX_CORE_VERSION=0.5.2
+# assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
+ARG VOICEVOX_CORE_VERSION=0.6.0
+ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 RUN <<EOF
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
@@ -27,34 +29,23 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
+    # Workaround: remove unused libcore (cpu, gpu)
+    # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
+    set -eux
+    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
+        rm /opt/voicevox_core/libcore_cpu.so
+    elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
+        rm /opt/voicevox_core/libcore.so
+    else
+        echo "Invalid VOICEVOX CORE library name: ${VOICEVOX_CORE_LIBRARY_NAME}" >> /dev/stderr
+        exit 1
+    fi
+EOF
+
+RUN <<EOF
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
     rm -f /etc/ld.so.cache
     ldconfig
-EOF
-
-# Temporary workaround: modify libcore link for cpu
-# Remove CUDA/LibTorchGPU dependencies from libcore
-ARG INFERENCE_DEVICE=cpu
-RUN <<EOF
-    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
-        apt-get update
-        apt-get install -y \
-            patchelf
-        apt-get clean
-        rm -rf /var/lib/apt/lists/*
-    fi
-EOF
-
-RUN <<EOF
-    if [ "${INFERENCE_DEVICE}" = "cpu" ]; then
-        cd /opt/voicevox_core/
-
-        patchelf --remove-needed libtorch_cuda.so libcore.so
-        patchelf --remove-needed libtorch_cuda_cpp.so libcore.so
-        patchelf --remove-needed libtorch_cuda_cu.so libcore.so
-        patchelf --remove-needed libnvToolsExt.so.1 libcore.so
-        patchelf --remove-needed libcudart.so.11.0 libcore.so
-    fi
 EOF
 
 
@@ -180,12 +171,19 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
-# Clone voicevox_core
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.5.2
+# Clone VOICEVOX Core example
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.6.0
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
     cp ./core.h ./example/python/
+EOF
+
+# Workaround: replace shared object name in setup.py
+ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
+RUN <<EOF
+  set -eux
+  sed -i 's/libraries=\["core"\]/libraries=["'${VOICEVOX_CORE_LIBRARY_NAME}'"]/' /opt/voicevox_core_example/example/python/setup.py
 EOF
 
 # Add local files

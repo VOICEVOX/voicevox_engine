@@ -24,35 +24,45 @@ jobs:
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            inference_device: cpu
+            voicevox_core_version: 0.6.0
+            voicevox_core_example_version: 0.6.0
+            voicevox_core_library_name: core_cpu
             libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
           - os: ubuntu-latest
             tag: cpu
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            inference_device: cpu
+            voicevox_core_version: 0.6.0
+            voicevox_core_example_version: 0.6.0
+            voicevox_core_library_name: core_cpu
             libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
           - os: ubuntu-latest
             tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            inference_device: cpu
+            voicevox_core_version: 0.6.0
+            voicevox_core_example_version: 0.6.0
+            voicevox_core_library_name: core_cpu
             libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
           - os: ubuntu-latest
             tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
-            inference_device: nvidia
+            voicevox_core_version: 0.6.0
+            voicevox_core_example_version: 0.6.0
+            voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           - os: ubuntu-latest
             tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
-            inference_device: nvidia
+            voicevox_core_version: 0.6.0
+            voicevox_core_example_version: 0.6.0
+            voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           # Ubuntu 18.04
           - os: ubuntu-latest
@@ -102,7 +112,9 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            INFERENCE_DEVICE=${{ matrix.inference_device }}
+            VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
+            VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
+            VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             LIBTORCH_URL=${{ matrix.libtorch_url }}
           target: ${{ matrix.target }}
           push: true

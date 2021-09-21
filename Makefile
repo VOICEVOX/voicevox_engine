@@ -10,7 +10,7 @@ build-linux-docker-ubuntu20.04:
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
-		--build-arg INFERENCE_DEVICE=cpu
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 
 .PHONY: run-linux-docker-ubuntu20.04
 run-linux-docker-ubuntu20.04:
@@ -27,7 +27,7 @@ build-linux-docker-nvidia-ubuntu20.04:
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04 \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
-		--build-arg INFERENCE_DEVICE=nvidia
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core
 
 .PHONY: run-linux-docker-nvidia-ubuntu20.04
 run-linux-docker-nvidia-ubuntu20.04:
@@ -99,7 +99,7 @@ build-linux-docker-build:
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
-		--build-arg INFERENCE_DEVICE=cpu
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 
 .PHONY: run-linux-docker-build
 run-linux-docker-build:
@@ -118,7 +118,7 @@ build-linux-docker-build-nvidia:
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04 \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
-		--build-arg INFERENCE_DEVICE=nvidia
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core
 
 .PHONY: run-linux-docker-build-nvidia
 run-linux-docker-build-nvidia:
