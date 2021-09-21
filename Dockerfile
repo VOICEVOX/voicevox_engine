@@ -26,7 +26,9 @@ RUN <<EOF
     unzip "./core.zip"
     mv ./core /opt/voicevox_core
     rm ./core.zip
+EOF
 
+RUN <<EOF
     # Workaround: remove unused libcore (cpu, gpu)
     # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
     set -eux
