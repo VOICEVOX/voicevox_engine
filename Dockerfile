@@ -145,7 +145,6 @@ WORKDIR /opt/voicevox_engine
 # libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
-# parallel: retry download pyopenjtalk dictionary
 RUN <<EOF
     apt-get update
     apt-get install -y \
@@ -154,7 +153,6 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
-        parallel \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -189,8 +187,6 @@ ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox
 RUN <<EOF
     # Create a general user
     useradd --create-home user
-    # Update ld
-    ldconfig
 
     # Const environment
     export PATH="$PATH:/opt/python/bin/"
@@ -203,14 +199,29 @@ RUN <<EOF
     # Install voicevox_core
     cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
+EOF
 
-    # FIXME: remove first execution delay
-    # try 5 times, delay 5 seconds before each execution.
-    # if all tries are failed, `docker build` will be failed.
+# Keep layer cache above if dict download failed in local build
+RUN <<EOF
+    set -eux
 
     # Download openjtalk dictionary
-    parallel --retries 5 --delay 5 --ungroup \
-      gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    # try 5 times, sleep 5 seconds before retry
+    for i in $(seq 5); do
+        EXIT_CODE=0
+        gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+        if [ "$EXIT_CODE" = "0" ]; then
+            break
+        fi
+        sleep 5
+    done
+
+    if [ "$EXIT_CODE" != "0" ]; then
+      exit "$EXIT_CODE"
+    fi
+
+    # Update ld
+    ldconfig
 EOF
 
 # Create container start shell
