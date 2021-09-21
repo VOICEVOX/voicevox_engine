@@ -223,7 +223,7 @@ cat /opt/voicevox_core/README.txt > /dev/stderr
 # For isolating problems and simplifing script, use flag USE_GLIBC_231_WORKAROUND
 # instead of implementing version check logic.
 if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-  export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
+    export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
 fi
 
 exec "\$@"
