@@ -109,3 +109,257 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
+
+
+  build-windows:
+    strategy:
+      matrix:
+        include:
+        # Windows CPU
+        - os: windows-2019
+          python: '3.7'
+          python_architecture: 'x64'
+          voicevox_core_version: '0.6.0'
+          voicevox_core_dll_name: core_cpu.dll
+          voicevox_core_example_version: '0.6.0'
+          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
+          ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
+          artifact_name: windows-cpu
+          nuitka_cache_path: nuitka_cache
+          pip_cache_path: ~\AppData\Local\pip\Cache
+        # Windows NVIDIA GPU
+        - os: windows-2019
+          python: '3.7'
+          python_architecture: 'x64'
+          voicevox_core_version: '0.6.0'
+          voicevox_core_dll_name: core.dll
+          voicevox_core_example_version: '0.6.0'
+          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
+          ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
+          artifact_name: windows-nvidia
+          nuitka_cache_path: nuitka_cache
+          pip_cache_path: ~\AppData\Local\pip\Cache
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # Python install path: C:/hostedtoolcache/windows/Python
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.python_architecture }}
+
+      # Install Python dependencies
+      - name: Prepare Python dependencies cache
+        uses: actions/cache@v2
+        id: pip-cache
+        with:
+          path: ${{ matrix.pip_cache_path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
+
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
+      - name: Create download directory
+        shell: bash
+        run: mkdir -p download/
+
+      # Install Ccache
+      - name: Export Ccache url to calc hash
+        shell: bash
+        run: echo "${{ matrix.ccache_url }}" > download/ccache_url.txt
+
+      - name: Prepare Ccache
+        uses: actions/cache@v2
+        id: ccache-cache
+        with:
+          key: ${{ matrix.os }}-ccache-${{ hashFiles('download/ccache_url.txt') }}
+          path: download/ccache
+
+      - name: Download Ccache
+        if: steps.ccache-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "${{ matrix.ccache_url }}" > download/ccache.zip
+          unzip download/ccache.zip -d download/
+          rm download/ccache.zip
+          mv download/ccache-*/ download/ccache
+
+      - name: Install Ccache
+        shell: bash
+        run: |
+          echo "$HOME/download/ccache" >> $GITHUB_PATH
+
+      # Download LibTorch
+      # Included:
+      # - CUDA
+      # - cuDNN
+      - name: Export LibTorch url to calc hash
+        shell: bash
+        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+
+      - name: Prepare LibTorch cache
+        uses: actions/cache@v2
+        id: libtorch-dll-cache
+        with:
+          key: ${{ matrix.os }}-libtorch-dll-${{ hashFiles('download/libtorch_url.txt') }}
+          path: download/libtorch
+
+      - name: Download LibTorch (CUDA, cuDNN included)
+        if: steps.libtorch-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          # extract only dlls
+          unzip download/libtorch.zip libtorch/lib/*.dll -d download/
+          rm download/libtorch.zip
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      # Download VOICEVOX Core
+      - name: Prepare VOICEVOX Core cache
+        uses: actions/cache@v2
+        id: voicevox-core-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
+          path: download/core
+
+      - name: Download VOICEVOX Core
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          unzip download/core.zip -d download/
+          rm download/core.zip
+
+      # Install VOICEVOX Core example
+      - name: Prepare VOICEVOX Core example cache
+        uses: actions/cache@v2
+        id: voicevox-core-example-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
+          path: download/voicevox_core_example
+
+      - name: Clone VOICEVOX Core example
+        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+
+      - name: Install VOICEVOX Core Python package
+        shell: bash
+        run: |
+          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_example/example/python/core.dll
+          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
+
+          cd download/voicevox_core_example/example/python
+          ./makelib.bat core
+
+          pip install .
+
+      - name: Cache Nuitka (ccache, module-cache)
+        uses: actions/cache@v2
+        id: nuitka-cache
+        with:
+          path: ${{ matrix.nuitka_cache_path }}
+          key: ${{ runner.os }}-nuitka-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nuitka-
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      - name: Build run.py with Nuitka
+        shell: bash
+        env:
+          NUITKA_CACHE_DIR: ${{ matrix.nuitka_cache_path }}
+        run:
+          python -m nuitka
+            --standalone
+            --assume-yes-for-downloads
+            --plugin-enable=numpy
+            --follow-import-to=numpy
+            --follow-import-to=aiofiles
+            --include-package=uvicorn
+            --include-package-data=pyopenjtalk
+            --include-package-data=resampy
+            --include-data-file="VERSION.txt=./"
+            --msvc=14.2
+            --follow-imports
+            --no-prefer-source-code
+            run.py
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      - name: Create artifact directory with symlink
+        shell: bash
+        env:
+          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
+          # create symlink instead of copy (Git Bash)
+          # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
+          MSYS: winsymlinks:nativestrict
+        run: |
+          set -eux
+
+          mkdir -p artifact
+          ln -sf "$(pwd)/run.dist"/* artifact/
+
+          ln -sf "$(pwd)/download/libtorch/lib"/*.dll artifact/
+          ln -sf "$(pwd)/download/core"/*.bin artifact/
+          ln -sf "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
+          ln -sf "$(pwd)/download/core/metas.json" artifact/
+
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/llvmlite/binding/llvmlite.dll" artifact/
+
+      # FIXME: versioned name may be useful; but
+      # actions/download-artifact and dawidd6/download-artifact do not support
+      # wildcard / forward-matching yet.
+      # Currently, It is good to use static artifact name for future binary test workflow.
+      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
+      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
+      - uses: actions/upload-artifact@v2
+        # env:
+        #   VERSIONED_ARTIFACT_NAME: |
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            artifact/
