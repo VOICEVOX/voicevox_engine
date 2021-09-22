@@ -294,7 +294,6 @@ RUN <<EOF
             gosu user /opt/python/bin/python3 -m nuitka \
                 --output-dir=/opt/voicevox_engine_build \
                 --standalone \
-                --show-progress \
                 --plugin-enable=numpy \
                 --follow-import-to=numpy \
                 --follow-import-to=aiofiles \
