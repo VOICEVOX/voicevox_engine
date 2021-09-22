@@ -76,6 +76,34 @@ run-linux-docker-nvidia-ubuntu18.04:
 		hiroshiba/voicevox_engine:nvidia-ubuntu18.04-latest $(CMD)
 
 
+# VOICEVOX Core env for test
+.PHONY: build-linux-docker-download-core-env-ubuntu18.04
+build-linux-docker-download-core-env-ubuntu18.04:
+	docker buildx build . \
+		-t hiroshiba/voicevox_engine:download-core-env-ubuntu18.04 \
+		--target download-core-env \
+		--progress plain \
+		--build-arg BASE_IMAGE=ubuntu:bionic
+
+.PHONY: run-linux-docker-download-core-env-ubuntu18.04
+run-linux-docker-download-core-env-ubuntu18.04:
+	docker run --rm -it \
+		hiroshiba/voicevox_engine:download-core-env-ubuntu18.04 $(CMD)
+
+# LibTorch env for test
+.PHONY: build-linux-docker-download-libtorch-env-ubuntu18.04
+build-linux-docker-download-libtorch-env-ubuntu18.04:
+	docker buildx build . \
+		-t hiroshiba/voicevox_engine:download-libtorch-env-ubuntu18.04 \
+		--target download-libtorch-env \
+		--progress plain \
+		--build-arg BASE_IMAGE=ubuntu:bionic
+
+.PHONY: run-linux-docker-download-libtorch-env-ubuntu18.04
+run-linux-docker-download-libtorch-env-ubuntu18.04:
+	docker run --rm -it \
+		hiroshiba/voicevox_engine:download-libtorch-env-ubuntu18.04 $(CMD)
+
 # Python env for test
 .PHONY: build-linux-docker-compile-python-env
 build-linux-docker-compile-python-env:
