@@ -89,9 +89,9 @@ jobs:
         id: nuitka-cache
         with:
           path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ matrix.target }}-${{ github.sha }}
+          key: ${{ runner.os }}-nuitka-${{ matrix.tag }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-nuitka-${{ matrix.target }}-
+            ${{ runner.os }}-nuitka-${{ matrix.tag }}-
 
       - name: Build run.py with Nuitka in Docker
         env:
