@@ -145,7 +145,6 @@ WORKDIR /opt/voicevox_engine
 # libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
-# parallel: retry download pyopenjtalk dictionary
 RUN <<EOF
     apt-get update
     apt-get install -y \
@@ -154,7 +153,6 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
-        parallel \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -186,15 +184,7 @@ ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
-# Create container start shell
-COPY <<EOF /entrypoint.sh
-#!/bin/bash
-cat /opt/voicevox_core/README.txt > /dev/stderr
-exec "\$@"
-EOF
-
 RUN <<EOF
-    chmod +x /entrypoint.sh
     # Create a general user
     useradd --create-home user
     # Update ld
@@ -211,14 +201,42 @@ RUN <<EOF
     # Install voicevox_core
     cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
+EOF
 
-    # FIXME: remove first execution delay
-    # try 5 times, delay 5 seconds before each execution.
-    # if all tries are failed, `docker build` will be failed.
+# Keep layer cache above if dict download failed in local build
+RUN <<EOF
+    set -eux
 
     # Download openjtalk dictionary
-    parallel --retries 5 --delay 5 --ungroup \
-      gosu user python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()"
+    # try 5 times, sleep 5 seconds before retry
+    for i in $(seq 5); do
+        EXIT_CODE=0
+        gosu user /opt/python/bin/python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+        if [ "$EXIT_CODE" = "0" ]; then
+            break
+        fi
+        sleep 5
+    done
+
+    if [ "$EXIT_CODE" != "0" ]; then
+        exit "$EXIT_CODE"
+    fi
+EOF
+
+# Create container start shell
+ARG USE_GLIBC_231_WORKAROUND=0
+COPY --chmod=775 <<EOF /entrypoint.sh
+#!/bin/bash
+cat /opt/voicevox_core/README.txt > /dev/stderr
+
+# Workaround: ldconfig fail to load LibTorch if glibc < 2.31.
+# For isolating problems and simplifing script, use flag USE_GLIBC_231_WORKAROUND
+# instead of implementing version check logic.
+if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+    export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
+fi
+
+exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]

@@ -24,9 +24,12 @@ jobs:
           - cpu-ubuntu20.04
           - nvidia
           - nvidia-ubuntu20.04
+          - cpu-ubuntu18.04
+          - nvidia-ubuntu18.04
         voicevox_core_version: [0.6.0]
         voicevox_core_example_version: [0.6.0]
         include:
+          # Ubuntu 20.04
           - tag: ''
             target: runtime-env
             base_image: ubuntu:focal
@@ -57,6 +60,21 @@ jobs:
             base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+          # Ubuntu 18.04
+          - tag: cpu-ubuntu18.04
+            target: runtime-env
+            base_image: ubuntu:bionic
+            base_runtime_image: ubuntu:bionic
+            voicevox_core_library_name: core_cpu
+            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+            use_glibc_231_workaround: 1
+          - tag: nvidia-ubuntu18.04
+            target: runtime-nvidia-env
+            base_image: ubuntu:bionic
+            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
+            voicevox_core_library_name: core
+            libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+            use_glibc_231_workaround: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -94,6 +112,7 @@ jobs:
             VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             LIBTORCH_URL=${{ matrix.libtorch_url }}
+            USE_GLIBC_231_WORKAROUND=${{ matrix.use_glibc_231_workaround || '0' }}
           target: ${{ matrix.target }}
           push: true
           tags: |
