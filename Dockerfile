@@ -184,9 +184,16 @@ ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
+ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
     # Create a general user
     useradd --create-home user
+
+    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+        rm -f /etc/ld.so.conf.d/libtorch.conf
+    fi
+
     # Update ld
     ldconfig
 
@@ -224,7 +231,6 @@ RUN <<EOF
 EOF
 
 # Create container start shell
-ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
