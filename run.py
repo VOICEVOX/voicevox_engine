@@ -86,7 +86,7 @@ def make_synthesis_engine(
     )
 
     # モックで置き換える
-    return mock_synthesis_engine()
+    return mock_synthesis_engine(speakers=core.metas())
 
 
 def mora_to_text(mora: str):
