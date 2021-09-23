@@ -80,10 +80,21 @@ class ParseKanaBadRequest(BaseModel):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
+class SpeakerStyle(BaseModel):
+    """
+    スピーカーのスタイル情報
+    """
+
+    name: str = Field(title="スタイル名")
+    id: int = Field(title="スタイルID")
+
+
 class Speaker(BaseModel):
     """
     スピーカー情報
     """
 
     name: str = Field(title="名前")
-    speaker_id: int = Field(title="スピーカーID")
+    speaker_uuid: str = Field(title="スピーカーのUUID")
+    styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
+    version: str = Field("スピーカーのバージョン")
