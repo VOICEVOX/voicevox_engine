@@ -20,9 +20,7 @@ class SynthesisEngine:
         """
         super().__init__()
 
-        self.speakers = (
-            '[{"name": "dummy1", "speaker_id": 0},{"name": "dummy2", "speaker_id": 1}]'
-        )
+        self.speakers = kwargs["speakers"]
         self.default_sampling_rate = 24000
 
     def replace_phoneme_length(

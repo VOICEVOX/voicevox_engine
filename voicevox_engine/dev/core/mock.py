@@ -1,4 +1,5 @@
 from logging import getLogger
+from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
@@ -71,4 +72,23 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
 
 
 def metas() -> str:
-    return '[{"name": "dummy1", "speaker_id": 0},{"name": "dummy2", "speaker_id": 1}]'
+    mock_dir = Path(__file__).parent
+    version = (mock_dir / ".." / ".." / ".." / "VERSION.txt").read_text().strip()
+    return str(
+        [
+            {
+                "name": "dummy1",
+                "styles": [{"name": "dummy1", "id": 0}],
+                "speaker_uuid": "db447b10-0664-475e-95e6-785bca0a84eb",
+                "version": version,
+            },
+            {
+                "name": "dummy2",
+                "styles": [{"name": "dummy2", "id": 1}],
+                "speaker_uuid": "26067458-596a-482c-9a90-6c1d10d69c78",
+                "version": version,
+            },
+        ]
+    ).replace(
+        "'", '"'  # ちゃんとJSONとして認識してもらうためにシングルクォーテーションを置き換える
+    )
