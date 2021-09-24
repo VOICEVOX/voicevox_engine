@@ -1,10 +1,13 @@
 import argparse
+import base64
+import io
 import sys
 import zipfile
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
+import numpy as np
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
@@ -182,6 +185,35 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             speaker_id=speaker_id,
         )
 
+    def decode_base64_waves(waves: List[str]):
+        if len(waves) == 0:
+            raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
+
+        waves_nparray = []
+        for i in range(len(waves)):
+            try:
+                wav_bin = base64.standard_b64decode(waves[i])
+            except ValueError:
+                raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
+            try:
+                _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
+            except Exception:
+                raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
+            if i == 0:
+                sampling_rate = _sampling_rate
+                channels = _data.ndim
+            else:
+                if sampling_rate != _sampling_rate:
+                    raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
+                if channels != _data.ndim:
+                    if channels == 1:
+                        _data = _data.T[0]
+                    else:
+                        _data = np.array([_data, _data]).T
+            waves_nparray.append(_data)
+
+        return waves_nparray, sampling_rate
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -335,6 +367,35 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                         zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
 
         return FileResponse(f.name, media_type="application/zip")
+
+    @app.post(
+        "/connect_waves",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["その他"],
+        summary="base64エンコードされた複数のwavデータを一つに結合する",
+    )
+    def connect_waves(waves: List[str]):
+        """
+        base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
+        """
+        waves_nparray, sampling_rate = decode_base64_waves(waves)
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f,
+                data=np.concatenate(waves_nparray),
+                samplerate=sampling_rate,
+                format="WAV",
+            )
+
+            return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
