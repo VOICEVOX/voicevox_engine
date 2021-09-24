@@ -372,3 +372,47 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: |
             artifact/
+
+
+  upload-to-release:
+    if: github.event.release.tag_name != ''
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        artifact_name:
+          - linux-cpu
+          - linux-nvidia
+          - windows-cpu
+          - windows-nvidia
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+              p7zip-full
+
+      - name: Download and extract artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}/
+
+      - name: Rearchive and split artifact
+        run: |
+          # compressed to artifact.7z.001, artifact.7z.002, ...
+          7z -r -v1g a "${{ matrix.artifact_name }}.7z" "${{ matrix.artifact_name }}/"
+
+          # Output splitted archive list
+          ls ${{ matrix.artifact_name }}.7z.* > archives.txt
+          mv archives.txt "${{ matrix.artifact_name }}.7z.txt"
+
+      - name: Upload splitted archives to Release assets
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }} # == github.event.release.tag_name
+          file_glob: true
+          file: ${{ matrix.artifact_name }}.7z.*
