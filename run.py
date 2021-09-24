@@ -2,7 +2,6 @@ import argparse
 import base64
 import io
 import sys
-import wave
 import zipfile
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
@@ -12,6 +11,7 @@ import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from numpy import concatenate
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
@@ -356,40 +356,32 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
-        waves_frames = []
+        waves_nparray = []
         for i in range(len(waves)):
             try:
                 wav_bin = base64.standard_b64decode(waves[i])
             except ValueError:
                 raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
             try:
-                with wave.open(io.BytesIO(wav_bin), mode="rb") as read_obj:
-                    if i == 0:
-                        channel = read_obj.getnchannels()
-                        samp_width = read_obj.getsampwidth()
-                        frame_rate = read_obj.getframerate()
-                    else:
-                        if (
-                            channel != read_obj.getnchannels()
-                            or samp_width != read_obj.getsampwidth()
-                            or frame_rate != read_obj.getframerate()
-                        ):
-                            raise HTTPException(
-                                status_code=422, detail="ファイル間で音声の形式が異なります"
-                            )
-                        waves_frames.append(read_obj.readframes(read_obj.getnframes()))
-            except HTTPException:
-                raise
+                _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
             except Exception:
-                raise HTTPException(status_code=422, detail="不正なwavフォーマットです")
+                raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
+            if i == 0:
+                sampling_rate = _sampling_rate
+            else:
+                if sampling_rate != _sampling_rate:
+                    raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
+            waves_nparray.append(_data)
+
         with NamedTemporaryFile(delete=False) as f:
-            with wave.open(f, mode="wb") as write_obj:
-                write_obj.setnchannels(channel)
-                write_obj.setsampwidth(samp_width)
-                write_obj.setframerate(frame_rate)
-                for i in range(len(waves_frames)):
-                    write_obj.writeframes(waves_frames[i])
-        return FileResponse(f.name, media_type="audio/wav")
+            soundfile.write(
+                file=f,
+                data=concatenate(waves_nparray),
+                samplerate=sampling_rate,
+                format="WAV",
+            )
+
+            return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
