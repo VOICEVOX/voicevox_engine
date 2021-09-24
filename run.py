@@ -185,6 +185,35 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             speaker_id=speaker_id,
         )
 
+    def decode_base64_waves(waves: List[str]) -> List[np.array]:
+        if len(waves) == 0:
+            raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
+
+        waves_nparray = []
+        for i in range(len(waves)):
+            try:
+                wav_bin = base64.standard_b64decode(waves[i])
+            except ValueError:
+                raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
+            try:
+                _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
+            except Exception:
+                raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
+            if i == 0:
+                sampling_rate = _sampling_rate
+                channels = _data.ndim
+            else:
+                if sampling_rate != _sampling_rate:
+                    raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
+                if channels != _data.ndim:
+                    if channels == 1:
+                        _data = _data.T[0]
+                    else:
+                        _data = np.array([_data, _data]).T
+            waves_nparray.append(_data)
+
+        return waves_nparray, sampling_rate
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -356,31 +385,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
-        if len(waves) == 0:
-            raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
-
-        waves_nparray = []
-        for i in range(len(waves)):
-            try:
-                wav_bin = base64.standard_b64decode(waves[i])
-            except ValueError:
-                raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
-            try:
-                _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
-            except Exception:
-                raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
-            if i == 0:
-                sampling_rate = _sampling_rate
-                channels = _data.ndim
-            else:
-                if sampling_rate != _sampling_rate:
-                    raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
-                if channels != _data.ndim:
-                    if channels == 1:
-                        _data = _data.T[0]
-                    else:
-                        _data = np.array([_data, _data]).T
-            waves_nparray.append(_data)
+        waves_nparray, sampling_rate = decode_base64_waves(waves)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
