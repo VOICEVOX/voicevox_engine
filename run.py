@@ -350,7 +350,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             }
         },
         tags=["その他"],
-        summary="複数の音声を一つに結合する",
+        summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
     def connect_waves(waves: List[str]):
         """
