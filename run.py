@@ -356,6 +356,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
+        if len(waves) == 0:
+            raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
+
         waves_nparray = []
         for i in range(len(waves)):
             try:
