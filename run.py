@@ -7,11 +7,11 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
+import numpy as np
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-import numpy as np
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
