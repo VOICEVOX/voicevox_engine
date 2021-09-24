@@ -185,7 +185,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             speaker_id=speaker_id,
         )
 
-    def decode_base64_waves(waves: List[str]) -> List[np.array]:
+    def decode_base64_waves(waves: List[str]):
         if len(waves) == 0:
             raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
 
