@@ -11,7 +11,7 @@ import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from numpy import concatenate
+import numpy as np
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
@@ -371,15 +371,21 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
             if i == 0:
                 sampling_rate = _sampling_rate
+                channels = _data.ndim
             else:
                 if sampling_rate != _sampling_rate:
                     raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
+                if channels != _data.ndim:
+                    if channels == 1:
+                        _data = _data.T[0]
+                    else:
+                        _data = np.array([_data, _data]).T
             waves_nparray.append(_data)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f,
-                data=concatenate(waves_nparray),
+                data=np.concatenate(waves_nparray),
                 samplerate=sampling_rate,
                 format="WAV",
             )
