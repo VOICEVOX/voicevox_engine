@@ -311,15 +311,9 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        # replace libcore.so link for libtorch to relative path
-        cat <<EOT | xargs -I '%' patchelf --replace-needed "%" "./%" /opt/voicevox_engine_build/run.dist/libcore.so
-            libc10.so
-            libtorch_cuda.so
-            libtorch_cuda_cpp.so
-            libtorch_cpu.so
-            libtorch_cuda_cu.so
-            libtorch.so
-EOT
+        # set relative path in libcore.so for searching libtorch
+        LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
+        patchelf --set-rpath $(patchelf --print-rpath ${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') ${LIBCORE_SO}
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
