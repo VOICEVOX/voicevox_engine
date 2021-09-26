@@ -313,7 +313,7 @@ RUN <<EOF
 
         # set relative path in libcore.so for searching libtorch
         LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        patchelf --set-rpath $(patchelf --print-rpath ${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') ${LIBCORE_SO}
+        patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
