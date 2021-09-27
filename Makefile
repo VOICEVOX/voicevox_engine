@@ -1,9 +1,9 @@
 CMD=
 NOCACHE=
 
-ARGS=
+ARGS:=
 ifeq ($(NOCACHE),1)
-	ARGS="$(ARGS) --no-cache"
+	ARGS:=$(ARGS) --no-cache
 endif
 
 # Ubuntu 20.04
