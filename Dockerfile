@@ -96,10 +96,14 @@ RUN <<EOF
       # use relative path for symbolic link
       cd /opt/libtorch/lib
 
-      ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
-      ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
-      ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
-      ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
+      # FIXME: consider 2 files existing for each pattern
+      # if LibTorch with CUDA
+      if [ -f ./libcudart-*.so.11.0 ]; then
+        ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
+        ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
+        ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
+        ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
+      fi
 
       cd -
     fi
