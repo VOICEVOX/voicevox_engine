@@ -87,6 +87,22 @@ RUN <<EOF
 
     rm -f /etc/ld.so.cache
     ldconfig
+
+    # create soname symbolic link manually instead of ldconfig
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+      # FIXME: use build-arg
+      # libnvrtc-builtins-07fb3db5.so.11.1 => libnvrtc-builtins.so.11.1
+
+      # use relative path for symbolic link
+      cd /opt/libtorch/lib
+
+      ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
+      ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
+      ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
+      ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
+
+      cd -
+    fi
 EOF
 
 
