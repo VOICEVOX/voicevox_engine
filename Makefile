@@ -25,7 +25,7 @@ build-linux-docker-nvidia-ubuntu20.04:
 		--target runtime-nvidia-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04 \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core
 
@@ -63,7 +63,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--target runtime-nvidia-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04 \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core \
 		--build-arg USE_GLIBC_231_WORKAROUND=1
@@ -147,7 +147,7 @@ build-linux-docker-build-nvidia-ubuntu20.04:
 		--target build-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04 \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core
 
@@ -184,7 +184,7 @@ build-linux-docker-build-nvidia-ubuntu18.04:
 		--target build-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04 \
+		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
 		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=core
 

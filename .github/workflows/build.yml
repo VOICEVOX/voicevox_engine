@@ -36,7 +36,7 @@ jobs:
           runtime_tag: nvidia-ubuntu18.04 # for cache use
           target: build-env
           base_image: ubuntu:bionic
-          base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
+          base_runtime_image: ubuntu:bionic
           voicevox_core_library_name: core
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           use_glibc_231_workaround: 1
