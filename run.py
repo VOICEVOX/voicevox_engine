@@ -408,8 +408,11 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             media_type="application/json",
         )
 
-    return app
+    @app.get("/licenses.json", tags=["その他"])
+    def licenses_json() -> str:
+        return FileResponse(root_dir / "licenses.json", media_type="application/json")
 
+    return app
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
