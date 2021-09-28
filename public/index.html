@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+.license details {
+  background-color: #EEEEEE;
+}
+</style>
+
+<script>
+  window.onload = () => {
+    const licensesDom = document.querySelector('.licenses');
+
+    fetch('licenses.json').then((response) => {
+      if (! response.ok) {
+        throw Error(`Failed to fetch licenses: ${response.statusText}`);
+      }
+      return response.json();
+    }).then((licenses) => {
+      for (const license of licenses) {
+        const licenseDom = document.createElement('div');
+        licenseDom.classList.add('license');
+
+        const licenseHeadingDom = document.createElement('h3');
+        const licenseHeadingText = license.name + (license.version ? (' ' + license.version) : '');
+        licenseHeadingDom.innerText = licenseHeadingText;
+        licenseDom.appendChild(licenseHeadingDom);
+
+        const licenseDetailDom = document.createElement('details');
+
+        const licenseDetailSummaryDom = document.createElement('summary');
+        const licenseDetailSumamryText = license.license ?? 'License';
+        licenseDetailSummaryDom.innerText = licenseDetailSumamryText;
+        licenseDetailDom.appendChild(licenseDetailSummaryDom);
+
+        const licenseDetailContentDom = document.createElement('pre');
+        licenseDetailContentDom.innerText = license.text;
+        licenseDetailDom.appendChild(licenseDetailContentDom);
+
+        licenseDom.appendChild(licenseDetailDom);
+
+        licensesDom.appendChild(licenseDom);
+      }
+    }).catch((error) => {
+      licensesDom.parentNode.removeChild(licensesDom);
+      console.error(error);
+    });
+  };
+</script>
+
+<h1>VOICEVOX ENGINE</h1>
+
+<ul>
+  <li><a href="docs">API Document</a>
+</ul>
+
+<section class="licenses">
+  <h2>Licenses</h2>
+</section>
