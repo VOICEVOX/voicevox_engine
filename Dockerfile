@@ -72,10 +72,41 @@ RUN <<EOF
     rm ./libtorch.zip
 EOF
 
+ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
-    echo "/opt/libtorch/lib" > /etc/ld.so.conf.d/libtorch.conf
+    set -eux
+
+    LIBTORCH_PATH="/opt/libtorch/lib"
+
+    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+      LIBTORCH_PATH=""
+    fi
+
+    echo "${LIBTORCH_PATH}" > /etc/ld.so.conf.d/libtorch.conf
+
     rm -f /etc/ld.so.cache
     ldconfig
+
+    # create soname symbolic link manually instead of ldconfig
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+      # FIXME: use build-arg
+      # libnvrtc-builtins-07fb3db5.so.11.1 => libnvrtc-builtins.so.11.1
+
+      # use relative path for symbolic link
+      cd /opt/libtorch/lib
+
+      # FIXME: consider 2 files existing for each pattern
+      # if LibTorch with CUDA
+      if [ -f ./libcudart-*.so.11.0 ]; then
+        ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
+        ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
+        ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
+        ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
+      fi
+
+      cd -
+    fi
 EOF
 
 
@@ -185,15 +216,9 @@ ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
 
-ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
     # Create a general user
     useradd --create-home user
-
-    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-        rm -f /etc/ld.so.conf.d/libtorch.conf
-    fi
 
     # Update ld
     ldconfig
@@ -237,6 +262,7 @@ RUN <<EOF
 EOF
 
 # Create container start shell
+ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
