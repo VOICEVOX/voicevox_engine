@@ -17,3 +17,5 @@ venv/
 
 /build
 /cache
+
+/licenses.json
