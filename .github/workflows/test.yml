@@ -50,11 +50,16 @@ jobs:
 
       - run: pytest
 
-      - name: "Check licenses: Python dependencies"
+      - name: "Check licenses"
         shell: bash
         run: |
           python -m venv venv
-          source venv/bin/activate
+
+          if [ -d "venv/Scripts" ]; then
+            source venv/Scripts/activate
+          else
+            source venv/bin/activate
+          fi
 
           pip install -r requirements-dev.txt
           python generate_licenses.py
