@@ -72,10 +72,41 @@ RUN <<EOF
     rm ./libtorch.zip
 EOF
 
+ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
-    echo "/opt/libtorch/lib" > /etc/ld.so.conf.d/libtorch.conf
+    set -eux
+
+    LIBTORCH_PATH="/opt/libtorch/lib"
+
+    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+      LIBTORCH_PATH=""
+    fi
+
+    echo "${LIBTORCH_PATH}" > /etc/ld.so.conf.d/libtorch.conf
+
     rm -f /etc/ld.so.cache
     ldconfig
+
+    # create soname symbolic link manually instead of ldconfig
+    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
+      # FIXME: use build-arg
+      # libnvrtc-builtins-07fb3db5.so.11.1 => libnvrtc-builtins.so.11.1
+
+      # use relative path for symbolic link
+      cd /opt/libtorch/lib
+
+      # FIXME: consider 2 files existing for each pattern
+      # if LibTorch with CUDA
+      if [ -f ./libcudart-*.so.11.0 ]; then
+        ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
+        ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
+        ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
+        ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
+      fi
+
+      cd -
+    fi
 EOF
 
 
@@ -182,23 +213,18 @@ EOF
 # ARG PATH=/opt/python/bin:$PATH
 ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./docs /opt/voicevox_engine/docs
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
 
-ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
     # Create a general user
     useradd --create-home user
-
-    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-        rm -f /etc/ld.so.conf.d/libtorch.conf
-    fi
 
     # Update ld
     ldconfig
 
     # Const environment
-    export PATH="$PATH:/opt/python/bin/"
+    export PATH="/home/user/.local/bin:/opt/python/bin:$PATH"
     export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
 
     # Install requirements
@@ -208,6 +234,11 @@ RUN <<EOF
     # Install voicevox_core
     cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
+
+    # Generate licenses.json
+    cd /opt/voicevox_engine
+    gosu user pip3 install pip-licenses
+    gosu user python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
 EOF
 
 # Keep layer cache above if dict download failed in local build
@@ -231,6 +262,7 @@ RUN <<EOF
 EOF
 
 # Create container start shell
+ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
@@ -301,6 +333,7 @@ RUN <<EOF
                 --include-package-data=pyopenjtalk \
                 --include-package-data=resampy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+                --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/libtorch/lib/*.so=./ \
                 --include-data-file=/opt/libtorch/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \

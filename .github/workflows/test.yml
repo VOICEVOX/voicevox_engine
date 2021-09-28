@@ -33,9 +33,9 @@ jobs:
         id: pip-cache
         with:
           path: ${{ matrix.path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-test.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-test.txt', '**/requirements-dev.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-test.txt') }}
+            ${{ runner.os }}-pip-
 
       - name: Install libraries for ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -49,3 +49,17 @@ jobs:
       - run: pysen run lint
 
       - run: pytest
+
+      - name: Check licenses
+        shell: bash
+        run: |
+          python -m venv venv
+
+          if [ -d "venv/Scripts" ]; then
+            source venv/Scripts/activate
+          else
+            source venv/bin/activate
+          fi
+
+          pip install -r requirements-dev.txt
+          python generate_licenses.py > /dev/null

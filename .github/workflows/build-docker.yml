@@ -51,13 +51,13 @@ jobs:
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
             voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
             voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
           # Ubuntu 18.04
@@ -71,7 +71,7 @@ jobs:
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
-            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
+            base_runtime_image: nvidia/driver:460.73.01-ubuntu18.04
             voicevox_core_library_name: core
             libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
             use_glibc_231_workaround: 1
