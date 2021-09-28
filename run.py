@@ -1,7 +1,6 @@
 import argparse
 import base64
 import io
-import os
 import sys
 import zipfile
 from pathlib import Path
@@ -27,8 +26,6 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
-
-DISABLE_LICENSE_ENDPOINT = os.environ.get("DISABLE_LICENSE_ENDPOINT", "")
 
 
 def make_synthesis_engine(
@@ -410,17 +407,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             content=engine.speakers,
             media_type="application/json",
         )
-
-    @app.get("/", tags=["その他"])
-    def index() -> str:
-        return FileResponse(root_dir / "public/index.html", media_type="text/html")
-
-    @app.get("/licenses.json", tags=["その他"])
-    def licenses_json() -> str:
-        if DISABLE_LICENSE_ENDPOINT == "1":
-            return Response("[]", status_code=403, media_type="application/json")
-
-        return FileResponse(root_dir / "licenses.json", media_type="application/json")
 
     return app
 
