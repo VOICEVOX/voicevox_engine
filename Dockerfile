@@ -182,7 +182,8 @@ EOF
 # ARG PATH=/opt/python/bin:$PATH
 ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./run.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
+ADD ./docs /opt/voicevox_engine/docs
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt ./LICENSE ./LGPL_LICENSE /opt/voicevox_engine/
 
 ARG USE_GLIBC_231_WORKAROUND=0
 RUN <<EOF
@@ -198,7 +199,7 @@ RUN <<EOF
     ldconfig
 
     # Const environment
-    export PATH="$PATH:/opt/python/bin/"
+    export PATH="/home/user/.local/bin:/opt/python/bin:$PATH"
     export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
 
     # Install requirements
@@ -208,6 +209,13 @@ RUN <<EOF
     # Install voicevox_core
     cd /opt/voicevox_core_example/example/python
     gosu user pip3 install .
+
+    # Generate licenses.json
+    cd /opt/voicevox_engine
+    gosu user pip3 install pip-licenses
+    gosu user python3 generate_licenses.py -o /home/user/licenses.json
+
+    mv /home/user/licenses.json /opt/voicevox_engine/
 EOF
 
 # Keep layer cache above if dict download failed in local build
@@ -301,6 +309,7 @@ RUN <<EOF
                 --include-package-data=pyopenjtalk \
                 --include-package-data=resampy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+                --include-data-file=/opt/voicevox_engine/licenses.json=./engine_licenses.json \
                 --include-data-file=/opt/libtorch/lib/*.so=./ \
                 --include-data-file=/opt/libtorch/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \
