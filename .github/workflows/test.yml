@@ -62,4 +62,4 @@ jobs:
           fi
 
           pip install -r requirements-dev.txt
-          python generate_licenses.py
+          python generate_licenses.py > /dev/null
