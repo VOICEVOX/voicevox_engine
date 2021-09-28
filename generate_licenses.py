@@ -105,6 +105,7 @@ for license_json in licenses_json:
         license=license_json["License"],
         text=license_json["LicenseText"],
     )
+    # FIXME: assert license type
     if license.text == "UNKNOWN":
         if license.name.lower() == "core" and license.version == "0.0.0":
             continue

@@ -49,3 +49,6 @@ jobs:
       - run: pysen run lint
 
       - run: pytest
+
+      - name: Check licenses: Python dependencies
+        run: python generate_licenses.py
