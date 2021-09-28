@@ -41,9 +41,7 @@ licenses.append(
         name="NAIST Japanese Dictionary",
         version=None,
         license="Modified BSD license",
-        text=Path(
-            "docs/licenses//open_jtalk/mecab-naist-jdic/COPYING"
-        ).read_text(),
+        text=Path("docs/licenses//open_jtalk/mecab-naist-jdic/COPYING").read_text(),
     )
 )
 with urllib.request.urlopen(
@@ -137,7 +135,7 @@ for license_json in licenses_json:
                 license.text = res.read().decode()
         else:
             # ライセンスがpypiに無い
-            raise Exception(f'No License info provided for {license.name}')
+            raise Exception(f"No License info provided for {license.name}")
     licenses.append(license)
 
 # cuda
@@ -163,7 +161,9 @@ licenses.append(
         name="cuDNN",
         version="7.6.5",
         license=None,
-        text=Path("docs/licenses/cuda/NVIDIA_SLA_cuDNN_Support.txt").read_text(encoding="utf8"),
+        text=Path("docs/licenses/cuda/NVIDIA_SLA_cuDNN_Support.txt").read_text(
+            encoding="utf8"
+        ),
     )
 )
 
