@@ -298,6 +298,10 @@ jobs:
 
           pip install .
 
+      - name: Generate licenses.json
+        shell: bash
+        run: python generate_licenses.py > licenses.json
+
       - name: Cache Nuitka (ccache, module-cache)
         uses: actions/cache@v2
         id: nuitka-cache
@@ -327,6 +331,7 @@ jobs:
             --include-package-data=pyopenjtalk
             --include-package-data=resampy
             --include-data-file="VERSION.txt=./"
+            --include-data-file="licenses.json=./"
             --msvc=14.2
             --follow-imports
             --no-prefer-source-code
