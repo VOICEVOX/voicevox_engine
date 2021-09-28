@@ -19,12 +19,13 @@ class License:
 licenses: List[License] = []
 
 # openjtalk
+# https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
 licenses.append(
     License(
         name="Open JTalk",
         version="1.11",
         license="Modified BSD license",
-        text=Path("/path/to/open_jtalk/COPYING").read_text(),
+        text=Path("docs/licenses/open_jtalk/COPYING").read_text(),
     )
 )
 licenses.append(
@@ -32,7 +33,7 @@ licenses.append(
         name="MeCab",
         version=None,
         license="Modified BSD license",
-        text=Path("/path/to/open_jtalk/mecab/COPYING").read_text(),
+        text=Path("docs/licenses/open_jtalk/mecab/COPYING").read_text(),
     )
 )
 licenses.append(
@@ -41,7 +42,7 @@ licenses.append(
         version=None,
         license="Modified BSD license",
         text=Path(
-            "/path/to/open_jtalk/mecab-naist-jdic/COPYING"
+            "docs/licenses//open_jtalk/mecab-naist-jdic/COPYING"
         ).read_text(),
     )
 )
@@ -72,14 +73,18 @@ with urllib.request.urlopen(
     )
 
 # Python
-licenses.append(
-    License(
-        name="Python",
-        version="3.7.11",
-        license="Python Software Foundation License",
-        text=Path("downloaded/Python 3.7.11.txt").read_text(encoding="utf8"),
+python_version = "3.7.12"
+with urllib.request.urlopen(
+    f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
+) as res:
+    licenses.append(
+        License(
+            name="Python",
+            version=python_version,
+            license="Python Software Foundation License",
+            text=res.read().decode(),
+        )
     )
-)
 
 # pip
 licenses_json = json.loads(
@@ -133,66 +138,38 @@ for license_json in licenses_json:
                 license.text = res.read().decode()
         else:
             # ライセンスがpypiに無い
-            raise Exception(license.name)
+            raise Exception(f'No License info provided for {license.name}')
     licenses.append(license)
 
-
-# npm
-npm_custom_path = (
-    Path("/patu/to/voicevox").expanduser().joinpath("license-custom.json")
-)
-npm_custom_path.write_text(
-    '{ "name": "", "version": "", "description": "", "licenses": "", "copyright": "",'
-    '"licenseFile": "none", "licenseText": "none", "licenseModified": "no" }'
-)
-licenses_json = json.loads(
-    subprocess.run(
-        "license-checker "
-        "--production "
-        "--excludePrivatePackages "
-        "--json "
-        "--customPath license-custom.json",
-        shell=True,
-        capture_output=True,
-        check=True,
-        cwd=Path("/patu/to/voicevox").expanduser(),
-    ).stdout.decode()
-)
-npm_custom_path.unlink()
-for license_json in licenses_json.values():
-    assert "licenseFile" in license_json
-    licenses.append(
-        License(
-            name=license_json["name"],
-            version=license_json["version"],
-            license=license_json["licenses"],
-            text=license_json["licenseText"],
-        )
-    )
-
 # cuda
+# license text from CUDA 11.1.1
+# https://developer.nvidia.com/cuda-11.1.1-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal
+# https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda_11.4.2_471.41_win10.exe
+# cuda_11.1.1_456.81_win10.exe (cuda_documentation/Doc/EULA.txt)
 licenses.append(
     License(
         name="CUDA Toolkit",
         version="11.1.1",
         license=None,
-        text=Path("downloaded/CUDA Toolkit v11.1.1.txt").read_text(encoding="utf8"),
+        text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
     )
 )
+# cudnn
+# license text from cuDNN v7.6.5 (November 18th, 2019), for CUDA 10.2, cuDNN Library for Windows 10
+# https://developer.nvidia.com/rdp/cudnn-archive
+# https://developer.nvidia.com/compute/machine-learning/cudnn/secure/7.6.5.32/Production/10.2_20191118/cudnn-10.2-windows10-x64-v7.6.5.32.zip
+# cudnn-10.2-windows10-x64-v7.6.5.32.zip (cuda/NVIDIA_SLA_cuDNN_Support.txt)
 licenses.append(
     License(
         name="cuDNN",
         version="7.6.5",
         license=None,
-        text=Path("downloaded/NVIDIA cuDNN.txt").read_text(encoding="utf8"),
+        text=Path("docs/licenses/cuda/NVIDIA_SLA_cuDNN_Support.txt").read_text(encoding="utf8"),
     )
 )
 
 # dump
 json.dump(
     [asdict(license) for license in licenses],
-    Path("/patu/to/voicevox")
-    .expanduser()
-    .joinpath("public/licenses.json")
-    .open("w"),
+    Path("licenses.json").open("w"),
 )
