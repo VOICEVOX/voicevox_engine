@@ -94,8 +94,7 @@ licenses_json = json.loads(
         "--format=json "
         "--with-urls "
         "--with-license-file "
-        "--no-license-path "
-        "--ignore-packages each-cpp-forwarder",
+        "--no-license-path ",
         shell=True,
         capture_output=True,
         check=True,
