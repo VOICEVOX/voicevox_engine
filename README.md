@@ -136,6 +136,8 @@ Build Tools for Visual Studio 2019 が必要です。
 ```bash
 pip install -r requirements-dev.txt
 
+python generate_licenses.py > licenses.json
+
 python -m nuitka \
     --standalone \
     --plugin-enable=numpy \
@@ -145,6 +147,7 @@ python -m nuitka \
     --include-package-data=pyopenjtalk \
     --include-package-data=resampy \
     --include-data-file=VERSION.txt=./ \
+    --include-data-file=licenses.json=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
