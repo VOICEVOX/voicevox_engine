@@ -143,6 +143,10 @@ class SynthesisEngine:
     def replace_mora_pitch(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
+        # numpy.concatenateが空リストだとエラーを返すのでチェック
+        if len(accent_phrases) == 0:
+            return []
+            
         # phoneme
         flatten_moras = to_flatten_moras(accent_phrases)
 
