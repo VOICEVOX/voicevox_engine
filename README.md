@@ -11,11 +11,12 @@ VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://
 ### HTTP リクエストで音声合成するサンプルコード
 
 ```bash
-text="ABCDEFG"
+echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?text=$text&speaker=1"\
+    "localhost:50021/audio_query?speaker=1"\
+    --get --data-urlencode text@text.txt \
     > query.json
 
 curl -s \
@@ -26,15 +27,15 @@ curl -s \
     > audio.wav
 ```
 
-### 読み方をAquesTalk記法で取得・修正するサンプルコード
-`/audio_query`のレスポンスにはエンジンが判断した読み方がAquesTalkライクな記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
+### 読み方を AquesTalk 記法で取得・修正するサンプルコード
+
+`/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk ライクな記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
 
-* 全てのカナはカタカナで記述される
-* アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
-* カナの手前に`_`を入れるとそのカナは無声化される
-* アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
-
+- 全てのカナはカタカナで記述される
+- アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
+- カナの手前に`_`を入れるとそのカナは無声化される
+- アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
