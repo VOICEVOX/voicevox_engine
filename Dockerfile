@@ -30,7 +30,7 @@ EOF
 
 RUN <<EOF
     # Workaround: remove unused libcore (cpu, gpu)
-    # Prevent error: $(/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link)
+    # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
     set -eux
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
         rm -f /opt/voicevox_core/libcore_cpu.so
@@ -47,6 +47,7 @@ RUN <<EOF
     rm -f /etc/ld.so.cache
     ldconfig
 EOF
+
 
 # Download LibTorch
 FROM ${BASE_IMAGE} AS download-libtorch-env
@@ -77,7 +78,7 @@ RUN <<EOF
 
     LIBTORCH_PATH="/opt/libtorch/lib"
 
-    # prevent nuitka build error caused by corrupted $(ldconfig -p) outputs
+    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
     if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
       LIBTORCH_PATH=""
     fi
@@ -107,6 +108,7 @@ RUN <<EOF
       cd -
     fi
 EOF
+
 
 # Compile Python (version locked)
 FROM ${BASE_IMAGE} AS compile-python-env
@@ -163,6 +165,7 @@ EOF
 #     rm -f /etc/ld.so.cache
 #     ldconfig
 # EOF
+
 
 # Runtime
 FROM ${BASE_RUNTIME_IMAGE} AS runtime-env
@@ -260,7 +263,7 @@ EOF
 
 # Create container start shell
 ARG USE_GLIBC_231_WORKAROUND=0
-COPY --chmod=775 /entrypoint.sh <<EOF
+COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 cat /opt/voicevox_core/README.txt > /dev/stderr
 
@@ -274,7 +277,7 @@ fi
 exec "\$@"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh"  ]
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
