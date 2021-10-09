@@ -72,7 +72,10 @@ def make_synthesis_engine(
         )
 
     if voicelib_dir is None:
-        voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
+        if voicevox_dir is not None:
+            voicelib_dir = voicevox_dir
+        else:
+            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
 
