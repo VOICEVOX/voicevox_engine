@@ -145,6 +145,7 @@ python -m nuitka \
     --follow-import-to=numpy \
     --follow-import-to=aiofiles \
     --include-package=uvicorn \
+    --include-package=anyio \
     --include-package-data=pyopenjtalk \
     --include-package-data=resampy \
     --include-data-file=VERSION.txt=./ \
