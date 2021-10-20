@@ -48,7 +48,14 @@ jobs:
 
       - run: pysen run lint
 
-      - run: pytest
+      - name: Run pytest and get coverage
+        run: |
+          coverage run --omit=test/* -m pytest
+
+      - name: Submit coverage to Coveralls
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
       - name: Check licenses
         shell: bash
