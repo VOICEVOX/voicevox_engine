@@ -1,5 +1,15 @@
 # VOICEVOX ENGINE
 
+[![build](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build.yml)
+[![releases](https://img.shields.io/github/v/release/Hiroshiba/voicevox_engine)](https://github.com/Hiroshiba/voicevox_engine/releases)
+
+[![test](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Hiroshiba/voicevox_engine/badge.svg?branch=master)](https://coveralls.io/github/Hiroshiba/voicevox_engine?branch=master)
+
+[![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
+[![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
+
+
 [VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
