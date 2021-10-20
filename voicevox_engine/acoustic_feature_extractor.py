@@ -19,6 +19,7 @@ class SamplingData:
     rate : float
         レート
     """
+
     array: numpy.ndarray  # shape: (N, ?)
     rate: float
 
@@ -60,6 +61,7 @@ class BasePhoneme(object):
     space_phoneme : str
         読点に値する音素
     """
+
     phoneme_list: Sequence[str]
     num_phoneme: int
     space_phoneme: str
@@ -210,6 +212,7 @@ class JvsPhoneme(BasePhoneme):
     space_phoneme : str
         読点に値する音素
     """
+
     phoneme_list = (
         "pau",
         "I",
@@ -288,6 +291,7 @@ class OjtPhoneme(BasePhoneme):
     space_phoneme : str
         読点に値する音素
     """
+
     phoneme_list = (
         "pau",
         "A",
