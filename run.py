@@ -262,10 +262,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                     selected_preset = copy.deepcopy(preset)
                     break
             else:
-                raise HTTPException(
-                    status_code=422, detail="該当するプリセットIDが見つかりません"
-                )
-            accent_phrases = create_accent_phrases(text, speaker_id=selected_preset.style_id)
+                raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
+            accent_phrases = create_accent_phrases(
+                text, speaker_id=selected_preset.style_id
+            )
             return AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=selected_preset.speedScale,
