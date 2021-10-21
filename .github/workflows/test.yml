@@ -67,7 +67,7 @@ jobs:
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
         uses: actions/github-script@v5.0.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
             const fs = require('fs')
             const baseReport = fs.readFileSync('report.txt', 'utf8').toString().split('\n')
