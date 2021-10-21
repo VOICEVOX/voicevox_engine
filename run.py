@@ -1,7 +1,7 @@
 import argparse
 import base64
-import copy
 import io
+import os
 import sys
 import zipfile
 from pathlib import Path
@@ -112,34 +112,42 @@ def mora_to_text(mora: str):
 def load_presets():
     """
     プリセットのYAMLファイルを読み込む
-
-    Returns
-    -------
-    ret: List[Preset]
-        読み込んだプリセットのリスト
     """
-    ret = []
+    global presets
+    global last_modified_time
+    PRESET_FILE_NAME = "presets.yaml"
+    _presets = []
+
+    # 設定ファイルのタイムスタンプを確認
     try:
-        with open("presets.yaml", encoding="utf-8") as f:
+        _last_modified_time = os.path.getmtime(PRESET_FILE_NAME)
+        if _last_modified_time == last_modified_time:
+            return
+    except OSError:
+        return
+
+    try:
+        with open(PRESET_FILE_NAME, encoding="utf-8") as f:
             obj = yaml.safe_load(f)
             if obj is None:
                 raise FileNotFoundError
     except FileNotFoundError:
-        return []
+        return
 
     for preset in obj:
         try:
-            ret.append(Preset(**preset))
+            _presets.append(Preset(**preset))
         except ValidationError:
             print("プリセットの設定ファイルにミスがあります。", file=sys.stderr)
-            raise
+            return
 
     # idが一意か確認
-    assert len([preset.id for preset in ret]) == len(
-        {preset.id for preset in ret}
+    assert len([preset.id for preset in _presets]) == len(
+        {preset.id for preset in _presets}
     ), "プリセットのidに重複があります"
 
-    return ret
+    presets = _presets
+    last_modified_time = _last_modified_time
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -260,46 +268,72 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, preset_id: Optional[int] = None):
+    def audio_query(text: str, speaker: int):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        if preset_id is not None:
-            for preset in presets:
-                if preset.id == preset_id:
-                    selected_preset = copy.deepcopy(preset)
-                    break
-            else:
-                raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
-            accent_phrases = create_accent_phrases(
-                text, speaker_id=selected_preset.style_id
-            )
-            return AudioQuery(
-                accent_phrases=accent_phrases,
-                speedScale=selected_preset.speedScale,
-                pitchScale=selected_preset.pitchScale,
-                intonationScale=selected_preset.intonationScale,
-                volumeScale=selected_preset.volumeScale,
-                prePhonemeLength=selected_preset.prePhonemeLength,
-                postPhonemeLength=selected_preset.postPhonemeLength,
-                outputSamplingRate=default_sampling_rate,
-                outputStereo=False,
-                kana=create_kana(accent_phrases),
-            )
+        accent_phrases = create_accent_phrases(text, speaker_id=speaker)
+        return AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=1,
+            pitchScale=0,
+            intonationScale=1,
+            volumeScale=1,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
+            kana=create_kana(accent_phrases),
+        )
+
+    @app.post(
+        "/audio_query_from_preset",
+        response_model=AudioQuery,
+        tags=["クエリ作成"],
+        summary="音声合成用のクエリをプリセットを用いて作成する",
+    )
+    def audio_query_from_preset(text: str, preset_id: int):
+        """
+        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        """
+        load_presets()
+        for preset in presets:
+            if preset.id == preset_id:
+                selected_preset = preset
+                break
         else:
-            accent_phrases = create_accent_phrases(text, speaker_id=speaker)
-            return AudioQuery(
-                accent_phrases=accent_phrases,
-                speedScale=1,
-                pitchScale=0,
-                intonationScale=1,
-                volumeScale=1,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-                outputSamplingRate=default_sampling_rate,
-                outputStereo=False,
-                kana=create_kana(accent_phrases),
+            raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
+
+        if not 0.5 <= selected_preset.speedScale <= 2:
+            raise HTTPException(status_code=422, detail="プリセットのspeedScaleが無効な値です")
+        elif not -0.15 <= selected_preset.pitchScale <= 0.15:
+            raise HTTPException(status_code=422, detail="プリセットのpitchScaleが無効な値です")
+        elif not 0 <= selected_preset.intonationScale <= 2:
+            raise HTTPException(status_code=422, detail="プリセットのintonationScaleが無効な値です")
+        elif not 0 <= selected_preset.volumeScale <= 2:
+            raise HTTPException(status_code=422, detail="プリセットのvolumeScaleが無効な値です")
+        elif not 0 <= selected_preset.prePhonemeLength <= 1.5:
+            raise HTTPException(status_code=422, detail="プリセットのprePhonemeLengthが無効な値です")
+        elif not 0 <= selected_preset.postPhonemeLength <= 1.5:
+            raise HTTPException(
+                status_code=422, detail="プリセットのpostPhonemeLengthが無効な値です"
             )
+
+        accent_phrases = create_accent_phrases(
+            text, speaker_id=selected_preset.style_id
+        )
+        return AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=selected_preset.speedScale,
+            pitchScale=selected_preset.pitchScale,
+            intonationScale=selected_preset.intonationScale,
+            volumeScale=selected_preset.volumeScale,
+            prePhonemeLength=selected_preset.prePhonemeLength,
+            postPhonemeLength=selected_preset.postPhonemeLength,
+            outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
+            kana=create_kana(accent_phrases),
+        )
 
     @app.post(
         "/accent_phrases",
@@ -460,8 +494,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
             return FileResponse(f.name, media_type="audio/wav")
 
-    @app.get("/get_presets", response_model=List[Preset], tags=["その他"])
-    def get_presets():
+    @app.get("/presets", response_model=List[Preset], tags=["その他"])
+    def ret_presets():
         """
         エンジンが保持しているプリセットの設定を返します
 
@@ -470,6 +504,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         presets: List[Preset]
             プリセットのリスト
         """
+        load_presets()
         return presets
 
     @app.get("/version", tags=["その他"])
@@ -494,7 +529,8 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
-    presets = load_presets()
+    presets = []
+    last_modified_time = 0
     uvicorn.run(
         generate_app(
             make_synthesis_engine(

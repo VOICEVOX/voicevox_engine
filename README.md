@@ -162,6 +162,19 @@ python -m nuitka \
     run.py
 ```
 
+## プリセット機能について
+
+run.exeと同じ場所に`presets.yaml`を配置します。  
+例となるファイルがありますので参照してください。
+(このファイルは動的に読み込まれます)   
+注意点として、`id`は重複してはいけません。  
+`speaker_uuid`は、`/speakers`で確認できます。  
+また、エンジンが保持しているプリセットの設定は、`/presets`で取得できます。
+
+このプリセットは、AudioQueryを取得する際に使用します。  
+`/audio_query_from_preset?preset_id=1`のようになります。   
+後は、通常と同じように`/synthesis`にAudioQueryとspeaker引数を投げて下さい。
+
 ## GitHub Actions
 
 ### Secrets
