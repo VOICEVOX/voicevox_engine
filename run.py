@@ -1,5 +1,6 @@
 import argparse
 import base64
+import copy
 import io
 import sys
 import zipfile
@@ -10,6 +11,7 @@ from typing import List, Optional
 import numpy as np
 import soundfile
 import uvicorn
+import yaml
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
@@ -22,6 +24,7 @@ from voicevox_engine.model import (
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
+    Preset,
     Speaker,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
@@ -103,6 +106,23 @@ def mora_to_text(mora: str):
         return openjtalk_mora2text[mora]
     else:
         return mora
+
+
+def load_presets():
+    ret = []
+    with open("presets.yaml") as f:
+        obj = yaml.safe_load(f)
+
+    for preset in obj:
+        # TODO: エラー時にもう少し丁寧に案内する
+        ret.append(Preset(preset))
+
+    # idが一意か確認
+    assert len([preset["id"] for preset in ret]) == len(
+        {preset["id"] for preset in ret}
+    ), "idに重複があります"
+
+    return ret
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -223,23 +243,46 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int):
+    def audio_query(text: str, speaker: int, preset_id: Optional[int] = None):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        accent_phrases = create_accent_phrases(text, speaker_id=speaker)
-        return AudioQuery(
-            accent_phrases=accent_phrases,
-            speedScale=1,
-            pitchScale=0,
-            intonationScale=1,
-            volumeScale=1,
-            prePhonemeLength=0.1,
-            postPhonemeLength=0.1,
-            outputSamplingRate=default_sampling_rate,
-            outputStereo=False,
-            kana=create_kana(accent_phrases),
-        )
+        if preset_id is not None:
+            for preset in presets:
+                if preset["id"] == preset_id:
+                    selected_preset = copy.deepcopy(preset)
+                    break
+            else:
+                raise HTTPException(
+                    status_code=422, detail="該当するプリセットIDが見つかりません"
+                )
+            accent_phrases = create_accent_phrases(text, speaker_id=selected_preset["style_id"])
+            return AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=selected_preset["speedScale"],
+                pitchScale=selected_preset["pitchScale"],
+                intonationScale=selected_preset["intonationScale"],
+                volumeScale=selected_preset["volumeScale"],
+                prePhonemeLength=selected_preset["prePhonemeLength"],
+                postPhonemeLength=selected_preset["postPhonemeLength"],
+                outputSamplingRate=default_sampling_rate,
+                outputStereo=False,
+                kana=create_kana(accent_phrases),
+            )
+        else:
+            accent_phrases = create_accent_phrases(text, speaker_id=speaker)
+            return AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=1,
+                pitchScale=0,
+                intonationScale=1,
+                volumeScale=1,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=default_sampling_rate,
+                outputStereo=False,
+                kana=create_kana(accent_phrases),
+            )
 
     @app.post(
         "/accent_phrases",
@@ -400,6 +443,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
             return FileResponse(f.name, media_type="audio/wav")
 
+    @app.get("/get_presets", response_model=List[Preset] tags=["その他"])
+    def get_presets():
+        return presets
+
     @app.get("/version", tags=["その他"])
     def version() -> str:
         return (root_dir / "VERSION.txt").read_text()
@@ -422,6 +469,7 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
+    presets = load_presets()
     uvicorn.run(
         generate_app(
             make_synthesis_engine(

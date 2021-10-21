@@ -99,10 +99,12 @@ class Speaker(BaseModel):
     styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
     version: str = Field("スピーカーのバージョン")
 
+
 class Preset(BaseModel):
     """
     プリセット情報
     """
+
     id: int = Field(title="プリセットID")
     name: str = Field(title="プリセット名")
     speaker_uuid: str = Field(title="スピーカーのUUID")
