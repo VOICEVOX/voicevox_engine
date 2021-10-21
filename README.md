@@ -4,7 +4,7 @@
 [![releases](https://img.shields.io/github/v/release/Hiroshiba/voicevox_engine)](https://github.com/Hiroshiba/voicevox_engine/releases)
 
 [![test](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Hiroshiba/voicevox_engine/badge.svg?branch=master)](https://coveralls.io/github/Hiroshiba/voicevox_engine?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Hiroshiba/voicevox_engine/badge.svg)](https://coveralls.io/github/Hiroshiba/voicevox_engine)
 
 [![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
