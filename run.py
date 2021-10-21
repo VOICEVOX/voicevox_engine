@@ -110,6 +110,14 @@ def mora_to_text(mora: str):
 
 
 def load_presets():
+    """
+    プリセットのYAMLファイルを読み込む
+
+    Returns
+    -------
+    ret: List[Preset]
+        読み込んだプリセットのリスト
+    """
     ret = []
     try:
         with open("presets.yaml", encoding="utf-8") as f:
@@ -454,6 +462,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     @app.get("/get_presets", response_model=List[Preset], tags=["その他"])
     def get_presets():
+        """
+        エンジンが保持しているプリセットの設定を返します
+
+        Returns
+        -------
+        presets: List[Preset]
+            プリセットのリスト
+        """
         return presets
 
     @app.get("/version", tags=["その他"])
