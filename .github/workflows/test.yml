@@ -92,6 +92,7 @@ jobs:
                 }
                 report += "|" + line.join("|") + "|\n"
               }
+              if (line[0] === 'TOTAL') break
             }
 
             github.rest.issues.createComment({
