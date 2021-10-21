@@ -32,6 +32,56 @@ from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
+class PresetLoader:
+    def __init__(self):
+        self.presets = []
+        self.last_modified_time = 0
+
+    def load_presets(self):
+        """
+        プリセットのYAMLファイルを読み込む
+
+        Returns
+        -------
+        err_detail: str
+            エラーの詳細な内容
+        """
+        PRESET_FILE_NAME = "presets.yaml"
+        _presets = []
+
+        # 設定ファイルのタイムスタンプを確認
+        try:
+            _last_modified_time = os.path.getmtime(PRESET_FILE_NAME)
+            if _last_modified_time == self.last_modified_time:
+                return ""
+        except OSError:
+            return ""
+
+        try:
+            with open(PRESET_FILE_NAME, encoding="utf-8") as f:
+                obj = yaml.safe_load(f)
+                if obj is None:
+                    raise FileNotFoundError
+        except FileNotFoundError:
+            return ""
+
+        for preset in obj:
+            try:
+                _presets.append(Preset(**preset))
+            except ValidationError:
+                return "プリセットの設定ファイルにミスがあります。"
+
+        # idが一意か確認
+        if len([preset.id for preset in _presets]) != len(
+            {preset.id for preset in _presets}
+        ):
+            return "プリセットのidに重複があります"
+
+        self.presets = _presets
+        self.last_modified_time = _last_modified_time
+        return ""
+
+
 def make_synthesis_engine(
     use_gpu: bool,
     voicevox_dir: Optional[Path] = None,
@@ -109,53 +159,6 @@ def mora_to_text(mora: str):
         return mora
 
 
-def load_presets():
-    """
-    プリセットのYAMLファイルを読み込む
-
-    Returns
-    -------
-    err_detail: str
-        エラーの詳細な内容
-    """
-    global presets
-    global last_modified_time
-    PRESET_FILE_NAME = "presets.yaml"
-    _presets = []
-
-    # 設定ファイルのタイムスタンプを確認
-    try:
-        _last_modified_time = os.path.getmtime(PRESET_FILE_NAME)
-        if _last_modified_time == last_modified_time:
-            return ""
-    except OSError:
-        return ""
-
-    try:
-        with open(PRESET_FILE_NAME, encoding="utf-8") as f:
-            obj = yaml.safe_load(f)
-            if obj is None:
-                raise FileNotFoundError
-    except FileNotFoundError:
-        return ""
-
-    for preset in obj:
-        try:
-            _presets.append(Preset(**preset))
-        except ValidationError:
-            return "プリセットの設定ファイルにミスがあります。"
-
-    # idが一意か確認
-    if len([preset.id for preset in _presets]) != len(
-        {preset.id for preset in _presets}
-    ):
-        return "プリセットのidに重複があります"
-
-    presets = _presets
-    last_modified_time = _last_modified_time
-    return ""
-
-
 def generate_app(engine: SynthesisEngine) -> FastAPI:
     root_dir = Path(__file__).parent
 
@@ -174,6 +177,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    preset_loader = PresetLoader()
 
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
@@ -302,10 +307,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        err_detail = load_presets()
+        err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
-        for preset in presets:
+        for preset in preset_loader.presets:
             if preset.id == preset_id:
                 selected_preset = preset
                 break
@@ -512,10 +517,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         presets: List[Preset]
             プリセットのリスト
         """
-        err_detail = load_presets()
+        err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
-        return presets
+        return preset_loader.presets
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
@@ -539,8 +544,6 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
-    presets = []
-    last_modified_time = 0
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
