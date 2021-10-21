@@ -53,9 +53,52 @@ jobs:
           coverage run --omit=test/* -m pytest
 
       - name: Submit coverage to Coveralls
+        if: matrix.os == 'ubuntu-latest'
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+      - name: Create coverage result
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        run: |
+          coverage report > report.txt
+
+      - name: Comment coverage result to Pull Requests
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
+        uses: actions/github-script@v5.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs')
+            const baseReport = fs.readFileSync('report.txt', 'utf8').toString().split('\n')
+            let report = ''
+            for (let i = 0; i < baseReport.length; i++) {
+              const line = baseReport[i].split(' ').filter(v => v)
+              if (i === 1 && line.length === 1) {
+                report += "|:---|---:|---:|---:|\n"
+              } else if (line.length === 1) {
+                continue
+              } else {
+                if (i !== 0 && line.length === 4) {
+                  const parcent = Number(line[3].replace("%", ""))
+                  let color = 'green'
+                  if (parcent < 50) {
+                    color = 'red'
+                  } else if (parcent < 90) {
+                    color = 'orange'
+                  }
+                  line[3] = `![coverage-${parcent}%](https://img.shields.io/badge/coverage-${parcent}%25-${color}.svg)`
+                }
+                report += "|" + line.join("|") + "|\n"
+              }
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Coverage Result\n\n${report}`
+            })
 
       - name: Check licenses
         shell: bash
