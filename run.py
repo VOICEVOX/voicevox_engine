@@ -112,6 +112,11 @@ def mora_to_text(mora: str):
 def load_presets():
     """
     プリセットのYAMLファイルを読み込む
+
+    Returns
+    -------
+    err_detail: str
+        エラーの詳細な内容
     """
     global presets
     global last_modified_time
@@ -122,9 +127,9 @@ def load_presets():
     try:
         _last_modified_time = os.path.getmtime(PRESET_FILE_NAME)
         if _last_modified_time == last_modified_time:
-            return
+            return ""
     except OSError:
-        return
+        return ""
 
     try:
         with open(PRESET_FILE_NAME, encoding="utf-8") as f:
@@ -132,22 +137,23 @@ def load_presets():
             if obj is None:
                 raise FileNotFoundError
     except FileNotFoundError:
-        return
+        return ""
 
     for preset in obj:
         try:
             _presets.append(Preset(**preset))
         except ValidationError:
-            print("プリセットの設定ファイルにミスがあります。", file=sys.stderr)
-            return
+            return "プリセットの設定ファイルにミスがあります。"
 
     # idが一意か確認
-    assert len([preset.id for preset in _presets]) == len(
+    if len([preset.id for preset in _presets]) != len(
         {preset.id for preset in _presets}
-    ), "プリセットのidに重複があります"
+    ):
+        return "プリセットのidに重複があります"
 
     presets = _presets
     last_modified_time = _last_modified_time
+    return ""
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -296,7 +302,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        load_presets()
+        err_detail = load_presets()
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -504,7 +512,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         presets: List[Preset]
             プリセットのリスト
         """
-        load_presets()
+        err_detail = load_presets()
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
         return presets
 
     @app.get("/version", tags=["その他"])
