@@ -14,6 +14,7 @@ import uvicorn
 import yaml
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
@@ -110,17 +111,25 @@ def mora_to_text(mora: str):
 
 def load_presets():
     ret = []
-    with open("presets.yaml") as f:
-        obj = yaml.safe_load(f)
+    try:
+        with open("presets.yaml", encoding="utf-8") as f:
+            obj = yaml.safe_load(f)
+            if obj is None:
+                raise FileNotFoundError
+    except FileNotFoundError:
+        return []
 
     for preset in obj:
-        # TODO: エラー時にもう少し丁寧に案内する
-        ret.append(Preset(preset))
+        try:
+            ret.append(Preset(**preset))
+        except ValidationError:
+            print("プリセットの設定ファイルにミスがあります。", file=sys.stderr)
+            raise
 
     # idが一意か確認
-    assert len([preset["id"] for preset in ret]) == len(
-        {preset["id"] for preset in ret}
-    ), "idに重複があります"
+    assert len([preset.id for preset in ret]) == len(
+        {preset.id for preset in ret}
+    ), "プリセットのidに重複があります"
 
     return ret
 
@@ -249,22 +258,22 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         if preset_id is not None:
             for preset in presets:
-                if preset["id"] == preset_id:
+                if preset.id == preset_id:
                     selected_preset = copy.deepcopy(preset)
                     break
             else:
                 raise HTTPException(
                     status_code=422, detail="該当するプリセットIDが見つかりません"
                 )
-            accent_phrases = create_accent_phrases(text, speaker_id=selected_preset["style_id"])
+            accent_phrases = create_accent_phrases(text, speaker_id=selected_preset.style_id)
             return AudioQuery(
                 accent_phrases=accent_phrases,
-                speedScale=selected_preset["speedScale"],
-                pitchScale=selected_preset["pitchScale"],
-                intonationScale=selected_preset["intonationScale"],
-                volumeScale=selected_preset["volumeScale"],
-                prePhonemeLength=selected_preset["prePhonemeLength"],
-                postPhonemeLength=selected_preset["postPhonemeLength"],
+                speedScale=selected_preset.speedScale,
+                pitchScale=selected_preset.pitchScale,
+                intonationScale=selected_preset.intonationScale,
+                volumeScale=selected_preset.volumeScale,
+                prePhonemeLength=selected_preset.prePhonemeLength,
+                postPhonemeLength=selected_preset.postPhonemeLength,
                 outputSamplingRate=default_sampling_rate,
                 outputStereo=False,
                 kana=create_kana(accent_phrases),
@@ -443,7 +452,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
             return FileResponse(f.name, media_type="audio/wav")
 
-    @app.get("/get_presets", response_model=List[Preset] tags=["その他"])
+    @app.get("/get_presets", response_model=List[Preset], tags=["その他"])
     def get_presets():
         return presets
 
