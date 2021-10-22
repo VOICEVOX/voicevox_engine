@@ -3,6 +3,7 @@ from unittest import TestCase
 import numpy
 
 from voicevox_engine.acoustic_feature_extractor import (
+    BasePhoneme,
     JvsPhoneme,
     OjtPhoneme,
     SamplingData,
@@ -40,6 +41,29 @@ class TestSamplingData(TestCase):
         expected_value_2d = self.array_2d[:328]
         self.assertEqual(len(result_2d), len(expected_value_2d))
         self.assertEqual(result_2d.all(), expected_value_2d.all())
+
+
+class TestBasePhoneme(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+        self.base_hello_hiho = [
+            BasePhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
+        ]
+
+    def test_repr_(self):
+        self.assertEqual(
+            self.base_hello_hiho[1].__repr__(),
+            "Phoneme(phoneme='k', start=1, end=2)"
+        )
+        self.assertEqual(
+            self.base_hello_hiho[10].__repr__(),
+            "Phoneme(phoneme='pau', start=10, end=11)"
+        )
+
+    def test_convert(self):
+        with self.assertRaises(NotImplementedError) as err:
+            BasePhoneme.convert(self.base_hello_hiho)
 
 
 class TestJvsPhoneme(TestCase):
