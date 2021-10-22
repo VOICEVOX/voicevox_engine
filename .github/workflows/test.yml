@@ -66,6 +66,7 @@ jobs:
           echo ${{ github.event.number }} > report/pr_num.txt
 
       - name: Upload coverage result
+        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v2
         with:
           name: report
