@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from run import mora_to_text
+from run import mora_to_text, PresetLoader
 
 
 class TestMoraToText(TestCase):
@@ -26,3 +26,19 @@ class TestMoraToText(TestCase):
         """変なモーラが来ても例外を投げない"""
         self.assertEqual(mora_to_text("x"), "x")
         self.assertEqual(mora_to_text(""), "")
+
+class TestPresetLoader(TestCase):
+    def test_validation(self):
+        preset_loader = PresetLoader()
+        preset_loader.PRESET_FILE_NAME = "test/presets-test-1.yaml"
+        self.assertEqual(preset_loader.load_presets(), "")
+
+    def test_validation_2(self):
+        preset_loader = PresetLoader()
+        preset_loader.PRESET_FILE_NAME = "test/presets-test-2.yaml"
+        self.assertEqual(preset_loader.load_presets(), "プリセットの設定ファイルにミスがあります")
+
+    def test_preset_id(self):
+        preset_loader = PresetLoader()
+        preset_loader.PRESET_FILE_NAME = "test/presets-test-3.yaml"
+        self.assertEqual(preset_loader.load_presets(), "プリセットのidに重複があります")

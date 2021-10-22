@@ -36,6 +36,7 @@ class PresetLoader:
     def __init__(self):
         self.presets = []
         self.last_modified_time = 0
+        self.PRESET_FILE_NAME = "presets.yaml"
 
     def load_presets(self):
         """
@@ -46,19 +47,18 @@ class PresetLoader:
         err_detail: str
             エラーの詳細な内容
         """
-        PRESET_FILE_NAME = "presets.yaml"
         _presets = []
 
         # 設定ファイルのタイムスタンプを確認
         try:
-            _last_modified_time = os.path.getmtime(PRESET_FILE_NAME)
+            _last_modified_time = os.path.getmtime(self.PRESET_FILE_NAME)
             if _last_modified_time == self.last_modified_time:
                 return ""
         except OSError:
             return ""
 
         try:
-            with open(PRESET_FILE_NAME, encoding="utf-8") as f:
+            with open(self.PRESET_FILE_NAME, encoding="utf-8") as f:
                 obj = yaml.safe_load(f)
                 if obj is None:
                     raise FileNotFoundError
@@ -69,7 +69,7 @@ class PresetLoader:
             try:
                 _presets.append(Preset(**preset))
             except ValidationError:
-                return "プリセットの設定ファイルにミスがあります。"
+                return "プリセットの設定ファイルにミスがあります"
 
         # idが一意か確認
         if len([preset.id for preset in _presets]) != len(
