@@ -53,16 +53,15 @@ class TestBasePhoneme(TestCase):
 
     def test_repr_(self):
         self.assertEqual(
-            self.base_hello_hiho[1].__repr__(),
-            "Phoneme(phoneme='k', start=1, end=2)"
+            self.base_hello_hiho[1].__repr__(), "Phoneme(phoneme='k', start=1, end=2)"
         )
         self.assertEqual(
             self.base_hello_hiho[10].__repr__(),
-            "Phoneme(phoneme='pau', start=10, end=11)"
+            "Phoneme(phoneme='pau', start=10, end=11)",
         )
 
     def test_convert(self):
-        with self.assertRaises(NotImplementedError) as err:
+        with self.assertRaises(NotImplementedError):
             BasePhoneme.convert(self.base_hello_hiho)
 
 
