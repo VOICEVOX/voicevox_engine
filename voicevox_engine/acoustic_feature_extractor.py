@@ -154,7 +154,7 @@ class BasePhoneme(object):
     @classmethod
     @abstractmethod
     def convert(cls, phonemes: List["BasePhoneme"]) -> List["BasePhoneme"]:
-        pass
+        raise NotImplementedError
 
     @classmethod
     def load_julius_list(cls, path: Path):
