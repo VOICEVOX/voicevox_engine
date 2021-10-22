@@ -508,7 +508,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             return FileResponse(f.name, media_type="audio/wav")
 
     @app.get("/presets", response_model=List[Preset], tags=["その他"])
-    def ret_presets():
+    def get_presets():
         """
         エンジンが保持しているプリセットの設定を返します
 
