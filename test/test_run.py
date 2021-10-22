@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from run import mora_to_text, PresetLoader
+from run import PresetLoader, mora_to_text
 
 
 class TestMoraToText(TestCase):
@@ -26,6 +26,7 @@ class TestMoraToText(TestCase):
         """変なモーラが来ても例外を投げない"""
         self.assertEqual(mora_to_text("x"), "x")
         self.assertEqual(mora_to_text(""), "")
+
 
 class TestPresetLoader(TestCase):
     def test_validation(self):
