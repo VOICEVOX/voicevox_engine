@@ -44,8 +44,8 @@ class PresetLoader:
 
         Returns
         -------
-        err_detail: str
-            エラーの詳細な内容
+        ret: tuple[Preset, str]
+            プリセットとエラー文のタプル
         """
         _presets = []
 
@@ -53,9 +53,9 @@ class PresetLoader:
         try:
             _last_modified_time = os.path.getmtime(self.PRESET_FILE_NAME)
             if _last_modified_time == self.last_modified_time:
-                return ""
+                return self.presets, ""
         except OSError:
-            return ""
+            return self.presets, ""
 
         try:
             with open(self.PRESET_FILE_NAME, encoding="utf-8") as f:
@@ -63,23 +63,23 @@ class PresetLoader:
                 if obj is None:
                     raise FileNotFoundError
         except FileNotFoundError:
-            return ""
+            return self.presets, ""
 
         for preset in obj:
             try:
                 _presets.append(Preset(**preset))
             except ValidationError:
-                return "プリセットの設定ファイルにミスがあります"
+                return None, "プリセットの設定ファイルにミスがあります"
 
         # idが一意か確認
         if len([preset.id for preset in _presets]) != len(
             {preset.id for preset in _presets}
         ):
-            return "プリセットのidに重複があります"
+            return None, "プリセットのidに重複があります"
 
         self.presets = _presets
         self.last_modified_time = _last_modified_time
-        return ""
+        return self.presets, ""
 
 
 def make_synthesis_engine(
@@ -307,10 +307,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        err_detail = preset_loader.load_presets()
+        presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
-        for preset in preset_loader.presets:
+        for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
                 break
@@ -502,10 +502,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         presets: List[Preset]
             プリセットのリスト
         """
-        err_detail = preset_loader.load_presets()
+        presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
-        return preset_loader.presets
+        return presets
 
     @app.get("/version", tags=["その他"])
     def version() -> str:

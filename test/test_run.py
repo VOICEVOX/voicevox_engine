@@ -32,14 +32,20 @@ class TestPresetLoader(TestCase):
     def test_validation(self):
         preset_loader = PresetLoader()
         preset_loader.PRESET_FILE_NAME = "test/presets-test-1.yaml"
-        self.assertEqual(preset_loader.load_presets(), "")
+        presets, err_detail = preset_loader.load_presets()
+        self.assertFalse(presets is None)
+        self.assertEqual(err_detail, "")
 
     def test_validation_2(self):
         preset_loader = PresetLoader()
         preset_loader.PRESET_FILE_NAME = "test/presets-test-2.yaml"
-        self.assertEqual(preset_loader.load_presets(), "プリセットの設定ファイルにミスがあります")
+        presets, err_detail = preset_loader.load_presets()
+        self.assertTrue(presets is None)
+        self.assertEqual(err_detail, "プリセットの設定ファイルにミスがあります")
 
     def test_preset_id(self):
         preset_loader = PresetLoader()
         preset_loader.PRESET_FILE_NAME = "test/presets-test-3.yaml"
-        self.assertEqual(preset_loader.load_presets(), "プリセットのidに重複があります")
+        presets, err_detail = preset_loader.load_presets()
+        self.assertTrue(presets is None)
+        self.assertEqual(err_detail, "プリセットのidに重複があります")
