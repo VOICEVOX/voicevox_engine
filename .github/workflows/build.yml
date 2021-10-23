@@ -29,9 +29,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install OpenBLAS and LibTorch, and CCache
+      - name: Install CMake, OpenBLAS, LibTorch, and CCache
         shell: bash
-        run: brew install openblas libtorch ccache
+        run: brew install cmake openblas libtorch ccache
 
       - name: Export OpenBLAS and LibTorch path to LD_LIBRARY_PATH
         run: |
