@@ -9,11 +9,13 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
 import numpy as np
+import pyworld as pw
 import soundfile
 import uvicorn
 import yaml
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Query
 from pydantic import ValidationError
 from starlette.responses import FileResponse
 
@@ -462,6 +464,68 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                         zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
 
         return FileResponse(f.name, media_type="application/zip")
+
+    @app.post(
+        "/synthesis_morphing",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="2つの話者でモーフィングした音声を合成する",
+    )
+    def synthesis_morphing(
+        query: AudioQuery,
+        base_speaker: int,
+        target_speaker: int,
+        morph_rate: float = Query(0.0, ge=0.0, le=1.0),
+    ):
+        # WORLDに掛けるため合成はモノラルで行う
+        output_stereo = query.outputStereo
+        query.outputStereo = False
+
+        base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
+            "float"
+        )
+        target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
+            "float"
+        )
+
+        frame_period = 1.0
+        fs = query.outputSamplingRate
+        _base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
+        base_f0 = pw.stonemask(base_wave, _base_f0, base_time_axis, fs)
+        base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
+        base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
+
+        _target_f0, morph_time_axis = pw.harvest(
+            target_wave, fs, frame_period=frame_period
+        )
+        target_f0 = pw.stonemask(target_wave, _target_f0, morph_time_axis, fs)
+        target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
+
+        morph_spectrogram = [
+            [x * (1.0 - morph_rate) for x in line] for line in base_spectrogram
+        ]
+        for i in range(min(len(morph_spectrogram), len(target_spectrogram))):
+            for j in range(min(len(morph_spectrogram[i]), len(target_spectrogram[i]))):
+                morph_spectrogram[i][j] += target_spectrogram[i][j] * morph_rate
+
+        y_h = pw.synthesize(
+            base_f0, np.array(morph_spectrogram), base_aperiodicity, fs, frame_period
+        )
+
+        if output_stereo:
+            y_h = np.array([y_h, y_h]).T
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(file=f, data=y_h, samplerate=fs, format="WAV")
+
+        return FileResponse(f.name, media_type="audio/wav")
 
     @app.post(
         "/connect_waves",
