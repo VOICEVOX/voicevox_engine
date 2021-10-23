@@ -39,8 +39,7 @@ jobs:
 
       - name: Export OpenBLAS and LibTorch path to LD_LIBRARY_PATH
         run: |
-          echo "LD_LIBRARY_PATH=$(brew --prefix libtorch)/lib:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=$(brew --prefix openblas)/lib:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$(brew --prefix libtorch)/lib:$(brew --prefix openblas)/lib:${LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
 
       - name: Setup Python
         id: setup-python
