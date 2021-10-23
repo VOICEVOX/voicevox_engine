@@ -72,5 +72,5 @@ jobs:
               issue_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Coverage Result\n\n<details>\n<summary>Resultを開く</summary>\n${report}\n</details>`
+              body: `## Coverage Result\n\n<details>\n<summary>Resultを開く</summary>\n\n${report}\n</details>`
             })
