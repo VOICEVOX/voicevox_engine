@@ -67,10 +67,29 @@ jobs:
             }
 
             const issue_number = Number(fs.readFileSync('pr_num.txt'))
+            const body = `## Coverage Result\n\n<details>\n<summary>Resultを開く</summary>\n\n${report}\n</details>`
 
-            github.rest.issues.createComment({
+            let listComment = await github.rest.issues.listComment({
               issue_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Coverage Result\n\n<details>\n<summary>Resultを開く</summary>\n\n${report}\n</details>`
+            }).data
+            listComment = listComment.filter((comment) => {
+              return comment.body.includes('Coverage Result') && comment.user.login.includes('github-actions')
             })
+
+            if (listComment.length === 0) {
+              github.rest.issues.createComment({
+                issue_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              })
+            } else {
+              github.rest.issues.updateComment({
+                comment_id: listComment[0].id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              })
+            }
