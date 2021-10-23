@@ -39,8 +39,8 @@ jobs:
 
       - name: Export OpenBLAS and LibTorch path to LD_LIBRARY_PATH
         run: |
-          echo "LD_LIBRARY_PATH=$(brew --prefix libtorch)/lib:${env.LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=$(brew --prefix openblas)/lib:${env.LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$(brew --prefix libtorch)/lib:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$(brew --prefix openblas)/lib:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
 
       - name: Setup Python
         id: setup-python
@@ -103,8 +103,8 @@ jobs:
 
       - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
         run: |
-          echo "LD_LIBRARY_PATH=/download/core:${env.LD_LIBRARY_PATH:-}" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=/download/core:${env.LIBRARY_PATH:-}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/download/core:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/download/core:${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
 
       - name: Prepare VOICEVOX Core example cache
         uses: actions/cache@v2
