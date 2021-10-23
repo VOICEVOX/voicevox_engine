@@ -55,7 +55,7 @@ class PresetLoader:
             if _last_modified_time == self.last_modified_time:
                 return self.presets, ""
         except OSError:
-            return self.presets, ""
+            return None, "プリセットの設定ファイルが見つかりません"
 
         try:
             with open(self.PRESET_FILE_NAME, encoding="utf-8") as f:
@@ -63,7 +63,7 @@ class PresetLoader:
                 if obj is None:
                     raise FileNotFoundError
         except FileNotFoundError:
-            return self.presets, ""
+            return None, "プリセットの設定ファイルが空の内容です"
 
         for preset in obj:
             try:

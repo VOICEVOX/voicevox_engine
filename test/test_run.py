@@ -49,3 +49,17 @@ class TestPresetLoader(TestCase):
         presets, err_detail = preset_loader.load_presets()
         self.assertTrue(presets is None)
         self.assertEqual(err_detail, "プリセットのidに重複があります")
+
+    def test_empty_file(self):
+        preset_loader = PresetLoader()
+        preset_loader.PRESET_FILE_NAME = "test/presets-test-4.yaml"
+        presets, err_detail = preset_loader.load_presets()
+        self.assertTrue(presets is None)
+        self.assertEqual(err_detail, "プリセットの設定ファイルが空の内容です")
+
+    def test_not_exist_file(self):
+        preset_loader = PresetLoader()
+        preset_loader.PRESET_FILE_NAME = "test/presets-dummy.yaml"
+        presets, err_detail = preset_loader.load_presets()
+        self.assertTrue(presets is None)
+        self.assertEqual(err_detail, "プリセットの設定ファイルが見つかりません")
