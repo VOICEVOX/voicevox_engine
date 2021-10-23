@@ -17,11 +17,12 @@ jobs:
       matrix:
         include:
         - os: [macos-11]
-          python: ['3.7']
-          python_architecture: ['x64']
-          pip_cache_path: ['~/Library/Caches/pip']
-          voicevox_core_version: [0.7.4]
-          voicevox_core_example_version: [0.7.4]
+          python: '3.7'
+          python_architecture: 'x64'
+          voicevox_core_dll_name: core_cpu.dll
+          pip_cache_path: ~/Library/Caches/pip
+          voicevox_core_version: '0.7.4'
+          voicevox_core_example_version: '0.7.4'
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
