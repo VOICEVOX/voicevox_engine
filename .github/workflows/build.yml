@@ -139,6 +139,26 @@ jobs:
         run: |
           pip install -r requirements-dev.txt
 
+      - name: Download PyOpenJTalk dictionary
+        shell: bash
+        run: |
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
       - name: Build run.py
         run: |
           python -m nuitka \
