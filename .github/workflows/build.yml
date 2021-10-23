@@ -33,9 +33,9 @@ jobs:
       - name: Create download and build directory
         run: mkdir download build
 
-      - name: Install CMake, OpenBLAS, LibTorch, and CCache
+      - name: Install CMake, OpenBLAS, LibTorch, GCC, and CCache
         shell: bash
-        run: brew install cmake openblas libtorch ccache
+        run: brew install cmake openblas libtorch gcc ccache
 
       - name: Export OpenBLAS and LibTorch path to LD_LIBRARY_PATH
         run: |
