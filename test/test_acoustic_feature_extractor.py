@@ -64,11 +64,25 @@ class TestBasePhoneme(TestCase):
         with self.assertRaises(NotImplementedError):
             BasePhoneme.convert(self.base_hello_hiho)
 
+    def test_duration(self):
+        self.assertEqual(self.base_hello_hiho[1].duration, 1)
 
-class TestJvsPhoneme(TestCase):
+    def test_parse(self):
+        parse_str_1 = "0 1 pau"
+        parse_str_2 = "32.67543 33.48933 e"
+        parsed_base_1 = BasePhoneme.parse(parse_str_1)
+        parsed_base_2 = BasePhoneme.parse(parse_str_2)
+        self.assertEqual(parsed_base_1.phoneme, "pau")
+        self.assertEqual(parsed_base_1.start, 0.0)
+        self.assertEqual(parsed_base_1.end, 1.0)
+        self.assertEqual(parsed_base_2.phoneme, "e")
+        self.assertEqual(parsed_base_2.start, 32.68)
+        self.assertEqual(parsed_base_2.end, 33.49)
+
+
+class TestJvsPhoneme(TestBasePhoneme):
     def setUp(self):
         super().setUp()
-        self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
         base_hello_hiho = [
             JvsPhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
         ]
@@ -113,9 +127,6 @@ class TestJvsPhoneme(TestCase):
             jvs_str_hello_hiho, "0 19 25 2 23 17 7 17 36 4 0 15 17 15 25 9 11 30 3 0"
         )
 
-    def test_duration(self):
-        self.assertEqual(self.jvs_hello_hiho[1].duration, 1)
-
     def test_onehot(self):
         phoneme_id_list = [
             0,
@@ -151,21 +162,15 @@ class TestJvsPhoneme(TestCase):
         parse_str_2 = "15.32654 16.39454 a"
         parsed_jvs_1 = JvsPhoneme.parse(parse_str_1)
         parsed_jvs_2 = JvsPhoneme.parse(parse_str_2)
-        self.assertEqual(parsed_jvs_1.phoneme, "pau")
         self.assertEqual(parsed_jvs_1.phoneme_id, 0)
-        self.assertEqual(parsed_jvs_1.start, 0.0)
-        self.assertEqual(parsed_jvs_1.end, 1.0)
-        self.assertEqual(parsed_jvs_2.phoneme, "a")
         self.assertEqual(parsed_jvs_2.phoneme_id, 4)
-        self.assertEqual(parsed_jvs_2.start, 15.33)
-        self.assertEqual(parsed_jvs_2.end, 16.39)
 
     def test_julius_list(self):
         # TODO: load/saveのテストを同時にすると良さそう...?
         pass
 
 
-class TestOjtPhoneme(TestCase):
+class TestOjtPhoneme(TestBasePhoneme):
     def setUp(self):
         super().setUp()
         self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
@@ -214,9 +219,6 @@ class TestOjtPhoneme(TestCase):
             ojt_str_hello_hiho, "0 23 30 4 28 21 10 21 42 7 0 19 21 19 30 12 14 35 6 0"
         )
 
-    def test_duration(self):
-        self.assertEqual(self.ojt_hello_hiho[1].duration, 1)
-
     def test_onehot(self):
         phoneme_id_list = [
             0,
@@ -252,14 +254,8 @@ class TestOjtPhoneme(TestCase):
         parse_str_2 = "32.67543 33.48933 e"
         parsed_ojt_1 = OjtPhoneme.parse(parse_str_1)
         parsed_ojt_2 = OjtPhoneme.parse(parse_str_2)
-        self.assertEqual(parsed_ojt_1.phoneme, "pau")
         self.assertEqual(parsed_ojt_1.phoneme_id, 0)
-        self.assertEqual(parsed_ojt_1.start, 0.0)
-        self.assertEqual(parsed_ojt_1.end, 1.0)
-        self.assertEqual(parsed_ojt_2.phoneme, "e")
         self.assertEqual(parsed_ojt_2.phoneme_id, 14)
-        self.assertEqual(parsed_ojt_2.start, 32.68)
-        self.assertEqual(parsed_ojt_2.end, 33.49)
 
     def test_julius_list(self):
         # TODO: load/saveのテストを同時にすると良さそう...?
