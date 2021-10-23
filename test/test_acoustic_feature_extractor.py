@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+from typing import List, Type
 from unittest import TestCase
 
 import numpy
@@ -50,6 +53,32 @@ class TestBasePhoneme(TestCase):
         self.base_hello_hiho = [
             BasePhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
         ]
+        self.julius_str = """
+            0.00	1.00	pau
+            1.00	2.00	k
+            2.00	3.00	o
+            3.00	4.00	N
+            4.00	5.00	n
+            5.00	6.00	i
+            6.00	7.00	ch
+            7.00	8.00	i
+            8.00	9.00	w
+            9.00	10.00	a
+            10.00	11.00	pau
+            11.00	12.00	h
+            12.00	13.00	i
+            13.00	14.00	h
+            14.00	15.00	o
+            15.00	16.00	d
+            16.00	17.00	e
+            17.00	18.00	s
+            18.00	19.00	U
+            19.00	20.00	pau
+        """.replace(
+            " ", ""
+        )[
+            1:-1
+        ]  # ダブルクオーテーションx3で囲われている部分で、空白をすべて置き換え、先頭と最後の"\n"を除外する
 
     def test_repr_(self):
         self.assertEqual(
@@ -78,6 +107,19 @@ class TestBasePhoneme(TestCase):
         self.assertEqual(parsed_base_2.phoneme, "e")
         self.assertEqual(parsed_base_2.start, 32.68)
         self.assertEqual(parsed_base_2.end, 33.49)
+
+    def julius_test_base(
+        self,
+        file_path: str,
+        phonemes: List["BasePhoneme"],
+        phoneme_class: Type["BasePhoneme"],
+    ):
+        phoneme_class.save_julius_list(phonemes, Path(file_path))
+        with open(file_path, mode="r") as f:
+            self.assertEqual(f.read(), self.julius_str)
+        result_phoneme = JvsPhoneme.load_julius_list(Path(file_path))
+        self.assertEqual(result_phoneme, phonemes)
+        os.remove(file_path)
 
 
 class TestJvsPhoneme(TestBasePhoneme):
@@ -166,8 +208,7 @@ class TestJvsPhoneme(TestBasePhoneme):
         self.assertEqual(parsed_jvs_2.phoneme_id, 4)
 
     def test_julius_list(self):
-        # TODO: load/saveのテストを同時にすると良さそう...?
-        pass
+        self.julius_test_base("./jvs_julius_test", self.jvs_hello_hiho, JvsPhoneme)
 
 
 class TestOjtPhoneme(TestBasePhoneme):
@@ -258,5 +299,4 @@ class TestOjtPhoneme(TestBasePhoneme):
         self.assertEqual(parsed_ojt_2.phoneme_id, 14)
 
     def test_julius_list(self):
-        # TODO: load/saveのテストを同時にすると良さそう...?
-        pass
+        self.julius_test_base("./ojt_julius_test", self.ojt_hello_hiho, OjtPhoneme)
