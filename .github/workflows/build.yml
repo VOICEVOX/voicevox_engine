@@ -118,7 +118,7 @@ jobs:
         run: |
           git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
 
-      - name: Install dependencies for building VOICEVOX core module
+      - name: Install dependencies for building VOICEVOX Core Python package
         shell: bash
         run: |
           source build_voicevox/bin/activate
