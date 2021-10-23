@@ -1,6 +1,7 @@
 import argparse
 import base64
 import io
+import os
 import sys
 import zipfile
 from pathlib import Path
@@ -10,8 +11,10 @@ from typing import List, Optional
 import numpy as np
 import soundfile
 import uvicorn
+import yaml
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from starlette.responses import FileResponse
 
 from voicevox_engine.full_context_label import extract_full_context_label
@@ -22,10 +25,61 @@ from voicevox_engine.model import (
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
+    Preset,
     Speaker,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
+
+
+class PresetLoader:
+    def __init__(self):
+        self.presets = []
+        self.last_modified_time = 0
+        self.PRESET_FILE_NAME = "presets.yaml"
+
+    def load_presets(self):
+        """
+        プリセットのYAMLファイルを読み込む
+
+        Returns
+        -------
+        ret: tuple[Preset, str]
+            プリセットとエラー文のタプル
+        """
+        _presets = []
+
+        # 設定ファイルのタイムスタンプを確認
+        try:
+            _last_modified_time = os.path.getmtime(self.PRESET_FILE_NAME)
+            if _last_modified_time == self.last_modified_time:
+                return self.presets, ""
+        except OSError:
+            return None, "プリセットの設定ファイルが見つかりません"
+
+        try:
+            with open(self.PRESET_FILE_NAME, encoding="utf-8") as f:
+                obj = yaml.safe_load(f)
+                if obj is None:
+                    raise FileNotFoundError
+        except FileNotFoundError:
+            return None, "プリセットの設定ファイルが空の内容です"
+
+        for preset in obj:
+            try:
+                _presets.append(Preset(**preset))
+            except ValidationError:
+                return None, "プリセットの設定ファイルにミスがあります"
+
+        # idが一意か確認
+        if len([preset.id for preset in _presets]) != len(
+            {preset.id for preset in _presets}
+        ):
+            return None, "プリセットのidに重複があります"
+
+        self.presets = _presets
+        self.last_modified_time = _last_modified_time
+        return self.presets, ""
 
 
 def make_synthesis_engine(
@@ -123,6 +177,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    preset_loader = PresetLoader()
 
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
@@ -236,6 +292,42 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
+            outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
+            kana=create_kana(accent_phrases),
+        )
+
+    @app.post(
+        "/audio_query_from_preset",
+        response_model=AudioQuery,
+        tags=["クエリ作成"],
+        summary="音声合成用のクエリをプリセットを用いて作成する",
+    )
+    def audio_query_from_preset(text: str, preset_id: int):
+        """
+        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        """
+        presets, err_detail = preset_loader.load_presets()
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
+        for preset in presets:
+            if preset.id == preset_id:
+                selected_preset = preset
+                break
+        else:
+            raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
+
+        accent_phrases = create_accent_phrases(
+            text, speaker_id=selected_preset.style_id
+        )
+        return AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=selected_preset.speedScale,
+            pitchScale=selected_preset.pitchScale,
+            intonationScale=selected_preset.intonationScale,
+            volumeScale=selected_preset.volumeScale,
+            prePhonemeLength=selected_preset.prePhonemeLength,
+            postPhonemeLength=selected_preset.postPhonemeLength,
             outputSamplingRate=default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
@@ -399,6 +491,21 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
             return FileResponse(f.name, media_type="audio/wav")
+
+    @app.get("/presets", response_model=List[Preset], tags=["その他"])
+    def get_presets():
+        """
+        エンジンが保持しているプリセットの設定を返します
+
+        Returns
+        -------
+        presets: List[Preset]
+            プリセットのリスト
+        """
+        presets, err_detail = preset_loader.load_presets()
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
+        return presets
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
