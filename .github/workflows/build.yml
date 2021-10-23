@@ -30,6 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Create download and build directory
+        run: mkdir download build
+
       - name: Install CMake, OpenBLAS, LibTorch, and CCache
         shell: bash
         run: brew install cmake openblas libtorch ccache
