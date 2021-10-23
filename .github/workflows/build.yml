@@ -123,7 +123,7 @@ jobs:
         run: |
           source build_voicevox/bin/activate
           pip install --upgrade pip setuptools wheel cython pybind11 pythran
-          pip install --no-binary :all: --no-use-pep517 numpy==1.20.0 scipy
+          pip install --no-binary :all: --no-use-pep517 numpy==1.20.0
           SYSTEM_VERSION_COMPAT=1 pip install --no-binary :all: --no-use-pep517 scipy
           pip install -r download/voicevox_core_example/example/python/requirements.txt
 
