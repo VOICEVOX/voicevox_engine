@@ -317,21 +317,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         else:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
-        if not 0.5 <= selected_preset.speedScale <= 2:
-            raise HTTPException(status_code=422, detail="プリセットのspeedScaleが無効な値です")
-        elif not -0.15 <= selected_preset.pitchScale <= 0.15:
-            raise HTTPException(status_code=422, detail="プリセットのpitchScaleが無効な値です")
-        elif not 0 <= selected_preset.intonationScale <= 2:
-            raise HTTPException(status_code=422, detail="プリセットのintonationScaleが無効な値です")
-        elif not 0 <= selected_preset.volumeScale <= 2:
-            raise HTTPException(status_code=422, detail="プリセットのvolumeScaleが無効な値です")
-        elif not 0 <= selected_preset.prePhonemeLength <= 1.5:
-            raise HTTPException(status_code=422, detail="プリセットのprePhonemeLengthが無効な値です")
-        elif not 0 <= selected_preset.postPhonemeLength <= 1.5:
-            raise HTTPException(
-                status_code=422, detail="プリセットのpostPhonemeLengthが無効な値です"
-            )
-
         accent_phrases = create_accent_phrases(
             text, speaker_id=selected_preset.style_id
         )
