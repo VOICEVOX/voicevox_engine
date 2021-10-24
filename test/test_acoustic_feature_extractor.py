@@ -53,7 +53,7 @@ class TestBasePhoneme(TestCase):
         self.base_hello_hiho = [
             BasePhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
         ]
-        self.julius_str = """
+        self.lab_str = """
             0.00	1.00	pau
             1.00	2.00	k
             2.00	3.00	o
@@ -108,15 +108,15 @@ class TestBasePhoneme(TestCase):
         self.assertEqual(parsed_base_2.start, 32.68)
         self.assertEqual(parsed_base_2.end, 33.49)
 
-    def julius_test_base(
+    def lab_test_base(
         self,
         file_path: str,
         phonemes: List["BasePhoneme"],
         phoneme_class: Type["BasePhoneme"],
     ):
-        phoneme_class.save_julius_list(phonemes, Path(file_path))
+        phoneme_class.save_lab_list(phonemes, Path(file_path))
         with open(file_path, mode="r") as f:
-            self.assertEqual(f.read(), self.julius_str)
+            self.assertEqual(f.read(), self.lab_str)
         result_phoneme = phoneme_class.load_lab_list(Path(file_path))
         self.assertEqual(result_phoneme, phonemes)
         os.remove(file_path)
@@ -207,8 +207,8 @@ class TestJvsPhoneme(TestBasePhoneme):
         self.assertEqual(parsed_jvs_1.phoneme_id, 0)
         self.assertEqual(parsed_jvs_2.phoneme_id, 4)
 
-    def test_julius_list(self):
-        self.julius_test_base("./jvs_julius_test", self.jvs_hello_hiho, JvsPhoneme)
+    def test_lab_list(self):
+        self.lab_test_base("./jvs_lab_test", self.jvs_hello_hiho, JvsPhoneme)
 
 
 class TestOjtPhoneme(TestBasePhoneme):
@@ -298,5 +298,5 @@ class TestOjtPhoneme(TestBasePhoneme):
         self.assertEqual(parsed_ojt_1.phoneme_id, 0)
         self.assertEqual(parsed_ojt_2.phoneme_id, 14)
 
-    def test_julius_list(self):
-        self.julius_test_base("./ojt_julius_test", self.ojt_hello_hiho, OjtPhoneme)
+    def tes_lab_list(self):
+        self.lab_test_base("./ojt_lab_test", self.ojt_hello_hiho, OjtPhoneme)

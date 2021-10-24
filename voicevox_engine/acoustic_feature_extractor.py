@@ -157,9 +157,9 @@ class BasePhoneme(object):
         raise NotImplementedError
 
     @classmethod
-    def load_julius_list(cls, path: Path):
+    def load_lab_list(cls, path: Path):
         """
-        Julius(汎用大語彙連続音声認識エンジン)などにおけるlabファイルを読み込む
+        labファイルを読み込む
         Parameters
         ----------
         path : Path
@@ -178,9 +178,9 @@ class BasePhoneme(object):
         return phonemes
 
     @classmethod
-    def save_julius_list(cls, phonemes: List["BasePhoneme"], path: Path):
+    def save_lab_list(cls, phonemes: List["BasePhoneme"], path: Path):
         """
-        音素クラスのリストをJuliusなどにおけるlabファイル形式で保存する
+        音素クラスのリストをlabファイル形式で保存する
         Parameters
         ----------
         phonemes : List[BasePhoneme]
