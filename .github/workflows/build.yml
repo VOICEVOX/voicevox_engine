@@ -236,7 +236,7 @@ jobs:
         #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: $BASE_PATH/build/run.dist/
+          path: build/run.dist/
 
 
   # Build Linux binary (push only buildcache image)
