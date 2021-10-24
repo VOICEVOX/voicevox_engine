@@ -33,13 +33,19 @@ jobs:
       - name: Create download and build directory
         run: mkdir download build
 
-      - name: Install CMake, OpenBLAS, LibTorch, GFortran, and CCache
+      - name: Install CMake, OpenBLAS, LibTorch, and CCache
         shell: bash
-        run: brew install cmake openblas libtorch gfortran ccache
+        run: brew install cmake openblas libtorch ccache
+
+      - name: Select GCC 11
+        run: echo "CC=gcc-11" >> $GITHUB_ENV
+
+      - name: Export OpenBLAS path to OPENBLAS
+        run: |
+          echo "OPENBLAS=$(brew --prefix openblas)/lib" >> $GITHUB_ENV
 
       - name: Export OpenBLAS and LibTorch path to LD_LIBRARY_PATH
         run: |
-          echo "OPENBLAS=$(brew --prefix openblas)/lib" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=$(brew --prefix libtorch)/lib:$(brew --prefix openblas)/lib:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
 
       - name: Setup Python
