@@ -117,7 +117,7 @@ class TestBasePhoneme(TestCase):
         phoneme_class.save_julius_list(phonemes, Path(file_path))
         with open(file_path, mode="r") as f:
             self.assertEqual(f.read(), self.julius_str)
-        result_phoneme = JvsPhoneme.load_julius_list(Path(file_path))
+        result_phoneme = phoneme_class.load_lab_list(Path(file_path))
         self.assertEqual(result_phoneme, phonemes)
         os.remove(file_path)
 
