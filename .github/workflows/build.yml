@@ -116,14 +116,16 @@ jobs:
           rm $BASE_PATH/download/core.zip
 
       - name: Prepare VOICEVOX Core file
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/download/core
           mv libcore_cpu.dylib libcore.dylib
-          echo "VOICEVOX_CORE_DIR=$(pwd)" >> $GITHUB_ENV
 
       - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
         run: |
+          cd $BASE_PATH/download/core
+          echo "VOICEVOX_CORE_DIR=$(pwd)" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=$BASE_PATH/download/core:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=$BASE_PATH/download/core:${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
 
