@@ -108,7 +108,7 @@ jobs:
           path: $BASE_PATH/download/core
 
       - name: Download VOICEVOX Core
-        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        # if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > $BASE_PATH/download/core.zip
@@ -116,7 +116,7 @@ jobs:
           rm $BASE_PATH/download/core.zip
 
       - name: Prepare VOICEVOX Core file
-        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        # if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/download/core
