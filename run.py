@@ -15,7 +15,6 @@ import uvicorn
 import yaml
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.params import Query
 from pydantic import ValidationError
 from starlette.responses import FileResponse
 
@@ -482,8 +481,18 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
-        morph_rate: float = Query(0.0, ge=0.0, le=1.0),
+        morph_rate: float,
     ):
+        """
+        指定された話者2つで音声を合成、指定した割合でモーフィングした音声を得ます。
+        モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
+        """
+
+        if morph_rate < 0.0 or morph_rate > 1.0:
+            raise HTTPException(
+                status_code=422, detail="morph_rateは0.0から1.0の範囲で指定してください"
+            )
+
         # WORLDに掛けるため合成はモノラルで行う
         output_stereo = query.outputStereo
         query.outputStereo = False
