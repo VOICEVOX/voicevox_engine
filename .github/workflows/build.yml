@@ -120,6 +120,7 @@ jobs:
         run: |
           cd $BASE_PATH/download/core
           mv libcore_cpu.dylib libcore.dylib
+          echo "VOICEVOX_CORE_DIR=$(pwd)" >> $GITHUB_ENV
 
       - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
         run: |
@@ -205,8 +206,8 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=resampy \
             --include-package-data=llvmlite \
-            --include-data-file=$VOICEVOX_ENGINE_DIR/VERSION.txt=./build/ \
-            --include-data-file=$VOICEVOX_ENGINE_DIR/licenses.json=./build/ \
+            --include-data-file=$BASE_PATH/VERSION.txt=./build/ \
+            --include-data-file=$BASE_PATH/licenses.json=./build/ \
             --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./build/ \
             --include-data-file=$VOICEVOX_CORE_DIR/*.dylib=./build/ \
             --include-data-file=$VOICEVOX_CORE_DIR/*.bin=./build/ \
