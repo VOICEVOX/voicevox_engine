@@ -41,7 +41,10 @@ jobs:
         run: echo "CC=gcc-11" >> $GITHUB_ENV
 
       - name: Select GFortran 11
-        run: echo "FC=gfortran-11" >> $GITHUB_ENV
+        run: |
+          echo "FC=gfortran-11" >> $GITHUB_ENV
+          echo "F77=gfortran-11" >> $GITHUB_ENV
+          echo "F90=gfortran-11" >> $GITHUB_ENV
 
       - name: Export OpenBLAS path to OPENBLAS
         run: |
