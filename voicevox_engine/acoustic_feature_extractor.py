@@ -25,7 +25,7 @@ class SamplingData:
 
     def resample(self, sampling_rate: float, index: int = 0, length: int = None):
         """
-        デコード用にデータを切り出す
+        リサンプリングする
         Parameters
         ----------
         sampling_rate : float
