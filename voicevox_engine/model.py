@@ -16,6 +16,13 @@ class Mora(BaseModel):
     vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
+    def __hash__(self):
+        items = [
+            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
+            for x in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
+
 
 class AccentPhrase(BaseModel):
     """
@@ -25,6 +32,13 @@ class AccentPhrase(BaseModel):
     moras: List[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
+
+    def __hash__(self):
+        items = [
+            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
+            for x in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
 
 
 class AudioQuery(BaseModel):
@@ -42,6 +56,13 @@ class AudioQuery(BaseModel):
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+
+    def __hash__(self):
+        items = [
+            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
+            for x in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
 
 
 class ParseKanaErrorCode(Enum):

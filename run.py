@@ -4,6 +4,7 @@ import io
 import os
 import sys
 import zipfile
+from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
@@ -274,6 +275,38 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
         return waves_nparray, sampling_rate
 
+    @lru_cache(maxsize=4)
+    def synthesis_world_params(
+        query: AudioQuery, base_speaker: int, target_speaker: int
+    ):
+        base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
+            "float"
+        )
+        target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
+            "float"
+        )
+
+        frame_period = 1.0
+        fs = query.outputSamplingRate
+        base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
+        base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
+        base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
+
+        target_f0, morph_time_axis = pw.harvest(
+            target_wave, fs, frame_period=frame_period
+        )
+        target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
+        target_spectrogram.resize(base_spectrogram.shape)
+
+        return (
+            fs,
+            frame_period,
+            base_f0,
+            base_aperiodicity,
+            base_spectrogram,
+            target_spectrogram,
+        )
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -497,35 +530,21 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         output_stereo = query.outputStereo
         query.outputStereo = False
 
-        base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
-            "float"
-        )
-        target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
-            "float"
-        )
+        (
+            fs,
+            frame_period,
+            base_f0,
+            base_aperiodicity,
+            base_spectrogram,
+            target_spectrogram,
+        ) = synthesis_world_params(query, base_speaker, target_speaker)
 
-        frame_period = 1.0
-        fs = query.outputSamplingRate
-        _base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
-        base_f0 = pw.stonemask(base_wave, _base_f0, base_time_axis, fs)
-        base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
-        base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
-
-        _target_f0, morph_time_axis = pw.harvest(
-            target_wave, fs, frame_period=frame_period
+        morph_spectrogram = (
+            base_spectrogram * (1.0 - morph_rate) + target_spectrogram * morph_rate
         )
-        target_f0 = pw.stonemask(target_wave, _target_f0, morph_time_axis, fs)
-        target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
-
-        morph_spectrogram = [
-            [x * (1.0 - morph_rate) for x in line] for line in base_spectrogram
-        ]
-        for i in range(min(len(morph_spectrogram), len(target_spectrogram))):
-            for j in range(min(len(morph_spectrogram[i]), len(target_spectrogram[i]))):
-                morph_spectrogram[i][j] += target_spectrogram[i][j] * morph_rate
 
         y_h = pw.synthesize(
-            base_f0, np.array(morph_spectrogram), base_aperiodicity, fs, frame_period
+            base_f0, morph_spectrogram, base_aperiodicity, fs, frame_period
         )
 
         if output_stereo:
