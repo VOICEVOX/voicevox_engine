@@ -40,8 +40,8 @@ jobs:
       - name: Select GCC 11
         run: echo "CC=gcc-11" >> $GITHUB_ENV
 
-      - name: Check GFortran path
-        run: which gfortran
+      - name: Add alias GFortran
+        run: alias gfortran='gfortran-11'
 
       - name: Export OpenBLAS path to OPENBLAS
         run: |
