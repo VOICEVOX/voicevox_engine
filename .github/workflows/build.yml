@@ -37,12 +37,11 @@ jobs:
         shell: bash
         run: brew install cmake openblas libtorch ccache
 
-      - name: Select GCC 11
-        run: echo "CC=gcc-11" >> $GITHUB_ENV
+      - name: Select clang as CC
+        run: echo "CC=clang" >> $GITHUB_ENV
 
-      - name: Select GFortran 11
+      - name: Select GFortran 11 as F77/F90
         run: |
-          echo "FC=gfortran-11" >> $GITHUB_ENV
           echo "F77=gfortran-11" >> $GITHUB_ENV
           echo "F90=gfortran-11" >> $GITHUB_ENV
 
