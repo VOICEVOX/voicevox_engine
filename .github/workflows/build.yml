@@ -206,6 +206,7 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=resampy \
             --include-package-data=llvmlite \
+            --include-package-data=SoundFile \
             --include-data-file=$BASE_PATH/VERSION.txt=./build/ \
             --include-data-file=$BASE_PATH/licenses.json=./build/ \
             --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./build/ \
