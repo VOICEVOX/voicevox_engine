@@ -217,7 +217,7 @@ jobs:
             --include-data-file=$VOICEVOX_CORE_DIR/metas.json=./build/ \
             --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./build/ \
             --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./build/ \
-            --include-data-file=$BASE_DIR/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./build/_soundfile_data/ \
+            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./build/_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
             run.py
