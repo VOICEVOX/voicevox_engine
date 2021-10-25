@@ -195,10 +195,11 @@ jobs:
 
       - name: Build run.py
         run: |
-          cd $BASE_PATH/
+          mkdir $BASE_PATH/build
+          cd $BASE_PATH/build
           source $BASE_PATH/build_voicevox/bin/activate
           python -m nuitka \
-            --output-dir=./build \
+            --output-dir=./ \
             --standalone \
             --plugin-enable=numpy \
             --follow-import-to=numpy \
@@ -208,18 +209,18 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=resampy \
             --include-package-data=llvmlite \
-            --include-data-file=$BASE_PATH/VERSION.txt=./build/ \
-            --include-data-file=$BASE_PATH/licenses.json=./build/ \
-            --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./build/ \
-            --include-data-file=$VOICEVOX_CORE_DIR/*.dylib=./build/ \
-            --include-data-file=$VOICEVOX_CORE_DIR/*.bin=./build/ \
-            --include-data-file=$VOICEVOX_CORE_DIR/metas.json=./build/ \
-            --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./build/ \
-            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./build/ \
-            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./build/_soundfile_data/ \
+            --include-data-file=$BASE_PATH/VERSION.txt=./ \
+            --include-data-file=$BASE_PATH/licenses.json=./ \
+            --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./ \
+            --include-data-file=$VOICEVOX_CORE_DIR/*.dylib=./ \
+            --include-data-file=$VOICEVOX_CORE_DIR/*.bin=./ \
+            --include-data-file=$VOICEVOX_CORE_DIR/metas.json=./ \
+            --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./ \
+            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
+            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
-            run.py
+            $BASE_PATH/run.py
           deactivate
 
       - name: Set @rpath to @executable_path
