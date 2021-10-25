@@ -18,8 +18,8 @@ class Mora(BaseModel):
 
     def __hash__(self):
         items = [
-            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
-            for x in self.__dict__.items()
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
 
@@ -35,8 +35,8 @@ class AccentPhrase(BaseModel):
 
     def __hash__(self):
         items = [
-            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
-            for x in self.__dict__.items()
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
 
@@ -59,8 +59,8 @@ class AudioQuery(BaseModel):
 
     def __hash__(self):
         items = [
-            (x[0], tuple(x[1])) if isinstance(x[1], List) else x
-            for x in self.__dict__.items()
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
 
