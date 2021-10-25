@@ -5,7 +5,6 @@ import numpy
 import resampy
 
 from voicevox_engine.acoustic_feature_extractor import (
-    BasePhoneme,
     OjtPhoneme,
     SamplingData,
 )
@@ -61,22 +60,22 @@ def to_phoneme_data_list(phoneme_str_list: List[str]):
     return phoneme_data_list
 
 
-def split_mora(phoneme_list: List[BasePhoneme]):
+def split_mora(phoneme_list: List[OjtPhoneme]):
     """
-    BasePhoneme(OjtPhoneme)のリストから、
+    OjtPhonemeのリストから、
     母音の位置(vowel_indexes)
     母音の音素列(vowel_phoneme_list)
     子音の音素列(consonant_phoneme_list)
     を生成し、返す
     Parameters
     ----------
-    phoneme_list : List[BasePhoneme]
+    phoneme_list : List[OjtPhoneme]
         phonemeクラスのリスト
     Returns
     -------
-    consonant_phoneme_list : List[BasePhoneme]
+    consonant_phoneme_list : List[OjtPhoneme]
         子音の音素列
-    vowel_phoneme_list : List[BasePhoneme]
+    vowel_phoneme_list : List[OjtPhoneme]
         母音の音素列
     vowel_indexes : : List[int]
         母音の位置
@@ -85,7 +84,7 @@ def split_mora(phoneme_list: List[BasePhoneme]):
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
     ]
     vowel_phoneme_list = [phoneme_list[i] for i in vowel_indexes]
-    consonant_phoneme_list: List[Optional[BasePhoneme]] = [None] + [
+    consonant_phoneme_list: List[Optional[OjtPhoneme]] = [None] + [
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
