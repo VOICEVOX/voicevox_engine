@@ -61,14 +61,6 @@ def to_phoneme_data_list(phoneme_str_list: List[str]):
     return phoneme_data_list
 
 
-def f0_mean(f0: numpy.ndarray, rate: float, split_second_list: List[float]):
-    indexes = numpy.floor(numpy.array(split_second_list) * rate).astype(int)
-    for a in numpy.split(f0, indexes):
-        a[:] = numpy.mean(a[a > 0])
-    f0[numpy.isnan(f0)] = 0
-    return f0
-
-
 def split_mora(phoneme_list: List[BasePhoneme]):
     """
     BasePhoneme(OjtPhoneme)のリストから、
