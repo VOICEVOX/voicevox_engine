@@ -208,7 +208,6 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=resampy \
             --include-package-data=llvmlite \
-            --include-package-data=SoundFile \
             --include-data-file=$BASE_PATH/VERSION.txt=./build/ \
             --include-data-file=$BASE_PATH/licenses.json=./build/ \
             --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./build/ \
@@ -217,7 +216,7 @@ jobs:
             --include-data-file=$VOICEVOX_CORE_DIR/metas.json=./build/ \
             --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./build/ \
             --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./build/ \
-            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./build/ \
+            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./build/_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
             run.py
@@ -227,6 +226,16 @@ jobs:
         run: |
           cd $BASE_PATH/
           install_name_tool -add_rpath @executable_path/. build/run.dist/run
+
+      - name: Add execute permission to run
+        run: |
+          cd $BASE_PATH/
+          chmod +x build/run.dist/run
+
+      - name: Compress VOICEVOX engine
+        run: |
+          cd $BASE_PATH/
+          tar cf VOICEVOX-${{ matrix.artifact_name }}.tar.gz build/run.dist
 
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
@@ -240,7 +249,7 @@ jobs:
         #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: build/run.dist/
+          path: VOICEVOX-${{ matrix.artifact_name }}.tar.gz
 
 
   # Build Linux binary (push only buildcache image)
