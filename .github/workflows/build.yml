@@ -137,7 +137,7 @@ jobs:
           path: $BASE_PATH/download/voicevox_core_example
 
       - name: Clone VOICEVOX Core example
-        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
+        # if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" $BASE_PATH/download/voicevox_core_example
