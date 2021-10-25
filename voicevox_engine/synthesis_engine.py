@@ -4,10 +4,7 @@ from typing import List, Optional
 import numpy
 import resampy
 
-from voicevox_engine.acoustic_feature_extractor import (
-    OjtPhoneme,
-    SamplingData,
-)
+from voicevox_engine.acoustic_feature_extractor import OjtPhoneme, SamplingData
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
