@@ -9,13 +9,25 @@ from voicevox_engine.acoustic_feature_extractor import (
     OjtPhoneme,
     SamplingData,
 )
-from voicevox_engine.model import AccentPhrase, AudioQuery
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
 
 
-def to_flatten_moras(accent_phrases: List[AccentPhrase]):
+def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
+    """
+    accent_phrasesに含まれるMora(とpause_moraがあればそれも)を
+    すべて一つのリストに結合する
+    Parameters
+    ----------
+    accent_phrases : List[AccentPhrase]
+        AccentPhraseのリスト
+    Returns
+    -------
+    moras : List[Mora]
+        結合されたMoraのリストを返す
+    """
     return list(
         chain.from_iterable(
             accent_phrase.moras
@@ -30,6 +42,17 @@ def to_flatten_moras(accent_phrases: List[AccentPhrase]):
 
 
 def to_phoneme_data_list(phoneme_str_list: List[str]):
+    """
+    phoneme文字列のリストを、OjtPhonemeクラスのリストに変換する
+    Parameters
+    ----------
+    phoneme_str_list : List[str]
+        phoneme文字列のリスト
+    Returns
+    -------
+    phoneme_list : List[OjtPhoneme]
+        変換されたOjtPhonemeクラスのリスト
+    """
     phoneme_data_list = [
         OjtPhoneme(phoneme=p, start=i, end=i + 1)
         for i, p in enumerate(phoneme_str_list)
@@ -47,6 +70,25 @@ def f0_mean(f0: numpy.ndarray, rate: float, split_second_list: List[float]):
 
 
 def split_mora(phoneme_list: List[BasePhoneme]):
+    """
+    BasePhoneme(OjtPhoneme)のリストから、
+    母音の位置(vowel_indexes)
+    母音の音素列(vowel_phoneme_list)
+    子音の音素列(consonant_phoneme_list)
+    を生成し、返す
+    Parameters
+    ----------
+    phoneme_list : List[BasePhoneme]
+        phonemeクラスのリスト
+    Returns
+    -------
+    consonant_phoneme_list : List[BasePhoneme]
+        子音の音素列
+    vowel_phoneme_list : List[BasePhoneme]
+        母音の音素列
+    vowel_indexes : : List[int]
+        母音の位置
+    """
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
     ]
@@ -107,6 +149,19 @@ class SynthesisEngine:
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
+        """
+        accent_phrasesの母音・子音の長さを設定する
+        Parameters
+        ----------
+        accent_phrases : List[AccentPhrase]
+            アクセント句モデルのリスト
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        accent_phrases : List[AccentPhrase]
+            母音・子音の長さが設定されたアクセント句モデルのリスト
+        """
         # phoneme
         flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -143,6 +198,19 @@ class SynthesisEngine:
     def replace_mora_pitch(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
+        """
+        accent_phrasesの音高(ピッチ)を設定する
+        Parameters
+        ----------
+        accent_phrases : List[AccentPhrase]
+            アクセント句モデルのリスト
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        accent_phrases : List[AccentPhrase]
+            音高(ピッチ)が設定されたアクセント句モデルのリスト
+        """
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -159,6 +227,19 @@ class SynthesisEngine:
 
         # accent
         def _repeat_with_mora(array: numpy.ndarray, accent_phrase: AccentPhrase):
+            """
+            moraの数だけあるarrayの要素数をphonemeの数まで増やす(変換する)
+            Parameters
+            ----------
+            array : numpy.ndarray
+                moraの数だけ要素数があるarray
+            accent_phrase : AccentPhrase
+                アクセント句モデル
+            Returns
+            -------
+            array : numpy.ndarray
+                phonemeの数まで拡張されたarrayを返す
+            """
             return numpy.repeat(
                 array,
                 [
@@ -279,6 +360,20 @@ class SynthesisEngine:
         return accent_phrases
 
     def synthesis(self, query: AudioQuery, speaker_id: int):
+        """
+        音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
+        Parameters
+        ----------
+        query : AudioQuery
+            音声合成クエリ
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        wave : numpy.ndarray
+            音声合成結果
+        """
+
         rate = 200
 
         # phoneme
