@@ -508,7 +508,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             }
         },
         tags=["音声合成"],
-        summary="2つの話者でモーフィングした音声を合成する",
+        summary="2人の話者でモーフィングした音声を合成する",
     )
     def synthesis_morphing(
         query: AudioQuery,
@@ -517,7 +517,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         morph_rate: float,
     ):
         """
-        指定された話者2つで音声を合成、指定した割合でモーフィングした音声を得ます。
+        指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
