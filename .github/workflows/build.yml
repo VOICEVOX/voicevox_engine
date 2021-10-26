@@ -75,7 +75,7 @@ jobs:
           path: |
             generate_licenses
             !generate_licenses/bin
-          key: ${{ runner.os }}-venv-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
@@ -89,7 +89,7 @@ jobs:
           path: |
             build_voicevox
             !build_voicevox/bin
-          key: ${{ runner.os }}-venv-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-venv-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for building VOICEVOX engine
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
