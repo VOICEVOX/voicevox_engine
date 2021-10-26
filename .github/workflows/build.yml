@@ -227,16 +227,6 @@ jobs:
           cd $BASE_PATH/
           install_name_tool -add_rpath @executable_path/. build/run.dist/run
 
-      - name: Add execute permission to run
-        run: |
-          cd $BASE_PATH/
-          chmod +x build/run.dist/run
-
-      - name: Compress VOICEVOX engine
-        run: |
-          cd $BASE_PATH/
-          tar cf VOICEVOX-${{ matrix.artifact_name }}.tar.gz build/run.dist
-
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
@@ -249,7 +239,7 @@ jobs:
         #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: VOICEVOX-${{ matrix.artifact_name }}.tar.gz
+          path: build/run.dist/
 
 
   # Build Linux binary (push only buildcache image)
