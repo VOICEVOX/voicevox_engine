@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy
 import resampy
@@ -88,6 +88,34 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
     return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
 
 
+def accent_phrases_shaping(accent_phrases: List[AccentPhrase]) -> Tuple[List[Mora], List[OjtPhoneme]]:
+    """
+    AccentPhraseモデルのリストを整形し、処理に必要なデータの原型を作り出す
+    Parameters
+    ----------
+    accent_phrases : List[AccentPhrase]
+        AccentPhraseモデルのリスト
+    Returns
+    -------
+    flatten_moras : List[Mora]
+        AccentPhraseモデルのリスト内に含まれるすべてのMoraをリスト化したものを返す
+    phoneme_data_list : List[OjtPhoneme]
+        flatten_morasから取り出したすべてのPhonemeをOjtPhonemeに変換したものを返す
+    """
+    flatten_moras = to_flatten_moras(accent_phrases)
+
+    phoneme_each_mora = [
+        ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
+        for mora in flatten_moras
+    ]
+    phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
+    phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
+
+    phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
+
+    return flatten_moras, phoneme_data_list
+
+
 class SynthesisEngine:
     def __init__(
         self,
@@ -151,16 +179,7 @@ class SynthesisEngine:
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # phoneme
-        flatten_moras = to_flatten_moras(accent_phrases)
-
-        phoneme_each_mora = [
-            ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
-            for mora in flatten_moras
-        ]
-        phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
-        phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
-
-        phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
+        flatten_moras, phoneme_data_list = accent_phrases_shaping(accent_phrases)
         _, _, vowel_indexes_data = split_mora(phoneme_data_list)
 
         # yukarin_s
@@ -204,14 +223,7 @@ class SynthesisEngine:
             return []
 
         # phoneme
-        flatten_moras = to_flatten_moras(accent_phrases)
-
-        phoneme_each_mora = [
-            ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
-            for mora in flatten_moras
-        ]
-        phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
-        phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
+        flatten_moras, phoneme_data_list = accent_phrases_shaping(accent_phrases)
 
         # accent
         def _repeat_with_mora(array: numpy.ndarray, accent_phrase: AccentPhrase):
@@ -304,7 +316,6 @@ class SynthesisEngine:
         )
         end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
 
-        phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
         (
             consonant_phoneme_data_list,
             vowel_phoneme_data_list,
@@ -365,15 +376,7 @@ class SynthesisEngine:
         rate = 200
 
         # phoneme
-        flatten_moras = to_flatten_moras(query.accent_phrases)
-        phoneme_each_mora = [
-            ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
-            for mora in flatten_moras
-        ]
-        phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
-        phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
-
-        phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
+        flatten_moras, phoneme_data_list = accent_phrases_shaping(query.accent_phrases)
         phoneme_list_s = numpy.array(
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
