@@ -384,7 +384,7 @@ class SynthesisEngine:
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )[0]
 
-        # Step11. 無声母音を含むMoraに関しては、Pitchを0にする
+        # Step11. 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
         for i, p in enumerate(vowel_phoneme_data_list):
             if p.phoneme in unvoiced_mora_phoneme_list:
                 f0_list[i] = 0
