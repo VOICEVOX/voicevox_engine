@@ -187,7 +187,7 @@ pysen run format lint
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
-pip install -r requirements-dev.txt -c constraints.txt
+pip install -r requirements-dev.txt
 
 python generate_licenses.py > licenses.json
 
