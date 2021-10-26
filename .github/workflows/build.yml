@@ -78,7 +78,6 @@ jobs:
           key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
-        if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
         run: python -m venv generate_licenses
 
@@ -92,7 +91,6 @@ jobs:
           key: ${{ runner.os }}-venv-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for building VOICEVOX engine
-        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: python -m venv build_voicevox
 
@@ -100,7 +98,7 @@ jobs:
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          generate_licenses/bin/activate
+          source generate_licenses/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
           deactivate
