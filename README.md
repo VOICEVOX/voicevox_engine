@@ -120,7 +120,6 @@ curl -s \
     -d @query.json \
     "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
     > audio.wav
-
 ```
 
 ## Docker イメージ
