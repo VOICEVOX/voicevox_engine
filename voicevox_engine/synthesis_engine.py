@@ -186,7 +186,7 @@ class SynthesisEngine:
         # phoneme
         # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = accent_phrases_shaping(accent_phrases)
-        # Step2. 次にOjtPhonemeの形に分解されたものから、vowel(母音)の位置を抜き出す
+        # Step2. 次にOjtPhonemeの形に分解されたもの(phoneme_data_list)から、vowel(母音)の位置を抜き出す
         _, _, vowel_indexes_data = split_mora(phoneme_data_list)
 
         # yukarin_s
