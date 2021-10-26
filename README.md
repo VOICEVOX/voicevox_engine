@@ -105,10 +105,10 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-pip install -r requirements-test.txt
+pip install -r requirements-test.txt -c constraints.txt
 
 # とりあえず実行したいだけなら代わりにこちら
-pip install -r requirements.txt
+pip install -r requirements.txt -c constraints.txt
 ```
 
 ## 実行
@@ -145,7 +145,7 @@ pysen run format lint
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt -c constraints.txt
 
 python generate_licenses.py > licenses.json
 

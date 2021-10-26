@@ -1,4 +1,4 @@
 -r requirements.txt
-cython
-nuitka
-pip-licenses
+cython==0.29.24
+Nuitka==0.6.17.4
+pip-licenses==3.5.3

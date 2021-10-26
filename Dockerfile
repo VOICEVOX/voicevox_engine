@@ -220,6 +220,7 @@ EOF
 # Temporary override PATH for convenience during the image building
 # ARG PATH=/opt/python/bin:$PATH
 ADD ./requirements.txt /tmp/
+ADD ./constraints.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
@@ -242,7 +243,7 @@ RUN <<EOF
 
     # Install requirements
     gosu user python3 -m pip install --upgrade pip setuptools wheel
-    gosu user pip3 install -r /tmp/requirements.txt
+    gosu user pip3 install -r /tmp/requirements.txt -c /tmp/constraints.txt
 
     # Install voicevox_core
     # Files will be generated at build time, so move to a writable directory
@@ -253,7 +254,7 @@ RUN <<EOF
 
     # Generate licenses.json
     cd /opt/voicevox_engine
-    gosu user pip3 install pip-licenses
+    gosu user pip3 install pip-licenses -c /tmp/constraints.txt
     gosu user python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
 EOF
 
@@ -321,7 +322,7 @@ EOF
 ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
     set -eux
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt -c /tmp/constraints.txt
 EOF
 
 # Create build script

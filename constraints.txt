@@ -1,0 +1,256 @@
+# main
+
+typing-extensions==3.10.0.2
+# The following modules depend on typing-extensions:
+# pydantic==1.8.2 [required: >=3.7.4.3]
+# anyio==3.3.4 [required: Any]
+# starlette==0.16.0 [required: Any]
+# asgiref==3.4.1 [required: Any]
+# importlib-metadata==4.8.1 [required: >=3.6.4]
+# uvicorn==0.15.0 [required: Any]
+# black==20.8b1 [required: >=3.7.4] (test)
+# mypy==0.790 [required: >=3.7.4] (test)
+# GitPython==3.1.24 [required: >=3.7.4.3] (test)
+
+pydantic==1.8.2
+# The following modules depend on pydantic:
+# fastapi==0.70.0 [required: >=1.6.2,<2.0.0,!=1.8.1,!=1.8,!=1.7.3,!=1.7.2,!=1.7.1,!=1.7]
+
+idna==3.3
+# The following modules depend on idna:
+# anyio==3.3.4 [required: >=2.8]
+# requests==2.26.0 [required: >=2.5,<4] (test)
+
+sniffio==1.2.0
+# The following modules depend on sniffio:
+# anyio==3.3.4 [required: >=1.1]
+
+anyio==3.3.4
+# The following modules depend on anyio:
+# starlette==0.16.0 [required: >=3.0.0,<4]
+
+starlette==0.16.0
+# The following modules depend on starlette:
+# fastapi==0.70.0 [required: ==0.16.0]
+
+cython==0.29.24
+# The following modules depend on cython:
+# pyopenjtalk==0.1.4+69e5f35 [required: >=0.21.0]
+
+numpy==1.20.0
+# The following modules depend on numpy:
+# pyopenjtalk==0.1.4+69e5f35 [required: >=1.8.0]
+# numba==0.54.1 [required: >=1.17,<1.21]
+# resampy==0.2.2 [required: >=1.10]
+# scipy==1.7.1 [required: >=1.16.5,<1.23.0]
+
+six==1.16.0
+# The following modules depend on six:
+# pyopenjtalk==0.1.4+69e5f35 [required: Any]
+# python-multipart==0.0.5 [required: >=1.4.0]
+# resampy==0.2.2 [required: >=1.3]
+
+llvmlite==0.37.0
+# The following modules depend on llvmlite:
+# numba==0.54.1 [required: >=0.37.0rc1,<0.38]
+
+setuptools==58.1.0
+# The following modules depend on setuptools:
+# numba==0.54.1 [required: Any]
+
+numba==0.54.1
+# The following modules depend on numba:
+# resampy==0.2.2 [required: >=0.32]
+
+scipy==1.7.1
+# The following modules depend on scipy:
+# resampy==0.2.2 [required: >=0.13]
+
+pycparser==2.20
+# The following modules depend on pycparser:
+# cffi==1.15.0 [required: Any]
+
+cffi==1.15.0
+# The following modules depend on cffi:
+# SoundFile==0.10.3.post1 [required: >=1.0]
+
+asgiref==3.4.1
+# The following modules depend on asgiref:
+# uvicorn==0.15.0 [required: >=3.4.0]
+
+colorama==0.4.4
+# The following modules depend on colorama:
+# click==0.4.4 [required: Any]
+# colorlog==4.8.0 [required: Any] (test)
+# pytest==6.2.5 [required: Any] (test)
+
+zipp==3.6.0
+# The following modules depend on zipp:
+# importlib-metadata==4.8.1 [required: >=0.5]
+
+importlib-metadata==4.8.1
+# The following modules depend on importlib-metadata:
+# click==8.0.3 [required: Any]
+# flake8==3.9.2 [required: Any] (test)
+# pytest==6.2.5 [required: >=0.12] (test)
+# pluggy==1.0.0 [required: >=0.12] (test)
+
+click==8.0.3
+# The following modules depend on click:
+# uvicorn==0.15.0 [required: >=7.0]
+# black==20.8b1 [required: >=7.1.2]
+
+h11==0.12.0
+# The following modules depend on h11:
+# uvicorn==0.15.0 [required: >=0.8]
+
+
+# dev
+
+PTable==0.9.2
+# The following modules depend on PTable:
+# pip-licenses==3.5.3 [required: Any]
+
+
+# test
+
+appdirs==1.4.4
+# The following modules depend on appdirs:
+# black==20.8b1 [required: Any]
+
+mypy-extensions==0.4.3
+# The following modules depend on mypy-extensions:
+# black==20.8b1 [required: >=0.4.3]
+# mypy==0.790 [required: >=0.4.3,<0.5.0]
+
+pathspec==0.9.0
+# The following modules depend on pathspec:
+# black==20.8b1 [required: >=0.6,<1]
+
+regex==2021.10.23
+# The following modules depend on regex:
+# black==20.8b1 [required: >=2020.1.8]
+
+toml==0.10.2
+# The following modules depend on toml:
+# black==20.8b1 [required: >=0.10.1]
+# pytest==6.2.5 [required: Any]
+
+typed-ast==1.4.3
+# The following modules depend on typed-ast:
+# black==20.8b1 [required: >=1.4.0]
+# mypy==0.790 [required: >=1.4.0,<1.5.0]
+
+black==20.8b1
+# The following modules depend on black:
+# pysen==0.9.1 [required: >=19.10b0,<=20.8]
+
+coverage==5.5
+# The following modules depend on coverage:
+# coveralls==3.2.0 [required: >=4.1,<6.0]
+
+docopt==0.6.2
+# The following modules depend on docopt:
+# coveralls==3.2.0 [required: >=0.6.1]
+
+certifi==2021.10.8
+# The following modules depend on certifi:
+# requests==2.26.0 [required: >=2017.4.17]
+
+charset-normalizer==2.0.7
+# The following modules depend on charset-normalizer:
+# requests==2.26.0 [required: ~=2.0.0]
+
+urllib3==1.26.7
+# The following modules depend on urllib3:
+# requests==2.26.0 [required: >=1.21.1,<1.27]
+
+requests==2.26.0
+# The following modules depend on requests:
+# coveralls==3.2.0 [required: >=1.0.0]
+
+attrs==21.2.0
+# The following modules depend on attrs:
+# flake8-bugbear==21.9.2 [required: >=19.2.0]
+# pytest==6.2.5 [required: >=19.2.0]
+
+mccabe==0.6.1
+# The following modules depend on mccabe:
+# flake8==3.9.2 [required: >=0.6.0,<0.7.0]
+
+pycodestyle==2.7.0
+# The following modules depend on pycodestyle:
+# flake8==3.9.2 [required: >=2.7.0,<2.8.0]
+
+pyflakes==2.3.1
+# The following modules depend on pyflakes:
+# flake8==3.9.2 [required: >=2.3.0,<2.4.0]
+
+flake8==3.9.2
+# The following modules depend on flake8:
+# flake8-bugbear==21.9.2 [required: >=3.0.0]
+# pysen==0.9.1 [required: >=3.7,<4]
+
+flake8-bugbear==21.9.2
+# The following modules depend on flake8-bugbear:
+# pysen==0.9.1 [required: Any]
+
+isort==5.1.4
+# The following modules depend on isort:
+# pysen==0.9.1 [required: >=4.3,<5.2.0]
+
+mypy==0.790
+# The following modules depend on mypy:
+# pysen==0.9.1 [required: >=0.770,<0.800]
+
+colorlog==4.8.0
+# The following modules depend on colorlog:
+# pysen==0.9.1 [required: >=4.0.0,<5.0.0]
+
+dacite==1.6.0
+# The following modules depend on dacite:
+# pysen==0.9.1 [required: >=1.1.0,<2.0.0]
+
+smmap==5.0.0
+# The following modules depend on smmap:
+# gitdb==4.0.9 [required: >=3.0.1,<6]
+
+gitdb==4.0.9
+# The following modules depend on gitdb:
+# GitPython==3.1.24 [required: >=4.0.1,<5]
+
+GitPython==3.1.24
+# The following modules depend on GitPython:
+# pysen==0.9.1 [required: >=3.0.0,<4.0.0]
+
+tomlkit==0.7.2
+# The following modules depend on tomlkit:
+# pysen==0.9.1 [required: >=0.5.11,<1.0.0]
+
+unidiff==0.7.0
+# The following modules depend on unidiff:
+# pysen==0.9.1 [required: >=0.6.0,<1.0.0]
+
+atomicwrites==1.4.0
+# The following modules depend on atomicwrites:
+# pytest==6.2.5 [required: >=1.0]
+
+iniconfig==1.1.1
+# The following modules depend on iniconfig:
+# pytest==6.2.5 [required: Any]
+
+pyparsing==3.0.1
+# The following modules depend on pyparsing:
+# packaging==21.0 [required: >=2.0.2]
+
+packaging==21.0
+# The following modules depend on packaging:
+# pytest==6.2.5 [required: Any]
+
+pluggy==1.0.0
+# The following modules depend on pluggy:
+# pytest==6.2.5 [required: >=0.12,<2.0]
+
+py==1.10.0
+# The following modules depend on py:
+# pytest==6.2.5 [required: >=1.8.2]

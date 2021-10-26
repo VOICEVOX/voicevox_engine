@@ -1,9 +1,9 @@
-numpy==1.20 # ver 1.20 for resampy
-fastapi
-python-multipart
-uvicorn
-aiofiles
-soundfile
-resampy
-PyYAML
+numpy==1.20.0
+fastapi==0.70.0
+python-multipart==0.0.5
+uvicorn==0.15.0
+aiofiles==0.7.0
+SoundFile==0.10.3.post1
+resampy==0.2.2
+PyYAML==6.0
 git+https://github.com/Hiroshiba/pyopenjtalk@69e5f354634f98098113f9cac5a6ea736443f9c9#egg=pyopenjtalk
