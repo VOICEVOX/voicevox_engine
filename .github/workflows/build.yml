@@ -72,7 +72,9 @@ jobs:
         uses: actions/cache@v2
         id: venv-generate-licenses-cache
         with:
-          path: generate_licenses
+          path: |
+            generate_licenses
+            !generate_licenses/bin
           key: ${{ runner.os }}-venv-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
@@ -80,27 +82,19 @@ jobs:
         shell: bash
         run: python -m venv generate_licenses
 
-      - name: Change owner Python venv for licenses.json generation activation script
-        if: steps.venv-generate-licenses-cache.outputs.cache-hit == 'true'
-        shell: bash
-        run: sudo chown $(whoami) generate_licenses/bin/activate
-
       - name: Prepare Python venv for building VOICEVOX engine cache
         uses: actions/cache@v2
         id: venv-build-voicevox-cache
         with:
-          path: build_voicevox
+          path: |
+            build_voicevox
+            !build_voicevox/bin
           key: ${{ runner.os }}-venv-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for building VOICEVOX engine
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: python -m venv build_voicevox
-
-      - name: Change owner Python venv for building VOICEVOX engine activation script
-        if: steps.venv-build-voicevox-cache.outputs.cache-hit == 'true'
-        shell: bash
-        run: sudo chown $(whoami) build_voicevox/bin/activate
 
       - name: Install dependencies for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
