@@ -88,7 +88,9 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
     return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
 
 
-def accent_phrases_shaping(accent_phrases: List[AccentPhrase]) -> Tuple[List[Mora], List[OjtPhoneme]]:
+def accent_phrases_shaping(
+    accent_phrases: List[AccentPhrase],
+) -> Tuple[List[Mora], List[OjtPhoneme]]:
     """
     AccentPhraseモデルのリストを整形し、処理に必要なデータの原型を作り出す
     Parameters
