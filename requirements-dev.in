@@ -2,3 +2,4 @@
 cython
 nuitka
 pip-licenses
+pip-tools

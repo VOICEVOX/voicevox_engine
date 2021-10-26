@@ -215,13 +215,8 @@ python -m nuitka \
 ```
 ## 依存関係の更新について
 
-pip-toolsが必要です。
-
-```bash
-pip install pip-tools
-```
-
-以下のコマンドで更新できます。
+pip-toolsを用いて依存ライブラリのバージョンを固定しています。
+`requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
 
 ```bash
 pip-compile requirements.in
