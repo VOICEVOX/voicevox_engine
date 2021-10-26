@@ -80,6 +80,48 @@ curl -s \
     > audio.wav
 ```
 
+### 2人の話者でモーフィングするサンプルコード
+
+`/synthesis_morphing`では、2人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
+
+```bash
+echo -n "モーフィングを利用することで、２つの声を混ぜることができます。" > text.txt
+
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query?speaker=0"\
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# 元の話者での合成結果
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis?speaker=0" \
+    > audio.wav
+
+export MORPH_RATE=0.5
+
+# 話者2人分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    > audio.wav
+
+export MORPH_RATE=0.9
+
+# query、base_speaker、target_speakerが同じ場合はキャッシュが使用されるため比較的高速に生成される
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    > audio.wav
+```
+
 ## Docker イメージ
 
 ### CPU
