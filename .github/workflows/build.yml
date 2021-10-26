@@ -29,11 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set current directory to environment variable
-        run: echo "BASE_PATH=$(pwd)" >> $GITHUB_ENV
-
       - name: Create download and build directory
-        run: mkdir $BASE_PATH/download $BASE_PATH/build
+        run: mkdir download build
 
       - name: Install CMake, OpenBLAS, LibTorch, and CCache
         shell: bash
@@ -75,45 +72,40 @@ jobs:
         uses: actions/cache@v2
         id: venv-generate-licenses-cache
         with:
-          path: $BASE_PATH/generate_licenses
+          path: generate_licenses
           key: ${{ runner.os }}-venv-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
-        run: |
-          cd $BASE_PATH
-          python -m venv generate_licenses
+        run: python -m venv generate_licenses
 
       - name: Prepare Python venv for building VOICEVOX engine cache
         uses: actions/cache@v2
         id: venv-build-voicevox-cache
         with:
-          path: $BASE_PATH/build_voicevox
+          path: build_voicevox
           key: ${{ runner.os }}-venv-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for building VOICEVOX engine
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
-        run: |
-          cd $BASE_PATH/
-          python -m venv build_voicevox
+        run: python -m venv build_voicevox
 
       - name: Install dependencies for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cd $BASE_PATH/
-          source $BASE_PATH/generate_licenses/bin/activate
+          generate_licenses/bin/activate
           pip install --upgrade pip setuptools wheel
-          pip install -r $BASE_PATH/requirements-dev.txt
+          pip install -r requirements-dev.txt
           deactivate
 
       - name: Generate licenses.json
         shell: bash
         run: |
-          source $BASE_PATH/generate_licenses/bin/activate
-          python generate_licenses.py > $BASE_PATH/licenses.json
+          source generate_licenses/bin/activate
+          python generate_licenses.py > licenses.json
           deactivate
 
       - name: Prepare VOICEVOX Core cache
@@ -121,79 +113,74 @@ jobs:
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
-          path: $BASE_PATH/download/core
+          path: download/core
 
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > $BASE_PATH/download/core.zip
-          ditto -x -k --sequesterRsrc --rsrc $BASE_PATH/download/core.zip $BASE_PATH/download/
-          rm $BASE_PATH/download/core.zip
+          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
+          rm download/core.zip
 
       - name: Prepare VOICEVOX Core file
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
-        run: |
-          cd $BASE_PATH/download/core
-          mv libcore_cpu.dylib libcore.dylib
+        run: mv libcore_cpu.dylib libcore.dylib
+        working-directory: download/core
 
       - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
         run: |
-          cd $BASE_PATH/download/core
-          echo "VOICEVOX_CORE_DIR=$(pwd)" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=$BASE_PATH/download/core:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=$BASE_PATH/download/core:${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$(pwd):${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=$(pwd):${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
+        working-directory: download/core
 
       - name: Prepare VOICEVOX Core example cache
         uses: actions/cache@v2
         id: voicevox-core-example-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
-          path: $BASE_PATH/download/voicevox_core_example
+          path: download/voicevox_core_example
 
       - name: Clone VOICEVOX Core example
         if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" $BASE_PATH/download/voicevox_core_example
+          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
 
       - name: Install dependencies for building VOICEVOX Core Python package
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          source $BASE_PATH/build_voicevox/bin/activate
+          source build_voicevox/bin/activate
           pip install --upgrade pip setuptools wheel cython pybind11 pythran
           pip install --no-binary :all: --no-use-pep517 numpy==1.20.0 scipy
-          pip install -r $BASE_PATH/download/voicevox_core_example/example/python/requirements.txt
+          pip install -r download/voicevox_core_example/example/python/requirements.txt
           deactivate
 
       - name: Install VOICEVOX Core Python package
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          source $BASE_PATH/build_voicevox/bin/activate
+          source build_voicevox/bin/activate
           NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
-          cp $BASE_PATH/download/voicevox_core_example/core.h $BASE_PATH/download/voicevox_core_example/example/python/
+          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
 
-          cd $BASE_PATH/download/voicevox_core_example/example/python
-
-          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install .
+          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install download/voicevox_core_example/example/python/
           deactivate
 
       - name: Install dependencies for building VOICEVOX engine
         if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          cd $BASE_PATH/
-          source $BASE_PATH/build_voicevox/bin/activate
+          source build_voicevox/bin/activate
           pip install -r requirements-dev.txt
           deactivate
 
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
-          source $BASE_PATH/build_voicevox/bin/activate
+          source build_voicevox/bin/activate
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for i in $(seq 5); do
@@ -214,8 +201,7 @@ jobs:
 
       - name: Build run.py
         run: |
-          cd $BASE_PATH/build
-          source $BASE_PATH/build_voicevox/bin/activate
+          source ../build_voicevox/bin/activate
           python -m nuitka \
             --output-dir=./ \
             --standalone \
@@ -227,23 +213,23 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=resampy \
             --include-package-data=llvmlite \
-            --include-data-file=$BASE_PATH/VERSION.txt=./ \
-            --include-data-file=$BASE_PATH/licenses.json=./ \
+            --include-data-file=../VERSION.txt=./ \
+            --include-data-file=../licenses.json=./ \
             --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./ \
-            --include-data-file=$VOICEVOX_CORE_DIR/*.dylib=./ \
-            --include-data-file=$VOICEVOX_CORE_DIR/*.bin=./ \
-            --include-data-file=$VOICEVOX_CORE_DIR/metas.json=./ \
+            --include-data-file=../download/core/*.dylib=./ \
+            --include-data-file=../download/core/*.bin=./ \
+            --include-data-file=../download/core/metas.json=./ \
             --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./ \
-            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
-            --include-data-file=$BASE_PATH/build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
+            --include-data-file=../build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
+            --include-data-file=../build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
-            $BASE_PATH/run.py
+            ../run.py
           deactivate
+        working-directory: build
 
       - name: Set @rpath to @executable_path
         run: |
-          cd $BASE_PATH/
           install_name_tool -add_rpath @executable_path/. build/run.dist/run
 
       # FIXME: versioned name may be useful; but
