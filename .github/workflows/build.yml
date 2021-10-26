@@ -80,10 +80,10 @@ jobs:
         shell: bash
         run: python -m venv generate_licenses
 
-      - name: Add execute permission to Python venv for licenses.json generation activation script
+      - name: Change owner Python venv for licenses.json generation activation script
         if: steps.venv-generate-licenses-cache.outputs.cache-hit == 'true'
         shell: bash
-        run: chmod +x generate_licenses/bin/activate
+        run: sudo chown $(whoami) generate_licenses/bin/activate
 
       - name: Prepare Python venv for building VOICEVOX engine cache
         uses: actions/cache@v2
@@ -97,10 +97,10 @@ jobs:
         shell: bash
         run: python -m venv build_voicevox
 
-      - name: Add execute permission to Python venv for building VOICEVOX engine activation script
+      - name: Change owner Python venv for building VOICEVOX engine activation script
         if: steps.venv-build-voicevox-cache.outputs.cache-hit == 'true'
         shell: bash
-        run: chmod +x build_voicevox/bin/activate
+        run: sudo chown $(whoami) build_voicevox/bin/activate
 
       - name: Install dependencies for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
