@@ -156,8 +156,6 @@ class SynthesisEngine:
         self.yukarin_s_forwarder = yukarin_s_forwarder
         self.yukarin_sa_forwarder = yukarin_sa_forwarder
         self.decode_forwarder = decode_forwarder
-        self.yukarin_s_phoneme_class = OjtPhoneme
-        self.yukarin_soso_phoneme_class = OjtPhoneme
 
         self.speakers = speakers
         self.default_sampling_rate = 24000
