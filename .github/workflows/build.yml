@@ -195,7 +195,6 @@ jobs:
 
       - name: Build run.py
         run: |
-          mkdir $BASE_PATH/build
           cd $BASE_PATH/build
           source $BASE_PATH/build_voicevox/bin/activate
           python -m nuitka \
