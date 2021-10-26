@@ -82,7 +82,7 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
     ]
     vowel_phoneme_list = [phoneme_list[i] for i in vowel_indexes]
     # postとprevのvowel_indexの差として考えられる値は1か2
-    # 理由としてはphoneme_listは、consonant、vowelの組み合わせ"か、vowel一つの連続であるから
+    # 理由としてはphoneme_listは、consonant、vowelの組み合わせか、vowel一つの連続であるから
     # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
     # 2の場合はconsonantが存在するモーラである
     # なので、2の場合(else)でphonemeを取り出している
