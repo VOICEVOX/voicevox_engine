@@ -19,7 +19,6 @@ jobs:
         - os: [macos-11]
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_core_dll_name: core_cpu.dll
           pip_cache_path: ~/Library/Caches/pip
           voicevox_core_version: '0.7.4'
           voicevox_core_example_version: '0.7.4'
@@ -72,19 +71,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      - name: Prepare Python venv for licenses.json generation cache
+        uses: actions/cache@v2
+        id: venv-generate-licenses-cache
+        with:
+          path: $BASE_PATH/generate_licenses
+          key: ${{ runner.os }}-venv-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+
       - name: Prepare Python venv for licenses.json generation
+        if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH
           python -m venv generate_licenses
 
+      - name: Prepare Python venv for building VOICEVOX engine cache
+        uses: actions/cache@v2
+        id: venv-build-voicevox-cache
+        with:
+          path: $BASE_PATH/build_voicevox
+          key: ${{ runner.os }}-venv-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+
       - name: Prepare Python venv for building VOICEVOX engine
+        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/
           python -m venv build_voicevox
 
       - name: Install dependencies for licenses.json generation
+        if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/
@@ -108,7 +124,7 @@ jobs:
           path: $BASE_PATH/download/core
 
       - name: Download VOICEVOX Core
-        # if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > $BASE_PATH/download/core.zip
@@ -116,7 +132,7 @@ jobs:
           rm $BASE_PATH/download/core.zip
 
       - name: Prepare VOICEVOX Core file
-        # if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/download/core
@@ -137,12 +153,13 @@ jobs:
           path: $BASE_PATH/download/voicevox_core_example
 
       - name: Clone VOICEVOX Core example
-        # if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
+        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" $BASE_PATH/download/voicevox_core_example
 
       - name: Install dependencies for building VOICEVOX Core Python package
+        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           source $BASE_PATH/build_voicevox/bin/activate
@@ -152,6 +169,7 @@ jobs:
           deactivate
 
       - name: Install VOICEVOX Core Python package
+        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           source $BASE_PATH/build_voicevox/bin/activate
@@ -164,6 +182,7 @@ jobs:
           deactivate
 
       - name: Install dependencies for building VOICEVOX engine
+        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd $BASE_PATH/
