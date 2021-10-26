@@ -105,10 +105,10 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-pip install -r requirements-test.txt -c constraints.txt
+pip install -r requirements-test.txt
 
 # とりあえず実行したいだけなら代わりにこちら
-pip install -r requirements.txt -c constraints.txt
+pip install -r requirements.txt
 ```
 
 ## 実行
@@ -171,6 +171,22 @@ python -m nuitka \
     --no-prefer-source-code \
     run.py
 ```
+## 依存関係の更新について
+
+pip-toolsが必要です。
+
+```bash
+pip install pip-tools
+```
+
+以下のコマンドで更新できます。
+
+```bash
+pip-compile requirements.in
+pip-compile requirements-dev.in
+pip-compile requirements-test.in
+```
+
 
 ## プリセット機能について
 

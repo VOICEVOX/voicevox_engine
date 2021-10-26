@@ -1,0 +1,4 @@
+-r requirements.in
+pysen[lint]
+pytest
+coveralls
