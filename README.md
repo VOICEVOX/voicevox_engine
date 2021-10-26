@@ -213,6 +213,17 @@ python -m nuitka \
     --no-prefer-source-code \
     run.py
 ```
+## 依存関係の更新について
+
+pip-toolsを用いて依存ライブラリのバージョンを固定しています。
+`requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
+
+```bash
+pip-compile requirements.in
+pip-compile requirements-dev.in
+pip-compile requirements-test.in
+```
+
 
 ## プリセット機能について
 
