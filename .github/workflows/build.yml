@@ -620,11 +620,12 @@ jobs:
 
   upload-to-release:
     if: github.event.release.tag_name != ''
-    needs: [build-linux, build-windows]
+    needs: [build-mac, build-linux, build-windows]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         artifact_name:
+          - macos-x64
           - linux-cpu
           - linux-nvidia
           - windows-cpu
