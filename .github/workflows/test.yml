@@ -83,5 +83,5 @@ jobs:
             source venv/bin/activate
           fi
 
-          pip install -r requirements-dev.txt
+          pip install -r requirements-dev.txt --user
           python generate_licenses.py > /dev/null
