@@ -93,7 +93,7 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
     return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
 
 
-def accent_phrases_shaping(
+def pre_process(
     accent_phrases: List[AccentPhrase],
 ) -> Tuple[List[Mora], List[OjtPhoneme]]:
     """
@@ -185,7 +185,7 @@ class SynthesisEngine:
         """
         # phoneme
         # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = accent_phrases_shaping(accent_phrases)
+        flatten_moras, phoneme_data_list = pre_process(accent_phrases)
         # Step2. 次にOjtPhonemeの形に分解されたもの(phoneme_data_list)から、vowel(母音)の位置を抜き出す
         _, _, vowel_indexes_data = split_mora(phoneme_data_list)
 
@@ -236,7 +236,7 @@ class SynthesisEngine:
 
         # phoneme
         # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = accent_phrases_shaping(accent_phrases)
+        flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
         def _repeat_with_mora(array: numpy.ndarray, accent_phrase: AccentPhrase):
@@ -417,7 +417,7 @@ class SynthesisEngine:
 
         # phoneme
         # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = accent_phrases_shaping(query.accent_phrases)
+        flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
         # Step2. OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
         phoneme_list_s = numpy.array(
