@@ -184,26 +184,25 @@ class SynthesisEngine:
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # phoneme
-        # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
+        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
-        # Step2. 次にOjtPhonemeの形に分解されたもの(phoneme_data_list)から、vowel(母音)の位置を抜き出す
+        # OjtPhonemeの形に分解されたもの(phoneme_data_list)から、vowel(母音)の位置を抜き出す
         _, _, vowel_indexes_data = split_mora(phoneme_data_list)
 
         # yukarin_s
-        # Step3. OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
+        # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
         phoneme_list_s = numpy.array(
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
-        # Step4. Step3.で作られたPhoneme IDのリストをyukarin_s_forwarderにかけ、推論器によって適切な音素の長さを割り当てる
+        # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwarderにかけ、推論器によって適切な音素の長さを割り当てる
         phoneme_length = self.yukarin_s_forwarder(
             length=len(phoneme_list_s),
             phoneme_list=phoneme_list_s,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
 
-        # Step5. yukarin_s_forwarderの結果をaccent_phrasesに反映する
-        # PythonにおけるObject(class)はイミュータブルであるため、
-        # flatten_moras変数に展開された値を変更することで間接的にaccent_phrases内のデータを書き換えることができる
+        # yukarin_s_forwarderの結果をaccent_phrasesに反映する
+        # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
         for i, mora in enumerate(flatten_moras):
             mora.consonant_length = (
                 phoneme_length[vowel_indexes_data[i + 1] - 1]
@@ -235,7 +234,7 @@ class SynthesisEngine:
             return []
 
         # phoneme
-        # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
+        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
@@ -266,7 +265,7 @@ class SynthesisEngine:
                 ],
             )
 
-        # Step2. accent_phrasesから、アクセントの開始位置のリストを作る
+        # accent_phrasesから、アクセントの開始位置のリストを作る
         # 単位行列(numpy.eye)を応用し、accent_listを作っている
         start_accent_list = numpy.concatenate(
             [
@@ -288,7 +287,7 @@ class SynthesisEngine:
             ]
         )
 
-        # Step3. accent_phrasesから、アクセントの終了位置のリストを作る
+        # accent_phrasesから、アクセントの終了位置のリストを作る
         end_accent_list = numpy.concatenate(
             [
                 _repeat_with_mora(
@@ -303,7 +302,7 @@ class SynthesisEngine:
             ]
         )
 
-        # Step4. accent_phrasesから、アクセント句の開始位置のリストを作る
+        # accent_phrasesから、アクセント句の開始位置のリストを作る
         # これによって、yukarin_sa_forwarder内でアクセント句を区別できる
         start_accent_phrase_list = numpy.concatenate(
             [
@@ -319,7 +318,7 @@ class SynthesisEngine:
             ]
         )
 
-        # Step5. accent_phrasesから、アクセント句の終了位置のリストを作る
+        # accent_phrasesから、アクセント句の終了位置のリストを作る
         end_accent_phrase_list = numpy.concatenate(
             [
                 _repeat_with_mora(
@@ -334,13 +333,13 @@ class SynthesisEngine:
             ]
         )
 
-        # Step6. 最初と最後に0を付け加える。これによってpau(前後の無音のためのもの)を付け加えたことになる
+        # 最初と最後に0を付け加える。これによってpau(前後の無音のためのもの)を付け加えたことになる
         start_accent_list = numpy.r_[0, start_accent_list, 0]
         end_accent_list = numpy.r_[0, end_accent_list, 0]
         start_accent_phrase_list = numpy.r_[0, start_accent_phrase_list, 0]
         end_accent_phrase_list = numpy.r_[0, end_accent_phrase_list, 0]
 
-        # Step7. アクセント・アクセント句関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
+        # アクセント・アクセント句関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
         start_accent_list = numpy.array(start_accent_list, dtype=numpy.int64)
         end_accent_list = numpy.array(end_accent_list, dtype=numpy.int64)
         start_accent_phrase_list = numpy.array(
@@ -348,7 +347,7 @@ class SynthesisEngine:
         )
         end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
 
-        # Step8. phonemeに関するデータを取得(変換)する
+        # phonemeに関するデータを取得(変換)する
         (
             consonant_phoneme_data_list,
             vowel_phoneme_data_list,
@@ -356,7 +355,7 @@ class SynthesisEngine:
         ) = split_mora(phoneme_data_list)
 
         # yukarin_sa
-        # Step9. Phoneme関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
+        # Phoneme関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
         vowel_indexes = numpy.array(vowel_indexes_data, dtype=numpy.int64)
 
         vowel_phoneme_list = numpy.array(
@@ -370,7 +369,7 @@ class SynthesisEngine:
             dtype=numpy.int64,
         )
 
-        # Step10. Step7.およびStep9.で作られたデータをyukarin_sa_forwarderにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
+        # 今までに生成された情報をyukarin_sa_forwarderにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
         f0_list = self.yukarin_sa_forwarder(
             length=vowel_phoneme_list.shape[0],
             vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
@@ -384,14 +383,13 @@ class SynthesisEngine:
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )[0]
 
-        # Step11. 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
+        # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
         for i, p in enumerate(vowel_phoneme_data_list):
             if p.phoneme in unvoiced_mora_phoneme_list:
                 f0_list[i] = 0
 
-        # Step12. yukarin_sa_forwarderの結果をaccent_phrasesに反映する
-        # PythonにおけるObject(class)はイミュータブルであるため、
-        # flatten_moras変数に展開された値を変更することで間接的にaccent_phrases内のデータを書き換えることができる
+        # yukarin_sa_forwarderの結果をaccent_phrasesに反映する
+        # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
         for i, mora in enumerate(flatten_moras):
             mora.pitch = f0_list[i + 1]
 
@@ -416,16 +414,16 @@ class SynthesisEngine:
         rate = 200
 
         # phoneme
-        # Step1. まず、AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
+        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
-        # Step2. OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
+        # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
         phoneme_list_s = numpy.array(
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
 
         # length
-        # Step3. 音素の長さをリストに展開・結合する。ここには前後の無音時間も含まれる
+        # 音素の長さをリストに展開・結合する。ここには前後の無音時間も含まれる
         phoneme_length_list = (
             [query.prePhonemeLength]
             + [
@@ -438,11 +436,11 @@ class SynthesisEngine:
             ]
             + [query.postPhonemeLength]
         )
-        # Step4. floatにキャストし、細かな値を四捨五入する
+        # floatにキャストし、細かな値を四捨五入する
         phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
         phoneme_length = numpy.round(phoneme_length * rate) / rate
 
-        # Step5. lengthにSpeed Scale(話速)を適用する
+        # lengthにSpeed Scale(話速)を適用する
         phoneme_length /= query.speedScale
 
         # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装
@@ -450,48 +448,48 @@ class SynthesisEngine:
         phoneme_length[0] += pre_padding_length
 
         # pitch
-        # Step6. モーラの音高(ピッチ)を展開・結合し、floatにキャストする
+        # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
         f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
         f0 = numpy.array(f0_list, dtype=numpy.float32)
-        # Step7. 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
+        # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
         f0 *= 2 ** query.pitchScale
 
-        # Step8. 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
+        # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
         voiced = f0 > 0
-        # Step9. 有声音素の音高(ピッチ)の平均値を求める
+        # 有声音素の音高(ピッチ)の平均値を求める
         mean_f0 = f0[voiced].mean()
-        # Step10. 平均値がNaNではないとき、抑揚を適用する
+        # 平均値がNaNではないとき、抑揚を適用する
         # 抑揚は音高と音高の平均値の差に抑揚を掛けたもの((f0 - mean_f0) * Intonation Scale)に抑揚の平均値(mean_f0)を足したもの
         if not numpy.isnan(mean_f0):
             f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
 
-        # Step11. OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
+        # OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
         _, _, vowel_indexes_data = split_mora(phoneme_data_list)
         vowel_indexes = numpy.array(vowel_indexes_data)
 
         # forward decode
-        # Step12. 音素の長さにrateを掛け、intにキャストする
+        # 音素の長さにrateを掛け、intにキャストする
         phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
-        # Step13. Phoneme IDを音素の長さ分繰り返す
+        # Phoneme IDを音素の長さ分繰り返す
         phoneme = numpy.repeat(phoneme_list_s, phoneme_bin_num)
-        # Step14. f0を母音と子音の長さの合計分繰り返す
+        # f0を母音と子音の長さの合計分繰り返す
         f0 = numpy.repeat(
             f0,
             [a.sum() for a in numpy.split(phoneme_bin_num, vowel_indexes[:-1] + 1)],
         )
 
-        # Step15. phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
+        # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
         array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
-        # Step16. Step15.で初期化された2次元配列の各行のPhoneme ID列目を1にする
+        # 初期化された2次元配列の各行のPhoneme ID列目を1にする
         array[numpy.arange(len(phoneme)), phoneme] = 1
         phoneme = array
 
-        # Step17. f0とphonemeをそれぞれデコード用にリサンプリングする
+        # f0とphonemeをそれぞれデコード用にリサンプリングする
         f0 = SamplingData(array=f0, rate=rate).resample(24000 / 256)
         phoneme = SamplingData(array=phoneme, rate=rate).resample(24000 / 256)
 
-        # Step18. 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
+        # 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
         wave = self.decode_forwarder(
             length=phoneme.shape[0],
             phoneme_size=phoneme.shape[1],
@@ -504,11 +502,11 @@ class SynthesisEngine:
         wave = wave[int(self.default_sampling_rate * pre_padding_length) :]
 
         # volume
-        # Step19. 音量が1ではないなら、その分を音声波形に適用する
+        # 音量が1ではないなら、その分を音声波形に適用する
         if query.volumeScale != 1:
             wave *= query.volumeScale
 
-        # Step20. 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
+        # 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
         if query.outputSamplingRate != self.default_sampling_rate:
             wave = resampy.resample(
                 wave,
@@ -518,7 +516,7 @@ class SynthesisEngine:
             )
 
         # ステレオ変換
-        # Step21. 出力設定がステレオなのであれば、ステレオ化する
+        # 出力設定がステレオなのであれば、ステレオ化する
         if query.outputStereo:
             wave = numpy.array([wave, wave]).T
 
