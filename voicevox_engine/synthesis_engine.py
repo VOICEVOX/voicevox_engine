@@ -481,7 +481,7 @@ class SynthesisEngine:
 
         # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
         array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
-        # 初期化された2次元配列の各行のPhoneme ID列目を1にする
+        # 初期化された2次元配列の各行をone hotにする
         array[numpy.arange(len(phoneme)), phoneme] = 1
         phoneme = array
 
