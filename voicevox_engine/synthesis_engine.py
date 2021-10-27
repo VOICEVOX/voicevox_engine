@@ -297,7 +297,9 @@ class SynthesisEngine:
                     # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
                     # accentが1の場合は0番目を指定している
                     # accentが1ではない場合、accentはend_accent_listに用いられる
-                    _create_one_hot(accent_phrase, 0 if accent_phrase.accent == 1 else 1),
+                    _create_one_hot(
+                        accent_phrase, 0 if accent_phrase.accent == 1 else 1
+                    ),
                     accent_phrase=accent_phrase,
                 )
                 for accent_phrase in accent_phrases
