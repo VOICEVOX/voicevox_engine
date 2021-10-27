@@ -410,7 +410,7 @@ class SynthesisEngine:
             音声合成結果
         """
 
-        # TODO: rateの意味
+        # TODO: rateを200にする意味がないので、テスト実装後リファクタする
         rate = 200
 
         # phoneme
