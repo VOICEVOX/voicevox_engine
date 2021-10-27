@@ -265,22 +265,39 @@ class SynthesisEngine:
                 ],
             )
 
+        def _create_one_hot(accent_phrase: AccentPhrase, position: int):
+            """
+            単位行列(numpy.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
+            例えば、accent_phraseのmorasの長さが12、positionが1なら
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            morasの長さが同じく12、positionが-1なら
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+            のような配列を生成する
+            accent_phraseがpause_moraを含む場合はさらに後ろに0が足される
+            Parameters
+            ----------
+            accent_phrase : AccentPhrase
+                アクセント句モデル
+            position : int
+                one hotにするindex
+            Returns
+            -------
+            one_hot : numpy.ndarray
+                one hotな配列(リスト)
+            """
+            return numpy.r_[
+                numpy.eye(len(accent_phrase.moras))[position],
+                (0 if accent_phrase.pause_mora is not None else []),
+            ]
+
         # accent_phrasesから、アクセントの開始位置のリストを作る
-        # 単位行列(numpy.eye)を応用し、accent_listを作っている
         start_accent_list = numpy.concatenate(
             [
                 _repeat_with_mora(
-                    numpy.r_[
-                        numpy.eye(len(accent_phrase.moras))[
-                            # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
-                            # accentが1の場合は0番目を指定している
-                            # accentが1ではない場合、accentはend_accent_listに用いられる
-                            0
-                            if accent_phrase.accent == 1
-                            else 1
-                        ],
-                        (0 if accent_phrase.pause_mora is not None else []),
-                    ],
+                    # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
+                    # accentが1の場合は0番目を指定している
+                    # accentが1ではない場合、accentはend_accent_listに用いられる
+                    _create_one_hot(accent_phrase, 0 if accent_phrase.accent == 1 else 1),
                     accent_phrase=accent_phrase,
                 )
                 for accent_phrase in accent_phrases
@@ -291,11 +308,8 @@ class SynthesisEngine:
         end_accent_list = numpy.concatenate(
             [
                 _repeat_with_mora(
-                    numpy.r_[
-                        # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
-                        numpy.eye(len(accent_phrase.moras))[accent_phrase.accent - 1],
-                        (0 if accent_phrase.pause_mora is not None else []),
-                    ],
+                    # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
+                    _create_one_hot(accent_phrase, accent_phrase.accent - 1),
                     accent_phrase=accent_phrase,
                 )
                 for accent_phrase in accent_phrases
@@ -307,11 +321,7 @@ class SynthesisEngine:
         start_accent_phrase_list = numpy.concatenate(
             [
                 _repeat_with_mora(
-                    numpy.r_[
-                        # フレーズの長さ分の単位行列の0番目([1, 0, 0, 0, 0,....])を取り出す
-                        numpy.eye(len(accent_phrase.moras))[0],
-                        (0 if accent_phrase.pause_mora is not None else []),
-                    ],
+                    _create_one_hot(accent_phrase, 0),
                     accent_phrase=accent_phrase,
                 )
                 for accent_phrase in accent_phrases
@@ -322,11 +332,7 @@ class SynthesisEngine:
         end_accent_phrase_list = numpy.concatenate(
             [
                 _repeat_with_mora(
-                    numpy.r_[
-                        # フレーズの長さ分の単位行列の最後([....0, 0, 0, 0, 1])を取り出す
-                        numpy.eye(len(accent_phrase.moras))[-1],
-                        (0 if accent_phrase.pause_mora is not None else []),
-                    ],
+                    _create_one_hot(accent_phrase, -1),
                     accent_phrase=accent_phrase,
                 )
                 for accent_phrase in accent_phrases
