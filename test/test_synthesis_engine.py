@@ -1,12 +1,25 @@
+from copy import deepcopy
 from unittest import TestCase
+from unittest.mock import Mock
+
+import numpy
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.synthesis_engine import (
+    SynthesisEngine,
     split_mora,
     to_flatten_moras,
     to_phoneme_data_list,
 )
+
+
+def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.ndarray):
+    result = []
+    # mockとしての適当な処理、特に意味はない
+    for i in range(length):
+        result.append(phoneme_list[i] * 0.5 + speaker_id)
+    return numpy.array(result)
 
 
 class TestSynthesisEngine(TestCase):
@@ -114,6 +127,15 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
+        self.yukarin_s_mock = Mock(side_effect=yukarin_s_mock)
+        self.yukarin_sa_mock = Mock()
+        self.decode_mock = Mock()
+        self.synthesis_engine = SynthesisEngine(
+            yukarin_s_forwarder=self.yukarin_s_mock,
+            yukarin_sa_forwarder=self.yukarin_sa_mock,
+            decode_forwarder=self.decode_mock,
+            speakers="",
+        )
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -168,3 +190,59 @@ class TestSynthesisEngine(TestCase):
                 None,
             ],
         )
+
+    def test_replace_phoneme_length(self):
+        result = self.synthesis_engine.replace_phoneme_length(
+            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), speaker_id=1
+        )
+        yukarin_s_args = self.yukarin_s_mock.call_args[1]
+        true_phoneme_list = numpy.array(
+            [
+                0,
+                23,
+                30,
+                4,
+                28,
+                21,
+                10,
+                21,
+                42,
+                7,
+                0,
+                19,
+                21,
+                19,
+                30,
+                12,
+                14,
+                35,
+                6,
+                0,
+            ],
+            dtype=numpy.int64,
+        )
+        self.assertEqual(yukarin_s_args["length"], 20)
+        self.assertEqual(
+            yukarin_s_args["phoneme_list"].all(),
+            true_phoneme_list.all(),
+        )
+        self.assertEqual(yukarin_s_args["speaker_id"], 1)
+
+        # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
+        true_result = deepcopy(self.accent_phrases_hello_hiho)
+        index = 1
+        for accent_phrase in true_result:
+            moras = accent_phrase.moras
+            for mora in moras:
+                if mora.consonant is not None:
+                    mora.consonant_length = true_phoneme_list[index] * 0.5 + 1
+                    index += 1
+                mora.vowel_length = true_phoneme_list[index] * 0.5 + 1
+                index += 1
+            if accent_phrase.pause_mora is not None:
+                accent_phrase.pause_mora.vowel_length = (
+                    true_phoneme_list[index] * 0.5 + 1
+                )
+                index += 1
+
+        self.assertEqual(result, true_result)
