@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements-test.txt
+          python -m pip install -r requirements-test.txt
 
       - run: pysen run lint
 
@@ -83,5 +83,5 @@ jobs:
             source venv/bin/activate
           fi
 
-          pip install -r requirements-dev.txt
+          python -m pip install -r requirements-dev.txt
           python generate_licenses.py > /dev/null
