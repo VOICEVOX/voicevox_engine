@@ -227,9 +227,9 @@ class TestSynthesisEngine(TestCase):
         phoneme_list = yukarin_s_args["phoneme_list"]
         self.assertEqual(list_length, 20)
         self.assertEqual(list_length, len(phoneme_list))
-        self.assertEqual(
-            phoneme_list.all(),
-            true_phoneme_list.all(),
+        numpy.testing.assert_array_equal(
+            phoneme_list,
+            true_phoneme_list,
         )
         self.assertEqual(yukarin_s_args["speaker_id"], 1)
 
