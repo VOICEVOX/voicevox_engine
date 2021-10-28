@@ -48,27 +48,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Prepare Python venv for licenses.json generation cache
-        uses: actions/cache@v2
-        id: venv-generate-licenses-cache
-        with:
-          path: |
-            generate_licenses
-            !generate_licenses/bin
-          key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+      # - name: Prepare Python venv for licenses.json generation cache
+      #   uses: actions/cache@v2
+      #   id: venv-generate-licenses-cache
+      #   with:
+      #     path: |
+      #       generate_licenses
+      #       !generate_licenses/bin
+      #     key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
         shell: bash
         run: python -m venv generate_licenses
 
-      - name: Prepare Python venv for building VOICEVOX engine cache
-        uses: actions/cache@v2
-        id: venv-build-voicevox-cache
-        with:
-          path: |
-            build_voicevox
-            !build_voicevox/bin
-          key: ${{ runner.os }}-venv-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+      # - name: Prepare Python venv for building VOICEVOX engine cache
+      #   uses: actions/cache@v2
+      #   id: venv-build-voicevox-cache
+      #   with:
+      #     path: |
+      #       build_voicevox
+      #       !build_voicevox/bin
+      #     key: ${{ runner.os }}-venv-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for building VOICEVOX engine
         shell: bash
@@ -90,12 +90,12 @@ jobs:
           python generate_licenses.py > licenses.json
           deactivate
 
-      - name: Prepare VOICEVOX Core cache
-        uses: actions/cache@v2
-        id: voicevox-core-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
-          path: download/core
+      # - name: Prepare VOICEVOX Core cache
+      #   uses: actions/cache@v2
+      #   id: voicevox-core-cache
+      #   with:
+      #     key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
+      #     path: download/core
 
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
@@ -117,12 +117,12 @@ jobs:
           echo "LIBRARY_PATH=$(pwd):${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
         working-directory: download/core
 
-      - name: Prepare VOICEVOX Core example cache
-        uses: actions/cache@v2
-        id: voicevox-core-example-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
-          path: download/voicevox_core_example
+      # - name: Prepare VOICEVOX Core example cache
+      #   uses: actions/cache@v2
+      #   id: voicevox-core-example-cache
+      #   with:
+      #     key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
+      #     path: download/voicevox_core_example
 
       - name: Clone VOICEVOX Core example
         if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
