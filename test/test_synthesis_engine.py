@@ -195,6 +195,8 @@ class TestSynthesisEngine(TestCase):
         result = self.synthesis_engine.replace_phoneme_length(
             accent_phrases=deepcopy(self.accent_phrases_hello_hiho), speaker_id=1
         )
+
+        # yukarin_sに渡される値の検証
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         true_phoneme_list = numpy.array(
             [
@@ -222,6 +224,7 @@ class TestSynthesisEngine(TestCase):
             dtype=numpy.int64,
         )
         self.assertEqual(yukarin_s_args["length"], 20)
+        self.assertEqual(yukarin_s_args["length"], len(yukarin_s_args["phoneme_list"]))
         self.assertEqual(
             yukarin_s_args["phoneme_list"].all(),
             true_phoneme_list.all(),
