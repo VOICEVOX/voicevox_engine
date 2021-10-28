@@ -183,9 +183,9 @@ jobs:
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=/Users/runner/hostedtoolcache/Python/3.7.12/x64/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
-            --include-data-file=/Users/runner/hostedtoolcache/Python/3.7.12/x64/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
-            --include-data-file=/Users/runner/hostedtoolcache/Python/3.7.12/x64/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
             ../run.py
