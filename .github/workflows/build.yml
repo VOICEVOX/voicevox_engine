@@ -52,13 +52,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      - name: Prepare Python for building VOICEVOX engine cache
+        uses: actions/cache@v2
+        id: venv-build-voicevox-cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+
       - name: Prepare Python venv for licenses.json generation cache
         uses: actions/cache@v2
         id: venv-generate-licenses-cache
         with:
-          path: |
-            generate_licenses
-            !generate_licenses/bin
+          path: generate_licenses
           key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation
