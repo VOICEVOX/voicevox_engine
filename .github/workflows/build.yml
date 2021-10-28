@@ -65,19 +65,6 @@ jobs:
         shell: bash
         run: python -m venv generate_licenses
 
-      - name: Prepare Python venv for building VOICEVOX engine cache
-        uses: actions/cache@v2
-        id: venv-build-voicevox-cache
-        with:
-          path: |
-            build_voicevox
-            !build_voicevox/bin
-          key: ${{ runner.os }}-venv-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
-
-      - name: Prepare Python venv for building VOICEVOX engine
-        shell: bash
-        run: python -m venv build_voicevox
-
       - name: Install dependencies for licenses.json generation
         if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
         shell: bash
@@ -135,36 +122,26 @@ jobs:
           git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
 
       - name: Install dependencies for building VOICEVOX Core Python package
-        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          source build_voicevox/bin/activate
           pip install -r download/voicevox_core_example/example/python/requirements.txt
-          deactivate
 
       - name: Install VOICEVOX Core Python package
-        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          source build_voicevox/bin/activate
           NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
           cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
 
           CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install download/voicevox_core_example/example/python/
-          deactivate
 
       - name: Install dependencies for building VOICEVOX engine
-        if: steps.venv-build-voicevox-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          source build_voicevox/bin/activate
           pip install -r requirements-dev.txt
-          deactivate
 
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
-          source build_voicevox/bin/activate
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for i in $(seq 5); do
@@ -181,11 +158,9 @@ jobs:
           if [ "$EXIT_CODE" != "0" ]; then
             exit "$EXIT_CODE"
           fi
-          deactivate
 
       - name: Build run.py
         run: |
-          source ../build_voicevox/bin/activate
           python -m nuitka \
             --output-dir=./ \
             --standalone \
@@ -203,13 +178,12 @@ jobs:
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=../build_voicevox/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
-            --include-data-file=../build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
-            --include-data-file=../build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
+            --include-data-file=/usr/local/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
+            --include-data-file=/usr/local/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
+            --include-data-file=/usr/local/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
             --no-prefer-source-code \
             ../run.py
-          deactivate
         working-directory: build
 
       - name: Set @rpath to @executable_path
