@@ -198,56 +198,57 @@ class TestSynthesisEngine(TestCase):
 
         # yukarin_sに渡される値の検証
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
-        true_phoneme_list = numpy.array(
-            [
-                0,
-                23,
-                30,
-                4,
-                28,
-                21,
-                10,
-                21,
-                42,
-                7,
-                0,
-                19,
-                21,
-                19,
-                30,
-                12,
-                14,
-                35,
-                6,
-                0,
-            ],
-            dtype=numpy.int64,
-        )
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
         self.assertEqual(list_length, 20)
         self.assertEqual(list_length, len(phoneme_list))
         numpy.testing.assert_array_equal(
             phoneme_list,
-            true_phoneme_list,
+            numpy.array(
+                [
+                    0,
+                    23,
+                    30,
+                    4,
+                    28,
+                    21,
+                    10,
+                    21,
+                    42,
+                    7,
+                    0,
+                    19,
+                    21,
+                    19,
+                    30,
+                    12,
+                    14,
+                    35,
+                    6,
+                    0,
+                ],
+                dtype=numpy.int64,
+            ),
         )
         self.assertEqual(yukarin_s_args["speaker_id"], 1)
 
         # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
+
+        def result_value(i: int):
+            return phoneme_list[i] * 0.5 + 1
+
         for accent_phrase in true_result:
             moras = accent_phrase.moras
             for mora in moras:
                 if mora.consonant is not None:
-                    mora.consonant_length = true_phoneme_list[index] * 0.5 + 1
+                    mora.consonant_length = result_value(index)
                     index += 1
-                mora.vowel_length = true_phoneme_list[index] * 0.5 + 1
+                mora.vowel_length = result_value(index)
                 index += 1
             if accent_phrase.pause_mora is not None:
-                accent_phrase.pause_mora.vowel_length = (
-                    true_phoneme_list[index] * 0.5 + 1
-                )
+                accent_phrase.pause_mora.vowel_length = result_value(index)
                 index += 1
 
         self.assertEqual(result, true_result)
