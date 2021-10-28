@@ -27,6 +27,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Prepare Python dependencies cache
         uses: actions/cache@v2
         id: pip-cache
@@ -68,7 +70,7 @@ jobs:
           key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
           path: download/voicevox_core_example
 
-      - name: Remove all cache
+      - name: Prepare VOICEVOX Core example cache
         run: |
           rm -rf generate_licenses
           rm -rf build_voicevox
