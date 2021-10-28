@@ -11,6 +11,205 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
 
 jobs:
+  # Build Mac binary (x64 arch only)
+  build-mac:
+    strategy:
+      matrix:
+        include:
+        - os: [macos-11]
+          python: '3.7'
+          python_architecture: 'x64'
+          pip_cache_path: ~/Library/Caches/pip
+          voicevox_core_version: '0.7.4'
+          voicevox_core_example_version: '0.7.4'
+          artifact_name: macos-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install LibTorch and CCache
+        shell: bash
+        run: brew install libtorch ccache
+
+      - name: Create download and build directory
+        run: mkdir download build
+
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.python_architecture }}
+
+      - name: Prepare Python dependencies cache
+        uses: actions/cache@v2
+        id: pip-cache
+        with:
+          path: ${{ matrix.pip_cache_path }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Prepare Python for building VOICEVOX engine cache
+        uses: actions/cache@v2
+        id: venv-build-voicevox-cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+
+      - name: Prepare Python venv for licenses.json generation cache
+        uses: actions/cache@v2
+        id: venv-generate-licenses-cache
+        with:
+          path: generate_licenses
+          key: ${{ runner.os }}-venv-libs-generate_licenses-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+
+      - name: Prepare Python venv for licenses.json generation
+        shell: bash
+        run: python -m venv generate_licenses
+
+      - name: Install dependencies for licenses.json generation
+        if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          source generate_licenses/bin/activate
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements-dev.txt
+          deactivate
+
+      - name: Generate licenses.json
+        shell: bash
+        run: |
+          source generate_licenses/bin/activate
+          python generate_licenses.py > licenses.json
+          deactivate
+
+      - name: Prepare VOICEVOX Core cache
+        uses: actions/cache@v2
+        id: voicevox-core-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
+          path: download/core
+
+      - name: Download VOICEVOX Core
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
+          rm download/core.zip
+
+      - name: Prepare VOICEVOX Core file
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: mv libcore_cpu.dylib libcore.dylib
+        working-directory: download/core
+
+      - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
+        run: |
+          echo "LD_LIBRARY_PATH=$(pwd):${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=$(pwd):${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
+        working-directory: download/core
+
+      - name: Prepare VOICEVOX Core example cache
+        uses: actions/cache@v2
+        id: voicevox-core-example-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
+          path: download/voicevox_core_example
+
+      - name: Clone VOICEVOX Core example
+        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+
+      - name: Install dependencies for building VOICEVOX Core Python package
+        shell: bash
+        run: |
+          pip install -r download/voicevox_core_example/example/python/requirements.txt
+
+      - name: Install VOICEVOX Core Python package
+        shell: bash
+        run: |
+          NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
+          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
+
+          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install download/voicevox_core_example/example/python/
+
+      - name: Install dependencies for building VOICEVOX engine
+        shell: bash
+        run: |
+          pip install -r requirements-dev.txt
+
+      - name: Download PyOpenJTalk dictionary
+        shell: bash
+        run: |
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
+      - name: Build run.py
+        run: |
+          python -m nuitka \
+            --output-dir=./ \
+            --standalone \
+            --plugin-enable=numpy \
+            --follow-import-to=numpy \
+            --follow-import-to=aiofiles \
+            --include-package=uvicorn \
+            --include-package=anyio \
+            --include-package-data=pyopenjtalk \
+            --include-package-data=resampy \
+            --include-package-data=llvmlite \
+            --include-data-file=../VERSION.txt=./ \
+            --include-data-file=../licenses.json=./ \
+            --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./ \
+            --include-data-file=../download/core/*.dylib=./ \
+            --include-data-file=../download/core/*.bin=./ \
+            --include-data-file=../download/core/metas.json=./ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
+            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
+            --follow-imports \
+            --no-prefer-source-code \
+            ../run.py
+        working-directory: build
+
+      - name: Set @rpath to @executable_path
+        run: |
+          install_name_tool -add_rpath @executable_path/. build/run.dist/run
+
+      # FIXME: versioned name may be useful; but
+      # actions/download-artifact and dawidd6/download-artifact do not support
+      # wildcard / forward-matching yet.
+      # Currently, It is good to use static artifact name for future binary test workflow.
+      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
+      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
+      - uses: actions/upload-artifact@v2
+        # env:
+        #   VERSIONED_ARTIFACT_NAME: |
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: build/run.dist/
+
+
   # Build Linux binary (push only buildcache image)
   build-linux:
     strategy:
@@ -382,11 +581,12 @@ jobs:
 
   upload-to-release:
     if: github.event.release.tag_name != ''
-    needs: [build-linux, build-windows]
+    needs: [build-mac, build-linux, build-windows]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         artifact_name:
+          - macos-x64
           - linux-cpu
           - linux-nvidia
           - windows-cpu
