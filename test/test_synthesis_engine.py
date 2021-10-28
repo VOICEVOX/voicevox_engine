@@ -223,10 +223,12 @@ class TestSynthesisEngine(TestCase):
             ],
             dtype=numpy.int64,
         )
-        self.assertEqual(yukarin_s_args["length"], 20)
-        self.assertEqual(yukarin_s_args["length"], len(yukarin_s_args["phoneme_list"]))
+        list_length = yukarin_s_args["length"]
+        phoneme_list = yukarin_s_args["phoneme_list"]
+        self.assertEqual(list_length, 20)
+        self.assertEqual(list_length, len(phoneme_list))
         self.assertEqual(
-            yukarin_s_args["phoneme_list"].all(),
+            phoneme_list.all(),
             true_phoneme_list.all(),
         )
         self.assertEqual(yukarin_s_args["speaker_id"], 1)
