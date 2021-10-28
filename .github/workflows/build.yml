@@ -32,26 +32,6 @@ jobs:
       - name: Create download and build directory
         run: mkdir download build
 
-      - name: Install CMake, OpenBLAS, LibTorch, and CCache
-        shell: bash
-        run: brew install cmake openblas libtorch ccache
-
-      - name: Select clang as CC
-        run: echo "CC=clang" >> $GITHUB_ENV
-
-      - name: Select GFortran 11 as F77/F90
-        run: |
-          echo "F77=gfortran-11" >> $GITHUB_ENV
-          echo "F90=gfortran-11" >> $GITHUB_ENV
-
-      - name: Export OpenBLAS path to OPENBLAS
-        run: |
-          echo "OPENBLAS=$(brew --prefix openblas)/lib" >> $GITHUB_ENV
-
-      - name: Export OpenBLAS path to LD_LIBRARY_PATH
-        run: |
-          echo "$(brew --prefix openblas)/lib:${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
-
       - name: Setup Python
         id: setup-python
         uses: actions/setup-python@v2
@@ -155,8 +135,6 @@ jobs:
         shell: bash
         run: |
           source build_voicevox/bin/activate
-          pip install --upgrade pip setuptools wheel cython pybind11 pythran
-          pip install --no-binary :all: --no-use-pep517 numpy==1.20.0 scipy
           pip install -r download/voicevox_core_example/example/python/requirements.txt
           deactivate
 
@@ -221,7 +199,7 @@ jobs:
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=$(brew --prefix openblas)/lib/*.dylib=./ \
+            --include-data-file=$BASE_DIR/build_env/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=../build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
             --include-data-file=../build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
