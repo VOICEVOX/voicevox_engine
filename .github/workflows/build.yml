@@ -29,6 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install LibTorch and CCache
+        shell: bash
+        run: brew install libtorch ccache
+
       - name: Create download and build directory
         run: mkdir download build
 
