@@ -203,7 +203,7 @@ jobs:
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=$BASE_DIR/build_env/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
+            --include-data-file=../build_voicevox/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=../build_voicevox/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
             --include-data-file=../build_voicevox/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --follow-imports \
