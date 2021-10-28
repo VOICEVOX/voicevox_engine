@@ -18,7 +18,7 @@ def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.n
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(phoneme_list[i] * 0.5 + speaker_id)
+        result.append(float(phoneme_list[i] * 0.5 + speaker_id))
     return numpy.array(result)
 
 
@@ -237,7 +237,7 @@ class TestSynthesisEngine(TestCase):
         index = 1
 
         def result_value(i: int):
-            return phoneme_list[i] * 0.5 + 1
+            return float(phoneme_list[i] * 0.5 + 1)
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
