@@ -9,7 +9,6 @@
 [![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
 
-
 [VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
@@ -80,9 +79,42 @@ curl -s \
     > audio.wav
 ```
 
-### 2人の話者でモーフィングするサンプルコード
+## プリセット機能について
 
-`/synthesis_morphing`では、2人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
+`presets.yaml`を編集することで話者や話速などのプリセットを使うことができます。
+
+```bash
+echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
+
+# プリセット情報を取得
+curl -s -X GET "localhost:50021/presets" > presets.json
+
+preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
+style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
+
+# AudioQueryの取得
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query_from_preset?preset_id=$preset_id"\
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# 音声合成
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis?speaker=$style_id" \
+    > audio.wav
+```
+
+- `speaker_uuid`は、`/speakers`で確認できます
+- `id`は重複してはいけません
+- エンジン起動後にファイルを書き換えるとエンジンに反映されます
+
+### 2 人の話者でモーフィングするサンプルコード
+
+`/synthesis_morphing`では、2 人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
 
 ```bash
 echo -n "モーフィングを利用することで、２つの声を混ぜることができます。" > text.txt
@@ -213,9 +245,10 @@ python -m nuitka \
     --no-prefer-source-code \
     run.py
 ```
+
 ## 依存関係の更新について
 
-pip-toolsを用いて依存ライブラリのバージョンを固定しています。
+pip-tools を用いて依存ライブラリのバージョンを固定しています。
 `requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
 
 ```bash
@@ -223,20 +256,6 @@ pip-compile requirements.in
 pip-compile requirements-dev.in
 pip-compile requirements-test.in
 ```
-
-
-## プリセット機能について
-
-run.exeと同じ場所に`presets.yaml`を配置します。  
-例となるファイル(`presets-template.yaml`)がありますので参照してください。
-(エンジン起動後にファイルを書き換えるとエンジンにも反映されます)   
-注意点として、`id`は重複してはいけません。  
-`speaker_uuid`は、`/speakers`で確認できます。  
-また、エンジンが保持しているプリセットの設定は、`/presets`で取得できます。
-
-このプリセットは、AudioQueryを取得する際に使用します。  
-`/audio_query_from_preset?preset_id=1`のようになります。   
-後は、通常と同じように`/synthesis`にAudioQueryとspeaker引数を投げて下さい。
 
 ## GitHub Actions
 
