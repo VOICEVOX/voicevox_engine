@@ -68,7 +68,7 @@ jobs:
           key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
           path: download/voicevox_core_example
 
-        name: Remove all cache
+      - name: Remove all cache
         run: |
           rm -rf generate_licenses
           rm -rf build_voicevox
