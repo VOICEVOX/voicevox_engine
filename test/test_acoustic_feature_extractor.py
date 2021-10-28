@@ -39,11 +39,16 @@ class TestSamplingData(TestCase):
         result_1d = self.sampling_data_1d.resample(24000 / 256)
         expected_value_1d = self.array_1d[:164]
         self.assertEqual(len(result_1d), len(expected_value_1d))
+        # TODO: 現状のテスト(.all)はミスっているので改善が必須
+        #  正しいのはコメントアウトしている方のコードだが、
+        #  expected_valueがそもそも間違っている上に返り値が毎回変わるのでテストコードそのものを変えないといけない
         self.assertEqual(result_1d.all(), expected_value_1d.all())
+        # numpy.testing.assert_array_equal(result_1d, expected_value_1d)
         result_2d = self.sampling_data_2d.resample(24000 / 256)
         expected_value_2d = self.array_2d[:328]
         self.assertEqual(len(result_2d), len(expected_value_2d))
         self.assertEqual(result_2d.all(), expected_value_2d.all())
+        # numpy.testing.assert_array_equal(result_2d, expected_value_2d)
 
 
 class TestBasePhoneme(TestCase):
