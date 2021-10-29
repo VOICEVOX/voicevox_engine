@@ -169,6 +169,17 @@ def generate_licenses() -> List[License]:
         )
     )
 
+    # world
+    # https://github.com/mmorise/World
+    licenses.append(
+        License(
+            name="world",
+            version=None,
+            license="Modified BSD license",
+            text=Path("docs/licenses/world/LICENSE.txt").read_text(),
+        )
+    )
+
     return licenses
 
 
