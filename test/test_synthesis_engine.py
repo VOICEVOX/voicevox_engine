@@ -484,8 +484,6 @@ class TestSynthesisEngine(TestCase):
         f0 = numpy.array(f0, dtype=numpy.float32)
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
-        # print(decode_args["f0"])
-        # print(numpy.array(f0, dtype=numpy.float32))
         # 乱数の影響で数値がずれが生じるので、大半(9/10)があっていればよしとする
         assert_f0_count = 0
         for i in range(len(f0)):
