@@ -11,7 +11,8 @@ from voicevox_engine.synthesis_engine import (
     SynthesisEngine,
     split_mora,
     to_flatten_moras,
-    to_phoneme_data_list, unvoiced_mora_phoneme_list,
+    to_phoneme_data_list,
+    unvoiced_mora_phoneme_list,
 )
 
 
@@ -64,7 +65,7 @@ def decode_mock(
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
-        for j in range(256):
+        for _ in range(256):
             result.append(
                 float(
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
@@ -458,9 +459,7 @@ class TestSynthesisEngine(TestCase):
         list_length = decode_args["length"]
         self.assertEqual(
             list_length,
-            int(
-                sum(phoneme_length_list) * (24000 / 256)
-            ),
+            int(sum(phoneme_length_list) * (24000 / 256)),
         )
 
         num_phoneme = OjtPhoneme.num_phoneme
@@ -469,7 +468,7 @@ class TestSynthesisEngine(TestCase):
         phoneme = []
         f0_index = 0
         for i, phoneme_length in enumerate(phoneme_length_list):
-            for j in range(int(round(phoneme_length * (24000 / 256)))):
+            for _ in range(int(round(phoneme_length * (24000 / 256)))):
                 # 2の1(音高)乗掛ける
                 f0.append([f0_list[f0_index] * 2])
                 phoneme_s = []
@@ -506,11 +505,14 @@ class TestSynthesisEngine(TestCase):
         # 計算結果にブレが出るのでf0_listをfloat32でキャストする
         f0_list = numpy.array(f0_list, dtype=numpy.float32)
         for i, phoneme_length in enumerate(phoneme_length_list):
-            for j in range(int(round(phoneme_length * (24000 / 256)))):
+            for _ in range(int(round(phoneme_length * (24000 / 256)))):
                 for _ in range(256):
                     true_result.append(
-                        # 2の1(音高)乗掛ける
-                        float(f0_list[index] * 2 * (phoneme_id_list[i] / num_phoneme) + 1)
+                        float(
+                            # 2の1(音高)乗掛ける
+                            f0_list[index] * 2 * (phoneme_id_list[i] / num_phoneme)
+                            + 1
+                        )
                     )
             if phoneme_length != 0.1:
                 index += 1
