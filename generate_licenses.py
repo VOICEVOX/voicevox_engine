@@ -44,6 +44,14 @@ def generate_licenses() -> List[License]:
             text=Path("docs/licenses//open_jtalk/mecab-naist-jdic/COPYING").read_text(),
         )
     )
+    licenses.append(
+        License(
+            name="world",
+            version=None,
+            license="Modified BSD license",
+            text=Path("docs/licenses/world/LICENSE.txt").read_text(),
+        )
+    )
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice"  # noqa: B950
     ) as res:
