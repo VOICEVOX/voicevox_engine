@@ -1,16 +1,17 @@
 from copy import deepcopy
+from random import random
 from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.synthesis_engine import (
     SynthesisEngine,
     split_mora,
     to_flatten_moras,
-    to_phoneme_data_list,
+    to_phoneme_data_list, unvoiced_mora_phoneme_list,
 )
 
 
@@ -50,6 +51,27 @@ def yukarin_sa_mock(
             )
         )
     return numpy.array(result)[numpy.newaxis]
+
+
+def decode_mock(
+    length: int,
+    phoneme_size: int,
+    f0: numpy.ndarray,
+    phoneme: numpy.ndarray,
+    speaker_id: numpy.ndarray,
+):
+    result = []
+    # mockとしての適当な処理、特に意味はない
+    for i in range(length):
+        # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
+        for j in range(256):
+            result.append(
+                float(
+                    f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
+                    + speaker_id
+                )
+            )
+    return numpy.array(result)
 
 
 class TestSynthesisEngine(TestCase):
@@ -159,7 +181,7 @@ class TestSynthesisEngine(TestCase):
         ]
         self.yukarin_s_mock = Mock(side_effect=yukarin_s_mock)
         self.yukarin_sa_mock = Mock(side_effect=yukarin_sa_mock)
-        self.decode_mock = Mock()
+        self.decode_mock = Mock(side_effect=decode_mock)
         self.synthesis_engine = SynthesisEngine(
             yukarin_s_forwarder=self.yukarin_s_mock,
             yukarin_sa_forwarder=self.yukarin_sa_mock,
@@ -385,3 +407,119 @@ class TestSynthesisEngine(TestCase):
                 index += 1
 
         self.assertEqual(result, true_result)
+
+    def test_synthesis(self):
+        accent_phrases = deepcopy(self.accent_phrases_hello_hiho)
+
+        # decode forwardのために適当にpitchとlengthを設定し、リストで持っておく
+        phoneme_length_list = [0.5]
+        phoneme_id_list = [0]
+        f0_list = [0.0]
+        for accent_phrase in accent_phrases:
+            moras = accent_phrase.moras
+            for mora in moras:
+                if mora.consonant is not None:
+                    mora.consonant_length = 0.1
+                    phoneme_length_list.append(0.1)
+                    phoneme_id_list.append(OjtPhoneme(mora.consonant, 0, 0).phoneme_id)
+                mora.vowel_length = 0.2
+                phoneme_length_list.append(0.2)
+                phoneme_id_list.append(OjtPhoneme(mora.vowel, 0, 0).phoneme_id)
+                if mora.vowel not in unvoiced_mora_phoneme_list:
+                    mora.pitch = 5.0 + random()
+                f0_list.append(mora.pitch)
+            if accent_phrase.pause_mora is not None:
+                accent_phrase.pause_mora.vowel_length = 0.2
+                phoneme_length_list.append(0.2)
+                phoneme_id_list.append(OjtPhoneme("pau", 0, 0).phoneme_id)
+                f0_list.append(0.0)
+        phoneme_length_list.append(0.1)
+        phoneme_id_list.append(0)
+        f0_list.append(0.0)
+
+        audio_query = AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=1.0,
+            pitchScale=1.0,
+            intonationScale=1.0,
+            volumeScale=1.0,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=24000,
+            outputStereo=False,
+            # このテスト内では使わないので生成不要
+            kana="",
+        )
+
+        result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
+
+        # decodeに渡される値の検証
+        decode_args = self.decode_mock.call_args[1]
+        list_length = decode_args["length"]
+        self.assertEqual(
+            list_length,
+            int(
+                sum(phoneme_length_list) * (24000 / 256)
+            ),
+        )
+
+        num_phoneme = OjtPhoneme.num_phoneme
+        # numpy.repeatをfor文でやる
+        f0 = []
+        phoneme = []
+        f0_index = 0
+        for i, phoneme_length in enumerate(phoneme_length_list):
+            for j in range(int(round(phoneme_length * (24000 / 256)))):
+                # 2の1(音高)乗掛ける
+                f0.append([f0_list[f0_index] * 2])
+                phoneme_s = []
+                for _ in range(num_phoneme):
+                    phoneme_s.append(0)
+                # one hot
+                phoneme_s[phoneme_id_list[i]] = 1
+                phoneme.append(phoneme_s)
+            # consonantのlengthを0.1にしているので、それをもとにconsonantとvowelを判別している
+            # なお、prePhonemeLengthが0.5になっているので、equal 0.2ではなくnot equal 0.1で判別している
+            if phoneme_length != 0.1:
+                f0_index += 1
+        f0 = numpy.array(f0, dtype=numpy.float32)
+        phoneme = numpy.array(phoneme, dtype=numpy.float32)
+
+        # print(decode_args["f0"])
+        # print(numpy.array(f0, dtype=numpy.float32))
+        # 乱数の影響で数値がずれが生じるので、大半(9/10)があっていればよしとする
+        assert_f0_count = 0
+        for i in range(len(f0)):
+            assert_f0_count += bool(f0[i] == decode_args["f0"][i])
+        self.assertTrue(assert_f0_count >= int(len(f0) / 10) * 9)
+        assert_phoneme_count = 0
+        for i in range(len(phoneme)):
+            assert_true_count = 0
+            for j in range(len(phoneme[i])):
+                assert_true_count += bool(phoneme[i][j] == decode_args["phoneme"][i][j])
+            assert_phoneme_count += assert_true_count == num_phoneme
+        self.assertTrue(assert_phoneme_count >= int(len(phoneme) / 10) * 9)
+        self.assertEqual(decode_args["speaker_id"], 1)
+
+        true_result = []
+        index = 0
+        # 計算結果にブレが出るのでf0_listをfloat32でキャストする
+        f0_list = numpy.array(f0_list, dtype=numpy.float32)
+        for i, phoneme_length in enumerate(phoneme_length_list):
+            for j in range(int(round(phoneme_length * (24000 / 256)))):
+                for _ in range(256):
+                    true_result.append(
+                        # 2の1(音高)乗掛ける
+                        float(f0_list[index] * 2 * (phoneme_id_list[i] / num_phoneme) + 1)
+                    )
+            if phoneme_length != 0.1:
+                index += 1
+
+        true_result = numpy.array(true_result)
+        # pre padding length分を切り取る
+        true_result = true_result[int(24000 * 0.4) :]
+
+        assert_result_count = 0
+        for i in range(len(true_result)):
+            assert_result_count += bool(true_result[i] == result[i])
+        self.assertTrue(assert_result_count >= int(len(true_result) / 10) * 9)
