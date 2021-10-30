@@ -354,7 +354,7 @@ class TestSynthesisEngine(TestCase):
             self.synthesis_engine.replace_mora_pitch(
                 accent_phrases=empty_accent_phrases, speaker_id=1
             ),
-            []
+            [],
         )
 
         result = self.synthesis_engine.replace_mora_pitch(
