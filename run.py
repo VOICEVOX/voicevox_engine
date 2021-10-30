@@ -1,6 +1,8 @@
 import argparse
+import asyncio
 import base64
 import io
+import multiprocessing
 import os
 import sys
 import zipfile
@@ -14,7 +16,7 @@ import pyworld as pw
 import soundfile
 import uvicorn
 import yaml
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from starlette.responses import FileResponse
@@ -159,6 +161,50 @@ def mora_to_text(mora: str):
         return openjtalk_mora2text[mora]
     else:
         return mora
+
+
+async def catch_disconnection():
+    global connections
+    lock = asyncio.Lock()
+    while True:
+        await asyncio.sleep(1)
+        async with lock:
+            for con in connections:
+                req, proc = con
+                disconnected = await req.is_disconnected()
+                if disconnected:
+                    try:
+                        if proc.is_alive():
+                            proc.terminate()
+                            proc.join()
+                        proc.close()
+                    except ValueError:
+                        pass
+                    finally:
+                        try:
+                            connections.remove(con)
+                        except ValueError:
+                            pass
+
+
+def wrap_synthesis(args, con):
+    engine = make_synthesis_engine(
+        use_gpu=args.use_gpu,
+        voicevox_dir=args.voicevox_dir,
+        voicelib_dir=args.voicelib_dir,
+    )
+    while True:
+        try:
+            query, speaker_id = con.recv()
+            wave = engine.synthesis(query=query, speaker_id=speaker_id)
+            with NamedTemporaryFile(delete=False) as f:
+                soundfile.write(
+                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+                )
+            con.send(f.name)
+        except Exception:
+            con.close()
+            raise
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -307,6 +353,19 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             target_spectrogram,
         )
 
+    @app.on_event("startup")
+    async def start_catch_disconnection():
+        global procs
+        loop = asyncio.get_event_loop()
+        _ = loop.create_task(catch_disconnection())
+        for _ in range(2):
+            con1, con2 = multiprocessing.Pipe(True)
+            proc = multiprocessing.Process(
+                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+            )
+            proc.start()
+            procs.append((proc, con1))
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -453,6 +512,54 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/cancellable_synthesis",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="音声合成する",
+    )
+    def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
+        global connetions
+        global procs
+        try:
+            proc, con1 = procs.pop(0)
+        except IndexError:
+            con1, con2 = multiprocessing.Pipe(True)
+            proc = multiprocessing.Process(
+                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+            )
+            proc.start()
+
+        append_con = (request, proc)
+        connections.append(append_con)
+
+        try:
+            con1.send((query, speaker))
+            f_name = con1.recv()
+        except Exception:
+            try:
+                connections.remove(append_con)
+            except ValueError:
+                pass
+            con1, con2 = multiprocessing.Pipe(True)
+            proc = multiprocessing.Process(
+                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+            )
+            proc.start()
+            procs.append((proc, con1))
+            raise HTTPException(status_code=422, detail="内部エラーが発生しました")
+
+        connections.remove(append_con)
+        procs.append((proc, con1))
+        return FileResponse(f_name, media_type="audio/wav")
 
     @app.post(
         "/multi_synthesis",
@@ -621,6 +728,9 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
+    multiprocessing.freeze_support()
+    connections = []
+    procs = []
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
