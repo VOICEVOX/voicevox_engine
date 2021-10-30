@@ -348,6 +348,15 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(result, true_result)
 
     def test_replace_mora_pitch(self):
+        # 空のリストでエラーを吐かないか
+        empty_accent_phrases = []
+        self.assertEqual(
+            self.synthesis_engine.replace_mora_pitch(
+                accent_phrases=empty_accent_phrases, speaker_id=1
+            ),
+            []
+        )
+
         result = self.synthesis_engine.replace_mora_pitch(
             accent_phrases=deepcopy(self.accent_phrases_hello_hiho), speaker_id=1
         )
