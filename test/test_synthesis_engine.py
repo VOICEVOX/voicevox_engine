@@ -488,9 +488,14 @@ class TestSynthesisEngine(TestCase):
         phoneme_id_list.append(0)
         f0_list.append(0.0)
 
-        pre_padding_length = 0.4
-        phoneme_length_list[0] = pre_padding_length + audio_query.prePhonemeLength
+        phoneme_length_list[0] = audio_query.prePhonemeLength
         phoneme_length_list[-1] = audio_query.postPhonemeLength
+
+        for i in range(len(phoneme_length_list)):
+            phoneme_length_list[i] /= audio_query.speedScale
+
+        pre_padding_length = 0.4
+        phoneme_length_list[0] += pre_padding_length
 
         result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
 
@@ -522,7 +527,7 @@ class TestSynthesisEngine(TestCase):
                 phoneme.append(phoneme_s)
             # consonantのlengthを0.1にしているので、それをもとにconsonantとvowelを判別している
             # なお、prePhonemeLengthが任意の値+pre paddingになっているので、equal 0.2ではなくnot equal 0.1で判別している
-            if phoneme_length != 0.1:
+            if phoneme_length != 0.1 / audio_query.speedScale:
                 if f0_single > 0:
                     mean_f0.append(f0_single)
                 f0_index += 1
@@ -592,17 +597,22 @@ class TestSynthesisEngine(TestCase):
 
         self.synthesis_test_base(audio_query)
 
-        # intonation scaleのテスト
-        audio_query.intonationScale = 1.4
+        # speed scaleのテスト
+        audio_query.speedScale = 1.2
         self.synthesis_test_base(audio_query)
 
         # pitch scaleのテスト
-        audio_query.intonationScale = 1.0
         audio_query.pitchScale = 1.5
+        audio_query.speedScale = 1.0
+        self.synthesis_test_base(audio_query)
+
+        # intonation scaleのテスト
+        audio_query.pitchScale = 1.0
+        audio_query.intonationScale = 1.4
         self.synthesis_test_base(audio_query)
 
         # volume scaleのテスト
-        audio_query.pitchScale = 1.0
+        audio_query.intonationScale = 1.0
         audio_query.volumeScale = 2.0
         self.synthesis_test_base(audio_query)
 
