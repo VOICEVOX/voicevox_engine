@@ -238,33 +238,6 @@ class SynthesisEngine:
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
-        def _repeat_with_mora(array: numpy.ndarray, accent_phrase: AccentPhrase):
-            """
-            moraの数だけあるarrayの要素数をphonemeの数まで増やす(変換する)
-            Parameters
-            ----------
-            array : numpy.ndarray
-                moraの数だけ要素数があるarray
-            accent_phrase : AccentPhrase
-                アクセント句モデル
-            Returns
-            -------
-            array : numpy.ndarray
-                phonemeの数まで拡張されたarrayを返す
-            """
-            return numpy.repeat(
-                array,
-                [
-                    1 if mora.consonant is None else 2
-                    for mora in accent_phrase.moras
-                    + (
-                        [accent_phrase.pause_mora]
-                        if accent_phrase.pause_mora is not None
-                        else []
-                    )
-                ],
-            )
-
         def _create_one_hot(accent_phrase: AccentPhrase, position: int):
             """
             単位行列(numpy.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
@@ -293,15 +266,10 @@ class SynthesisEngine:
         # accent_phrasesから、アクセントの開始位置のリストを作る
         start_accent_list = numpy.concatenate(
             [
-                _repeat_with_mora(
-                    # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
-                    # accentが1の場合は0番目を指定している
-                    # accentが1ではない場合、accentはend_accent_listに用いられる
-                    _create_one_hot(
-                        accent_phrase, 0 if accent_phrase.accent == 1 else 1
-                    ),
-                    accent_phrase=accent_phrase,
-                )
+                # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
+                # accentが1の場合は0番目を指定している
+                # accentが1ではない場合、accentはend_accent_listに用いられる
+                _create_one_hot(accent_phrase, 0 if accent_phrase.accent == 1 else 1)
                 for accent_phrase in accent_phrases
             ]
         )
@@ -309,11 +277,8 @@ class SynthesisEngine:
         # accent_phrasesから、アクセントの終了位置のリストを作る
         end_accent_list = numpy.concatenate(
             [
-                _repeat_with_mora(
-                    # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
-                    _create_one_hot(accent_phrase, accent_phrase.accent - 1),
-                    accent_phrase=accent_phrase,
-                )
+                # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
+                _create_one_hot(accent_phrase, accent_phrase.accent - 1)
                 for accent_phrase in accent_phrases
             ]
         )
@@ -321,24 +286,12 @@ class SynthesisEngine:
         # accent_phrasesから、アクセント句の開始位置のリストを作る
         # これによって、yukarin_sa_forwarder内でアクセント句を区別できる
         start_accent_phrase_list = numpy.concatenate(
-            [
-                _repeat_with_mora(
-                    _create_one_hot(accent_phrase, 0),
-                    accent_phrase=accent_phrase,
-                )
-                for accent_phrase in accent_phrases
-            ]
+            [_create_one_hot(accent_phrase, 0) for accent_phrase in accent_phrases]
         )
 
         # accent_phrasesから、アクセント句の終了位置のリストを作る
         end_accent_phrase_list = numpy.concatenate(
-            [
-                _repeat_with_mora(
-                    _create_one_hot(accent_phrase, -1),
-                    accent_phrase=accent_phrase,
-                )
-                for accent_phrase in accent_phrases
-            ]
+            [_create_one_hot(accent_phrase, -1) for accent_phrase in accent_phrases]
         )
 
         # 最初と最後に0を付け加える。これによってpau(前後の無音のためのもの)を付け加えたことになる
@@ -359,13 +312,11 @@ class SynthesisEngine:
         (
             consonant_phoneme_data_list,
             vowel_phoneme_data_list,
-            vowel_indexes_data,
+            _,
         ) = split_mora(phoneme_data_list)
 
         # yukarin_sa
         # Phoneme関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
-        vowel_indexes = numpy.array(vowel_indexes_data, dtype=numpy.int64)
-
         vowel_phoneme_list = numpy.array(
             [p.phoneme_id for p in vowel_phoneme_data_list], dtype=numpy.int64
         )
@@ -382,12 +333,10 @@ class SynthesisEngine:
             length=vowel_phoneme_list.shape[0],
             vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
             consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-            start_accent_list=start_accent_list[vowel_indexes][numpy.newaxis],
-            end_accent_list=end_accent_list[vowel_indexes][numpy.newaxis],
-            start_accent_phrase_list=start_accent_phrase_list[vowel_indexes][
-                numpy.newaxis
-            ],
-            end_accent_phrase_list=end_accent_phrase_list[vowel_indexes][numpy.newaxis],
+            start_accent_list=start_accent_list[numpy.newaxis],
+            end_accent_list=end_accent_list[numpy.newaxis],
+            start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
+            end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )[0]
 
