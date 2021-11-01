@@ -747,6 +747,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50021)
@@ -754,7 +755,6 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
-    multiprocessing.freeze_support()
     proc_manager = ProcessManager()
     uvicorn.run(
         generate_app(
