@@ -187,7 +187,7 @@ async def catch_disconnection():
                             pass
 
 
-def wrap_synthesis(args, con):
+def wrap_synthesis(args: argparse.Namespace, con: multiprocessing.connection.Connection):
     engine = make_synthesis_engine(
         use_gpu=args.use_gpu,
         voicevox_dir=args.voicevox_dir,
