@@ -9,7 +9,7 @@ import zipfile
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pyworld as pw
@@ -84,6 +84,86 @@ class PresetLoader:
         self.presets = _presets
         self.last_modified_time = _last_modified_time
         return self.presets, ""
+
+
+class ProcessManager:
+    def __init__(self) -> None:
+        self.connections: List[Tuple[Request, multiprocessing.Process]] = []
+        self.procs: List[
+            Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
+        ] = []
+        for _ in range(2):
+            con1, con2 = multiprocessing.Pipe(True)
+            proc = multiprocessing.Process(
+                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+            )
+            proc.start()
+            self.procs.append((proc, con1))
+
+    def get_proc(
+        self, req: Request
+    ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
+        try:
+            ret_proc, ret_con = self.procs.pop(0)
+        except IndexError:
+            ret_con, con2 = multiprocessing.Pipe(True)
+            ret_proc = multiprocessing.Process(
+                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+            )
+            ret_proc.start()
+        self.connections.append((req, ret_proc))
+        return ret_proc, ret_con
+
+    def remove_con(
+        self,
+        req: Request,
+        proc: multiprocessing.Process,
+        con: Optional[multiprocessing.connection.Connection],
+    ) -> None:
+        try:
+            self.connections.remove((req, proc))
+        except ValueError:
+            pass
+        try:
+            if not proc.is_alive() or con is None:
+                proc.close()
+                raise ValueError
+        except ValueError:
+            if len(self.procs) <= 5:
+                new_con1, new_con2 = multiprocessing.Pipe(True)
+                new_proc = multiprocessing.Process(
+                    target=wrap_synthesis,
+                    kwargs={"args": args, "con": new_con2},
+                    daemon=True,
+                )
+                new_proc.start()
+                self.procs.append((new_proc, new_con1))
+            return
+        if len(self.procs) <= 4:
+            self.procs.append((proc, con))
+        else:
+            proc.terminate()
+            proc.join()
+            proc.close()
+        return
+
+    async def catch_disconnection(self):
+        lock = asyncio.Lock()
+        while True:
+            await asyncio.sleep(1)
+            async with lock:
+                for con in self.connections:
+                    req, proc = con
+                    if await req.is_disconnected():
+                        try:
+                            if proc.is_alive():
+                                proc.terminate()
+                                proc.join()
+                            proc.close()
+                        except ValueError:
+                            pass
+                        finally:
+                            self.remove_con(req, proc, None)
 
 
 def make_synthesis_engine(
@@ -163,31 +243,9 @@ def mora_to_text(mora: str):
         return mora
 
 
-async def catch_disconnection():
-    global connections
-    lock = asyncio.Lock()
-    while True:
-        await asyncio.sleep(1)
-        async with lock:
-            for con in connections:
-                req, proc = con
-                disconnected = await req.is_disconnected()
-                if disconnected:
-                    try:
-                        if proc.is_alive():
-                            proc.terminate()
-                            proc.join()
-                        proc.close()
-                    except ValueError:
-                        pass
-                    finally:
-                        try:
-                            connections.remove(con)
-                        except ValueError:
-                            pass
-
-
-def wrap_synthesis(args: argparse.Namespace, con: multiprocessing.connection.Connection):
+def wrap_synthesis(
+    args: argparse.Namespace, con: multiprocessing.connection.Connection
+):
     engine = make_synthesis_engine(
         use_gpu=args.use_gpu,
         voicevox_dir=args.voicevox_dir,
@@ -355,16 +413,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     @app.on_event("startup")
     async def start_catch_disconnection():
-        global procs
         loop = asyncio.get_event_loop()
-        _ = loop.create_task(catch_disconnection())
-        for _ in range(2):
-            con1, con2 = multiprocessing.Pipe(True)
-            proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
-            )
-            proc.start()
-            procs.append((proc, con1))
+        _ = loop.create_task(proc_manager.catch_disconnection())
 
     @app.post(
         "/audio_query",
@@ -527,38 +577,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="音声合成する（キャンセル可能）",
     )
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
-        global connetions
-        global procs
-        try:
-            proc, con1 = procs.pop(0)
-        except IndexError:
-            con1, con2 = multiprocessing.Pipe(True)
-            proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
-            )
-            proc.start()
-
-        append_con = (request, proc)
-        connections.append(append_con)
-
+        proc, con1 = proc_manager.get_proc(request)
         try:
             con1.send((query, speaker))
             f_name = con1.recv()
-        except Exception:
-            try:
-                connections.remove(append_con)
-            except ValueError:
-                pass
-            con1, con2 = multiprocessing.Pipe(True)
-            proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
-            )
-            proc.start()
-            procs.append((proc, con1))
-            raise HTTPException(status_code=422, detail="内部エラーが発生しました")
+        except EOFError:
+            raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
 
-        connections.remove(append_con)
-        procs.append((proc, con1))
+        proc_manager.remove_con(request, proc, con1)
         return FileResponse(f_name, media_type="audio/wav")
 
     @app.post(
@@ -729,8 +755,7 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
     multiprocessing.freeze_support()
-    connections = []
-    procs = []
+    proc_manager = ProcessManager()
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
