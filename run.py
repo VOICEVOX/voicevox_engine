@@ -524,7 +524,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             }
         },
         tags=["音声合成"],
-        summary="音声合成する",
+        summary="音声合成する（キャンセル可能）",
     )
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
         global connetions
