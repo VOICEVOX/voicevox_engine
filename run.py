@@ -88,59 +88,59 @@ class PresetLoader:
 
 class ProcessManager:
     def __init__(self) -> None:
-        self.connections: List[Tuple[Request, multiprocessing.Process]] = []
-        self.procs: List[
+        self.client_connections: List[Tuple[Request, multiprocessing.Process]] = []
+        self.procs_and_cons: List[
             Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
         ] = []
         for _ in range(2):
-            con1, con2 = multiprocessing.Pipe(True)
+            sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
             proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+                target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
             )
             proc.start()
-            self.procs.append((proc, con1))
+            self.procs_and_cons.append((proc, sub_proc_con1))
 
     def get_proc(
         self, req: Request
     ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
         try:
-            ret_proc, ret_con = self.procs.pop(0)
+            ret_proc, sub_proc_con1 = self.procs_and_cons.pop(0)
         except IndexError:
-            ret_con, con2 = multiprocessing.Pipe(True)
+            sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
             ret_proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "con": con2}, daemon=True
+                target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
             )
             ret_proc.start()
-        self.connections.append((req, ret_proc))
-        return ret_proc, ret_con
+        self.client_connections.append((req, ret_proc))
+        return ret_proc, sub_proc_con1
 
     def remove_con(
         self,
         req: Request,
         proc: multiprocessing.Process,
-        con: Optional[multiprocessing.connection.Connection],
+        sub_proc_con: Optional[multiprocessing.connection.Connection],
     ) -> None:
         try:
-            self.connections.remove((req, proc))
+            self.client_connections.remove((req, proc))
         except ValueError:
             pass
         try:
-            if not proc.is_alive() or con is None:
+            if not proc.is_alive() or sub_proc_con is None:
                 proc.close()
                 raise ValueError
         except ValueError:
-            if len(self.procs) <= 5:
-                new_con1, new_con2 = multiprocessing.Pipe(True)
+            if len(self.procs_and_cons) <= 5:
+                new_sub_proc_con1, new_sub_proc_con2 = multiprocessing.Pipe(True)
                 new_proc = multiprocessing.Process(
                     target=wrap_synthesis,
-                    kwargs={"args": args, "con": new_con2},
+                    kwargs={"args": args, "sub_proc_con": new_sub_proc_con2},
                     daemon=True,
                 )
                 new_proc.start()
-                self.procs.append((new_proc, new_con1))
+                self.procs_and_cons.append((new_proc, new_sub_proc_con1))
             return
-        if len(self.procs) <= 4:
-            self.procs.append((proc, con))
+        if len(self.procs_and_cons) <= 4:
+            self.procs_and_cons.append((proc, sub_proc_con))
         else:
             proc.terminate()
             proc.join()
@@ -152,7 +152,7 @@ class ProcessManager:
         while True:
             await asyncio.sleep(1)
             async with lock:
-                for con in self.connections:
+                for con in self.client_connections:
                     req, proc = con
                     if await req.is_disconnected():
                         try:
@@ -244,7 +244,7 @@ def mora_to_text(mora: str):
 
 
 def wrap_synthesis(
-    args: argparse.Namespace, con: multiprocessing.connection.Connection
+    args: argparse.Namespace, sub_proc_con: multiprocessing.connection.Connection
 ):
     engine = make_synthesis_engine(
         use_gpu=args.use_gpu,
@@ -253,15 +253,15 @@ def wrap_synthesis(
     )
     while True:
         try:
-            query, speaker_id = con.recv()
+            query, speaker_id = sub_proc_con.recv()
             wave = engine.synthesis(query=query, speaker_id=speaker_id)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
                 )
-            con.send(f.name)
+            sub_proc_con.send(f.name)
         except Exception:
-            con.close()
+            sub_proc_con.close()
             raise
 
 
@@ -577,14 +577,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="音声合成する（キャンセル可能）",
     )
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
-        proc, con1 = proc_manager.get_proc(request)
+        proc, sub_proc_con1 = proc_manager.get_proc(request)
         try:
-            con1.send((query, speaker))
-            f_name = con1.recv()
+            sub_proc_con1.send((query, speaker))
+            f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
 
-        proc_manager.remove_con(request, proc, con1)
+        proc_manager.remove_con(request, proc, sub_proc_con1)
         return FileResponse(f_name, media_type="audio/wav")
 
     @app.post(
