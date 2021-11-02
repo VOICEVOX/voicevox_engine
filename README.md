@@ -9,8 +9,12 @@
 [![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
 
-[VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
+[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
+
+（エディターは [VOICEVOX](https://github.com/Hiroshiba/voicevox/) 、
+コアは [VOICEVOX CORE](https://github.com/Hiroshiba/voicevox_core/) 、
+全体構成は [こちら](https://github.com/Hiroshiba/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## API ドキュメント
 
