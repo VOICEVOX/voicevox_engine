@@ -105,15 +105,19 @@ class CancellableEngine:
     Warnings
     --------
     音声合成の結果のオブジェクトが32MiBを超えるとValueErrorが発生する可能性がある
-    https://docs.python.org/ja/3/library/multiprocessing.html#multiprocessing.connection.Connection.send
+    https://docs.python.org/ja/3/library/multiprocessing.html
     """
+
     def __init__(self) -> None:
         """
         変数の初期化を行う
         また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
         if not args.enable_cancellable_synthesis:
-            raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesis=Trueを使用してください。")
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
 
         self.client_connections: List[Tuple[Request, multiprocessing.Process]] = []
         self.procs_and_cons: List[
@@ -123,7 +127,9 @@ class CancellableEngine:
             new_proc, sub_proc_con1 = self.start_new_proc()
             self.procs_and_cons.append((new_proc, sub_proc_con1))
 
-    def start_new_proc(self) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
+    def start_new_proc(
+        self,
+    ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
         """
         新しく開始したプロセスを返す関数
 
@@ -136,7 +142,9 @@ class CancellableEngine:
         """
         sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
         ret_proc = multiprocessing.Process(
-            target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
+            target=wrap_synthesis,
+            kwargs={"args": args, "sub_proc_con": sub_proc_con2},
+            daemon=True,
         )
         ret_proc.start()
         return ret_proc, sub_proc_con1
@@ -212,7 +220,9 @@ class CancellableEngine:
             proc.close()
         return
 
-    def synthesis(self, query: AudioQuery, speaker_id:Speaker, request: Request) -> np.ndarray:
+    def synthesis(
+        self, query: AudioQuery, speaker_id: Speaker, request: Request
+    ) -> np.ndarray:
         """
         音声合成を行う関数
         通常エンジンの引数に比べ、requestが必要になっている
@@ -240,7 +250,6 @@ class CancellableEngine:
         self.remove_con(request, proc, sub_proc_con1)
         return wave
 
-
     async def catch_disconnection(self):
         """
         接続監視を行うコルーチン
@@ -261,6 +270,7 @@ class CancellableEngine:
                             pass
                         finally:
                             self.remove_con(req, proc, None)
+
 
 def wrap_synthesis(
     args: argparse.Namespace, sub_proc_con: multiprocessing.connection.Connection
@@ -289,6 +299,7 @@ def wrap_synthesis(
         except Exception:
             sub_proc_con.close()
             raise
+
 
 def make_synthesis_engine(
     use_gpu: bool,
@@ -681,8 +692,13 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
         if not args.enable_cancellable_synthesis:
-            raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesis=Trueを使用してください。")
-        wave = cancellable_engine.synthesis(query=query, speaker_id=speaker, request=request)
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
+        wave = cancellable_engine.synthesis(
+            query=query, speaker_id=speaker, request=request
+        )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
