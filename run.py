@@ -92,7 +92,7 @@ class ProcessManager:
         self.procs_and_cons: List[
             Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
         ] = []
-        for _ in range(2):
+        for _ in range(args.init_processes):
             new_proc, sub_proc_con1 = self.start_new_proc()
             self.procs_and_cons.append((new_proc, sub_proc_con1))
 
@@ -129,11 +129,11 @@ class ProcessManager:
                 proc.close()
                 raise ValueError
         except ValueError:
-            if len(self.procs_and_cons) <= 5:
+            if len(self.procs_and_cons) < args.max_wait_processes:
                 new_proc, new_sub_proc_con1 = self.start_new_proc()
                 self.procs_and_cons.append((new_proc, new_sub_proc_con1))
             return
-        if len(self.procs_and_cons) <= 4:
+        if len(self.procs_and_cons) < args.max_wait_processes:
             self.procs_and_cons.append((proc, sub_proc_con))
         else:
             proc.terminate()
@@ -573,7 +573,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
         if not args.enable_cancellable_synthesis:
-            raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesisを使用してください。")
+            raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesis=Trueを使用してください。")
         proc, sub_proc_con1 = proc_manager.get_proc(request)
         try:
             sub_proc_con1.send((query, speaker))
@@ -752,6 +752,8 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     parser.add_argument("--enable_cancellable_synthesis", type=bool, default=False)
+    parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument("--max_wait_processes", type=int, default=5)
     args = parser.parse_args()
     if args.enable_cancellable_synthesis:
         proc_manager = ProcessManager()
