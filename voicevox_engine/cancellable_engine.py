@@ -3,11 +3,12 @@ import asyncio
 import multiprocessing
 from typing import List, Optional, Tuple
 
-from fastapi import HTTPException, Request
 import numpy as np
+from fastapi import HTTPException, Request
 
 from voicevox_engine.model import AudioQuery, Speaker
-from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
+from voicevox_engine.synthesis_engine import make_synthesis_engine
+
 
 class CancellableEngine:
     """
@@ -194,7 +195,6 @@ class CancellableEngine:
                             pass
                         finally:
                             self.remove_con(req, proc, None)
-
 
 
 def synthesis_subprocess(
