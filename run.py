@@ -86,8 +86,11 @@ class PresetLoader:
         return self.presets, ""
 
 
-class ProcessManager:
+class CancellableEngine:
     def __init__(self) -> None:
+        if not args.enable_cancellable_synthesis:
+            raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesis=Trueを使用してください。")
+
         self.client_connections: List[Tuple[Request, multiprocessing.Process]] = []
         self.procs_and_cons: List[
             Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
@@ -141,6 +144,18 @@ class ProcessManager:
             proc.close()
         return
 
+    def synthesis(self, query: AudioQuery, speaker_id:Speaker, request: Request) -> np.ndarray:
+        proc, sub_proc_con1 = self.get_proc(request)
+        try:
+            sub_proc_con1.send((query, speaker_id))
+            wave = sub_proc_con1.recv()
+        except EOFError:
+            raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
+
+        self.remove_con(request, proc, sub_proc_con1)
+        return wave
+
+
     async def catch_disconnection(self):
         lock = asyncio.Lock()
         while True:
@@ -159,6 +174,22 @@ class ProcessManager:
                         finally:
                             self.remove_con(req, proc, None)
 
+def wrap_synthesis(
+    args: argparse.Namespace, sub_proc_con: multiprocessing.connection.Connection
+):
+    engine = make_synthesis_engine(
+        use_gpu=args.use_gpu,
+        voicevox_dir=args.voicevox_dir,
+        voicelib_dir=args.voicelib_dir,
+    )
+    while True:
+        try:
+            query, speaker_id = sub_proc_con.recv()
+            wave = engine.synthesis(query=query, speaker_id=speaker_id)
+            sub_proc_con.send(wave)
+        except Exception:
+            sub_proc_con.close()
+            raise
 
 def make_synthesis_engine(
     use_gpu: bool,
@@ -235,28 +266,6 @@ def mora_to_text(mora: str):
         return openjtalk_mora2text[mora]
     else:
         return mora
-
-
-def wrap_synthesis(
-    args: argparse.Namespace, sub_proc_con: multiprocessing.connection.Connection
-):
-    engine = make_synthesis_engine(
-        use_gpu=args.use_gpu,
-        voicevox_dir=args.voicevox_dir,
-        voicelib_dir=args.voicelib_dir,
-    )
-    while True:
-        try:
-            query, speaker_id = sub_proc_con.recv()
-            wave = engine.synthesis(query=query, speaker_id=speaker_id)
-            with NamedTemporaryFile(delete=False) as f:
-                soundfile.write(
-                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-                )
-            sub_proc_con.send(f.name)
-        except Exception:
-            sub_proc_con.close()
-            raise
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -409,7 +418,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     async def start_catch_disconnection():
         if args.enable_cancellable_synthesis:
             loop = asyncio.get_event_loop()
-            _ = loop.create_task(proc_manager.catch_disconnection())
+            _ = loop.create_task(cancellable_engine.catch_disconnection())
 
     @app.post(
         "/audio_query",
@@ -574,15 +583,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
         if not args.enable_cancellable_synthesis:
             raise HTTPException(status_code=404, detail="実験的機能はデフォルトで無効になっています。使用するには--enable_cancellable_synthesis=Trueを使用してください。")
-        proc, sub_proc_con1 = proc_manager.get_proc(request)
-        try:
-            sub_proc_con1.send((query, speaker))
-            f_name = sub_proc_con1.recv()
-        except EOFError:
-            raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
+        wave = cancellable_engine.synthesis(query=query, speaker_id=speaker, request=request)
 
-        proc_manager.remove_con(request, proc, sub_proc_con1)
-        return FileResponse(f_name, media_type="audio/wav")
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+            )
+
+        return FileResponse(f.name, media_type="audio/wav")
 
     @app.post(
         "/multi_synthesis",
@@ -756,7 +764,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_wait_processes", type=int, default=5)
     args = parser.parse_args()
     if args.enable_cancellable_synthesis:
-        proc_manager = ProcessManager()
+        cancellable_engine = CancellableEngine()
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
