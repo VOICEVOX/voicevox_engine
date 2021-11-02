@@ -93,26 +93,26 @@ class ProcessManager:
             Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
         ] = []
         for _ in range(2):
-            sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
-            proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
-            )
-            proc.start()
-            self.procs_and_cons.append((proc, sub_proc_con1))
+            new_proc, sub_proc_con1 = self.start_new_proc()
+            self.procs_and_cons.append((new_proc, sub_proc_con1))
+
+    def start_new_proc(self) -> multiprocessing.Process:
+        sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
+        ret_proc = multiprocessing.Process(
+            target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
+        )
+        ret_proc.start()
+        return ret_proc, sub_proc_con1
 
     def get_proc(
         self, req: Request
     ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
         try:
-            ret_proc, sub_proc_con1 = self.procs_and_cons.pop(0)
+            new_proc, sub_proc_con1 = self.procs_and_cons.pop(0)
         except IndexError:
-            sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
-            ret_proc = multiprocessing.Process(
-                target=wrap_synthesis, kwargs={"args": args, "sub_proc_con": sub_proc_con2}, daemon=True
-            )
-            ret_proc.start()
-        self.client_connections.append((req, ret_proc))
-        return ret_proc, sub_proc_con1
+            new_proc, sub_proc_con1 = self.start_new_proc()
+        self.client_connections.append((req, new_proc))
+        return new_proc, sub_proc_con1
 
     def remove_con(
         self,
@@ -130,13 +130,7 @@ class ProcessManager:
                 raise ValueError
         except ValueError:
             if len(self.procs_and_cons) <= 5:
-                new_sub_proc_con1, new_sub_proc_con2 = multiprocessing.Pipe(True)
-                new_proc = multiprocessing.Process(
-                    target=wrap_synthesis,
-                    kwargs={"args": args, "sub_proc_con": new_sub_proc_con2},
-                    daemon=True,
-                )
-                new_proc.start()
+                new_proc, new_sub_proc_con1 = self.start_new_proc()
                 self.procs_and_cons.append((new_proc, new_sub_proc_con1))
             return
         if len(self.procs_and_cons) <= 4:
