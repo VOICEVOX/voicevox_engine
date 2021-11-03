@@ -223,6 +223,7 @@ ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
+ADD ./characters_info /opt/voicevox_engine/characters_info
 
 RUN <<EOF
     set -eux
