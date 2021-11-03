@@ -186,6 +186,7 @@ jobs:
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
+            --include-data-dir=../charactors_info=./charactors_info \
             --follow-imports \
             --no-prefer-source-code \
             ../run.py
@@ -532,6 +533,7 @@ jobs:
             --include-package-data=resampy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
+            --include-data-dir="charactors_info=./charactors_info"
             --msvc=14.2
             --follow-imports
             --no-prefer-source-code
