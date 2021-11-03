@@ -13,12 +13,11 @@ import pyworld as pw
 import soundfile
 import uvicorn
 import yaml
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from starlette.responses import FileResponse
 
-from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
