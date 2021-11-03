@@ -109,6 +109,11 @@ def generate_licenses() -> List[License]:
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
                 continue
+            elif license.name.lower() == "mccabe":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/PyCQA/mccabe/master/LICENSE"
+                ) as res:
+                    license.text = res.read().decode()
             elif license.name.lower() == "nuitka":
                 with urllib.request.urlopen(
                     "https://raw.githubusercontent.com/Nuitka/Nuitka/develop/LICENSE.txt"
