@@ -2,12 +2,11 @@ import argparse
 import base64
 import io
 import os
-import sys
 import zipfile
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 import pyworld as pw
@@ -31,7 +30,7 @@ from voicevox_engine.model import (
     Speaker,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
-from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
 
 
 class PresetLoader:
@@ -82,73 +81,6 @@ class PresetLoader:
         self.presets = _presets
         self.last_modified_time = _last_modified_time
         return self.presets, ""
-
-
-def make_synthesis_engine(
-    use_gpu: bool,
-    voicevox_dir: Optional[Path] = None,
-    voicelib_dir: Optional[Path] = None,
-) -> SynthesisEngine:
-    """
-    音声ライブラリをロードして、音声合成エンジンを生成
-
-    Parameters
-    ----------
-    use_gpu: bool
-        音声ライブラリに GPU を使わせるか否か
-    voicevox_dir: Path, optional, default=None
-        音声ライブラリの Python モジュールがあるディレクトリ
-        None のとき、Python 標準のモジュール検索パスのどれかにあるとする
-    voicelib_dir: Path, optional, default=None
-        音声ライブラリ自体があるディレクトリ
-        None のとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
-    """
-
-    # Python モジュール検索パスへ追加
-    if voicevox_dir is not None:
-        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
-        if voicevox_dir.exists():
-            sys.path.insert(0, str(voicevox_dir))
-
-    has_voicevox_core = True
-    try:
-        import core
-    except ImportError:
-        import traceback
-
-        from voicevox_engine.dev import core
-
-        has_voicevox_core = False
-
-        # 音声ライブラリの Python モジュールをロードできなかった
-        traceback.print_exc()
-        print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
-            file=sys.stderr,
-        )
-
-    if voicelib_dir is None:
-        if voicevox_dir is not None:
-            voicelib_dir = voicevox_dir
-        else:
-            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
-
-    core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
-
-    if has_voicevox_core:
-        return SynthesisEngine(
-            yukarin_s_forwarder=core.yukarin_s_forward,
-            yukarin_sa_forwarder=core.yukarin_sa_forward,
-            decode_forwarder=core.decode_forward,
-            speakers=core.metas(),
-        )
-
-    from voicevox_engine.dev.synthesis_engine import (
-        SynthesisEngine as mock_synthesis_engine,
-    )
-
-    # モックで置き換える
-    return mock_synthesis_engine(speakers=core.metas())
 
 
 def mora_to_text(mora: str):
