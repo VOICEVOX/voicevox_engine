@@ -1,8 +1,6 @@
 import argparse
-import asyncio
 import base64
 import io
-import multiprocessing
 import os
 import zipfile
 from functools import lru_cache
@@ -242,12 +240,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             target_spectrogram,
         )
 
-    @app.on_event("startup")
-    async def start_catch_disconnection():
-        if args.enable_cancellable_synthesis:
-            loop = asyncio.get_event_loop()
-            _ = loop.create_task(cancellable_engine.catch_disconnection())
-
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -387,36 +379,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
     def synthesis(query: AudioQuery, speaker: int):
         wave = engine.synthesis(query=query, speaker_id=speaker)
-
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-            )
-
-        return FileResponse(f.name, media_type="audio/wav")
-
-    @app.post(
-        "/cancellable_synthesis",
-        response_class=FileResponse,
-        responses={
-            200: {
-                "content": {
-                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
-                },
-            }
-        },
-        tags=["音声合成"],
-        summary="音声合成する（キャンセル可能）",
-    )
-    def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
-        if not args.enable_cancellable_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
-        wave = cancellable_engine.synthesis(
-            query=query, speaker_id=speaker, request=request
-        )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -585,20 +547,13 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50021)
     parser.add_argument("--use_gpu", action="store_true")
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
-    parser.add_argument("--enable_cancellable_synthesis", type=bool, default=False)
-    parser.add_argument("--init_processes", type=int, default=2)
-    parser.add_argument("--max_wait_processes", type=int, default=5)
     args = parser.parse_args()
-    cancellable_engine = None
-    if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args)
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
