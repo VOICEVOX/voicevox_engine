@@ -138,9 +138,9 @@ class Preset(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
 
 
-class CharactorInfo(BaseModel):
+class CharacterInfo(BaseModel):
     """
-    フロントのCharactorInfoが必要な情報
+    フロントのCharacterInfoが必要な情報
     """
 
     policy: str = Field(title="policy.md")

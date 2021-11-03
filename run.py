@@ -24,7 +24,7 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    CharactorInfo,
+    CharacterInfo,
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
@@ -611,36 +611,36 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             media_type="application/json",
         )
 
-    @app.get("/charactor_info", response_model=CharactorInfo, tags=["その他"])
-    def charactor_info(charactor_uuid: str):
+    @app.get("/character_info", response_model=CharacterInfo, tags=["その他"])
+    def character_info(character_uuid: str):
         """
-        指定されたcharactor_uuidに関する情報をjson形式で返します。
+        指定されたcharacter_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         icon、voice_samplesのdictのキーはファイル名です。
 
         Returns
         -------
-        ret_data: CharactorInfo
+        ret_data: CharacterInfo
         """
         try:
             with open(
-                f"charactors_info/{charactor_uuid}/policy.md", encoding="utf-8"
+                f"characters_info/{character_uuid}/policy.md", encoding="utf-8"
             ) as f:
                 policy = f.read()
-            with open(f"charactors_info/{charactor_uuid}/portrait.png", mode="rb") as f:
+            with open(f"characters_info/{character_uuid}/portrait.png", mode="rb") as f:
                 portrait = base64.b64encode(f.read()).decode("utf-8")
             icons = {}
-            for file_name in os.listdir(f"charactors_info/{charactor_uuid}/icons"):
+            for file_name in os.listdir(f"characters_info/{character_uuid}/icons"):
                 with open(
-                    f"charactors_info/{charactor_uuid}/icons/{file_name}", mode="rb"
+                    f"characters_info/{character_uuid}/icons/{file_name}", mode="rb"
                 ) as f:
                     icons[file_name] = base64.b64encode(f.read()).decode("utf-8")
             voice_samples = {}
             for file_name in os.listdir(
-                f"charactors_info/{charactor_uuid}/voice_samples"
+                f"characters_info/{character_uuid}/voice_samples"
             ):
                 with open(
-                    f"charactors_info/{charactor_uuid}/voice_samples/{file_name}",
+                    f"characters_info/{character_uuid}/voice_samples/{file_name}",
                     mode="rb",
                 ) as f:
                     voice_samples[file_name] = base64.b64encode(f.read()).decode(

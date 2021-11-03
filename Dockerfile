@@ -360,7 +360,7 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
                 --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
-                --include-data-dir=/opt/voicevox_engine/charactors_info=./charactors_info \
+                --include-data-dir=/opt/voicevox_engine/characters_info=./characters_info \
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
