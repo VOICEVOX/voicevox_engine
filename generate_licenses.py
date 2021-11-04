@@ -56,6 +56,19 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # world
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
+    ) as res:
+        licenses.append(
+            License(
+                name="world",
+                version=None,
+                license="Modified BSD license",
+                text=res.read().decode(),
+            )
+        )
+
     # pytorch
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE"
@@ -139,6 +152,19 @@ def generate_licenses() -> List[License]:
                 raise Exception(f"No License info provided for {license.name}")
         licenses.append(license)
 
+    # OpenBLAS
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="OpenBLAS",
+                version=None,
+                license="BSD 3-clause license",
+                text=res.read().decode(),
+            )
+        )
+
     # cuda
     # license text from CUDA 11.1.1
     # https://developer.nvidia.com/cuda-11.1.1-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal # noqa: B950
@@ -166,17 +192,6 @@ def generate_licenses() -> List[License]:
             text=Path("docs/licenses/cuda/NVIDIA_SLA_cuDNN_Support.txt").read_text(
                 encoding="utf8"
             ),
-        )
-    )
-
-    # world
-    # https://github.com/mmorise/World
-    licenses.append(
-        License(
-            name="world",
-            version=None,
-            license="Modified BSD license",
-            text=Path("docs/licenses/world/LICENSE.txt").read_text(),
         )
     )
 
