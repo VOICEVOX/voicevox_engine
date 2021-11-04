@@ -14,6 +14,7 @@ jobs:
           python: '3.7'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
+          voicevox_resource_version: '0.8.0'
           voicevox_core_version: '0.8.0'
           voicevox_core_example_version: '0.8.0'
           artifact_name: macos-x64
@@ -22,6 +23,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      # Download VOICEVOX RESOURCE
+      - name: Prepare VOICEVOX RESOURCE cache
+        uses: actions/cache@v2
+        id: voicevox-resource-cache
+        with:
+          key: voicevox-resource-${{ matrix.voicevox_resource_version }}
+          path: download/resource
+
+      - name: Checkout VOICEVOX RESOURCE
+        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: Hiroshiba/voicevox_resource
+          path: download/resource
 
 
   # Build Linux binary (push only buildcache image)
@@ -32,8 +48,9 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_core_version: [0.8.0]
-        voicevox_core_example_version: [0.8.0]
+        voicevox_resource_version: ['0.8.0']
+        voicevox_core_version: ['0.8.0']
+        voicevox_core_example_version: ['0.8.0']
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
@@ -61,6 +78,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Download VOICEVOX RESOURCE
+      - name: Prepare VOICEVOX RESOURCE cache
+        uses: actions/cache@v2
+        id: voicevox-resource-cache
+        with:
+          key: voicevox-resource-${{ matrix.voicevox_resource_version }}
+          path: download/resource
+
+      - name: Checkout VOICEVOX RESOURCE
+        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: Hiroshiba/voicevox_resource
+          path: download/resource
+
 
   build-windows:
     strategy:
@@ -70,6 +102,7 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
+          voicevox_resource_version: '0.8.0'
           voicevox_core_version: '0.8.0'
           voicevox_core_dll_name: core_cpu.dll
           voicevox_core_example_version: '0.8.0'
@@ -82,6 +115,7 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
+          voicevox_resource_version: '0.8.0'
           voicevox_core_version: '0.8.0'
           voicevox_core_dll_name: core.dll
           voicevox_core_example_version: '0.8.0'
@@ -95,3 +129,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      # Download VOICEVOX RESOURCE
+      - name: Prepare VOICEVOX RESOURCE cache
+        uses: actions/cache@v2
+        id: voicevox-resource-cache
+        with:
+          key: voicevox-resource-${{ matrix.voicevox_resource_version }}
+          path: download/resource
+
+      - name: Checkout VOICEVOX RESOURCE
+        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: Hiroshiba/voicevox_resource
+          path: download/resource
