@@ -223,7 +223,7 @@ ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
-ADD ./characters_info /opt/voicevox_engine/characters_info
+ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 RUN <<EOF
     set -eux
@@ -361,7 +361,7 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
                 --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
-                --include-data-dir=/opt/voicevox_engine/characters_info=./characters_info \
+                --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py

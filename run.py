@@ -24,7 +24,7 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    CharacterInfo,
+    SpeakerInfo,
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
@@ -160,6 +160,10 @@ def mora_to_text(mora: str):
         return openjtalk_mora2text[mora]
     else:
         return mora
+
+
+def b64encode_str(s):
+    return base64.b64encode(s).decode("utf-8")
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -611,43 +615,28 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             media_type="application/json",
         )
 
-    @app.get("/character_info", response_model=CharacterInfo, tags=["その他"])
-    def character_info(character_uuid: str):
+    @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
+    def speaker_info(speaker_uuid: str):
         """
-        指定されたcharacter_uuidに関する情報をjson形式で返します。
+        指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         icon、voice_samplesのdictのキーはファイル名です。
 
         Returns
         -------
-        ret_data: CharacterInfo
+        ret_data: SpeakerInfo
         """
         try:
-            with open(
-                f"characters_info/{character_uuid}/policy.md", encoding="utf-8"
-            ) as f:
-                policy = f.read()
-            with open(f"characters_info/{character_uuid}/portrait.png", mode="rb") as f:
-                portrait = base64.b64encode(f.read()).decode("utf-8")
+            policy = Path(f"speaker_info/{speaker_uuid}/policy.md").read_text("utf-8")
+            portrait = b64encode_str(Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes())
             icons = {}
-            for file_name in os.listdir(f"characters_info/{character_uuid}/icons"):
-                with open(
-                    f"characters_info/{character_uuid}/icons/{file_name}", mode="rb"
-                ) as f:
-                    icons[file_name] = base64.b64encode(f.read()).decode("utf-8")
+            for p in Path(f"speaker_info/{speaker_uuid}/icons").glob("*.png"):
+                icons[p.stem] = b64encode_str(p.read_bytes())
             voice_samples = {}
-            for file_name in os.listdir(
-                f"characters_info/{character_uuid}/voice_samples"
-            ):
-                with open(
-                    f"characters_info/{character_uuid}/voice_samples/{file_name}",
-                    mode="rb",
-                ) as f:
-                    voice_samples[file_name] = base64.b64encode(f.read()).decode(
-                        "utf-8"
-                    )
+            for p in Path(f"speaker_info/{speaker_uuid}/voice_samples/").glob("*.wav"):
+                voice_samples[p.stem] = b64encode_str(p.read_bytes())
         except FileNotFoundError:
-            raise HTTPException(status_code=404, detail="該当するキャラクターが見つかりません")
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
         ret_data = {
             "policy": policy,
             "portrait": portrait,
