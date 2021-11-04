@@ -39,6 +39,14 @@ jobs:
           repository: Hiroshiba/voicevox_resource
           path: download/resource
 
+      # Merge VOICEVOX RESOURCE
+      - name: Merge VOICEVOX RESOURCE
+        shell: bash
+        run: |
+          set -eux
+          rm -r speaker_info
+          cp -r download/resource/character_info speaker_info
+
 
   # Build Linux binary (push only buildcache image)
   build-linux:
@@ -93,6 +101,14 @@ jobs:
           repository: Hiroshiba/voicevox_resource
           path: download/resource
 
+      # Merge VOICEVOX RESOURCE
+      - name: Merge VOICEVOX RESOURCE
+        shell: bash
+        run: |
+          set -eux
+          rm -r speaker_info
+          cp -r download/resource/character_info speaker_info
+
 
   build-windows:
     strategy:
@@ -144,3 +160,11 @@ jobs:
         with:
           repository: Hiroshiba/voicevox_resource
           path: download/resource
+
+      # Merge VOICEVOX RESOURCE
+      - name: Merge VOICEVOX RESOURCE
+        shell: bash
+        run: |
+          set -eux
+          rm -r speaker_info
+          cp -r download/resource/character_info speaker_info
