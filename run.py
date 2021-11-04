@@ -1,6 +1,7 @@
 import argparse
 import base64
 import io
+import json
 import os
 import zipfile
 from functools import lru_cache
@@ -558,6 +559,11 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         -------
         ret_data: SpeakerInfo
         """
+        if speaker_uuid not in [
+            info["speaker_uuid"] for info in json.loads(engine.speakers)
+        ]:
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+
         try:
             policy = Path(f"speaker_info/{speaker_uuid}/policy.md").read_text("utf-8")
             portrait = b64encode_str(
@@ -570,7 +576,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             for p in Path(f"speaker_info/{speaker_uuid}/voice_samples/").glob("*.wav"):
                 voice_samples[p.stem] = b64encode_str(p.read_bytes())
         except FileNotFoundError:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+            raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
         ret_data = {
             "policy": policy,
             "portrait": portrait,
