@@ -20,8 +20,8 @@ jobs:
           python: '3.7'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
-          voicevox_core_version: '0.7.4'
-          voicevox_core_example_version: '0.7.4'
+          voicevox_core_version: '0.8.0'
+          voicevox_core_example_version: '0.8.0'
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -219,8 +219,8 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_core_version: [0.7.4]
-        voicevox_core_example_version: [0.7.4]
+        voicevox_core_version: [0.8.0]
+        voicevox_core_example_version: [0.8.0]
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
@@ -328,9 +328,9 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_core_version: '0.7.4'
+          voicevox_core_version: '0.8.0'
           voicevox_core_dll_name: core_cpu.dll
-          voicevox_core_example_version: '0.7.4'
+          voicevox_core_example_version: '0.8.0'
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
@@ -340,9 +340,9 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_core_version: '0.7.4'
+          voicevox_core_version: '0.8.0'
           voicevox_core_dll_name: core.dll
-          voicevox_core_example_version: '0.7.4'
+          voicevox_core_example_version: '0.8.0'
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-nvidia
