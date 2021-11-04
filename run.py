@@ -24,12 +24,12 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    SpeakerInfo,
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
     Preset,
     Speaker,
+    SpeakerInfo,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine
@@ -628,7 +628,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         try:
             policy = Path(f"speaker_info/{speaker_uuid}/policy.md").read_text("utf-8")
-            portrait = b64encode_str(Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes())
+            portrait = b64encode_str(
+                Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
+            )
             icons = {}
             for p in Path(f"speaker_info/{speaker_uuid}/icons").glob("*.png"):
                 icons[p.stem] = b64encode_str(p.read_bytes())
