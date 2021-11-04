@@ -620,7 +620,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-        icon、voice_samplesのdictのキーはファイル名です。
+        icon、voice_samplesのdictのキーは拡張子無しのファイル名です。
 
         Returns
         -------
