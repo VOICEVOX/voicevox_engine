@@ -243,8 +243,9 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_core_version: [0.8.0]
-        voicevox_core_example_version: [0.8.0]
+        voicevox_resource_version: ['0.8.0']
+        voicevox_core_version: ['0.8.0']
+        voicevox_core_example_version: ['0.8.0']
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
