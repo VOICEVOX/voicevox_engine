@@ -244,6 +244,7 @@ python -m nuitka \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
     --include-data-file=.venv-release/Lib/site-packages/llvmlite/binding/llvmlite.dll=./ \
+    --include-data-dir=speaker_info=./speaker_info \
     --msvc=14.2 \
     --follow-imports \
     --no-prefer-source-code \

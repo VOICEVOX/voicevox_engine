@@ -28,6 +28,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Preset,
     Speaker,
+    SpeakerInfo,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
@@ -91,6 +92,10 @@ def mora_to_text(mora: str):
         return openjtalk_mora2text[mora]
     else:
         return mora
+
+
+def b64encode_str(s):
+    return base64.b64encode(s).decode("utf-8")
 
 
 def generate_app(engine: SynthesisEngine) -> FastAPI:
@@ -541,6 +546,38 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             content=engine.speakers,
             media_type="application/json",
         )
+
+    @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
+    def speaker_info(speaker_uuid: str):
+        """
+        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        画像や音声はbase64エンコードされたものが返されます。
+        icon、voice_samplesのdictのキーは拡張子無しのファイル名です。
+
+        Returns
+        -------
+        ret_data: SpeakerInfo
+        """
+        try:
+            policy = Path(f"speaker_info/{speaker_uuid}/policy.md").read_text("utf-8")
+            portrait = b64encode_str(
+                Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
+            )
+            icons = {}
+            for p in Path(f"speaker_info/{speaker_uuid}/icons").glob("*.png"):
+                icons[p.stem] = b64encode_str(p.read_bytes())
+            voice_samples = {}
+            for p in Path(f"speaker_info/{speaker_uuid}/voice_samples/").glob("*.wav"):
+                voice_samples[p.stem] = b64encode_str(p.read_bytes())
+        except FileNotFoundError:
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+        ret_data = {
+            "policy": policy,
+            "portrait": portrait,
+            "icons": icons,
+            "voice_samples": voice_samples,
+        }
+        return ret_data
 
     return app
 

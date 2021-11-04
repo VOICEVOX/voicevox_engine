@@ -136,3 +136,14 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+
+
+class SpeakerInfo(BaseModel):
+    """
+    話者の追加情報
+    """
+
+    policy: str = Field(title="policy.md")
+    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
+    icons: Dict[str, str] = Field(title="icons/*.pngをbase64エンコードしたもの")
+    voice_samples: Dict[str, str] = Field(title="voice_samples/*.wavをbase64エンコードしたもの")
