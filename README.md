@@ -158,6 +158,16 @@ curl -s \
     > audio.wav
 ```
 
+### 話者の追加情報を取得するサンプルコード
+追加情報の中のportrait.pngを取得するコードです。  
+（[jq](https://stedolan.github.io/jq/)を使用してjsonをパースしています。）
+```bash
+curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
+    | jq  -r ".portrait" \
+    | base64 -d \
+    > portrait.png
+```
+
 ## Docker イメージ
 
 ### CPU
