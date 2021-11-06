@@ -7,7 +7,7 @@ import zipfile
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pyworld as pw
@@ -596,12 +596,21 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     args = parser.parse_args()
+
+    # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
+    voicelib_dir: Optional[Path] = args.voicelib_dir
+    if voicelib_dir is None:
+        if args.voicevox_dir is not None:
+            voicelib_dir = args.voicevox_dir
+        else:
+            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
+
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
                 use_gpu=args.use_gpu,
+                voicelib_dir=voicelib_dir,
                 voicevox_dir=args.voicevox_dir,
-                voicelib_dir=args.voicelib_dir,
             )
         ),
         host=args.host,
