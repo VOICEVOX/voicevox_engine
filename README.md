@@ -9,8 +9,12 @@
 [![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
 
-[VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
+[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
+
+（エディターは [VOICEVOX](https://github.com/Hiroshiba/voicevox/) 、
+コアは [VOICEVOX CORE](https://github.com/Hiroshiba/voicevox_core/) 、
+全体構成は [こちら](https://github.com/Hiroshiba/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## API ドキュメント
 
@@ -154,6 +158,16 @@ curl -s \
     > audio.wav
 ```
 
+### 話者の追加情報を取得するサンプルコード
+追加情報の中のportrait.pngを取得するコードです。  
+（[jq](https://stedolan.github.io/jq/)を使用してjsonをパースしています。）
+```bash
+curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
+    | jq  -r ".portrait" \
+    | base64 -d \
+    > portrait.png
+```
+
 ## Docker イメージ
 
 ### CPU
@@ -240,6 +254,7 @@ python -m nuitka \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
     --include-data-file=.venv-release/Lib/site-packages/llvmlite/binding/llvmlite.dll=./ \
+    --include-data-dir=speaker_info=./speaker_info \
     --msvc=14.2 \
     --follow-imports \
     --no-prefer-source-code \
