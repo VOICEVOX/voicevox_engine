@@ -484,8 +484,8 @@ class SynthesisEngine:
 
 def make_synthesis_engine(
     use_gpu: bool,
+    voicelib_dir: Path,
     voicevox_dir: Optional[Path] = None,
-    voicelib_dir: Optional[Path] = None,
 ) -> SynthesisEngine:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
@@ -494,12 +494,11 @@ def make_synthesis_engine(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
+    voicelib_dir: Path
+        音声ライブラリ自体があるディレクトリ
     voicevox_dir: Path, optional, default=None
         音声ライブラリの Python モジュールがあるディレクトリ
         None のとき、Python 標準のモジュール検索パスのどれかにあるとする
-    voicelib_dir: Path, optional, default=None
-        音声ライブラリ自体があるディレクトリ
-        None のとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     """
 
     # Python モジュール検索パスへ追加
@@ -524,12 +523,6 @@ def make_synthesis_engine(
             "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
             file=sys.stderr,
         )
-
-    if voicelib_dir is None:
-        if voicevox_dir is not None:
-            voicelib_dir = voicevox_dir
-        else:
-            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
 
