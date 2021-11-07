@@ -553,15 +553,16 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-        icon、voice_samplesのdictのキーは拡張子無しのファイル名です。
 
         Returns
         -------
         ret_data: SpeakerInfo
         """
-        if speaker_uuid not in [
-            info["speaker_uuid"] for info in json.loads(engine.speakers)
-        ]:
+        metas = json.loads(engine.speakers)
+        for i in range(len(metas)):
+            if metas[i]["speaker_uuid"] == speaker_uuid:
+                break
+        else:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
@@ -569,20 +570,34 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             portrait = b64encode_str(
                 Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
             )
-            icons = {}
-            for p in Path(f"speaker_info/{speaker_uuid}/icons").glob("*.png"):
-                icons[p.stem] = b64encode_str(p.read_bytes())
-            voice_samples = {}
-            for p in Path(f"speaker_info/{speaker_uuid}/voice_samples/").glob("*.wav"):
-                voice_samples[p.stem] = b64encode_str(p.read_bytes())
+            style_infos = []
+            for style in metas[i]["styles"]:
+                id = style["id"]
+                icon = b64encode_str(
+                    Path(
+                        f"speaker_info/{speaker_uuid}/icons/{metas[i]['name']}_{id}.png"
+                    ).read_bytes()
+                )
+                voice_samples = [
+                    b64encode_str(
+                        Path(
+                            "speaker_info/{}/voice_samples/{}_{}_{}.wav".format(
+                                speaker_uuid, metas[i]["name"], id, str(j + 1).zfill(3)
+                            )
+                        ).read_bytes()
+                    )
+                    for j in range(3)
+                ]
+                style_infos.append(
+                    {"id": id, "icon": icon, "voice_samples": voice_samples}
+                )
         except FileNotFoundError:
+            import traceback
+
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
-        ret_data = {
-            "policy": policy,
-            "portrait": portrait,
-            "icons": icons,
-            "voice_samples": voice_samples,
-        }
+
+        ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
     return app
