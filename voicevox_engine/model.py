@@ -138,6 +138,16 @@ class Preset(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
 
 
+class StyleInfo(BaseModel):
+    """
+    スタイルの追加情報
+    """
+
+    id: int = Field(title="スタイルID")
+    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
+
+
 class SpeakerInfo(BaseModel):
     """
     話者の追加情報
@@ -145,5 +155,4 @@ class SpeakerInfo(BaseModel):
 
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
-    icons: Dict[str, str] = Field(title="icons/*.pngをbase64エンコードしたもの")
-    voice_samples: Dict[str, str] = Field(title="voice_samples/*.wavをbase64エンコードしたもの")
+    style_infos: List[StyleInfo] = Field("スタイルの追加情報")

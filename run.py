@@ -9,7 +9,7 @@ import zipfile
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pyworld as pw
@@ -592,15 +592,17 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-        icon、voice_samplesのdictのキーは拡張子無しのファイル名です。
 
         Returns
         -------
         ret_data: SpeakerInfo
         """
-        if speaker_uuid not in [
-            info["speaker_uuid"] for info in json.loads(engine.speakers)
-        ]:
+        speakers = json.loads(engine.speakers)
+        for i in range(len(speakers)):
+            if speakers[i]["speaker_uuid"] == speaker_uuid:
+                speaker = speakers[i]
+                break
+        else:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
@@ -608,20 +610,34 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             portrait = b64encode_str(
                 Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
             )
-            icons = {}
-            for p in Path(f"speaker_info/{speaker_uuid}/icons").glob("*.png"):
-                icons[p.stem] = b64encode_str(p.read_bytes())
-            voice_samples = {}
-            for p in Path(f"speaker_info/{speaker_uuid}/voice_samples/").glob("*.wav"):
-                voice_samples[p.stem] = b64encode_str(p.read_bytes())
+            style_infos = []
+            for style in speaker["styles"]:
+                id = style["id"]
+                icon = b64encode_str(
+                    Path(
+                        f"speaker_info/{speaker_uuid}/icons/{speaker['name']}_{id}.png"
+                    ).read_bytes()
+                )
+                voice_samples = [
+                    b64encode_str(
+                        Path(
+                            "speaker_info/{}/voice_samples/{}_{}_{}.wav".format(
+                                speaker_uuid, speaker["name"], id, str(j + 1).zfill(3)
+                            )
+                        ).read_bytes()
+                    )
+                    for j in range(3)
+                ]
+                style_infos.append(
+                    {"id": id, "icon": icon, "voice_samples": voice_samples}
+                )
         except FileNotFoundError:
+            import traceback
+
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
-        ret_data = {
-            "policy": policy,
-            "portrait": portrait,
-            "icons": icons,
-            "voice_samples": voice_samples,
-        }
+
+        ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
     return app
@@ -639,15 +655,25 @@ if __name__ == "__main__":
     parser.add_argument("--init_processes", type=int, default=2)
     parser.add_argument("--max_wait_processes", type=int, default=5)
     args = parser.parse_args()
+
+    # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
+    voicelib_dir: Optional[Path] = args.voicelib_dir
+    if voicelib_dir is None:
+        if args.voicevox_dir is not None:
+            voicelib_dir = args.voicevox_dir
+        else:
+            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
+            
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
+
     uvicorn.run(
         generate_app(
             make_synthesis_engine(
                 use_gpu=args.use_gpu,
+                voicelib_dir=voicelib_dir,
                 voicevox_dir=args.voicevox_dir,
-                voicelib_dir=args.voicelib_dir,
             )
         ),
         host=args.host,
