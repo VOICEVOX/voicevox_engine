@@ -558,8 +558,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         -------
         ret_data: SpeakerInfo
         """
-        for speaker in json.loads(engine.speakers):
-            if speaker["speaker_uuid"] == speaker_uuid:
+        speakers = json.loads(engine.speakers)
+        for i in range(len(speakers)):
+            if speakers[i]["speaker_uuid"] == speaker_uuid:
+                speaker = speakers[i]
                 break
         else:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
