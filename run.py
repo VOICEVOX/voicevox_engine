@@ -558,9 +558,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         -------
         ret_data: SpeakerInfo
         """
-        metas = json.loads(engine.speakers)
-        for i in range(len(metas)):
-            if metas[i]["speaker_uuid"] == speaker_uuid:
+        for speaker in json.loads(engine.speakers):
+            if speaker[i]["speaker_uuid"] == speaker_uuid:
                 break
         else:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
@@ -571,18 +570,18 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
             )
             style_infos = []
-            for style in metas[i]["styles"]:
+            for style in speaker["styles"]:
                 id = style["id"]
                 icon = b64encode_str(
                     Path(
-                        f"speaker_info/{speaker_uuid}/icons/{metas[i]['name']}_{id}.png"
+                        f"speaker_info/{speaker_uuid}/icons/{speaker['name']}_{id}.png"
                     ).read_bytes()
                 )
                 voice_samples = [
                     b64encode_str(
                         Path(
                             "speaker_info/{}/voice_samples/{}_{}_{}.wav".format(
-                                speaker_uuid, metas[i]["name"], id, str(j + 1).zfill(3)
+                                speaker_uuid, speaker["name"], id, str(j + 1).zfill(3)
                             )
                         ).read_bytes()
                     )
