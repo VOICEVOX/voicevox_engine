@@ -420,16 +420,11 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        wave = cancellable_engine.synthesis(
+        f_name = cancellable_engine.synthesis(
             query=query, speaker_id=speaker, request=request
         )
 
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-            )
-
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(f_name, media_type="audio/wav")
 
     @app.post(
         "/multi_synthesis",
@@ -653,7 +648,6 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     parser.add_argument("--enable_cancellable_synthesis", type=bool, default=False)
     parser.add_argument("--init_processes", type=int, default=2)
-    parser.add_argument("--max_wait_processes", type=int, default=5)
     args = parser.parse_args()
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
@@ -663,10 +657,10 @@ if __name__ == "__main__":
             voicelib_dir = args.voicevox_dir
         else:
             voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
-            
+
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args)
+        cancellable_engine = CancellableEngine(args, voicelib_dir)
 
     uvicorn.run(
         generate_app(

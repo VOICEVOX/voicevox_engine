@@ -1,8 +1,13 @@
 import argparse
 import asyncio
-import multiprocessing
+import queue
+from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
+import soundfile
 import numpy as np
 from fastapi import HTTPException, Request
 
@@ -18,132 +23,93 @@ class CancellableEngine:
 
     Attributes
     ----------
-    client_connections: List[Tuple[Request, multiprocessing.Process]]
-        Requestは接続の監視に使用され、multiprocessing.Processは通信切断時のプロセスキルに使用される
+    watch_con_list: List[Tuple[Request, Process]]
+        Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: List[Tuple[multiprocessing.Process, multiprocessing.connection.Connection]]
+    procs_and_cons: queue.Queue[Tuple[Process, Connection]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
-
-    Warnings
-    --------
-    音声合成の結果のオブジェクトが32MiBを超えるとValueErrorが発生する可能性がある
-    https://docs.python.org/ja/3/library/multiprocessing.html
     """
 
-    def __init__(self, args) -> None:
+    def __init__(self, args, voicelib_dir) -> None:
         """
         変数の初期化を行う
         また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
         self.args = args
+        self.voicelib_dir = voicelib_dir
         if not self.args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
 
-        self.client_connections: List[Tuple[Request, multiprocessing.Process]] = []
-        self.procs_and_cons: List[
-            Tuple[multiprocessing.Process, multiprocessing.connection.Connection]
-        ] = []
+        self.watch_con_list: List[Tuple[Request, Process]] = []
+        self.procs_and_cons: queue.Queue[
+            Tuple[Process, Connection]
+        ] = queue.Queue()
         for _ in range(self.args.init_processes):
-            new_proc, sub_proc_con1 = self.start_new_proc()
-            self.procs_and_cons.append((new_proc, sub_proc_con1))
+            self.procs_and_cons.put(self.start_new_proc())
 
     def start_new_proc(
         self,
-    ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
+    ) -> Tuple[Process, Connection]:
         """
         新しく開始したプロセスを返す関数
 
         Returns
         -------
-        ret_proc: multiprocessing.Process
+        ret_proc: Process
             新規のプロセス
-        sub_proc_con1: multiprocessing.connection.Connection
+        sub_proc_con1: Connection
             ret_procのプロセスと通信するためのPipe
         """
-        sub_proc_con1, sub_proc_con2 = multiprocessing.Pipe(True)
-        ret_proc = multiprocessing.Process(
+        sub_proc_con1, sub_proc_con2 = Pipe(True)
+        ret_proc = Process(
             target=synthesis_subprocess,
-            kwargs={"args": self.args, "sub_proc_con": sub_proc_con2},
+            kwargs={"args": self.args, "voicelib_dir": self.voicelib_dir,"sub_proc_con": sub_proc_con2},
             daemon=True,
         )
         ret_proc.start()
         return ret_proc, sub_proc_con1
 
-    def get_proc(
-        self, req: Request
-    ) -> Tuple[multiprocessing.Process, multiprocessing.connection.Connection]:
-        """
-        音声合成可能なプロセスを返す関数
-        準備済みのプロセスがあればそれを、無ければstart_new_procの結果を返す
-
-        Parameters
-        ----------
-        req: fastapi.Request
-            接続確立時に受け取ったものをそのまま渡せばよい
-            https://fastapi.tiangolo.com/advanced/using-request-directly/
-
-        Returns
-        -------
-        ret_proc: multiprocessing.Process
-            音声合成可能なプロセス
-        sub_proc_con1: multiprocessing.connection.Connection
-            ret_procのプロセスと通信するためのPipe
-        """
-        try:
-            ret_proc, sub_proc_con1 = self.procs_and_cons.pop(0)
-        except IndexError:
-            ret_proc, sub_proc_con1 = self.start_new_proc()
-        self.client_connections.append((req, ret_proc))
-        return ret_proc, sub_proc_con1
-
-    def remove_con(
+    def finalize_con(
         self,
         req: Request,
-        proc: multiprocessing.Process,
-        sub_proc_con: Optional[multiprocessing.connection.Connection],
+        proc: Process,
+        sub_proc_con: Optional[Connection],
     ) -> None:
         """
         接続が切断された時の処理を行う関数
-        client_connectionsからの削除、プロセスの後処理を行う
-        args.max_wait_processesより、procs_and_consの長さが短い場合はプロセスをそこに加える
-        同じか長い場合は停止される
+        watch_con_listからの削除、プロセスの後処理を行う
+        プロセスが生きている場合はそのままprocs_and_consに加える
+        死んでいる場合は新しく生成したものをprocs_and_consに加える
 
         Parameters
         ----------
         req: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
-        proc: multiprocessing.Process
+        proc: Process
             音声合成を行っていたプロセス
-        sub_proc_con: multiprocessing.connection.Connection, optional
+        sub_proc_con: Connection, optional
             音声合成を行っていたプロセスとのPipe
             指定されていない場合、プロセスは再利用されず終了される
         """
         try:
-            self.client_connections.remove((req, proc))
+            self.watch_con_list.remove((req, proc))
         except ValueError:
             pass
         try:
             if not proc.is_alive() or sub_proc_con is None:
                 proc.close()
                 raise ValueError
+            # プロセスが死んでいない場合は再利用する
+            self.procs_and_cons.put((proc, sub_proc_con))
         except ValueError:
-            if len(self.procs_and_cons) < self.args.max_wait_processes:
-                new_proc, new_sub_proc_con1 = self.start_new_proc()
-                self.procs_and_cons.append((new_proc, new_sub_proc_con1))
-            return
-        if len(self.procs_and_cons) < self.args.max_wait_processes:
-            self.procs_and_cons.append((proc, sub_proc_con))
-        else:
-            proc.terminate()
-            proc.join()
-            proc.close()
-        return
+            # プロセスが死んでいるので新しく作り直す
+            self.procs_and_cons.put(self.start_new_proc())
 
     def synthesis(
         self, query: AudioQuery, speaker_id: Speaker, request: Request
@@ -151,6 +117,7 @@ class CancellableEngine:
         """
         音声合成を行う関数
         通常エンジンの引数に比べ、requestが必要になっている
+        また、返り値がファイル名になっている
 
         Parameters
         ----------
@@ -162,43 +129,42 @@ class CancellableEngine:
 
         Returns
         -------
-        wave: np.ndarray
-            生成された音声データ
+        f_name: str
+            生成された音声ファイルの名前
         """
-        proc, sub_proc_con1 = self.get_proc(request)
+        proc, sub_proc_con1 = self.procs_and_cons.get()
+        self.watch_con_list.append((request, proc))
         try:
             sub_proc_con1.send((query, speaker_id))
-            wave = sub_proc_con1.recv()
+            f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
 
-        self.remove_con(request, proc, sub_proc_con1)
-        return wave
+        self.finalize_con(request, proc, sub_proc_con1)
+        return f_name
 
     async def catch_disconnection(self):
         """
         接続監視を行うコルーチン
         """
-        lock = asyncio.Lock()
         while True:
             await asyncio.sleep(1)
-            async with lock:
-                for con in self.client_connections:
-                    req, proc = con
-                    if await req.is_disconnected():
-                        try:
-                            if proc.is_alive():
-                                proc.terminate()
-                                proc.join()
-                            proc.close()
-                        except ValueError:
-                            pass
-                        finally:
-                            self.remove_con(req, proc, None)
+            for con in self.watch_con_list:
+                req, proc = con
+                if await req.is_disconnected():
+                    try:
+                        if proc.is_alive():
+                            proc.terminate()
+                            proc.join()
+                        proc.close()
+                    except ValueError:
+                        pass
+                    finally:
+                        self.finalize_con(req, proc, None)
 
 
 def synthesis_subprocess(
-    args: argparse.Namespace, sub_proc_con: multiprocessing.connection.Connection
+    args: argparse.Namespace, voicelib_dir: Path, sub_proc_con: Connection
 ):
     """
     音声合成を行うサブプロセスで行うための関数
@@ -208,20 +174,24 @@ def synthesis_subprocess(
     ----------
     args: argparse.Namespace
         起動時に作られたものをそのまま渡す
-    sub_proc_con: multiprocessing.connection.Connection
+    sub_proc_con: Connection
         メインプロセスと通信するためのPipe
     """
 
     engine = make_synthesis_engine(
         use_gpu=args.use_gpu,
         voicevox_dir=args.voicevox_dir,
-        voicelib_dir=args.voicelib_dir,
+        voicelib_dir=voicelib_dir,
     )
     while True:
         try:
             query, speaker_id = sub_proc_con.recv()
             wave = engine.synthesis(query=query, speaker_id=speaker_id)
-            sub_proc_con.send(wave)
+            with NamedTemporaryFile(delete=False) as f:
+                soundfile.write(
+                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+                )
+            sub_proc_con.send(f.name)
         except Exception:
             sub_proc_con.close()
             raise
