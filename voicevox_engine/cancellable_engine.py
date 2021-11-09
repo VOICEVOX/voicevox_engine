@@ -1,14 +1,14 @@
 import argparse
 import asyncio
 import queue
-from multiprocessing import Process, Pipe
+from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
-import soundfile
 import numpy as np
+import soundfile
 from fastapi import HTTPException, Request
 
 from voicevox_engine.model import AudioQuery, Speaker
@@ -46,9 +46,7 @@ class CancellableEngine:
             )
 
         self.watch_con_list: List[Tuple[Request, Process]] = []
-        self.procs_and_cons: queue.Queue[
-            Tuple[Process, Connection]
-        ] = queue.Queue()
+        self.procs_and_cons: queue.Queue[Tuple[Process, Connection]] = queue.Queue()
         for _ in range(self.args.init_processes):
             self.procs_and_cons.put(self.start_new_proc())
 
@@ -68,7 +66,11 @@ class CancellableEngine:
         sub_proc_con1, sub_proc_con2 = Pipe(True)
         ret_proc = Process(
             target=synthesis_subprocess,
-            kwargs={"args": self.args, "voicelib_dir": self.voicelib_dir,"sub_proc_con": sub_proc_con2},
+            kwargs={
+                "args": self.args,
+                "voicelib_dir": self.voicelib_dir,
+                "sub_proc_con": sub_proc_con2,
+            },
             daemon=True,
         )
         ret_proc.start()
