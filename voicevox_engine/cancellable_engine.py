@@ -7,7 +7,6 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
-import numpy as np
 import soundfile
 from fastapi import HTTPException, Request
 
