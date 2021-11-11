@@ -65,7 +65,7 @@ class CancellableEngine:
         """
         sub_proc_con1, sub_proc_con2 = Pipe(True)
         ret_proc = Process(
-            target=synthesis_subprocess,
+            target=start_synthesis_subprocess,
             kwargs={
                 "args": self.args,
                 "voicelib_dir": self.voicelib_dir,
@@ -168,7 +168,7 @@ class CancellableEngine:
                         self.finalize_con(req, proc, None)
 
 
-def synthesis_subprocess(
+def start_synthesis_subprocess(
     args: argparse.Namespace, voicelib_dir: Path, sub_proc_con: Connection
 ):
     """
