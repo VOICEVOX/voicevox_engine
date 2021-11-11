@@ -178,7 +178,7 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 
 `/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。  
 (`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
-このAPIは実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis True`を指定しないと有効化されません。  
+このAPIは実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
 ## Docker イメージ

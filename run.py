@@ -646,7 +646,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_gpu", action="store_true")
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
-    parser.add_argument("--enable_cancellable_synthesis", type=bool, default=False)
+    parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
     args = parser.parse_args()
 
