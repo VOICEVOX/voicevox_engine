@@ -1,7 +1,9 @@
 import argparse
+import asyncio
 import base64
 import io
 import json
+import multiprocessing
 import os
 import zipfile
 from functools import lru_cache
@@ -14,11 +16,12 @@ import pyworld as pw
 import soundfile
 import uvicorn
 import yaml
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from starlette.responses import FileResponse
 
+from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
@@ -245,6 +248,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             target_spectrogram,
         )
 
+    @app.on_event("startup")
+    async def start_catch_disconnection():
+        if args.enable_cancellable_synthesis:
+            loop = asyncio.get_event_loop()
+            _ = loop.create_task(cancellable_engine.catch_disconnection())
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -391,6 +400,31 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             )
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/cancellable_synthesis",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="音声合成する（キャンセル可能）",
+    )
+    def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
+        if not args.enable_cancellable_synthesis:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
+        f_name = cancellable_engine.synthesis(
+            query=query, speaker_id=speaker, request=request
+        )
+
+        return FileResponse(f_name, media_type="audio/wav")
 
     @app.post(
         "/multi_synthesis",
@@ -605,12 +639,15 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50021)
     parser.add_argument("--use_gpu", action="store_true")
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None)
+    parser.add_argument("--enable_cancellable_synthesis", action="store_true")
+    parser.add_argument("--init_processes", type=int, default=2)
     args = parser.parse_args()
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
@@ -620,6 +657,10 @@ if __name__ == "__main__":
             voicelib_dir = args.voicevox_dir
         else:
             voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
+
+    cancellable_engine = None
+    if args.enable_cancellable_synthesis:
+        cancellable_engine = CancellableEngine(args, voicelib_dir)
 
     uvicorn.run(
         generate_app(
