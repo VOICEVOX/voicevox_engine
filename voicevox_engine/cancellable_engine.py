@@ -115,7 +115,7 @@ class CancellableEngine:
 
     def synthesis(
         self, query: AudioQuery, speaker_id: Speaker, request: Request
-    ) -> np.ndarray:
+    ) -> str:
         """
         音声合成を行う関数
         通常エンジンの引数に比べ、requestが必要になっている
