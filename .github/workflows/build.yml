@@ -203,6 +203,7 @@ jobs:
             --include-package-data=llvmlite \
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
+            --include-data-file=../presets.yaml=./ \
             --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./ \
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \

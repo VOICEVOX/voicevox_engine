@@ -261,6 +261,7 @@ python -m nuitka \
     --include-package-data=resampy \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
+    --include-data-file=presets.yaml=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
