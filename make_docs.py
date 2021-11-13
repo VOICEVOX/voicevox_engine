@@ -1,8 +1,9 @@
 import json
+
 import run
 
-from voicevox_engine.dev.synthesis_engine.mock import SynthesisEngine
 from voicevox_engine.dev.core import mock as core
+from voicevox_engine.dev.synthesis_engine.mock import SynthesisEngine
 
 if __name__ == "__main__":
     app = run.generate_app(SynthesisEngine(speakers=core.metas()))
@@ -22,5 +23,6 @@ if __name__ == "__main__":
         Redoc.init(%s, {}, document.getElementById("redoc-container"));
     </script>
 </body>
-</html>""" % json.dumps(app.openapi())
+</html>"""
+            % json.dumps(app.openapi())
         )
