@@ -7,7 +7,7 @@ from voicevox_engine.dev.synthesis_engine.mock import SynthesisEngine
 
 if __name__ == "__main__":
     app = run.generate_app(SynthesisEngine(speakers=core.metas()))
-    with open("html/index.html", "w") as f:
+    with open("docs/api/index.html", "w") as f:
         f.write(
             """<!DOCTYPE html>
 <html lang="ja">
