@@ -20,7 +20,7 @@ if __name__ == "__main__":
     <div id="redoc-container"></div>
     <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
     <script>
-        Redoc.init(%s, {}, document.getElementById("redoc-container"));
+        Redoc.init(%s, {"hideHostname": true}, document.getElementById("redoc-container"));
     </script>
 </body>
 </html>"""
