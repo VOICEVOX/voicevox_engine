@@ -241,6 +241,14 @@ python run.py
 pysen run format lint
 ```
 
+## APIドキュメントの更新
+
+`docs/api/index.html`の内容を更新します。
+
+```bash
+python make_docs.py
+```
+
 ## ビルド
 
 Build Tools for Visual Studio 2019 が必要です。
