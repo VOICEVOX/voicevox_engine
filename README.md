@@ -18,8 +18,10 @@
 
 ## API ドキュメント
 
-VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。  
-[VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md)も参考になるかもしれません。
+[API ドキュメント](https://hiroshiba.github.io/voicevox_engine/api/)をご参照ください。
+
+VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
 
@@ -243,7 +245,7 @@ pysen run format lint
 
 ## APIドキュメントの更新
 
-`docs/api/index.html`の内容を更新します。
+[API ドキュメント](https://hiroshiba.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
 
 ```bash
 python make_docs.py
