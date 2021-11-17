@@ -222,7 +222,7 @@ EOF
 ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 RUN <<EOF
