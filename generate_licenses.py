@@ -167,7 +167,7 @@ def generate_licenses() -> List[License]:
 
     # libsndfile-binaries
     with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/84cb164928f17c7ca0c1e5c40342c20ce2b90e8c/COPYING"
+        "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/84cb164928f17c7ca0c1e5c40342c20ce2b90e8c/COPYING"  # noqa: B950
     ) as res:
         licenses.append(
             License(
