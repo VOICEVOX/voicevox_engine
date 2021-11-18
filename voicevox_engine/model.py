@@ -16,6 +16,13 @@ class Mora(BaseModel):
     vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
+    def __hash__(self):
+        items = [
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
+
 
 class AccentPhrase(BaseModel):
     """
@@ -25,6 +32,13 @@ class AccentPhrase(BaseModel):
     moras: List[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
+
+    def __hash__(self):
+        items = [
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
 
 
 class AudioQuery(BaseModel):
@@ -42,6 +56,13 @@ class AudioQuery(BaseModel):
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+
+    def __hash__(self):
+        items = [
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
 
 
 class ParseKanaErrorCode(Enum):
@@ -98,3 +119,40 @@ class Speaker(BaseModel):
     speaker_uuid: str = Field(title="スピーカーのUUID")
     styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
     version: str = Field("スピーカーのバージョン")
+
+
+class Preset(BaseModel):
+    """
+    プリセット情報
+    """
+
+    id: int = Field(title="プリセットID")
+    name: str = Field(title="プリセット名")
+    speaker_uuid: str = Field(title="スピーカーのUUID")
+    style_id: int = Field(title="スタイルID")
+    speedScale: float = Field(title="全体の話速")
+    pitchScale: float = Field(title="全体の音高")
+    intonationScale: float = Field(title="全体の抑揚")
+    volumeScale: float = Field(title="全体の音量")
+    prePhonemeLength: float = Field(title="音声の前の無音時間")
+    postPhonemeLength: float = Field(title="音声の後の無音時間")
+
+
+class StyleInfo(BaseModel):
+    """
+    スタイルの追加情報
+    """
+
+    id: int = Field(title="スタイルID")
+    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
+
+
+class SpeakerInfo(BaseModel):
+    """
+    話者の追加情報
+    """
+
+    policy: str = Field(title="policy.md")
+    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
+    style_infos: List[StyleInfo] = Field("スタイルの追加情報")

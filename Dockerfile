@@ -10,6 +10,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /work
 
 RUN <<EOF
+    set -eux
     apt-get update
     apt-get install -y \
         wget \
@@ -19,9 +20,10 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
-ARG VOICEVOX_CORE_VERSION=0.7.4
+ARG VOICEVOX_CORE_VERSION=0.8.0
 ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 RUN <<EOF
+    set -eux
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
     mv ./core /opt/voicevox_core
@@ -43,6 +45,7 @@ RUN <<EOF
 EOF
 
 RUN <<EOF
+    set -eux
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
     rm -f /etc/ld.so.cache
     ldconfig
@@ -56,6 +59,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /work
 
 RUN <<EOF
+    set -eux
     apt-get update
     apt-get install -y \
         wget \
@@ -66,6 +70,7 @@ EOF
 
 ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
 RUN <<EOF
+    set -eux
     wget -nv --show-progress -c -O "./libtorch.zip" "${LIBTORCH_URL}"
     unzip "./libtorch.zip"
     mv ./libtorch /opt/libtorch
@@ -116,6 +121,7 @@ FROM ${BASE_IMAGE} AS compile-python-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN <<EOF
+    set -eux
     apt-get update
     apt-get install -y \
         build-essential \
@@ -146,7 +152,7 @@ ARG PYENV_VERSION=master
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
-    set -e
+    set -eux
     git clone -b "${PYENV_VERSION}" https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
     PREFIX="$PYBUILD_ROOT" "$PYENV_ROOT"/plugins/python-build/install.sh
     "$PYBUILD_ROOT/bin/python-build" -v "$PYTHON_VERSION" /opt/python
@@ -158,6 +164,7 @@ EOF
 # not working: /etc/environment is the same
 # not suitable: `ENV` is ignored by docker-compose
 # RUN <<EOF
+#     set -eux
 #     echo "export PATH=/opt/python/bin:\$PATH" > /etc/profile.d/python-path.sh
 #     echo "export LD_LIBRARY_PATH=/opt/python/lib:\$LD_LIBRARY_PATH" >> /etc/profile.d/python-path.sh
 #     echo "export C_INCLUDE_PATH=/opt/python/include:\$C_INCLUDE_PATH" >> /etc/profile.d/python-path.sh
@@ -177,6 +184,7 @@ WORKDIR /opt/voicevox_engine
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
 RUN <<EOF
+    set -eux
     apt-get update
     apt-get install -y \
         git \
@@ -201,7 +209,7 @@ COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.con
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
 # Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.7.4
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.8.0
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
@@ -214,9 +222,12 @@ EOF
 ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./check_tts.py ./VERSION.txt /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt /opt/voicevox_engine/
+ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 RUN <<EOF
+    set -eux
+
     # Create a general user
     useradd --create-home user
 
@@ -224,16 +235,22 @@ RUN <<EOF
     ldconfig
 
     # Const environment
+    # FIXME: These values may be undefined, so `set +u` is needed
+    set +u
     export PATH="/home/user/.local/bin:/opt/python/bin:$PATH"
     export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
+    set -u
 
     # Install requirements
     gosu user python3 -m pip install --upgrade pip setuptools wheel
     gosu user pip3 install -r /tmp/requirements.txt
 
     # Install voicevox_core
-    cd /opt/voicevox_core_example/example/python
+    # Files will be generated at build time, so move to a writable directory
+    gosu user cp -r /opt/voicevox_core_example/example/python /tmp/voicevox_core_example_setup
+    cd /tmp/voicevox_core_example_setup
     gosu user pip3 install .
+    rm -r /tmp/voicevox_core_example_setup
 
     # Generate licenses.json
     cd /opt/voicevox_engine
@@ -265,6 +282,7 @@ EOF
 ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
+set -eux
 cat /opt/voicevox_core/README.txt > /dev/stderr
 
 # Workaround: ldconfig fail to load LibTorch if glibc < 2.31.
@@ -290,6 +308,7 @@ FROM runtime-env AS build-env
 # Install ccache for Nuitka cache
 # chrpath: required for nuitka build; 'RPATH' settings in used shared
 RUN <<EOF
+    set -eux
     apt-get update
     apt-get install -y \
         ccache \
@@ -302,6 +321,7 @@ EOF
 # Install Python build dependencies
 ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
+    set -eux
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
@@ -335,12 +355,14 @@ RUN <<EOF
                 --include-package-data=resampy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
+                --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
                 --include-data-file=/opt/libtorch/lib/*.so=./ \
                 --include-data-file=/opt/libtorch/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
                 --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
+                --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py

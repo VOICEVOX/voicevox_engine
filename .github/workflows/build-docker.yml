@@ -26,8 +26,8 @@ jobs:
           - nvidia-ubuntu20.04
           - cpu-ubuntu18.04
           - nvidia-ubuntu18.04
-        voicevox_core_version: [0.7.4]
-        voicevox_core_example_version: [0.7.4]
+        voicevox_core_version: [0.8.0]
+        voicevox_core_example_version: [0.8.0]
         include:
           # Ubuntu 20.04
           - tag: ''

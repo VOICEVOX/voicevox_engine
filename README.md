@@ -9,14 +9,21 @@
 [![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
 
-
-[VOICEVOX](https://github.com/Hiroshiba/voicevox)の音声合成エンジン。
+[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
+
+（エディターは [VOICEVOX](https://github.com/Hiroshiba/voicevox/) 、
+コアは [VOICEVOX CORE](https://github.com/Hiroshiba/voicevox_core/) 、
+全体構成は [こちら](https://github.com/Hiroshiba/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## API ドキュメント
 
-VOICEVOX ソフトウェアを起動した状態で、ブラウザから http://localhost:50021/docs にアクセスするとドキュメントが表示されます。  
-[VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md)も参考になるかもしれません。
+[API ドキュメント](https://hiroshiba.github.io/voicevox_engine/api/)をご参照ください。
+
+VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
+
+リクエスト・レスポンスの文字コードはすべて UTF-8 です。
 
 ### HTTP リクエストで音声合成するサンプルコード
 
@@ -36,6 +43,10 @@ curl -s \
     localhost:50021/synthesis?speaker=1 \
     > audio.wav
 ```
+
+生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
+
+`speaker` に指定する値は `/speakers` エンドポイントで得られる `styleId` です。互換性のために `speaker` という名前になっています。
 
 ### 読み方を AquesTalk 記法で取得・修正するサンプルコード
 
@@ -80,6 +91,98 @@ curl -s \
     > audio.wav
 ```
 
+### プリセット機能について
+
+`presets.yaml`を編集することで話者や話速などのプリセットを使うことができます。
+
+```bash
+echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
+
+# プリセット情報を取得
+curl -s -X GET "localhost:50021/presets" > presets.json
+
+preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
+style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
+
+# AudioQueryの取得
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query_from_preset?preset_id=$preset_id"\
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# 音声合成
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis?speaker=$style_id" \
+    > audio.wav
+```
+
+- `speaker_uuid`は、`/speakers`で確認できます
+- `id`は重複してはいけません
+- エンジン起動後にファイルを書き換えるとエンジンに反映されます
+
+### 2 人の話者でモーフィングするサンプルコード
+
+`/synthesis_morphing`では、2 人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
+
+```bash
+echo -n "モーフィングを利用することで、２つの声を混ぜることができます。" > text.txt
+
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query?speaker=0"\
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# 元の話者での合成結果
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis?speaker=0" \
+    > audio.wav
+
+export MORPH_RATE=0.5
+
+# 話者2人分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    > audio.wav
+
+export MORPH_RATE=0.9
+
+# query、base_speaker、target_speakerが同じ場合はキャッシュが使用されるため比較的高速に生成される
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    > audio.wav
+```
+
+### 話者の追加情報を取得するサンプルコード
+追加情報の中のportrait.pngを取得するコードです。  
+（[jq](https://stedolan.github.io/jq/)を使用してjsonをパースしています。）
+```bash
+curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
+    | jq  -r ".portrait" \
+    | base64 -d \
+    > portrait.png
+```
+
+### キャンセル可能な音声合成
+
+`/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。  
+(`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
+このAPIは実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
+音声合成に必要なパラメータは`/synthesis`と同様です。
+
 ## Docker イメージ
 
 ### CPU
@@ -105,10 +208,10 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-pip install -r requirements-test.txt
+python -m pip install -r requirements-test.txt
 
 # とりあえず実行したいだけなら代わりにこちら
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ## 実行
@@ -140,12 +243,20 @@ python run.py
 pysen run format lint
 ```
 
+## APIドキュメントの更新
+
+[API ドキュメント](https://hiroshiba.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
+
+```bash
+python make_docs.py
+```
+
 ## ビルド
 
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 
 python generate_licenses.py > licenses.json
 
@@ -160,16 +271,29 @@ python -m nuitka \
     --include-package-data=resampy \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
+    --include-data-file=presets.yaml=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
     --include-data-file=.venv-release/Lib/site-packages/llvmlite/binding/llvmlite.dll=./ \
+    --include-data-dir=speaker_info=./speaker_info \
     --msvc=14.2 \
     --follow-imports \
     --no-prefer-source-code \
     run.py
+```
+
+## 依存関係の更新について
+
+pip-tools を用いて依存ライブラリのバージョンを固定しています。
+`requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
+
+```bash
+pip-compile requirements.in
+pip-compile requirements-dev.in
+pip-compile requirements-test.in
 ```
 
 ## GitHub Actions
