@@ -56,6 +56,19 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # world
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
+    ) as res:
+        licenses.append(
+            License(
+                name="world",
+                version=None,
+                license="Modified BSD license",
+                text=res.read().decode(),
+            )
+        )
+
     # pytorch
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE"
@@ -138,6 +151,19 @@ def generate_licenses() -> List[License]:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")
         licenses.append(license)
+
+    # OpenBLAS
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="OpenBLAS",
+                version=None,
+                license="BSD 3-clause license",
+                text=res.read().decode(),
+            )
+        )
 
     # cuda
     # license text from CUDA 11.1.1

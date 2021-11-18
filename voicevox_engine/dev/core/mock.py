@@ -78,14 +78,24 @@ def metas() -> str:
         [
             {
                 "name": "dummy1",
-                "styles": [{"name": "dummy1", "id": 0}],
-                "speaker_uuid": "db447b10-0664-475e-95e6-785bca0a84eb",
+                "styles": [
+                    {"name": "style0", "id": 0},
+                    {"name": "style1", "id": 2},
+                    {"name": "style2", "id": 4},
+                    {"name": "style3", "id": 6},
+                ],
+                "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
                 "version": version,
             },
             {
                 "name": "dummy2",
-                "styles": [{"name": "dummy2", "id": 1}],
-                "speaker_uuid": "26067458-596a-482c-9a90-6c1d10d69c78",
+                "styles": [
+                    {"name": "style0", "id": 1},
+                    {"name": "style1", "id": 3},
+                    {"name": "style2", "id": 5},
+                    {"name": "style3", "id": 7},
+                ],
+                "speaker_uuid": "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9",
                 "version": version,
             },
         ]
