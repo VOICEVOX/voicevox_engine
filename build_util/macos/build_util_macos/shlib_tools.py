@@ -63,9 +63,9 @@ def change_rpath(old_rpath: Path, new_rpath: Path, dylib_path: Path, base_path: 
         [
             "install_name_tool",
             "-change",
-            str(old_rpath),
+            old_rpath,
             "@rpath/" + str(relative_new_rpath),
-            str(dylib_path),
+            dylib_path,
         ]
     )
 
