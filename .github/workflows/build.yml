@@ -221,6 +221,18 @@ jobs:
         run: |
           install_name_tool -add_rpath @executable_path/. build/run.dist/run
 
+      # NOTE: This task should ideally be done by Nuitka in the `Build run.py` step.
+      # Please remove this step when you have solved the problem with Nuitka.
+      - name: Copy the missing .dylib files into the distribution
+        run: |
+          python build_util/macos/copy_missing_dylibs.py build/run.dist/
+
+      # NOTE: This task should ideally be done by Nuitka in the `Build run.py` step.
+      # Please remove this step when you have solved the problem with Nuitka.
+      - name: Fix the rpaths of the .dylib files in the distribution
+        run: |
+          python build_util/macos/fix_rpaths.py build/run.dist/
+
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
