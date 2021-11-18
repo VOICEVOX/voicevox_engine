@@ -165,6 +165,58 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # libsndfile-binaries
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/84cb164928f17c7ca0c1e5c40342c20ce2b90e8c/COPYING"  # noqa: B950
+    ) as res:
+        licenses.append(
+            License(
+                name="libsndfile-binaries",
+                version="1.0.28",
+                license="LGPL-2.1 license",
+                text=res.read().decode(),
+            )
+        )
+
+    # libogg
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/xiph/ogg/v1.3.2/COPYING"
+    ) as res:
+        licenses.append(
+            License(
+                name="libogg",
+                version="1.3.2",
+                license="BSD 3-clause license",
+                text=res.read().decode(),
+            )
+        )
+
+    # libvorbis
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/xiph/vorbis/v1.3.5/COPYING"
+    ) as res:
+        licenses.append(
+            License(
+                name="libvorbis",
+                version="1.3.5",
+                license="BSD 3-clause license",
+                text=res.read().decode(),
+            )
+        )
+
+    # libflac
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/xiph/flac/1.3.2/COPYING.Xiph"
+    ) as res:
+        licenses.append(
+            License(
+                name="FLAC",
+                version="1.3.2",
+                license="Xiph.org's BSD-like license",
+                text=res.read().decode(),
+            )
+        )
+
     # cuda
     # license text from CUDA 11.1.1
     # https://developer.nvidia.com/cuda-11.1.1-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal # noqa: B950
