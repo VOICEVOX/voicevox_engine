@@ -1,3 +1,11 @@
+"""
+配布物内の.dylibファイルの不足を解消するためのスクリプト
+
+引数で指定したbase_directory以下にある.dylibファイルのrpathをチェックし、
+rpathの指す.dylibファイルがbase_directory以下に存在しなかった場合、
+rpathの指している場所からその.dylibファイルをbase_directory直下へとコピーする。
+"""
+
 import argparse
 import shutil
 import sys

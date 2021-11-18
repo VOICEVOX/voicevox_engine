@@ -1,3 +1,7 @@
+"""
+macOSにおいて共有ライブラリを操作するためのツールをまとめたモジュール
+"""
+
 import subprocess
 from pathlib import Path
 from typing import List

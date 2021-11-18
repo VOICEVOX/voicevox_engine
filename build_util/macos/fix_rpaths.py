@@ -1,3 +1,12 @@
+"""
+配布物内の.dylibファイルのrpathをどのようなユーザー環境においても有効になるように修正するスクリプト
+
+引数で指定したbase_directory以下にある.dylibファイルのrpathをチェックし、
+開発環境に依存した（配布先の環境に存在することが保証されていない）rpathであった場合、
+base_directory以下の.dylibファイルを相対パスで指すように変更する。
+（base_directory以下の.dylibファイルに不足がないことを前提とする。）
+"""
+
 import argparse
 import sys
 from pathlib import Path
