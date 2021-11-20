@@ -23,6 +23,7 @@ jobs:
           voicevox_resource_version: '0.8.0'
           voicevox_core_version: '0.8.0'
           voicevox_core_example_version: '0.8.0'
+          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.9.0.zip
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -30,9 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install LibTorch and CCache
+      - name: Install CCache
         shell: bash
-        run: brew install libtorch ccache
+        run: brew install ccache
 
       - name: Create download and build directory
         run: mkdir download build
@@ -86,6 +87,27 @@ jobs:
           source generate_licenses/bin/activate
           python generate_licenses.py > licenses.json
           deactivate
+
+      # Download LibTorch
+      - name: Export LibTorch url to calc hash
+        shell: bash
+        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+
+      - name: Prepare LibTorch cache
+        uses: actions/cache@v2
+        id: libtorch-dylib-cache
+        with:
+          key: ${{ matrix.os }}-libtorch-dylib-${{ hashFiles('download/libtorch_url.txt') }}
+          path: download/libtorch
+
+      - name: Download LibTorch
+        if: steps.libtorch-dylib-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          # extract only dylibs
+          unzip download/libtorch.zip "libtorch/lib/*.dylib" -d download/
+          rm download/libtorch.zip
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
@@ -204,7 +226,7 @@ jobs:
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
-            --include-data-file=$(brew --prefix libtorch)/lib/*.dylib=./ \
+            --include-data-file=../download/libtorch/lib/*.dylib=./ \
             --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
