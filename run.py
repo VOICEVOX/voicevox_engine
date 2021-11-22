@@ -4,7 +4,6 @@ import base64
 import io
 import json
 import multiprocessing
-import os
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -15,10 +14,8 @@ import numpy as np
 import pyworld as pw
 import soundfile
 import uvicorn
-import yaml
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import ValidationError
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -36,56 +33,7 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
-
-
-class PresetLoader:
-    def __init__(self):
-        self.presets = []
-        self.last_modified_time = 0
-        self.PRESET_FILE_NAME = "presets.yaml"
-
-    def load_presets(self):
-        """
-        プリセットのYAMLファイルを読み込む
-
-        Returns
-        -------
-        ret: tuple[Preset, str]
-            プリセットとエラー文のタプル
-        """
-        _presets = []
-
-        # 設定ファイルのタイムスタンプを確認
-        try:
-            _last_modified_time = os.path.getmtime(self.PRESET_FILE_NAME)
-            if _last_modified_time == self.last_modified_time:
-                return self.presets, ""
-        except OSError:
-            return None, "プリセットの設定ファイルが見つかりません"
-
-        try:
-            with open(self.PRESET_FILE_NAME, encoding="utf-8") as f:
-                obj = yaml.safe_load(f)
-                if obj is None:
-                    raise FileNotFoundError
-        except FileNotFoundError:
-            return None, "プリセットの設定ファイルが空の内容です"
-
-        for preset in obj:
-            try:
-                _presets.append(Preset(**preset))
-            except ValidationError:
-                return None, "プリセットの設定ファイルにミスがあります"
-
-        # idが一意か確認
-        if len([preset.id for preset in _presets]) != len(
-            {preset.id for preset in _presets}
-        ):
-            return None, "プリセットのidに重複があります"
-
-        self.presets = _presets
-        self.last_modified_time = _last_modified_time
-        return self.presets, ""
+from voicevox_engine.preset import PresetLoader
 
 
 def mora_to_text(mora: str):
@@ -121,7 +69,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         allow_headers=["*"],
     )
 
-    preset_loader = PresetLoader()
+    preset_loader = PresetLoader(
+        preset_path=root_dir / "presets.yaml",
+    )
 
     def replace_mora_data(
         accent_phrases: List[AccentPhrase], speaker_id: int
