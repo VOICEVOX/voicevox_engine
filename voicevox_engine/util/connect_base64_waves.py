@@ -7,7 +7,8 @@ import soundfile
 
 
 class ConnectBase64WavesException(Exception):
-    pass
+    def __init__(self, message: str):
+        self.message = message
 
 
 def decode_base64_waves(waves: List[str]) -> Tuple[List[np.ndarray], float]:
