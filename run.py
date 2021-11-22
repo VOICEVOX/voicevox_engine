@@ -332,7 +332,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            return engine.replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
+            return engine.replace_mora_data(
+                accent_phrases=accent_phrases, speaker_id=speaker
+            )
         else:
             return create_accent_phrases(text, speaker_id=speaker)
 
