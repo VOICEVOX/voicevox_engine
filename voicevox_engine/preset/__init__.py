@@ -1,2 +1,7 @@
-from .Preset import Preset  # noqa: F401
-from .PresetLoader import PresetLoader  # noqa: F401
+from .Preset import Preset
+from .PresetLoader import PresetLoader
+
+__all__ = [
+    "Preset",
+    "PresetLoader",
+]
