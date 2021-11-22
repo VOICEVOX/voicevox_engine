@@ -35,7 +35,7 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
-from voicevox_engine.util import DecodeBase64WavesException, decode_base64_waves
+from voicevox_engine.util import ConnectBase64WavesException, connect_base64_waves
 
 
 class PresetLoader:
@@ -516,14 +516,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
         try:
-            waves_nparray, sampling_rate = decode_base64_waves(waves)
-        except DecodeBase64WavesException as err:
+            waves_nparray, sampling_rate = connect_base64_waves(waves)
+        except ConnectBase64WavesException as err:
             return HTTPException(status_code=422, detail=err.message)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f,
-                data=np.concatenate(waves_nparray),
+                data=waves_nparray,
                 samplerate=sampling_rate,
                 format="WAV",
             )
