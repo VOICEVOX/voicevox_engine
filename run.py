@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import base64
-import io
 import json
 import multiprocessing
 import os
@@ -36,6 +35,7 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
+from voicevox_engine.util import DecodeBase64WavesException, decode_base64_waves
 
 
 class PresetLoader:
@@ -186,35 +186,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             ],
             speaker_id=speaker_id,
         )
-
-    def decode_base64_waves(waves: List[str]):
-        if len(waves) == 0:
-            raise HTTPException(status_code=422, detail="wavファイルが含まれていません")
-
-        waves_nparray = []
-        for i in range(len(waves)):
-            try:
-                wav_bin = base64.standard_b64decode(waves[i])
-            except ValueError:
-                raise HTTPException(status_code=422, detail="base64デコードに失敗しました")
-            try:
-                _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
-            except Exception:
-                raise HTTPException(status_code=422, detail="wavファイルを読み込めませんでした")
-            if i == 0:
-                sampling_rate = _sampling_rate
-                channels = _data.ndim
-            else:
-                if sampling_rate != _sampling_rate:
-                    raise HTTPException(status_code=422, detail="ファイル間でサンプリングレートが異なります")
-                if channels != _data.ndim:
-                    if channels == 1:
-                        _data = _data.T[0]
-                    else:
-                        _data = np.array([_data, _data]).T
-            waves_nparray.append(_data)
-
-        return waves_nparray, sampling_rate
 
     @lru_cache(maxsize=4)
     def synthesis_world_params(
@@ -544,7 +515,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
-        waves_nparray, sampling_rate = decode_base64_waves(waves)
+        try:
+            waves_nparray, sampling_rate = decode_base64_waves(waves)
+        except DecodeBase64WavesException as err:
+            return HTTPException(status_code=422, detail=err.message)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
