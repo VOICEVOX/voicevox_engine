@@ -15,7 +15,7 @@ def decode_base64_waves(waves: List[str]) -> Tuple[List[np.ndarray], float]:
     if len(waves) == 0:
         raise ConnectBase64WavesException("wavファイルが含まれていません")
 
-    waves_nparray_list = []
+    waves_nparray = []
     for i in range(len(waves)):
         try:
             wav_bin = base64.standard_b64decode(waves[i])
@@ -36,9 +36,7 @@ def decode_base64_waves(waves: List[str]) -> Tuple[List[np.ndarray], float]:
                     _data = _data.T[0]
                 else:
                     _data = np.array([_data, _data]).T
-        waves_nparray_list.append(_data)
-
-    waves_nparray = np.concatenate(waves_nparray_list)
+        waves_nparray.append(_data)
 
     return waves_nparray, sampling_rate
 

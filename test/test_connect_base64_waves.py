@@ -8,21 +8,34 @@ import soundfile
 from voicevox_engine.util import ConnectBase64WavesException, connect_base64_waves
 
 
-def generate_sine_wave_bytes(
+def generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
-) -> bytes:
+) -> np.ndarray:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
     wave = np.sin(2 * np.pi * frequency * x)
 
+    return wave
+
+
+def encode_bytes(wave_ndarray: np.ndarray, samplerate: int) -> bytes:
     wave_bio = io.BytesIO()
-    soundfile.write(file=wave_bio, data=wave, samplerate=samplerate, format="WAV")
+    soundfile.write(
+        file=wave_bio, data=wave_ndarray, samplerate=samplerate, format="WAV"
+    )
     wave_bio.seek(0)
 
     return wave_bio.getvalue()
 
 
+def generate_sine_wave_bytes(
+    seconds: float, samplerate: int, frequency: float
+) -> bytes:
+    wave_ndarray = generate_sine_wave_ndarray(seconds, samplerate, frequency)
+    return encode_bytes(wave_ndarray, samplerate)
+
+
 def encode_base64(wave_bytes: bytes) -> str:
-    return base64.standard_b64encode(wave_bytes)
+    return base64.standard_b64encode(wave_bytes).decode('utf-8')
 
 
 def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float) -> str:
@@ -32,6 +45,20 @@ def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float)
 
 
 class TestConnectBase64Waves(TestCase):
+    def test_connect(self):
+        samplerate = 1000
+        wave = generate_sine_wave_ndarray(seconds=2, samplerate=samplerate, frequency=10)
+        wave_base64 = encode_base64(encode_bytes(wave, samplerate=samplerate))
+
+        wave_x2_ref = np.concatenate([wave, wave])
+
+        wave_x2, _ = connect_base64_waves(waves=[wave_base64, wave_base64])
+
+        self.assertEqual(wave_x2_ref.shape, wave_x2.shape)
+
+        # 変換時に誤差が出る
+        # self.assertTrue((wave_x2_ref == wave_x2).all())
+
     def test_no_wave_error(self):
         self.assertRaises(ConnectBase64WavesException, connect_base64_waves, waves=[])
 
