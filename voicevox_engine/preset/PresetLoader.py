@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from ..model import Preset
+from .Preset import Preset
 
 
 class PresetLoader:

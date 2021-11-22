@@ -27,12 +27,11 @@ from voicevox_engine.model import (
     Mora,
     ParseKanaBadRequest,
     ParseKanaError,
-    Preset,
     Speaker,
     SpeakerInfo,
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
-from voicevox_engine.preset import PresetLoader
+from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
 
 
