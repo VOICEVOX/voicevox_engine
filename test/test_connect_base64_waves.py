@@ -35,7 +35,7 @@ def generate_sine_wave_bytes(
 
 
 def encode_base64(wave_bytes: bytes) -> str:
-    return base64.standard_b64encode(wave_bytes).decode('utf-8')
+    return base64.standard_b64encode(wave_bytes).decode("utf-8")
 
 
 def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float) -> str:
@@ -47,7 +47,9 @@ def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float)
 class TestConnectBase64Waves(TestCase):
     def test_connect(self):
         samplerate = 1000
-        wave = generate_sine_wave_ndarray(seconds=2, samplerate=samplerate, frequency=10)
+        wave = generate_sine_wave_ndarray(
+            seconds=2, samplerate=samplerate, frequency=10
+        )
         wave_base64 = encode_base64(encode_bytes(wave, samplerate=samplerate))
 
         wave_x2_ref = np.concatenate([wave, wave])
