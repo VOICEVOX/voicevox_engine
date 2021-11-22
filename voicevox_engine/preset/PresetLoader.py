@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import yaml
 from pydantic import ValidationError
-from pathlib import Path
 
 from ..model import Preset
 

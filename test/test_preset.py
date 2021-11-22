@@ -1,6 +1,6 @@
+from pathlib import Path
 from unittest import TestCase
 
-from pathlib import Path
 from voicevox_engine.preset import PresetLoader
 
 
