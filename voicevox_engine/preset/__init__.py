@@ -1,1 +1,1 @@
-from .PresetLoader import PresetLoader
+from .PresetLoader import PresetLoader  # noqa: F401
