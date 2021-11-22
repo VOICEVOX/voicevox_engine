@@ -68,7 +68,7 @@ class TestConnectBase64Waves(TestCase):
         wave_1000hz = generate_sine_wave_base64(
             seconds=2, samplerate=1000, frequency=10
         )
-        wave_1000hz_broken = wave_1000hz[1:]  # strip head 1 char
+        wave_1000hz_broken = wave_1000hz[1:]  # remove head 1 char
 
         self.assertRaises(
             ConnectBase64WavesException,
@@ -80,7 +80,7 @@ class TestConnectBase64Waves(TestCase):
 
     def test_invalid_bytes_error(self):
         wave_1000hz = generate_sine_wave_bytes(seconds=2, samplerate=1000, frequency=10)
-        wave_1000hz_broken_bytes = wave_1000hz[1:]  # strip head 1 byte
+        wave_1000hz_broken_bytes = wave_1000hz[1:]  # remove head 1 byte
         wave_1000hz_broken = encode_base64(wave_1000hz_broken_bytes)
 
         self.assertRaises(
