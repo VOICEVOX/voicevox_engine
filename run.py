@@ -26,7 +26,6 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    Mora,
     ParseKanaBadRequest,
     ParseKanaError,
     Preset,
@@ -267,7 +266,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            return engine.replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
+            return engine.replace_mora_data(
+                accent_phrases=accent_phrases, speaker_id=speaker
+            )
         else:
             return engine.create_accent_phrases(text, speaker_id=speaker)
 
