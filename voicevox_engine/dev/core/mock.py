@@ -53,8 +53,6 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
         dtype=np.float64, 16 bit, mono 48000 Hz
 
         # resampleの説明
-        本来はfloat64の入力でも問題ないのかと思われたが、実際には出力が音割れひどかった。
-        対策として、あらかじめint16に型変換しておくと、期待通りの結果になった。
         非モックdecode_forwardと合わせるために、出力を24kHzに変換した。
     """
     logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
