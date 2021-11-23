@@ -72,17 +72,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         preset_path=root_dir / "presets.yaml",
     )
 
-    def replace_mora_data(
-        accent_phrases: List[AccentPhrase], speaker_id: int
-    ) -> List[AccentPhrase]:
-        return engine.replace_mora_pitch(
-            accent_phrases=engine.replace_phoneme_length(
-                accent_phrases=accent_phrases,
-                speaker_id=speaker_id,
-            ),
-            speaker_id=speaker_id,
-        )
-
     def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
@@ -91,7 +80,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         if len(utterance.breath_groups) == 0:
             return []
 
-        return replace_mora_data(
+        return engine.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
                     moras=[
@@ -292,7 +281,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            return replace_mora_data(accent_phrases=accent_phrases, speaker_id=speaker)
+            return engine.replace_mora_data(
+                accent_phrases=accent_phrases, speaker_id=speaker
+            )
         else:
             return create_accent_phrases(text, speaker_id=speaker)
 
@@ -303,7 +294,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         summary="アクセント句から音高・音素長を得る",
     )
     def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
-        return replace_mora_data(accent_phrases, speaker_id=speaker)
+        return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
         "/mora_length",

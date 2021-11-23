@@ -354,6 +354,19 @@ class SynthesisEngine:
 
         return accent_phrases
 
+    def replace_mora_data(
+        self,
+        accent_phrases: List[AccentPhrase],
+        speaker_id: int,
+    ) -> List[AccentPhrase]:
+        return self.replace_mora_pitch(
+            accent_phrases=self.replace_phoneme_length(
+                accent_phrases=accent_phrases,
+                speaker_id=speaker_id,
+            ),
+            speaker_id=speaker_id,
+        )
+
     def synthesis(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
