@@ -12,7 +12,7 @@ def generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
 ) -> np.ndarray:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
-    wave = np.sin(2 * np.pi * frequency * x)
+    wave = np.sin(2 * np.pi * frequency * x).astype(np.float32)
 
     return wave
 
@@ -20,7 +20,11 @@ def generate_sine_wave_ndarray(
 def encode_bytes(wave_ndarray: np.ndarray, samplerate: int) -> bytes:
     wave_bio = io.BytesIO()
     soundfile.write(
-        file=wave_bio, data=wave_ndarray, samplerate=samplerate, format="WAV"
+        file=wave_bio,
+        data=wave_ndarray,
+        samplerate=samplerate,
+        format="WAV",
+        subtype="FLOAT",
     )
     wave_bio.seek(0)
 
@@ -58,8 +62,7 @@ class TestConnectBase64Waves(TestCase):
 
         self.assertEqual(wave_x2_ref.shape, wave_x2.shape)
 
-        # 変換時に誤差が出る
-        # self.assertTrue((wave_x2_ref == wave_x2).all())
+        self.assertTrue((wave_x2_ref == wave_x2).all())
 
     def test_no_wave_error(self):
         self.assertRaises(ConnectBase64WavesException, connect_base64_waves, waves=[])
