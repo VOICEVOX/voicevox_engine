@@ -6,6 +6,7 @@ on:
   release:
     types:
       - created
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
