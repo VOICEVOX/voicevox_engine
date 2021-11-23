@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy
-import resampy
+from scipy.signal import resample
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme, SamplingData
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
@@ -480,11 +480,9 @@ class SynthesisEngine:
 
         # 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
         if query.outputSamplingRate != self.default_sampling_rate:
-            wave = resampy.resample(
+            wave = resample(
                 wave,
-                self.default_sampling_rate,
-                query.outputSamplingRate,
-                filter="kaiser_fast",
+                query.outputSamplingRate * len(wave) // self.default_sampling_rate,
             )
 
         # ステレオ変換

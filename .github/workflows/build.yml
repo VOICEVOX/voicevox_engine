@@ -222,7 +222,7 @@ jobs:
             --include-package=uvicorn \
             --include-package=anyio \
             --include-package-data=pyopenjtalk \
-            --include-package-data=resampy \
+            --include-package-data=scipy \
             --include-package-data=llvmlite \
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
@@ -639,7 +639,7 @@ jobs:
             --include-package=uvicorn
             --include-package=anyio
             --include-package-data=pyopenjtalk
-            --include-package-data=resampy
+            --include-package-data=scipy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
             --include-data-dir="speaker_info=./speaker_info"

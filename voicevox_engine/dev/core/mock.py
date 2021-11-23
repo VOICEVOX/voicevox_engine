@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 from pyopenjtalk import tts
-from resampy import resample
+from scipy.signal import resample
 
 DUMMY_TEXT = "これはダミーのテキストです"
 
@@ -64,9 +64,7 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     wave, sr = tts(DUMMY_TEXT)
     wave = resample(
         wave.astype("int16"),
-        sr,
-        24000,
-        filter="kaiser_fast",
+        24000 * len(wave) // 48000,
     )
     return wave
 

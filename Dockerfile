@@ -352,7 +352,7 @@ RUN <<EOF
                 --include-package=uvicorn \
                 --include-package=anyio \
                 --include-package-data=pyopenjtalk \
-                --include-package-data=resampy \
+                --include-package-data=scipy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \

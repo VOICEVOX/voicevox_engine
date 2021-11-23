@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 from pyopenjtalk import tts
-from resampy import resample
+from scipy.signal import resample
 
 from voicevox_engine.model import AccentPhrase, AudioQuery
 from voicevox_engine.synthesis_engine import to_flatten_moras
@@ -123,8 +123,6 @@ class SynthesisEngine:
         wave, sr = tts(text)
         wave = resample(
             wave.astype("int16"),
-            sr,
-            24000,
-            filter="kaiser_fast",
+            24000 * len(wave) // 48000,
         )
         return wave.astype("int16")

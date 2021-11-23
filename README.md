@@ -268,7 +268,7 @@ python -m nuitka \
     --include-package=uvicorn \
     --include-package=anyio \
     --include-package-data=pyopenjtalk \
-    --include-package-data=resampy \
+    --include-package-data=scipy \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
