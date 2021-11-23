@@ -35,7 +35,7 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
-from voicevox_engine.util import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
 class PresetLoader:

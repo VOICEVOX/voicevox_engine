@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 import soundfile
 
-from voicevox_engine.util import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
 def generate_sine_wave_ndarray(
