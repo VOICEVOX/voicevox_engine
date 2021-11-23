@@ -1,6 +1,8 @@
 from unittest import TestCase
 
-from run import PresetLoader, mora_to_text
+from run import PresetLoader
+
+from voicevox_engine.synthesis_engine import mora_to_text
 
 
 class TestMoraToText(TestCase):
