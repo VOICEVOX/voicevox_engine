@@ -352,7 +352,7 @@ RUN <<EOF
                 --include-package=uvicorn \
                 --include-package=anyio \
                 --include-package-data=pyopenjtalk \
-                --include-package-data=resampy \
+                --include-package-data=scipy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
@@ -361,7 +361,6 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
-                --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
                 --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \
