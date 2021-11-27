@@ -129,6 +129,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         query: AudioQuery, base_speaker: int, target_speaker: int
     ):
         import pyworld as pw
+
         base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
             "float"
         )
@@ -405,6 +406,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
 
         import pyworld as pw
+
         if morph_rate < 0.0 or morph_rate > 1.0:
             raise HTTPException(
                 status_code=422, detail="morph_rateは0.0から1.0の範囲で指定してください"
