@@ -1,10 +1,10 @@
-numpy==1.20 # ver 1.20 for resampy
+numpy
 fastapi
 python-multipart
 uvicorn
 aiofiles
 soundfile
-resampy
+scipy
 PyYAML
 pyworld
 git+https://github.com/Hiroshiba/pyopenjtalk@69e5f354634f98098113f9cac5a6ea736443f9c9#egg=pyopenjtalk

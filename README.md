@@ -268,7 +268,7 @@ python -m nuitka \
     --include-package=uvicorn \
     --include-package=anyio \
     --include-package-data=pyopenjtalk \
-    --include-package-data=resampy \
+    --include-package-data=scipy \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
@@ -277,7 +277,6 @@ python -m nuitka \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
-    --include-data-file=.venv-release/Lib/site-packages/llvmlite/binding/llvmlite.dll=./ \
     --include-data-dir=speaker_info=./speaker_info \
     --msvc=14.2 \
     --follow-imports \

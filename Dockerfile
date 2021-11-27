@@ -20,7 +20,7 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
-ARG VOICEVOX_CORE_VERSION=0.8.0
+ARG VOICEVOX_CORE_VERSION=0.9.0
 ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
 RUN <<EOF
     set -eux
@@ -209,7 +209,7 @@ COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.con
 COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 
 # Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.8.0
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.9.0
 RUN <<EOF
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
@@ -352,7 +352,7 @@ RUN <<EOF
                 --include-package=uvicorn \
                 --include-package=anyio \
                 --include-package-data=pyopenjtalk \
-                --include-package-data=resampy \
+                --include-package-data=scipy \
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
@@ -361,7 +361,6 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
-                --include-data-file=/home/user/.local/lib/python*/site-packages/llvmlite/binding/*.so=./ \
                 --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \

@@ -28,17 +28,11 @@ idna==3.3
     # via anyio
 importlib-metadata==4.8.1
     # via click
-llvmlite==0.37.0
-    # via numba
-numba==0.54.1
-    # via resampy
 numpy==1.20.0
     # via
     #   -r requirements.in
-    #   numba
     #   pyopenjtalk
     #   pyworld
-    #   resampy
     #   scipy
 pycparser==2.20
     # via cffi
@@ -52,15 +46,12 @@ pyworld==0.3.0
     # via -r requirements.in
 pyyaml==6.0
     # via -r requirements.in
-resampy==0.2.2
-    # via -r requirements.in
 scipy==1.7.1
-    # via resampy
+    # via -r requirements.in
 six==1.16.0
     # via
     #   pyopenjtalk
     #   python-multipart
-    #   resampy
 sniffio==1.2.0
     # via anyio
 soundfile==0.10.3.post1
@@ -79,6 +70,3 @@ uvicorn==0.15.0
     # via -r requirements.in
 zipp==3.6.0
     # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

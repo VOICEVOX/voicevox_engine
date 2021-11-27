@@ -21,9 +21,9 @@ jobs:
           python: '3.7'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
-          voicevox_resource_version: '0.8.0'
-          voicevox_core_version: '0.8.0'
-          voicevox_core_example_version: '0.8.0'
+          voicevox_resource_version: '0.9.1'
+          voicevox_core_version: '0.9.0'
+          voicevox_core_example_version: '0.9.0'
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.9.0.zip
           artifact_name: macos-x64
 
@@ -222,8 +222,7 @@ jobs:
             --include-package=uvicorn \
             --include-package=anyio \
             --include-package-data=pyopenjtalk \
-            --include-package-data=resampy \
-            --include-package-data=llvmlite \
+            --include-package-data=scipy \
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
@@ -232,7 +231,6 @@ jobs:
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
-            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/llvmlite/binding/*.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
             --follow-imports \
@@ -279,9 +277,9 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_resource_version: ['0.8.0']
-        voicevox_core_version: ['0.8.0']
-        voicevox_core_example_version: ['0.8.0']
+        voicevox_resource_version: ['0.9.1']
+        voicevox_core_version: ['0.9.0']
+        voicevox_core_example_version: ['0.9.0']
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
@@ -412,10 +410,10 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.8.0'
-          voicevox_core_version: '0.8.0'
+          voicevox_resource_version: '0.9.1'
+          voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core_cpu.dll
-          voicevox_core_example_version: '0.8.0'
+          voicevox_core_example_version: '0.9.0'
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
@@ -425,10 +423,10 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.8.0'
-          voicevox_core_version: '0.8.0'
+          voicevox_resource_version: '0.9.1'
+          voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core.dll
-          voicevox_core_example_version: '0.8.0'
+          voicevox_core_example_version: '0.9.0'
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-nvidia
@@ -639,7 +637,7 @@ jobs:
             --include-package=uvicorn
             --include-package=anyio
             --include-package-data=pyopenjtalk
-            --include-package-data=resampy
+            --include-package-data=scipy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
             --include-data-dir="speaker_info=./speaker_info"
@@ -672,7 +670,6 @@ jobs:
           ln -sf "$(pwd)/download/core/metas.json" artifact/
 
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/llvmlite/binding/llvmlite.dll" artifact/
 
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
