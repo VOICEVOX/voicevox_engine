@@ -21,7 +21,7 @@ jobs:
           python: '3.7'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
-          voicevox_resource_version: '0.9.1'
+          voicevox_resource_version: '0.9.2'
           voicevox_core_version: '0.9.0'
           voicevox_core_example_version: '0.9.0'
           libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.9.0.zip
@@ -277,7 +277,7 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_resource_version: ['0.9.1']
+        voicevox_resource_version: ['0.9.2']
         voicevox_core_version: ['0.9.0']
         voicevox_core_example_version: ['0.9.0']
         include:
@@ -410,7 +410,7 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.9.1'
+          voicevox_resource_version: '0.9.2'
           voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core_cpu.dll
           voicevox_core_example_version: '0.9.0'
@@ -423,7 +423,7 @@ jobs:
         - os: windows-2019
           python: '3.7'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.9.1'
+          voicevox_resource_version: '0.9.2'
           voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core.dll
           voicevox_core_example_version: '0.9.0'
