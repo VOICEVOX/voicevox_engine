@@ -10,7 +10,6 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
 import numpy as np
-import pyworld as pw
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -129,6 +128,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     def synthesis_world_params(
         query: AudioQuery, base_speaker: int, target_speaker: int
     ):
+        import pyworld as pw
+
         base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
             "float"
         )
@@ -403,6 +404,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
+
+        import pyworld as pw
 
         if morph_rate < 0.0 or morph_rate > 1.0:
             raise HTTPException(
