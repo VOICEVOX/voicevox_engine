@@ -18,31 +18,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.full_context_label import extract_full_context_label
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    Mora,
     ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
     SpeakerInfo,
 )
-from voicevox_engine.mora_list import openjtalk_mora2text
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
-
-
-def mora_to_text(mora: str):
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
-        # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
-    else:
-        return mora
 
 
 def b64encode_str(s):
@@ -71,59 +58,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
     )
-
-    def create_accent_phrases(text: str, speaker_id: int) -> List[AccentPhrase]:
-        if len(text.strip()) == 0:
-            return []
-
-        utterance = extract_full_context_label(text)
-        if len(utterance.breath_groups) == 0:
-            return []
-
-        return engine.replace_mora_data(
-            accent_phrases=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text=mora_to_text(
-                                "".join([p.phoneme for p in mora.phonemes])
-                            ),
-                            consonant=(
-                                mora.consonant.phoneme
-                                if mora.consonant is not None
-                                else None
-                            ),
-                            consonant_length=0 if mora.consonant is not None else None,
-                            vowel=mora.vowel.phoneme,
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        for mora in accent_phrase.moras
-                    ],
-                    accent=accent_phrase.accent,
-                    pause_mora=(
-                        Mora(
-                            text="、",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="pau",
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        if (
-                            i_accent_phrase == len(breath_group.accent_phrases) - 1
-                            and i_breath_group != len(utterance.breath_groups) - 1
-                        )
-                        else None
-                    ),
-                )
-                for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-                for i_accent_phrase, accent_phrase in enumerate(
-                    breath_group.accent_phrases
-                )
-            ],
-            speaker_id=speaker_id,
-        )
 
     @lru_cache(maxsize=4)
     def synthesis_world_params(
@@ -173,7 +107,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        accent_phrases = create_accent_phrases(text, speaker_id=speaker)
+        accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -207,7 +141,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         else:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
-        accent_phrases = create_accent_phrases(
+        accent_phrases = engine.create_accent_phrases(
             text, speaker_id=selected_preset.style_id
         )
         return AudioQuery(
@@ -256,7 +190,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
         else:
-            return create_accent_phrases(text, speaker_id=speaker)
+            return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
         "/mora_data",
