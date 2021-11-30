@@ -123,6 +123,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: Hiroshiba/voicevox_resource
+          ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
       # Merge VOICEVOX RESOURCE
@@ -330,6 +331,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: Hiroshiba/voicevox_resource
+          ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
       # Merge VOICEVOX RESOURCE
@@ -554,6 +556,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: Hiroshiba/voicevox_resource
+          ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
       # Merge VOICEVOX RESOURCE
