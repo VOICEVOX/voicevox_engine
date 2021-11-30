@@ -457,15 +457,13 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             for style in speaker["styles"]:
                 id = style["id"]
                 icon = b64encode_str(
-                    Path(
-                        f"speaker_info/{speaker_uuid}/icons/{speaker['name']}_{id}.png"
-                    ).read_bytes()
+                    Path(f"speaker_info/{speaker_uuid}/icons/{id}.png").read_bytes()
                 )
                 voice_samples = [
                     b64encode_str(
                         Path(
-                            "speaker_info/{}/voice_samples/{}_{}_{}.wav".format(
-                                speaker_uuid, speaker["name"], id, str(j + 1).zfill(3)
+                            "speaker_info/{}/voice_samples/{}_{}.wav".format(
+                                speaker_uuid, id, str(j + 1).zfill(3)
                             )
                         ).read_bytes()
                     )
