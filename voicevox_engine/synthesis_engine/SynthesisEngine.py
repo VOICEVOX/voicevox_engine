@@ -12,6 +12,7 @@ from ..mora_list import openjtalk_mora2text
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
 
+
 # TODO: move mora utility to mora module
 def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
     """
