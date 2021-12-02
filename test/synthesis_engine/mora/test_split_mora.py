@@ -1,8 +1,10 @@
 from unittest import TestCase
 
-from ...data_hello_hiho import phoneme_data_list_hello_hiho
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.synthesis_engine.mora import split_mora
+
+from ...data_hello_hiho import phoneme_data_list_hello_hiho
+
 
 class TestSplitMora(TestCase):
     def test_split_mora(self):

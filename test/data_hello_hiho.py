@@ -1,16 +1,11 @@
-
-from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
+from voicevox_engine.model import AccentPhrase, Mora
 
-str_list_hello_hiho = (
-    "sil k o N n i ch i w a pau h i h o d e s U sil".split()
-)
+str_list_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil".split()
 
 phoneme_data_list_hello_hiho = [
     OjtPhoneme(phoneme=p, start=i, end=i + 1)
-    for i, p in enumerate(
-        "pau k o N n i ch i w a pau h i h o d e s U pau".split()
-    )
+    for i, p in enumerate("pau k o N n i ch i w a pau h i h o d e s U pau".split())
 ]
 
 accent_phrases_hello_hiho = [

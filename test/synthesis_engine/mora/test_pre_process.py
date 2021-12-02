@@ -1,10 +1,11 @@
+from copy import deepcopy
 from unittest import TestCase
 
-from copy import deepcopy
-
-from ...data_hello_hiho import accent_phrases_hello_hiho
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.synthesis_engine.mora import pre_process
+
+from ...data_hello_hiho import accent_phrases_hello_hiho
+
 
 class TestPreProcess(TestCase):
     def test_pre_process(self):

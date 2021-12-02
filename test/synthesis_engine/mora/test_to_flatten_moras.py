@@ -1,7 +1,9 @@
 from unittest import TestCase
 
-from ...data_hello_hiho import accent_phrases_hello_hiho
 from voicevox_engine.synthesis_engine.mora import to_flatten_moras
+
+from ...data_hello_hiho import accent_phrases_hello_hiho
+
 
 class TestToFlattenMoras(TestCase):
     def test_to_flatten_moras(self):

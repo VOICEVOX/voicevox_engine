@@ -10,9 +10,7 @@ import numpy
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.synthesis_engine import SynthesisEngine
-from voicevox_engine.synthesis_engine.mora import (
-    unvoiced_mora_phoneme_list,
-)
+from voicevox_engine.synthesis_engine.mora import unvoiced_mora_phoneme_list
 
 from ..data_hello_hiho import accent_phrases_hello_hiho
 
@@ -74,7 +72,6 @@ def decode_mock(
                 )
             )
     return numpy.array(result)
-
 
 
 class TestSynthesisEngine(TestCase):
