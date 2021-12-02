@@ -1,4 +1,4 @@
-from ..mora_list import openjtalk_mora2text
+from ...mora_list import openjtalk_mora2text
 
 
 def mora_to_text(mora: str) -> str:

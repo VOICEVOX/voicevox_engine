@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import List
 
-from ..model import AccentPhrase, Mora
+from ...model import AccentPhrase, Mora
 
 
 def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:

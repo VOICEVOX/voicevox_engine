@@ -1,6 +1,6 @@
 from typing import List
 
-from ..acoustic_feature_extractor import OjtPhoneme
+from ...acoustic_feature_extractor import OjtPhoneme
 
 
 def to_phoneme_data_list(phoneme_str_list: List[str]):

@@ -9,14 +9,14 @@ import numpy
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.mora import (
+from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.synthesis_engine.mora import (
     pre_process,
     split_mora,
     to_flatten_moras,
     to_phoneme_data_list,
     unvoiced_mora_phoneme_list,
 )
-from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.ndarray):

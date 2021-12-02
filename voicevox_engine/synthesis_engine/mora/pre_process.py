@@ -1,8 +1,8 @@
 from itertools import chain
 from typing import List, Tuple
 
-from ..acoustic_feature_extractor import OjtPhoneme
-from ..model import AccentPhrase, Mora
+from ...acoustic_feature_extractor import OjtPhoneme
+from ...model import AccentPhrase, Mora
 from .to_flatten_moras import to_flatten_moras
 from .to_phoneme_data_list import to_phoneme_data_list
 
