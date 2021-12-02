@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.synthesis_engine import mora_to_text
+from voicevox_engine.synthesis_engine.SynthesisEngine import mora_to_text
 
 
 class TestMoraToText(TestCase):

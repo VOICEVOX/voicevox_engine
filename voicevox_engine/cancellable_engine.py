@@ -8,10 +8,12 @@ from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
 import soundfile
+
+# FIXME: remove FastAPI dependency
 from fastapi import HTTPException, Request
 
-from voicevox_engine.model import AudioQuery, Speaker
-from voicevox_engine.synthesis_engine import make_synthesis_engine
+from .model import AudioQuery, Speaker
+from .synthesis_engine import make_synthesis_engine
 
 
 class CancellableEngine:

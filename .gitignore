@@ -12,6 +12,10 @@ __pycache__/
 
 # virtual environment
 venv/
+
+# pyenv local version
+/.python-version
+
 # JetBrains IDE project settings folder
 .idea/
 

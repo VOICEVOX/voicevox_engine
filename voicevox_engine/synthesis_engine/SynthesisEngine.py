@@ -6,10 +6,10 @@ from typing import List, Optional, Tuple
 import numpy
 from scipy.signal import resample
 
-from voicevox_engine.acoustic_feature_extractor import OjtPhoneme, SamplingData
-from voicevox_engine.full_context_label import extract_full_context_label
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.mora_list import openjtalk_mora2text
+from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..full_context_label import extract_full_context_label
+from ..model import AccentPhrase, AudioQuery, Mora
+from ..mora_list import openjtalk_mora2text
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
