@@ -1,6 +1,7 @@
-from .SynthesisEngine import SynthesisEngine, make_synthesis_engine
+from .make_synthesis_engine import make_synthesis_engine
+from .SynthesisEngine import SynthesisEngine
 
 __all__ = [
-    "SynthesisEngine",
     "make_synthesis_engine",
+    "SynthesisEngine",
 ]
