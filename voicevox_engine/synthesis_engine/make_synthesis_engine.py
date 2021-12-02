@@ -36,14 +36,14 @@ def make_synthesis_engine(
     except ImportError:
         import traceback
 
-        from voicevox_engine.dev import core
+        from ..dev import core
 
         has_voicevox_core = False
 
         # 音声ライブラリの Python モジュールをロードできなかった
         traceback.print_exc()
         print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
+            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
             file=sys.stderr,
         )
 
@@ -57,9 +57,7 @@ def make_synthesis_engine(
             speakers=core.metas(),
         )
 
-    from voicevox_engine.dev.synthesis_engine import (
-        SynthesisEngine as mock_synthesis_engine,
-    )
+    from ..dev.synthesis_engine import SynthesisEngine as MockSynthesisEngine
 
     # モックで置き換える
-    return mock_synthesis_engine(speakers=core.metas())
+    return MockSynthesisEngine(speakers=core.metas())
