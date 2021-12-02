@@ -4,13 +4,10 @@ import base64
 import json
 import multiprocessing
 import zipfile
-from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
-import numpy as np
-import pyworld as pw
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -27,6 +24,7 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
 )
+from voicevox_engine.morphing import MorphingQuery, morphing
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
@@ -58,38 +56,6 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
     )
-
-    @lru_cache(maxsize=4)
-    def synthesis_world_params(
-        query: AudioQuery, base_speaker: int, target_speaker: int
-    ):
-        base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
-            "float"
-        )
-        target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
-            "float"
-        )
-
-        frame_period = 1.0
-        fs = query.outputSamplingRate
-        base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
-        base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
-        base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
-
-        target_f0, morph_time_axis = pw.harvest(
-            target_wave, fs, frame_period=frame_period
-        )
-        target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
-        target_spectrogram.resize(base_spectrogram.shape)
-
-        return (
-            fs,
-            frame_period,
-            base_f0,
-            base_aperiodicity,
-            base_spectrogram,
-            target_spectrogram,
-        )
 
     @app.on_event("startup")
     async def start_catch_disconnection():
@@ -338,37 +304,22 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
-        if morph_rate < 0.0 or morph_rate > 1.0:
-            raise HTTPException(
-                status_code=422, detail="morph_rateは0.0から1.0の範囲で指定してください"
+        result = morphing(
+            MorphingQuery(
+                audio_query=query,
+                base_speaker=base_speaker,
+                target_speaker=target_speaker,
+                morph_rate=morph_rate,
             )
-
-        # WORLDに掛けるため合成はモノラルで行う
-        output_stereo = query.outputStereo
-        query.outputStereo = False
-
-        (
-            fs,
-            frame_period,
-            base_f0,
-            base_aperiodicity,
-            base_spectrogram,
-            target_spectrogram,
-        ) = synthesis_world_params(query, base_speaker, target_speaker)
-
-        morph_spectrogram = (
-            base_spectrogram * (1.0 - morph_rate) + target_spectrogram * morph_rate
         )
-
-        y_h = pw.synthesize(
-            base_f0, morph_spectrogram, base_aperiodicity, fs, frame_period
-        )
-
-        if output_stereo:
-            y_h = np.array([y_h, y_h]).T
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=y_h, samplerate=fs, format="WAV")
+            soundfile.write(
+                file=f,
+                data=result.generated,
+                samplerate=query.outputSamplingRate,
+                format="WAV",
+            )
 
         return FileResponse(f.name, media_type="audio/wav")
 
