@@ -1,6 +1,6 @@
-
-from typing import List
 from itertools import chain
+from typing import List
+
 from ..model import AccentPhrase, Mora
 
 

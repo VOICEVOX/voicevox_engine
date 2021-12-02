@@ -1,5 +1,4 @@
-from itertools import chain
-from typing import List, Optional, Tuple
+from typing import List
 
 import numpy
 from scipy.signal import resample
@@ -7,7 +6,6 @@ from scipy.signal import resample
 from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
 from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
-
 from ..mora.mora_to_text import mora_to_text
 from ..mora.pre_process import pre_process
 from ..mora.split_mora import split_mora, unvoiced_mora_phoneme_list

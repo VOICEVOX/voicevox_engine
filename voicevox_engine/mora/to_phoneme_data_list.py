@@ -1,5 +1,5 @@
-
 from typing import List
+
 from ..acoustic_feature_extractor import OjtPhoneme
 
 
