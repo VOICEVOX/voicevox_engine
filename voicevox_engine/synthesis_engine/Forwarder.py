@@ -1,29 +1,8 @@
-from typing import List, Optional
-
 import numpy
 
-from ..acoustic_feature_extractor import (
-    BasePhoneme,
-    JvsPhoneme,
-    OjtPhoneme,
-    SamplingData,
-)
+from ..acoustic_feature_extractor import JvsPhoneme, OjtPhoneme, SamplingData
 from ..full_context_label import extract_full_context_label
-
-unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
-mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
-
-
-def split_mora(phoneme_list: List[BasePhoneme]):
-    vowel_indexes = [
-        i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
-    ]
-    vowel_phoneme_list = [phoneme_list[i] for i in vowel_indexes]
-    consonant_phoneme_list: List[Optional[BasePhoneme]] = [None] + [
-        None if post - prev == 1 else phoneme_list[post - 1]
-        for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
-    ]
-    return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
+from .mora import split_mora, unvoiced_mora_phoneme_list
 
 
 class Forwarder:
