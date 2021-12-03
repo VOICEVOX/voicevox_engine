@@ -1,20 +1,19 @@
-import sys
 from itertools import chain
-from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy
 from scipy.signal import resample
 
-from voicevox_engine.acoustic_feature_extractor import OjtPhoneme, SamplingData
-from voicevox_engine.full_context_label import extract_full_context_label
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.mora_list import openjtalk_mora2text
+from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..full_context_label import extract_full_context_label
+from ..model import AccentPhrase, AudioQuery, Mora
+from ..mora_list import openjtalk_mora2text
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
 
 
+# TODO: move mora utility to mora module
 def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
     """
     accent_phrasesに含まれるMora(とpause_moraがあればそれも)を
@@ -556,63 +555,3 @@ class SynthesisEngine:
             wave = numpy.array([wave, wave]).T
 
         return wave
-
-
-def make_synthesis_engine(
-    use_gpu: bool,
-    voicelib_dir: Path,
-    voicevox_dir: Optional[Path] = None,
-) -> SynthesisEngine:
-    """
-    音声ライブラリをロードして、音声合成エンジンを生成
-
-    Parameters
-    ----------
-    use_gpu: bool
-        音声ライブラリに GPU を使わせるか否か
-    voicelib_dir: Path
-        音声ライブラリ自体があるディレクトリ
-    voicevox_dir: Path, optional, default=None
-        音声ライブラリの Python モジュールがあるディレクトリ
-        None のとき、Python 標準のモジュール検索パスのどれかにあるとする
-    """
-
-    # Python モジュール検索パスへ追加
-    if voicevox_dir is not None:
-        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
-        if voicevox_dir.exists():
-            sys.path.insert(0, str(voicevox_dir))
-
-    has_voicevox_core = True
-    try:
-        import core
-    except ImportError:
-        import traceback
-
-        from voicevox_engine.dev import core
-
-        has_voicevox_core = False
-
-        # 音声ライブラリの Python モジュールをロードできなかった
-        traceback.print_exc()
-        print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
-            file=sys.stderr,
-        )
-
-    core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
-
-    if has_voicevox_core:
-        return SynthesisEngine(
-            yukarin_s_forwarder=core.yukarin_s_forward,
-            yukarin_sa_forwarder=core.yukarin_sa_forward,
-            decode_forwarder=core.decode_forward,
-            speakers=core.metas(),
-        )
-
-    from voicevox_engine.dev.synthesis_engine import (
-        SynthesisEngine as mock_synthesis_engine,
-    )
-
-    # モックで置き換える
-    return mock_synthesis_engine(speakers=core.metas())

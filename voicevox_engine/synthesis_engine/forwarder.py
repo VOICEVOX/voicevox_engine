@@ -2,13 +2,13 @@ from typing import List, Optional
 
 import numpy
 
-from voicevox_engine.acoustic_feature_extractor import (
+from ..acoustic_feature_extractor import (
     BasePhoneme,
     JvsPhoneme,
     OjtPhoneme,
     SamplingData,
 )
-from voicevox_engine.full_context_label import extract_full_context_label
+from ..full_context_label import extract_full_context_label
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
