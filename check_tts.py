@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import soundfile
 
-from voicevox_engine.forwarder import Forwarder
+from voicevox_engine.synthesis_engine import Forwarder
 
 
 def run(
