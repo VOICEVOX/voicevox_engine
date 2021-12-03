@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .SynthesisEngine import SynthesisEngine
+from .synthesis_engine import SynthesisEngine
 
 
 def make_synthesis_engine(
