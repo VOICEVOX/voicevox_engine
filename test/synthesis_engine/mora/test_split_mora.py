@@ -3,13 +3,13 @@ from unittest import TestCase
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.synthesis_engine.mora import split_mora
 
-from ...data_hello_hiho import phoneme_data_list_hello_hiho
+from ... import data_hello_hiho
 
 
 class TestSplitMora(TestCase):
     def test_split_mora(self):
         consonant_phoneme_list, vowel_phoneme_list, vowel_indexes = split_mora(
-            phoneme_data_list_hello_hiho
+            data_hello_hiho.phoneme_data_list
         )
 
         self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])

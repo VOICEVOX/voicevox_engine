@@ -4,20 +4,20 @@ from unittest import TestCase
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.synthesis_engine.mora import pre_process
 
-from ...data_hello_hiho import accent_phrases_hello_hiho
+from ... import data_hello_hiho
 
 
 class TestPreProcess(TestCase):
     def test_pre_process(self):
         flatten_moras, phoneme_data_list = pre_process(
-            deepcopy(accent_phrases_hello_hiho)
+            deepcopy(data_hello_hiho.accent_phrases)
         )
 
         mora_index = 0
         phoneme_index = 1
 
         self.assertEqual(phoneme_data_list[0], OjtPhoneme("pau", 0, 1))
-        for accent_phrase in accent_phrases_hello_hiho:
+        for accent_phrase in data_hello_hiho.accent_phrases:
             moras = accent_phrase.moras
             for mora in moras:
                 self.assertEqual(flatten_moras[mora_index], mora)

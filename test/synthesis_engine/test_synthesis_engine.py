@@ -12,7 +12,7 @@ from voicevox_engine.model import AudioQuery
 from voicevox_engine.synthesis_engine import SynthesisEngine
 from voicevox_engine.synthesis_engine.mora import unvoiced_mora_phoneme_list
 
-from ..data_hello_hiho import accent_phrases_hello_hiho
+from .. import data_hello_hiho
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.ndarray):
@@ -89,7 +89,7 @@ class TestSynthesisEngine(TestCase):
 
     def test_replace_phoneme_length(self):
         result = self.synthesis_engine.replace_phoneme_length(
-            accent_phrases=deepcopy(accent_phrases_hello_hiho), speaker_id=1
+            accent_phrases=deepcopy(data_hello_hiho.accent_phrases), speaker_id=1
         )
 
         # yukarin_sに渡される値の検証
@@ -129,7 +129,7 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(yukarin_s_args["speaker_id"], 1)
 
         # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
-        true_result = deepcopy(accent_phrases_hello_hiho)
+        true_result = deepcopy(data_hello_hiho.accent_phrases)
         index = 1
 
         def result_value(i: int):
@@ -160,7 +160,7 @@ class TestSynthesisEngine(TestCase):
         )
 
         result = self.synthesis_engine.replace_mora_pitch(
-            accent_phrases=deepcopy(accent_phrases_hello_hiho), speaker_id=1
+            accent_phrases=deepcopy(data_hello_hiho.accent_phrases), speaker_id=1
         )
 
         # yukarin_saに渡される値の検証
@@ -233,7 +233,7 @@ class TestSynthesisEngine(TestCase):
         )
 
         # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
-        true_result = deepcopy(accent_phrases_hello_hiho)
+        true_result = deepcopy(data_hello_hiho.accent_phrases)
         index = 1
 
         def result_value(i: int):
@@ -388,7 +388,7 @@ class TestSynthesisEngine(TestCase):
 
     def test_synthesis(self):
         audio_query = AudioQuery(
-            accent_phrases=deepcopy(accent_phrases_hello_hiho),
+            accent_phrases=deepcopy(data_hello_hiho.accent_phrases),
             speedScale=1.0,
             pitchScale=1.0,
             intonationScale=1.0,
