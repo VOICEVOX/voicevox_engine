@@ -2,3 +2,4 @@
 pysen[lint]
 pytest
 coveralls
+pre-commit
