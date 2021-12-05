@@ -24,6 +24,30 @@ class WorldParameters:
     target_spectrogram: np.ndarray
 
 
+def create_world_parameters(
+    base_wave: np.ndarray,
+    target_wave: np.ndarray,
+    fs: float,
+) -> WorldParameters:
+    frame_period = 1.0
+    base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
+    base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
+    base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
+
+    target_f0, morph_time_axis = pw.harvest(target_wave, fs, frame_period=frame_period)
+    target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
+    target_spectrogram.resize(base_spectrogram.shape)
+
+    return WorldParameters(
+        fs=fs,
+        frame_period=frame_period,
+        base_f0=base_f0,
+        base_aperiodicity=base_aperiodicity,
+        base_spectrogram=base_spectrogram,
+        target_spectrogram=target_spectrogram,
+    )
+
+
 def synthesis_world_parameters(
     engine: SynthesisEngine,
     query: AudioQuery,
@@ -40,23 +64,10 @@ def synthesis_world_parameters(
         "float"
     )
 
-    frame_period = 1.0
-    fs = query.outputSamplingRate
-    base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
-    base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
-    base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
-
-    target_f0, morph_time_axis = pw.harvest(target_wave, fs, frame_period=frame_period)
-    target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
-    target_spectrogram.resize(base_spectrogram.shape)
-
-    return WorldParameters(
-        fs=fs,
-        frame_period=frame_period,
-        base_f0=base_f0,
-        base_aperiodicity=base_aperiodicity,
-        base_spectrogram=base_spectrogram,
-        target_spectrogram=target_spectrogram,
+    return create_world_parameters(
+        base_wave=base_wave,
+        target_wave=target_wave,
+        fs=query.outputSamplingRate,
     )
 
 
