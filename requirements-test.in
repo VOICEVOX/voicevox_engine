@@ -3,3 +3,5 @@ pysen[lint]
 pytest
 coveralls
 pre-commit
+atomicwrites
+colorama
