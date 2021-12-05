@@ -245,7 +245,7 @@ python run.py
 pre-commit install -t pre-push
 ```
 
-また、以下のコマンドで手動でコードフォーマットすることも可能です。
+エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
 
 ```bash
 pysen run format lint
