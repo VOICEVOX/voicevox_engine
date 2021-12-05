@@ -3,5 +3,7 @@ pysen[lint]
 pytest
 coveralls
 pre-commit
+
+# 以下のパッケージはWindowsでは必要とされてるが、Linux上でpip-compileすると出力内容に含まれないため明示的に含めている
 atomicwrites
 colorama
