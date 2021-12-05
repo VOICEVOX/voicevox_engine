@@ -311,7 +311,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
-        # cachable param
+        # 結果はキャッシュされる
         morph_param = synthesis_world_parameters(
             engine=engine,
             query=query,
