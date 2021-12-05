@@ -13,21 +13,17 @@ appdirs==1.4.4
 asgiref==3.4.1
     # via uvicorn
 atomicwrites==1.4.0
-    # via -r requirements-test.in
+    # via pytest
 attrs==21.2.0
     # via
     #   flake8-bugbear
     #   pytest
-backports.entry-points-selectable==1.1.1
-    # via virtualenv
 black==20.8b1
     # via pysen
 certifi==2021.10.8
     # via requests
 cffi==1.15.0
     # via soundfile
-cfgv==3.3.1
-    # via pre-commit
 charset-normalizer==2.0.7
     # via requests
 click==8.0.3
@@ -35,7 +31,10 @@ click==8.0.3
     #   black
     #   uvicorn
 colorama==0.4.4
-    # via -r requirements-test.in
+    # via
+    #   click
+    #   colorlog
+    #   pytest
 colorlog==4.8.0
     # via pysen
 coverage==5.5
@@ -48,14 +47,10 @@ cython==0.29.24
     #   pyworld
 dacite==1.6.0
     # via pysen
-distlib==0.3.3
-    # via virtualenv
 docopt==0.6.2
     # via coveralls
 fastapi==0.70.0
     # via -r requirements.in
-filelock==3.4.0
-    # via virtualenv
 flake8==3.9.2
     # via
     #   flake8-bugbear
@@ -68,8 +63,6 @@ gitpython==3.1.24
     # via pysen
 h11==0.12.0
     # via uvicorn
-identify==2.4.0
-    # via pre-commit
 idna==3.3
     # via
     #   anyio
@@ -86,8 +79,6 @@ mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-nodeenv==1.6.0
-    # via pre-commit
 numpy==1.20.0
     # via
     #   -r requirements.in
@@ -98,12 +89,8 @@ packaging==21.0
     # via pytest
 pathspec==0.9.0
     # via black
-platformdirs==2.4.0
-    # via virtualenv
 pluggy==1.0.0
     # via pytest
-pre-commit==2.16.0
-    # via -r requirements-test.in
 py==1.10.0
     # via pytest
 pycodestyle==2.7.0
@@ -127,9 +114,7 @@ python-multipart==0.0.5
 pyworld==0.3.0
     # via -r requirements.in
 pyyaml==6.0
-    # via
-    #   -r requirements.in
-    #   pre-commit
+    # via -r requirements.in
 regex==2021.10.23
     # via black
 requests==2.26.0
@@ -140,7 +125,6 @@ six==1.16.0
     # via
     #   pyopenjtalk
     #   python-multipart
-    #   virtualenv
 smmap==5.0.0
     # via gitdb
 sniffio==1.2.0
@@ -152,7 +136,6 @@ starlette==0.16.0
 toml==0.10.2
     # via
     #   black
-    #   pre-commit
     #   pytest
 tomlkit==0.7.2
     # via pysen
@@ -172,5 +155,3 @@ urllib3==1.26.7
     # via requests
 uvicorn==0.15.0
     # via -r requirements.in
-virtualenv==20.10.0
-    # via pre-commit
