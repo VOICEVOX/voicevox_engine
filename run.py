@@ -4,6 +4,7 @@ import base64
 import json
 import multiprocessing
 import zipfile
+from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
@@ -24,7 +25,10 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
 )
-from voicevox_engine.morphing import MorphingQuery, morphing
+from voicevox_engine.morphing import morphing
+from voicevox_engine.morphing import (
+    synthesis_world_parameters as _synthesis_world_parameters,
+)
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
@@ -56,6 +60,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
     )
+
+    # キャッシュを有効化
+    synthesis_world_parameters = lru_cache(maxsize=4)(_synthesis_world_parameters)
 
     @app.on_event("startup")
     async def start_catch_disconnection():
@@ -304,19 +311,24 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
+        # cachable param
+        morph_param = synthesis_world_parameters(
+            engine=engine,
+            query=query,
+            base_speaker=base_speaker,
+            target_speaker=target_speaker,
+        )
+
         result = morphing(
-            MorphingQuery(
-                audio_query=query,
-                base_speaker=base_speaker,
-                target_speaker=target_speaker,
-                morph_rate=morph_rate,
-            )
+            morph_param=morph_param,
+            morph_rate=morph_rate,
+            output_stereo=query.outputStereo,
         )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f,
-                data=result.generated,
+                data=result,
                 samplerate=query.outputSamplingRate,
                 format="WAV",
             )
