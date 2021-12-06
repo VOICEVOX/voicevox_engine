@@ -26,7 +26,7 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
 )
-from voicevox_engine.morphing import morphing
+from voicevox_engine.morphing import synthesis_world
 from voicevox_engine.morphing import (
     synthesis_world_parameters as _synthesis_world_parameters,
 )
@@ -322,7 +322,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             target_speaker=target_speaker,
         )
 
-        result = morphing(
+        result = synthesis_world(
             morph_param=morph_param,
             morph_rate=morph_rate,
             output_stereo=query.outputStereo,

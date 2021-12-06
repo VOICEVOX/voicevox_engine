@@ -71,7 +71,7 @@ def synthesis_world_parameters(
     )
 
 
-def morphing(
+def synthesis_world(
     morph_param: WorldParameters,
     morph_rate: float,
     output_stereo: bool = False,
