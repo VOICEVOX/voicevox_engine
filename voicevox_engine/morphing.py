@@ -76,17 +76,17 @@ def synthesis_world(
 
     Parameters
     ----------
-    morh_param : WorldParameters
+    morph_param : WorldParameters
         `synthesis_world_parameters`または`create_world_parameters`で作成したパラメータ
 
-    morh_rate : float
+    morph_rate : float
         モーフィングの割合
         0.0でベースの話者、1.0でターゲットの話者に近づきます。
 
     Returns
     -------
     generated : np.ndarray
-        モーフィングされた音声
+        モーフィングした音声
 
     Raises
     -------
