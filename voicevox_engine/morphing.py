@@ -84,7 +84,6 @@ def morphing(
     if morph_rate < 0.0 or morph_rate > 1.0:
         raise MorphingException("morph_rateは0.0から1.0の範囲で指定してください")
 
-    # スペクトルの重み付き結合
     morph_spectrogram = (
         morph_param.base_spectrogram * (1.0 - morph_rate)
         + morph_param.target_spectrogram * morph_rate

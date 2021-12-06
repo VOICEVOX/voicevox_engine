@@ -62,6 +62,8 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     )
 
     # キャッシュを有効化
+    # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
+    # TODO: 明示的にキャッシュを解放するモジュール側API・HTTP側APIを用意する
     synthesis_world_parameters = lru_cache(maxsize=4)(_synthesis_world_parameters)
 
     @app.on_event("startup")
@@ -311,7 +313,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
-        # 結果はキャッシュされる
+        # 生成したパラメータはキャッシュされる
         morph_param = synthesis_world_parameters(
             engine=engine,
             query=query,
