@@ -8,11 +8,6 @@ from .model import AudioQuery
 from .synthesis_engine import SynthesisEngine
 
 
-class MorphingException(Exception):
-    def __init__(self, message: str):
-        self.message = message
-
-
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class WorldParameters:
@@ -85,17 +80,22 @@ def synthesis_world(
         `synthesis_world_parameters`または`create_world_parameters`で作成したパラメータ
 
     morh_rate : float
-        モーフィングの割合 [0.0, 1.0]
+        モーフィングの割合
         0.0でベースの話者、1.0でターゲットの話者に近づきます。
 
     Returns
     -------
     generated : np.ndarray
         モーフィングされた音声
+
+    Raises
+    -------
+    ValueError
+        morph_rate ∈ [0, 1]
     """
 
     if morph_rate < 0.0 or morph_rate > 1.0:
-        raise MorphingException("morph_rateは0.0から1.0の範囲で指定してください")
+        raise ValueError("morph_rateは0.0から1.0の範囲で指定してください")
 
     morph_spectrogram = (
         morph_param.base_spectrogram * (1.0 - morph_rate)
