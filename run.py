@@ -64,7 +64,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
-    # TODO: 明示的にキャッシュを解放するモジュール側API・HTTP側APIを用意する
+    # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
     synthesis_world_parameters = lru_cache(maxsize=4)(_synthesis_world_parameters)
 
     @app.on_event("startup")
