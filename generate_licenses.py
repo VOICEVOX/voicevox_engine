@@ -142,6 +142,11 @@ def generate_licenses() -> List[License]:
                     "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE"
                 ) as res:
                     license.text = res.read().decode()
+            elif license.name.lower() == "distlib":
+                with urllib.request.urlopen(
+                    "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt"  # noqa: B950
+                ) as res:
+                    license.text = res.read().decode()
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")
