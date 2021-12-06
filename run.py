@@ -13,6 +13,7 @@ import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Query
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -306,7 +307,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
-        morph_rate: float,
+        morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa
     ):
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
