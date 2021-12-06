@@ -332,7 +332,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             soundfile.write(
                 file=f,
                 data=result,
-                samplerate=query.outputSamplingRate,
+                samplerate=morph_param.fs,
                 format="WAV",
             )
 
