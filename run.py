@@ -322,7 +322,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             target_speaker=target_speaker,
         )
 
-        result = synthesis_world(
+        morph_wave = synthesis_world(
             morph_param=morph_param,
             morph_rate=morph_rate,
             output_stereo=query.outputStereo,
@@ -331,7 +331,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f,
-                data=result,
+                data=morph_wave,
                 samplerate=morph_param.fs,
                 format="WAV",
             )
