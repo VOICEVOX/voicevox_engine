@@ -307,7 +307,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
-        morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa
+        morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
     ):
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
