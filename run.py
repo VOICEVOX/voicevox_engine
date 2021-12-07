@@ -28,7 +28,7 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.morphing import synthesis_world
 from voicevox_engine.morphing import (
-    synthesis_world_parameters as _synthesis_world_parameters,
+    synthesis_world_parameter as _synthesis_world_parameter,
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
@@ -65,7 +65,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
-    synthesis_world_parameters = lru_cache(maxsize=4)(_synthesis_world_parameters)
+    synthesis_world_parameter = lru_cache(maxsize=4)(_synthesis_world_parameter)
 
     @app.on_event("startup")
     async def start_catch_disconnection():
@@ -315,7 +315,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
 
         # 生成したパラメータはキャッシュされる
-        morph_param = synthesis_world_parameters(
+        morph_param = synthesis_world_parameter(
             engine=engine,
             query=query,
             base_speaker=base_speaker,
