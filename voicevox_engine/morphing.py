@@ -10,7 +10,7 @@ from .synthesis_engine import SynthesisEngine
 
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
-class WorldParameters:
+class MorphingWorldParameters:
     fs: float
     frame_period: float
     base_f0: np.ndarray
@@ -23,7 +23,7 @@ def create_world_parameters(
     base_wave: np.ndarray,
     target_wave: np.ndarray,
     fs: float,
-) -> WorldParameters:
+) -> MorphingWorldParameters:
     frame_period = 1.0
     base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
     base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
@@ -33,7 +33,7 @@ def create_world_parameters(
     target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
     target_spectrogram.resize(base_spectrogram.shape)
 
-    return WorldParameters(
+    return MorphingWorldParameters(
         fs=fs,
         frame_period=frame_period,
         base_f0=base_f0,
@@ -48,7 +48,7 @@ def synthesis_world_parameters(
     query: AudioQuery,
     base_speaker: int,
     target_speaker: int,
-) -> WorldParameters:
+) -> MorphingWorldParameters:
     query = deepcopy(query)
 
     # WORLDに掛けるため合成はモノラルで行う
@@ -67,7 +67,7 @@ def synthesis_world_parameters(
 
 
 def synthesis_world(
-    morph_param: WorldParameters,
+    morph_param: MorphingWorldParameters,
     morph_rate: float,
     output_stereo: bool = False,
 ) -> np.ndarray:
@@ -76,7 +76,7 @@ def synthesis_world(
 
     Parameters
     ----------
-    morph_param : WorldParameters
+    morph_param : MorphingWorldParameters
         `synthesis_world_parameters`または`create_world_parameters`で作成したパラメータ
 
     morph_rate : float
