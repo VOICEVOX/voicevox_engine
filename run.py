@@ -26,9 +26,9 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
 )
-from voicevox_engine.morphing import synthesis_world
+from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
-    synthesis_world_parameter as _synthesis_world_parameter,
+    synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
@@ -65,7 +65,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
-    synthesis_world_parameter = lru_cache(maxsize=4)(_synthesis_world_parameter)
+    synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
     @app.on_event("startup")
     async def start_catch_disconnection():
@@ -303,7 +303,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["音声合成"],
         summary="2人の話者でモーフィングした音声を合成する",
     )
-    def synthesis_morphing(
+    def _synthesis_morphing(
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
@@ -315,14 +315,14 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
 
         # 生成したパラメータはキャッシュされる
-        morph_param = synthesis_world_parameter(
+        morph_param = synthesis_morphing_parameter(
             engine=engine,
             query=query,
             base_speaker=base_speaker,
             target_speaker=target_speaker,
         )
 
-        morph_wave = synthesis_world(
+        morph_wave = synthesis_morphing(
             morph_param=morph_param,
             morph_rate=morph_rate,
             output_stereo=query.outputStereo,

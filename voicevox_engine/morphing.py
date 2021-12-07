@@ -10,7 +10,7 @@ from .synthesis_engine import SynthesisEngine
 
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
-class MorphingWorldParameter:
+class MorphingParameter:
     fs: float
     frame_period: float
     base_f0: np.ndarray
@@ -19,11 +19,11 @@ class MorphingWorldParameter:
     target_spectrogram: np.ndarray
 
 
-def create_world_parameter(
+def create_morphing_parameter(
     base_wave: np.ndarray,
     target_wave: np.ndarray,
     fs: float,
-) -> MorphingWorldParameter:
+) -> MorphingParameter:
     frame_period = 1.0
     base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
     base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
@@ -33,7 +33,7 @@ def create_world_parameter(
     target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
     target_spectrogram.resize(base_spectrogram.shape)
 
-    return MorphingWorldParameter(
+    return MorphingParameter(
         fs=fs,
         frame_period=frame_period,
         base_f0=base_f0,
@@ -43,12 +43,12 @@ def create_world_parameter(
     )
 
 
-def synthesis_world_parameter(
+def synthesis_morphing_parameter(
     engine: SynthesisEngine,
     query: AudioQuery,
     base_speaker: int,
     target_speaker: int,
-) -> MorphingWorldParameter:
+) -> MorphingParameter:
     query = deepcopy(query)
 
     # WORLDに掛けるため合成はモノラルで行う
@@ -59,15 +59,15 @@ def synthesis_world_parameter(
         "float"
     )
 
-    return create_world_parameter(
+    return create_morphing_parameter(
         base_wave=base_wave,
         target_wave=target_wave,
         fs=query.outputSamplingRate,
     )
 
 
-def synthesis_world(
-    morph_param: MorphingWorldParameter,
+def synthesis_morphing(
+    morph_param: MorphingParameter,
     morph_rate: float,
     output_stereo: bool = False,
 ) -> np.ndarray:
@@ -76,8 +76,8 @@ def synthesis_world(
 
     Parameters
     ----------
-    morph_param : MorphingWorldParameter
-        `synthesis_world_parameter`または`create_world_parameter`で作成したパラメータ
+    morph_param : MorphingParameter
+        `synthesis_morphing_parameter`または`create_morphing_parameter`で作成したパラメータ
 
     morph_rate : float
         モーフィングの割合
