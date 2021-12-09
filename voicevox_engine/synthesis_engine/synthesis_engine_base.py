@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import List
 
 from ..full_context_label import extract_full_context_label
@@ -16,6 +17,7 @@ def mora_to_text(mora: str) -> str:
 
 
 class SynthesisEngineBase:
+    @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
@@ -34,6 +36,7 @@ class SynthesisEngineBase:
         """
         raise NotImplementedError()
 
+    @abstractmethod
     def replace_mora_pitch(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> List[AccentPhrase]:
@@ -118,6 +121,7 @@ class SynthesisEngineBase:
             speaker_id=speaker_id,
         )
 
+    @abstractmethod
     def synthesis(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
