@@ -32,7 +32,7 @@ class SynthesisEngineBase:
         accent_phrases : List[AccentPhrase]
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
-        raise Exception('Unimplemented')
+        raise NotImplementedError()
 
     def replace_mora_pitch(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -50,7 +50,7 @@ class SynthesisEngineBase:
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
-        raise Exception('Unimplemented')
+        raise NotImplementedError()
 
     def replace_mora_data(
         self,
@@ -132,4 +132,4 @@ class SynthesisEngineBase:
         wave : numpy.ndarray
             音声合成結果
         """
-        raise Exception('Unimplemented')
+        raise NotImplementedError()
