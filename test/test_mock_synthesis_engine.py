@@ -1,7 +1,8 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.synthesis_engine import MockSynthesisEngine
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.kana_parser import create_kana
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 
 
 class TestMockSynthesisEngine(TestCase):
@@ -106,7 +107,8 @@ class TestMockSynthesisEngine(TestCase):
     def test_replace_phoneme_length(self):
         self.assertEqual(
             self.engine.replace_phoneme_length(
-                accent_phrases=self.accent_phrases_hello_hiho, speaker_id=0
+                accent_phrases=self.accent_phrases_hello_hiho,
+                speaker_id=0,
             ),
             self.accent_phrases_hello_hiho,
         )
@@ -114,7 +116,25 @@ class TestMockSynthesisEngine(TestCase):
     def test_replace_mora_pitch(self):
         self.assertEqual(
             self.engine.replace_mora_pitch(
-                accent_phrases=self.accent_phrases_hello_hiho, speaker_id=0
+                accent_phrases=self.accent_phrases_hello_hiho,
+                speaker_id=0,
             ),
             self.accent_phrases_hello_hiho,
+        )
+
+    def test_synthesis(self):
+        self.engine.synthesis(
+            AudioQuery(
+                accent_phrases=self.accent_phrases_hello_hiho,
+                speedScale=1,
+                pitchScale=0,
+                intonationScale=1,
+                volumeScale=1,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=24000,
+                outputStereo=False,
+                kana=create_kana(self.accent_phrases_hello_hiho),
+            ),
+            speaker_id=0,
         )
