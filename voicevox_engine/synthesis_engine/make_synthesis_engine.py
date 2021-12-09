@@ -57,7 +57,7 @@ def make_synthesis_engine(
             speakers=core.metas(),
         )
 
-    from ..dev.synthesis_engine import SynthesisEngine as MockSynthesisEngine
+    from ..dev.synthesis_engine import MockSynthesisEngine
 
     # モックで置き換える
     return MockSynthesisEngine(speakers=core.metas())
