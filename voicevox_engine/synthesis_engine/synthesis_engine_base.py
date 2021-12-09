@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import List
 
 from ..full_context_label import extract_full_context_label
@@ -16,7 +16,7 @@ def mora_to_text(mora: str) -> str:
         return mora
 
 
-class SynthesisEngineBase:
+class SynthesisEngineBase(metaclass=ABCMeta):
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
