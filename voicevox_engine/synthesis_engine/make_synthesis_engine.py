@@ -2,14 +2,14 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .synthesis_engine import SynthesisEngine
+from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
 
 def make_synthesis_engine(
     use_gpu: bool,
     voicelib_dir: Path,
     voicevox_dir: Optional[Path] = None,
-) -> SynthesisEngine:
+) -> SynthesisEngineBase:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 
@@ -57,7 +57,7 @@ def make_synthesis_engine(
             speakers=core.metas(),
         )
 
-    from ..dev.synthesis_engine import SynthesisEngine as MockSynthesisEngine
+    from ..dev.synthesis_engine import MockSynthesisEngine
 
     # モックで置き換える
     return MockSynthesisEngine(speakers=core.metas())

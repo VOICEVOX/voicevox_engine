@@ -5,9 +5,8 @@ import numpy
 from scipy.signal import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
-from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
-from ..mora_list import openjtalk_mora2text
+from .synthesis_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -126,17 +125,7 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
-def mora_to_text(mora: str) -> str:
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
-        # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
-    else:
-        return mora
-
-
-class SynthesisEngine:
+class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
         yukarin_s_forwarder,
@@ -364,72 +353,6 @@ class SynthesisEngine:
             mora.pitch = f0_list[i + 1]
 
         return accent_phrases
-
-    def replace_mora_data(
-        self,
-        accent_phrases: List[AccentPhrase],
-        speaker_id: int,
-    ) -> List[AccentPhrase]:
-        return self.replace_mora_pitch(
-            accent_phrases=self.replace_phoneme_length(
-                accent_phrases=accent_phrases,
-                speaker_id=speaker_id,
-            ),
-            speaker_id=speaker_id,
-        )
-
-    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
-        if len(text.strip()) == 0:
-            return []
-
-        utterance = extract_full_context_label(text)
-        if len(utterance.breath_groups) == 0:
-            return []
-
-        return self.replace_mora_data(
-            accent_phrases=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text=mora_to_text(
-                                "".join([p.phoneme for p in mora.phonemes])
-                            ),
-                            consonant=(
-                                mora.consonant.phoneme
-                                if mora.consonant is not None
-                                else None
-                            ),
-                            consonant_length=0 if mora.consonant is not None else None,
-                            vowel=mora.vowel.phoneme,
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        for mora in accent_phrase.moras
-                    ],
-                    accent=accent_phrase.accent,
-                    pause_mora=(
-                        Mora(
-                            text="、",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="pau",
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        if (
-                            i_accent_phrase == len(breath_group.accent_phrases) - 1
-                            and i_breath_group != len(utterance.breath_groups) - 1
-                        )
-                        else None
-                    ),
-                )
-                for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-                for i_accent_phrase, accent_phrase in enumerate(
-                    breath_group.accent_phrases
-                )
-            ],
-            speaker_id=speaker_id,
-        )
 
     def synthesis(self, query: AudioQuery, speaker_id: int):
         """

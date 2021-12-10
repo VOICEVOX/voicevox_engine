@@ -1,3 +1,3 @@
-from .mock import SynthesisEngine
+from .mock import MockSynthesisEngine
 
-__all__ = ["SynthesisEngine"]
+__all__ = ["MockSynthesisEngine"]

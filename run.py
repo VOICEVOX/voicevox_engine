@@ -31,7 +31,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
+from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engine
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
@@ -39,7 +39,7 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
-def generate_app(engine: SynthesisEngine) -> FastAPI:
+def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     root_dir = Path(__file__).parent
 
     default_sampling_rate = engine.default_sampling_rate

@@ -6,10 +6,11 @@ from pyopenjtalk import tts
 from scipy.signal import resample
 
 from ...model import AccentPhrase, AudioQuery
+from ...synthesis_engine import SynthesisEngineBase
 from ...synthesis_engine.synthesis_engine import to_flatten_moras
 
 
-class SynthesisEngine:
+class MockSynthesisEngine(SynthesisEngineBase):
     """
     SynthesisEngine [Mock]
     """
