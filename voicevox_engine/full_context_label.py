@@ -96,6 +96,16 @@ class Phoneme:
         """
         return self.contexts["f1"] == "xx"
 
+    def is_interrogative(self):
+        """
+        音素が質問(interrogative)であるかを返す
+        Returns
+        -------
+        is_interrogative: bool
+            音素が質問(interrogative)であるか(True)否か(False)
+        """
+        return self.contexts["f3"] == "1"
+
     def __repr__(self):
         return f"<Phoneme phoneme='{self.phoneme}'>"
 
