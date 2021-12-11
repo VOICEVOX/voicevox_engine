@@ -1,7 +1,7 @@
 import math
 from copy import deepcopy
 from random import random
-from typing import Union
+from typing import List, Union
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -648,3 +648,106 @@ class TestSynthesisEngine(TestCase):
         audio_query.outputSamplingRate = 24000
         audio_query.outputStereo = True
         self.synthesis_test_base(audio_query)
+
+    def create_accent_phrases_test_base(self, text: str, expected: List[AccentPhrase]):
+        actual = self.synthesis_engine.create_accent_phrases(text, 1)
+        self.assertEqual(expected, actual)
+
+    def test_create_accent_phrases_これはありますか_question_mark(self):
+        text = "これはありますか？"
+        expected = [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="コ",
+                        consonant="k",
+                        consonant_length=12.5,
+                        vowel="o",
+                        vowel_length=16.0,
+                        pitch=28.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="レ",
+                        consonant="r",
+                        consonant_length=17.5,
+                        vowel="e",
+                        vowel_length=8.0,
+                        pitch=25.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ワ",
+                        consonant="w",
+                        consonant_length=22.0,
+                        vowel="a",
+                        vowel_length=4.4,
+                        pitch=6.5,
+                        is_interrogative=False,
+                    ),
+                ],
+                accent=3,
+                pause_mora=None,
+            ),
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ア",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="a",
+                        vowel_length=4.5,
+                        pitch=4.5,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="リ",
+                        consonant="r",
+                        consonant_length=17.5,
+                        vowel="i",
+                        vowel_length=11.5,
+                        pitch=28.5,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="マ",
+                        consonant="m",
+                        consonant_length=14.0,
+                        vowel="a",
+                        vowel_length=4.5,
+                        pitch=18.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ス",
+                        consonant="s",
+                        consonant_length=18.5,
+                        vowel="U",
+                        vowel_length=4.0,
+                        pitch=0.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="カ",
+                        consonant="k",
+                        consonant_length=12.5,
+                        vowel="a",
+                        vowel_length=4.5,
+                        pitch=16.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ア",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="a",
+                        vowel_length=4.4,
+                        pitch=6.5,
+                        is_interrogative=True,
+                    ),
+                ],
+                accent=3,
+                pause_mora=None,
+            ),
+        ]
+        self.create_accent_phrases_test_base(text, expected)
