@@ -15,6 +15,7 @@ class Mora(BaseModel):
     vowel: str = Field(title="母音の音素")
     vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
+    is_interrogative: bool = Field(title="疑問の発音を表現するモーラかの判定")
 
     def __hash__(self):
         items = [
