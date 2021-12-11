@@ -96,7 +96,7 @@ class Phoneme:
         """
         return self.contexts["f1"] == "xx"
 
-    def is_interrogative(self):
+    def is_interrogative(self) -> bool:
         """
         音素が質問(interrogative)であるかを返す
         Returns
