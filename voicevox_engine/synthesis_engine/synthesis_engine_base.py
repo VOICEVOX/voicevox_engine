@@ -1,5 +1,8 @@
+import copy
 from abc import ABCMeta, abstractmethod
 from typing import List
+
+import full_context_label
 
 from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
@@ -14,6 +17,57 @@ def mora_to_text(mora: str) -> str:
         return openjtalk_mora2text[mora]
     else:
         return mora
+
+
+def add_interrogative_mora_if_last_phoneme_is_interrogative(
+    full_context_moras: List[full_context_label.Mora],
+) -> List[full_context_label.Mora]:
+    last_mora = full_context_moras[-1]
+    return (
+        full_context_moras + [full_context_label.Mora(None, last_mora.vowel)]
+        if last_mora.vowel.is_interrogative()
+        else full_context_moras
+    )
+
+
+def adjust_interrogative_moras(moras: List[Mora]) -> List[Mora]:
+    if len(moras) <= 1:
+        return moras
+    moras = moras.copy()
+    moras[-1] = adjust_interrogative_mora(moras[-1], moras[-2])
+    return moras
+
+
+def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
+    mora = copy.copy(mora)
+
+    adjust_vowel_length = 0.1
+    min_vowel_length = 0.1
+    mora.vowel_length = max(mora.vowel_length - adjust_vowel_length, min_vowel_length)
+
+    adjust_pitch = 0.3
+    max_pitch = 6.5
+    mora.pitch = min(before_mora.pitch + adjust_pitch, max_pitch)
+    return mora
+
+
+def full_context_label_moras_to_moras(
+    full_context_moras: List[full_context_label.Mora],
+) -> List[Mora]:
+    return [
+        Mora(
+            text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
+            consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
+            consonant_length=0 if mora.consonant is not None else None,
+            vowel=mora.vowel.phoneme,
+            vowel_length=0,
+            pitch=0,
+            is_interrogative=mora.vowel.is_interrogative()
+            if mora is full_context_moras[-1]
+            else False,
+        )
+        for mora in full_context_moras
+    ]
 
 
 class SynthesisEngineBase(metaclass=ABCMeta):
@@ -60,13 +114,28 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         accent_phrases: List[AccentPhrase],
         speaker_id: int,
     ) -> List[AccentPhrase]:
-        return self.replace_mora_pitch(
-            accent_phrases=self.replace_phoneme_length(
-                accent_phrases=accent_phrases,
+        return self.adjust_interrogative_accent_phrases(
+            accent_phrases=self.replace_mora_pitch(
+                accent_phrases=self.replace_phoneme_length(
+                    accent_phrases=accent_phrases,
+                    speaker_id=speaker_id,
+                ),
                 speaker_id=speaker_id,
             ),
             speaker_id=speaker_id,
         )
+
+    def adjust_interrogative_accent_phrases(
+        self, accent_phrases: List[AccentPhrase], speaker_id: int
+    ) -> List[AccentPhrase]:
+        return [
+            AccentPhrase(
+                moras=adjust_interrogative_moras(accent_phrase.moras),
+                accent=accent_phrase.accent,
+                pause_mora=accent_phrase.pause_mora,
+            )
+            for accent_phrase in accent_phrases
+        ]
 
     def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
@@ -79,23 +148,11 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         return self.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
-                    moras=[
-                        Mora(
-                            text=mora_to_text(
-                                "".join([p.phoneme for p in mora.phonemes])
-                            ),
-                            consonant=(
-                                mora.consonant.phoneme
-                                if mora.consonant is not None
-                                else None
-                            ),
-                            consonant_length=0 if mora.consonant is not None else None,
-                            vowel=mora.vowel.phoneme,
-                            vowel_length=0,
-                            pitch=0,
+                    moras=full_context_label_moras_to_moras(
+                        add_interrogative_mora_if_last_phoneme_is_interrogative(
+                            accent_phrase.moras
                         )
-                        for mora in accent_phrase.moras
-                    ],
+                    ),
                     accent=accent_phrase.accent,
                     pause_mora=(
                         Mora(
