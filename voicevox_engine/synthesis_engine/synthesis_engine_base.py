@@ -32,13 +32,13 @@ def add_interrogative_mora_if_last_phoneme_is_interrogative(
 def adjust_interrogative_moras(moras: List[Mora]) -> List[Mora]:
     if len(moras) <= 1:
         return moras
-    moras = moras.copy()
+    moras = copy.deepcopy(moras)
     moras[-1] = adjust_interrogative_mora(moras[-1], moras[-2])
     return moras
 
 
 def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
-    mora = copy.copy(mora)
+    mora = copy.deepcopy(mora)
 
     adjust_vowel_length = 0.1
     min_vowel_length = 0.1
