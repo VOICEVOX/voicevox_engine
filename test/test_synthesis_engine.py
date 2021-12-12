@@ -751,3 +751,93 @@ class TestSynthesisEngine(TestCase):
             ),
         ]
         self.create_accent_phrases_test_base(text, expected)
+
+    def test_create_accent_phrases_ん_question_mark(self):
+        text = "ん？"
+        expected = [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ン",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="N",
+                        vowel_length=3.0,
+                        pitch=4.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ン",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="N",
+                        vowel_length=2.9,
+                        pitch=4.3,
+                        is_interrogative=True,
+                    ),
+                ],
+                accent=1,
+                pause_mora=None,
+            )
+        ]
+        self.create_accent_phrases_test_base(text, expected)
+
+    def test_create_accent_phrases_っ_question_mark(self):
+        text = "っ？"
+        expected = [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ッ",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="cl",
+                        vowel_length=6.5,
+                        pitch=0.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ッ",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="cl",
+                        vowel_length=6.4,
+                        pitch=0.3,
+                        is_interrogative=True,
+                    ),
+                ],
+                accent=1,
+                pause_mora=None,
+            )
+        ]
+        self.create_accent_phrases_test_base(text, expected)
+
+    def test_create_accent_phrases_す_question_mark(self):
+        text = "す？"
+        expected = [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ス",
+                        consonant="s",
+                        consonant_length=18.5,
+                        vowel="u",
+                        vowel_length=21.0,
+                        pitch=40.0,
+                        is_interrogative=False,
+                    ),
+                    Mora(
+                        text="ウ",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="u",
+                        vowel_length=20.9,
+                        pitch=6.5,
+                        is_interrogative=True,
+                    ),
+                ],
+                accent=1,
+                pause_mora=None,
+            )
+        ]
+        self.create_accent_phrases_test_base(text, expected)
