@@ -361,6 +361,7 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
+                --include-data-file=/opt/voicevox_engine/user.dic=./ \
                 --include-data-file=/opt/libtorch/lib/*.so=./ \
                 --include-data-file=/opt/libtorch/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \
