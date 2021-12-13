@@ -84,7 +84,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         accent_phrases = engine.create_accent_phrases(
-            text, speaker_id=speaker, enable_interrogative=enable_interrogative
+            text,
+            speaker_id=speaker,
+            enable_interrogative=enable_interrogative,
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -105,7 +107,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
-    def audio_query_from_preset(text: str, preset_id: int):
+    def audio_query_from_preset(
+        text: str, preset_id: int, enable_interrogative: bool = True
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -120,7 +124,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, speaker_id=selected_preset.style_id
+            text,
+            speaker_id=selected_preset.style_id,
+            enable_interrogative=enable_interrogative,
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -147,7 +153,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             }
         },
     )
-    def accent_phrases(text: str, speaker: int, is_kana: bool = False):
+    def accent_phrases(
+        text: str,
+        speaker: int,
+        is_kana: bool = False,
+        enable_interrogative: bool = True,
+    ):
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
@@ -168,7 +179,11 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
         else:
-            return engine.create_accent_phrases(text, speaker_id=speaker)
+            return engine.create_accent_phrases(
+                text,
+                speaker_id=speaker,
+                enable_interrogative=enable_interrogative,
+            )
 
     @app.post(
         "/mora_data",
