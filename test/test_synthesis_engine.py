@@ -649,8 +649,12 @@ class TestSynthesisEngine(TestCase):
         audio_query.outputStereo = True
         self.synthesis_test_base(audio_query)
 
-    def create_accent_phrases_test_base(self, text: str, expected: List[AccentPhrase]):
-        actual = self.synthesis_engine.create_accent_phrases(text, 1)
+    def create_accent_phrases_test_base(
+        self, text: str, expected: List[AccentPhrase], enable_interrogative: bool
+    ):
+        actual = self.synthesis_engine.create_accent_phrases(
+            text, 1, enable_interrogative
+        )
         self.assertEqual(expected, actual)
 
     def test_create_accent_phrases_これはありますか_question_mark(self):
@@ -750,7 +754,7 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
-        self.create_accent_phrases_test_base(text, expected)
+        self.create_accent_phrases_test_base(text, expected, True)
 
     def test_create_accent_phrases_ん_question_mark(self):
         text = "ん？"
@@ -780,7 +784,7 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             )
         ]
-        self.create_accent_phrases_test_base(text, expected)
+        self.create_accent_phrases_test_base(text, expected, True)
 
     def test_create_accent_phrases_っ_question_mark(self):
         text = "っ？"
@@ -810,7 +814,7 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             )
         ]
-        self.create_accent_phrases_test_base(text, expected)
+        self.create_accent_phrases_test_base(text, expected, True)
 
     def test_create_accent_phrases_す_question_mark(self):
         text = "す？"
@@ -840,4 +844,4 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             )
         ]
-        self.create_accent_phrases_test_base(text, expected)
+        self.create_accent_phrases_test_base(text, expected, True)

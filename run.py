@@ -79,11 +79,13 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int):
+    def audio_query(text: str, speaker: int, enable_interrogative: bool = True):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
+        accent_phrases = engine.create_accent_phrases(
+            text, speaker_id=speaker, enable_interrogative=enable_interrogative
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,

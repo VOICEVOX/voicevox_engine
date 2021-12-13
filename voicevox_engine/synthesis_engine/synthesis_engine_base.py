@@ -20,11 +20,12 @@ def mora_to_text(mora: str) -> str:
 
 def add_interrogative_mora_if_last_phoneme_is_interrogative(
     full_context_moras: List[full_context_label.Mora],
+    enable_interrogative: bool,
 ) -> List[full_context_label.Mora]:
     last_mora = full_context_moras[-1]
     return (
         full_context_moras + [full_context_label.Mora(None, last_mora.vowel)]
-        if last_mora.vowel.is_interrogative()
+        if last_mora.vowel.is_interrogative() and enable_interrogative
         else full_context_moras
     )
 
@@ -51,6 +52,7 @@ def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
 
 def full_context_label_moras_to_moras(
     full_context_moras: List[full_context_label.Mora],
+    enable_interrogative: bool,
 ) -> List[Mora]:
     return [
         Mora(
@@ -60,7 +62,7 @@ def full_context_label_moras_to_moras(
             vowel=mora.vowel.phoneme,
             vowel_length=0,
             pitch=0,
-            is_interrogative=mora.vowel.is_interrogative()
+            is_interrogative=mora.vowel.is_interrogative() and enable_interrogative
             if mora is full_context_moras[-1]
             else False,
         )
@@ -135,7 +137,9 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             for accent_phrase in accent_phrases
         ]
 
-    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
+    def create_accent_phrases(
+        self, text: str, speaker_id: int, enable_interrogative: bool
+    ) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
@@ -148,8 +152,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                 AccentPhrase(
                     moras=full_context_label_moras_to_moras(
                         add_interrogative_mora_if_last_phoneme_is_interrogative(
-                            accent_phrase.moras
-                        )
+                            accent_phrase.moras,
+                            enable_interrogative,
+                        ),
+                        enable_interrogative,
                     ),
                     accent=accent_phrase.accent,
                     pause_mora=(
