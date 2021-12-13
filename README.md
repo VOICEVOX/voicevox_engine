@@ -306,6 +306,14 @@ pip-compile requirements-dev.in
 pip-compile requirements-test.in
 ```
 
+## ユーザー辞書の更新について
+
+以下のコマンドでopenjtalkのユーザー辞書をコンパイルできます。
+
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('user-dic.csv','user.dic')"
+```
+
 ## GitHub Actions
 
 ### Secrets
