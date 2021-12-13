@@ -39,13 +39,13 @@ def adjust_interrogative_moras(moras: List[Mora]) -> List[Mora]:
 
 def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
     mora = copy.deepcopy(mora)
+    if mora.is_interrogative:
+        fix_vowel_length = 0.15
+        mora.vowel_length = fix_vowel_length
 
-    fix_vowel_length = 0.15
-    mora.vowel_length = fix_vowel_length
-
-    adjust_pitch = 0.3
-    max_pitch = 6.5
-    mora.pitch = min(before_mora.pitch + adjust_pitch, max_pitch)
+        adjust_pitch = 0.3
+        max_pitch = 6.5
+        mora.pitch = min(before_mora.pitch + adjust_pitch, max_pitch)
     return mora
 
 
