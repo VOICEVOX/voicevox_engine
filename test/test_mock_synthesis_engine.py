@@ -19,7 +19,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ン",
@@ -28,7 +27,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ニ",
@@ -37,7 +35,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="チ",
@@ -46,7 +43,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ワ",
@@ -55,7 +51,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=5,
@@ -66,7 +61,6 @@ class TestMockSynthesisEngine(TestCase):
                     vowel="pau",
                     vowel_length=0.0,
                     pitch=0.0,
-                    is_interrogative=False,
                 ),
             ),
             AccentPhrase(
@@ -78,7 +72,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ホ",
@@ -87,7 +80,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="デ",
@@ -96,7 +88,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="e",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ス",
@@ -105,7 +96,6 @@ class TestMockSynthesisEngine(TestCase):
                         vowel="U",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,

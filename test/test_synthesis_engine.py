@@ -102,7 +102,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ン",
@@ -111,7 +110,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ニ",
@@ -120,7 +118,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="チ",
@@ -129,7 +126,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ワ",
@@ -138,7 +134,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=5,
@@ -149,7 +144,6 @@ class TestSynthesisEngine(TestCase):
                     vowel="pau",
                     vowel_length=0.0,
                     pitch=0.0,
-                    is_interrogative=False,
                 ),
             ),
             AccentPhrase(
@@ -161,7 +155,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ホ",
@@ -170,7 +163,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="デ",
@@ -179,7 +171,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="e",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ス",
@@ -188,7 +179,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="U",
                         vowel_length=0.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -669,7 +659,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=16.0,
                         pitch=28.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="レ",
@@ -678,7 +667,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="e",
                         vowel_length=8.0,
                         pitch=25.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ワ",
@@ -687,7 +675,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=26.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=3,
@@ -702,7 +689,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=4.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="リ",
@@ -711,7 +697,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=11.5,
                         pitch=28.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="マ",
@@ -720,7 +705,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=18.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ス",
@@ -729,7 +713,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="U",
                         vowel_length=4.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="カ",
@@ -738,7 +721,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=16.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=3,
@@ -759,7 +741,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=16.0,
                         pitch=28.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="レ",
@@ -768,7 +749,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="e",
                         vowel_length=8.0,
                         pitch=25.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ワ",
@@ -777,7 +757,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=26.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=3,
@@ -792,7 +771,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=4.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="リ",
@@ -801,7 +779,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=11.5,
                         pitch=28.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="マ",
@@ -810,7 +787,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=18.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ス",
@@ -819,7 +795,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="U",
                         vowel_length=4.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="カ",
@@ -828,7 +803,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=16.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ア",
@@ -837,7 +811,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=0.15,
                         pitch=6.5,
-                        is_interrogative=True,
                     ),
                 ],
                 accent=3,
@@ -860,7 +833,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="o",
                         vowel_length=16.0,
                         pitch=28.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="レ",
@@ -869,7 +841,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="e",
                         vowel_length=8.0,
                         pitch=25.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ワ",
@@ -878,7 +849,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=26.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=3,
@@ -893,7 +863,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=4.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="リ",
@@ -902,7 +871,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="i",
                         vowel_length=11.5,
                         pitch=28.5,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="マ",
@@ -911,7 +879,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=18.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ス",
@@ -920,7 +887,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="U",
                         vowel_length=4.0,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="カ",
@@ -929,7 +895,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="a",
                         vowel_length=4.5,
                         pitch=16.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=3,
@@ -950,7 +915,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=3.0,
                         pitch=4.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -971,7 +935,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=3.0,
                         pitch=4.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ン",
@@ -980,7 +943,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=0.15,
                         pitch=4.3,
-                        is_interrogative=True,
                     ),
                 ],
                 accent=1,
@@ -1001,7 +963,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="N",
                         vowel_length=3.0,
                         pitch=4.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -1022,7 +983,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="cl",
                         vowel_length=6.5,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -1043,7 +1003,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="cl",
                         vowel_length=6.5,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ッ",
@@ -1052,7 +1011,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="cl",
                         vowel_length=0.15,
                         pitch=0.3,
-                        is_interrogative=True,
                     ),
                 ],
                 accent=1,
@@ -1073,7 +1031,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="cl",
                         vowel_length=6.5,
                         pitch=0.0,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -1094,7 +1051,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="u",
                         vowel_length=21.0,
                         pitch=40.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,
@@ -1115,7 +1071,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="u",
                         vowel_length=21.0,
                         pitch=40.0,
-                        is_interrogative=False,
                     ),
                     Mora(
                         text="ウ",
@@ -1124,7 +1079,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="u",
                         vowel_length=0.15,
                         pitch=6.5,
-                        is_interrogative=True,
                     ),
                 ],
                 accent=1,
@@ -1145,7 +1099,6 @@ class TestSynthesisEngine(TestCase):
                         vowel="u",
                         vowel_length=21.0,
                         pitch=40.5,
-                        is_interrogative=False,
                     ),
                 ],
                 accent=1,

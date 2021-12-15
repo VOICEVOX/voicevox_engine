@@ -78,9 +78,6 @@ def full_context_label_moras_to_moras(
             vowel=mora.vowel.phoneme,
             vowel_length=0,
             pitch=0,
-            is_interrogative=mora.vowel.is_interrogative() and enable_interrogative
-            if mora is full_context_moras[-1]
-            else False,
         )
         for mora in full_context_moras
     ]
