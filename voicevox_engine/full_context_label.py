@@ -186,6 +186,7 @@ class AccentPhrase:
 
     moras: List[Mora]
     accent: int
+    is_interrogative: bool
 
     @classmethod
     def from_phonemes(cls, phonemes: List[Phoneme]):
@@ -231,7 +232,8 @@ class AccentPhrase:
         # workaround for Hihosiba/voicevox_engine#55
         # アクセント位置とするキー f2 の値がアクセント句内のモーラ数を超える場合がある
         accent = accent if accent <= len(moras) else len(moras)
-        return cls(moras=moras, accent=accent)
+        is_interrogative = moras[-1].vowel.is_interrogative()
+        return cls(moras=moras, accent=accent, is_interrogative=is_interrogative)
 
     def set_context(self, key: str, value: str):
         """
@@ -285,6 +287,7 @@ class AccentPhrase:
         return AccentPhrase(
             moras=self.moras + accent_phrase.moras,
             accent=self.accent,
+            is_interrogative=accent_phrase.is_interrogative,
         )
 
 
