@@ -97,100 +97,8 @@ class TestSynthesisEngineBase(TestCase):
         )
 
     def test_create_accent_phrases(self):
-        self.create_accent_phrases_test_base(
-            text="これはありますか？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="コ",
-                            consonant="k",
-                            consonant_length=12.5,
-                            vowel="o",
-                            vowel_length=16.0,
-                            pitch=28.0,
-                        ),
-                        Mora(
-                            text="レ",
-                            consonant="r",
-                            consonant_length=17.5,
-                            vowel="e",
-                            vowel_length=8.0,
-                            pitch=25.0,
-                        ),
-                        Mora(
-                            text="ワ",
-                            consonant="w",
-                            consonant_length=22.0,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=26.5,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                ),
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ア",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=4.5,
-                        ),
-                        Mora(
-                            text="リ",
-                            consonant="r",
-                            consonant_length=17.5,
-                            vowel="i",
-                            vowel_length=11.5,
-                            pitch=28.5,
-                        ),
-                        Mora(
-                            text="マ",
-                            consonant="m",
-                            consonant_length=14.0,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=18.0,
-                        ),
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=18.5,
-                            vowel="U",
-                            vowel_length=4.0,
-                            pitch=0.0,
-                        ),
-                        Mora(
-                            text="カ",
-                            consonant="k",
-                            consonant_length=12.5,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=16.0,
-                        ),
-                        Mora(
-                            text="ア",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="a",
-                            vowel_length=0.15,
-                            pitch=6.5,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                ),
-            ],
-            enable_interrogative=True,
-        )
-
-        self.create_accent_phrases_test_base(
-            text="これはありますか？",
-            expected=[
+        def koreha_arimasuka_base_expected():
+            return [
                 AccentPhrase(
                     moras=[
                         Mora(
@@ -267,302 +175,186 @@ class TestSynthesisEngineBase(TestCase):
                     accent=3,
                     pause_mora=None,
                 ),
-            ],
+            ]
+
+        expected = koreha_arimasuka_base_expected()
+        expected[-1].moras[-1].pitch = 16.0
+        expected[-1].moras += [
+            Mora(
+                text="ア",
+                consonant=None,
+                consonant_length=None,
+                vowel="a",
+                vowel_length=0.15,
+                pitch=6.5,
+            )
+        ]
+        self.create_accent_phrases_test_base(
+            text="これはありますか？",
+            expected=expected,
+            enable_interrogative=True,
+        )
+
+        expected = koreha_arimasuka_base_expected()
+        self.create_accent_phrases_test_base(
+            text="これはありますか？",
+            expected=expected,
             enable_interrogative=False,
         )
 
+        expected = koreha_arimasuka_base_expected()
         self.create_accent_phrases_test_base(
             text="これはありますか",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="コ",
-                            consonant="k",
-                            consonant_length=12.5,
-                            vowel="o",
-                            vowel_length=16.0,
-                            pitch=28.0,
-                        ),
-                        Mora(
-                            text="レ",
-                            consonant="r",
-                            consonant_length=17.5,
-                            vowel="e",
-                            vowel_length=8.0,
-                            pitch=25.0,
-                        ),
-                        Mora(
-                            text="ワ",
-                            consonant="w",
-                            consonant_length=22.0,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=26.5,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                ),
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ア",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=4.5,
-                        ),
-                        Mora(
-                            text="リ",
-                            consonant="r",
-                            consonant_length=17.5,
-                            vowel="i",
-                            vowel_length=11.5,
-                            pitch=28.5,
-                        ),
-                        Mora(
-                            text="マ",
-                            consonant="m",
-                            consonant_length=14.0,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=18.0,
-                        ),
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=18.5,
-                            vowel="U",
-                            vowel_length=4.0,
-                            pitch=0.0,
-                        ),
-                        Mora(
-                            text="カ",
-                            consonant="k",
-                            consonant_length=12.5,
-                            vowel="a",
-                            vowel_length=4.5,
-                            pitch=16.5,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                ),
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        def nn_base_expected():
+            return [
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ン",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="N",
+                            vowel_length=3.0,
+                            pitch=4.5,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                )
+            ]
+
+        expected = nn_base_expected()
         self.create_accent_phrases_test_base(
             text="ん",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ン",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="N",
-                            vowel_length=3.0,
-                            pitch=4.5,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = nn_base_expected()
+        expected[-1].moras[-1].pitch = 4.0
+        expected[-1].moras += [
+            Mora(
+                text="ン",
+                consonant=None,
+                consonant_length=None,
+                vowel="N",
+                vowel_length=0.15,
+                pitch=4.3,
+            )
+        ]
         self.create_accent_phrases_test_base(
             text="ん？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ン",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="N",
-                            vowel_length=3.0,
-                            pitch=4.0,
-                        ),
-                        Mora(
-                            text="ン",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="N",
-                            vowel_length=0.15,
-                            pitch=4.3,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = nn_base_expected()
         self.create_accent_phrases_test_base(
             text="ん？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ン",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="N",
-                            vowel_length=3.0,
-                            pitch=4.5,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=False,
         )
 
+        def ltu_base_expected():
+            return [
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ッ",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="cl",
+                            vowel_length=6.5,
+                            pitch=0.0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                )
+            ]
+
+        expected = ltu_base_expected()
         self.create_accent_phrases_test_base(
             text="っ",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ッ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="cl",
-                            vowel_length=6.5,
-                            pitch=0.0,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = ltu_base_expected()
+        expected[-1].moras[-1].pitch = 0.0
+        expected[-1].moras += [
+            Mora(
+                text="ッ",
+                consonant=None,
+                consonant_length=None,
+                vowel="cl",
+                vowel_length=0.15,
+                pitch=0.3,
+            )
+        ]
         self.create_accent_phrases_test_base(
             text="っ？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ッ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="cl",
-                            vowel_length=6.5,
-                            pitch=0.0,
-                        ),
-                        Mora(
-                            text="ッ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="cl",
-                            vowel_length=0.15,
-                            pitch=0.3,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = ltu_base_expected()
         self.create_accent_phrases_test_base(
             text="っ？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ッ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="cl",
-                            vowel_length=6.5,
-                            pitch=0.0,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=False,
         )
 
+        def su_base_expected():
+            return [
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ス",
+                            consonant="s",
+                            consonant_length=18.5,
+                            vowel="u",
+                            vowel_length=21.0,
+                            pitch=40.5,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                )
+            ]
+
+        expected = su_base_expected()
         self.create_accent_phrases_test_base(
             text="す",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=18.5,
-                            vowel="u",
-                            vowel_length=21.0,
-                            pitch=40.5,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = su_base_expected()
+        expected[-1].moras[-1].pitch = 40.0
+        expected[-1].moras += [
+            Mora(
+                text="ウ",
+                consonant=None,
+                consonant_length=None,
+                vowel="u",
+                vowel_length=0.15,
+                pitch=6.5,
+            )
+        ]
         self.create_accent_phrases_test_base(
             text="す？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=18.5,
-                            vowel="u",
-                            vowel_length=21.0,
-                            pitch=40.0,
-                        ),
-                        Mora(
-                            text="ウ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="u",
-                            vowel_length=0.15,
-                            pitch=6.5,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=True,
         )
 
+        expected = su_base_expected()
         self.create_accent_phrases_test_base(
             text="す？",
-            expected=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=18.5,
-                            vowel="u",
-                            vowel_length=21.0,
-                            pitch=40.5,
-                        ),
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                )
-            ],
+            expected=expected,
             enable_interrogative=False,
         )
