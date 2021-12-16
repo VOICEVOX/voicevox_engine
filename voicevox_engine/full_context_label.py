@@ -99,16 +99,6 @@ class Phoneme:
         """
         return self.contexts["f1"] == "xx"
 
-    def is_interrogative(self) -> bool:
-        """
-        音素が質問(interrogative)であるかを返す
-        Returns
-        -------
-        is_interrogative: bool
-            音素が質問(interrogative)であるか(True)否か(False)
-        """
-        return self.contexts["f3"] == "1"
-
     def __repr__(self):
         return f"<Phoneme phoneme='{self.phoneme}'>"
 
@@ -232,7 +222,7 @@ class AccentPhrase:
         # workaround for Hihosiba/voicevox_engine#55
         # アクセント位置とするキー f2 の値がアクセント句内のモーラ数を超える場合がある
         accent = accent if accent <= len(moras) else len(moras)
-        is_interrogative = moras[-1].vowel.is_interrogative()
+        is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
         return cls(moras=moras, accent=accent, is_interrogative=is_interrogative)
 
     def set_context(self, key: str, value: str):

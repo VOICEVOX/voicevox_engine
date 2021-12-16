@@ -19,14 +19,15 @@ def mora_to_text(mora: str) -> str:
 
 
 def add_interrogative_mora_if_last_phoneme_is_interrogative(
-    full_context_moras: List[full_context_label.Mora],
+    full_context_accent_phrase: full_context_label.AccentPhrase,
     enable_interrogative: bool,
 ) -> List[full_context_label.Mora]:
-    last_mora = full_context_moras[-1]
+    last_mora = full_context_accent_phrase.moras[-1]
     return (
-        full_context_moras + [full_context_label.Mora(None, last_mora.vowel)]
-        if last_mora.vowel.is_interrogative() and enable_interrogative
-        else full_context_moras
+        full_context_accent_phrase.moras
+        + [full_context_label.Mora(None, last_mora.vowel)]
+        if full_context_accent_phrase.is_interrogative and enable_interrogative
+        else full_context_accent_phrase.moras
     )
 
 
@@ -174,7 +175,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                 AccentPhrase(
                     moras=full_context_label_moras_to_moras(
                         add_interrogative_mora_if_last_phoneme_is_interrogative(
-                            accent_phrase.moras,
+                            accent_phrase,
                             enable_interrogative,
                         ),
                         enable_interrogative,
