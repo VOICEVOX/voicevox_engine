@@ -142,18 +142,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             enable_interrogative=enable_interrogative,
         )
 
-    def adjust_interrogative_accent_phrases(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
-    ) -> List[AccentPhrase]:
-        return [
-            AccentPhrase(
-                moras=adjust_interrogative_moras(accent_phrase.moras),
-                accent=accent_phrase.accent,
-                pause_mora=accent_phrase.pause_mora,
-            )
-            for accent_phrase in accent_phrases
-        ]
-
     def create_accent_phrases(
         self, text: str, speaker_id: int, enable_interrogative: bool
     ) -> List[AccentPhrase]:
