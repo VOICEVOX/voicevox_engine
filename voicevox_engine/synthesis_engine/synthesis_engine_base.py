@@ -69,7 +69,6 @@ def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
 
 def full_context_label_moras_to_moras(
     full_context_moras: List[full_context_label.Mora],
-    enable_interrogative: bool,
 ) -> List[Mora]:
     return [
         Mora(
@@ -166,7 +165,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                             accent_phrase,
                             enable_interrogative,
                         ),
-                        enable_interrogative,
                     ),
                     accent=accent_phrase.accent,
                     pause_mora=(
