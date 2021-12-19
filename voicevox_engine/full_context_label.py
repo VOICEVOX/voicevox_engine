@@ -34,6 +34,9 @@ class Phoneme:
         phoneme: Phoneme
             Phonemeクラスを返す
         """
+
+        # フルコンテキストラベルの仕様は、
+        # http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
         contexts = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
             r"/A\:(?P<a1>.+?)\+(?P<a2>.+?)\+(?P<a3>.+?)"
@@ -173,6 +176,7 @@ class AccentPhrase:
 
     moras: List[Mora]
     accent: int
+    is_interrogative: bool
 
     @classmethod
     def from_phonemes(cls, phonemes: List[Phoneme]):
@@ -218,7 +222,8 @@ class AccentPhrase:
         # workaround for Hihosiba/voicevox_engine#55
         # アクセント位置とするキー f2 の値がアクセント句内のモーラ数を超える場合がある
         accent = accent if accent <= len(moras) else len(moras)
-        return cls(moras=moras, accent=accent)
+        is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
+        return cls(moras=moras, accent=accent, is_interrogative=is_interrogative)
 
     def set_context(self, key: str, value: str):
         """
@@ -272,6 +277,7 @@ class AccentPhrase:
         return AccentPhrase(
             moras=self.moras + accent_phrase.moras,
             accent=self.accent,
+            is_interrogative=accent_phrase.is_interrogative,
         )
 
 

@@ -18,6 +18,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         vowel=vowel,
         vowel_length=0,
         pitch=0,
+        is_interrogative=False,
     )
     if vowel in ["a", "i", "u", "e", "o"]:
         text2mora_with_unvoice[UNVOICE_SYMBOL + text] = Mora(
@@ -27,6 +28,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
             vowel=vowel.upper(),
             vowel_length=0,
             pitch=0,
+            is_interrogative=False,
         )
 
 
@@ -100,6 +102,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                     vowel="pau",
                     vowel_length=0,
                     pitch=0,
+                    is_interrogative=False,
                 )
             parsed_results.append(accent_phrase)
     return parsed_results
