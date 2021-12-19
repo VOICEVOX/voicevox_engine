@@ -22,6 +22,10 @@ def add_interrogative_mora_if_last_phoneme_is_interrogative(
     full_context_accent_phrase: full_context_label.AccentPhrase,
     enable_interrogative: bool,
 ) -> List[full_context_label.Mora]:
+    """
+    enable_interrogativeが有効になっていて与えられたfull_context_accent_phraseが疑問系だった場合、
+    accent_phraseのmoraに対して疑問系の発音を擬似的に行うMoraを末尾に一つ追加する
+    """
     last_mora = full_context_accent_phrase.moras[-1]
     return (
         full_context_accent_phrase.moras
@@ -36,6 +40,10 @@ def adjust_interrogative_accent_phrases(
     fcl_accent_phrases: List[full_context_label.AccentPhrase],
     enable_interrogative: bool,
 ) -> List[AccentPhrase]:
+    """
+    enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
+    SynthesisEngineの実装によって調整されたあとの各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
+    """
     return [
         AccentPhrase(
             moras=adjust_interrogative_moras(accent_phrase.moras)
