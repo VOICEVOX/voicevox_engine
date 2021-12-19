@@ -73,6 +73,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             loop = asyncio.get_event_loop()
             _ = loop.create_task(cancellable_engine.catch_disconnection())
 
+    def enable_interrogative_query_param() -> Query:
+        return Query(
+            default=True,
+            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
+        )
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -82,10 +88,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def audio_query(
         text: str,
         speaker: int,
-        enable_interrogative: bool = Query(  # noqa: B008
-            default=True,
-            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
-        ),
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
     ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -117,10 +120,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def audio_query_from_preset(
         text: str,
         preset_id: int,
-        enable_interrogative: bool = Query(  # noqa: B008
-            default=True,
-            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
-        ),
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
     ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -169,10 +169,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         text: str,
         speaker: int,
         is_kana: bool = False,
-        enable_interrogative: bool = Query(  # noqa: B008
-            default=True,
-            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
-        ),
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
     ):
         """
         テキストからアクセント句を得ます。
