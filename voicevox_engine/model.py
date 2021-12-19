@@ -138,4 +138,4 @@ class SpeakerInfo(BaseModel):
 
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
-    style_infos: List[StyleInfo] = Field("スタイルの追加情報")
+    style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
