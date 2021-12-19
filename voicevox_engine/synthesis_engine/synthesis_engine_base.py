@@ -133,20 +133,14 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def replace_mora_data(
         self,
         accent_phrases: List[AccentPhrase],
-        fcl_accent_phrases: List[full_context_label.AccentPhrase],
-        enable_interrogative: bool,
         speaker_id: int,
     ) -> List[AccentPhrase]:
-        return adjust_interrogative_accent_phrases(
-            accent_phrases=self.replace_mora_pitch(
-                accent_phrases=self.replace_phoneme_length(
-                    accent_phrases=accent_phrases,
-                    speaker_id=speaker_id,
-                ),
+        return self.replace_mora_pitch(
+            accent_phrases=self.replace_phoneme_length(
+                accent_phrases=accent_phrases,
                 speaker_id=speaker_id,
             ),
-            fcl_accent_phrases=fcl_accent_phrases,
-            enable_interrogative=enable_interrogative,
+            speaker_id=speaker_id,
         )
 
     def create_accent_phrases(
@@ -165,7 +159,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             for accent_phrase in breath_group.accent_phrases
         ]
 
-        return self.replace_mora_data(
+        accent_phrases = self.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
                     moras=full_context_label_moras_to_moras(
@@ -196,9 +190,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                     breath_group.accent_phrases
                 )
             ],
-            fcl_accent_phrases=fcl_accent_phrases,
-            enable_interrogative=enable_interrogative,
             speaker_id=speaker_id,
+        )
+        return adjust_interrogative_accent_phrases(
+            accent_phrases, fcl_accent_phrases, enable_interrogative
         )
 
     @abstractmethod
