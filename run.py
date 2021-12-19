@@ -79,7 +79,14 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, enable_interrogative: bool = True):
+    def audio_query(
+        text: str,
+        speaker: int,
+        enable_interrogative: bool = Query(  # noqa: B008
+            default=True,
+            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
+        ),
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -108,7 +115,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
     def audio_query_from_preset(
-        text: str, preset_id: int, enable_interrogative: bool = True
+        text: str,
+        preset_id: int,
+        enable_interrogative: bool = Query(  # noqa: B008
+            default=True,
+            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
+        ),
     ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -157,7 +169,10 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         text: str,
         speaker: int,
         is_kana: bool = False,
-        enable_interrogative: bool = True,
+        enable_interrogative: bool = Query(  # noqa: B008
+            default=True,
+            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
+        ),
     ):
         """
         テキストからアクセント句を得ます。
