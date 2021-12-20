@@ -23,3 +23,12 @@ venv/
 /cache
 
 /licenses.json
+
+# direnv setting file
+.envrc
+
+# asdf setting file
+.tool-versions
+
+# neovim local workspace directory
+.vim/
