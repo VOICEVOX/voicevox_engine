@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_list import openjtalk_text2mora
@@ -8,6 +8,7 @@ UNVOICE_SYMBOL = "_"
 ACCENT_SYMBOL = "'"
 NOPAUSE_DELIMITER = "/"
 PAUSE_DELIMITER = "、"
+WIDE_INTERROGATION_MARK = "？"
 
 text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
@@ -78,12 +79,18 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
+def parse_kana(
+    text: str, enable_interrogative: bool
+) -> Tuple[List[AccentPhrase], List[bool]]:
     """
     AquesTalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
     """
     parsed_results: List[AccentPhrase] = []
     phrase_base = 0
+    is_interrogative_text = text[-1] == WIDE_INTERROGATION_MARK
+    if is_interrogative_text:
+        text = text[:-1]
+
     for i in range(len(text) + 1):
         if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
             phrase = text[phrase_base:i]
@@ -102,10 +109,27 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                     vowel="pau",
                     vowel_length=0,
                     pitch=0,
-                    is_interrogative=False,
                 )
             parsed_results.append(accent_phrase)
-    return parsed_results
+
+    interrogative_accent_phrase_marks = [False] * len(parsed_results)
+
+    if enable_interrogative and is_interrogative_text:
+        last_parsed_result = parsed_results[-1]
+        last_mora = last_parsed_result.moras[-1]
+        last_parsed_result.moras.append(
+            Mora(
+                text=last_mora.vowel,
+                consonant=None,
+                consonant_length=None,
+                vowel=last_mora.vowel,
+                vowel_length=last_mora.vowel_length,
+                pitch=0,
+            )
+        )
+        interrogative_accent_phrase_marks[-1] = True
+
+    return parsed_results, interrogative_accent_phrase_marks
 
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
