@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from .core_wrapper import CoreWrapper
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
 
@@ -61,3 +62,32 @@ def make_synthesis_engine(
 
     # モックで置き換える
     return MockSynthesisEngine(speakers=core.metas())
+
+
+def make_old_synthesis_engine(
+    use_gpu: bool,
+    old_voicelib_dir: Path,
+    libtorch_dir: Path,
+) -> SynthesisEngineBase:
+    try:
+        core = CoreWrapper(
+            use_gpu=use_gpu,
+            old_voicelib_dir=old_voicelib_dir,
+            libtorch_dir=libtorch_dir,
+        )
+
+        return SynthesisEngine(
+            yukarin_s_forwarder=core.yukarin_s_forward,
+            yukarin_sa_forwarder=core.yukarin_sa_forward,
+            decode_forwarder=core.decode_forward,
+            speakers=core.metas(),
+        )
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        print(
+            "Warning: Failed to make old synthesis engine.",
+            file=sys.stderr,
+        )
+        return None
