@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from .mora_list import openjtalk_text2mora
+from .mora_list import openjtalk_mora2text, openjtalk_text2mora
 
 LOOP_LIMIT = 300
 UNVOICE_SYMBOL = "_"
@@ -119,7 +119,7 @@ def parse_kana(
         last_mora = last_parsed_result.moras[-1]
         last_parsed_result.moras.append(
             Mora(
-                text=last_mora.vowel,
+                text=openjtalk_mora2text[last_mora.vowel],
                 consonant=None,
                 consonant_length=None,
                 vowel=last_mora.vowel,
