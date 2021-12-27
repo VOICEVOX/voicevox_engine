@@ -10,6 +10,9 @@ def make_synthesis_engine(
     use_gpu: bool,
     voicelib_dir: Path,
     voicevox_dir: Optional[Path] = None,
+    model_type: Optional[str] = "libtorch",
+    model_lib_dir: Optional[Path] = None,
+    use_mock: Optional[bool] = True,
 ) -> SynthesisEngineBase:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
@@ -23,18 +26,27 @@ def make_synthesis_engine(
     voicevox_dir: Path, optional, default=None
         音声ライブラリの Python モジュールがあるディレクトリ
         None のとき、Python 標準のモジュール検索パスのどれかにあるとする
+    model_type: str, optional, default="libtorch"
+        コアで使用するライブラリの名称
+    model_lib_dir: Path, optional, default=None
+        コアで使用するライブラリのあるディレクトリ
+        None のとき、voicevox_dir、それもNoneの場合はカレントディレクトリになる
+    use_mock: bool, optional, default=True
+        音声ライブラリの読み込みに失敗した際に代わりにmockを使用するか否か
     """
 
-    # Python モジュール検索パスへ追加
-    if voicevox_dir is not None:
-        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
-        if voicevox_dir.exists():
-            sys.path.insert(0, str(voicevox_dir))
-
+    if model_lib_dir is None:
+        if voicevox_dir is None:
+            model_lib_dir = Path(".")
+        else:
+            model_lib_dir = voicevox_dir
+    if not model_lib_dir.is_dir():
+        raise Exception("model_lib_dirが不正です")
     has_voicevox_core = True
+
     try:
-        import core
-    except ImportError:
+        core = CoreWrapper(use_gpu, voicelib_dir, model_lib_dir, model_type)
+    except Exception:
         import traceback
 
         from ..dev import core
@@ -43,12 +55,16 @@ def make_synthesis_engine(
 
         # 音声ライブラリの Python モジュールをロードできなかった
         traceback.print_exc()
-        print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
-            file=sys.stderr,
-        )
-
-    core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
+        if use_mock:
+            print(
+                "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "Notice: Failed to make synthesis engine. This error will be ignored.",
+                file=sys.stderr,
+            )
 
     if has_voicevox_core:
         return SynthesisEngine(
@@ -62,32 +78,3 @@ def make_synthesis_engine(
 
     # モックで置き換える
     return MockSynthesisEngine(speakers=core.metas())
-
-
-def make_old_synthesis_engine(
-    use_gpu: bool,
-    old_voicelib_dir: Path,
-    libtorch_dir: Path,
-) -> SynthesisEngineBase:
-    try:
-        core = CoreWrapper(
-            use_gpu=use_gpu,
-            old_voicelib_dir=old_voicelib_dir,
-            libtorch_dir=libtorch_dir,
-        )
-
-        return SynthesisEngine(
-            yukarin_s_forwarder=core.yukarin_s_forward,
-            yukarin_sa_forwarder=core.yukarin_sa_forward,
-            decode_forwarder=core.decode_forward,
-            speakers=core.metas(),
-        )
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        print(
-            "Warning: Failed to make old synthesis engine.",
-            file=sys.stderr,
-        )
-        return None

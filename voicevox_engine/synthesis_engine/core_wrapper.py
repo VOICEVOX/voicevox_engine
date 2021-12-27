@@ -1,48 +1,89 @@
 import os
 import sys
-from ctypes import POINTER, c_bool, c_char_p, c_float, c_int, c_long, cdll
+from ctypes import (
+    CDLL,
+    POINTER,
+    LibraryLoader,
+    c_bool,
+    c_char_p,
+    c_float,
+    c_int,
+    c_long,
+)
 from pathlib import Path
 
 import numpy as np
 
 
+def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
+    if model_type == "libtorch":
+        if sys.platform == "win32":
+            if use_gpu:
+                model_libs = ["c10.dll", "torch.dll", "torch_cuda.dll"]
+            else:
+                model_libs = ["c10.dll", "torch.dll", "torch_cpu.dll"]
+        elif sys.platform == "linux":
+            if use_gpu:
+                model_libs = ["libc10.so", "libtorch.so", "libtorch_cuda.so"]
+            else:
+                model_libs = ["libc10.so", "libtorch.so", "libtorch_cuda.so"]
+        elif sys.platform == "darwin":
+            model_libs = ["libc10.dylib", "libtorch.dylib", "libtorch_cpu.dylib"]
+        else:
+            raise RuntimeError("不明なOSです")
+    else:
+        raise RuntimeError("不明なmodel_typeです")
+
+    for lib_name in model_libs:
+        LibraryLoader(CDLL(str((model_lib_dir / lib_name).resolve(strict=True))))
+
+
 class CoreWrapper:
     def __init__(
-        self, use_gpu: bool, old_voicelib_dir: Path, libtorch_dir: Path
+        self,
+        use_gpu: bool,
+        voicelib_dir: Path,
+        model_lib_dir: Path,
+        model_type: str,
     ) -> None:
+        load_model_lib(use_gpu, model_type, model_lib_dir)
         if sys.platform == "win32":
-            os.add_dll_directory(libtorch_dir.resolve())
-            os.environ["PATH"] += ";" + str(libtorch_dir.resolve())
-            if not use_gpu:
-                self.core = cdll.LoadLibrary(
-                    str((old_voicelib_dir / "core_cpu.dll").resolve())
+            if use_gpu:
+                self.core = CDLL(str((voicelib_dir / "core.dll").resolve(strict=True)))
+            else:
+                try:
+                    self.core = CDLL(
+                        str((voicelib_dir / "core_cpu.dll").resolve(strict=True))
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str((voicelib_dir / "core.dll").resolve(strict=True))
+                    )
+        elif sys.platform == "linux":
+            if use_gpu:
+                self.core = CDLL(
+                    str((voicelib_dir / "libcore.so").resolve(strict=True))
                 )
             else:
-                self.core = cdll.LoadLibrary(
-                    str((old_voicelib_dir / "core.dll").resolve())
+                try:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore_cpu.so").resolve(strict=True))
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore.so").resolve(strict=True))
+                    )
+        elif sys.platform == "darwin":
+            try:
+                self.core = CDLL(
+                    str((voicelib_dir / "libcore_cpu.dylib").resolve(strict=True))
                 )
-        elif sys.platform == "linux":
-            if not use_gpu:
-                cdll.LoadLibrary(str((libtorch_dir / "libc10.so").resolve()))
-                cdll.LoadLibrary(str((libtorch_dir / "libtorch_cpu.so").resolve()))
-                cdll.LoadLibrary(str((libtorch_dir / "libtorch.so").resolve()))
-                self.core = cdll.LoadLibrary(
-                    str((old_voicelib_dir / "libcore_cpu.so").resolve())
+            except FileNotFoundError:
+                self.core = CDLL(
+                    str((voicelib_dir / "libcore.dylib").resolve(strict=True))
                 )
-            else:  # not tested
-                cdll.LoadLibrary(str((libtorch_dir / "libc10.so").resolve()))
-                cdll.LoadLibrary(str((libtorch_dir / "libtorch_cuda.so").resolve()))
-                cdll.LoadLibrary(str((libtorch_dir / "libtorch.so").resolve()))
-                self.core = cdll.LoadLibrary(
-                    str((old_voicelib_dir / "libcore.so").resolve())
-                )
-        elif sys.platform == "darwin":  # not tested
-            cdll.LoadLibrary(str((libtorch_dir / "libc10.dylib").resolve()))
-            cdll.LoadLibrary(str((libtorch_dir / "libtorch_cpu.dylib").resolve()))
-            cdll.LoadLibrary(str((libtorch_dir / "libtorch.dylib").resolve()))
-            self.core = cdll.LoadLibrary(
-                str((old_voicelib_dir / "libcore_cpu.dylib").resolve())
-            )
+        else:
+            raise RuntimeError("不明なOSです")
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -78,7 +119,7 @@ class CoreWrapper:
         )
 
         cwd = os.getcwd()
-        os.chdir(old_voicelib_dir)
+        os.chdir(voicelib_dir)
         try:
             if not self.core.initialize(".", use_gpu):
                 raise Exception(self.core.last_error_message().decode("utf-8"))

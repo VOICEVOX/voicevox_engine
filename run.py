@@ -31,11 +31,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.synthesis_engine import (
-    SynthesisEngineBase,
-    make_old_synthesis_engine,
-    make_synthesis_engine,
-)
+from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engine
 from voicevox_engine.synthesis_engine.synthesis_engine_base import (
     adjust_interrogative_accent_phrases,
 )
@@ -567,7 +563,7 @@ if __name__ == "__main__":
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
     parser.add_argument("--old_voicelib_dir", type=Path, default=None)
-    parser.add_argument("--libtorch_dir", type=Path, default=None)
+    parser.add_argument("--model_lib_dir", type=Path, default=None)
     args = parser.parse_args()
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
@@ -583,11 +579,13 @@ if __name__ == "__main__":
         cancellable_engine = CancellableEngine(args, voicelib_dir)
 
     old_engine = None
-    if args.old_voicelib_dir is not None and args.libtorch_dir is not None:
-        old_engine = make_old_synthesis_engine(
+    if args.old_voicelib_dir is not None:
+        old_engine = make_synthesis_engine(
             use_gpu=args.use_gpu,
-            old_voicelib_dir=args.old_voicelib_dir,
-            libtorch_dir=args.libtorch_dir,
+            voicelib_dir=args.old_voicelib_dir,
+            voicevox_dir=args.voicevox_dir,
+            model_lib_dir=args.model_lib_dir,
+            use_mock=False,
         )
 
     uvicorn.run(
