@@ -586,6 +586,7 @@ class TestParseKanaException(TestCase):
         self._assert_error_code("__ス'", ParseKanaErrorCode.UNKNOWN_TEXT)
         self._assert_error_code("ア'/", ParseKanaErrorCode.EMPTY_PHRASE)
         self._assert_error_code("/ア'", ParseKanaErrorCode.EMPTY_PHRASE)
+        self._assert_error_code("", ParseKanaErrorCode.EMPTY_PHRASE)
 
         with self.assertRaises(ParseKanaError) as err:
             parse_kana("ヒト'ツメ/フタツメ")

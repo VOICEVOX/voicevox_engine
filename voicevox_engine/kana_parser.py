@@ -87,6 +87,8 @@ def parse_kana(
     """
     parsed_results: List[AccentPhrase] = []
     phrase_base = 0
+    if len(text) == 0:
+        raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
     is_interrogative_text = text[-1] == WIDE_INTERROGATION_MARK
     if is_interrogative_text:
         text = text[:-1]
