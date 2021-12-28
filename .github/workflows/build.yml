@@ -648,7 +648,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: Hiroshiba/voicevox_resource
+          repository: VOICEVOX/voicevox_resource
           ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
@@ -672,7 +672,7 @@ jobs:
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           unzip download/core.zip -d download/
           rm download/core.zip
 
@@ -688,7 +688,7 @@ jobs:
         if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/VOICEVOX/voicevox_core.git" download/voicevox_core_example
 
       - name: Install VOICEVOX Core Python package
         shell: bash
