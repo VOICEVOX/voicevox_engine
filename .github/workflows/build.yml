@@ -430,6 +430,8 @@ jobs:
           voicevox_core_dll_name: core.dll
           voicevox_core_example_version: '0.9.0'
           libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
+          cuda_version: '11.4.2'
+          cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-nvidia
           nuitka_cache_path: nuitka_cache
@@ -439,6 +441,97 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      # Download CUDA
+      - name: Prepare CUDA DLL cache
+        if: matrix.cuda_version != ''
+        uses: actions/cache@v2
+        id: cuda-dll-cache
+        with:
+          # update this key when ONNX Runtime CUDA dependency changed
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        uses: Jimver/cuda-toolkit@v0.2.4
+        id: cuda-toolkit
+        with:
+          method: network
+          cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA DLL (reduce disk usage)
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          mkdir -p download/cuda/bin
+          DEST=$(realpath download/cuda/bin)
+
+          CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
+          cd "${CUDA_ROOT}"/bin
+
+          mv cublas.dll cublasLt.dll cudart.dll cufft.dll curand.dll "${DEST}"
+
+          rm -rf "${CUDA_ROOT}"
+
+      - name: Show disk space (debug info)
+        if: matrix.cuda_version != ''
+        shell: bash
+        run: |
+          df -h
+
+      # Download cuDNN
+      - name: Export cuDNN url to calc hash
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
+
+      - name: Prepare cuDNN cache
+        if: matrix.cudnn_url != ''
+        uses: actions/cache@v2
+        id: cudnn-dll-cache
+        with:
+          # update this key when ONNX Runtime cuDNN dependency changed
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
+          path: download/cudnn
+
+      - name: Download cuDNN
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+          unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+          rm download/cudnn.zip
+
+      - name: Extract cuDNN DLL (reduce disk usage)
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          mkdir -p download/cudnn/bin
+          DEST=$(realpath download/cudnn/bin)
+
+          cd download/cudnn_tmp/bin
+
+          mv cudnn.dll "${DEST}"
+
+          rm -rf download/cudnn_tmp
+
+      - name: Show disk space (debug info)
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: |
+          df -h
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
