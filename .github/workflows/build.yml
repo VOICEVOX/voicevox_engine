@@ -272,7 +272,6 @@ jobs:
 
   # Build Linux binary (push only buildcache image)
   build-linux:
-    if: false
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -342,6 +341,14 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
+      
+      # Temporary: Download LibTorch Dockerfile
+      # ref https://github.com/VOICEVOX/voicevox_engine/pull/248
+      - name: Download Dockerfile for LibTorch Core
+        shell: bash
+        run: |
+          set -eux
+          wget -nv --show-progress -c -O "./Dockerfile.libtorchcore" https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/86e06dc13d634562e92f799c5e75f06da23822cd/Dockerfile
 
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
@@ -353,7 +360,7 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: ./Dockerfile
+          file: ./Dockerfile.libtorchcore
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
