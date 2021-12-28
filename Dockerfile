@@ -189,7 +189,7 @@ COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
 # Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.9.0
+ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.10.preview.0
 RUN <<EOF
     set -eux
 
