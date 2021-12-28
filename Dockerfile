@@ -218,6 +218,7 @@ RUN <<EOF
     ldconfig
 
     # Define temporary env vars
+    # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:/opt/python/bin:${PATH:-}"
     export LIBRARY_PATH="/opt/voicevox_core:${LIBRARY_PATH:-}"
 
