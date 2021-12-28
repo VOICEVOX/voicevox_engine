@@ -19,35 +19,37 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
-ARG VOICEVOX_CORE_VERSION=0.9.0
-ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
+# assert VOICEVOX_CORE_VERSION >= 0.10.preview.0 (ONNX)
+ARG VOICEVOX_CORE_VERSION=0.10.preview.0
+ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
 RUN <<EOF
     set -eux
+
+    # Download Core
     wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
-    mv ./core /opt/voicevox_core
     rm ./core.zip
-EOF
 
-RUN <<EOF
-    # Workaround: remove unused libcore (cpu, gpu)
-    # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
-    set -eux
-    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
-        rm -f /opt/voicevox_core/libcore_cpu.so
-    elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
-        mv /opt/voicevox_core/libcore_cpu.so /opt/voicevox_core/libcore.so
-    else
-        echo "Invalid VOICEVOX CORE library name: ${VOICEVOX_CORE_LIBRARY_NAME}" >> /dev/stderr
-        exit 1
+    # Move Core Library to /opt/voicevox_core/
+    mkdir /opt/voicevox_core
+    mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
+
+    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
+        ln -sf "/opt/voicevox_core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/libcore.so
     fi
-EOF
 
-RUN <<EOF
-    set -eux
+    # Move Voice Library to /opt/voicevox_core/
+    mv ./core/*.bin ./core/core.h ./core/metas.json /opt/voicevox_core/
+
+    # Move documents to /opt/voicevox_core/
+    mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
+
+    rm -rf ./core
+
+    # Add /opt/voicevox_core to dynamic library search path
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
-    rm -f /etc/ld.so.cache
+
+    # Update dynamic library search cache
     ldconfig
 EOF
 
