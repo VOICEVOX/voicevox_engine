@@ -416,7 +416,7 @@ jobs:
           voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core_cpu.dll
           voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-1.9.0.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
@@ -429,7 +429,7 @@ jobs:
           voicevox_core_version: '0.9.0'
           voicevox_core_dll_name: core.dll
           voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-gpu-1.9.0.zip
           cuda_version: '11.4.2'
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
@@ -607,29 +607,29 @@ jobs:
         run: |
           echo "$HOME/download/ccache" >> $GITHUB_PATH
 
-      # Download LibTorch
-      # Included:
-      # - CUDA
-      # - cuDNN
-      - name: Export LibTorch url to calc hash
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
         shell: bash
-        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: Prepare LibTorch cache
+      - name: Prepare ONNX Runtime cache
         uses: actions/cache@v2
-        id: libtorch-dll-cache
+        id: onnxruntime-dll-cache
         with:
-          key: ${{ matrix.os }}-libtorch-dll-${{ hashFiles('download/libtorch_url.txt') }}
-          path: download/libtorch
+          key: ${{ matrix.os }}-onnxruntime-dll-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
 
-      - name: Download LibTorch (CUDA, cuDNN included)
-        if: steps.libtorch-dll-cache.outputs.cache-hit != 'true'
+      - name: Download ONNX Runtime
+        if: steps.onnxruntime-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+
           # extract only dlls
-          unzip download/libtorch.zip libtorch/lib/*.dll -d download/
-          rm download/libtorch.zip
+          unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
+          rm download/onnxruntime.zip
+
+          mv download/onnxruntime-* download/onnxruntime
 
       - name: Show disk space (debug info)
         shell: bash
