@@ -12,14 +12,14 @@ from scipy.io import wavfile
 from os.path import exists
 from urllib.request import urlretrieve
 from .julius4seg import sp_inserter
-
-from .synthesis_engine import SynthesisEngine
-
+from .acoustic_feature_extractor import OjtPhoneme, SamplingData
+from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
 JULIUS_SAMPLE_RATE = 16000
 VOICEVOX_SAMPLE_RATE = 24000
 FRAME_PERIOD = 1.0
 PUNCTUATION = ["_", "'", "/", "、"]
+SIL_SYMBOL = ["silB", "silE", "sp"]
 TMP_PATH = "tmp.wav"
 UUT_ID = "tmp"
 TEMP_FILE_LIST = ["first_pass.dfa", "first_pass.dict", "second_pass.dfa", "second_pass.dict", "tmp.wav"]
@@ -60,17 +60,45 @@ def _extract_julius():
     os.remove(filename)
 
 
+def min_max(x: np.ndarray, axis=None):
+    x_min = x.min(axis=axis, keepdims=True)
+    x_max = x.max(axis=axis, keepdims=True)
+    normalized = (x - x_min) / (x_max - x_min)
+    return normalized
+
+
 # Get f0 query with pw, segment with julius and send to forward decoder
-def synthesis(audio_file, kana: str) -> np.ndarray:
+def synthesis(engine: SynthesisEngineBase, audio_file: np.ndarray, kana: str):
     _lazy_init()
     sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR.decode("ascii"))
     sr, wave = wavfile.read(audio_file)
     julius_wave = resample(wave.astype(np.int16), JULIUS_SAMPLE_RATE * len(wave) // sr)
-    julius_kana = re.sub("|".join(PUNCTUATION), "", kana.replace("/", " "))
+    julius_kana = re.sub("|".join(PUNCTUATION), "", kana.replace("/", " ").replace("、", " "))
 
-    forced_align(julius_wave, julius_kana)
+    phonemes = forced_align(julius_wave.astype(np.int16), julius_kana)
+    f0 = extract_pitch(wave.astype(np.double), sr).astype(np.float32)
 
-    return extract_pitch(wave, sr)
+    f0 = min_max(f0) * 6.5
+    f0[f0 < 3] = 0
+
+    phoneme_list = np.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=np.float32)
+    for p in phonemes:
+        if p[2] in SIL_SYMBOL:
+            if p[2] == 'silB':
+                p = OjtPhoneme("pau", int(p[0]) + 1, int(p[1]))
+            else:
+                p = OjtPhoneme("pau", int(p[0]), int(p[1]))
+        else:
+            p = OjtPhoneme(p[2], int(p[0]), int(p[1]))
+        phoneme_list[int((p.start - 1) * (240 / 256)): int(p.end * (240 / 256))] = p.onehot
+
+    return engine.guided_synthesis(
+        length=phoneme_list.shape[0],
+        phoneme_size=phoneme_list.shape[1],
+        f0=f0[:, np.newaxis],
+        phoneme=phoneme_list,
+        speaker_id=np.array([5], dtype=np.int64).reshape(-1)
+    )
 
 
 def forced_align(julius_wave: np.ndarray, base_kata_text: str):
@@ -85,7 +113,7 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
     with open('first_pass.dfa', 'w', encoding="utf-8") as f:
         f.write(dfa_1st)
 
-    wavfile.write(TMP_PATH, JULIUS_SAMPLE_RATE, julius_wave.astype(np.int16))
+    wavfile.write(TMP_PATH, JULIUS_SAMPLE_RATE, julius_wave)
 
     raw_first_output = sp_inserter.julius_sp_insert(TMP_PATH, 'first_pass', None)
 
@@ -124,8 +152,6 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
 
 
 def extract_pitch(wave: np.ndarray, sr: int) -> np.ndarray:
-    frame_period = 1.0
-    world_wave = wave.astype(np.double)
-    f0, time_axis = pw.harvest(world_wave, sr, frame_period=frame_period)
-
+    frame_period = 2400 / 256
+    f0, time_axis = pw.harvest(wave, sr, frame_period=frame_period)
     return f0

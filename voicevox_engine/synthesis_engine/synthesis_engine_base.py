@@ -215,3 +215,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             音声合成結果
         """
         raise NotImplementedError()
+
+    @abstractmethod
+    def guided_synthesis(self, length, phoneme_size, f0, phoneme, speaker_id):
+        raise NotImplementedError()

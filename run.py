@@ -342,8 +342,14 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
     )
     def guided_synthesis(kana: str = Form(...), audio_file: UploadFile = File(...)):
-        res = guided.synthesis(audio_file.file, kana)
-        return {"filename": str(res)}
+        wave = guided.synthesis(engine=engine, audio_file=audio_file.file, kana=kana)
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f, data=wave, samplerate=24000, format="WAV"
+            )
+
+        return FileResponse(f.name, media_type="audio/wav")
 
     @app.post(
         "/synthesis_morphing",
