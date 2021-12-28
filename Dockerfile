@@ -263,6 +263,7 @@ EOF
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
+
 cat /opt/voicevox_core/README.txt > /dev/stderr
 
 exec "\$@"
@@ -282,6 +283,7 @@ FROM runtime-env AS build-env
 # chrpath: required for nuitka build; 'RPATH' settings in used shared
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         ccache \
@@ -295,6 +297,7 @@ EOF
 ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
     set -eux
+
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
