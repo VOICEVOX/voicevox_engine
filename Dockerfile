@@ -213,21 +213,18 @@ RUN <<EOF
     # Create a general user
     useradd --create-home user
 
-    # Update ld
+    # Update dynamic library search cache
     ldconfig
 
-    # Const environment
-    # FIXME: These values may be undefined, so `set +u` is needed
-    set +u
-    export PATH="/home/user/.local/bin:/opt/python/bin:$PATH"
-    export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
-    set -u
+    # Define temporary env vars
+    export PATH="/home/user/.local/bin:/opt/python/bin:${PATH:-}"
+    export LIBRARY_PATH="/opt/voicevox_core:${LIBRARY_PATH:-}"
 
     # Install requirements
     gosu user python3 -m pip install --upgrade pip setuptools wheel
     gosu user pip3 install -r /tmp/requirements.txt
 
-    # Install voicevox_core
+    # Install voicevox_core Python module
     # Files will be generated at build time, so move to a writable directory
     gosu user cp -r /opt/voicevox_core_example/example/python /tmp/voicevox_core_example_setup
     cd /tmp/voicevox_core_example_setup
