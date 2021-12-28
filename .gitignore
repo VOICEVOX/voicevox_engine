@@ -23,3 +23,9 @@ venv/
 /cache
 
 /licenses.json
+
+# Guided Synthesis temp files
+/voicevox_engine/dictation-kit*
+first_pass*
+second_pass*
+tmp.wav

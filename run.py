@@ -11,7 +11,7 @@ from typing import List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
@@ -33,6 +33,7 @@ from voicevox_engine.morphing import (
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engine
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+import voicevox_engine.guided as guided
 
 
 def b64encode_str(s):
@@ -315,9 +316,25 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                             format="WAV",
                         )
                         wav_file.seek(0)
-                        zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
+                        zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
         return FileResponse(f.name, media_type="application/zip")
+
+    @app.post(
+        "/guided_synthesis",
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
+    )
+    def guided_synthesis(kana: str = Form(...), audio_file: UploadFile = File(...)):
+        res = guided.synthesis(audio_file.file, kana)
+        return {"filename": str(res)}
 
     @app.post(
         "/synthesis_morphing",
