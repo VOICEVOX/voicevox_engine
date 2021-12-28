@@ -191,6 +191,8 @@ COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
 # Clone VOICEVOX Core example
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.9.0
 RUN <<EOF
+    set -eux
+
     git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
     cd /opt/voicevox_core_example/
     cp ./core.h ./example/python/
