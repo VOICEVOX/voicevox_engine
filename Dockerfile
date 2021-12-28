@@ -184,9 +184,9 @@ COPY --from=compile-python-env /opt/python /opt/python
 COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
 COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 
-# Copy LibTorch
-COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
-COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
+# Copy ONNX Runtime
+COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
+COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
 # Clone VOICEVOX Core example
 ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.9.0
@@ -343,8 +343,8 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-                --include-data-file=/opt/libtorch/lib/*.so=./ \
-                --include-data-file=/opt/libtorch/lib/*.so.*=./ \
+                --include-data-file=/opt/onnxruntime/lib/*.so=./ \
+                --include-data-file=/opt/onnxruntime/lib/*.so.*=./ \
                 --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
@@ -353,7 +353,7 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        # set relative path in libcore.so for searching libtorch
+        # set relative path in libcore.so for searching onnxruntime
         LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
         patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
 
