@@ -214,17 +214,18 @@ RUN <<EOF
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
     cp -d /opt/onnxruntime/lib/*.so* /tmp/voicevox_core_source/core/lib/
 
-    if [ -f /opt/onnxruntime/lib/libonnxruntime_providers_cuda.so ]; then
-        # assert nvidia/cuda base image
-
-        cd /usr/local/cuda/lib64
-        cp -d libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /tmp/voicevox_core_source/core/lib/
-        cd -
-
-        cd /usr/lib/x86_64-linux-gnu
-        cp -d libcudnn.so* /tmp/voicevox_core_source/core/lib/
-        cd -
-    fi
+    # Skip CUDA/cuDNN copy to prevent redundant copies
+    # if [ -f /opt/onnxruntime/lib/libonnxruntime_providers_cuda.so ]; then
+    #     # assert nvidia/cuda base image
+    #
+    #     cd /usr/local/cuda/lib64
+    #     cp -d libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /tmp/voicevox_core_source/core/lib/
+    #     cd -
+    #
+    #     cd /usr/lib/x86_64-linux-gnu
+    #     cp -d libcudnn.so* /tmp/voicevox_core_source/core/lib/
+    #     cd -
+    # fi
 
     # Duplicate core.h in repo
     cp /tmp/voicevox_core_source/core/src/core.h /tmp/voicevox_core_source/core/lib/
