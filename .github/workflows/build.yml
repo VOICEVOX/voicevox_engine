@@ -694,7 +694,7 @@ jobs:
         shell: bash
         run: |
           cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_example/example/python/core.dll
-          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
+          cp download/core/core.h download/voicevox_core_example/example/python/
 
           cd download/voicevox_core_example/example/python
           ./makelib.bat core
