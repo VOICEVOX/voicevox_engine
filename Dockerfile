@@ -36,7 +36,10 @@ RUN <<EOF
     mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
 
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
-        ln -sf "/opt/voicevox_core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/libcore.so
+        # Create relative symbilic link
+        cd /opt/voicevox_core
+        ln -sf "${VOICEVOX_CORE_LIBRARY_NAME}" libcore.so
+        cd -
     fi
 
     # Move Voice Library to /opt/voicevox_core/
