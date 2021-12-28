@@ -15,7 +15,7 @@ build-linux-docker-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-ubuntu20.04
@@ -32,7 +32,7 @@ build-linux-docker-nvidia-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu20.04 \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-nvidia-ubuntu20.04
@@ -52,7 +52,7 @@ build-linux-docker-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so \
 		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
 
@@ -70,7 +70,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu18.04 \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so \
 		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
 
@@ -136,7 +136,7 @@ build-linux-docker-build-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-build-ubuntu20.04
@@ -154,7 +154,7 @@ build-linux-docker-build-nvidia-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu20.04 \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-build-nvidia-ubuntu20.04
@@ -173,7 +173,7 @@ build-linux-docker-build-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so \
 		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
 
@@ -192,7 +192,7 @@ build-linux-docker-build-nvidia-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu18.04 \
-		--build-arg LIBTORCH_URL=https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so \
 		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
 
