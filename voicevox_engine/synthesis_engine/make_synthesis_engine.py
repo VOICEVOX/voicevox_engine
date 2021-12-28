@@ -10,7 +10,7 @@ def make_synthesis_engine(
     use_gpu: bool,
     voicelib_dir: Path,
     voicevox_dir: Optional[Path] = None,
-    model_type: Optional[str] = "libtorch",
+    model_type: Optional[str] = "onnxruntime",
     model_lib_dir: Optional[Path] = None,
     use_mock: Optional[bool] = True,
 ) -> SynthesisEngineBase:
@@ -26,7 +26,7 @@ def make_synthesis_engine(
     voicevox_dir: Path, optional, default=None
         音声ライブラリの Python モジュールがあるディレクトリ
         None のとき、Python 標準のモジュール検索パスのどれかにあるとする
-    model_type: str, optional, default="libtorch"
+    model_type: str, optional, default="onnxruntime"
         コアで使用するライブラリの名称
     model_lib_dir: Path, optional, default=None
         コアで使用するライブラリのあるディレクトリ

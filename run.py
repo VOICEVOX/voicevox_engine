@@ -563,7 +563,8 @@ if __name__ == "__main__":
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
     parser.add_argument("--old_voicelib_dir", type=Path, default=None)
-    parser.add_argument("--model_lib_dir", type=Path, default=None)
+    parser.add_argument("--old_model_lib_dir", type=Path, default=None)
+    parser.add_argument("--old_model_type", type=str, default="onnxruntime")
     args = parser.parse_args()
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
@@ -584,7 +585,8 @@ if __name__ == "__main__":
             use_gpu=args.use_gpu,
             voicelib_dir=args.old_voicelib_dir,
             voicevox_dir=args.voicevox_dir,
-            model_lib_dir=args.model_lib_dir,
+            model_lib_dir=args.old_model_lib_dir,
+            model_type=args.old_model_type,
             use_mock=False,
         )
 

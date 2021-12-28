@@ -31,6 +31,13 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
             model_libs = ["libc10.dylib", "libtorch.dylib", "libtorch_cpu.dylib"]
         else:
             raise RuntimeError("不明なOSです")
+    elif model_type == "onnxruntime":
+        if sys.platform == "win32":
+            model_libs = ["onnxruntime.dll"]
+        elif sys.platform == "linux":
+            model_libs = ["onnxruntime.so"]
+        elif sys.platform == "darwin":
+            model_libs = ["libonnxruntime.dylib"]
     else:
         raise RuntimeError("不明なmodel_typeです")
 
@@ -47,43 +54,77 @@ class CoreWrapper:
         model_type: str,
     ) -> None:
         load_model_lib(use_gpu, model_type, model_lib_dir)
-        if sys.platform == "win32":
-            if use_gpu:
-                self.core = CDLL(str((voicelib_dir / "core.dll").resolve(strict=True)))
-            else:
-                try:
-                    self.core = CDLL(
-                        str((voicelib_dir / "core_cpu.dll").resolve(strict=True))
-                    )
-                except FileNotFoundError:
+        if model_type == "libtorch":
+            if sys.platform == "win32":
+                if use_gpu:
                     self.core = CDLL(
                         str((voicelib_dir / "core.dll").resolve(strict=True))
                     )
-        elif sys.platform == "linux":
-            if use_gpu:
-                self.core = CDLL(
-                    str((voicelib_dir / "libcore.so").resolve(strict=True))
-                )
-            else:
-                try:
-                    self.core = CDLL(
-                        str((voicelib_dir / "libcore_cpu.so").resolve(strict=True))
-                    )
-                except FileNotFoundError:
+                else:
+                    try:
+                        self.core = CDLL(
+                            str((voicelib_dir / "core_cpu.dll").resolve(strict=True))
+                        )
+                    except FileNotFoundError:
+                        self.core = CDLL(
+                            str((voicelib_dir / "core.dll").resolve(strict=True))
+                        )
+            elif sys.platform == "linux":
+                if use_gpu:
                     self.core = CDLL(
                         str((voicelib_dir / "libcore.so").resolve(strict=True))
                     )
-        elif sys.platform == "darwin":
-            try:
+                else:
+                    try:
+                        self.core = CDLL(
+                            str((voicelib_dir / "libcore_cpu.so").resolve(strict=True))
+                        )
+                    except FileNotFoundError:
+                        self.core = CDLL(
+                            str((voicelib_dir / "libcore.so").resolve(strict=True))
+                        )
+            elif sys.platform == "darwin":
+                try:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore_cpu.dylib").resolve(strict=True))
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore.dylib").resolve(strict=True))
+                    )
+            else:
+                raise RuntimeError("不明なOSです")
+        elif model_type == "onnxruntime":
+            if sys.platform == "win32":
+                try:
+                    self.core = CDLL(
+                        str(
+                            (voicelib_dir / "core_gpu_x64_nvidia.dll").resolve(
+                                strict=True
+                            )
+                        )
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str((voicelib_dir / "core_cpu_x64.dll").resolve(strict=True))
+                    )
+            elif sys.platform == "linux":
+                try:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore_cpu_x64.so").resolve(strict=True))
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str(
+                            (voicelib_dir / "libcore_gpu_x64_nvidia.so").resolve(
+                                strict=True
+                            )
+                        )
+                    )
+            elif sys.platform == "darwin":
                 self.core = CDLL(
-                    str((voicelib_dir / "libcore_cpu.dylib").resolve(strict=True))
+                    str((voicelib_dir / "libcore_cpu_x64.dylib").resolve(strict=True))
                 )
-            except FileNotFoundError:
-                self.core = CDLL(
-                    str((voicelib_dir / "libcore.dylib").resolve(strict=True))
-                )
-        else:
-            raise RuntimeError("不明なOSです")
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -91,6 +132,14 @@ class CoreWrapper:
         self.core.yukarin_sa_forward.restype = c_bool
         self.core.decode_forward.restype = c_bool
         self.core.last_error_message.restype = c_char_p
+
+        self.exist_suppoted_devices = False
+        self.exist_finalize = False
+        if model_type == "onnxruntime":
+            self.core.supported_devices.restype = c_char_p
+            self.core.finalize.restype = None
+            self.exist_suppoted_devices = True
+            self.exist_finalize = True
 
         self.core.yukarin_s_forward.argtypes = (
             c_int,
@@ -199,3 +248,14 @@ class CoreWrapper:
         if not success:
             raise Exception(self.core.last_error_message().decode("utf-8"))
         return output
+
+    def supported_devices(self) -> str:
+        if self.exist_suppoted_devices:
+            return self.core.supported_devices().decode("utf-8")
+        raise NameError
+
+    def finalize(self) -> None:
+        if self.exist_finalize:
+            self.core.finalize()
+            return
+        raise NameError
