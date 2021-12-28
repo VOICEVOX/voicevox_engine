@@ -212,10 +212,13 @@ RUN <<EOF
     # Copy shared libraries to repo to be packed in Python package
     mkdir -p /tmp/voicevox_core_source/core/lib
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
-    cp -d /opt/onnxruntime/lib/*.so* /tmp/voicevox_core_source/core/lib/
+
+    cd /opt/onnxruntime/lib
+    cp -d *.so* /tmp/voicevox_core_source/core/lib/
+    cd -
 
     # TODO: remove redundant shared library copy to reduce image size
-    if [ -f /opt/onnxruntime/lib/libonnxruntime_providers_cuda.so ]; then
+    if [ -f /tmp/voicevox_core_source/core/lib/libonnxruntime_providers_cuda.so ]; then
         # assert nvidia/cuda base image
 
         cd /usr/local/cuda/lib64
