@@ -521,9 +521,9 @@ jobs:
           mkdir -p download/cudnn/bin
           DEST=$(realpath download/cudnn/bin)
 
-          cd download/cudnn_tmp/bin
+          cd download/cudnn_tmp/cuda/bin
 
-          mv cudnn.dll "${DEST}"
+          mv cudnn64_8.dll "${DEST}"
 
           rm -rf download/cudnn_tmp
 
