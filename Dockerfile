@@ -365,21 +365,6 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        # set relative path in libcore.so for searching onnxruntime
-        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
-
-        # Copy libonnxruntime_providers_cuda.so dependencies (CUDA/cuDNN)
-        if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
-            cd /usr/local/cuda/lib64
-            cp libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /opt/voicevox_engine_build/run.dist/
-            cd -
-
-            cd /usr/lib/x86_64-linux-gnu
-            cp libcudnn.so* /opt/voicevox_engine_build/run.dist/
-            cd -
-        fi
-
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
     chmod +x /build.sh
