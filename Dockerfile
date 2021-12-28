@@ -193,7 +193,7 @@ ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.10.preview.0
 RUN <<EOF
     set -eux
 
-    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
+    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /opt/voicevox_core_example
 
     # Copy core.h from core.zip
     cp /opt/voicevox_core/core.h /opt/voicevox_core_example/example/python/
