@@ -349,7 +349,11 @@ RUN <<EOF
         # Copy libonnxruntime_providers_cuda.so dependencies (CUDA/cuDNN)
         if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
             cd /usr/local/cuda/lib64
-            cp libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* libcudnn.so* /opt/voicevox_engine_build/run.dist/
+            cp libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /opt/voicevox_engine_build/run.dist/
+            cd -
+
+            cd /usr/lib/x86_64-linux-gnu
+            cp libcudnn.so* /opt/voicevox_engine_build/run.dist/
             cd -
         fi
 
