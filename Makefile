@@ -53,8 +53,7 @@ build-linux-docker-ubuntu18.04:
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so \
-		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-ubuntu18.04
 run-linux-docker-ubuntu18.04:
@@ -71,8 +70,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu18.04 \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so \
-		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-nvidia-ubuntu18.04
 run-linux-docker-nvidia-ubuntu18.04:
@@ -174,8 +172,7 @@ build-linux-docker-build-ubuntu18.04:
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so \
-		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-build-ubuntu18.04
 run-linux-docker-build-ubuntu18.04:
@@ -193,8 +190,7 @@ build-linux-docker-build-nvidia-ubuntu18.04:
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/driver:460.73.01-ubuntu18.04 \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so \
-		--build-arg USE_GLIBC_231_WORKAROUND=1 $(ARGS)
+		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-build-nvidia-ubuntu18.04
 run-linux-docker-build-nvidia-ubuntu18.04:
