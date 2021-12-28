@@ -51,13 +51,13 @@ jobs:
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           # Ubuntu 18.04
@@ -70,7 +70,7 @@ jobs:
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu18.04
+            base_runtime_image: nvidia/cuda:11.4.1-cudnn8-runtime-ubuntu18.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
 
