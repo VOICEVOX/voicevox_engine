@@ -240,9 +240,6 @@ RUN <<EOF
 
     cd /tmp/voicevox_core_source
 
-    # Define temporary env vars
-    export LIBRARY_PATH="/opt/voicevox_core:${LIBRARY_PATH:-}"
-
     gosu user /opt/python/bin/pip3 install .
 
     # remove cloned repository before layer end to reduce image size
