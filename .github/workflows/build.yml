@@ -760,7 +760,9 @@ jobs:
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
 
-          ln -sf "$(pwd)/download/libtorch/lib"/*.dll artifact/
+          ln -sf "$(pwd)/download/onnxruntime/lib"/*.dll artifact/
+          ln -sf "$(pwd)/download/cuda/bin"/*.dll artifact/
+          ln -sf "$(pwd)/download/cudnn/bin"/*.dll artifact/
           ln -sf "$(pwd)/download/core"/*.bin artifact/
           ln -sf "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
           ln -sf "$(pwd)/download/core/metas.json" artifact/
