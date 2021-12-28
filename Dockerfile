@@ -360,15 +360,14 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
-                --include-data-file=/home/user/.local/lib/python*/site-packages/core/lib/*=./lib/ \
                 --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
         # set relative path in libcore.so for searching onnxruntime
-        LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
+        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
+        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
