@@ -57,6 +57,7 @@ curl -s \
 - アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
 - カナの手前に`_`を入れるとそのカナは無声化される
 - アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
+- 文末に`？`(全角)を入れることにより疑問文の発音ができる
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -167,8 +168,10 @@ curl -s \
 ```
 
 ### 話者の追加情報を取得するサンプルコード
-追加情報の中のportrait.pngを取得するコードです。  
-（[jq](https://stedolan.github.io/jq/)を使用してjsonをパースしています。）
+
+追加情報の中の portrait.png を取得するコードです。  
+（[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
+
 ```bash
 curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
     | jq  -r ".portrait" \
@@ -180,7 +183,7 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 
 `/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。  
 (`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
-このAPIは実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
+この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
 ## Docker イメージ
@@ -253,7 +256,7 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
-## APIドキュメントの更新
+## API ドキュメントの更新
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
 
