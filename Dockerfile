@@ -54,8 +54,8 @@ RUN <<EOF
 EOF
 
 
-# Download LibTorch
-FROM ${BASE_IMAGE} AS download-libtorch-env
+# Download ONNX Runtime
+FROM ${BASE_IMAGE} AS download-onnxruntime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -65,55 +65,28 @@ RUN <<EOF
     apt-get update
     apt-get install -y \
         wget \
-        unzip
+        tar
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-RUN <<EOF
-    set -eux
-    wget -nv --show-progress -c -O "./libtorch.zip" "${LIBTORCH_URL}"
-    unzip "./libtorch.zip"
-    mv ./libtorch /opt/libtorch
-    rm ./libtorch.zip
-EOF
-
-ARG USE_GLIBC_231_WORKAROUND=0
+ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
 RUN <<EOF
     set -eux
 
-    LIBTORCH_PATH="/opt/libtorch/lib"
+    # Download ONNX Runtime
+    wget -nv --show-progress -c -O "./onnxruntime.tgz" "${ONNXRUNTIME_URL}"
 
-    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-      LIBTORCH_PATH=""
-    fi
+    # Extract ONNX Runtime to /opt/onnxruntime
+    mkdir -p /opt/onnxruntime
+    tar xf "./onnxruntime.tgz" -C "/opt/onnxruntime" --strip-components 1
+    rm ./onnxruntime.tgz
 
-    echo "${LIBTORCH_PATH}" > /etc/ld.so.conf.d/libtorch.conf
+    # Add /opt/onnxruntime/lib to dynamic library search path
+    echo "/opt/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf
 
-    rm -f /etc/ld.so.cache
+    # Update dynamic library search cache
     ldconfig
-
-    # create soname symbolic link manually instead of ldconfig
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-      # FIXME: use build-arg
-      # libnvrtc-builtins-07fb3db5.so.11.1 => libnvrtc-builtins.so.11.1
-
-      # use relative path for symbolic link
-      cd /opt/libtorch/lib
-
-      # FIXME: consider 2 files existing for each pattern
-      # if LibTorch with CUDA
-      if [ -f ./libcudart-*.so.11.0 ]; then
-        ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
-        ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
-        ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
-        ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
-      fi
-
-      cd -
-    fi
 EOF
 
 
