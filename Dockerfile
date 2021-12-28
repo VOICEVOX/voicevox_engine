@@ -214,6 +214,7 @@ RUN <<EOF
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
     cp -d /opt/onnxruntime/lib/*.so* /tmp/voicevox_core_source/core/lib/
 
+    # TODO: remove redundant shared library copy to reduce image size
     if [ -f /opt/onnxruntime/lib/libonnxruntime_providers_cuda.so ]; then
         # assert nvidia/cuda base image
 
