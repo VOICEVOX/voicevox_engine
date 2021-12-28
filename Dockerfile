@@ -178,14 +178,9 @@ RUN <<EOF
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
-EOF
 
-RUN <<EOF
     # Create a general user
     useradd --create-home user
-
-    # Update dynamic library search cache
-    ldconfig
 EOF
 
 # Copy python env
