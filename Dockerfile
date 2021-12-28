@@ -358,11 +358,9 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-                --include-data-file=/opt/onnxruntime/lib/*.so=./ \
-                --include-data-file=/opt/onnxruntime/lib/*.so.*=./ \
-                --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
+                --include-data-file=/home/user/.local/lib/python*/site-packages/core/lib/*=./lib/ \
                 --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
                 --follow-imports \
                 --no-prefer-source-code \
