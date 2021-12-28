@@ -35,7 +35,7 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
         if sys.platform == "win32":
             model_libs = ["onnxruntime.dll"]
         elif sys.platform == "linux":
-            model_libs = ["onnxruntime.so"]
+            model_libs = ["libonnxruntime.so"]
         elif sys.platform == "darwin":
             model_libs = ["libonnxruntime.dylib"]
     else:
