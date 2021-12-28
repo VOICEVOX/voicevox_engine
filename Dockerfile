@@ -11,6 +11,7 @@ WORKDIR /work
 
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         wget \
@@ -62,6 +63,7 @@ WORKDIR /work
 
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         wget \
@@ -128,9 +130,11 @@ ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
     set -eux
+
     git clone -b "${PYENV_VERSION}" https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
     PREFIX="$PYBUILD_ROOT" "$PYENV_ROOT"/plugins/python-build/install.sh
     "$PYBUILD_ROOT/bin/python-build" -v "$PYTHON_VERSION" /opt/python
+
     rm -rf "$PYBUILD_ROOT" "$PYENV_ROOT"
 EOF
 
@@ -160,6 +164,7 @@ WORKDIR /opt/voicevox_engine
 # build-essential: pyopenjtalk local build
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         git \
