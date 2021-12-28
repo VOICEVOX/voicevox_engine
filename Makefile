@@ -94,19 +94,19 @@ run-linux-docker-download-core-env-ubuntu18.04:
 	docker run --rm -it $(ARGS) \
 		hiroshiba/voicevox_engine:download-core-env-ubuntu18.04 $(CMD)
 
-# LibTorch env for test
-.PHONY: build-linux-docker-download-libtorch-env-ubuntu18.04
-build-linux-docker-download-libtorch-env-ubuntu18.04:
+# ONNX Runtime env for test
+.PHONY: build-linux-docker-download-onnxruntime-env-ubuntu18.04
+build-linux-docker-download-onnxruntime-env-ubuntu18.04:
 	docker buildx build . \
-		-t hiroshiba/voicevox_engine:download-libtorch-env-ubuntu18.04 \
-		--target download-libtorch-env \
+		-t hiroshiba/voicevox_engine:download-onnxruntime-env-ubuntu18.04 \
+		--target download-onnxruntime-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic $(ARGS)
 
-.PHONY: run-linux-docker-download-libtorch-env-ubuntu18.04
-run-linux-docker-download-libtorch-env-ubuntu18.04:
+.PHONY: run-linux-docker-download-onnxruntime-env-ubuntu18.04
+run-linux-docker-download-onnxruntime-env-ubuntu18.04:
 	docker run --rm -it $(ARGS) \
-		hiroshiba/voicevox_engine:download-libtorch-env-ubuntu18.04 $(CMD)
+		hiroshiba/voicevox_engine:download-onnxruntime-env-ubuntu18.04 $(CMD)
 
 
 # Python env for test
