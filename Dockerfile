@@ -188,15 +188,19 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
-# Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.10.preview.0
+# Clone VOICEVOX Core repository to install Python core module
+ARG VOICEVOX_CORE_SOURCE_VERSION=0.10.preview.0
 RUN <<EOF
     set -eux
 
-    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /opt/voicevox_core_example
+    git clone -b "${VOICEVOX_CORE_SOURCE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /opt/voicevox_core_source
 
-    # Copy core.h from core.zip
-    cp /opt/voicevox_core/core.h /opt/voicevox_core_example/example/python/
+    # Copy libcore.so to repo
+    mkdir -p /opt/voicevox_core_source/core/lib
+    cp /opt/voicevox_core/libcore.so /opt/voicevox_core_source/core/lib/
+
+    # Duplicate core.h in repo
+    cp /opt/voicevox_core_source/core/src/core.h /opt/voicevox_core_source/core/lib/
 EOF
 
 # Add local files
@@ -228,10 +232,10 @@ RUN <<EOF
 
     # Install voicevox_core Python module
     # Files will be generated at build time, so move to a writable directory
-    gosu user cp -r /opt/voicevox_core_example/example/python /tmp/voicevox_core_example_setup
-    cd /tmp/voicevox_core_example_setup
+    gosu user cp -r /opt/voicevox_core_source /tmp/voicevox_core_source_setup
+    cd /tmp/voicevox_core_source_setup
     gosu user pip3 install .
-    rm -r /tmp/voicevox_core_example_setup
+    rm -r /tmp/voicevox_core_source_setup
 
     # Generate licenses.json
     cd /opt/voicevox_engine
