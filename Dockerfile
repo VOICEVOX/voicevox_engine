@@ -175,8 +175,6 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
-        patchelf \
-        chrpath \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
