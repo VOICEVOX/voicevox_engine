@@ -318,7 +318,7 @@ RUN <<EOF
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
-# Generate licenses.json
+# Generate licenses.json with build dependencies
 RUN <<EOF
     set -eux
 
