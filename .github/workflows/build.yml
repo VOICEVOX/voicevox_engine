@@ -740,6 +740,7 @@ jobs:
             --include-package=anyio
             --include-package-data=pyopenjtalk
             --include-package-data=scipy
+            --include-package-data=core
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
             --include-data-file="presets.yaml=./"
@@ -770,7 +771,7 @@ jobs:
           # Nuitka copies core.dll to run.dist/core.dll
           # but core Python module will load core.dll from run.dist/core/lib/core.dll.
           mkdir -p run.dist/core/lib
-          mv run.dist/core.dll run.dist/core/lib/
+          # mv run.dist/core.dll run.dist/core/lib/
 
           # Build artifact directory
           mkdir -p artifact
@@ -780,18 +781,18 @@ jobs:
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
+            # ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/core/lib/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/core/lib/
           fi
 
           # pysoundfile
