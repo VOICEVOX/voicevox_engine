@@ -465,19 +465,16 @@ jobs:
           method: network
           cuda: ${{ matrix.cuda_version }}
 
-      - name: Extract CUDA DLL (reduce disk usage)
+      - name: Extract CUDA DLL
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
 
-          mkdir -p download/cuda/bin
-          DEST=$(realpath download/cuda/bin)
-
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
-          cd "${CUDA_ROOT}"/bin
 
-          mv cublas.dll cublasLt.dll cudart.dll cufft.dll curand.dll "${DEST}"
+          mkdir -p download/cuda/bin
+          mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
           rm -rf "${CUDA_ROOT}"
 
@@ -502,30 +499,19 @@ jobs:
           key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
           path: download/cudnn
 
-      - name: Download cuDNN
+      - name: Download and extract cuDNN DLLs
         if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
 
           curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+
           unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
-          rm download/cudnn.zip
-
-      - name: Extract cuDNN DLL (reduce disk usage)
-        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -eux
-
-          mkdir -p download/cudnn/bin
-          DEST=$(realpath download/cudnn/bin)
-
-          cd download/cudnn_tmp/cuda/bin
-
-          mv cudnn64_8.dll "${DEST}"
-
+          mv download/cudnn_tmp/cuda download/cudnn
           rm -rf download/cudnn_tmp
+
+          rm download/cudnn.zip
 
       - name: Show disk space (debug info)
         if: matrix.cudnn_url != ''
