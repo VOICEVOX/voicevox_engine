@@ -508,7 +508,9 @@ jobs:
           curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
           unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
-          mv download/cudnn_tmp/cuda download/cudnn
+
+          mkdir -p download/cudnn/bin
+          mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
           rm -rf download/cudnn_tmp
 
           rm download/cudnn.zip
