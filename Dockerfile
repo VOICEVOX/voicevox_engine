@@ -36,7 +36,7 @@ RUN <<EOF
     mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
 
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
-        # Create relative symbilic link
+        # Create relative symbolic link
         cd /opt/voicevox_core
         ln -sf "${VOICEVOX_CORE_LIBRARY_NAME}" libcore.so
         cd -
