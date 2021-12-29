@@ -360,22 +360,38 @@ RUN <<EOF
         # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
         # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
 
-        # TODO: remove redundant copy
-
         # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
         if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
+            mkdir -p /tmp/coredeps
+
             # Copy provider libraries (libonnxruntime.so.{version} is copied by Nuitka)
             cd /opt/onnxruntime/lib
-            cp libonnxruntime_*.so /opt/voicevox_engine_build/run.dist/
+            cp libonnxruntime_*.so /tmp/coredeps/
             cd -
 
+            # assert nvidia/cuda base image
             cd /usr/local/cuda/lib64
-            cp libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /opt/voicevox_engine_build/run.dist/
+            cp libcublas.so.* libcublasLt.so.* libcudart.so.* libcufft.so.* libcurand.so.* /tmp/coredeps/
             cd -
 
-            cd /usr/lib/x86_64-linux-gnu
-            cp libcudnn.so* libcudnn_*_infer.so* /opt/voicevox_engine_build/run.dist/
+            # remove unneed full version libraries
+            cd /tmp/coredeps
+            rm -f libcublas.so.*.* libcublasLt.so.*.* libcufft.so.*.* libcurand.so.*.*
+            rm -f libcudart.so.*.*.*
             cd -
+
+            # assert nvidia/cuda base image
+            cd /usr/lib/x86_64-linux-gnu
+            cp libcudnn.so.* libcudnn_*_infer.so.* /tmp/coredeps/
+            cd -
+
+            # remove unneed full version libraries
+            cd /tmp/coredeps
+            rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
+            cd -
+
+            mv /tmp/coredeps/* /opt/voicevox_engine_build/run.dist/
+            rm -rf /tmp/coredeps
         fi
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
