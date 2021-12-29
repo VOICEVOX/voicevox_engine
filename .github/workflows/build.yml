@@ -716,9 +716,9 @@ jobs:
         id: nuitka-cache
         with:
           path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ github.sha }}
+          key: ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-nuitka-
+            ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-
 
       - name: Show disk space (debug info)
         shell: bash
