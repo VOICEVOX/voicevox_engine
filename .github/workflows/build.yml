@@ -713,7 +713,7 @@ jobs:
           # Copy ONNX Runtime DLLs
           cp download/onnxruntime/lib/*.dll download/voicevox_core_source/lib/
 
-          # Install Python package with core.dll & onnxruntime*.dll
+          # Install VOICEVOX Core Python package with core.dll & onnxruntime*.dll
           cd download/voicevox_core_source
           pip install .
 
