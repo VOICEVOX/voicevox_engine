@@ -226,7 +226,7 @@ RUN <<EOF
         cd -
 
         cd /usr/lib/x86_64-linux-gnu
-        cp -d libcudnn.so* /tmp/voicevox_core_source/core/lib/
+        cp -d libcudnn.so* libcudnn_*_infer.so* /tmp/voicevox_core_source/core/lib/
         cd -
     fi
 
