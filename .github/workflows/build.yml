@@ -784,15 +784,15 @@ jobs:
             # ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/core/lib/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/core/lib/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/core/lib/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/core/lib/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/core/lib/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
           fi
 
           # pysoundfile
