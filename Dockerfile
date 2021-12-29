@@ -213,8 +213,9 @@ RUN <<EOF
     mkdir -p /tmp/voicevox_core_source/core/lib
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
 
+    # Copy versioned shared library only (setup.py copy will copy as real file)
     cd /opt/onnxruntime/lib
-    cp -d *.so* /tmp/voicevox_core_source/core/lib/
+    find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
     cd -
 
     # TODO: remove redundant shared library copy to reduce image size
@@ -222,11 +223,22 @@ RUN <<EOF
         # assert nvidia/cuda base image
 
         cd /usr/local/cuda/lib64
-        cp -d libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /tmp/voicevox_core_source/core/lib/
+        cp libcublas.so.* libcublasLt.so.* libcudart.so.* libcufft.so.* libcurand.so.* /tmp/voicevox_core_source/core/lib/
+        cd -
+
+        # remove unneed full version libraries
+        cd /tmp/voicevox_core_source/core/lib
+        rm -f libcublas.so.*.* libcublasLt.so.*.* libcufft.so.*.* libcurand.so.*.*
+        rm -f libcudart.so.*.*.*
         cd -
 
         cd /usr/lib/x86_64-linux-gnu
-        cp -d libcudnn.so* libcudnn_*_infer.so* /tmp/voicevox_core_source/core/lib/
+        cp libcudnn.so.* libcudnn_*_infer.so.* /tmp/voicevox_core_source/core/lib/
+        cd -
+
+        # remove unneed full version libraries
+        cd /tmp/voicevox_core_source/core/lib
+        rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
         cd -
     fi
 
