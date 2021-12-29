@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.3-labs
 
 ARG BASE_IMAGE=ubuntu:focal
-ARG BASE_RUNTIME_IMAGE=ubuntu:focal
+ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
 # Download VOICEVOX Core shared object
 FROM ${BASE_IMAGE} AS download-core-env
@@ -11,6 +11,7 @@ WORKDIR /work
 
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         wget \
@@ -19,99 +20,78 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# assert VOICEVOX_CORE_VERSION >= 0.5.4 (added cpu shared object)
-ARG VOICEVOX_CORE_VERSION=0.9.0
-ARG VOICEVOX_CORE_LIBRARY_NAME=core_cpu
+# assert VOICEVOX_CORE_VERSION >= 0.10.preview.0 (ONNX)
+ARG VOICEVOX_CORE_VERSION=0.10.preview.0
+ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
 RUN <<EOF
     set -eux
-    wget -nv --show-progress -c -O "./core.zip" "https://github.com/Hiroshiba/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
+
+    # Download Core
+    wget -nv --show-progress -c -O "./core.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
     unzip "./core.zip"
-    mv ./core /opt/voicevox_core
     rm ./core.zip
-EOF
 
-RUN <<EOF
-    # Workaround: remove unused libcore (cpu, gpu)
-    # Prevent error: `/sbin/ldconfig.real: /opt/voicevox_core/libcore.so is not a symbolic link`
-    set -eux
-    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core" ]; then
-        rm -f /opt/voicevox_core/libcore_cpu.so
-    elif [ "${VOICEVOX_CORE_LIBRARY_NAME}" = "core_cpu" ]; then
-        mv /opt/voicevox_core/libcore_cpu.so /opt/voicevox_core/libcore.so
-    else
-        echo "Invalid VOICEVOX CORE library name: ${VOICEVOX_CORE_LIBRARY_NAME}" >> /dev/stderr
-        exit 1
+    # Move Core Library to /opt/voicevox_core/
+    mkdir /opt/voicevox_core
+    mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
+
+    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
+        # Create relative symbilic link
+        cd /opt/voicevox_core
+        ln -sf "${VOICEVOX_CORE_LIBRARY_NAME}" libcore.so
+        cd -
     fi
-EOF
 
-RUN <<EOF
-    set -eux
+    # Move Voice Library to /opt/voicevox_core/
+    mv ./core/*.bin ./core/core.h ./core/metas.json /opt/voicevox_core/
+
+    # Move documents to /opt/voicevox_core/
+    mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
+
+    rm -rf ./core
+
+    # Add /opt/voicevox_core to dynamic library search path
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
-    rm -f /etc/ld.so.cache
+
+    # Update dynamic library search cache
     ldconfig
 EOF
 
 
-# Download LibTorch
-FROM ${BASE_IMAGE} AS download-libtorch-env
+# Download ONNX Runtime
+FROM ${BASE_IMAGE} AS download-onnxruntime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
 
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         wget \
-        unzip
+        tar
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG LIBTORCH_URL=https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-RUN <<EOF
-    set -eux
-    wget -nv --show-progress -c -O "./libtorch.zip" "${LIBTORCH_URL}"
-    unzip "./libtorch.zip"
-    mv ./libtorch /opt/libtorch
-    rm ./libtorch.zip
-EOF
-
-ARG USE_GLIBC_231_WORKAROUND=0
+ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
 RUN <<EOF
     set -eux
 
-    LIBTORCH_PATH="/opt/libtorch/lib"
+    # Download ONNX Runtime
+    wget -nv --show-progress -c -O "./onnxruntime.tgz" "${ONNXRUNTIME_URL}"
 
-    # prevent nuitka build error caused by corrupted `ldconfig -p` outputs
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-      LIBTORCH_PATH=""
-    fi
+    # Extract ONNX Runtime to /opt/onnxruntime
+    mkdir -p /opt/onnxruntime
+    tar xf "./onnxruntime.tgz" -C "/opt/onnxruntime" --strip-components 1
+    rm ./onnxruntime.tgz
 
-    echo "${LIBTORCH_PATH}" > /etc/ld.so.conf.d/libtorch.conf
+    # Add /opt/onnxruntime/lib to dynamic library search path
+    echo "/opt/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf
 
-    rm -f /etc/ld.so.cache
+    # Update dynamic library search cache
     ldconfig
-
-    # create soname symbolic link manually instead of ldconfig
-    if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-      # FIXME: use build-arg
-      # libnvrtc-builtins-07fb3db5.so.11.1 => libnvrtc-builtins.so.11.1
-
-      # use relative path for symbolic link
-      cd /opt/libtorch/lib
-
-      # FIXME: consider 2 files existing for each pattern
-      # if LibTorch with CUDA
-      if [ -f ./libcudart-*.so.11.0 ]; then
-        ln -sf ./libcudart-*.so.11.0 ./libcudart.so.11.0
-        ln -sf ./libnvToolsExt-*.so.1 ./libnvToolsExt.so.1
-        ln -sf $(find . -name 'libnvrtc-*' -not -name 'libnvrtc-builtins*') ./libnvrtc.so.11.1
-        ln -sf ./libnvrtc-builtins-*.so.11.1 ./libnvrtc-builtins.so.11.1
-      fi
-
-      cd -
-    fi
 EOF
 
 
@@ -153,9 +133,11 @@ ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
     set -eux
+
     git clone -b "${PYENV_VERSION}" https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
     PREFIX="$PYBUILD_ROOT" "$PYENV_ROOT"/plugins/python-build/install.sh
     "$PYBUILD_ROOT/bin/python-build" -v "$PYTHON_VERSION" /opt/python
+
     rm -rf "$PYBUILD_ROOT" "$PYENV_ROOT"
 EOF
 
@@ -185,6 +167,7 @@ WORKDIR /opt/voicevox_engine
 # build-essential: pyopenjtalk local build
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         git \
@@ -195,70 +178,85 @@ RUN <<EOF
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
+
+    # Create a general user
+    useradd --create-home user
 EOF
 
 # Copy python env
 COPY --from=compile-python-env /opt/python /opt/python
 
-# Copy VOICEVOX Core shared object
-COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
+# Install Python dependencies
+ADD ./requirements.txt /tmp/
+RUN <<EOF
+    # Install requirements
+    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools wheel
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
+EOF
+
+# Copy VOICEVOX Core release
+# COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
 COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 
-# Copy LibTorch
-COPY --from=download-libtorch-env /etc/ld.so.conf.d/libtorch.conf /etc/ld.so.conf.d/libtorch.conf
-COPY --from=download-libtorch-env /opt/libtorch /opt/libtorch
+# Copy ONNX Runtime
+# COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
+COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
-# Clone VOICEVOX Core example
-ARG VOICEVOX_CORE_EXAMPLE_VERSION=0.9.0
+# Install VOICEVOX Core Python module
+ARG VOICEVOX_CORE_SOURCE_VERSION=0.10.preview.0
 RUN <<EOF
-    git clone -b "${VOICEVOX_CORE_EXAMPLE_VERSION}" --depth 1 https://github.com/Hiroshiba/voicevox_core.git /opt/voicevox_core_example
-    cd /opt/voicevox_core_example/
-    cp ./core.h ./example/python/
+    set -eux
+
+    git clone -b "${VOICEVOX_CORE_SOURCE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /tmp/voicevox_core_source
+
+    # Copy shared libraries to repo to be packed in core package
+    # ONNX Runtime: included
+    # CUDA/cuDNN: not included
+
+    mkdir -p /tmp/voicevox_core_source/core/lib
+    cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
+
+    # Copy versioned shared library only (setup.py will copy package data as real file on install)
+    cd /opt/onnxruntime/lib
+    find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
+    cd -
+
+    # Duplicate core.h in repo
+    cp /tmp/voicevox_core_source/core/src/core.h /tmp/voicevox_core_source/core/lib/
+
+    # Install voicevox_core Python module
+    # Files will be generated at build time, so chown for general user
+    chown -R user:user /tmp/voicevox_core_source
+
+    cd /tmp/voicevox_core_source
+
+    gosu user /opt/python/bin/pip3 install .
+
+    # remove cloned repository before layer end to reduce image size
+    rm -rf /tmp/voicevox_core_source
 EOF
 
 # Add local files
-# Temporary override PATH for convenience during the image building
-# ARG PATH=/opt/python/bin:$PATH
-ADD ./requirements.txt /tmp/
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
+# Generate licenses.json
 RUN <<EOF
     set -eux
 
-    # Create a general user
-    useradd --create-home user
-
-    # Update ld
-    ldconfig
-
-    # Const environment
-    # FIXME: These values may be undefined, so `set +u` is needed
-    set +u
-    export PATH="/home/user/.local/bin:/opt/python/bin:$PATH"
-    export LIBRARY_PATH="/opt/voicevox_core:$LIBRARY_PATH"
-    set -u
-
-    # Install requirements
-    gosu user python3 -m pip install --upgrade pip setuptools wheel
-    gosu user pip3 install -r /tmp/requirements.txt
-
-    # Install voicevox_core
-    # Files will be generated at build time, so move to a writable directory
-    gosu user cp -r /opt/voicevox_core_example/example/python /tmp/voicevox_core_example_setup
-    cd /tmp/voicevox_core_example_setup
-    gosu user pip3 install .
-    rm -r /tmp/voicevox_core_example_setup
-
-    # Generate licenses.json
     cd /opt/voicevox_engine
-    gosu user pip3 install pip-licenses
-    gosu user python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+
+    # Define temporary env vars
+    # /home/user/.local/bin is required to use the commands installed by pip
+    export PATH="/home/user/.local/bin:${PATH:-}"
+
+    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
 EOF
 
-# Keep layer cache above if dict download failed in local build
+# Keep this layer separated to use layer cache on download failed in local build
 RUN <<EOF
     set -eux
 
@@ -279,33 +277,21 @@ RUN <<EOF
 EOF
 
 # Create container start shell
-ARG USE_GLIBC_231_WORKAROUND=0
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
-cat /opt/voicevox_core/README.txt > /dev/stderr
 
-if [ "${USE_GLIBC_231_WORKAROUND}" = "1" ]; then
-    # Workaround: ldconfig fail to load LibTorch if glibc < 2.31.
-    # For isolating problems and simplifing script, use flag USE_GLIBC_231_WORKAROUND
-    # instead of implementing version check logic.
-    export LD_LIBRARY_PATH="/opt/libtorch/lib:\${LD_LIBRARY_PATH:-}"
-else
-    # Workaround: ld.so.cache may not be updated on image build.
-    # Fix the problem of `libtorch_cuda_cpp.so` not being recognized for unknown reason.
-    # Execute ldconfig on every container run.
-    ldconfig
-fi
+cat /opt/voicevox_core/README.txt > /dev/stderr
 
 exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicevox_dir", "/opt/voicevox_core/", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
 
 # Binary build environment (common to CPU, GPU)
 FROM runtime-env AS build-env
@@ -314,6 +300,7 @@ FROM runtime-env AS build-env
 # chrpath: required for nuitka build; 'RPATH' settings in used shared
 RUN <<EOF
     set -eux
+
     apt-get update
     apt-get install -y \
         ccache \
@@ -327,6 +314,7 @@ EOF
 ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
     set -eux
+
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
@@ -361,9 +349,6 @@ RUN <<EOF
                 --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
                 --include-data-file=/opt/voicevox_engine/licenses.json=./ \
                 --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-                --include-data-file=/opt/libtorch/lib/*.so=./ \
-                --include-data-file=/opt/libtorch/lib/*.so.*=./ \
-                --include-data-file=/opt/voicevox_core/*.so=./ \
                 --include-data-file=/opt/voicevox_core/*.bin=./ \
                 --include-data-file=/opt/voicevox_core/metas.json=./ \
                 --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
@@ -371,9 +356,11 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        # set relative path in libcore.so for searching libtorch
-        LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
+        # set relative path in libcore.so for searching onnxruntime
+        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
+        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
+
+        # FIXME: pack CUDA/cuDNN shared libraries
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
