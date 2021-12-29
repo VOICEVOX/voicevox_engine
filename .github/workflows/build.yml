@@ -707,7 +707,7 @@ jobs:
           mkdir -p core/lib
           mv example/python/core.dll core/lib/
           mv example/python/core.lib core/lib/
-          cp core/core.h core/lib/
+          cp core/src/core.h core/lib/
           cd -
 
           # Copy ONNX Runtime DLLs
