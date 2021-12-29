@@ -32,9 +32,9 @@ JULIUS_DICTATION_DIR = os.environ.get(
     "JULIUS_DICTATION_DIR",
     # they did put two "dictation-kit"s in extracted folder name
     pkg_resources.resource_filename(__name__, "dictation-kit-dictation-kit-v4.3.1"),
-).encode("ascii")
+)
 
-sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR.decode("ascii"))
+sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR)
 
 
 # benchmark decorator
@@ -61,43 +61,41 @@ def _extract_julius():
     print("Extracting Julius...", JULIUS_DICTATION_DIR)
     with tarfile.open(filename, mode="r|gz") as f:
         f.extractall(path=pkg_resources.resource_filename(__name__, ""))
-    JULIUS_DICTATION_DIR = pkg_resources.resource_filename(__name__, "dictation-kit-dictation-kit-v4.3.1").encode("ascii")
+    JULIUS_DICTATION_DIR = pkg_resources.resource_filename(__name__, "dictation-kit-dictation-kit-v4.3.1")
     os.remove(filename)
 
 
-def min_max(x: np.ndarray, axis=None):
-    x_min = x.min(axis=axis, keepdims=True)
-    x_max = x.max(axis=axis, keepdims=True)
-    normalized = (x - x_min) / (x_max - x_min)
-    return normalized
-
-
 # Get f0 query with pw, segment with julius and send to forward decoder
-def synthesis(engine: SynthesisEngineBase, audio_file: Optional[IO], kana: str):
+def synthesis(engine: SynthesisEngineBase, audio_file: Optional[IO], kana: str, speaker_id: int):
     _lazy_init()
-    sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR.decode("ascii"))
+    sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR)
     sr, wave = wavfile.read(audio_file)
 
-    # stereo to mono
     if len(wave.shape) == 2:
         wave = wave.sum(axis=1) / 2
 
     julius_wave = resample(wave.astype(np.int16), JULIUS_SAMPLE_RATE * len(wave) // sr)
     julius_kana = re.sub("|".join(PUNCTUATION), "", kana.replace("/", "").replace("、", " "))
 
-    phones = forced_align(julius_wave.astype(np.int16), julius_kana)
-    f0 = extract_pitch(wave.astype(np.double), sr).astype(np.float32)
+    f0 = extract_f0(wave, sr, 256 / 24000 * 1000)
 
-    f0 = min_max(f0) * 6.5
-    f0[f0 < 3] = 0
+    phones = forced_align(julius_wave.astype(np.int16), julius_kana)
+
+    np.set_printoptions(threshold=np.inf)
+    np.save("G:\\f0.npy", f0)
 
     phone_list = np.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=np.float32)
+    print(phones)
     for p in phones:
-        if p[2] in SIL_SYMBOL:
-            if p[2] == 'silB':
-                p = OjtPhoneme("pau", int(p[0]) + 1, int(p[1]))
-            else:
-                p = OjtPhoneme("pau", int(p[0]), int(p[1]))
+        if p[2] == "silB":
+            f0[: int(int(p[1]) * (240 / 256))] = 0.0
+            p = OjtPhoneme("pau", 1, int(p[1]))
+        elif p[2] == "silE":
+            f0[int(int(p[0]) * (240 / 256)):] = 0.0
+            p = OjtPhoneme("pau", int(p[0]), len(f0) // 10)
+        elif p[2] == "sp":
+            f0[int(int(p[0]) * (240 / 256)): int(int(p[1]) * (240 / 256))] = 0.0
+            p = OjtPhoneme("pau", int(p[0]), int(p[1]))
         else:
             if p[2] == 'q':
                 p = OjtPhoneme("cl", int(p[0]), int(p[1]))
@@ -105,18 +103,20 @@ def synthesis(engine: SynthesisEngineBase, audio_file: Optional[IO], kana: str):
                 p = OjtPhoneme(p[2], int(p[0]), int(p[1]))
         phone_list[int((p.start - 1) * (240 / 256)): int(p.end * (240 / 256))] = p.onehot
 
+    np.save("G:\\f0_log.npy", f0)
+
     return engine.guided_synthesis(
         length=phone_list.shape[0],
         phoneme_size=phone_list.shape[1],
-        f0=f0[:, np.newaxis],
+        f0=f0[:, np.newaxis].astype(np.float32),
         phoneme=phone_list,
-        speaker_id=np.array([5], dtype=np.int64).reshape(-1)
+        speaker_id=np.array([speaker_id], dtype=np.int64).reshape(-1)
     )
 
 
 def forced_align(julius_wave: np.ndarray, base_kata_text: str):
     model_type = ModelType.gmm
-    hmm_model = os.path.join(JULIUS_DICTATION_DIR.decode("ascii"), "model/phone_m/jnas-mono-16mix-gid.binhmm")
+    hmm_model = os.path.join(JULIUS_DICTATION_DIR, "model/phone_m/jnas-mono-16mix-gid.binhmm")
     options = []
 
     base_kata_text = sp_inserter.kata2hira(base_kata_text)
@@ -190,7 +190,10 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
     return time_alimented_list
 
 
-def extract_pitch(wave: np.ndarray, sr: int) -> np.ndarray:
-    frame_period = 2400 / 256
-    f0, time_axis = pw.harvest(wave, sr, frame_period=frame_period)
-    return f0
+def extract_f0(wave: np.ndarray, sr: int, frame_period: float):
+    w = wave.astype(np.float64)
+    f0, t = pw.harvest(w, sr, frame_period=frame_period)
+    vuv = f0 != 0
+    f0_log = np.zeros_like(f0)
+    f0_log[vuv] = np.log(f0[vuv])
+    return f0_log

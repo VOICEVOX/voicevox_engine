@@ -3,7 +3,6 @@ import subprocess
 import sys
 from enum import Enum
 from itertools import chain
-from pprint import pprint
 from typing import List, Optional, Tuple
 
 
@@ -214,7 +213,7 @@ def julius_sp_insert(
     return julius_p.communicate()[0].decode("utf-8").split("\n")
 
 
-def get_sp_inserted_text(raw_output: List[str]) -> Tuple[str, List[int]]:
+def get_sp_inserted_text(raw_output: List[str]) -> Tuple[str, List[int]] or None:
     """デコード結果からsp挿入後のテキストとspのインデックスを取得する
     args:
         raw_output: `julius_sp_insert`の出力
