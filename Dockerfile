@@ -175,6 +175,8 @@ RUN <<EOF
         libsndfile1 \
         ca-certificates \
         build-essential \
+        patchelf \
+        chrpath \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -218,7 +220,6 @@ RUN <<EOF
     find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
     cd -
 
-    # TODO: remove redundant shared library copy to reduce image size
     if [ -f /tmp/voicevox_core_source/core/lib/libonnxruntime_providers_cuda.so ]; then
         # assert nvidia/cuda base image
 
@@ -239,6 +240,14 @@ RUN <<EOF
         # remove unneed full version libraries
         cd /tmp/voicevox_core_source/core/lib
         rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
+        cd -
+
+        # set rpath to use shared libraries in relative path
+        # remove RUNPATH and set RPATH (cannot replace RUNPATH with RPATH directly using patchelf)
+        # https://github.com/NixOS/patchelf/issues/94
+        cd /tmp/voicevox_core_source/core/lib
+        find . -type f -name '*.so*' | xargs -I% chrpath -d %
+        find . -type f -name '*.so*' | xargs -I% patchelf --force-rpath --set-rpath '$ORIGIN' %
         cd -
     fi
 
