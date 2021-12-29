@@ -360,7 +360,23 @@ RUN <<EOF
         # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
         # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
 
-        # FIXME: pack CUDA/cuDNN shared libraries
+        # TODO: remove redundant copy
+
+        # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
+        if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
+            # Copy provider libraries (libonnxruntime.so.{version} is copied by Nuitka)
+            cd /opt/onnxruntime/lib
+            cp libonnxruntime_*.so /opt/voicevox_engine_build/run.dist/
+            cd -
+
+            cd /usr/local/cuda/lib64
+            cp libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /opt/voicevox_engine_build/run.dist/
+            cd -
+
+            cd /usr/lib/x86_64-linux-gnu
+            cp libcudnn.so* libcudnn_*_infer.so* /opt/voicevox_engine_build/run.dist/
+            cd -
+        fi
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
