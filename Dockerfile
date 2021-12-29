@@ -370,10 +370,6 @@ RUN <<EOF
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
 
-        # set relative path in libcore.so for searching onnxruntime
-        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
-
         # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
         if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
             mkdir -p /tmp/coredeps
