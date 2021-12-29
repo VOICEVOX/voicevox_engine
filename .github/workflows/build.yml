@@ -415,7 +415,7 @@ jobs:
           voicevox_resource_version: '0.10.preview.1'
           voicevox_core_version: '0.10.preview.0'
           voicevox_core_dll_name: core_cpu_x64.dll
-          voicevox_core_example_version: '0.10.preview.0'
+          voicevox_core_source_version: '0.10.preview.0'
           onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-1.9.0.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
@@ -428,7 +428,7 @@ jobs:
           voicevox_resource_version: '0.10.preview.1'
           voicevox_core_version: '0.10.preview.0'
           voicevox_core_dll_name: core_gpu_x64_nvidia.dll
-          voicevox_core_example_version: '0.10.preview.0'
+          voicevox_core_source_version: '0.10.preview.0'
           onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-gpu-1.9.0.zip
           cuda_version: '11.4.2'
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
@@ -681,7 +681,7 @@ jobs:
         uses: actions/cache@v2
         id: voicevox-core-source-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_source_version }}
+          key: ${{ matrix.os }}-voicevox-core-source-${{ matrix.voicevox_core_source_version }}
           path: download/voicevox_core_source
 
       - name: Checkout VOICEVOX Core
