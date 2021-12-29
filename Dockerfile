@@ -318,6 +318,20 @@ RUN <<EOF
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
+# Generate licenses.json
+RUN <<EOF
+    set -eux
+
+    cd /opt/voicevox_engine
+
+    # Define temporary env vars
+    # /home/user/.local/bin is required to use the commands installed by pip
+    export PATH="/home/user/.local/bin:${PATH:-}"
+
+    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+EOF
+
 # Create build script
 RUN <<EOF
     set -eux
