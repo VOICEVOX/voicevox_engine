@@ -769,6 +769,12 @@ jobs:
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
 
+          # Workaround: Move core.dll to run.dist/core/lib/
+          # Nuitka copies core.dll to run.dist/core.dll
+          # but core Python module will load core.dll from run.dist/core/lib/core.dll.
+          mkdir -p run.dist/core/lib
+          mv run.dist/core.dll run.dist/core/lib/
+
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers
             ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
