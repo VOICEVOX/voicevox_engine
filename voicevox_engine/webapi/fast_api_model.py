@@ -1,7 +1,8 @@
-from enum import Enum
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+from ..model import ParseKanaError, ParseKanaErrorCode
 
 
 class Mora(BaseModel):
@@ -65,22 +66,22 @@ class AudioQuery(BaseModel):
         return hash(tuple(sorted(items)))
 
 
-class ParseKanaErrorCode(Enum):
-    UNKNOWN_TEXT = "判別できない読み仮名があります: {text}"
-    ACCENT_TOP = "句頭にアクセントは置けません: {text}"
-    ACCENT_TWICE = "1つのアクセント句に二つ以上のアクセントは置けません: {text}"
-    ACCENT_NOTFOUND = "アクセントを指定していないアクセント句があります: {text}"
-    EMPTY_PHRASE = "{position}番目のアクセント句が空白です"
-    INFINITE_LOOP = "処理時に無限ループになってしまいました...バグ報告をお願いします。"
+class ParseKanaBadRequest(BaseModel):
+    text: str = Field(title="エラーメッセージ")
+    error_name: str = Field(
+        title="エラー名",
+        description="|name|description|\n|---|---|\n"
+        + "\n".join(
+            [
+                "| {} | {} |".format(err.name, err.value)
+                for err in list(ParseKanaErrorCode)
+            ]
+        ),
+    )
+    error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
 
-
-class ParseKanaError(Exception):
-    def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
-        self.errcode = errcode
-        self.errname = errcode.name
-        self.kwargs: Dict[str, str] = kwargs
-        err_fmt: str = errcode.value
-        self.text = err_fmt.format(**kwargs)
+    def __init__(self, err: ParseKanaError):
+        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 class SpeakerStyle(BaseModel):

@@ -18,14 +18,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
-from voicevox_engine.model import (
-    AccentPhrase,
-    AudioQuery,
-    ParseKanaBadRequest,
-    ParseKanaError,
-    Speaker,
-    SpeakerInfo,
-)
+from voicevox_engine.model import ParseKanaError
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
@@ -36,6 +29,13 @@ from voicevox_engine.synthesis_engine.synthesis_engine_base import (
     adjust_interrogative_accent_phrases,
 )
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.webapi.fast_api_model import (
+    AccentPhrase,
+    AudioQuery,
+    ParseKanaBadRequest,
+    Speaker,
+    SpeakerInfo,
+)
 
 
 def b64encode_str(s):
