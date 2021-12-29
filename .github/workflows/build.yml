@@ -752,6 +752,9 @@ jobs:
             --include-package-data=scipy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
+            --include-data-file="presets.yaml=./"
+            --include-data-file=download/core/*.bin=./
+            --include-data-file="download/core/metas.json=./"
             --include-data-dir="speaker_info=./speaker_info"
             --msvc=14.2
             --follow-imports
@@ -776,13 +779,23 @@ jobs:
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
 
-          ln -sf "$(pwd)/download/onnxruntime/lib"/*.dll artifact/
-          ln -sf "$(pwd)/download/cuda/bin"/*.dll artifact/
-          ln -sf "$(pwd)/download/cudnn/bin"/*.dll artifact/
-          ln -sf "$(pwd)/download/core"/*.bin artifact/
-          ln -sf "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
-          ln -sf "$(pwd)/download/core/metas.json" artifact/
+          if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
+            # ONNX Runtime providers
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
 
+            # CUDA
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+
+            # cuDNN
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+          fi
+
+          # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
       # FIXME: versioned name may be useful; but
