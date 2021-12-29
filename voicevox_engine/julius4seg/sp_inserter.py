@@ -43,11 +43,11 @@ def get_os_dependent_exec() -> str:
 
 
 def get_os_dependent_echo(filename: str) -> list:
-    """ Get parameters of echo referencing platforms
+    """Get parameters of echo referencing platforms
     Returns:
         list[str]: echo parameters
     """
-    if sys.platform.startswith("win") or sys.platform.startswith('cygwin'):
+    if sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
         return ["cmd.exe", "/c", "echo " + filename]
     else:
         return ["echo", filename]
@@ -195,12 +195,19 @@ def julius_sp_insert(
     }
 
     file_echo_p = subprocess.Popen(
-        get_os_dependent_echo(target_wav_file), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        get_os_dependent_echo(target_wav_file),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
     )
     julius_p = subprocess.Popen(
         " ".join(
             [
-                str(JULIUS_ROOT / 'bin' / get_os_dependent_directory() / get_os_dependent_exec()),
+                str(
+                    JULIUS_ROOT
+                    / "bin"
+                    / get_os_dependent_directory()
+                    / get_os_dependent_exec()
+                ),
                 *list(chain.from_iterable([[k, v] for k, v in julius_args.items()])),
             ]
             + options
@@ -293,7 +300,12 @@ def julius_phone_alignment(
     julius_p = subprocess.Popen(
         " ".join(
             [
-                str(JULIUS_ROOT / 'bin' / get_os_dependent_directory() / get_os_dependent_exec()),
+                str(
+                    JULIUS_ROOT
+                    / "bin"
+                    / get_os_dependent_directory()
+                    / get_os_dependent_exec()
+                ),
                 *list(chain.from_iterable([[k, v] for k, v in julius_args.items()])),
             ]
             + options

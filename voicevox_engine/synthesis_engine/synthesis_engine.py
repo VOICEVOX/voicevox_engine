@@ -485,5 +485,5 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme_size=phoneme_size,
             f0=f0,
             phoneme=phoneme,
-            speaker_id=speaker_id
+            speaker_id=speaker_id,
         )

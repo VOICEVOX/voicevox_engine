@@ -44,7 +44,7 @@ def get_wav_sp_removed(
         seg_end = tmp if tmp < sp_segment[-1][1] * 10 else sp_segment[-1][1] * 10
 
         removed.extend(
-            data[int(seg_start / 1000 * 16000): int(seg_end / 1000 * 16000)]
+            data[int(seg_start / 1000 * 16000) : int(seg_end / 1000 * 16000)]
         )
     else:
         for i, seg in enumerate(sp_segment):
@@ -55,7 +55,7 @@ def get_wav_sp_removed(
             seg_end = seg[0] * 10 + MARGIN
 
             removed.extend(
-                data[int(seg_start / 1000 * 16000): int(seg_end / 1000 * 16000)]
+                data[int(seg_start / 1000 * 16000) : int(seg_end / 1000 * 16000)]
             )
 
             if i != len(sp_segment) - 1:

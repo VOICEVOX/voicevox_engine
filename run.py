@@ -341,13 +341,17 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["音声合成"],
         summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
     )
-    def guided_synthesis(kana: str = Form(...), speaker_id: int = Form(...), audio_file: UploadFile = File(...)):
-        wave = guided.synthesis(engine=engine, audio_file=audio_file.file, kana=kana, speaker_id=speaker_id)
+    def guided_synthesis(
+        kana: str = Form(...),
+        speaker_id: int = Form(...),
+        audio_file: UploadFile = File(...),
+    ):
+        wave = guided.synthesis(
+            engine=engine, audio_file=audio_file.file, kana=kana, speaker_id=speaker_id
+        )
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f, data=wave, samplerate=24000, format="WAV"
-            )
+            soundfile.write(file=f, data=wave, samplerate=24000, format="WAV")
 
         return FileResponse(f.name, media_type="audio/wav")
 
