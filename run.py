@@ -11,11 +11,12 @@ from typing import List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response, UploadFile, File, Form
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
 
+import voicevox_engine.guided as guided
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
@@ -36,7 +37,6 @@ from voicevox_engine.synthesis_engine.synthesis_engine_base import (
     adjust_interrogative_accent_phrases,
 )
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
-import voicevox_engine.guided as guided
 
 
 def b64encode_str(s):
