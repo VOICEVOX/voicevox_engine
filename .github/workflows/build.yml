@@ -676,29 +676,45 @@ jobs:
           unzip download/core.zip -d download/
           rm download/core.zip
 
-      # Install VOICEVOX Core example
-      - name: Prepare VOICEVOX Core example cache
+      # Install VOICEVOX Core Python package
+      - name: Prepare VOICEVOX Core source cache
         uses: actions/cache@v2
-        id: voicevox-core-example-cache
+        id: voicevox-core-source-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
-          path: download/voicevox_core_example
+          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
-      - name: Clone VOICEVOX Core example
-        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/VOICEVOX/voicevox_core.git" download/voicevox_core_example
+      - name: Checkout VOICEVOX Core
+        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: VOICEVOX/voicevox_core
+          ref: ${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
-          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_example/example/python/core.dll
-          cp download/core/core.h download/voicevox_core_example/example/python/
+          # Generate VOICEVOX Core LIB from DLL
+          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_source/example/python/core.dll
 
-          cd download/voicevox_core_example/example/python
+          cd download/voicevox_core_source/example/python
           ./makelib.bat core
+          cd -
 
+          # Copy VOICEVOX Core DLL & LIB to core/lib
+          cd download/voicevox_core_source
+          mkdir -p core/lib
+          mv example/python/core.dll core/lib/
+          mv example/python/core.lib core/lib/
+          cp core/core.h core/lib/
+          cd -
+
+          # Copy ONNX Runtime DLLs
+          cp download/onnxruntime/lib/*.dll download/voicevox_core_source/lib/
+
+          # Install Python package with core.dll & onnxruntime*.dll
+          cd download/voicevox_core_source
           pip install .
 
       - name: Generate licenses.json
