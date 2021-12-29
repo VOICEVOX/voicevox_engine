@@ -216,7 +216,7 @@ RUN <<EOF
     mkdir -p /tmp/voicevox_core_source/core/lib
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
 
-    # Copy versioned shared library only (setup.py copy will copy as real file)
+    # Copy versioned shared library only (setup.py will copy package data as real file on install)
     cd /opt/onnxruntime/lib
     find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
     cd -
