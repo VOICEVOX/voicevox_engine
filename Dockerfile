@@ -211,7 +211,10 @@ RUN <<EOF
 
     git clone -b "${VOICEVOX_CORE_SOURCE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /tmp/voicevox_core_source
 
-    # Copy shared libraries to repo to be packed in Python package
+    # Copy shared libraries to repo to be packed in core package
+    # ONNX Runtime: included
+    # CUDA/cuDNN: not included
+
     mkdir -p /tmp/voicevox_core_source/core/lib
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
 
@@ -219,37 +222,6 @@ RUN <<EOF
     cd /opt/onnxruntime/lib
     find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
     cd -
-
-    if [ -f /tmp/voicevox_core_source/core/lib/libonnxruntime_providers_cuda.so ]; then
-        # assert nvidia/cuda base image
-
-        cd /usr/local/cuda/lib64
-        cp libcublas.so.* libcublasLt.so.* libcudart.so.* libcufft.so.* libcurand.so.* /tmp/voicevox_core_source/core/lib/
-        cd -
-
-        # remove unneed full version libraries
-        cd /tmp/voicevox_core_source/core/lib
-        rm -f libcublas.so.*.* libcublasLt.so.*.* libcufft.so.*.* libcurand.so.*.*
-        rm -f libcudart.so.*.*.*
-        cd -
-
-        cd /usr/lib/x86_64-linux-gnu
-        cp libcudnn.so.* libcudnn_*_infer.so.* /tmp/voicevox_core_source/core/lib/
-        cd -
-
-        # remove unneed full version libraries
-        cd /tmp/voicevox_core_source/core/lib
-        rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
-        cd -
-
-        # set rpath to use shared libraries in relative path
-        # remove RUNPATH and set RPATH (cannot replace RUNPATH with RPATH directly using patchelf)
-        # https://github.com/NixOS/patchelf/issues/94
-        cd /tmp/voicevox_core_source/core/lib
-        find . -type f -name '*.so*' | xargs -I% chrpath -d %
-        find . -type f -name '*.so*' | xargs -I% patchelf --force-rpath --set-rpath '$ORIGIN' %
-        cd -
-    fi
 
     # Duplicate core.h in repo
     cp /tmp/voicevox_core_source/core/src/core.h /tmp/voicevox_core_source/core/lib/
