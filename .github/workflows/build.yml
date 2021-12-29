@@ -695,6 +695,8 @@ jobs:
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
+          set -eux
+
           # Generate VOICEVOX Core LIB from DLL
           cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_source/example/python/core.dll
 
@@ -711,7 +713,7 @@ jobs:
           cd -
 
           # Copy ONNX Runtime DLLs
-          cp download/onnxruntime/lib/*.dll download/voicevox_core_source/lib/
+          cp download/onnxruntime/lib/*.dll download/voicevox_core_source/core/lib/
 
           # Install VOICEVOX Core Python package with core.dll & onnxruntime*.dll
           cd download/voicevox_core_source
