@@ -3,22 +3,19 @@ import re
 import tarfile
 from os.path import exists
 from pathlib import PurePath
-from pprint import pprint
-from typing import Any, List, Optional
+from typing import Optional
+from typing.io import IO
 from urllib.request import urlretrieve
 
 import numpy as np
 import pkg_resources
 import pyworld as pw
-from typing.io import IO
-
-from .julius4seg import converter, sp_inserter
-from .julius4seg.sp_inserter import ModelType, frame_to_second, space_symbols
 from scipy.io import wavfile
 from scipy.signal import resample
 
 from .acoustic_feature_extractor import OjtPhoneme
-from .julius4seg import sp_inserter
+from .julius4seg import converter, sp_inserter
+from .julius4seg.sp_inserter import ModelType, space_symbols
 from .synthesis_engine import SynthesisEngineBase
 
 JULIUS_SAMPLE_RATE = 16000
