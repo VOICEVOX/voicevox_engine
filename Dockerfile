@@ -209,26 +209,17 @@ RUN <<EOF
 
     git clone -b "${VOICEVOX_CORE_SOURCE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /tmp/voicevox_core_source
 
-    # Copy shared libraries to repo to be packed in Python package
+    # Copy shared libraries to repo to be packed in core package
+    # ONNX Runtime: included
+    # CUDA/cuDNN: not included
+
     mkdir -p /tmp/voicevox_core_source/core/lib
     cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
 
+    # Copy versioned shared library only (setup.py copy will copy as real file)
     cd /opt/onnxruntime/lib
-    cp -d *.so* /tmp/voicevox_core_source/core/lib/
+    find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
     cd -
-
-    # TODO: remove redundant shared library copy to reduce image size
-    if [ -f /tmp/voicevox_core_source/core/lib/libonnxruntime_providers_cuda.so ]; then
-        # assert nvidia/cuda base image
-
-        cd /usr/local/cuda/lib64
-        cp -d libcublas.so* libcublasLt.so* libcudart.so* libcufft.so* libcurand.so* /tmp/voicevox_core_source/core/lib/
-        cd -
-
-        cd /usr/lib/x86_64-linux-gnu
-        cp -d libcudnn.so* /tmp/voicevox_core_source/core/lib/
-        cd -
-    fi
 
     # Duplicate core.h in repo
     cp /tmp/voicevox_core_source/core/src/core.h /tmp/voicevox_core_source/core/lib/
@@ -364,6 +355,12 @@ RUN <<EOF
                 --follow-imports \
                 --no-prefer-source-code \
                 /opt/voicevox_engine/run.py
+
+        # set relative path in libcore.so for searching onnxruntime
+        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
+        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
+
+        # FIXME: pack CUDA/cuDNN shared libraries
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD
