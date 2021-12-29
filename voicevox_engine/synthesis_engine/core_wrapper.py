@@ -111,15 +111,15 @@ class CoreWrapper:
             elif sys.platform == "linux":
                 try:
                     self.core = CDLL(
-                        str((voicelib_dir / "libcore_cpu_x64.so").resolve(strict=True))
-                    )
-                except FileNotFoundError:
-                    self.core = CDLL(
                         str(
                             (voicelib_dir / "libcore_gpu_x64_nvidia.so").resolve(
                                 strict=True
                             )
                         )
+                    )
+                except FileNotFoundError:
+                    self.core = CDLL(
+                        str((voicelib_dir / "libcore_cpu_x64.so").resolve(strict=True))
                     )
             elif sys.platform == "darwin":
                 self.core = CDLL(
