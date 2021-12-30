@@ -230,6 +230,8 @@ jobs:
 
       - name: Build run.py
         run: |
+          set -eux
+
           # Nuitka does not copy grandchild dependencies. Explicitly copy libonnxruntime
           python -m nuitka \
             --output-dir=./ \
