@@ -1,9 +1,10 @@
 import os
 import re
 import tarfile
+from copy import deepcopy
 from os.path import exists
 from pathlib import PurePath
-from typing import Optional
+from typing import List, Optional, Tuple
 from typing.io import IO
 from urllib.request import urlretrieve
 
@@ -15,8 +16,11 @@ from scipy.signal import resample
 
 from .acoustic_feature_extractor import OjtPhoneme
 from .julius4seg import converter, sp_inserter
-from .julius4seg.sp_inserter import ModelType, space_symbols
+from .julius4seg.sp_inserter import ModelType, frame_to_second, space_symbols
+from .kana_parser import parse_kana
+from .model import Mora
 from .synthesis_engine import SynthesisEngineBase
+from .synthesis_engine.synthesis_engine import unvoiced_mora_phoneme_list
 
 JULIUS_SAMPLE_RATE = 16000
 VOICEVOX_SAMPLE_RATE = 24000
@@ -41,6 +45,13 @@ JULIUS_DICTATION_DIR = os.environ.get(
 )
 
 sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR)
+
+
+class PhraseInfo:
+    def __init__(self, pitch: float, length: float, phoneme: str):
+        self.pitch = pitch
+        self.length = length
+        self.phoneme = phoneme
 
 
 # benchmark decorator
@@ -71,53 +82,83 @@ def _extract_julius():
     JULIUS_DICTATION_DIR = pkg_resources.resource_filename(
         __name__, "dictation-kit-dictation-kit-v4.3.1"
     )
+    sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR)
     os.remove(filename)
 
 
-# Get f0 query with pw, segment with julius and send to forward decoder
-def synthesis(
-    engine: SynthesisEngineBase, audio_file: Optional[IO], kana: str, speaker_id: int
-):
-    _lazy_init()
-    sp_inserter.JULIUS_ROOT = PurePath(JULIUS_DICTATION_DIR)
-    sr, wave = wavfile.read(audio_file)
+def _resample_ts(timestamp: str):
+    return int((float(timestamp) * 0.9375))
 
-    if len(wave.shape) == 2:
-        wave = wave.sum(axis=1) / 2
 
-    julius_wave = resample(wave.astype(np.int16), JULIUS_SAMPLE_RATE * len(wave) // sr)
-    julius_kana = re.sub(
-        "|".join(PUNCTUATION), "", kana.replace("/", "").replace("、", " ")
-    )
-
-    f0 = extract_f0(wave, sr, 256 / 24000 * 1000)
-
-    phones = forced_align(julius_wave.astype(np.int16), julius_kana)
-
-    np.set_printoptions(threshold=np.inf)
-    np.save("G:\\f0.npy", f0)
-
-    phone_list = np.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=np.float32)
+def _convert_aligned_phonemes(phones: List[Tuple], f0: np.ndarray) -> List[OjtPhoneme]:
+    res = []
     for p in phones:
         if p[2] == "silB":
-            f0[: int(int(p[1]) * (240 / 256))] = 0.0
+            f0[: _resample_ts(p[1])] = 0.0
             p = OjtPhoneme("pau", 1, int(p[1]))
         elif p[2] == "silE":
-            f0[int(int(p[0]) * (240 / 256)) :] = 0.0
+            f0[_resample_ts(p[0]) :] = 0.0
             p = OjtPhoneme("pau", int(p[0]), len(f0) // 10)
         elif p[2] == "sp":
-            f0[int(int(p[0]) * (240 / 256)) : int(int(p[1]) * (240 / 256))] = 0.0
+            f0[_resample_ts(p[0]) : _resample_ts(p[1])] = 0.0
             p = OjtPhoneme("pau", int(p[0]), int(p[1]))
         else:
             if p[2] == "q":
                 p = OjtPhoneme("cl", int(p[0]), int(p[1]))
             else:
                 p = OjtPhoneme(p[2], int(p[0]), int(p[1]))
-        phone_list[
-            int((p.start - 1) * (240 / 256)) : int(p.end * (240 / 256))
-        ] = p.onehot
+        res.append(p)
+    return res
 
-    np.save("G:\\f0_log.npy", f0)
+
+def _predict_avg_pitch(engine: SynthesisEngineBase, kana: str, speaker_id: int):
+    predicted_phrases, _ = parse_kana(kana, False)
+    engine.replace_mora_data(predicted_phrases, speaker_id=speaker_id)
+    pitch_list = []
+    for phrase in predicted_phrases:
+        for mora in phrase.moras:
+            pitch_list.append(mora.pitch)
+    pitch_list = np.array(pitch_list, dtype=np.float64)
+    return _no_nan(np.average(pitch_list[pitch_list != 0]))
+
+
+def _no_nan(num):
+    return 0.0 if np.isnan(num) else num
+
+
+# Get f0 query with pw, segment with julius and send to forward decoder
+def synthesis(
+    engine: SynthesisEngineBase,
+    audio_file: Optional[IO],
+    kana: str,
+    speaker_id: int,
+    normalize: int,
+):
+    _lazy_init()
+    f0, phonemes = extract_feature(audio_file, kana)
+
+    phone_list = np.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=np.float32)
+
+    for s, e, p in phonemes:
+        s, e = (_resample_ts(v) for v in (s, e))
+        if p == "silB":
+            f0[:e] = 0.0
+            s += 1
+            p = "pau"
+        elif p == "silE":
+            f0[s:] = 0.0
+            p = "pau"
+        elif p == "sp":
+            f0[s:e] = 0.0
+            p = "pau"
+        elif p == "q":
+            p = "cl"
+        phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
+
+    if normalize:
+        f0_avg = _no_nan(np.average(f0[f0 != 0]))
+        predicted_avg = _predict_avg_pitch(engine, kana, speaker_id)
+        f0 *= predicted_avg / f0_avg
 
     return engine.guided_synthesis(
         length=phone_list.shape[0],
@@ -126,6 +167,79 @@ def synthesis(
         phoneme=phone_list,
         speaker_id=np.array([speaker_id], dtype=np.int64).reshape(-1),
     )
+
+
+def accent_phrase(
+    engine: SynthesisEngineBase,
+    audio_file: Optional[IO],
+    kana: str,
+    speaker_id: int,
+    normalize: int,
+):
+    _lazy_init()
+    f0, phonemes = extract_feature(audio_file, kana)
+    timed_phonemes = frame_to_second(deepcopy(phonemes))
+    accent_phrases, _ = parse_kana(kana, False)
+
+    phrase_info = []
+    for ((s, e, p), (ts, te, tp)) in zip(phonemes, timed_phonemes):
+        if p not in unvoiced_mora_phoneme_list:
+            clip = f0[_resample_ts(s) : _resample_ts(e)]
+            clip = clip[clip != 0]
+            pitch = np.average(clip) if len(clip) != 0 else 0
+        else:
+            pitch = 0
+        pitch = 0 if np.isnan(pitch) else pitch
+        length = float(te) - float(ts)
+        phrase_info.append(PhraseInfo(pitch, length, p))
+
+    if normalize:
+        f0_avg = _no_nan(np.average(f0[f0 != 0]))
+        predicted_avg = _predict_avg_pitch(engine, kana, speaker_id)
+        normalize_scale = predicted_avg / f0_avg
+        for p in phrase_info:
+            p.pitch = p.pitch * normalize_scale
+
+    idx = 1
+    for phrase in accent_phrases:
+        for mora in phrase.moras:
+            if mora.consonant is not None:
+                mora.pitch = (phrase_info[idx].pitch + phrase_info[idx + 1].pitch) / 2
+                mora.consonant_length = phrase_info[idx].length
+                mora.vowel_length = phrase_info[idx + 1].length
+                idx += 2
+            else:
+                mora.pitch = phrase_info[idx].pitch
+                mora.vowel_length = phrase_info[idx].length
+                idx += 1
+        if phrase_info[idx].phoneme == "sp":
+            phrase.pause_mora = Mora(
+                text="、",
+                consonant=None,
+                consonant_length=None,
+                vowel="pau",
+                vowel_length=phrase_info[idx].length,
+                pitch=0,
+            )
+            idx += 1
+
+    return accent_phrases
+
+
+def extract_feature(audio_file: Optional[IO], kana: str):
+    sr, wave = wavfile.read(audio_file)
+    if len(wave.shape) == 2:
+        wave = wave.sum(axis=1) / 2
+
+    f0 = extract_f0(wave, sr, 256 / 24000 * 1000)
+
+    julius_wave = resample(wave.astype(np.int16), JULIUS_SAMPLE_RATE * len(wave) // sr)
+    julius_kana = re.sub(
+        "|".join(PUNCTUATION), "", kana.replace("/", "").replace("、", " ")
+    )
+
+    phones = forced_align(julius_wave.astype(np.int16), julius_kana)
+    return f0, phones
 
 
 def forced_align(julius_wave: np.ndarray, base_kata_text: str):
@@ -171,7 +285,7 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
                 forced_phones_with_sp.append(space_symbols[model_type])
 
         forced_phones_with_sp = " ".join(forced_phones_with_sp)
-    except Exception:
+    except:
         pass
 
     phones_with_sp = sp_inserter.get_sp_inserterd_phone_seqence(

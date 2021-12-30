@@ -3,6 +3,7 @@ import asyncio
 import base64
 import json
 import multiprocessing
+import traceback
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -208,6 +209,63 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             )
 
     @app.post(
+        "/guided/accent_phrase",
+        response_model=AudioQuery,
+        tags=["クエリ作成"],
+        summary="Create Audio Query Guided by External Audio",
+    )
+    def guided_accent_phrase(
+        kana: str = Form(...),
+        speaker_id: int = Form(...),
+        normalize: int = Form(...),
+        audio_file: UploadFile = File(...),
+    ):
+        try:
+            accent_phrases = guided.accent_phrase(
+                engine=engine,
+                audio_file=audio_file.file,
+                kana=kana,
+                speaker_id=speaker_id,
+                normalize=normalize,
+            )
+            return AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=1,
+                pitchScale=0,
+                intonationScale=1,
+                volumeScale=1,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=default_sampling_rate,
+                outputStereo=False,
+                kana=create_kana(accent_phrases),
+            )
+        except ParseKanaError:
+            print(traceback.format_exc())
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to Parse Kana",
+            )
+        except StopIteration:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+            print("Hello ", str(e))
+            if str(e) == "Decode Failed":
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Internal Server Error.",
+                )
+
+    @app.post(
         "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
@@ -330,32 +388,6 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         return FileResponse(f.name, media_type="application/zip")
 
     @app.post(
-        "/guided_synthesis",
-        responses={
-            200: {
-                "content": {
-                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
-                },
-            }
-        },
-        tags=["音声合成"],
-        summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
-    )
-    def guided_synthesis(
-        kana: str = Form(...),
-        speaker_id: int = Form(...),
-        audio_file: UploadFile = File(...),
-    ):
-        wave = guided.synthesis(
-            engine=engine, audio_file=audio_file.file, kana=kana, speaker_id=speaker_id
-        )
-
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=24000, format="WAV")
-
-        return FileResponse(f.name, media_type="audio/wav")
-
-    @app.post(
         "/synthesis_morphing",
         response_class=FileResponse,
         responses={
@@ -400,6 +432,44 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 samplerate=morph_param.fs,
                 format="WAV",
             )
+
+        return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/guided/synthesis",
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
+    )
+    def guided_synthesis(
+        kana: str = Form(...),
+        speaker_id: int = Form(...),
+        normalize: int = Form(...),
+        audio_file: UploadFile = File(...),
+    ):
+        try:
+            wave = guided.synthesis(
+                engine=engine,
+                audio_file=audio_file.file,
+                kana=kana,
+                speaker_id=speaker_id,
+                normalize=normalize,
+            )
+        except Exception:
+            print(traceback.format_exc())
+            raise HTTPException(
+                status_code=500,
+                detail="Julius Crashes Again. No need to panic, it's an Experimental Feature.",
+            )
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(file=f, data=wave, samplerate=24000, format="WAV")
 
         return FileResponse(f.name, media_type="audio/wav")
 
