@@ -142,14 +142,14 @@ jobs:
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
 
-      - name: Prepare VOICEVOX Core cache
+      - name: Prepare VOICEVOX Core release cache
         uses: actions/cache@v2
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
           path: download/core
 
-      - name: Download VOICEVOX Core
+      - name: Download VOICEVOX Core release
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -182,12 +182,12 @@ jobs:
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
-          cd download/voicevox_core_source
-          mkdir -p core/lib
+          mkdir -p download/voicevox_core_source/core/lib
 
           # Copy VOICEVOX Core dylib to core/lib
           cp download/core/${{ matrix.voicevox_core_library_name }} download/voicevox_core_source/core/lib/libcore.dylib
 
+          cd download/voicevox_core_source
           cp core/src/core.h core/lib/
           cd -
 
