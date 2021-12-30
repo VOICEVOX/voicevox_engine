@@ -454,7 +454,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         audio_file: UploadFile = File(...),
         stereo: int = Form(...),
         sample_rate: int = Form(...),
-        volume: float = Form(...),
+        volumeScale: float = Form(...),
+        pitchScale: float = Form(...),
+        speedScale: float = Form(...),
     ):
         try:
             wave = guided.synthesis(
@@ -465,7 +467,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 normalize=normalize,
                 stereo=stereo,
                 sample_rate=sample_rate,
-                volume=volume,
+                volumeScale=volumeScale,
+                pitchScale=pitchScale,
+                speedScale=speedScale
             )
 
             with NamedTemporaryFile(delete=False) as f:

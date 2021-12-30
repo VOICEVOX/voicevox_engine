@@ -96,10 +96,10 @@ def _convert_aligned_phonemes(phones: List[Tuple], f0: np.ndarray) -> List[OjtPh
             f0[: _resample_ts(p[1])] = 0.0
             p = OjtPhoneme("pau", 1, int(p[1]))
         elif p[2] == "silE":
-            f0[_resample_ts(p[0]) :] = 0.0
+            f0[_resample_ts(p[0]):] = 0.0
             p = OjtPhoneme("pau", int(p[0]), len(f0) // 10)
         elif p[2] == "sp":
-            f0[_resample_ts(p[0]) : _resample_ts(p[1])] = 0.0
+            f0[_resample_ts(p[0]): _resample_ts(p[1])] = 0.0
             p = OjtPhoneme("pau", int(p[0]), int(p[1]))
         else:
             if p[2] == "q":
@@ -125,7 +125,6 @@ def _no_nan(num):
     return 0.0 if np.isnan(num) else num
 
 
-# Get f0 query with pw, segment with julius and send to forward decoder
 def synthesis(
     engine: SynthesisEngineBase,
     audio_file: Optional[IO],
@@ -134,7 +133,9 @@ def synthesis(
     normalize: int,
     stereo: int,
     sample_rate: int,
-    volume: float,
+    volumeScale: float,
+    pitchScale: float,
+    speedScale: float
 ) -> np.ndarray:
     _lazy_init()
     f0, phonemes = extract_feature(audio_file, kana)
@@ -155,12 +156,17 @@ def synthesis(
             p = "pau"
         elif p == "q":
             p = "cl"
-        phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
+        phone_list[s - 1: e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
 
     if normalize:
         f0_avg = _no_nan(np.average(f0[f0 != 0]))
         predicted_avg = _predict_avg_pitch(engine, kana, speaker_id)
         f0 *= predicted_avg / f0_avg
+
+    f0 *= 2 ** pitchScale
+
+    f0 = resample(f0, int(len(f0) / speedScale))
+    phone_list = resample(phone_list, int(len(phone_list) / speedScale))
 
     return engine.guided_synthesis(
         length=phone_list.shape[0],
@@ -170,7 +176,7 @@ def synthesis(
         speaker_id=np.array([speaker_id], dtype=np.int64).reshape(-1),
         stereo=stereo,
         sample_rate=sample_rate,
-        volume=volume,
+        volume=volumeScale,
     )
 
 
@@ -189,7 +195,7 @@ def accent_phrase(
     phrase_info = []
     for ((s, e, p), (ts, te, tp)) in zip(phonemes, timed_phonemes):
         if p not in unvoiced_mora_phoneme_list:
-            clip = f0[_resample_ts(s) : _resample_ts(e)]
+            clip = f0[_resample_ts(s): _resample_ts(e)]
             clip = clip[clip != 0]
             pitch = np.average(clip) if len(clip) != 0 else 0
         else:
