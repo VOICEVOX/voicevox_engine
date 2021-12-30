@@ -469,7 +469,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 sample_rate=sample_rate,
                 volumeScale=volumeScale,
                 pitchScale=pitchScale,
-                speedScale=speedScale
+                speedScale=speedScale,
             )
 
             with NamedTemporaryFile(delete=False) as f:
