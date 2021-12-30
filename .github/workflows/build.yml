@@ -740,7 +740,6 @@ jobs:
             --include-package=anyio
             --include-package-data=pyopenjtalk
             --include-package-data=scipy
-            --include-package-data=core
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
             --include-data-file="presets.yaml=./"
@@ -771,7 +770,8 @@ jobs:
           # Nuitka copies core.dll to run.dist/core.dll
           # but core Python module will load core.dll from run.dist/core/lib/core.dll.
           mkdir -p run.dist/core/lib
-          # mv run.dist/core.dll run.dist/core/lib/
+          mv run.dist/core.dll run.dist/core/lib/
+          mv run.dist/onnxruntime*.dll run.dist/core/lib/
 
           # Build artifact directory
           mkdir -p artifact
@@ -780,8 +780,8 @@ jobs:
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
-            # ONNX Runtime providers
-            # ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
+            # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
 
             # CUDA
             ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
