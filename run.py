@@ -528,10 +528,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
-        ret_data = SpeakerInfo(
-            policy=policy, portrait=portrait, style_infos=style_infos
+        return fastapi_model_converter.from_model_speaker_info(
+            model.SpeakerInfo(policy=policy, portrait=portrait, style_infos=style_infos)
         )
-        return ret_data
 
     return app
 
