@@ -97,20 +97,20 @@ jobs:
 
       - name: Prepare ONNX Runtime cache
         uses: actions/cache@v2
-        id: onnxruntime-dll-cache
+        id: onnxruntime-dylib-cache
         with:
-          key: ${{ matrix.os }}-onnxruntime-dll-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          key: ${{ matrix.os }}-onnxruntime-dylib-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
       - name: Download ONNX Runtime
-        if: steps.onnxruntime-dll-cache.outputs.cache-hit != 'true'
+        if: steps.onnxruntime-dylib-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
 
           # extract only dylibs
           mkdir -p download/onnxruntime
-          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
+          tar xf "download/onnxruntime.tgz" 'onnxruntime-*/lib/*.dylib' -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
 
       - name: Show disk space (debug info)
