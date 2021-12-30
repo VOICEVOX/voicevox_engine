@@ -234,8 +234,8 @@ jobs:
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
-            --include-data-file=../download/onnxruntime/lib/*.dylib=./ \
-            --include-data-file=../download/core/*.dylib=./ \
+            --include-data-file=../download/onnxruntime/lib/libonnxruntime.*.dylib=./ \
+            --include-data-file=../download/core/libcore.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
