@@ -479,11 +479,27 @@ class SynthesisEngine(SynthesisEngineBase):
 
         return wave
 
-    def guided_synthesis(self, length, phoneme_size, f0, phoneme, speaker_id):
-        return self.decode_forwarder(
+    def guided_synthesis(
+        self, length, phoneme_size, f0, phoneme, speaker_id, stereo, sample_rate, volume
+    ):
+        wave = self.decode_forwarder(
             length=length,
             phoneme_size=phoneme_size,
             f0=f0,
             phoneme=phoneme,
             speaker_id=speaker_id,
         )
+
+        if volume != 1:
+            wave *= volume
+
+        if sample_rate != self.default_sampling_rate:
+            wave = resample(
+                wave,
+                sample_rate * len(wave) // self.default_sampling_rate,
+            )
+
+        if stereo:
+            wave = numpy.array([wave, wave]).T
+
+        return wave

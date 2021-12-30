@@ -23,7 +23,6 @@ from .synthesis_engine import SynthesisEngineBase
 from .synthesis_engine.synthesis_engine import unvoiced_mora_phoneme_list
 
 JULIUS_SAMPLE_RATE = 16000
-VOICEVOX_SAMPLE_RATE = 24000
 FRAME_PERIOD = 1.0
 PUNCTUATION = ["_", "'", "/", "、"]
 SIL_SYMBOL = ["silB", "silE", "sp"]
@@ -133,6 +132,9 @@ def synthesis(
     kana: str,
     speaker_id: int,
     normalize: int,
+    stereo: int,
+    sample_rate: int,
+    volume: float,
 ):
     _lazy_init()
     f0, phonemes = extract_feature(audio_file, kana)
@@ -166,6 +168,9 @@ def synthesis(
         f0=f0[:, np.newaxis].astype(np.float32),
         phoneme=phone_list,
         speaker_id=np.array([speaker_id], dtype=np.int64).reshape(-1),
+        stereo=stereo,
+        sample_rate=sample_rate,
+        volume=volume,
     )
 
 

@@ -452,6 +452,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         speaker_id: int = Form(...),
         normalize: int = Form(...),
         audio_file: UploadFile = File(...),
+        stereo: int = Form(...),
+        sample_rate: int = Form(...),
+        volume: float = Form(...),
     ):
         try:
             wave = guided.synthesis(
@@ -460,6 +463,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 kana=kana,
                 speaker_id=speaker_id,
                 normalize=normalize,
+                stereo=stereo,
+                sample_rate=sample_rate,
+                volume=volume,
             )
         except Exception:
             print(traceback.format_exc())
@@ -469,7 +475,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             )
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=24000, format="WAV")
+            soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
 
         return FileResponse(f.name, media_type="audio/wav")
 

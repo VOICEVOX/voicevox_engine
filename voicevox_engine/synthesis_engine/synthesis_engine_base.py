@@ -217,5 +217,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def guided_synthesis(self, length, phoneme_size, f0, phoneme, speaker_id):
+    def guided_synthesis(
+        self, length, phoneme_size, f0, phoneme, speaker_id, stereo, sample_rate, volume
+    ):
         raise NotImplementedError()
