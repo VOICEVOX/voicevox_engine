@@ -182,6 +182,8 @@ jobs:
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
+          set -eux
+
           mkdir -p download/voicevox_core_source/core/lib
 
           # Copy VOICEVOX Core dylib to core/lib
@@ -207,6 +209,8 @@ jobs:
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
+          set -eux
+
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for i in $(seq 5); do
