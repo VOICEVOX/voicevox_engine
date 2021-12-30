@@ -18,7 +18,7 @@ from .acoustic_feature_extractor import OjtPhoneme
 from .julius4seg import converter, sp_inserter
 from .julius4seg.sp_inserter import ModelType, frame_to_second, space_symbols
 from .kana_parser import parse_kana
-from .model import Mora, AccentPhrase
+from .model import AccentPhrase, Mora
 from .synthesis_engine import SynthesisEngineBase
 from .synthesis_engine.synthesis_engine import unvoiced_mora_phoneme_list
 
