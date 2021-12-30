@@ -672,7 +672,7 @@ jobs:
           key: ${{ matrix.os }}-voicevox-core-source-${{ matrix.voicevox_core_source_version }}
           path: download/voicevox_core_source
 
-      - name: Checkout VOICEVOX Core
+      - name: Checkout VOICEVOX Core source
         if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
