@@ -18,7 +18,7 @@ from .acoustic_feature_extractor import OjtPhoneme
 from .julius4seg import converter, sp_inserter
 from .julius4seg.sp_inserter import ModelType, frame_to_second, space_symbols
 from .kana_parser import parse_kana
-from .model import Mora
+from .model import Mora, AccentPhrase
 from .synthesis_engine import SynthesisEngineBase
 from .synthesis_engine.synthesis_engine import unvoiced_mora_phoneme_list
 
@@ -135,7 +135,7 @@ def synthesis(
     stereo: int,
     sample_rate: int,
     volume: float,
-):
+) -> np.ndarray:
     _lazy_init()
     f0, phonemes = extract_feature(audio_file, kana)
 
@@ -180,7 +180,7 @@ def accent_phrase(
     kana: str,
     speaker_id: int,
     normalize: int,
-):
+) -> List[AccentPhrase]:
     _lazy_init()
     f0, phonemes = extract_feature(audio_file, kana)
     timed_phonemes = frame_to_second(deepcopy(phonemes))

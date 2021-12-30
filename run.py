@@ -247,13 +247,13 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 detail="Failed to Parse Kana",
             )
         except StopIteration:
+            print(traceback.format_exc())
             raise HTTPException(
                 status_code=500,
                 detail="Failed in Forced Alignment. Please try again with another Audio Resource",
             )
         except Exception as e:
             print(traceback.format_exc())
-            print("Hello ", str(e))
             if str(e) == "Decode Failed":
                 raise HTTPException(
                     status_code=500,
@@ -467,17 +467,35 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 sample_rate=sample_rate,
                 volume=volume,
             )
-        except Exception:
+
+            with NamedTemporaryFile(delete=False) as f:
+                soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
+
+            return FileResponse(f.name, media_type="audio/wav")
+        except ParseKanaError:
             print(traceback.format_exc())
             raise HTTPException(
                 status_code=500,
-                detail="Julius Crashes Again. No need to panic, it's an Experimental Feature.",
+                detail="Failed to Parse Kana",
             )
-
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
-
-        return FileResponse(f.name, media_type="audio/wav")
+        except StopIteration:
+            print(traceback.format_exc())
+            raise HTTPException(
+                status_code=500,
+                detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+            if str(e) == "Decode Failed":
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Internal Server Error.",
+                )
 
     @app.post(
         "/connect_waves",
