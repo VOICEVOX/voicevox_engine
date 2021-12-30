@@ -771,7 +771,7 @@ jobs:
           # but core Python module will load core.dll from run.dist/core/lib/core.dll.
           mkdir -p run.dist/core/lib
           mv run.dist/core.dll run.dist/core/lib/
-          mv run.dist/onnxruntime*.dll run.dist/core/lib/
+          mv run.dist/onnxruntime.dll run.dist/core/lib/
 
           # Build artifact directory
           mkdir -p artifact
