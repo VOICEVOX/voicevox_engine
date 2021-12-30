@@ -349,26 +349,25 @@ RUN <<EOF
 
         cd /opt/voicevox_engine_build
 
-        LIBRARY_PATH="/opt/voicevox_core:\${LIBRARY_PATH:-}" \
-            gosu user /opt/python/bin/python3 -m nuitka \
-                --output-dir=/opt/voicevox_engine_build \
-                --standalone \
-                --plugin-enable=numpy \
-                --follow-import-to=numpy \
-                --follow-import-to=aiofiles \
-                --include-package=uvicorn \
-                --include-package=anyio \
-                --include-package-data=pyopenjtalk \
-                --include-package-data=scipy \
-                --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
-                --include-data-file=/opt/voicevox_engine/licenses.json=./ \
-                --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-                --include-data-file=/opt/voicevox_core/*.bin=./ \
-                --include-data-file=/opt/voicevox_core/metas.json=./ \
-                --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
-                --follow-imports \
-                --no-prefer-source-code \
-                /opt/voicevox_engine/run.py
+        gosu user /opt/python/bin/python3 -m nuitka \
+            --output-dir=/opt/voicevox_engine_build \
+            --standalone \
+            --plugin-enable=numpy \
+            --follow-import-to=numpy \
+            --follow-import-to=aiofiles \
+            --include-package=uvicorn \
+            --include-package=anyio \
+            --include-package-data=pyopenjtalk \
+            --include-package-data=scipy \
+            --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+            --include-data-file=/opt/voicevox_engine/licenses.json=./ \
+            --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
+            --include-data-file=/opt/voicevox_core/*.bin=./ \
+            --include-data-file=/opt/voicevox_core/metas.json=./ \
+            --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
+            --follow-imports \
+            --no-prefer-source-code \
+            /opt/voicevox_engine/run.py
 
         # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
         if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
