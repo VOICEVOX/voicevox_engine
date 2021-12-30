@@ -156,7 +156,7 @@ jobs:
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
           rm download/core.zip
-          mv core/ voicevox_core
+          mv download/core/ download/voicevox_core
 
       # Install VOICEVOX Core Python package
       - name: Prepare VOICEVOX Core source cache
