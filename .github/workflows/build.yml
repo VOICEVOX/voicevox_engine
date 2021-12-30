@@ -147,16 +147,16 @@ jobs:
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
-          path: download/voicevox_core
+          path: download/core
 
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
+          # extracted like download/core/metas.json
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
           rm download/core.zip
-          mv download/core/ download/voicevox_core
 
       # Install VOICEVOX Core Python package
       - name: Prepare VOICEVOX Core source cache
