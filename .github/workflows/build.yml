@@ -245,6 +245,7 @@ jobs:
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
+            --include-data-file=../download/onnxruntime/lib/libonnxruntime.*.dylib=./ \ # Nuitka does not copy grandchild dependencies
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
