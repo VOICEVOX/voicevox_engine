@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: [macos-11]
+        - os: macos-11
           python: '3.8'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
