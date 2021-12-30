@@ -139,7 +139,7 @@ def from_model_speakers(speakers: List[model.Speaker]) -> List[fastapi_model.Spe
 def to_model_speaker(fastapi_speaker: fastapi_model.Speaker) -> model.Speaker:
     return model.Speaker(
         name=fastapi_speaker.name,
-        fastapi_speaker_uuid=fastapi_speaker.speaker_uuid,
+        speaker_uuid=fastapi_speaker.speaker_uuid,
         styles=fastapi_speaker.styles,
         version=fastapi_speaker.version,
     )
