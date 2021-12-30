@@ -110,7 +110,7 @@ jobs:
 
           # extract only dylibs
           mkdir -p download/onnxruntime
-          tar xf "download/onnxruntime.tgz" 'onnxruntime-*/lib/*.dylib' -C "download/onnxruntime" --strip-components 1
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
           rm download/onnxruntime.tgz
 
       - name: Show disk space (debug info)
