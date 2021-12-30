@@ -4,6 +4,12 @@ from pydantic import BaseModel, Field
 
 from voicevox_engine import model
 
+"""
+このファイルの型はmodel.pyと重複しているように見えるが、これは内部で使用しているmodel.pyの変更をAPI定義に影響を与えないするためである。
+fastapiのリクエスト、レスポンスに使用する型はmodel.pyにあるものではなく必ずここに定義してある型を使用すること。
+model.pyあるいはこのファイルの型に変更がある場合fastapi_model_converterでの変換処理を実装する
+"""
+
 
 class Mora(BaseModel):
     """
