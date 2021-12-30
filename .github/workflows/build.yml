@@ -24,7 +24,7 @@ jobs:
           voicevox_resource_version: '0.10.preview.1'
           voicevox_core_version: '0.9.0'
           voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.9.0.zip
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-osx-x64-1.9.0.tgz
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -89,26 +89,33 @@ jobs:
           python generate_licenses.py > licenses.json
           deactivate
 
-      # Download LibTorch
-      - name: Export LibTorch url to calc hash
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
         shell: bash
-        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: Prepare LibTorch cache
+      - name: Prepare ONNX Runtime cache
         uses: actions/cache@v2
-        id: libtorch-dylib-cache
+        id: onnxruntime-dll-cache
         with:
-          key: ${{ matrix.os }}-libtorch-dylib-${{ hashFiles('download/libtorch_url.txt') }}
-          path: download/libtorch
+          key: ${{ matrix.os }}-onnxruntime-dll-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
 
-      - name: Download LibTorch
-        if: steps.libtorch-dylib-cache.outputs.cache-hit != 'true'
+      - name: Download ONNX Runtime
+        if: steps.onnxruntime-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+
           # extract only dylibs
-          unzip download/libtorch.zip "libtorch/lib/*.dylib" -d download/
-          rm download/libtorch.zip
+          mkdir -p download/onnxruntime
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
+          rm download/onnxruntime.tgz
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
