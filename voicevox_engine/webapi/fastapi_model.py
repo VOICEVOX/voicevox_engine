@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from voicevox_engine import model
+from voicevox_engine import model, preset
+from voicevox_engine.webapi import fastapi_model_converter
 
 """
 このファイルの型はmodel.pyと重複しているように見えるが、これは内部で使用しているmodel.pyの変更をAPI定義に影響を与えないするためである。
@@ -30,6 +33,13 @@ class Mora(BaseModel):
         ]
         return hash(tuple(sorted(items)))
 
+    @classmethod
+    def from_model(cls, mora: model.Mora) -> Mora:
+        return fastapi_model_converter.from_model_mora(mora)
+
+    def to_model(self) -> model.Mora:
+        return fastapi_model_converter.to_model_mora(self)
+
 
 class AccentPhrase(BaseModel):
     """
@@ -46,6 +56,13 @@ class AccentPhrase(BaseModel):
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
+
+    @classmethod
+    def from_model(cls, accent_phrase: model.AccentPhrase) -> AccentPhrase:
+        return fastapi_model_converter.from_model_accent_phrase(accent_phrase)
+
+    def to_model(self) -> model.AccentPhrase:
+        return fastapi_model_converter.to_model_accent_phrase(self)
 
 
 class AudioQuery(BaseModel):
@@ -70,6 +87,13 @@ class AudioQuery(BaseModel):
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
+
+    @classmethod
+    def from_model(cls, audio_query: model.AudioQuery) -> AudioQuery:
+        return fastapi_model_converter.from_model_audio_query(audio_query)
+
+    def to_model(self) -> model.AudioQuery:
+        return fastapi_model_converter.to_model_audio_query(self)
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -98,6 +122,13 @@ class SpeakerStyle(BaseModel):
     name: str = Field(title="スタイル名")
     id: int = Field(title="スタイルID")
 
+    @classmethod
+    def from_model(cls, speaker_style: model.SpeakerStyle) -> SpeakerStyle:
+        return fastapi_model_converter.from_model_speaker_style(speaker_style)
+
+    def to_model(self) -> model.SpeakerStyle:
+        return fastapi_model_converter.to_model_speaker_style(self)
+
 
 class Speaker(BaseModel):
     """
@@ -109,6 +140,13 @@ class Speaker(BaseModel):
     styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
     version: str = Field("スピーカーのバージョン")
 
+    @classmethod
+    def from_model(cls, speaker: model.Speaker) -> Speaker:
+        return fastapi_model_converter.from_model_speaker(speaker)
+
+    def to_model(self) -> model.Speaker:
+        return fastapi_model_converter.to_model_speaker(self)
+
 
 class StyleInfo(BaseModel):
     """
@@ -119,6 +157,13 @@ class StyleInfo(BaseModel):
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
 
+    @classmethod
+    def from_model(cls, style_info: model.StyleInfo) -> StyleInfo:
+        return fastapi_model_converter.from_model_style_info(style_info)
+
+    def to_model(self) -> model.StyleInfo:
+        return fastapi_model_converter.to_model_style_info(self)
+
 
 class SpeakerInfo(BaseModel):
     """
@@ -128,6 +173,13 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+    @classmethod
+    def from_model(cls, speaker_info: model.SpeakerInfo) -> SpeakerInfo:
+        return fastapi_model_converter.from_model_speaker_info(speaker_info)
+
+    def to_model(self) -> model.SpeakerInfo:
+        return fastapi_model_converter.to_model_speaker_info(self)
 
 
 class Preset(BaseModel):
@@ -145,3 +197,10 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+
+    @classmethod
+    def from_model(cls, preset: preset.Preset) -> Preset:
+        return fastapi_model_converter.from_model_preset(preset)
+
+    def to_model(self) -> preset.Preset:
+        return fastapi_model_converter.to_model_preset(self)

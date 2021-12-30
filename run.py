@@ -104,7 +104,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             speaker_id=speaker,
             enable_interrogative=enable_interrogative,
         )
-        return fastapi_model_converter.from_model_audio_query(
+        return AudioQuery.from_model(
             model.AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=1,
@@ -148,7 +148,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             speaker_id=selected_preset.style_id,
             enable_interrogative=enable_interrogative,
         )
-        return fastapi_model_converter.from_model_audio_query(
+        return AudioQuery.from_model(
             model.AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=selected_preset.speedScale,
@@ -286,7 +286,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     )
     def synthesis(query: AudioQuery, speaker: int) -> FileResponse:
         wave = engine.synthesis(
-            query=fastapi_model_converter.to_model_audio_query(query),
+            query=query.to_model(),
             speaker_id=speaker,
         )
 
@@ -319,7 +319,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         f_name = cancellable_engine.synthesis(
-            query=fastapi_model_converter.to_model_audio_query(query),
+            query=query.to_model(),
             speaker_id=speaker,
             request=request,
         )
@@ -358,9 +358,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                     with TemporaryFile() as wav_file:
 
                         wave = engine.synthesis(
-                            query=fastapi_model_converter.to_model_audio_query(
-                                queries[i]
-                            ),
+                            query=queries[i].to_model(),
                             speaker_id=speaker,
                         )
                         soundfile.write(
@@ -401,7 +399,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
-            query=query,
+            query=query.to_model(),
             base_speaker=base_speaker,
             target_speaker=target_speaker,
         )
@@ -520,7 +518,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                     for j in range(3)
                 ]
                 style_infos.append(
-                    {"id": id, "icon": icon, "voice_samples": voice_samples}
+                    model.StyleInfo(id=id, icon=icon, voice_samples=voice_samples)
                 )
         except FileNotFoundError:
             import traceback
@@ -528,7 +526,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
-        return fastapi_model_converter.from_model_speaker_info(
+        return SpeakerInfo.from_model(
             model.SpeakerInfo(policy=policy, portrait=portrait, style_infos=style_infos)
         )
 
