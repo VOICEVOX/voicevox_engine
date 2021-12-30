@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from ..model import ParseKanaError, ParseKanaErrorCode
+from voicevox_engine import model
 
 
 class Mora(BaseModel):
@@ -74,13 +74,13 @@ class ParseKanaBadRequest(BaseModel):
         + "\n".join(
             [
                 "| {} | {} |".format(err.name, err.value)
-                for err in list(ParseKanaErrorCode)
+                for err in list(model.ParseKanaErrorCode)
             ]
         ),
     )
     error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
 
-    def __init__(self, err: ParseKanaError):
+    def __init__(self, err: model.ParseKanaError):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
@@ -122,3 +122,20 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+
+class Preset(BaseModel):
+    """
+    プリセット情報
+    """
+
+    id: int = Field(title="プリセットID")
+    name: str = Field(title="プリセット名")
+    speaker_uuid: str = Field(title="スピーカーのUUID")
+    style_id: int = Field(title="スタイルID")
+    speedScale: float = Field(title="全体の話速")
+    pitchScale: float = Field(title="全体の音高")
+    intonationScale: float = Field(title="全体の抑揚")
+    volumeScale: float = Field(title="全体の音量")
+    prePhonemeLength: float = Field(title="音声の前の無音時間")
+    postPhonemeLength: float = Field(title="音声の後の無音時間")
