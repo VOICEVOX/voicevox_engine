@@ -1,6 +1,7 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Optional
+from typing.io import IO
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
@@ -218,6 +219,20 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     @abstractmethod
     def guided_synthesis(
-        self, length, phoneme_size, f0, phoneme, speaker_id, stereo, sample_rate, volume
+        self,
+        query: AudioQuery,
+        speaker_id: int,
+        audio_file: Optional[IO],
+        normalize: int,
     ):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def guided_accent_phrases(
+        self,
+        query: AudioQuery,
+        speaker_id: int,
+        audio_file: Optional[IO],
+        normalize: int,
+    ) -> AudioQuery:
         raise NotImplementedError()

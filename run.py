@@ -17,7 +17,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
 
-import voicevox_engine.guided as guided
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
@@ -221,14 +220,8 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         audio_file: UploadFile = File(...),  # noqa: B008
     ):
         try:
-            accent_phrases = guided.accent_phrase(
-                engine=engine,
-                audio_file=audio_file.file,
-                kana=kana,
-                speaker_id=speaker_id,
-                normalize=normalize,
-            )
-            return AudioQuery(
+            accent_phrases, _ = parse_kana(kana, False)
+            query = AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=1,
                 pitchScale=0,
@@ -238,7 +231,13 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 postPhonemeLength=0.1,
                 outputSamplingRate=default_sampling_rate,
                 outputStereo=False,
-                kana=create_kana(accent_phrases),
+                kana=kana,
+            )
+            return engine.guided_accent_phrases(
+                query=query,
+                speaker_id=speaker_id,
+                audio_file=audio_file.file,
+                normalize=normalize,
             )
         except ParseKanaError:
             print(traceback.format_exc())
@@ -459,17 +458,24 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         speedScale: float = Form(...),  # noqa: B008
     ):
         try:
-            wave = guided.synthesis(
-                engine=engine,
-                audio_file=audio_file.file,
+            accent_phrases, _ = parse_kana(kana, False)
+            query = AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=speedScale,
+                pitchScale=pitchScale,
+                intonationScale=1,
+                volumeScale=volumeScale,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=sample_rate,
+                outputStereo=stereo,
                 kana=kana,
+            )
+            wave = engine.guided_synthesis(
+                audio_file=audio_file.file,
+                query=query,
                 speaker_id=speaker_id,
                 normalize=normalize,
-                stereo=stereo,
-                sample_rate=sample_rate,
-                volumeScale=volumeScale,
-                pitchScale=pitchScale,
-                speedScale=speedScale,
             )
 
             with NamedTemporaryFile(delete=False) as f:

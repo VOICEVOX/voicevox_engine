@@ -1,10 +1,19 @@
+from copy import deepcopy
 from itertools import chain
 from typing import List, Optional, Tuple
+from typing.io import IO
 
 import numpy
 from scipy.signal import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..guided_extractor import (
+    PhraseInfo,
+    extract_guided_feature,
+    get_normalize_scale,
+    resample_ts,
+)
+from ..julius4seg.sp_inserter import frame_to_second
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
 
@@ -480,26 +489,118 @@ class SynthesisEngine(SynthesisEngineBase):
         return wave
 
     def guided_synthesis(
-        self, length, phoneme_size, f0, phoneme, speaker_id, stereo, sample_rate, volume
+        self,
+        query: AudioQuery,
+        speaker_id: int,
+        audio_file: Optional[IO],
+        normalize: int,
     ):
-        wave = self.decode_forwarder(
-            length=length,
-            phoneme_size=phoneme_size,
-            f0=f0,
-            phoneme=phoneme,
-            speaker_id=speaker_id,
-        )
+        f0, phonemes = extract_guided_feature(audio_file, query.kana)
 
-        if volume != 1:
-            wave *= volume
+        phone_list = numpy.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=numpy.float32)
 
-        if sample_rate != self.default_sampling_rate:
-            wave = resample(
-                wave,
-                sample_rate * len(wave) // self.default_sampling_rate,
+        for s, e, p in phonemes:
+            s, e = (resample_ts(v) for v in (s, e))
+            if p == "silB":
+                f0[:e] = 0.0
+                s += 1
+                p = "pau"
+            elif p == "silE":
+                f0[s:] = 0.0
+                p = "pau"
+            elif p == "sp":
+                f0[s:e] = 0.0
+                p = "pau"
+            elif p == "q":
+                p = "cl"
+            phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
+
+        if normalize:
+            f0 *= get_normalize_scale(
+                engine=self, kana=query.kana, f0=f0, speaker_id=speaker_id
             )
 
-        if stereo:
+        f0 *= 2 ** query.pitchScale
+        f0[f0 > 6.5] = 6.5
+        f0[(0 < f0) & (f0 < 3)] = 3.0
+
+        f0 = resample(f0, int(len(f0) / query.speedScale))
+        phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))
+
+        wave = self.decode_forwarder(
+            length=phone_list.shape[0],
+            phoneme_size=phone_list.shape[1],
+            f0=f0[:, numpy.newaxis].astype(numpy.float32),
+            phoneme=phone_list,
+            speaker_id=numpy.array([speaker_id], dtype=numpy.int64).reshape(-1),
+        )
+
+        if query.volumeScale != 1:
+            wave *= query.volumeScale
+
+        if query.outputSamplingRate != self.default_sampling_rate:
+            wave = resample(
+                wave,
+                query.outputSamplingRate * len(wave) // self.default_sampling_rate,
+            )
+
+        if query.outputStereo:
             wave = numpy.array([wave, wave]).T
 
         return wave
+
+    def guided_accent_phrases(
+        self,
+        query: AudioQuery,
+        speaker_id: int,
+        audio_file: Optional[IO],
+        normalize: int,
+    ) -> AudioQuery:
+        f0, phonemes = extract_guided_feature(audio_file, query.kana)
+        timed_phonemes = frame_to_second(deepcopy(phonemes))
+
+        phrase_info = []
+        for ((s, e, p), (ts, te, _tp)) in zip(phonemes, timed_phonemes):
+            if p not in unvoiced_mora_phoneme_list:
+                clip = f0[resample_ts(s) : resample_ts(e)]
+                clip = clip[clip != 0]
+                pitch = numpy.average(clip) if len(clip) != 0 else 0
+            else:
+                pitch = 0
+            pitch = 0 if numpy.isnan(pitch) else pitch
+            length = float(te) - float(ts)
+            phrase_info.append(PhraseInfo(pitch, length, p))
+
+        if normalize:
+            normalize_scale = get_normalize_scale(
+                engine=self, kana=query.kana, f0=f0, speaker_id=speaker_id
+            )
+            for p in phrase_info:
+                p.pitch = p.pitch * normalize_scale
+
+        idx = 1
+        for phrase in query.accent_phrases:
+            for mora in phrase.moras:
+                if mora.consonant is not None:
+                    mora.pitch = (
+                        phrase_info[idx].pitch + phrase_info[idx + 1].pitch
+                    ) / 2
+                    mora.consonant_length = phrase_info[idx].length
+                    mora.vowel_length = phrase_info[idx + 1].length
+                    idx += 2
+                else:
+                    mora.pitch = phrase_info[idx].pitch
+                    mora.vowel_length = phrase_info[idx].length
+                    idx += 1
+            if phrase_info[idx].phoneme == "sp":
+                phrase.pause_mora = Mora(
+                    text="、",
+                    consonant=None,
+                    consonant_length=None,
+                    vowel="pau",
+                    vowel_length=phrase_info[idx].length,
+                    pitch=0,
+                )
+                idx += 1
+
+        return query
