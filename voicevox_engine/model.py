@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 また、対応する型との適切な変換処理を実装すること
 """
 
+# FIXME: このファイルの各型からpydantic由来の機能を削除し、dataclassにする。もともとmodel.pyはAPI定義に使用されていたが、
+# 使用するデータ型が分離したため
+
 
 class Mora(BaseModel):
     """
