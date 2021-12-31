@@ -8,9 +8,10 @@ from pydantic import BaseModel, Field
 from voicevox_engine import model, preset
 
 """
-このファイルの型はmodel.pyと重複しているように見えるが、これは内部で使用しているmodel.pyの変更をAPI定義に影響を与えないするためである。
+このファイルの型はvoicevox_engine/model.pyと重複しているように見えるが、
+これは内部で使用しているvoicevox_engine/model.pyの変更をAPI定義に影響を与えないするためである。
 fastapiのリクエスト、レスポンスに使用する型はmodel.pyにあるものではなく必ずここに定義してある型を使用すること。
-model.pyあるいはこのファイルの型に変更がある場合fastapi_model_converterでの変換処理を実装する
+model.pyあるいはこのファイルの型に変更がある場合各モデルで必要な変換処理を実装する
 """
 
 

@@ -3,6 +3,11 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+"""
+ここで定義されている型は内部で使用するための型であり、API定義を変更したければvoicevox_engine/webapi/fastapi_model.pyの定義を変更すること。
+また、対応する型との適切な変換処理を実装すること
+"""
+
 
 class Mora(BaseModel):
     """

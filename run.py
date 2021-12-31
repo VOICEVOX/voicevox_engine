@@ -39,6 +39,12 @@ from voicevox_engine.webapi.fastapi_model import (
     SpeakerInfo,
 )
 
+"""
+voicevox_enbine/model.pyで定義されている型は内部で使用する方なので、リクエスト及びレスポンスを行う際に使用してはならない。
+リクエスト・レスポンスで使用する型はvoicevox_engine/webapi/fastapi_model.pyで定義されている型を使用し、
+内部で使用している型から(or に)変換すること
+"""
+
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
