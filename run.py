@@ -250,19 +250,19 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             print(traceback.format_exc())
             raise HTTPException(
                 status_code=500,
-                detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                detail="Failed in Forced Alignment",
             )
         except Exception as e:
             print(traceback.format_exc())
             if str(e) == "Decode Failed":
                 raise HTTPException(
                     status_code=500,
-                    detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                    detail="Failed in Forced Alignment",
                 )
             else:
                 raise HTTPException(
                     status_code=500,
-                    detail="Internal Server Error.",
+                    detail="Internal Server Error",
                 )
 
     @app.post(
@@ -445,7 +445,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             }
         },
         tags=["音声合成"],
-        summary="Audio synthesis guided by external audio and phonemes in kana, both uploaded in one form",
+        summary="Audio synthesis guided by external audio and phonemes",
     )
     def guided_synthesis(
         kana: str = Form(...),
@@ -486,14 +486,14 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             print(traceback.format_exc())
             raise HTTPException(
                 status_code=500,
-                detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                detail="Failed in Forced Alignment.",
             )
         except Exception as e:
             print(traceback.format_exc())
             if str(e) == "Decode Failed":
                 raise HTTPException(
                     status_code=500,
-                    detail="Failed in Forced Alignment. Please try again with another Audio Resource",
+                    detail="Failed in Forced Alignment.",
                 )
             else:
                 raise HTTPException(

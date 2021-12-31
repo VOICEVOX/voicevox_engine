@@ -53,17 +53,6 @@ class PhraseInfo:
         self.phoneme = phoneme
 
 
-# benchmark decorator
-def timereps(reps, func):
-    from time import time
-
-    start = time()
-    for i in range(0, reps):
-        func()
-    end = time()
-    return (end - start) / reps
-
-
 def _lazy_init():
     if not exists(JULIUS_DICTATION_DIR):
         print("Julius not found, Downloading")
@@ -195,7 +184,7 @@ def accent_phrase(
     accent_phrases, _ = parse_kana(kana, False)
 
     phrase_info = []
-    for ((s, e, p), (ts, te, tp)) in zip(phonemes, timed_phonemes):
+    for ((s, e, p), (ts, te, _tp)) in zip(phonemes, timed_phonemes):
         if p not in unvoiced_mora_phoneme_list:
             clip = f0[_resample_ts(s) : _resample_ts(e)]
             clip = clip[clip != 0]
@@ -295,7 +284,7 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
 
     raw_first_output = sp_inserter.julius_sp_insert(
         TMP_PATH,
-        f"first_pass",
+        "first_pass",
         hmm_model,
         model_type,
         options,
@@ -305,13 +294,13 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
     try:
         _, sp_position = sp_inserter.get_sp_inserted_text(raw_first_output)
 
-        for j, (t, p) in enumerate(zip(base_kan_text, julius_phones)):
+        for j, (_t, p) in enumerate(zip(base_kan_text, julius_phones)):
             forced_phones_with_sp.append(p)
             if j in sp_position:
                 forced_phones_with_sp.append(space_symbols[model_type])
 
         forced_phones_with_sp = " ".join(forced_phones_with_sp)
-    except:
+    except Exception:
         pass
 
     phones_with_sp = sp_inserter.get_sp_inserterd_phone_seqence(
@@ -330,7 +319,7 @@ def forced_align(julius_wave: np.ndarray, base_kata_text: str):
         f.write(dfa_2nd)
 
     raw_second_output = sp_inserter.julius_phone_alignment(
-        TMP_PATH, f"second_pass", hmm_model, model_type, options
+        TMP_PATH, "second_pass", hmm_model, model_type, options
     )
     time_alimented_list = sp_inserter.get_time_alimented_list(raw_second_output)
 
