@@ -215,10 +215,10 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         summary="Create Audio Query Guided by External Audio",
     )
     def guided_accent_phrase(
-        kana: str = Form(...),
-        speaker_id: int = Form(...),
-        normalize: int = Form(...),
-        audio_file: UploadFile = File(...),
+        kana: str = Form(...),  # noqa: B008
+        speaker_id: int = Form(...),  # noqa: B008
+        normalize: int = Form(...),  # noqa: B008
+        audio_file: UploadFile = File(...),  # noqa: B008
     ):
         try:
             accent_phrases = guided.accent_phrase(
@@ -448,15 +448,15 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         summary="Audio synthesis guided by external audio and phonemes",
     )
     def guided_synthesis(
-        kana: str = Form(...),
-        speaker_id: int = Form(...),
-        normalize: int = Form(...),
-        audio_file: UploadFile = File(...),
-        stereo: int = Form(...),
-        sample_rate: int = Form(...),
-        volumeScale: float = Form(...),
-        pitchScale: float = Form(...),
-        speedScale: float = Form(...),
+        kana: str = Form(...),  # noqa: B008
+        speaker_id: int = Form(...),  # noqa: B008
+        normalize: int = Form(...),  # noqa: B008
+        audio_file: UploadFile = File(...),  # noqa: B008
+        stereo: int = Form(...),  # noqa: B008
+        sample_rate: int = Form(...),  # noqa: B008
+        volumeScale: float = Form(...),  # noqa: B008
+        pitchScale: float = Form(...),  # noqa: B008
+        speedScale: float = Form(...),  # noqa: B008
     ):
         try:
             wave = guided.synthesis(

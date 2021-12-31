@@ -36,7 +36,7 @@ TEMP_FILE_LIST = [
     "tmp.wav",
 ]
 
-_JULIUS_DICTATION_URL = "https://github.com/julius-speech/dictation-kit/archive/refs/tags/dictation-kit-v4.3.1.tar.gz"
+_JULIUS_DICTATION_URL = "https://github.com/julius-speech/dictation-kit/archive/refs/tags/dictation-kit-v4.3.1.tar.gz"  # noqa: B950
 JULIUS_DICTATION_DIR = os.environ.get(
     "JULIUS_DICTATION_DIR",
     # they did put two "dictation-kit"s in extracted folder name
