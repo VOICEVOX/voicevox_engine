@@ -208,7 +208,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             )
 
     @app.post(
-        "/guided/accent_phrase",
+        "/guided_accent_phrase",
         response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="Create Audio Query Guided by External Audio",
@@ -435,7 +435,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         return FileResponse(f.name, media_type="audio/wav")
 
     @app.post(
-        "/guided/synthesis",
+        "/guided_synthesis",
         responses={
             200: {
                 "content": {
