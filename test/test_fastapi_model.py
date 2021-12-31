@@ -1,8 +1,7 @@
-from typing import List
 from unittest import TestCase
 
 from voicevox_engine import model, preset
-from voicevox_engine.webapi import fastapi_model, fastapi_model_converter
+from voicevox_engine.webapi import fastapi_model
 
 
 class TestFastAPIModelConverter(TestCase):
@@ -46,14 +45,12 @@ class TestFastAPIModelConverter(TestCase):
             pitch=3.5,
         )
 
-    def test_from_model_mora(self):
-        actual: fastapi_model.Mora = fastapi_model_converter.from_model_mora(
-            self._mora()
-        )
+    def test_mora_from_engine(self):
+        actual: fastapi_model.Mora = fastapi_model.Mora.from_engine(self._mora())
         self._asserts(expected=self._fastapi_mora(), given=self._mora(), actual=actual)
 
-    def test_to_model_mora(self):
-        actual: model.Mora = fastapi_model_converter.to_model_mora(self._fastapi_mora())
+    def test_mora_to_engine(self):
+        actual: model.Mora = self._fastapi_mora().to_engine()
         self._asserts(expected=self._mora(), given=self._fastapi_mora(), actual=actual)
 
     def _moras(self):
@@ -61,22 +58,6 @@ class TestFastAPIModelConverter(TestCase):
 
     def _fastapi_moras(self):
         return [self._fastapi_mora(), self._fastapi_mora()]
-
-    def test_from_model_moras(self):
-        actual: List[fastapi_model.Mora] = fastapi_model_converter.from_model_moras(
-            self._moras()
-        )
-        self._asserts_list(
-            expected=self._fastapi_moras(), given=self._moras(), actual=actual
-        )
-
-    def test_to_model_moras(self):
-        actual: List[model.Mora] = fastapi_model_converter.to_model_moras(
-            self._fastapi_moras()
-        )
-        self._asserts_list(
-            expected=self._moras(), given=self._fastapi_moras(), actual=actual
-        )
 
     def _accent_phrase(self):
         return model.AccentPhrase(
@@ -113,8 +94,8 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_accent_phrase(self):
-        actual: fastapi_model.AccentPhrase = (
-            fastapi_model_converter.from_model_accent_phrase(self._accent_phrase())
+        actual: fastapi_model.AccentPhrase = fastapi_model.AccentPhrase.from_engine(
+            self._accent_phrase()
         )
         self._asserts(
             expected=self._fastapi_accent_phrase(),
@@ -126,15 +107,15 @@ class TestFastAPIModelConverter(TestCase):
         given.pause_mora = self._pause_mora()
         expected = self._fastapi_accent_phrase()
         expected.pause_mora = self._fastapi_pause_mora()
-        actual: fastapi_model.AccentPhrase = (
-            fastapi_model_converter.from_model_accent_phrase(given)
+        actual: fastapi_model.AccentPhrase = fastapi_model.AccentPhrase.from_engine(
+            given
         )
+
         self._asserts(expected=expected, given=given, actual=actual)
 
     def test_to_model_accent_phrase(self):
-        actual: model.AccentPhrase = fastapi_model_converter.to_model_accent_phrase(
-            self._fastapi_accent_phrase()
-        )
+        actual: model.AccentPhrase = self._fastapi_accent_phrase().to_engine()
+
         self._asserts(
             expected=self._accent_phrase(),
             given=self._fastapi_accent_phrase(),
@@ -145,9 +126,7 @@ class TestFastAPIModelConverter(TestCase):
         given.pause_mora = self._fastapi_pause_mora()
         expected = self._accent_phrase()
         expected.pause_mora = self._pause_mora()
-        actual: model.AccentPhrase = fastapi_model_converter.to_model_accent_phrase(
-            given
-        )
+        actual: model.AccentPhrase = given.to_engine()
         self._asserts(expected=expected, given=given, actual=actual)
 
     def _accent_phrases(self):
@@ -161,28 +140,6 @@ class TestFastAPIModelConverter(TestCase):
             self._fastapi_accent_phrase(),
             self._fastapi_accent_phrase(),
         ]
-
-    def test_from_model_accent_phrases(self):
-        actual: List[
-            fastapi_model.AccentPhrase
-        ] = fastapi_model_converter.from_model_accent_phrases(self._accent_phrases())
-        self._asserts_list(
-            expected=self._fastapi_accent_phrases(),
-            given=self._accent_phrases(),
-            actual=actual,
-        )
-
-    def test_to_model_accent_phrases(self):
-        actual: List[
-            model.AccentPhrase
-        ] = fastapi_model_converter.to_model_accent_phrases(
-            self._fastapi_accent_phrases()
-        )
-        self._asserts_list(
-            expected=self._accent_phrases(),
-            given=self._fastapi_accent_phrases(),
-            actual=actual,
-        )
 
     def _audio_query(self):
         return model.AudioQuery(
@@ -213,8 +170,8 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_audio_query(self):
-        actual: fastapi_model.AudioQuery = (
-            fastapi_model_converter.from_model_audio_query(self._audio_query())
+        actual: fastapi_model.AudioQuery = fastapi_model.AudioQuery.from_engine(
+            self._audio_query()
         )
         self._asserts(
             expected=self._fastapi_audio_query(),
@@ -223,9 +180,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_to_model_audio_query(self):
-        actual: model.AudioQuery = fastapi_model_converter.to_model_audio_query(
-            self._fastapi_audio_query()
-        )
+        actual: model.AudioQuery = self._fastapi_audio_query().to_engine()
         self._asserts(
             expected=self._audio_query(),
             given=self._fastapi_audio_query(),
@@ -245,8 +200,8 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_speaker_style(self):
-        actual: fastapi_model.SpeakerStyle = (
-            fastapi_model_converter.from_model_speaker_style(self._speaker_style())
+        actual: fastapi_model.SpeakerStyle = fastapi_model.SpeakerStyle.from_engine(
+            self._speaker_style()
         )
         self._asserts(
             expected=self._fastapi_speaker_style(),
@@ -255,9 +210,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_to_model_speaker_style(self):
-        actual: model.SpeakerStyle = fastapi_model_converter.to_model_speaker_style(
-            self._fastapi_speaker_style()
-        )
+        actual: model.SpeakerStyle = self._fastapi_speaker_style().to_engine()
         self._asserts(
             expected=self._speaker_style(),
             given=self._fastapi_speaker_style(),
@@ -281,7 +234,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_speaker(self):
-        actual: fastapi_model.Speaker = fastapi_model_converter.from_model_speaker(
+        actual: fastapi_model.Speaker = fastapi_model.Speaker.from_engine(
             self._speaker()
         )
         self._asserts(
@@ -289,9 +242,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_to_model_speaker(self):
-        actual: model.Speaker = fastapi_model_converter.to_model_speaker(
-            self._fastapi_speaker()
-        )
+        actual: model.Speaker = self._fastapi_speaker().to_engine()
         self._asserts(
             expected=self._speaker(), given=self._fastapi_speaker(), actual=actual
         )
@@ -311,7 +262,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_style_info(self):
-        actual: fastapi_model.StyleInfo = fastapi_model_converter.from_model_style_info(
+        actual: fastapi_model.StyleInfo = fastapi_model.StyleInfo.from_engine(
             self._style_info()
         )
         self._asserts(
@@ -319,9 +270,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_to_model_style_info(self):
-        actual: model.StyleInfo = fastapi_model_converter.to_model_style_info(
-            self._fastapi_style_info()
-        )
+        actual: model.StyleInfo = self._fastapi_style_info().to_engine()
         self._asserts(
             expected=self._style_info(), given=self._fastapi_style_info(), actual=actual
         )
@@ -341,8 +290,8 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_speaker_info(self):
-        actual: fastapi_model.SpeakerInfo = (
-            fastapi_model_converter.from_model_speaker_info(self._speaker_info())
+        actual: fastapi_model.SpeakerInfo = fastapi_model.SpeakerInfo.from_engine(
+            self._speaker_info()
         )
         self._asserts(
             expected=self._fastapi_speaker_info(),
@@ -351,9 +300,7 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_to_model_speaker_info(self):
-        actual: model.SpeakerInfo = fastapi_model_converter.to_model_speaker_info(
-            self._fastapi_speaker_info()
-        )
+        actual: model.SpeakerInfo = self._fastapi_speaker_info().to_engine()
         self._asserts(
             expected=self._speaker_info(),
             given=self._fastapi_speaker_info(),
@@ -389,33 +336,13 @@ class TestFastAPIModelConverter(TestCase):
         )
 
     def test_from_model_preset(self):
-        actual: fastapi_model.Preset = fastapi_model_converter.from_model_preset(
-            self._preset()
-        )
+        actual: fastapi_model.Preset = fastapi_model.Preset.from_engine(self._preset())
         self._asserts(
             expected=self._fastapi_preset(), given=self._preset(), actual=actual
         )
 
     def test_to_model_preset(self):
-        actual: preset.Preset = fastapi_model_converter.to_model_preset(
-            self._fastapi_preset()
-        )
+        actual: preset.Preset = self._fastapi_preset().to_engine()
         self._asserts(
             expected=self._preset(), given=self._fastapi_preset(), actual=actual
-        )
-
-    def _presets(self):
-        return [self._preset(), self._preset()]
-
-    def _fastapi_presets(self):
-        return [self._fastapi_preset(), self._fastapi_preset()]
-
-    def test_from_model_presets(self):
-        actual: List[fastapi_model.Preset] = fastapi_model_converter.from_model_presets(
-            self._presets()
-        )
-        self._asserts_list(
-            expected=self._fastapi_presets(),
-            given=self._presets(),
-            actual=actual,
         )

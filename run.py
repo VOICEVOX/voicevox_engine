@@ -30,7 +30,6 @@ from voicevox_engine.synthesis_engine.synthesis_engine_base import (
     adjust_interrogative_accent_phrases,
 )
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
-from voicevox_engine.webapi import fastapi_model_converter
 from voicevox_engine.webapi.fastapi_model import (
     AccentPhrase,
     AudioQuery,
@@ -104,7 +103,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             speaker_id=speaker,
             enable_interrogative=enable_interrogative,
         )
-        return AudioQuery.from_model(
+        return AudioQuery.from_engine(
             model.AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=1,
@@ -148,7 +147,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             speaker_id=selected_preset.style_id,
             enable_interrogative=enable_interrogative,
         )
-        return AudioQuery.from_model(
+        return AudioQuery.from_engine(
             model.AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=selected_preset.speedScale,
@@ -203,21 +202,27 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
 
-            return fastapi_model_converter.from_model_accent_phrases(
-                adjust_interrogative_accent_phrases(
-                    accent_phrases,
-                    interrogative_accent_phrase_marks,
-                    enable_interrogative,
+            return [
+                AccentPhrase.from_engine(accent_phrase)
+                for accent_phrase in (
+                    adjust_interrogative_accent_phrases(
+                        accent_phrases,
+                        interrogative_accent_phrase_marks,
+                        enable_interrogative,
+                    )
                 )
-            )
+            ]
         else:
-            return fastapi_model_converter.from_model_accent_phrases(
-                engine.create_accent_phrases(
-                    text,
-                    speaker_id=speaker,
-                    enable_interrogative=enable_interrogative,
+            return [
+                AccentPhrase.from_engine(accent_phrase)
+                for accent_phrase in (
+                    engine.create_accent_phrases(
+                        text,
+                        speaker_id=speaker,
+                        enable_interrogative=enable_interrogative,
+                    )
                 )
-            )
+            ]
 
     @app.post(
         "/mora_data",
@@ -228,12 +233,17 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def mora_data(
         accent_phrases: List[AccentPhrase], speaker: int
     ) -> List[AccentPhrase]:
-        return fastapi_model_converter.from_model_accent_phrases(
-            engine.replace_mora_data(
-                fastapi_model_converter.to_model_accent_phrases(accent_phrases),
-                speaker_id=speaker,
+        return [
+            AccentPhrase.from_engine(accent_phrase)
+            for accent_phrase in (
+                engine.replace_mora_data(
+                    accent_phrases=[
+                        accent_phrase.to_engine() for accent_phrase in accent_phrases
+                    ],
+                    speaker_id=speaker,
+                )
             )
-        )
+        ]
 
     @app.post(
         "/mora_length",
@@ -244,14 +254,17 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def mora_length(
         accent_phrases: List[AccentPhrase], speaker: int
     ) -> List[AccentPhrase]:
-        return fastapi_model_converter.from_model_accent_phrases(
-            engine.replace_phoneme_length(
-                accent_phrases=fastapi_model_converter.to_model_accent_phrases(
-                    accent_phrases
-                ),
-                speaker_id=speaker,
+        return [
+            AccentPhrase.from_engine(accent_phrase)
+            for accent_phrase in (
+                engine.replace_phoneme_length(
+                    accent_phrases=[
+                        accent_phrase.to_engine() for accent_phrase in accent_phrases
+                    ],
+                    speaker_id=speaker,
+                )
             )
-        )
+        ]
 
     @app.post(
         "/mora_pitch",
@@ -262,14 +275,17 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def mora_pitch(
         accent_phrases: List[AccentPhrase], speaker: int
     ) -> List[AccentPhrase]:
-        return fastapi_model_converter.from_model_accent_phrases(
-            engine.replace_mora_pitch(
-                accent_phrases=fastapi_model_converter.to_model_accent_phrases(
-                    accent_phrases
-                ),
-                speaker_id=speaker,
+        return [
+            AccentPhrase.from_engine(accent_phrase)
+            for accent_phrase in (
+                engine.replace_mora_pitch(
+                    accent_phrases=[
+                        accent_phrase.to_engine() for accent_phrase in accent_phrases
+                    ],
+                    speaker_id=speaker,
+                )
             )
-        )
+        ]
 
     @app.post(
         "/synthesis",
@@ -286,7 +302,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     )
     def synthesis(query: AudioQuery, speaker: int) -> FileResponse:
         wave = engine.synthesis(
-            query=query.to_model(),
+            query=query.to_engine(),
             speaker_id=speaker,
         )
 
@@ -319,7 +335,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         f_name = cancellable_engine.synthesis(
-            query=query.to_model(),
+            query=query.to_engine(),
             speaker_id=speaker,
             request=request,
         )
@@ -358,7 +374,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                     with TemporaryFile() as wav_file:
 
                         wave = engine.synthesis(
-                            query=queries[i].to_model(),
+                            query=queries[i].to_engine(),
                             speaker_id=speaker,
                         )
                         soundfile.write(
@@ -399,7 +415,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
-            query=query.to_model(),
+            query=query.to_engine(),
             base_speaker=base_speaker,
             target_speaker=target_speaker,
         )
@@ -465,7 +481,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
-        return fastapi_model_converter.from_model_presets(presets)
+        return [preset.to_engine() for preset in presets]
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
@@ -526,7 +542,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
-        return SpeakerInfo.from_model(
+        return SpeakerInfo.from_engine(
             model.SpeakerInfo(policy=policy, portrait=portrait, style_infos=style_infos)
         )
 

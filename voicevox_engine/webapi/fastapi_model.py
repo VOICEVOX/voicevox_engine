@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import copy
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
 from voicevox_engine import model, preset
-from voicevox_engine.webapi import fastapi_model_converter
 
 """
 このファイルの型はmodel.pyと重複しているように見えるが、これは内部で使用しているmodel.pyの変更をAPI定義に影響を与えないするためである。
@@ -34,11 +34,25 @@ class Mora(BaseModel):
         return hash(tuple(sorted(items)))
 
     @classmethod
-    def from_model(cls, mora: model.Mora) -> Mora:
-        return fastapi_model_converter.from_model_mora(mora)
+    def from_engine(cls, mora: model.Mora) -> Mora:
+        return cls(
+            text=mora.text,
+            consonant=mora.consonant,
+            consonant_length=mora.consonant_length,
+            vowel=mora.vowel,
+            vowel_length=mora.vowel_length,
+            pitch=mora.pitch,
+        )
 
-    def to_model(self) -> model.Mora:
-        return fastapi_model_converter.to_model_mora(self)
+    def to_engine(self) -> model.Mora:
+        return model.Mora(
+            text=self.text,
+            consonant=self.consonant,
+            consonant_length=self.consonant_length,
+            vowel=self.vowel,
+            vowel_length=self.vowel_length,
+            pitch=self.pitch,
+        )
 
 
 class AccentPhrase(BaseModel):
@@ -58,11 +72,23 @@ class AccentPhrase(BaseModel):
         return hash(tuple(sorted(items)))
 
     @classmethod
-    def from_model(cls, accent_phrase: model.AccentPhrase) -> AccentPhrase:
-        return fastapi_model_converter.from_model_accent_phrase(accent_phrase)
+    def from_engine(cls, accent_phrase: model.AccentPhrase) -> AccentPhrase:
+        return cls(
+            moras=[Mora.from_engine(mora) for mora in accent_phrase.moras],
+            accent=accent_phrase.accent,
+            pause_mora=Mora.from_engine(accent_phrase.pause_mora)
+            if accent_phrase.pause_mora is not None
+            else None,
+        )
 
-    def to_model(self) -> model.AccentPhrase:
-        return fastapi_model_converter.to_model_accent_phrase(self)
+    def to_engine(self) -> model.AccentPhrase:
+        return model.AccentPhrase(
+            moras=[mora.to_engine() for mora in self.moras],
+            accent=self.accent,
+            pause_mora=self.pause_mora.to_engine()
+            if self.pause_mora is not None
+            else None,
+        )
 
 
 class AudioQuery(BaseModel):
@@ -89,11 +115,38 @@ class AudioQuery(BaseModel):
         return hash(tuple(sorted(items)))
 
     @classmethod
-    def from_model(cls, audio_query: model.AudioQuery) -> AudioQuery:
-        return fastapi_model_converter.from_model_audio_query(audio_query)
+    def from_engine(cls, audio_query: model.AudioQuery) -> AudioQuery:
+        return cls(
+            accent_phrases=[
+                AccentPhrase.from_engine(accent_phrase)
+                for accent_phrase in audio_query.accent_phrases
+            ],
+            speedScale=audio_query.speedScale,
+            pitchScale=audio_query.pitchScale,
+            intonationScale=audio_query.intonationScale,
+            volumeScale=audio_query.volumeScale,
+            prePhonemeLength=audio_query.prePhonemeLength,
+            postPhonemeLength=audio_query.postPhonemeLength,
+            outputSamplingRate=audio_query.outputSamplingRate,
+            outputStereo=audio_query.outputStereo,
+            kana=audio_query.kana,
+        )
 
-    def to_model(self) -> model.AudioQuery:
-        return fastapi_model_converter.to_model_audio_query(self)
+    def to_engine(self) -> model.AudioQuery:
+        return model.AudioQuery(
+            accent_phrases=[
+                accent_phrase.to_engine() for accent_phrase in self.accent_phrases
+            ],
+            speedScale=self.speedScale,
+            pitchScale=self.pitchScale,
+            intonationScale=self.intonationScale,
+            volumeScale=self.volumeScale,
+            prePhonemeLength=self.prePhonemeLength,
+            postPhonemeLength=self.postPhonemeLength,
+            outputSamplingRate=self.outputSamplingRate,
+            outputStereo=self.outputStereo,
+            kana=self.kana,
+        )
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -123,11 +176,17 @@ class SpeakerStyle(BaseModel):
     id: int = Field(title="スタイルID")
 
     @classmethod
-    def from_model(cls, speaker_style: model.SpeakerStyle) -> SpeakerStyle:
-        return fastapi_model_converter.from_model_speaker_style(speaker_style)
+    def from_engine(cls, speaker_style: model.SpeakerStyle) -> SpeakerStyle:
+        return cls(
+            name=speaker_style.name,
+            id=speaker_style.id,
+        )
 
-    def to_model(self) -> model.SpeakerStyle:
-        return fastapi_model_converter.to_model_speaker_style(self)
+    def to_engine(self) -> model.SpeakerStyle:
+        return model.SpeakerStyle(
+            name=self.name,
+            id=self.id,
+        )
 
 
 class Speaker(BaseModel):
@@ -141,11 +200,21 @@ class Speaker(BaseModel):
     version: str = Field("スピーカーのバージョン")
 
     @classmethod
-    def from_model(cls, speaker: model.Speaker) -> Speaker:
-        return fastapi_model_converter.from_model_speaker(speaker)
+    def from_engine(cls, speaker: model.Speaker) -> Speaker:
+        return cls(
+            name=speaker.name,
+            speaker_uuid=speaker.speaker_uuid,
+            styles=speaker.styles,
+            version=speaker.version,
+        )
 
-    def to_model(self) -> model.Speaker:
-        return fastapi_model_converter.to_model_speaker(self)
+    def to_engine(self) -> model.Speaker:
+        return model.Speaker(
+            name=self.name,
+            speaker_uuid=self.speaker_uuid,
+            styles=self.styles,
+            version=self.version,
+        )
 
 
 class StyleInfo(BaseModel):
@@ -158,11 +227,19 @@ class StyleInfo(BaseModel):
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
 
     @classmethod
-    def from_model(cls, style_info: model.StyleInfo) -> StyleInfo:
-        return fastapi_model_converter.from_model_style_info(style_info)
+    def from_engine(cls, style_info: model.StyleInfo) -> StyleInfo:
+        return cls(
+            id=style_info.id,
+            icon=style_info.icon,
+            voice_samples=copy.deepcopy(style_info.voice_samples),
+        )
 
-    def to_model(self) -> model.StyleInfo:
-        return fastapi_model_converter.to_model_style_info(self)
+    def to_engine(self) -> model.StyleInfo:
+        return model.StyleInfo(
+            id=self.id,
+            icon=self.icon,
+            voice_samples=copy.deepcopy(self.voice_samples),
+        )
 
 
 class SpeakerInfo(BaseModel):
@@ -175,11 +252,19 @@ class SpeakerInfo(BaseModel):
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
 
     @classmethod
-    def from_model(cls, speaker_info: model.SpeakerInfo) -> SpeakerInfo:
-        return fastapi_model_converter.from_model_speaker_info(speaker_info)
+    def from_engine(cls, speaker_info: model.SpeakerInfo) -> SpeakerInfo:
+        return cls(
+            policy=speaker_info.policy,
+            portrait=speaker_info.portrait,
+            style_infos=speaker_info.style_infos,
+        )
 
-    def to_model(self) -> model.SpeakerInfo:
-        return fastapi_model_converter.to_model_speaker_info(self)
+    def to_engine(self) -> model.SpeakerInfo:
+        return model.SpeakerInfo(
+            policy=self.policy,
+            portrait=self.portrait,
+            style_infos=self.style_infos,
+        )
 
 
 class Preset(BaseModel):
@@ -199,8 +284,30 @@ class Preset(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
 
     @classmethod
-    def from_model(cls, preset: preset.Preset) -> Preset:
-        return fastapi_model_converter.from_model_preset(preset)
+    def from_engine(cls, preset: preset.Preset) -> Preset:
+        return cls(
+            id=preset.id,
+            name=preset.name,
+            speaker_uuid=preset.speaker_uuid,
+            style_id=preset.style_id,
+            speedScale=preset.speedScale,
+            pitchScale=preset.pitchScale,
+            intonationScale=preset.intonationScale,
+            volumeScale=preset.volumeScale,
+            prePhonemeLength=preset.prePhonemeLength,
+            postPhonemeLength=preset.postPhonemeLength,
+        )
 
-    def to_model(self) -> preset.Preset:
-        return fastapi_model_converter.to_model_preset(self)
+    def to_engine(self) -> preset.Preset:
+        return preset.Preset(
+            id=self.id,
+            name=self.name,
+            speaker_uuid=self.speaker_uuid,
+            style_id=self.style_id,
+            speedScale=self.speedScale,
+            pitchScale=self.pitchScale,
+            intonationScale=self.intonationScale,
+            volumeScale=self.volumeScale,
+            prePhonemeLength=self.prePhonemeLength,
+            postPhonemeLength=self.postPhonemeLength,
+        )
