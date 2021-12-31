@@ -73,8 +73,8 @@ def resample_ts(timestamp: str):
     return int((float(timestamp) * 0.9375))
 
 
-# can't define type for engine because it causes a circular import
-def _predict_avg_pitch(engine, kana: str, speaker_id: int):
+def get_normalize_scale(engine, kana: str, f0: np.ndarray, speaker_id: int):
+    f0_avg = _no_nan(np.average(f0[f0 != 0]))
     predicted_phrases, _ = parse_kana(kana, False)
     engine.replace_mora_data(predicted_phrases, speaker_id=speaker_id)
     pitch_list = []
@@ -82,12 +82,7 @@ def _predict_avg_pitch(engine, kana: str, speaker_id: int):
         for mora in phrase.moras:
             pitch_list.append(mora.pitch)
     pitch_list = np.array(pitch_list, dtype=np.float64)
-    return _no_nan(np.average(pitch_list[pitch_list != 0]))
-
-
-def get_normalize_scale(engine, kana: str, f0: np.ndarray, speaker_id: int):
-    f0_avg = _no_nan(np.average(f0[f0 != 0]))
-    predicted_avg = _predict_avg_pitch(engine, kana, speaker_id)
+    predicted_avg = _no_nan(np.average(pitch_list[pitch_list != 0]))
     return predicted_avg / f0_avg
 
 
