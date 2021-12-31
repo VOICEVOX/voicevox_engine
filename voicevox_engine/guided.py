@@ -241,17 +241,30 @@ def accent_phrase(
 
 def extract_feature(audio_file: Optional[IO], kana: str):
     sr, wave = wavfile.read(audio_file)
+    # stereo to mono
     if len(wave.shape) == 2:
         wave = wave.sum(axis=1) / 2
 
     f0 = extract_f0(wave, sr, 256 / 24000 * 1000)
 
-    julius_wave = resample(wave.astype(np.int16), JULIUS_SAMPLE_RATE * len(wave) // sr)
+    julius_wave = resample(wave, JULIUS_SAMPLE_RATE * len(wave) // sr)
+
+    # normalization for different WAV format
+    if julius_wave.dtype == "float32":
+        julius_wave *= 32767
+    if julius_wave.dtype == "int32":
+        julius_wave = np.floor_divide(julius_wave, 2147483392 / 32767)
+    if julius_wave.dtype == "uint8":
+        # floor of 32767 / 255
+        julius_wave *= 128
+
+    julius_wave = julius_wave.astype(np.int16)
+
     julius_kana = re.sub(
         "|".join(PUNCTUATION), "", kana.replace("/", "").replace("、", " ")
     )
 
-    phones = forced_align(julius_wave.astype(np.int16), julius_kana)
+    phones = forced_align(julius_wave, julius_kana)
     return f0, phones
 
 
