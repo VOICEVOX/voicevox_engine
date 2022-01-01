@@ -17,14 +17,15 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: [macos-11]
+        - os: macos-11
           python: '3.8'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
           voicevox_resource_version: '0.10.preview.1'
-          voicevox_core_version: '0.9.0'
-          voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-macos-1.9.0.zip
+          voicevox_core_version: '0.10.preview.0'
+          voicevox_core_source_version: '0.10.preview.0'
+          voicevox_core_library_name: libcore_cpu_x64.dylib
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-osx-x64-1.9.0.tgz
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -60,7 +61,7 @@ jobs:
         id: venv-build-voicevox-cache
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_example_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-libs-build_voicevox-${{ matrix.python }}-${{ matrix.python_architecture }}-${{ matrix.voicevox_core_version }}-${{ matrix.voicevox_core_source_version }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
       - name: Prepare Python venv for licenses.json generation cache
         uses: actions/cache@v2
@@ -89,26 +90,33 @@ jobs:
           python generate_licenses.py > licenses.json
           deactivate
 
-      # Download LibTorch
-      - name: Export LibTorch url to calc hash
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
         shell: bash
-        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: Prepare LibTorch cache
+      - name: Prepare ONNX Runtime cache
         uses: actions/cache@v2
-        id: libtorch-dylib-cache
+        id: onnxruntime-dylib-cache
         with:
-          key: ${{ matrix.os }}-libtorch-dylib-${{ hashFiles('download/libtorch_url.txt') }}
-          path: download/libtorch
+          key: ${{ matrix.os }}-onnxruntime-dylib-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
 
-      - name: Download LibTorch
-        if: steps.libtorch-dylib-cache.outputs.cache-hit != 'true'
+      - name: Download ONNX Runtime
+        if: steps.onnxruntime-dylib-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+
           # extract only dylibs
-          unzip download/libtorch.zip "libtorch/lib/*.dylib" -d download/
-          rm download/libtorch.zip
+          mkdir -p download/onnxruntime
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
+          rm download/onnxruntime.tgz
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
@@ -122,7 +130,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: Hiroshiba/voicevox_resource
+          repository: VOICEVOX/voicevox_resource
           ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
@@ -134,58 +142,64 @@ jobs:
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
 
-      - name: Prepare VOICEVOX Core cache
+      - name: Prepare VOICEVOX Core release cache
         uses: actions/cache@v2
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_version }}
           path: download/core
 
-      - name: Download VOICEVOX Core
+      - name: Download VOICEVOX Core release
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          # extracted like download/core/metas.json
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
           rm download/core.zip
 
-      - name: Prepare VOICEVOX Core file
-        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: mv libcore_cpu.dylib libcore.dylib
-        working-directory: download/core
-
-      - name: Export VOICEVOX Core path to LD_LIBRARY_PATH and LIBRARY_PATH
-        run: |
-          echo "LD_LIBRARY_PATH=$(pwd):${{ env.LD_LIBRARY_PATH }}" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=$(pwd):${{ env.LIBRARY_PATH }}" >> $GITHUB_ENV
-        working-directory: download/core
-
-      - name: Prepare VOICEVOX Core example cache
+      # Install VOICEVOX Core Python package
+      - name: Prepare VOICEVOX Core source cache
         uses: actions/cache@v2
-        id: voicevox-core-example-cache
+        id: voicevox-core-source-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
-          path: download/voicevox_core_example
+          key: ${{ matrix.os }}-voicevox-core-source-${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
-      - name: Clone VOICEVOX Core example
-        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+      - name: Checkout VOICEVOX Core source
+        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: VOICEVOX/voicevox_core
+          ref: ${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
       - name: Install dependencies for building VOICEVOX Core Python package
         shell: bash
         run: |
-          pip install -r download/voicevox_core_example/example/python/requirements.txt
+          pip install -r download/voicevox_core_source/requirements.txt
 
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
-          NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
-          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
+          set -eux
 
-          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install download/voicevox_core_example/example/python/
+          mkdir -p download/voicevox_core_source/core/lib
+
+          # Copy VOICEVOX Core dylib to core/lib
+          cp download/core/${{ matrix.voicevox_core_library_name }} download/voicevox_core_source/core/lib/libcore.dylib
+
+          cd download/voicevox_core_source
+          cp core/src/core.h core/lib/
+          cd -
+
+          # Copy ONNX Runtime dylib
+          cp download/onnxruntime/lib/libonnxruntime.*.dylib download/voicevox_core_source/core/lib/
+
+          # Install VOICEVOX Core Python package with libcore.dylib & libonnxruntime.*.dylib
+          cd download/voicevox_core_source
+          NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
+          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install .
 
       - name: Install dependencies for building VOICEVOX engine
         shell: bash
@@ -195,6 +209,8 @@ jobs:
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
+          set -eux
+
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for i in $(seq 5); do
@@ -214,6 +230,9 @@ jobs:
 
       - name: Build run.py
         run: |
+          set -eux
+
+          # Nuitka does not copy grandchild dependencies. Explicitly copy libonnxruntime
           python -m nuitka \
             --output-dir=./ \
             --standalone \
@@ -228,10 +247,9 @@ jobs:
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../user.dic=./ \
-            --include-data-file=../download/libtorch/lib/*.dylib=./ \
-            --include-data-file=../download/core/*.dylib=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
+            --include-data-file=../download/onnxruntime/lib/libonnxruntime.*.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
@@ -280,27 +298,25 @@ jobs:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
         voicevox_resource_version: ['0.10.preview.1']
-        voicevox_core_version: ['0.9.0']
-        voicevox_core_example_version: ['0.9.0']
+        voicevox_core_version: ['0.10.preview.0']
+        voicevox_core_example_version: ['0.10.preview.0']
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
           target: build-env
           base_image: ubuntu:bionic
           base_runtime_image: ubuntu:bionic
-          voicevox_core_library_name: core_cpu
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-          use_glibc_231_workaround: 1
+          voicevox_core_library_name: libcore_cpu_x64.so
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           artifact_name: linux-cpu
           nuitka_cache_path: nuitka_cache
         - tag: build-nvidia-ubuntu18.04
           runtime_tag: nvidia-ubuntu18.04 # for cache use
           target: build-env
           base_image: ubuntu:bionic
-          base_runtime_image: nvidia/driver:460.73.01-ubuntu18.04
-          voicevox_core_library_name: core
-          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
-          use_glibc_231_workaround: 1
+          base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+          voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           artifact_name: linux-nvidia
           nuitka_cache_path: nuitka_cache
 
@@ -331,7 +347,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: Hiroshiba/voicevox_resource
+          repository: VOICEVOX/voicevox_resource
           ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
@@ -342,7 +358,7 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
-
+      
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
       - name: Create binary build environment with Docker
@@ -360,8 +376,7 @@ jobs:
             VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
             VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
-            LIBTORCH_URL=${{ matrix.libtorch_url }}
-            USE_GLIBC_231_WORKAROUND=${{ matrix.use_glibc_231_workaround || '0' }}
+            ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           load: true
           tags: |

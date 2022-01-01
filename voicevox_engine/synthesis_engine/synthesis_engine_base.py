@@ -37,22 +37,25 @@ def add_interrogative_mora_if_last_phoneme_is_interrogative(
 
 def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
-    fcl_accent_phrases: List[full_context_label.AccentPhrase],
+    interrogative_accent_phrase_marks: List[bool],
     enable_interrogative: bool,
 ) -> List[AccentPhrase]:
     """
     enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
     SynthesisEngineの実装によって調整されたあとの各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
+    NOTE: リファクタリング時に適切な場所へ移動させること
     """
     return [
         AccentPhrase(
             moras=adjust_interrogative_moras(accent_phrase.moras)
-            if enable_interrogative and fcl_accent_phrase.is_interrogative
+            if enable_interrogative and interrogative_accent_phrase_mark
             else accent_phrase.moras,
             accent=accent_phrase.accent,
             pause_mora=accent_phrase.pause_mora,
         )
-        for accent_phrase, fcl_accent_phrase in zip(accent_phrases, fcl_accent_phrases)
+        for accent_phrase, interrogative_accent_phrase_mark in zip(
+            accent_phrases, interrogative_accent_phrase_marks
+        )
     ]
 
 
@@ -153,8 +156,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         if len(utterance.breath_groups) == 0:
             return []
 
-        fcl_accent_phrases = [
-            accent_phrase
+        interrogative_accent_phrase_marks = [
+            accent_phrase.is_interrogative
             for breath_group in utterance.breath_groups
             for accent_phrase in breath_group.accent_phrases
         ]
@@ -193,7 +196,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             speaker_id=speaker_id,
         )
         return adjust_interrogative_accent_phrases(
-            accent_phrases, fcl_accent_phrases, enable_interrogative
+            accent_phrases, interrogative_accent_phrase_marks, enable_interrogative
         )
 
     @abstractmethod

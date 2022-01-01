@@ -14,7 +14,6 @@ jobs:
 
     env:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-      # IMAGE_NAME: voicevox/voicevox_engine
 
     strategy:
       matrix:
@@ -27,55 +26,53 @@ jobs:
           - nvidia-ubuntu20.04
           - cpu-ubuntu18.04
           - nvidia-ubuntu18.04
-        voicevox_core_version: [0.9.0]
-        voicevox_core_example_version: [0.9.0]
+        voicevox_core_version: ['0.10.preview.0']
+        voicevox_core_source_version: ['0.10.preview.0']
         include:
           # Ubuntu 20.04
           - tag: ''
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: core_cpu
-            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+            voicevox_core_library_name: libcore_cpu_x64.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           - tag: cpu
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: core_cpu
-            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+            voicevox_core_library_name: libcore_cpu_x64.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: core_cpu
-            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
+            voicevox_core_library_name: libcore_cpu_x64.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
-            voicevox_core_library_name: core
-            libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
+            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu20.04
-            voicevox_core_library_name: core
-            libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
+            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
+            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
-            voicevox_core_library_name: core_cpu
-            libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-            use_glibc_231_workaround: 1
+            voicevox_core_library_name: libcore_cpu_x64.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
-            base_runtime_image: nvidia/driver:460.73.01-ubuntu18.04
-            voicevox_core_library_name: core
-            libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
-            use_glibc_231_workaround: 1
+            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
 
     steps:
       - uses: actions/checkout@v2
@@ -110,10 +107,9 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
-            VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
+            VOICEVOX_CORE_SOURCE_VERSION=${{ matrix.voicevox_core_source_version }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
-            LIBTORCH_URL=${{ matrix.libtorch_url }}
-            USE_GLIBC_231_WORKAROUND=${{ matrix.use_glibc_231_workaround || '0' }}
+            ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           push: true
           tags: |
