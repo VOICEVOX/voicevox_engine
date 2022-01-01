@@ -13,15 +13,17 @@ class TestFastAPIModelConverter(TestCase):
         for i, e in enumerate(expected):
             self.assertNotEqual(type(e), type(actual[i]))
 
-    def _asserts(self, expected, given, actual):
+    def _asserts_convert_data_and_type(self, expected, before_convert_value, actual):
         self.assertEqual(expected, actual)
         self.assertEqual(type(expected), type(actual))
-        self.assertNotEqual(type(given), type(actual))
+        self.assertNotEqual(type(before_convert_value), type(actual))
 
-    def _asserts_list(self, expected, given, actual):
+    def _asserts_list_convert_data_and_type(
+        self, expected, before_conert_value, actual
+    ):
         self.assertEqual(expected, actual)
         self._assert_equal_types(expected, actual)
-        self._assert_not_equal_types(given, actual)
+        self._assert_not_equal_types(before_conert_value, actual)
 
     def _mora(self):
         return model.Mora(
@@ -45,11 +47,19 @@ class TestFastAPIModelConverter(TestCase):
 
     def test_mora_from_engine(self):
         actual: fastapi_model.Mora = fastapi_model.Mora.from_engine(self._mora())
-        self._asserts(expected=self._fastapi_mora(), given=self._mora(), actual=actual)
+        self._asserts_convert_data_and_type(
+            expected=self._fastapi_mora(),
+            before_convert_value=self._mora(),
+            actual=actual,
+        )
 
     def test_mora_to_engine(self):
         actual: model.Mora = self._fastapi_mora().to_engine()
-        self._asserts(expected=self._mora(), given=self._fastapi_mora(), actual=actual)
+        self._asserts_convert_data_and_type(
+            expected=self._mora(),
+            before_convert_value=self._fastapi_mora(),
+            actual=actual,
+        )
 
     def _moras(self):
         return [self._mora(), self._mora()]
@@ -95,9 +105,9 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.AccentPhrase = fastapi_model.AccentPhrase.from_engine(
             self._accent_phrase()
         )
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._fastapi_accent_phrase(),
-            given=self._accent_phrase(),
+            before_convert_value=self._accent_phrase(),
             actual=actual,
         )
 
@@ -109,14 +119,16 @@ class TestFastAPIModelConverter(TestCase):
             given
         )
 
-        self._asserts(expected=expected, given=given, actual=actual)
+        self._asserts_convert_data_and_type(
+            expected=expected, before_convert_value=given, actual=actual
+        )
 
     def test_to_model_accent_phrase(self):
         actual: model.AccentPhrase = self._fastapi_accent_phrase().to_engine()
 
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._accent_phrase(),
-            given=self._fastapi_accent_phrase(),
+            before_convert_value=self._fastapi_accent_phrase(),
             actual=actual,
         )
 
@@ -125,7 +137,9 @@ class TestFastAPIModelConverter(TestCase):
         expected = self._accent_phrase()
         expected.pause_mora = self._pause_mora()
         actual: model.AccentPhrase = given.to_engine()
-        self._asserts(expected=expected, given=given, actual=actual)
+        self._asserts_convert_data_and_type(
+            expected=expected, before_convert_value=given, actual=actual
+        )
 
     def _accent_phrases(self):
         return [
@@ -171,17 +185,17 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.AudioQuery = fastapi_model.AudioQuery.from_engine(
             self._audio_query()
         )
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._fastapi_audio_query(),
-            given=self._audio_query(),
+            before_convert_value=self._audio_query(),
             actual=actual,
         )
 
     def test_to_model_audio_query(self):
         actual: model.AudioQuery = self._fastapi_audio_query().to_engine()
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._audio_query(),
-            given=self._fastapi_audio_query(),
+            before_convert_value=self._fastapi_audio_query(),
             actual=actual,
         )
 
@@ -201,17 +215,17 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.SpeakerStyle = fastapi_model.SpeakerStyle.from_engine(
             self._speaker_style()
         )
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._fastapi_speaker_style(),
-            given=self._speaker_style(),
+            before_convert_value=self._speaker_style(),
             actual=actual,
         )
 
     def test_to_model_speaker_style(self):
         actual: model.SpeakerStyle = self._fastapi_speaker_style().to_engine()
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._speaker_style(),
-            given=self._fastapi_speaker_style(),
+            before_convert_value=self._fastapi_speaker_style(),
             actual=actual,
         )
 
@@ -235,14 +249,18 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.Speaker = fastapi_model.Speaker.from_engine(
             self._speaker()
         )
-        self._asserts(
-            expected=self._fastapi_speaker(), given=self._speaker(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._fastapi_speaker(),
+            before_convert_value=self._speaker(),
+            actual=actual,
         )
 
     def test_to_model_speaker(self):
         actual: model.Speaker = self._fastapi_speaker().to_engine()
-        self._asserts(
-            expected=self._speaker(), given=self._fastapi_speaker(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._speaker(),
+            before_convert_value=self._fastapi_speaker(),
+            actual=actual,
         )
 
     def _style_info(self):
@@ -263,14 +281,18 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.StyleInfo = fastapi_model.StyleInfo.from_engine(
             self._style_info()
         )
-        self._asserts(
-            expected=self._fastapi_style_info(), given=self._style_info(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._fastapi_style_info(),
+            before_convert_value=self._style_info(),
+            actual=actual,
         )
 
     def test_to_model_style_info(self):
         actual: model.StyleInfo = self._fastapi_style_info().to_engine()
-        self._asserts(
-            expected=self._style_info(), given=self._fastapi_style_info(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._style_info(),
+            before_convert_value=self._fastapi_style_info(),
+            actual=actual,
         )
 
     def _speaker_info(self):
@@ -291,17 +313,17 @@ class TestFastAPIModelConverter(TestCase):
         actual: fastapi_model.SpeakerInfo = fastapi_model.SpeakerInfo.from_engine(
             self._speaker_info()
         )
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._fastapi_speaker_info(),
-            given=self._speaker_info(),
+            before_convert_value=self._speaker_info(),
             actual=actual,
         )
 
     def test_to_model_speaker_info(self):
         actual: model.SpeakerInfo = self._fastapi_speaker_info().to_engine()
-        self._asserts(
+        self._asserts_convert_data_and_type(
             expected=self._speaker_info(),
-            given=self._fastapi_speaker_info(),
+            before_convert_value=self._fastapi_speaker_info(),
             actual=actual,
         )
 
@@ -335,12 +357,16 @@ class TestFastAPIModelConverter(TestCase):
 
     def test_from_model_preset(self):
         actual: fastapi_model.Preset = fastapi_model.Preset.from_engine(self._preset())
-        self._asserts(
-            expected=self._fastapi_preset(), given=self._preset(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._fastapi_preset(),
+            before_convert_value=self._preset(),
+            actual=actual,
         )
 
     def test_to_model_preset(self):
         actual: preset.Preset = self._fastapi_preset().to_engine()
-        self._asserts(
-            expected=self._preset(), given=self._fastapi_preset(), actual=actual
+        self._asserts_convert_data_and_type(
+            expected=self._preset(),
+            before_convert_value=self._fastapi_preset(),
+            actual=actual,
         )
