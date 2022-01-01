@@ -348,7 +348,7 @@ RUN <<EOF
         chown -R user:user /home/user/.cache/Nuitka
 
         cd /opt/voicevox_engine_build
-  
+
         gosu user /opt/python/bin/python3 -m nuitka \
             --output-dir=/opt/voicevox_engine_build \
             --standalone \
