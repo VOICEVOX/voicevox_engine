@@ -297,27 +297,25 @@ jobs:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
         voicevox_resource_version: ['0.10.preview.1']
-        voicevox_core_version: ['0.9.0']
-        voicevox_core_example_version: ['0.9.0']
+        voicevox_core_version: ['0.10.preview.0']
+        voicevox_core_example_version: ['0.10.preview.0']
         include:
         - tag: build-cpu-ubuntu18.04
           runtime_tag: cpu-ubuntu18.04 # for cache use
           target: build-env
           base_image: ubuntu:bionic
           base_runtime_image: ubuntu:bionic
-          voicevox_core_library_name: core_cpu
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcpu.zip
-          use_glibc_231_workaround: 1
+          voicevox_core_library_name: libcore_cpu_x64.so
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
           artifact_name: linux-cpu
           nuitka_cache_path: nuitka_cache
         - tag: build-nvidia-ubuntu18.04
           runtime_tag: nvidia-ubuntu18.04 # for cache use
           target: build-env
           base_image: ubuntu:bionic
-          base_runtime_image: nvidia/driver:460.73.01-ubuntu18.04
-          voicevox_core_library_name: core
-          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip
-          use_glibc_231_workaround: 1
+          base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+          voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
           artifact_name: linux-nvidia
           nuitka_cache_path: nuitka_cache
 
@@ -348,7 +346,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: Hiroshiba/voicevox_resource
+          repository: VOICEVOX/voicevox_resource
           ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
@@ -360,15 +358,6 @@ jobs:
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
       
-      # Temporary: Download LibTorch Dockerfile
-      # ref https://github.com/VOICEVOX/voicevox_engine/pull/248
-      # tree https://github.com/VOICEVOX/voicevox_engine/tree/86e06dc13d634562e92f799c5e75f06da23822cd
-      - name: Download Dockerfile for LibTorch Core
-        shell: bash
-        run: |
-          set -eux
-          wget -nv --show-progress -c -O "./Dockerfile.libtorchcore" https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/86e06dc13d634562e92f799c5e75f06da23822cd/Dockerfile
-
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
       - name: Create binary build environment with Docker
@@ -379,15 +368,14 @@ jobs:
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
-          file: ./Dockerfile.libtorchcore
+          file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
             VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
-            LIBTORCH_URL=${{ matrix.libtorch_url }}
-            USE_GLIBC_231_WORKAROUND=${{ matrix.use_glibc_231_workaround || '0' }}
+            ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           load: true
           tags: |
