@@ -16,13 +16,11 @@ class TestFastAPIModelConverter(TestCase):
     def _asserts(self, expected, given, actual):
         self.assertEqual(expected, actual)
         self.assertEqual(type(expected), type(actual))
-        self.assertEqual(given, actual)
         self.assertNotEqual(type(given), type(actual))
 
     def _asserts_list(self, expected, given, actual):
         self.assertEqual(expected, actual)
         self._assert_equal_types(expected, actual)
-        self.assertEqual(given, actual)
         self._assert_not_equal_types(given, actual)
 
     def _mora(self):
