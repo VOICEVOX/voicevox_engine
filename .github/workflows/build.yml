@@ -428,10 +428,10 @@ jobs:
           python: '3.8'
           python_architecture: 'x64'
           voicevox_resource_version: '0.10.preview.1'
-          voicevox_core_version: '0.9.0'
-          voicevox_core_dll_name: core_cpu.dll
-          voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cpu/libtorch-win-shared-with-deps-1.9.0%2Bcpu.zip
+          voicevox_core_version: '0.10.preview.0'
+          voicevox_core_dll_name: core_cpu_x64.dll
+          voicevox_core_source_version: '0.10.preview.0'
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-1.9.0.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
@@ -441,10 +441,12 @@ jobs:
           python: '3.8'
           python_architecture: 'x64'
           voicevox_resource_version: '0.10.preview.1'
-          voicevox_core_version: '0.9.0'
-          voicevox_core_dll_name: core.dll
-          voicevox_core_example_version: '0.9.0'
-          libtorch_url: https://download.pytorch.org/libtorch/cu111/libtorch-win-shared-with-deps-1.9.0%2Bcu111.zip
+          voicevox_core_version: '0.10.preview.0'
+          voicevox_core_dll_name: core_gpu_x64_nvidia.dll
+          voicevox_core_source_version: '0.10.preview.0'
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-gpu-1.9.0.zip
+          cuda_version: '11.4.2'
+          cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-nvidia
           nuitka_cache_path: nuitka_cache
@@ -454,6 +456,85 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      # Download CUDA
+      - name: Prepare CUDA DLL cache
+        if: matrix.cuda_version != ''
+        uses: actions/cache@v2
+        id: cuda-dll-cache
+        with:
+          # update this key when ONNX Runtime CUDA dependency changed
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        uses: Jimver/cuda-toolkit@v0.2.5
+        id: cuda-toolkit
+        with:
+          method: network
+          cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA DLL
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
+
+          mkdir -p download/cuda/bin
+          mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
+
+          rm -rf "${CUDA_ROOT}"
+
+      - name: Show disk space (debug info)
+        if: matrix.cuda_version != ''
+        shell: bash
+        run: |
+          df -h
+
+      # Download cuDNN
+      - name: Export cuDNN url to calc hash
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
+
+      - name: Prepare cuDNN cache
+        if: matrix.cudnn_url != ''
+        uses: actions/cache@v2
+        id: cudnn-dll-cache
+        with:
+          # update this key when ONNX Runtime cuDNN dependency changed
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
+          path: download/cudnn
+
+      - name: Download and extract cuDNN DLLs
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+
+          unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+
+          mkdir -p download/cudnn/bin
+          mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
+          rm -rf download/cudnn_tmp
+
+          rm download/cudnn.zip
+
+      - name: Show disk space (debug info)
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: |
+          df -h
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -529,29 +610,29 @@ jobs:
         run: |
           echo "$HOME/download/ccache" >> $GITHUB_PATH
 
-      # Download LibTorch
-      # Included:
-      # - CUDA
-      # - cuDNN
-      - name: Export LibTorch url to calc hash
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
         shell: bash
-        run: echo "${{ matrix.libtorch_url }}" > download/libtorch_url.txt
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: Prepare LibTorch cache
+      - name: Prepare ONNX Runtime cache
         uses: actions/cache@v2
-        id: libtorch-dll-cache
+        id: onnxruntime-dll-cache
         with:
-          key: ${{ matrix.os }}-libtorch-dll-${{ hashFiles('download/libtorch_url.txt') }}
-          path: download/libtorch
+          key: ${{ matrix.os }}-onnxruntime-dll-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
 
-      - name: Download LibTorch (CUDA, cuDNN included)
-        if: steps.libtorch-dll-cache.outputs.cache-hit != 'true'
+      - name: Download ONNX Runtime
+        if: steps.onnxruntime-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "${{ matrix.libtorch_url }}" > download/libtorch.zip
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+
           # extract only dlls
-          unzip download/libtorch.zip libtorch/lib/*.dll -d download/
-          rm download/libtorch.zip
+          unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
+          rm download/onnxruntime.zip
+
+          mv download/onnxruntime-* download/onnxruntime
 
       - name: Show disk space (debug info)
         shell: bash
@@ -570,7 +651,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: Hiroshiba/voicevox_resource
+          repository: VOICEVOX/voicevox_resource
           ref: ${{ matrix.voicevox_resource_version }}
           path: download/resource
 
@@ -594,33 +675,51 @@ jobs:
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/Hiroshiba/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ matrix.voicevox_core_version }}/core.zip" > download/core.zip
           unzip download/core.zip -d download/
           rm download/core.zip
 
-      # Install VOICEVOX Core example
-      - name: Prepare VOICEVOX Core example cache
+      # Install VOICEVOX Core Python package
+      - name: Prepare VOICEVOX Core source cache
         uses: actions/cache@v2
-        id: voicevox-core-example-cache
+        id: voicevox-core-source-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-example-${{ matrix.voicevox_core_example_version }}
-          path: download/voicevox_core_example
+          key: ${{ matrix.os }}-voicevox-core-source-${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
-      - name: Clone VOICEVOX Core example
-        if: steps.voicevox-core-example-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          git clone -b "${{ matrix.voicevox_core_example_version }}" --depth 1 "https://github.com/Hiroshiba/voicevox_core.git" download/voicevox_core_example
+      - name: Checkout VOICEVOX Core source
+        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: VOICEVOX/voicevox_core
+          ref: ${{ matrix.voicevox_core_source_version }}
+          path: download/voicevox_core_source
 
       - name: Install VOICEVOX Core Python package
         shell: bash
         run: |
-          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_example/example/python/core.dll
-          cp download/voicevox_core_example/core.h download/voicevox_core_example/example/python/
+          set -eux
 
-          cd download/voicevox_core_example/example/python
+          # Generate VOICEVOX Core LIB from DLL
+          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_source/example/python/core.dll
+
+          cd download/voicevox_core_source/example/python
           ./makelib.bat core
+          cd -
 
+          # Copy VOICEVOX Core DLL & LIB to core/lib
+          cd download/voicevox_core_source
+          mkdir -p core/lib
+          mv example/python/core.dll core/lib/
+          mv example/python/core.lib core/lib/
+          cp core/src/core.h core/lib/
+          cd -
+
+          # Copy ONNX Runtime DLLs
+          cp download/onnxruntime/lib/*.dll download/voicevox_core_source/core/lib/
+
+          # Install VOICEVOX Core Python package with core.dll & onnxruntime*.dll
+          cd download/voicevox_core_source
           pip install .
 
       - name: Generate licenses.json
@@ -632,9 +731,9 @@ jobs:
         id: nuitka-cache
         with:
           path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ github.sha }}
+          key: ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-nuitka-
+            ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-
 
       - name: Show disk space (debug info)
         shell: bash
@@ -658,6 +757,9 @@ jobs:
             --include-package-data=scipy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
+            --include-data-file="presets.yaml=./"
+            --include-data-file=download/core/*.bin=./
+            --include-data-file="download/core/metas.json=./"
             --include-data-dir="speaker_info=./speaker_info"
             --msvc=14.2
             --follow-imports
@@ -679,14 +781,36 @@ jobs:
         run: |
           set -eux
 
+          # Workaround: Move core.dll to run.dist/core/lib/
+          # Nuitka copies core.dll to run.dist/core.dll
+          # but core Python module will load core.dll from run.dist/core/lib/core.dll.
+          mkdir -p run.dist/core/lib
+          mv run.dist/core.dll run.dist/core/lib/
+          mv run.dist/onnxruntime.dll run.dist/core/lib/
+
+          # Build artifact directory
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
 
-          ln -sf "$(pwd)/download/libtorch/lib"/*.dll artifact/
-          ln -sf "$(pwd)/download/core"/*.bin artifact/
-          ln -sf "$(pwd)/download/voicevox_core_example/example/python/"*.dll artifact/
-          ln -sf "$(pwd)/download/core/metas.json" artifact/
+          # Copy DLL dependencies
 
+          if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
+            # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
+
+            # CUDA
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+
+            # cuDNN
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+          fi
+
+          # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
       # FIXME: versioned name may be useful; but
