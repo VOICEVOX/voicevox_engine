@@ -211,8 +211,6 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 for accent_phrase in (
                     adjust_interrogative_accent_phrases(
                         accent_phrases,
-                        interrogative_accent_phrase_marks,
-                        enable_interrogative,
                     )
                 )
             ]

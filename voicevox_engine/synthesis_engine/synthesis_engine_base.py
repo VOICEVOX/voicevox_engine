@@ -37,8 +37,6 @@ def add_interrogative_mora_if_last_phoneme_is_interrogative(
 
 def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
-    interrogative_accent_phrase_marks: List[bool],
-    enable_interrogative: bool,
 ) -> List[AccentPhrase]:
     """
     enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
@@ -48,14 +46,13 @@ def adjust_interrogative_accent_phrases(
     return [
         AccentPhrase(
             moras=adjust_interrogative_moras(accent_phrase.moras)
-            if enable_interrogative and interrogative_accent_phrase_mark
+            if accent_phrase.is_interrogative
             else accent_phrase.moras,
             accent=accent_phrase.accent,
             pause_mora=accent_phrase.pause_mora,
+            is_interrogative=accent_phrase.is_interrogative,
         )
-        for accent_phrase, interrogative_accent_phrase_mark in zip(
-            accent_phrases, interrogative_accent_phrase_marks
-        )
+        for accent_phrase in accent_phrases
     ]
 
 
@@ -156,12 +153,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         if len(utterance.breath_groups) == 0:
             return []
 
-        interrogative_accent_phrase_marks = [
-            accent_phrase.is_interrogative
-            for breath_group in utterance.breath_groups
-            for accent_phrase in breath_group.accent_phrases
-        ]
-
         accent_phrases = self.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
@@ -187,6 +178,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                         )
                         else None
                     ),
+                    is_interrogative=enable_interrogative
+                    and accent_phrase.is_interrogative,
                 )
                 for i_breath_group, breath_group in enumerate(utterance.breath_groups)
                 for i_accent_phrase, accent_phrase in enumerate(
@@ -195,9 +188,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             ],
             speaker_id=speaker_id,
         )
-        return adjust_interrogative_accent_phrases(
-            accent_phrases, interrogative_accent_phrase_marks, enable_interrogative
-        )
+        return adjust_interrogative_accent_phrases(accent_phrases)
 
     @abstractmethod
     def synthesis(self, query: AudioQuery, speaker_id: int):

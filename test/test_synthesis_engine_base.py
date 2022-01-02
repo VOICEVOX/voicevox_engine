@@ -58,6 +58,7 @@ class TestSynthesisEngineBase(TestCase):
                     ],
                     accent=3,
                     pause_mora=None,
+                    is_interrogative=False,
                 ),
                 AccentPhrase(
                     moras=[
@@ -104,10 +105,12 @@ class TestSynthesisEngineBase(TestCase):
                     ],
                     accent=3,
                     pause_mora=None,
+                    is_interrogative=False,
                 ),
             ]
 
         expected = koreha_arimasuka_base_expected()
+        expected[-1].is_interrogative = True
         expected[-1].moras += [
             Mora(
                 text="ア",
@@ -153,6 +156,7 @@ class TestSynthesisEngineBase(TestCase):
                     ],
                     accent=1,
                     pause_mora=None,
+                    is_interrogative=False,
                 )
             ]
 
@@ -164,6 +168,7 @@ class TestSynthesisEngineBase(TestCase):
         )
 
         expected = nn_base_expected()
+        expected[-1].is_interrogative = True
         expected[-1].moras += [
             Mora(
                 text="ン",
@@ -202,6 +207,7 @@ class TestSynthesisEngineBase(TestCase):
                     ],
                     accent=1,
                     pause_mora=None,
+                    is_interrogative=False,
                 )
             ]
 
@@ -213,6 +219,7 @@ class TestSynthesisEngineBase(TestCase):
         )
 
         expected = ltu_base_expected()
+        expected[-1].is_interrogative = True
         expected[-1].moras += [
             Mora(
                 text="ッ",
@@ -251,6 +258,7 @@ class TestSynthesisEngineBase(TestCase):
                     ],
                     accent=1,
                     pause_mora=None,
+                    is_interrogative=False,
                 )
             ]
 
@@ -262,6 +270,7 @@ class TestSynthesisEngineBase(TestCase):
         )
 
         expected = su_base_expected()
+        expected[-1].is_interrogative = True
         expected[-1].moras += [
             Mora(
                 text="ウ",
