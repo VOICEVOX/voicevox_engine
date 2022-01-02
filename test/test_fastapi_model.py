@@ -72,6 +72,7 @@ class TestFastAPIModelConverter(TestCase):
             moras=self._moras(),
             accent=3,
             pause_mora=None,
+            is_interrogative=False,
         )
 
     def _fastapi_accent_phrase(self):

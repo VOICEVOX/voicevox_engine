@@ -62,6 +62,7 @@ class TestMockSynthesisEngine(TestCase):
                     vowel_length=0.0,
                     pitch=0.0,
                 ),
+                is_interrogative=False,
             ),
             AccentPhrase(
                 moras=[
@@ -100,6 +101,7 @@ class TestMockSynthesisEngine(TestCase):
                 ],
                 accent=1,
                 pause_mora=None,
+                is_interrogative=False,
             ),
         ]
         self.engine = MockSynthesisEngine(speakers="")

@@ -145,6 +145,7 @@ class TestSynthesisEngine(TestCase):
                     vowel_length=0.0,
                     pitch=0.0,
                 ),
+                is_interrogative=False,
             ),
             AccentPhrase(
                 moras=[
@@ -183,6 +184,7 @@ class TestSynthesisEngine(TestCase):
                 ],
                 accent=1,
                 pause_mora=None,
+                is_interrogative=False,
             ),
         ]
         self.yukarin_s_mock = Mock(side_effect=yukarin_s_mock)

@@ -89,6 +89,7 @@ class AccentPhrase(BaseModel):
             pause_mora=self.pause_mora.to_engine()
             if self.pause_mora is not None
             else None,
+            is_interrogative=False,
         )
 
 
