@@ -276,6 +276,7 @@ python generate_licenses.py > licenses.json
 python -m nuitka \
     --standalone \
     --plugin-enable=numpy \
+    --plugin-enable=multiprocessing \
     --follow-import-to=numpy \
     --follow-import-to=aiofiles \
     --include-package=uvicorn \
