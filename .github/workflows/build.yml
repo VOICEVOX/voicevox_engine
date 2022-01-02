@@ -246,6 +246,7 @@ jobs:
             --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
+            --include-data-file=../user.dic=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.*.dylib=./ \
@@ -757,6 +758,7 @@ jobs:
             --include-package-data=scipy
             --include-data-file="VERSION.txt=./"
             --include-data-file="licenses.json=./"
+            --include-data-file="user.dic=./"
             --include-data-file="presets.yaml=./"
             --include-data-file=download/core/*.bin=./
             --include-data-file="download/core/metas.json=./"

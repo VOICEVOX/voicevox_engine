@@ -23,7 +23,10 @@ click==8.0.3
     #   pip-tools
     #   uvicorn
 colorama==0.4.4
-    # via -r requirements-dev.in
+    # via
+    #   -r requirements-dev.in
+    #   click
+    #   tqdm
 cython==0.29.24
     # via
     #   -r requirements-dev.in
@@ -67,7 +70,7 @@ pycparser==2.20
     # via cffi
 pydantic==1.8.2
     # via fastapi
-pyopenjtalk @ git+https://github.com/Hiroshiba/pyopenjtalk@69e5f354634f98098113f9cac5a6ea736443f9c9
+pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@8466b5a331e4736181648d5585be626aa7f9bde1
     # via -r requirements.in
 python-multipart==0.0.5
     # via -r requirements.in
@@ -94,6 +97,8 @@ toml==0.10.2
     # via pre-commit
 tomli==1.2.2
     # via pep517
+tqdm==4.62.3
+    # via pyopenjtalk
 typing-extensions==3.10.0.2
     # via pydantic
 uvicorn==0.15.0

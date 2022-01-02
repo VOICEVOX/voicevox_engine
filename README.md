@@ -285,6 +285,7 @@ python -m nuitka \
     --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
+    --include-data-file=user.dic=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
@@ -306,6 +307,14 @@ pip-tools を用いて依存ライブラリのバージョンを固定してい�
 pip-compile requirements.in
 pip-compile requirements-dev.in
 pip-compile requirements-test.in
+```
+
+## ユーザー辞書の更新について
+
+以下のコマンドでopenjtalkのユーザー辞書をコンパイルできます。
+
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('user-dic.csv','user.dic')"
 ```
 
 ## GitHub Actions

@@ -362,6 +362,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
+            --include-data-file=/opt/voicevox_engine/user.dic=./ \
             --include-data-file=/opt/voicevox_core/*.bin=./ \
             --include-data-file=/opt/voicevox_core/metas.json=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
