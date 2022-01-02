@@ -3,6 +3,14 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+"""
+ここで定義されている型は内部で使用するための型であり、API定義を変更したければvoicevox_engine/webapi/fastapi_model.pyの定義を変更すること。
+また、対応する型との適切な変換処理を実装すること
+"""
+
+# FIXME: このファイルの各型からpydantic由来の機能を削除し、dataclassにする。もともとmodel.pyはAPI定義に使用されていたが、
+# 使用するデータ型が分離したため
+
 
 class Mora(BaseModel):
     """
@@ -81,24 +89,6 @@ class ParseKanaError(Exception):
         self.kwargs: Dict[str, str] = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
-
-
-class ParseKanaBadRequest(BaseModel):
-    text: str = Field(title="エラーメッセージ")
-    error_name: str = Field(
-        title="エラー名",
-        description="|name|description|\n|---|---|\n"
-        + "\n".join(
-            [
-                "| {} | {} |".format(err.name, err.value)
-                for err in list(ParseKanaErrorCode)
-            ]
-        ),
-    )
-    error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
-
-    def __init__(self, err: ParseKanaError):
-        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 class SpeakerStyle(BaseModel):
