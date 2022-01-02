@@ -353,6 +353,7 @@ RUN <<EOF
             --output-dir=/opt/voicevox_engine_build \
             --standalone \
             --plugin-enable=numpy \
+            --plugin-enable=multiprocessing \
             --follow-import-to=numpy \
             --follow-import-to=aiofiles \
             --include-package=uvicorn \
