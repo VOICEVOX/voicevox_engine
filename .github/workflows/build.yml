@@ -721,14 +721,14 @@ jobs:
           ln -sf "$(pwd)/run.dist"/* artifact/
 
           # Copy DLL of core and onnxruntime
-          ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime.dll artifact/core/lib/
-          ln -sf "$(pwd)/download/core/${{ matrix.voicevox_core_dll_name }}" artifact/core/lib/
+          ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime.dll artifact/
+          ln -sf "$(pwd)/download/core/${{ matrix.voicevox_core_dll_name }}" artifact/
 
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
 
             # CUDA
             ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
