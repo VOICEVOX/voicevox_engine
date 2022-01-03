@@ -35,13 +35,6 @@ RUN <<EOF
     mkdir /opt/voicevox_core
     mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
 
-    if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
-        # Create relative symbolic link
-        cd /opt/voicevox_core
-        ln -sf "${VOICEVOX_CORE_LIBRARY_NAME}" libcore.so
-        cd -
-    fi
-
     # Move Voice Library to /opt/voicevox_core/
     mv ./core/*.bin ./core/core.h ./core/metas.json /opt/voicevox_core/
 
@@ -287,11 +280,11 @@ exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--model_lib_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--model_lib_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Binary build environment (common to CPU, GPU)
 FROM runtime-env AS build-env
@@ -366,6 +359,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/user.dic=./ \
             --include-data-file=/opt/voicevox_core/*.bin=./ \
             --include-data-file=/opt/voicevox_core/metas.json=./ \
+            --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
             --follow-imports \
             --no-prefer-source-code \
