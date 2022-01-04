@@ -11,6 +11,7 @@ __pycache__/
 .mypy_cache/
 
 # virtual environment
+.venv
 venv/
 
 # pyenv local version
