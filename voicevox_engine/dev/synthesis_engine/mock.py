@@ -87,8 +87,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         wave = self.forward(kana_text)
 
         # volume
-        if query.volumeScale != 1:
-            wave *= query.volumeScale
+        wave *= query.volumeScale
 
         return wave.astype("int16")
 
