@@ -460,10 +460,8 @@ class SynthesisEngine(SynthesisEngineBase):
         # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装の後処理
         wave = wave[int(self.default_sampling_rate * pre_padding_length) :]
 
-        # volume
-        # 音量が1ではないなら、その分を音声波形に適用する
-        if query.volumeScale != 1:
-            wave *= query.volumeScale
+        # volume: ゲイン適用
+        wave *= query.volumeScale
 
         # 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
         if query.outputSamplingRate != self.default_sampling_rate:

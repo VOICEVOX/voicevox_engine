@@ -87,8 +87,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         wave = self.forward(kana_text)
 
         # volume
-        if query.volumeScale != 1:
-            wave *= query.volumeScale
+        wave *= query.volumeScale
 
         return wave.astype("int16")
 
@@ -120,8 +119,5 @@ class MockSynthesisEngine(SynthesisEngineBase):
         logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
         logger.info("[Mock] input text: %s" % text)
         wave, sr = tts(text)
-        wave = resample(
-            wave.astype("int16"),
-            24000 * len(wave) // 48000,
-        )
-        return wave.astype("int16")
+        wave = resample(wave, 24000 * len(wave) // 48000)
+        return wave
