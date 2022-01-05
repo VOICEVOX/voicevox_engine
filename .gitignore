@@ -10,8 +10,17 @@ __pycache__/
 # test artifacts
 .mypy_cache/
 
-# virtual environment
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Environments
+.env
+.venv
+env/
 venv/
+ENV/
+env.bak/
+venv.bak/
 
 # pyenv local version
 /.python-version
