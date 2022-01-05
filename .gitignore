@@ -25,6 +25,10 @@ venv.bak/
 # pyenv local version
 /.python-version
 
+# lock files
+Pipfile.lock
+poetry.lock
+
 # JetBrains IDE project settings folder
 .idea/
 
