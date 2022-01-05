@@ -42,6 +42,15 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
+def select_engine(use_old_core, old_engine, latest_engine):
+    if use_old_core:
+        if old_engine is None:
+            raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
+        return old_engine
+    else:
+        return latest_engine
+
+
 def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
     root_dir = Path(__file__).parent
 
@@ -97,12 +106,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         accent_phrases = engine.create_accent_phrases(
             text,
             speaker_id=speaker,
@@ -136,12 +140,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
@@ -197,12 +196,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         """
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         if is_kana:
             try:
                 accent_phrases, interrogative_accent_phrase_marks = parse_kana(
@@ -236,12 +230,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
     def mora_data(
         accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
     ):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
@@ -253,12 +242,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
     def mora_length(
         accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
     ):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -272,12 +256,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
     def mora_pitch(
         accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
     ):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -296,12 +275,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int, use_old_core: bool = False):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         wave = engine.synthesis(query=query, speaker_id=speaker)
 
         with NamedTemporaryFile(delete=False) as f:
@@ -354,12 +328,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
     def multi_synthesis(
         queries: List[AudioQuery], speaker: int, use_old_core: bool = False
     ):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -411,12 +380,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
@@ -495,12 +459,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
 
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers(use_old_core: bool = False):
-        if use_old_core:
-            if old_engine is None:
-                raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
-            engine = old_engine
-        else:
-            engine = latest_engine
+        engine = select_engine(use_old_core, old_engine, latest_engine)
         return Response(
             content=engine.speakers,
             media_type="application/json",
