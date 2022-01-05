@@ -695,6 +695,8 @@ jobs:
             --include-data-file="presets.yaml=./"
             --include-data-file=download/core/*.bin=./
             --include-data-file="download/core/metas.json=./"
+            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./"
+            --include-data-file="download/core/${{ matrix.voicevox_core_dll_name }}=./"
             --include-data-dir="speaker_info=./speaker_info"
             --msvc=14.2
             --follow-imports
@@ -719,10 +721,6 @@ jobs:
           # Build artifact directory
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
-
-          # Copy DLL of core and onnxruntime
-          ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime.dll artifact/
-          ln -sf "$(pwd)/download/core/${{ matrix.voicevox_core_dll_name }}" artifact/
 
           # Copy DLL dependencies
 

@@ -36,7 +36,7 @@ RUN <<EOF
     mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
 
     # Move Voice Library to /opt/voicevox_core/
-    mv ./core/*.bin ./core/core.h ./core/metas.json /opt/voicevox_core/
+    mv ./core/*.bin ./core/metas.json /opt/voicevox_core/
 
     # Move documents to /opt/voicevox_core/
     mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
@@ -195,40 +195,6 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 # COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
-# Install VOICEVOX Core Python module
-ARG VOICEVOX_CORE_SOURCE_VERSION=0.10.preview.0
-RUN <<EOF
-    set -eux
-
-    git clone -b "${VOICEVOX_CORE_SOURCE_VERSION}" --depth 1 https://github.com/VOICEVOX/voicevox_core.git /tmp/voicevox_core_source
-
-    # Copy shared libraries to repo to be packed in core package
-    # ONNX Runtime: included
-    # CUDA/cuDNN: not included
-
-    mkdir -p /tmp/voicevox_core_source/core/lib
-    cp /opt/voicevox_core/libcore.so /tmp/voicevox_core_source/core/lib/
-
-    # Copy versioned shared library only (setup.py will copy package data as real file on install)
-    cd /opt/onnxruntime/lib
-    find . -name 'libonnxruntime.so.*' -or -name 'libonnxruntime_*.so' | xargs -I% cp -v % /tmp/voicevox_core_source/core/lib/
-    cd -
-
-    # Duplicate core.h in repo
-    cp /tmp/voicevox_core_source/core/src/core.h /tmp/voicevox_core_source/core/lib/
-
-    # Install voicevox_core Python module
-    # Files will be generated at build time, so chown for general user
-    chown -R user:user /tmp/voicevox_core_source
-
-    cd /tmp/voicevox_core_source
-
-    gosu user /opt/python/bin/pip3 install .
-
-    # remove cloned repository before layer end to reduce image size
-    rm -rf /tmp/voicevox_core_source
-EOF
-
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
@@ -359,6 +325,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/user.dic=./ \
             --include-data-file=/opt/voicevox_core/*.bin=./ \
             --include-data-file=/opt/voicevox_core/metas.json=./ \
+            --include-data-file=/opt/voicevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
             --follow-imports \
