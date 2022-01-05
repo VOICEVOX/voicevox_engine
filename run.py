@@ -233,7 +233,9 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
-    def mora_data(accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False):
+    def mora_data(
+        accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
+    ):
         if use_old_core:
             if old_engine is None:
                 raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
@@ -248,7 +250,9 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
-    def mora_length(accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False):
+    def mora_length(
+        accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
+    ):
         if use_old_core:
             if old_engine is None:
                 raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
@@ -265,7 +269,9 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音高を得る",
     )
-    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False):
+    def mora_pitch(
+        accent_phrases: List[AccentPhrase], speaker: int, use_old_core: bool = False
+    ):
         if use_old_core:
             if old_engine is None:
                 raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
@@ -345,7 +351,9 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         tags=["音声合成"],
         summary="複数まとめて音声合成する",
     )
-    def multi_synthesis(queries: List[AudioQuery], speaker: int, use_old_core: bool = False):
+    def multi_synthesis(
+        queries: List[AudioQuery], speaker: int, use_old_core: bool = False
+    ):
         if use_old_core:
             if old_engine is None:
                 raise HTTPException(status_code=422, detail="古いバージョンのコアは利用可能ではありません")
