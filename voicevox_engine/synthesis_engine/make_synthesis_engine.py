@@ -37,7 +37,10 @@ def make_synthesis_engine(
 
     if model_lib_dir is None:
         if voicevox_dir is None:
-            model_lib_dir = Path(".")
+            if "__compiled__" in globals():
+                model_lib_dir = Path(sys.argv[0]).parent
+            else:
+                model_lib_dir = Path(__file__).parents[2]
         else:
             model_lib_dir = voicevox_dir
     if not model_lib_dir.is_dir():
