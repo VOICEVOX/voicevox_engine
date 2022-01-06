@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_list import openjtalk_mora2text, openjtalk_text2mora
@@ -79,9 +79,7 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(
-    text: str, enable_interrogative: bool
-) -> Tuple[List[AccentPhrase], List[bool]]:
+def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
     """
     AquesTalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
     """
@@ -114,8 +112,6 @@ def parse_kana(
                 )
             parsed_results.append(accent_phrase)
 
-    interrogative_accent_phrase_marks = [False] * len(parsed_results)
-
     if enable_interrogative and is_interrogative_text:
         last_parsed_result = parsed_results[-1]
         last_mora = last_parsed_result.moras[-1]
@@ -129,18 +125,30 @@ def parse_kana(
                 pitch=0,
             )
         )
-        interrogative_accent_phrase_marks[-1] = True
+        last_parsed_result.is_interrogative = True
 
-    return parsed_results, interrogative_accent_phrase_marks
+    return parsed_results
 
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     text = ""
+    replace_vowel_to_interrogative = (
+        len(accent_phrases) > 0 and accent_phrases[-1].is_interrogative
+    )
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
             if mora.vowel in ["A", "I", "U", "E", "O"]:
                 text += UNVOICE_SYMBOL
-            text += mora.text
+
+            # TODO: 疑問系が正式に対応したらここの処理をmora.textを追加した上で疑問符を追加する処理に変更する
+            if (
+                replace_vowel_to_interrogative
+                and i == len(accent_phrases) - 1
+                and j == len(phrase.moras) - 1
+            ):
+                text += WIDE_INTERROGATION_MARK
+            else:
+                text += mora.text
             if j + 1 == phrase.accent:
                 text += ACCENT_SYMBOL
         if i < len(accent_phrases) - 1:
