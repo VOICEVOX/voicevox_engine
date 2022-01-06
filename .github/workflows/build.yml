@@ -21,7 +21,7 @@ jobs:
           python: '3.8'
           python_architecture: 'x64'
           pip_cache_path: ~/Library/Caches/pip
-          voicevox_resource_version: '0.10.preview.1'
+          voicevox_resource_version: '0.10.preview.2'
           voicevox_core_version: '0.10.preview.0'
           voicevox_core_source_version: '0.10.preview.0'
           voicevox_core_library_name: libcore_cpu_x64.dylib
@@ -298,7 +298,7 @@ jobs:
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
-        voicevox_resource_version: ['0.10.preview.1']
+        voicevox_resource_version: ['0.10.preview.2']
         voicevox_core_version: ['0.10.preview.0']
         voicevox_core_example_version: ['0.10.preview.0']
         include:
@@ -429,7 +429,7 @@ jobs:
         - os: windows-2019
           python: '3.8'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.10.preview.1'
+          voicevox_resource_version: '0.10.preview.2'
           voicevox_core_version: '0.10.preview.0'
           voicevox_core_dll_name: core_cpu_x64.dll
           voicevox_core_source_version: '0.10.preview.0'
@@ -442,7 +442,7 @@ jobs:
         - os: windows-2019
           python: '3.8'
           python_architecture: 'x64'
-          voicevox_resource_version: '0.10.preview.1'
+          voicevox_resource_version: '0.10.preview.2'
           voicevox_core_version: '0.10.preview.0'
           voicevox_core_dll_name: core_gpu_x64_nvidia.dll
           voicevox_core_source_version: '0.10.preview.0'
