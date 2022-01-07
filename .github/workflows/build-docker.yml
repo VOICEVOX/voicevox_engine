@@ -9,15 +9,14 @@ on:
   workflow_dispatch:
 
 env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
+  PYTHON_VERSION: '3.8.12'
   VOICEVOX_CORE_VERSION: '0.10.preview.0'
   VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.0'
 
 jobs:
   build-docker:
     runs-on: ${{ matrix.os }}
-
-    env:
-      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
 
     strategy:
       matrix:
@@ -108,6 +107,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
+            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
