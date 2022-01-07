@@ -10,8 +10,6 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-
-env:
   PYTHON_VERSION: '3.8'
   VOICEVOX_RESOURCE_VERSION: '0.10.preview.2'
   VOICEVOX_CORE_VERSION: '0.10.preview.0'
@@ -374,7 +372,7 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_EXAMPLE_VERSION=${{ matrix.voicevox_core_example_version }}
+            VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
