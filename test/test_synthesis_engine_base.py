@@ -86,8 +86,6 @@ class TestSynthesisEngineBase(TestCase):
         actual = self.synthesis_engine.create_accent_phrases(
             text, 1, enable_interrogative
         )
-        print(expected)
-        print(actual)
         self.assertEqual(
             expected,
             actual,
