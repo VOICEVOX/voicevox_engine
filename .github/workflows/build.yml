@@ -56,39 +56,40 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Prepare Python for building VOICEVOX engine cache
-        uses: actions/cache@v2
-        id: venv-build-voicevox-cache
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-libs-build_voicevox-${{ env.PYTHON_VERSION }}-${{ matrix.python_architecture }}-${{ env.VOICEVOX_CORE_VERSION }}-${{ env.VOICEVOX_CORE_SOURCE_VERSION }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+      # - name: Prepare Python for building VOICEVOX engine cache
+      #   uses: actions/cache@v2
+      #   id: venv-build-voicevox-cache
+      #   with:
+      #     path: ${{ env.pythonLocation }}
+      #     key: ${{ runner.os }}-libs-build_voicevox-${{ env.PYTHON_VERSION }}-${{ matrix.python_architecture }}-${{ env.VOICEVOX_CORE_VERSION }}-${{ env.VOICEVOX_CORE_SOURCE_VERSION }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
-      - name: Prepare Python venv for licenses.json generation cache
-        uses: actions/cache@v2
-        id: venv-generate-licenses-cache
-        with:
-          path: generate_licenses
-          key: ${{ runner.os }}-venv-libs-generate_licenses-${{ env.PYTHON_VERSION }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+      # - name: Prepare Python venv for licenses.json generation cache
+      #   uses: actions/cache@v2
+      #   id: venv-generate-licenses-cache
+      #   with:
+      #     path: generate_licenses
+      #     key: ${{ runner.os }}-venv-libs-generate_licenses-${{ env.PYTHON_VERSION }}-${{ matrix.python_architecture }}-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
 
-      - name: Prepare Python venv for licenses.json generation
-        shell: bash
-        run: python -m venv generate_licenses
+      # - name: Prepare Python venv for licenses.json generation
+      #   shell: bash
+      #   run: python -m venv generate_licenses
 
-      - name: Install dependencies for licenses.json generation
-        if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
+      # - name: Install dependencies for licenses.json generation
+      #   if: steps.venv-generate-licenses-cache.outputs.cache-hit != 'true'
+      - name: Install Python dependencies
         shell: bash
         run: |
-          source generate_licenses/bin/activate
+          # source generate_licenses/bin/activate
           pip install --upgrade pip setuptools wheel
           pip install -r requirements-dev.txt
-          deactivate
+          # deactivate
 
       - name: Generate licenses.json
         shell: bash
         run: |
-          source generate_licenses/bin/activate
+          # source generate_licenses/bin/activate
           python generate_licenses.py > licenses.json
-          deactivate
+          # deactivate
 
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
@@ -174,10 +175,10 @@ jobs:
           ref: ${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
           path: download/voicevox_core_source
 
-      - name: Install dependencies for building VOICEVOX Core Python package
-        shell: bash
-        run: |
-          pip install -r download/voicevox_core_source/requirements.txt
+      # - name: Install dependencies for building VOICEVOX Core Python package
+      #   shell: bash
+      #   run: |
+      #     pip install -r download/voicevox_core_source/requirements.txt
 
       - name: Install VOICEVOX Core Python package
         shell: bash
@@ -201,10 +202,10 @@ jobs:
           NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
           CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install .
 
-      - name: Install dependencies for building VOICEVOX engine
-        shell: bash
-        run: |
-          pip install -r requirements-dev.txt
+      # - name: Install dependencies for building VOICEVOX engine
+      #   shell: bash
+      #   run: |
+      #     pip install -r requirements-dev.txt
 
       - name: Download PyOpenJTalk dictionary
         shell: bash
@@ -356,7 +357,7 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
-      
+
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
       - name: Create binary build environment with Docker
