@@ -8,12 +8,15 @@ on:
       - created
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
+  PYTHON_VERSION: '3.8.10'
+  VOICEVOX_CORE_VERSION: '0.10.preview.0'
+  VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.0'
+
 jobs:
   build-docker:
     runs-on: ${{ matrix.os }}
-
-    env:
-      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
 
     strategy:
       matrix:
@@ -26,8 +29,6 @@ jobs:
           - nvidia-ubuntu20.04
           - cpu-ubuntu18.04
           - nvidia-ubuntu18.04
-        voicevox_core_version: ['0.10.preview.0']
-        voicevox_core_source_version: ['0.10.preview.0']
         include:
           # Ubuntu 20.04
           - tag: ''
@@ -106,8 +107,9 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            VOICEVOX_CORE_VERSION=${{ matrix.voicevox_core_version }}
-            VOICEVOX_CORE_SOURCE_VERSION=${{ matrix.voicevox_core_source_version }}
+            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
+            VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
