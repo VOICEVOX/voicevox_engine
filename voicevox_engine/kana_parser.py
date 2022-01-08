@@ -133,7 +133,10 @@ def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     text = ""
     replace_vowel_to_interrogative = (
-        len(accent_phrases) > 0 and accent_phrases[-1].is_interrogative
+        len(accent_phrases) > 0
+        and accent_phrases[-1].is_interrogative
+        and len(accent_phrases[-1].moras) > 0
+        and accent_phrases[-1].moras[-1].pitch > 0
     )
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):

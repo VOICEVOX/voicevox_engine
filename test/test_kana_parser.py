@@ -576,26 +576,26 @@ class TestCreateKana(TestCase):
                         Mora(
                             text="コ",
                             consonant="k",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="o",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="レ",
                             consonant="r",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="e",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="ワ",
                             consonant="w",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="a",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                     ],
                     accent=3,
@@ -609,48 +609,48 @@ class TestCreateKana(TestCase):
                             consonant=None,
                             consonant_length=None,
                             vowel="a",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="リ",
                             consonant="r",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="i",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="マ",
                             consonant="m",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="a",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="ス",
                             consonant="s",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="U",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="カ",
                             consonant="k",
-                            consonant_length=0,
+                            consonant_length=2.5,
                             vowel="a",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                         Mora(
                             text="ア",
                             consonant=None,
                             consonant_length=None,
                             vowel="a",
-                            vowel_length=0,
-                            pitch=0,
+                            vowel_length=2.5,
+                            pitch=2.5,
                         ),
                     ],
                     accent=3,
@@ -665,3 +665,37 @@ class TestCreateKana(TestCase):
         accent_phrases = koreha_arimasuka_accent_phrases()
         accent_phrases[-1].is_interrogative = True
         self.assertEqual(create_kana(accent_phrases), "コレワ'/アリマ'_スカ？")
+
+        def kya_accent_phrases():
+            return [
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="キャ",
+                            consonant="ky",
+                            consonant_length=2.5,
+                            vowel="a",
+                            vowel_length=2.5,
+                            pitch=2.5,
+                        ),
+                        Mora(
+                            text="ッ",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="cl",
+                            vowel_length=0.1,
+                            pitch=0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                    is_interrogative=False,
+                ),
+            ]
+
+        accent_phrases = kya_accent_phrases()
+        self.assertEqual(create_kana(accent_phrases), "キャ'ッ")
+
+        accent_phrases = kya_accent_phrases()
+        accent_phrases[-1].is_interrogative = True
+        self.assertEqual(create_kana(accent_phrases), "キャ'ッ")
