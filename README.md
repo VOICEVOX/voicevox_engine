@@ -209,7 +209,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ## 環境構築
 
-`Python 3.8.*` を用いて開発されています。
+`Python 3.8.10` を用いて開発されています。
 
 ```bash
 # 開発に必要なライブラリのインストール
@@ -299,7 +299,9 @@ python -m nuitka \
     run.py
 ```
 
-## 依存関係の更新について
+## 依存関係
+
+### 更新
 
 pip-tools を用いて依存ライブラリのバージョンを固定しています。
 `requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
@@ -309,6 +311,15 @@ pip-compile requirements.in
 pip-compile requirements-dev.in
 pip-compile requirements-test.in
 ```
+
+### ライセンス
+
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。  
+
+- MIT/Apache/BSD-3: OK
+- LGPL: OK （コアと動的分離されているため）
+- GPL: NG （全関連コードの公開が必要なため）
 
 ## ユーザー辞書の更新について
 
