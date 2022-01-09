@@ -25,7 +25,7 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
         elif sys.platform == "linux":
             model_libs = ["libtorch.so"]
         elif sys.platform == "darwin":
-            model_libs = ["libtorch.dylib"]
+            model_libs = []
         else:
             raise RuntimeError("不明なOSです")
     elif model_type == "onnxruntime":
