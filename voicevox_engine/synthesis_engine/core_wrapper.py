@@ -38,14 +38,9 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
     else:
         raise RuntimeError("不明なmodel_typeです")
 
-    model_lib_dir = model_lib_dir.resolve(strict=True)
-    cwd = os.getcwd()
-    os.chdir(model_lib_dir)
-    try:
-        for lib_name in model_libs:
-            LibraryLoader(CDLL(str((model_lib_dir / lib_name).resolve(strict=True))))
-    finally:
-        os.chdir(cwd)
+    for lib_name in model_libs:
+        LibraryLoader(CDLL(str((model_lib_dir / lib_name).resolve(strict=True))))
+
 
 
 class CoreWrapper:
