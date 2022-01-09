@@ -1,14 +1,14 @@
-# Artifacts of nuitka
+# VOICEVOX specifics
+## Artifacts of nuitka
 *.dist
 *.build
 /build
 /cache
-
-# Artifact of generate_licenses.py
+## Artifact of generate_licenses.py
 /licenses.json
-
-# pyenv local version
+## pyenv local version
 /.python-version
+
 
 # Copied from `https://github.com/github/gitignore/blob/main/Python.gitignore` @2022-01-10
 # Byte-compiled / optimized / DLL files
