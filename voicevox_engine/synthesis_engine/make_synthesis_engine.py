@@ -43,13 +43,13 @@ def make_synthesis_engine(
                 model_lib_dir = Path(__file__).parents[2]
         else:
             model_lib_dir = voicevox_dir
-    if not model_lib_dir.is_dir():
-        raise Exception("model_lib_dirが不正です")
-    has_voicevox_core = True
 
     voicelib_dir = voicelib_dir.expanduser()
     model_lib_dir = model_lib_dir.expanduser()
 
+    if not model_lib_dir.is_dir():
+        raise Exception("model_lib_dirが不正です")
+    has_voicevox_core = True
     try:
         core = CoreWrapper(use_gpu, voicelib_dir, model_lib_dir, model_type)
     except Exception:
