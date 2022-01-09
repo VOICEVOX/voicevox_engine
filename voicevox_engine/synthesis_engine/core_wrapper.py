@@ -42,7 +42,6 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
         LibraryLoader(CDLL(str((model_lib_dir / lib_name).resolve(strict=True))))
 
 
-
 class CoreWrapper:
     def __init__(
         self,
