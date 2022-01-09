@@ -19,16 +19,13 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
     if model_type == "libtorch":
         if sys.platform == "win32":
             if use_gpu:
-                model_libs = ["c10.dll", "torch.dll", "torch_cuda.dll"]
+                model_libs = ["torch_cuda.dll"]
             else:
-                model_libs = ["c10.dll", "torch.dll", "torch_cpu.dll"]
+                model_libs = ["torch_cpu.dll"]
         elif sys.platform == "linux":
-            if use_gpu:
-                model_libs = ["libc10.so", "libtorch.so", "libtorch_cuda.so"]
-            else:
-                model_libs = ["libc10.so", "libtorch.so", "libtorch_cuda.so"]
+            model_libs = ["libtorch.so"]
         elif sys.platform == "darwin":
-            model_libs = ["libc10.dylib", "libtorch.dylib", "libtorch_cpu.dylib"]
+            model_libs = ["libtorch.dylib"]
         else:
             raise RuntimeError("不明なOSです")
     elif model_type == "onnxruntime":
