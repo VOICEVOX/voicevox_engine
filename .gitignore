@@ -4,8 +4,6 @@
 /build
 /cache
 
-.venv-release
-
 # Artifact of generate_licenses.py
 /licenses.json
 
