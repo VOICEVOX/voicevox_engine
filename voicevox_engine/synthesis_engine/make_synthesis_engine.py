@@ -34,23 +34,22 @@ def make_synthesis_engine(
     use_mock: bool, optional, default=True
         音声ライブラリの読み込みに失敗した際に代わりにmockを使用するか否か
     """
-
-    if model_lib_dir is None:
-        if voicevox_dir is None:
-            if "__compiled__" in globals():
-                model_lib_dir = Path(sys.argv[0]).parent
-            else:
-                model_lib_dir = Path(__file__).parents[2]
-        else:
-            model_lib_dir = voicevox_dir
-
-    voicelib_dir = voicelib_dir.expanduser()
-    model_lib_dir = model_lib_dir.expanduser()
-
-    if not model_lib_dir.is_dir():
-        raise Exception("model_lib_dirが不正です")
-    has_voicevox_core = True
     try:
+        if model_lib_dir is None:
+            if voicevox_dir is None:
+                if "__compiled__" in globals():
+                    model_lib_dir = Path(sys.argv[0]).parent
+                else:
+                    model_lib_dir = Path(__file__).parents[2]
+            else:
+                model_lib_dir = voicevox_dir
+
+        voicelib_dir = voicelib_dir.expanduser()
+        model_lib_dir = model_lib_dir.expanduser()
+
+        if not model_lib_dir.is_dir():
+            raise Exception("model_lib_dirが不正です")
+        has_voicevox_core = True
         core = CoreWrapper(use_gpu, voicelib_dir, model_lib_dir, model_type)
     except Exception:
         import traceback
