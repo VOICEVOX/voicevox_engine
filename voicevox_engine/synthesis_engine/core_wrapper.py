@@ -47,6 +47,7 @@ def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
     finally:
         os.chdir(cwd)
 
+
 class CoreWrapper:
     def __init__(
         self,
