@@ -239,11 +239,10 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 audio_file=audio_file.file,
                 normalize=normalize,
             )
-        except ParseKanaError:
-            print(traceback.format_exc())
+        except ParseKanaError as err:
             raise HTTPException(
-                status_code=500,
-                detail="Failed to Parse Kana",
+                status_code=400,
+                detail=ParseKanaBadRequest(err).dict(),
             )
         except StopIteration:
             print(traceback.format_exc())
@@ -482,11 +481,10 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
                 soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
 
             return FileResponse(f.name, media_type="audio/wav")
-        except ParseKanaError:
-            print(traceback.format_exc())
+        except ParseKanaError as err:
             raise HTTPException(
-                status_code=500,
-                detail="Failed to Parse Kana",
+                status_code=400,
+                detail=ParseKanaBadRequest(err).dict(),
             )
         except StopIteration:
             print(traceback.format_exc())
