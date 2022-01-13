@@ -9,6 +9,7 @@ def make_synthesis_engine(
     use_gpu: bool,
     voicelib_dir: Path,
     voicevox_dir: Optional[Path] = None,
+    cpu_num_threads: Optional[int] = None,
 ) -> SynthesisEngineBase:
     """
     音声ライブラリをロードして、音声合成エンジンを生成

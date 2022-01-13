@@ -3,6 +3,7 @@ import asyncio
 import base64
 import json
 import multiprocessing
+import os
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -494,7 +495,16 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument("--cpu_num_threads", type=int, default=None)
     args = parser.parse_args()
+
+    cpu_num_threads: Optional[int] = args.cpu_num_threads
+    
+    #引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
+    #環境変数にもない場合は、Noneのままとします。
+    if cpu_num_threads is None:
+        cpu_num_threads = os.getenv('CPU_NUM_THREADS', None)
+        
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
