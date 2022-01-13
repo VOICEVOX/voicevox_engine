@@ -515,7 +515,7 @@ if __name__ == "__main__":
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args, voicelib_dir)
+        cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
 
     uvicorn.run(
         generate_app(
