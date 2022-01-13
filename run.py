@@ -523,6 +523,7 @@ if __name__ == "__main__":
                 use_gpu=args.use_gpu,
                 voicelib_dir=voicelib_dir,
                 voicevox_dir=args.voicevox_dir,
+                cpu_num_threads=cpu_num_threads,
             )
         ),
         host=args.host,
