@@ -23,6 +23,9 @@ def make_synthesis_engine(
     voicevox_dir: Path, optional, default=None
         音声ライブラリの Python モジュールがあるディレクトリ
         None のとき、Python 標準のモジュール検索パスのどれかにあるとする
+    cpu_num_threads: int, optional, default=None
+        音声ライブラリが、推論に用いるCPUスレッド数を設定する
+        Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     """
 
     # Python モジュール検索パスへ追加
@@ -48,7 +51,8 @@ def make_synthesis_engine(
             file=sys.stderr,
         )
 
-    core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
+    
+    core.initialize(voicelib_dir.as_posix() + "/", use_gpu, cpu_num_threads)
 
     if has_voicevox_core:
         return SynthesisEngine(
