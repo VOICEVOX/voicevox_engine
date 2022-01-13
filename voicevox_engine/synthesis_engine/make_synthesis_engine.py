@@ -54,7 +54,8 @@ def make_synthesis_engine(
     if cpu_num_threads == 0:
         print(
             "Warning: cpu_num_threads is set to 0. "
-            + "( The library leaves the decision to the synthesis runtime )"
+            + "( The library leaves the decision to the synthesis runtime )",
+            file=sys.stderr,
         )
 
     core.initialize(voicelib_dir.as_posix() + "/", use_gpu, cpu_num_threads or 0)
