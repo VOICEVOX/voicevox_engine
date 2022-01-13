@@ -240,6 +240,22 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 python run.py
 ```
 
+
+### CPUスレッド数を指定する
+CPUスレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どのCPUで、これは全体の処理能力の半分です）  
+もしIaaSで実行していたり、専用サーバーで実行している場合は、CPUスレッド数を使うことで全ての処理能力を使用できます。
+
+- 実行時引数で指定する
+    ```bash
+    python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+    ```
+
+- 環境変数で指定する
+    ```bash
+    CPU_NUM_THREADS=4
+    python run.py --voicevox_dir=$VOICEVOX_DIR
+    ```
+
 ## コードフォーマット
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
