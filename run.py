@@ -499,12 +499,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
-    
-    #引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
-    #環境変数にもない場合は、Noneのままとします。
+
+    # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
+    # 環境変数にもない場合は、Noneのままとします。
     if cpu_num_threads is None:
-        cpu_num_threads = os.getenv('CPU_NUM_THREADS', None)
-        
+        cpu_num_threads = os.getenv("CPU_NUM_THREADS", None)
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
