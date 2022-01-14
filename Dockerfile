@@ -21,7 +21,7 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.10.preview.0 (ONNX)
-ARG VOICEVOX_CORE_VERSION=0.10.preview.0
+ARG VOICEVOX_CORE_VERSION=0.10.preview.3
 ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
 RUN <<EOF
     set -eux
@@ -203,7 +203,7 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
 # Install VOICEVOX Core Python module
-ARG VOICEVOX_CORE_SOURCE_VERSION=0.10.preview.0
+ARG VOICEVOX_CORE_SOURCE_VERSION=0.10.preview.3
 RUN <<EOF
     set -eux
 
