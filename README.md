@@ -253,7 +253,7 @@ VOICEVOX ENGINEが使う処理能力を調節したい場合は、CPUスレッ�
 
 - 環境変数で指定する
     ```bash
-    export CPU_NUM_THREADS=4
+    export VV_CPU_NUM_THREADS=4
     python run.py --voicevox_dir=$VOICEVOX_DIR
     ```
 
