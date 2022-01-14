@@ -4,7 +4,6 @@ import base64
 import json
 import multiprocessing
 import os
-import traceback
 import zipfile
 from functools import lru_cache
 from pathlib import Path
