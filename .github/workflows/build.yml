@@ -151,11 +151,6 @@ jobs:
           ref: ${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
           path: download/voicevox_core_source
 
-      - name: Install dependencies for building VOICEVOX engine
-        shell: bash
-        run: |
-          pip install -r requirements-dev.txt
-
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
