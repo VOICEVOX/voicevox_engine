@@ -504,7 +504,7 @@ if __name__ == "__main__":
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
     if cpu_num_threads is None:
-        cpu_num_threads_env = os.getenv("CPU_NUM_THREADS")
+        cpu_num_threads_env = os.getenv("CPU_NUM_THREADS", None)
 
         if cpu_num_threads_env is not None:
             try:
