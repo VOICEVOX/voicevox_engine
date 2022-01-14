@@ -496,22 +496,15 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
-    parser.add_argument("--cpu_num_threads", type=int, default=None)
-    args = parser.parse_args()
-
-    cpu_num_threads: Optional[int] = args.cpu_num_threads
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
-    if cpu_num_threads is None:
-        cpu_num_threads_env = os.getenv("CPU_NUM_THREADS", None)
+    # VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合、エラー終了します。
+    parser.add_argument("--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS"))
 
-        if cpu_num_threads_env is not None:
-            try:
-                cpu_num_threads = int(cpu_num_threads_env)
-            except ValueError:
-                # 数値でなかった場合、エラーを出力してcpu_num_threads=Noneのまま起動を続行
-                traceback.print_exc()
+    args = parser.parse_args()
+
+    cpu_num_threads: Optional[int] = args.cpu_num_threads
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
