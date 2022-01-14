@@ -13,6 +13,7 @@ def make_synthesis_engine(
     model_type: Optional[str] = "onnxruntime",
     model_lib_dir: Optional[Path] = None,
     use_mock: Optional[bool] = True,
+    cpu_num_threads: Optional[int] = None,
 ) -> SynthesisEngineBase:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
@@ -33,6 +34,9 @@ def make_synthesis_engine(
         None のとき、voicevox_dir、それもNoneの場合はカレントディレクトリになる
     use_mock: bool, optional, default=True
         音声ライブラリの読み込みに失敗した際に代わりにmockを使用するか否か
+    cpu_num_threads: int, optional, default=None
+        音声ライブラリが、推論に用いるCPUスレッド数を設定する
+        Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     """
     try:
         if model_lib_dir is None:
@@ -70,6 +74,14 @@ def make_synthesis_engine(
                 "Notice: Failed to make synthesis engine. This error will be ignored.",
                 file=sys.stderr,
             )
+    if cpu_num_threads == 0:
+        print(
+            "Warning: cpu_num_threads is set to 0. "
+            + "( The library leaves the decision to the synthesis runtime )",
+            file=sys.stderr,
+        )
+
+    core.initialize(voicelib_dir.as_posix() + "/", use_gpu, cpu_num_threads or 0)
 
     if has_voicevox_core:
         return SynthesisEngine(

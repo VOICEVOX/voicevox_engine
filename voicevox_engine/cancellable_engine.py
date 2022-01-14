@@ -33,13 +33,14 @@ class CancellableEngine:
         （音声合成中のプロセスは入っていない）
     """
 
-    def __init__(self, args, voicelib_dir) -> None:
+    def __init__(self, args, voicelib_dir, cpu_num_threads: Optional[int]) -> None:
         """
         変数の初期化を行う
         また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
         self.args = args
         self.voicelib_dir = voicelib_dir
+        self.cpu_num_threads = cpu_num_threads
         if not self.args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
@@ -71,6 +72,7 @@ class CancellableEngine:
                 "args": self.args,
                 "voicelib_dir": self.voicelib_dir,
                 "sub_proc_con": sub_proc_con2,
+                "cpu_num_threads": self.cpu_num_threads,
             },
             daemon=True,
         )
@@ -170,7 +172,10 @@ class CancellableEngine:
 
 
 def start_synthesis_subprocess(
-    args: argparse.Namespace, voicelib_dir: Path, sub_proc_con: Connection
+    args: argparse.Namespace,
+    voicelib_dir: Path,
+    sub_proc_con: Connection,
+    cpu_num_threads: Optional[int],
 ):
     """
     音声合成を行うサブプロセスで行うための関数
@@ -189,6 +194,7 @@ def start_synthesis_subprocess(
         voicevox_dir=args.voicevox_dir,
         voicelib_dir=voicelib_dir,
         model_lib_dir=args.model_lib_dir,
+        cpu_num_threads=cpu_num_threads,
     )
     while True:
         try:

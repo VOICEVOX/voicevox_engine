@@ -3,6 +3,7 @@ import asyncio
 import base64
 import json
 import multiprocessing
+import os
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -199,9 +200,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
         engine = select_engine(use_old_core, old_engine, latest_engine)
         if is_kana:
             try:
-                accent_phrases, interrogative_accent_phrase_marks = parse_kana(
-                    text, enable_interrogative
-                )
+                accent_phrases = parse_kana(text, enable_interrogative)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
@@ -211,9 +210,7 @@ def generate_app(latest_engine: SynthesisEngineBase) -> FastAPI:
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
 
-            return adjust_interrogative_accent_phrases(
-                accent_phrases, interrogative_accent_phrase_marks, enable_interrogative
-            )
+            return adjust_interrogative_accent_phrases(accent_phrases)
         else:
             return engine.create_accent_phrases(
                 text,
@@ -533,7 +530,17 @@ if __name__ == "__main__":
     parser.add_argument("--old_voicelib_dir", type=Path, default=None)
     parser.add_argument("--old_model_lib_dir", type=Path, default=None)
     parser.add_argument("--old_model_type", type=str, default="onnxruntime")
+
+    # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
+    # 環境変数にもない場合は、Noneのままとします。
+    # VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合、エラー終了します。
+    parser.add_argument(
+        "--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS") or None
+    )
+
     args = parser.parse_args()
+
+    cpu_num_threads: Optional[int] = args.cpu_num_threads
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
@@ -545,7 +552,7 @@ if __name__ == "__main__":
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args, voicelib_dir)
+        cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
 
     old_engine = None
     if args.old_voicelib_dir is not None:
@@ -565,6 +572,7 @@ if __name__ == "__main__":
                 voicelib_dir=voicelib_dir,
                 voicevox_dir=args.voicevox_dir,
                 model_lib_dir=args.model_lib_dir,
+                cpu_num_threads=cpu_num_threads,
             )
         ),
         host=args.host,
