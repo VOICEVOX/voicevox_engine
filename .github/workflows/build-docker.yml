@@ -11,8 +11,8 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: '3.8.10'
-  VOICEVOX_CORE_VERSION: '0.10.preview.0'
-  VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.0'
+  VOICEVOX_CORE_VERSION: '0.10.preview.3'
+  VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.3'
 
 jobs:
   build-docker:
