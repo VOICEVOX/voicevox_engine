@@ -4,6 +4,7 @@ import base64
 import json
 import multiprocessing
 import os
+import traceback
 import zipfile
 from functools import lru_cache
 from pathlib import Path
@@ -503,7 +504,14 @@ if __name__ == "__main__":
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
     if cpu_num_threads is None:
-        cpu_num_threads = os.getenv("CPU_NUM_THREADS", None)
+        cpu_num_threads_env = os.getenv("CPU_NUM_THREADS")
+
+        if cpu_num_threads_env is not None:
+            try:
+                cpu_num_threads = int(cpu_num_threads_env)
+            except ValueError:
+                # 数値でなかった場合、エラーを出力してcpu_num_threads=Noneのまま起動を続行
+                traceback.print_exc()
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
