@@ -500,7 +500,7 @@ if __name__ == "__main__":
     # 環境変数にもない場合は、Noneのままとします。
     # VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合、エラー終了します。
     parser.add_argument(
-        "--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS", None)
+        "--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS") or None
     )
 
     args = parser.parse_args()
