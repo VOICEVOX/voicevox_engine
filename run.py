@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
 
+from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
@@ -51,7 +52,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     app = FastAPI(
         title="VOICEVOX ENGINE",
         description="VOICEVOXの音声合成エンジンです。",
-        version=(root_dir / "VERSION.txt").read_text().strip(),
+        version=__version__,
     )
 
     app.add_middleware(
@@ -422,7 +423,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
-        return (root_dir / "VERSION.txt").read_text()
+        return __version__
 
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers():
