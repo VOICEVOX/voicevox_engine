@@ -135,22 +135,6 @@ jobs:
           ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
           rm download/core.zip
 
-      # Install VOICEVOX Core Python package
-      - name: Prepare VOICEVOX Core source cache
-        uses: actions/cache@v2
-        id: voicevox-core-source-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-source-${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
-      - name: Checkout VOICEVOX Core source
-        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          repository: VOICEVOX/voicevox_core
-          ref: ${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
@@ -195,7 +179,7 @@ jobs:
             --include-data-file=../user.dic=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=../download/core/libcore_cpu_x64.dylib=./ \
+            --include-data-file=../download/core/${{ matrix.voicevox_core_library_name }}=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
