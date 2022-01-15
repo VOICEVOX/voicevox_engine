@@ -639,29 +639,29 @@ jobs:
           # Replace version
           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
 
-          python -m nuitka
-            --standalone
-            --assume-yes-for-downloads
-            --plugin-enable=numpy
-            --plugin-enable=multiprocessing
-            --follow-import-to=numpy
-            --follow-import-to=aiofiles
-            --include-package=uvicorn
-            --include-package=anyio
-            --include-package-data=pyopenjtalk
-            --include-package-data=scipy
-            --include-data-file="VERSION.txt=./"
-            --include-data-file="licenses.json=./"
-            --include-data-file="user.dic=./"
-            --include-data-file="presets.yaml=./"
-            --include-data-file=download/core/*.bin=./
-            --include-data-file="download/core/metas.json=./"
-            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./"
-            --include-data-file="download/core/${{ matrix.voicevox_core_dll_name }}=./"
-            --include-data-dir="speaker_info=./speaker_info"
-            --msvc=14.2
-            --follow-imports
-            --no-prefer-source-code
+          python -m nuitka \
+            --standalone \
+            --assume-yes-for-downloads \
+            --plugin-enable=numpy \
+            --plugin-enable=multiprocessing \
+            --follow-import-to=numpy \
+            --follow-import-to=aiofiles \
+            --include-package=uvicorn \
+            --include-package=anyio \
+            --include-package-data=pyopenjtalk \
+            --include-package-data=scipy \
+            --include-data-file="VERSION.txt=./" \
+            --include-data-file="licenses.json=./" \
+            --include-data-file="user.dic=./" \
+            --include-data-file="presets.yaml=./" \
+            --include-data-file=download/core/*.bin=./ \
+            --include-data-file="download/core/metas.json=./" \
+            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
+            --include-data-file="download/core/${{ matrix.voicevox_core_dll_name }}=./" \
+            --include-data-dir="speaker_info=./speaker_info" \
+            --msvc=14.2 \
+            --follow-imports \
+            --no-prefer-source-code \
             run.py
 
       - name: Show disk space (debug info)
