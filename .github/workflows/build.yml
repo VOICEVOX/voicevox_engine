@@ -13,6 +13,8 @@ env:
   PYTHON_VERSION: '3.8.10'
   VOICEVOX_RESOURCE_VERSION: '0.10.preview.2'
   VOICEVOX_CORE_VERSION: '0.10.preview.3'
+  VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
+    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
 jobs:
   # Build Mac binary (x64 arch only)
@@ -35,6 +37,13 @@ jobs:
       - name: Install CCache
         shell: bash
         run: brew install ccache
+
+      # NOTE: The default sed of macOS is BSD sed.
+      #       There is a difference in specification between BSD sed and GNU sed,
+      #       so you need to install GNU sed.
+      - name: Install GNU sed on macOS
+        shell: bash
+        run: brew install gnu-sed
 
       - name: Create download and build directory
         run: mkdir download build
@@ -160,6 +169,9 @@ jobs:
         run: |
           set -eux
 
+          # Replace version
+          gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" ../voicevox_engine/__init__.py
+
           # Nuitka does not copy grandchild dependencies. Explicitly copy libonnxruntime
           python -m nuitka \
             --output-dir=./ \
@@ -172,7 +184,6 @@ jobs:
             --include-package=anyio \
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
-            --include-data-file=../VERSION.txt=./ \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../user.dic=./ \
@@ -301,6 +312,7 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
@@ -621,7 +633,12 @@ jobs:
         shell: bash
         env:
           NUITKA_CACHE_DIR: ${{ matrix.nuitka_cache_path }}
-        run:
+        run: |
+          set -eux
+          
+          # Replace version
+          sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+
           python -m nuitka
             --standalone
             --assume-yes-for-downloads
