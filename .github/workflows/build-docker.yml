@@ -13,6 +13,8 @@ env:
   PYTHON_VERSION: '3.8.10'
   VOICEVOX_CORE_VERSION: '0.10.preview.3'
   VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.3'
+  VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
+    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
 jobs:
   build-docker:
@@ -108,6 +110,7 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
