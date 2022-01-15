@@ -1,127 +1,117 @@
 import os
 import sys
-from ctypes import (
-    CDLL,
-    POINTER,
-    LibraryLoader,
-    c_bool,
-    c_char_p,
-    c_float,
-    c_int,
-    c_long,
-)
+from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
+from ctypes.util import find_library
 from pathlib import Path
+from typing import List
 
 import numpy as np
 
 
-def load_model_lib(use_gpu: bool, model_type: str, model_lib_dir: Path):
-    if model_type == "libtorch":
-        if sys.platform == "win32":
-            if use_gpu:
-                model_libs = ["torch_cuda.dll"]
-            else:
-                model_libs = ["torch_cpu.dll"]
-        elif sys.platform == "linux":
-            model_libs = ["libtorch.so"]
-        elif sys.platform == "darwin":
-            model_libs = []
-        else:
-            raise RuntimeError("不明なOSです")
-    elif model_type == "onnxruntime":
-        if sys.platform == "win32":
-            model_libs = ["onnxruntime.dll"]
-        elif sys.platform == "linux":
-            model_libs = ["libonnxruntime.so"]
-        elif sys.platform == "darwin":
-            model_libs = ["libonnxruntime.dylib"]
+def load_model_lib(model_lib_dir: List[Path]):
+    if sys.platform == "win32":
+        lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "onnxruntime.dll"]
+        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
+    elif sys.platform == "linux":
+        lib_file_names = ["libtorch.so", "libonnxruntime.so"]
+        lib_names = ["torch", "onnxruntime"]
+    elif sys.platform == "darwin":
+        lib_file_names = ["libonnxruntime.dylib"]
+        lib_names = ["onnxruntime"]
     else:
-        raise RuntimeError("不明なmodel_typeです")
+        raise RuntimeError("不明なOSです")
+    for lib_path in model_lib_dir:
+        for file_name in lib_file_names:
+            try:
+                CDLL(str((lib_path / file_name).resolve(strict=True)))
+            except OSError:
+                pass
+    for lib_name in lib_names:
+        try:
+            CDLL(find_library(lib_name))
+        except (OSError, TypeError):
+            pass
 
-    for lib_name in model_libs:
-        LibraryLoader(CDLL(str((model_lib_dir / lib_name).resolve(strict=True))))
+
+def check_core_type(core_dir: Path):
+    if sys.platform == "win32":
+        if (core_dir / "core.dll").is_file() or (core_dir / "core_cpu.dll").is_file():
+            return "libtorch"
+        elif (core_dir / "core_gpu_x64_nvidia.dll").is_file() or (
+            core_dir / "core_cpu_x64.dll"
+        ).is_file():
+            return "onnxruntime"
+    elif sys.platform == "linux":
+        if (core_dir / "libcore.so").is_file() or (
+            core_dir / "libcore_cpu.so"
+        ).is_file():
+            return "libtorch"
+        elif (core_dir / "libcore_gpu_x64_nvidia.so").is_file() or (
+            core_dir / "libcore_cpu_x64.so"
+        ).is_file():
+            return "onnxruntime"
+    elif sys.platform == "darwin":
+        if (core_dir / "libcore_cpu_x64.dylib").is_file():
+            return "onnxruntime"
+    return None
+
+
+def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
+    model_type = check_core_type(core_dir)
+    if model_type is None:
+        raise RuntimeError("コアが見つかりません")
+    if sys.platform == "win32":
+        if model_type == "libtorch":
+            if use_gpu:
+                try:
+                    return CDLL(str((core_dir / "core.dll").resolve(strict=True)))
+                except OSError:
+                    pass
+            try:
+                return CDLL(str((core_dir / "core_cpu.dll").resolve(strict=True)))
+            except OSError:
+                return CDLL(str((core_dir / "core.dll").resolve(strict=True)))
+        elif model_type == "onnxruntime":
+            try:
+                return CDLL(
+                    str((core_dir / "core_gpu_x64_nvidia.dll").resolve(strict=True))
+                )
+            except OSError:
+                return CDLL(str((core_dir / "core_cpu_x64.dll").resolve(strict=True)))
+    elif sys.platform == "linux":
+        if model_type == "libtorch":
+            if use_gpu:
+                try:
+                    return CDLL(str((core_dir / "libcore.so").resolve(strict=True)))
+                except OSError:
+                    pass
+            try:
+                return CDLL(str((core_dir / "libcore_cpu.so").resolve(strict=True)))
+            except OSError:
+                return CDLL(str((core_dir / "libcore.so").resolve(strict=True)))
+        elif model_type == "onnxruntime":
+            try:
+                return CDLL(
+                    str((core_dir / "libcore_gpu_x64_nvidia.so").resolve(strict=True))
+                )
+            except OSError:
+                return CDLL(str((core_dir / "libcore_cpu_x64.so").resolve(strict=True)))
+    elif sys.platform == "darwin":
+        if model_type == "onnxruntime":
+            try:
+                return CDLL(
+                    str((core_dir / "libcore_cpu_x64.dylib").resolve(strict=True))
+                )
+            except OSError:
+                pass
+    raise RuntimeError("コアの読み込みに失敗しました")
 
 
 class CoreWrapper:
-    def __init__(
-        self,
-        use_gpu: bool,
-        voicelib_dir: Path,
-        model_lib_dir: Path,
-        model_type: str,
-    ) -> None:
-        load_model_lib(use_gpu, model_type, model_lib_dir)
-        if model_type == "libtorch":
-            if sys.platform == "win32":
-                if use_gpu:
-                    self.core = CDLL(
-                        str((voicelib_dir / "core.dll").resolve(strict=True))
-                    )
-                else:
-                    try:
-                        self.core = CDLL(
-                            str((voicelib_dir / "core_cpu.dll").resolve(strict=True))
-                        )
-                    except FileNotFoundError:
-                        self.core = CDLL(
-                            str((voicelib_dir / "core.dll").resolve(strict=True))
-                        )
-            elif sys.platform == "linux":
-                if use_gpu:
-                    self.core = CDLL(
-                        str((voicelib_dir / "libcore.so").resolve(strict=True))
-                    )
-                else:
-                    try:
-                        self.core = CDLL(
-                            str((voicelib_dir / "libcore_cpu.so").resolve(strict=True))
-                        )
-                    except FileNotFoundError:
-                        self.core = CDLL(
-                            str((voicelib_dir / "libcore.so").resolve(strict=True))
-                        )
-            elif sys.platform == "darwin":
-                try:
-                    self.core = CDLL(
-                        str((voicelib_dir / "libcore_cpu.dylib").resolve(strict=True))
-                    )
-                except FileNotFoundError:
-                    self.core = CDLL(
-                        str((voicelib_dir / "libcore.dylib").resolve(strict=True))
-                    )
-            else:
-                raise RuntimeError("不明なOSです")
-        elif model_type == "onnxruntime":
-            if sys.platform == "win32":
-                try:
-                    self.core = CDLL(
-                        str(
-                            (voicelib_dir / "core_gpu_x64_nvidia.dll").resolve(
-                                strict=True
-                            )
-                        )
-                    )
-                except FileNotFoundError:
-                    self.core = CDLL(
-                        str((voicelib_dir / "core_cpu_x64.dll").resolve(strict=True))
-                    )
-            elif sys.platform == "linux":
-                try:
-                    self.core = CDLL(
-                        str(
-                            (voicelib_dir / "libcore_gpu_x64_nvidia.so").resolve(
-                                strict=True
-                            )
-                        )
-                    )
-                except FileNotFoundError:
-                    self.core = CDLL(
-                        str((voicelib_dir / "libcore_cpu_x64.so").resolve(strict=True))
-                    )
-            elif sys.platform == "darwin":
-                self.core = CDLL(
-                    str((voicelib_dir / "libcore_cpu_x64.dylib").resolve(strict=True))
-                )
+    def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
+        model_type = check_core_type(core_dir)
+        self.core = load_core(core_dir, use_gpu)
+        assert model_type is not None
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -132,11 +122,13 @@ class CoreWrapper:
 
         self.exist_suppoted_devices = False
         self.exist_finalize = False
+        exist_cpu_num_threads = False
         if model_type == "onnxruntime":
             self.core.supported_devices.restype = c_char_p
             self.core.finalize.restype = None
             self.exist_suppoted_devices = True
             self.exist_finalize = True
+            exist_cpu_num_threads = True
 
         self.core.yukarin_s_forward.argtypes = (
             c_int,
@@ -165,10 +157,14 @@ class CoreWrapper:
         )
 
         cwd = os.getcwd()
-        os.chdir(voicelib_dir)
+        os.chdir(core_dir)
         try:
-            if not self.core.initialize(".", use_gpu):
-                raise Exception(self.core.last_error_message().decode("utf-8"))
+            if exist_cpu_num_threads:
+                if not self.core.initialize(".", use_gpu, cpu_num_threads):
+                    raise Exception(self.core.last_error_message().decode("utf-8"))
+            else:
+                if not self.core.initialize(".", use_gpu):
+                    raise Exception(self.core.last_error_message().decode("utf-8"))
         finally:
             os.chdir(cwd)
 
