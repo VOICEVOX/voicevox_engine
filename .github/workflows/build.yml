@@ -208,6 +208,7 @@ jobs:
         run: |
           set -eux
 
+          # Replace version
           gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" ../voicevox_engine/__init__.py
 
           # Nuitka does not copy grandchild dependencies. Explicitly copy libonnxruntime
@@ -717,6 +718,7 @@ jobs:
         run: |
           set -eux
           
+          # Replace version
           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
           
           python -m nuitka \
