@@ -5,8 +5,6 @@ from copy import copy
 from pathlib import Path
 from typing import List, Optional
 
-from ..dev import core as mock_core
-from ..dev.synthesis_engine import MockSynthesisEngine
 from .core_wrapper import CoreWrapper, load_model_lib
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
@@ -99,7 +97,8 @@ def make_synthesis_engines(
                 "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
                 file=sys.stderr,
             )
+            from ..dev.core import metas as mock_metas
+            from ..dev.synthesis_engine import MockSynthesisEngine
+
             if "0.0.0" not in synthesis_engines:
-                synthesis_engines["0.0.0"] = MockSynthesisEngine(
-                    speakers=mock_core.metas()
-                )
+                synthesis_engines["0.0.0"] = MockSynthesisEngine(speakers=mock_metas())
