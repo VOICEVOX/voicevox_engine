@@ -469,7 +469,7 @@ def generate_app(
     @app.get("/core_versions", response_model=List[str], tags=["その他"])
     def core_versions() -> List[str]:
         return Response(
-            content=list(synthesis_engines.keys()),
+            content=json.dumps(list(synthesis_engines.keys())),
             media_type="application/json",
         )
 
@@ -546,6 +546,7 @@ if __name__ == "__main__":
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
     parser.add_argument("--model_lib_dir", type=Path, default=None, action="append")
+    parser.add_argument("--enable_mock", action="store_true")
     # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
     # parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     # parser.add_argument("--init_processes", type=int, default=2)
@@ -566,7 +567,7 @@ if __name__ == "__main__":
         voicelib_dir=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
         model_lib_dir=args.model_lib_dir,
-        raise_error=True,
+        enable_mock=args.enable_mock,
     )
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 

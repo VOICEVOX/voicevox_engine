@@ -15,7 +15,7 @@ def make_synthesis_engines(
     voicevox_dir: Optional[Path] = None,
     model_lib_dir: Optional[List[Path]] = None,
     cpu_num_threads: int = 0,
-    raise_error: bool = True,
+    enable_mock: bool = True,
 ) -> List[SynthesisEngineBase]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
@@ -34,7 +34,7 @@ def make_synthesis_engines(
     cpu_num_threads: int, optional, default=None
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
         Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
-    raise_error: bool, optional, default=True
+    enable_mock: bool, optional, default=True
         コア読み込みに失敗したときにエラーを送出するかどうか
         Falseだと代わりにmockが使用される
     """
@@ -73,10 +73,7 @@ def make_synthesis_engines(
         try:
             core = CoreWrapper(use_gpu, core_dir, cpu_num_threads)
             metas = json.loads(core.metas())
-            if "version" in metas[0]:
-                core_version = metas[0]["version"]
-            else:
-                core_version = "0.5.2"
+            core_version = metas[0]["version"]
             if core_version in synthesis_engines:
                 print(
                     "Warning: Core loading is skipped because of version duplication.",
@@ -87,10 +84,10 @@ def make_synthesis_engines(
                 yukarin_s_forwarder=core.yukarin_s_forward,
                 yukarin_sa_forwarder=core.yukarin_sa_forward,
                 decode_forwarder=core.decode_forward,
-                speakers=metas,
+                speakers=core.metas(),
             )
         except Exception:
-            if raise_error:
+            if not enable_mock:
                 raise
             traceback.print_exc()
             print(
@@ -102,3 +99,5 @@ def make_synthesis_engines(
 
             if "0.0.0" not in synthesis_engines:
                 synthesis_engines["0.0.0"] = MockSynthesisEngine(speakers=mock_metas())
+
+    return synthesis_engines
