@@ -1,5 +1,5 @@
+import json
 from logging import getLogger
-from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
@@ -68,9 +68,7 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
 
 
 def metas() -> str:
-    mock_dir = Path(__file__).parent
-    version = (mock_dir / ".." / ".." / ".." / "VERSION.txt").read_text().strip()
-    return str(
+    return json.dumps(
         [
             {
                 "name": "dummy1",
@@ -81,7 +79,7 @@ def metas() -> str:
                     {"name": "style3", "id": 6},
                 ],
                 "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
-                "version": version,
+                "version": "mock",
             },
             {
                 "name": "dummy2",
@@ -92,7 +90,7 @@ def metas() -> str:
                     {"name": "style3", "id": 7},
                 ],
                 "speaker_uuid": "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9",
-                "version": version,
+                "version": "mock",
             },
             {
                 "name": "dummy3",
@@ -100,7 +98,7 @@ def metas() -> str:
                     {"name": "style0", "id": 8},
                 ],
                 "speaker_uuid": "35b2c544-660e-401e-b503-0e14c635303a",
-                "version": version,
+                "version": "mock",
             },
             {
                 "name": "dummy4",
@@ -108,9 +106,7 @@ def metas() -> str:
                     {"name": "style0", "id": 9},
                 ],
                 "speaker_uuid": "b1a81618-b27b-40d2-b0ea-27a9ad408c4b",
-                "version": version,
+                "version": "mock",
             },
         ]
-    ).replace(
-        "'", '"'  # ちゃんとJSONとして認識してもらうためにシングルクォーテーションを置き換える
     )

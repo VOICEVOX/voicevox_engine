@@ -239,8 +239,12 @@ EOF
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt ./user.dic /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./user.dic /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
+
+# Replace version
+ARG VOICEVOX_ENGINE_VERSION=latest
+RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
 
 # Generate licenses.json
 RUN <<EOF
@@ -360,7 +364,6 @@ RUN <<EOF
             --include-package=anyio \
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
-            --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
             --include-data-file=/opt/voicevox_engine/user.dic=./ \
