@@ -95,13 +95,9 @@ jobs:
         env:
           IMAGE_TAG: |- # If it's a release, add the version, otherwise add the `latest`
             ${{ (
-              github.event.release.tag_name != '' && (
-                matrix.tag != '' && (
-                  format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, github.event.release.tag_name)
-                ) || format('{0}:{1}', env.IMAGE_NAME, github.event.release.tag_name)
-              )
-            ) || (
-              format('{0}:{1}{2}latest', env.IMAGE_NAME, matrix.tag, (matrix.tag != '' && '-') || ''
+              matrix.tag != '' && (
+                format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, env.VOICEVOX_ENGINE_VERSION)
+              ) || format('{0}:{1}', env.IMAGE_NAME, env.VOICEVOX_ENGINE_VERSION)
             ) }}
         with:
           context: .
