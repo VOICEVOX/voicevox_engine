@@ -57,9 +57,9 @@ def make_synthesis_engines(
         else:
             voicelib_dir = [voicevox_dir]
         if model_lib_dir is not None:
-            model_lib_dir.append(model_lib_dir)
+            model_lib_dir.append(voicevox_dir)
         else:
-            model_lib_dir = [model_lib_dir]
+            model_lib_dir = [voicevox_dir]
     else:
         if voicelib_dir is None:
             voicelib_dir = [copy(root_dir)]
