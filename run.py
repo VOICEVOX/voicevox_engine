@@ -565,9 +565,9 @@ if __name__ == "__main__":
 
     synthesis_engines = make_synthesis_engines(
         use_gpu=args.use_gpu,
-        voicelib_dir=args.voicelib_dir,
+        voicelib_dirs=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
-        model_lib_dir=args.model_lib_dir,
+        model_lib_dirs=args.model_lib_dir,
         enable_mock=args.enable_mock,
     )
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))

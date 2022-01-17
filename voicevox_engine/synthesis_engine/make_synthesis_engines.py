@@ -11,9 +11,9 @@ from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
 def make_synthesis_engines(
     use_gpu: bool,
-    voicelib_dir: Optional[List[Path]] = None,
+    voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
-    model_lib_dir: Optional[List[Path]] = None,
+    model_lib_dirs: Optional[List[Path]] = None,
     cpu_num_threads: int = 0,
     enable_mock: bool = True,
 ) -> List[SynthesisEngineBase]:
@@ -24,11 +24,11 @@ def make_synthesis_engines(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
-    voicelib_dir: List[Path], optional, defauld=None
+    voicelib_dirs: List[Path], optional, defauld=None
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir: Path, optional, default=None
         コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    model_lib_dir: List[Path], optional, default=None
+    model_lib_dirs: List[Path], optional, default=None
         コアで使用するライブラリのあるディレクトリのリスト
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional, default=None
@@ -52,26 +52,26 @@ def make_synthesis_engines(
         root_dir = Path(__file__).parents[2]
 
     if voicevox_dir is not None:
-        if voicelib_dir is not None:
-            voicelib_dir.append(voicevox_dir)
+        if voicelib_dirs is not None:
+            voicelib_dirs.append(voicevox_dir)
         else:
-            voicelib_dir = [voicevox_dir]
-        if model_lib_dir is not None:
-            model_lib_dir.append(voicevox_dir)
+            voicelib_dirs = [voicevox_dir]
+        if model_lib_dirs is not None:
+            model_lib_dirs.append(voicevox_dir)
         else:
-            model_lib_dir = [voicevox_dir]
+            model_lib_dirs = [voicevox_dir]
     else:
-        if voicelib_dir is None:
-            voicelib_dir = [copy(root_dir)]
-        if model_lib_dir is None:
-            model_lib_dir = [copy(root_dir)]
+        if voicelib_dirs is None:
+            voicelib_dirs = [copy(root_dir)]
+        if model_lib_dirs is None:
+            model_lib_dirs = [copy(root_dir)]
 
-    voicelib_dir = [p.expanduser() for p in voicelib_dir]
-    model_lib_dir = [p.expanduser() for p in model_lib_dir]
+    voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
+    model_lib_dirs = [p.expanduser() for p in model_lib_dirs]
 
-    load_model_lib(model_lib_dir)
+    load_model_lib(model_lib_dirs)
     synthesis_engines = {}
-    for core_dir in voicelib_dir:
+    for core_dir in voicelib_dirs:
         try:
             core = CoreWrapper(use_gpu, core_dir, cpu_num_threads)
             metas = json.loads(core.metas())
