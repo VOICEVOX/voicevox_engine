@@ -44,6 +44,8 @@ def make_synthesis_engines(
             + "( The library leaves the decision to the synthesis runtime )",
             file=sys.stderr,
         )
+    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
+    # https://nuitka.net/doc/user-manual.html#detecting-nuitka-at-run-time
     if "__compiled__" in globals():
         root_dir = Path(sys.argv[0]).parent
     else:
