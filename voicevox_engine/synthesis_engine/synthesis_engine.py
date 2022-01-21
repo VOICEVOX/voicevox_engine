@@ -402,10 +402,6 @@ class SynthesisEngine(SynthesisEngineBase):
         # lengthにSpeed Scale(話速)を適用する
         phoneme_length /= query.speedScale
 
-        # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装
-        pre_padding_length = 0.4
-        phoneme_length[0] += pre_padding_length
-
         # pitch
         # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
         f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
@@ -456,9 +452,6 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme=phoneme,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
-
-        # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装の後処理
-        wave = wave[int(self.default_sampling_rate * pre_padding_length) :]
 
         # volume: ゲイン適用
         wave *= query.volumeScale
