@@ -423,9 +423,8 @@ class SynthesisEngine(SynthesisEngineBase):
         vowel_indexes = numpy.array(vowel_indexes_data)
 
         # forward decode
-        rate = 24000 / 256
-
         # 音素の長さにrateを掛け、intにキャストする
+        rate = 24000 / 256
         phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
         # Phoneme IDを音素の長さ分繰り返す
