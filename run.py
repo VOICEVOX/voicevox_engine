@@ -3,20 +3,21 @@ import asyncio
 import base64
 import json
 import multiprocessing
+import os
 import zipfile
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
 
-import numpy as np
-import pyworld as pw
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Query
 from starlette.responses import FileResponse
 
+from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
@@ -27,8 +28,15 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
 )
+from voicevox_engine.morphing import synthesis_morphing
+from voicevox_engine.morphing import (
+    synthesis_morphing_parameter as _synthesis_morphing_parameter,
+)
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.synthesis_engine import SynthesisEngine, make_synthesis_engine
+from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engine
+from voicevox_engine.synthesis_engine.synthesis_engine_base import (
+    adjust_interrogative_accent_phrases,
+)
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
@@ -36,7 +44,7 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
-def generate_app(engine: SynthesisEngine) -> FastAPI:
+def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     root_dir = Path(__file__).parent
 
     default_sampling_rate = engine.default_sampling_rate
@@ -44,7 +52,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
     app = FastAPI(
         title="VOICEVOX ENGINE",
         description="VOICEVOXの音声合成エンジンです。",
-        version=(root_dir / "VERSION.txt").read_text().strip(),
+        version=__version__,
     )
 
     app.add_middleware(
@@ -59,37 +67,10 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         preset_path=root_dir / "presets.yaml",
     )
 
-    @lru_cache(maxsize=4)
-    def synthesis_world_params(
-        query: AudioQuery, base_speaker: int, target_speaker: int
-    ):
-        base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype(
-            "float"
-        )
-        target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
-            "float"
-        )
-
-        frame_period = 1.0
-        fs = query.outputSamplingRate
-        base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
-        base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
-        base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
-
-        target_f0, morph_time_axis = pw.harvest(
-            target_wave, fs, frame_period=frame_period
-        )
-        target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
-        target_spectrogram.resize(base_spectrogram.shape)
-
-        return (
-            fs,
-            frame_period,
-            base_f0,
-            base_aperiodicity,
-            base_spectrogram,
-            target_spectrogram,
-        )
+    # キャッシュを有効化
+    # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
+    # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
+    synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
     @app.on_event("startup")
     async def start_catch_disconnection():
@@ -97,17 +78,31 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             loop = asyncio.get_event_loop()
             _ = loop.create_task(cancellable_engine.catch_disconnection())
 
+    def enable_interrogative_query_param() -> Query:
+        return Query(
+            default=True,
+            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
+        )
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int):
+    def audio_query(
+        text: str,
+        speaker: int,
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
+        accent_phrases = engine.create_accent_phrases(
+            text,
+            speaker_id=speaker,
+            enable_interrogative=enable_interrogative,
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -127,7 +122,11 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
-    def audio_query_from_preset(text: str, preset_id: int):
+    def audio_query_from_preset(
+        text: str,
+        preset_id: int,
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -142,7 +141,9 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, speaker_id=selected_preset.style_id
+            text,
+            speaker_id=selected_preset.style_id,
+            enable_interrogative=enable_interrogative,
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -169,7 +170,12 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
             }
         },
     )
-    def accent_phrases(text: str, speaker: int, is_kana: bool = False):
+    def accent_phrases(
+        text: str,
+        speaker: int,
+        is_kana: bool = False,
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
+    ):
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
@@ -180,17 +186,23 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         """
         if is_kana:
             try:
-                accent_phrases = parse_kana(text)
+                accent_phrases = parse_kana(text, enable_interrogative)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            return engine.replace_mora_data(
+            accent_phrases = engine.replace_mora_data(
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
+
+            return adjust_interrogative_accent_phrases(accent_phrases)
         else:
-            return engine.create_accent_phrases(text, speaker_id=speaker)
+            return engine.create_accent_phrases(
+                text,
+                speaker_id=speaker,
+                enable_interrogative=enable_interrogative,
+            )
 
     @app.post(
         "/mora_data",
@@ -327,48 +339,38 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         tags=["音声合成"],
         summary="2人の話者でモーフィングした音声を合成する",
     )
-    def synthesis_morphing(
+    def _synthesis_morphing(
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
-        morph_rate: float,
+        morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
     ):
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
 
-        if morph_rate < 0.0 or morph_rate > 1.0:
-            raise HTTPException(
-                status_code=422, detail="morph_rateは0.0から1.0の範囲で指定してください"
-            )
-
-        # WORLDに掛けるため合成はモノラルで行う
-        output_stereo = query.outputStereo
-        query.outputStereo = False
-
-        (
-            fs,
-            frame_period,
-            base_f0,
-            base_aperiodicity,
-            base_spectrogram,
-            target_spectrogram,
-        ) = synthesis_world_params(query, base_speaker, target_speaker)
-
-        morph_spectrogram = (
-            base_spectrogram * (1.0 - morph_rate) + target_spectrogram * morph_rate
+        # 生成したパラメータはキャッシュされる
+        morph_param = synthesis_morphing_parameter(
+            engine=engine,
+            query=query,
+            base_speaker=base_speaker,
+            target_speaker=target_speaker,
         )
 
-        y_h = pw.synthesize(
-            base_f0, morph_spectrogram, base_aperiodicity, fs, frame_period
+        morph_wave = synthesis_morphing(
+            morph_param=morph_param,
+            morph_rate=morph_rate,
+            output_stereo=query.outputStereo,
         )
-
-        if output_stereo:
-            y_h = np.array([y_h, y_h]).T
 
         with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(file=f, data=y_h, samplerate=fs, format="WAV")
+            soundfile.write(
+                file=f,
+                data=morph_wave,
+                samplerate=morph_param.fs,
+                format="WAV",
+            )
 
         return FileResponse(f.name, media_type="audio/wav")
 
@@ -392,7 +394,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as err:
-            return HTTPException(status_code=422, detail=err.message)
+            return HTTPException(status_code=422, detail=str(err))
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -421,7 +423,7 @@ def generate_app(engine: SynthesisEngine) -> FastAPI:
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
-        return (root_dir / "VERSION.txt").read_text()
+        return __version__
 
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
     def speakers():
@@ -494,7 +496,17 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None)
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
+
+    # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
+    # 環境変数にもない場合は、Noneのままとします。
+    # VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合、エラー終了します。
+    parser.add_argument(
+        "--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS") or None
+    )
+
     args = parser.parse_args()
+
+    cpu_num_threads: Optional[int] = args.cpu_num_threads
 
     # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
     voicelib_dir: Optional[Path] = args.voicelib_dir
@@ -506,7 +518,7 @@ if __name__ == "__main__":
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args, voicelib_dir)
+        cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
 
     uvicorn.run(
         generate_app(
@@ -514,6 +526,7 @@ if __name__ == "__main__":
                 use_gpu=args.use_gpu,
                 voicelib_dir=voicelib_dir,
                 voicevox_dir=args.voicevox_dir,
+                cpu_num_threads=cpu_num_threads,
             )
         ),
         host=args.host,

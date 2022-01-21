@@ -10,25 +10,42 @@ anyio==3.3.4
     # via starlette
 asgiref==3.4.1
     # via uvicorn
+atomicwrites==1.4.0
+    # via -r requirements-dev.in
+backports.entry-points-selectable==1.1.1
+    # via virtualenv
 cffi==1.15.0
     # via soundfile
+cfgv==3.3.1
+    # via pre-commit
 click==8.0.3
     # via
     #   pip-tools
     #   uvicorn
 colorama==0.4.4
-    # via click
+    # via
+    #   -r requirements-dev.in
+    #   click
+    #   tqdm
 cython==0.29.24
     # via
     #   -r requirements-dev.in
     #   pyopenjtalk
     #   pyworld
+distlib==0.3.3
+    # via virtualenv
 fastapi==0.70.0
     # via -r requirements.in
+filelock==3.4.0
+    # via virtualenv
 h11==0.12.0
     # via uvicorn
+identify==2.4.0
+    # via pre-commit
 idna==3.3
     # via anyio
+nodeenv==1.6.0
+    # via pre-commit
 nuitka==0.6.17.4
     # via -r requirements-dev.in
 numpy==1.20.0
@@ -43,38 +60,51 @@ pip-licenses==3.5.3
     # via -r requirements-dev.in
 pip-tools==6.4.0
     # via -r requirements-dev.in
+platformdirs==2.4.0
+    # via virtualenv
+pre-commit==2.16.0
+    # via -r requirements-dev.in
 ptable==0.9.2
     # via pip-licenses
 pycparser==2.20
     # via cffi
 pydantic==1.8.2
     # via fastapi
-pyopenjtalk @ git+https://github.com/Hiroshiba/pyopenjtalk@69e5f354634f98098113f9cac5a6ea736443f9c9
+pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@8466b5a331e4736181648d5585be626aa7f9bde1
     # via -r requirements.in
 python-multipart==0.0.5
     # via -r requirements.in
 pyworld==0.3.0
     # via -r requirements.in
 pyyaml==6.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pre-commit
 scipy==1.7.1
     # via -r requirements.in
 six==1.16.0
     # via
     #   pyopenjtalk
     #   python-multipart
+    #   virtualenv
 sniffio==1.2.0
     # via anyio
 soundfile==0.10.3.post1
     # via -r requirements.in
 starlette==0.16.0
     # via fastapi
+toml==0.10.2
+    # via pre-commit
 tomli==1.2.2
     # via pep517
+tqdm==4.62.3
+    # via pyopenjtalk
 typing-extensions==3.10.0.2
     # via pydantic
 uvicorn==0.15.0
     # via -r requirements.in
+virtualenv==20.10.0
+    # via pre-commit
 wheel==0.37.0
     # via pip-tools
 

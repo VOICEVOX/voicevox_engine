@@ -9,8 +9,10 @@ import numpy
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.synthesis_engine import (
-    SynthesisEngine,
+from voicevox_engine.synthesis_engine import SynthesisEngine
+
+# TODO: import from voicevox_engine.synthesis_engine.mora
+from voicevox_engine.synthesis_engine.synthesis_engine import (
     pre_process,
     split_mora,
     to_flatten_moras,

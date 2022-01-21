@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import soundfile
 
-from voicevox_engine.forwarder import Forwarder
+from voicevox_engine.synthesis_engine import Forwarder
 
 
 def run(
@@ -31,7 +31,7 @@ def run(
 
         # 音声ライブラリの Python モジュールをロードできなかった
         print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
+            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
             file=sys.stderr,
         )
 

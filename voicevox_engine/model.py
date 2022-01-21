@@ -32,6 +32,7 @@ class AccentPhrase(BaseModel):
     moras: List[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
+    is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
     def __hash__(self):
         items = [
@@ -138,4 +139,4 @@ class SpeakerInfo(BaseModel):
 
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
-    style_infos: List[StyleInfo] = Field("スタイルの追加情報")
+    style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")

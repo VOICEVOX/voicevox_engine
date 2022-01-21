@@ -1,20 +1,18 @@
-import sys
 from itertools import chain
-from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy
 from scipy.signal import resample
 
-from voicevox_engine.acoustic_feature_extractor import OjtPhoneme, SamplingData
-from voicevox_engine.full_context_label import extract_full_context_label
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.mora_list import openjtalk_mora2text
+from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..model import AccentPhrase, AudioQuery, Mora
+from .synthesis_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
 
 
+# TODO: move mora utility to mora module
 def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
     """
     accent_phrasesに含まれるMora(とpause_moraがあればそれも)を
@@ -127,17 +125,7 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
-def mora_to_text(mora: str) -> str:
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
-        # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
-    else:
-        return mora
-
-
-class SynthesisEngine:
+class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
         yukarin_s_forwarder,
@@ -366,72 +354,6 @@ class SynthesisEngine:
 
         return accent_phrases
 
-    def replace_mora_data(
-        self,
-        accent_phrases: List[AccentPhrase],
-        speaker_id: int,
-    ) -> List[AccentPhrase]:
-        return self.replace_mora_pitch(
-            accent_phrases=self.replace_phoneme_length(
-                accent_phrases=accent_phrases,
-                speaker_id=speaker_id,
-            ),
-            speaker_id=speaker_id,
-        )
-
-    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
-        if len(text.strip()) == 0:
-            return []
-
-        utterance = extract_full_context_label(text)
-        if len(utterance.breath_groups) == 0:
-            return []
-
-        return self.replace_mora_data(
-            accent_phrases=[
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text=mora_to_text(
-                                "".join([p.phoneme for p in mora.phonemes])
-                            ),
-                            consonant=(
-                                mora.consonant.phoneme
-                                if mora.consonant is not None
-                                else None
-                            ),
-                            consonant_length=0 if mora.consonant is not None else None,
-                            vowel=mora.vowel.phoneme,
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        for mora in accent_phrase.moras
-                    ],
-                    accent=accent_phrase.accent,
-                    pause_mora=(
-                        Mora(
-                            text="、",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="pau",
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        if (
-                            i_accent_phrase == len(breath_group.accent_phrases) - 1
-                            and i_breath_group != len(utterance.breath_groups) - 1
-                        )
-                        else None
-                    ),
-                )
-                for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-                for i_accent_phrase, accent_phrase in enumerate(
-                    breath_group.accent_phrases
-                )
-            ],
-            speaker_id=speaker_id,
-        )
-
     def synthesis(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
@@ -538,10 +460,8 @@ class SynthesisEngine:
         # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装の後処理
         wave = wave[int(self.default_sampling_rate * pre_padding_length) :]
 
-        # volume
-        # 音量が1ではないなら、その分を音声波形に適用する
-        if query.volumeScale != 1:
-            wave *= query.volumeScale
+        # volume: ゲイン適用
+        wave *= query.volumeScale
 
         # 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
         if query.outputSamplingRate != self.default_sampling_rate:
@@ -556,63 +476,3 @@ class SynthesisEngine:
             wave = numpy.array([wave, wave]).T
 
         return wave
-
-
-def make_synthesis_engine(
-    use_gpu: bool,
-    voicelib_dir: Path,
-    voicevox_dir: Optional[Path] = None,
-) -> SynthesisEngine:
-    """
-    音声ライブラリをロードして、音声合成エンジンを生成
-
-    Parameters
-    ----------
-    use_gpu: bool
-        音声ライブラリに GPU を使わせるか否か
-    voicelib_dir: Path
-        音声ライブラリ自体があるディレクトリ
-    voicevox_dir: Path, optional, default=None
-        音声ライブラリの Python モジュールがあるディレクトリ
-        None のとき、Python 標準のモジュール検索パスのどれかにあるとする
-    """
-
-    # Python モジュール検索パスへ追加
-    if voicevox_dir is not None:
-        print("Notice: --voicevox_dir is " + voicevox_dir.as_posix(), file=sys.stderr)
-        if voicevox_dir.exists():
-            sys.path.insert(0, str(voicevox_dir))
-
-    has_voicevox_core = True
-    try:
-        import core
-    except ImportError:
-        import traceback
-
-        from voicevox_engine.dev import core
-
-        has_voicevox_core = False
-
-        # 音声ライブラリの Python モジュールをロードできなかった
-        traceback.print_exc()
-        print(
-            "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",  # noqa
-            file=sys.stderr,
-        )
-
-    core.initialize(voicelib_dir.as_posix() + "/", use_gpu)
-
-    if has_voicevox_core:
-        return SynthesisEngine(
-            yukarin_s_forwarder=core.yukarin_s_forward,
-            yukarin_sa_forwarder=core.yukarin_sa_forward,
-            decode_forwarder=core.decode_forward,
-            speakers=core.metas(),
-        )
-
-    from voicevox_engine.dev.synthesis_engine import (
-        SynthesisEngine as mock_synthesis_engine,
-    )
-
-    # モックで置き換える
-    return mock_synthesis_engine(speakers=core.metas())
