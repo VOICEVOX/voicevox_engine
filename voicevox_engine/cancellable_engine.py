@@ -193,7 +193,7 @@ def start_synthesis_subprocess(
         use_gpu=args.use_gpu,
         voicevox_dir=args.voicevox_dir,
         voicelib_dir=voicelib_dir,
-        model_lib_dir=args.model_lib_dir,
+        runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
     )
     while True:

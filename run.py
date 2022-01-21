@@ -546,7 +546,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_gpu", action="store_true")
     parser.add_argument("--voicevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
-    parser.add_argument("--model_lib_dir", type=Path, default=None, action="append")
+    parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
     # parser.add_argument("--enable_cancellable_synthesis", action="store_true")
@@ -567,7 +567,7 @@ if __name__ == "__main__":
         use_gpu=args.use_gpu,
         voicelib_dirs=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
-        model_lib_dirs=args.model_lib_dir,
+        runtime_dirs=args.runtime_dir,
         enable_mock=args.enable_mock,
     )
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))

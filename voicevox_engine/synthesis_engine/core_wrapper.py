@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 
 
-def load_model_lib(model_lib_dirs: List[Path]):
+def load_model_lib(runtime_dirs: List[Path]):
     if sys.platform == "win32":
         lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "onnxruntime.dll"]
         lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
@@ -20,7 +20,7 @@ def load_model_lib(model_lib_dirs: List[Path]):
         lib_names = ["onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
-    for lib_path in model_lib_dirs:
+    for lib_path in runtime_dirs:
         for file_name in lib_file_names:
             try:
                 CDLL(str((lib_path / file_name).resolve(strict=True)))

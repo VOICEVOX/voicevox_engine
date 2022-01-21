@@ -13,7 +13,7 @@ def make_synthesis_engines(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
-    model_lib_dirs: Optional[List[Path]] = None,
+    runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: int = 0,
     enable_mock: bool = True,
 ) -> List[SynthesisEngineBase]:
@@ -28,7 +28,7 @@ def make_synthesis_engines(
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir: Path, optional, default=None
         コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    model_lib_dirs: List[Path], optional, default=None
+    runtime_dirs: List[Path], optional, default=None
         コアで使用するライブラリのあるディレクトリのリスト
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional, default=None
@@ -56,20 +56,20 @@ def make_synthesis_engines(
             voicelib_dirs.append(voicevox_dir)
         else:
             voicelib_dirs = [voicevox_dir]
-        if model_lib_dirs is not None:
-            model_lib_dirs.append(voicevox_dir)
+        if runtime_dirs is not None:
+            runtime_dirs.append(voicevox_dir)
         else:
-            model_lib_dirs = [voicevox_dir]
+            runtime_dirs = [voicevox_dir]
     else:
         if voicelib_dirs is None:
             voicelib_dirs = [copy(root_dir)]
-        if model_lib_dirs is None:
-            model_lib_dirs = [copy(root_dir)]
+        if runtime_dirs is None:
+            runtime_dirs = [copy(root_dir)]
 
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
-    model_lib_dirs = [p.expanduser() for p in model_lib_dirs]
+    runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
-    load_model_lib(model_lib_dirs)
+    load_model_lib(runtime_dirs)
     synthesis_engines = {}
     for core_dir in voicelib_dirs:
         try:
