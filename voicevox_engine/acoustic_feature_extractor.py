@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import List, Sequence
