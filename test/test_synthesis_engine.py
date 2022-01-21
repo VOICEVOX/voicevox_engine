@@ -18,6 +18,7 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     to_flatten_moras,
     to_phoneme_data_list,
     unvoiced_mora_phoneme_list,
+    mora_phoneme_list,
 )
 
 
@@ -510,6 +511,9 @@ class TestSynthesisEngine(TestCase):
         )
 
         num_phoneme = OjtPhoneme.num_phoneme
+        # mora_phoneme_listのPhoneme ID版
+        mora_phoneme_id_list = [OjtPhoneme(p, 0, 0).phoneme_id for p in mora_phoneme_list]
+
         # numpy.repeatをfor文でやる
         f0 = []
         phoneme = []
@@ -527,9 +531,8 @@ class TestSynthesisEngine(TestCase):
                 # one hot
                 phoneme_s[phoneme_id_list[i]] = 1
                 phoneme.append(phoneme_s)
-            # consonantのlengthを0.1にしているので、それをもとにconsonantとvowelを判別している
-            # なお、prePhonemeLengthが任意の値+pre paddingになっているので、equal 0.2ではなくnot equal 0.1で判別している
-            if phoneme_length != 0.1 / audio_query.speedScale:
+            # consonantとvowelを判別し、vowelであればf0_indexを一つ進める
+            if phoneme_id_list[i] in mora_phoneme_id_list:
                 if f0_single > 0:
                     mean_f0.append(f0_single)
                 f0_index += 1
