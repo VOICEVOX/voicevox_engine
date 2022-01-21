@@ -13,12 +13,12 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
+    mora_phoneme_list,
     pre_process,
     split_mora,
     to_flatten_moras,
     to_phoneme_data_list,
     unvoiced_mora_phoneme_list,
-    mora_phoneme_list,
 )
 
 
@@ -439,7 +439,9 @@ class TestSynthesisEngine(TestCase):
 
         def result_value(i: int):
             # unvoiced_mora_phoneme_listのPhoneme ID版
-            unvoiced_mora_phoneme_id_list = [OjtPhoneme(p, 0, 0).phoneme_id for p in unvoiced_mora_phoneme_list]
+            unvoiced_mora_phoneme_id_list = [
+                OjtPhoneme(p, 0, 0).phoneme_id for p in unvoiced_mora_phoneme_list
+            ]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0
             return (
@@ -512,7 +514,9 @@ class TestSynthesisEngine(TestCase):
 
         num_phoneme = OjtPhoneme.num_phoneme
         # mora_phoneme_listのPhoneme ID版
-        mora_phoneme_id_list = [OjtPhoneme(p, 0, 0).phoneme_id for p in mora_phoneme_list]
+        mora_phoneme_id_list = [
+            OjtPhoneme(p, 0, 0).phoneme_id for p in mora_phoneme_list
+        ]
 
         # numpy.repeatをfor文でやる
         f0 = []
