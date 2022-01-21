@@ -7,47 +7,6 @@ from typing import List, Sequence
 import numpy
 
 
-@dataclass
-class SamplingData:
-    """
-    デコード用のデータ切り出し(resample)用クラス
-
-    Attributes
-    ----------
-    array : numpy.ndarray
-        切り出し前のnumpy.ndarray
-    rate : float
-        レート
-    """
-
-    array: numpy.ndarray  # shape: (N, ?)
-    rate: float
-
-    def resample(self, sampling_rate: float, index: int = 0, length: int = None):
-        """
-        リサンプリングする
-        Parameters
-        ----------
-        sampling_rate : float
-            サンプリングレートの指定
-        index : int
-            切り出したいデータをの初期位置を指定する
-        length : int
-            切り出したいデータの長さを指定する
-
-        Returns
-        -------
-        array : numpy.ndarray
-            切り出されたarrayを返す
-        """
-        if length is None:
-            length = int(len(self.array) / self.rate * sampling_rate)
-        indexes = (numpy.random.rand() + index + numpy.arange(length)) * (
-            self.rate / sampling_rate
-        )
-        return self.array[indexes.astype(int)]
-
-
 class BasePhoneme(object):
     """
     音素の応用クラス群の抽象基底クラス

@@ -3,48 +3,11 @@ from pathlib import Path
 from typing import List, Type
 from unittest import TestCase
 
-import numpy
-
 from voicevox_engine.acoustic_feature_extractor import (
     BasePhoneme,
     JvsPhoneme,
     OjtPhoneme,
-    SamplingData,
 )
-
-
-class TestSamplingData(TestCase):
-    def setUp(self):
-        super().setUp()
-        # 実データ(f0/phoneme)に近い形のデータを用意する
-        self.array_1d = numpy.tile(numpy.array([0, 1, 2, 3, 4, 5, 6]), 50)
-        self.array_2d = numpy.tile(
-            numpy.array(
-                [
-                    [0] * 45,  # 45はOjtPhonemeのnum_phoneme
-                    [1] * 45,
-                    [2] * 45,
-                    [3] * 45,
-                    [4] * 45,
-                    [5] * 45,
-                    [6] * 45,
-                ]
-            ),
-            (100, 1),
-        )
-        self.rate = 200
-        self.sampling_rate = 24000 / 256
-        self.sampling_data_1d = SamplingData(self.array_1d, self.rate)
-        self.sampling_data_2d = SamplingData(self.array_2d, self.rate)
-
-    def test_resample(self):
-        result_1d = self.sampling_data_1d.resample(self.sampling_rate)
-        # expected_value_1d = self.array_1d[:164]
-        # TODO: 内容の検証はしておらず、長さだけ検証している
-        self.assertEqual(len(result_1d), 164)
-        result_2d = self.sampling_data_2d.resample(self.sampling_rate)
-        # expected_value_2d = self.array_2d[:328]
-        self.assertEqual(len(result_2d), 328)
 
 
 class TestBasePhoneme(TestCase):

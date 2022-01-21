@@ -506,7 +506,7 @@ class TestSynthesisEngine(TestCase):
         list_length = decode_args["length"]
         self.assertEqual(
             list_length,
-            int(sum(phoneme_length_list) * (24000 / 256)),
+            int(sum([round(p * 24000 / 256) for p in phoneme_length_list])),
         )
 
         num_phoneme = OjtPhoneme.num_phoneme
