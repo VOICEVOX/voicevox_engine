@@ -554,7 +554,6 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(decode_f0)):
             # 乱数の影響等で数値にずれが生じるので、10の-5乗までの近似値であれば許容する
             assert_f0_count += math.isclose(f0[i][0], decode_f0[i][0], rel_tol=10e-5)
-        print(len(decode_f0), assert_f0_count)
         self.assertTrue(assert_f0_count >= int(len(decode_f0) / 5) * 4)
         assert_phoneme_count = 0
         decode_phoneme = decode_args["phoneme"]
