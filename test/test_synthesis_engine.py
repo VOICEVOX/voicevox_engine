@@ -438,7 +438,7 @@ class TestSynthesisEngine(TestCase):
 
         def result_value(i: int):
             # unvoiced_mora_phoneme_listのPhoneme ID版
-            unvoiced_mora_phoneme_id_list = [0, 1, 2, 3, 5, 6, 11]
+            unvoiced_mora_phoneme_id_list = [OjtPhoneme(p, 0, 0).phoneme_id for p in unvoiced_mora_phoneme_list]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0
             return (
