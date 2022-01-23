@@ -499,9 +499,6 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
-        pre_padding_length = 0.4
-        phoneme_length_list[0] += pre_padding_length
-
         result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
 
         # decodeに渡される値の検証
@@ -573,8 +570,6 @@ class TestSynthesisEngine(TestCase):
         true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
 
         true_result *= audio_query.volumeScale
-        # pre padding length分を切り取る
-        true_result = true_result[int(24000 * pre_padding_length) :]
 
         # TODO: resampyの部分は値の検証しようがないので、パスする
         if audio_query.outputSamplingRate != 24000:
