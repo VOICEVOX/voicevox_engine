@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 import numpy
 from scipy.signal import resample
 
-from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..acoustic_feature_extractor import OjtPhoneme
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
 
@@ -369,9 +369,6 @@ class SynthesisEngine(SynthesisEngineBase):
             音声合成結果
         """
 
-        # TODO: rateを200にする意味がないので、テスト実装後リファクタする
-        rate = 200
-
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
@@ -395,9 +392,8 @@ class SynthesisEngine(SynthesisEngineBase):
             ]
             + [query.postPhonemeLength]
         )
-        # floatにキャストし、細かな値を四捨五入する
+        # floatにキャスト
         phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
-        phoneme_length = numpy.round(phoneme_length * rate) / rate
 
         # lengthにSpeed Scale(話速)を適用する
         phoneme_length /= query.speedScale
@@ -424,6 +420,7 @@ class SynthesisEngine(SynthesisEngineBase):
 
         # forward decode
         # 音素の長さにrateを掛け、intにキャストする
+        rate = 24000 / 256
         phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
         # Phoneme IDを音素の長さ分繰り返す
@@ -439,10 +436,6 @@ class SynthesisEngine(SynthesisEngineBase):
         # 初期化された2次元配列の各行をone hotにする
         array[numpy.arange(len(phoneme)), phoneme] = 1
         phoneme = array
-
-        # f0とphonemeをそれぞれデコード用にリサンプリングする
-        f0 = SamplingData(array=f0, rate=rate).resample(24000 / 256)
-        phoneme = SamplingData(array=phoneme, rate=rate).resample(24000 / 256)
 
         # 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
         wave = self.decode_forwarder(
