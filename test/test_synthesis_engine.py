@@ -13,6 +13,7 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
+    mora_phoneme_list,
     pre_process,
     split_mora,
     to_flatten_moras,
@@ -438,7 +439,9 @@ class TestSynthesisEngine(TestCase):
 
         def result_value(i: int):
             # unvoiced_mora_phoneme_listのPhoneme ID版
-            unvoiced_mora_phoneme_id_list = [0, 1, 2, 3, 5, 6, 11]
+            unvoiced_mora_phoneme_id_list = [
+                OjtPhoneme(p, 0, 0).phoneme_id for p in unvoiced_mora_phoneme_list
+            ]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0
             return (
@@ -496,9 +499,6 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
-        pre_padding_length = 0.4
-        phoneme_length_list[0] += pre_padding_length
-
         result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
 
         # decodeに渡される値の検証
@@ -506,10 +506,15 @@ class TestSynthesisEngine(TestCase):
         list_length = decode_args["length"]
         self.assertEqual(
             list_length,
-            int(sum(phoneme_length_list) * (24000 / 256)),
+            int(sum([round(p * 24000 / 256) for p in phoneme_length_list])),
         )
 
         num_phoneme = OjtPhoneme.num_phoneme
+        # mora_phoneme_listのPhoneme ID版
+        mora_phoneme_id_list = [
+            OjtPhoneme(p, 0, 0).phoneme_id for p in mora_phoneme_list
+        ]
+
         # numpy.repeatをfor文でやる
         f0 = []
         phoneme = []
@@ -527,9 +532,8 @@ class TestSynthesisEngine(TestCase):
                 # one hot
                 phoneme_s[phoneme_id_list[i]] = 1
                 phoneme.append(phoneme_s)
-            # consonantのlengthを0.1にしているので、それをもとにconsonantとvowelを判別している
-            # なお、prePhonemeLengthが任意の値+pre paddingになっているので、equal 0.2ではなくnot equal 0.1で判別している
-            if phoneme_length != 0.1 / audio_query.speedScale:
+            # consonantとvowelを判別し、vowelであればf0_indexを一つ進める
+            if phoneme_id_list[i] in mora_phoneme_id_list:
                 if f0_single > 0:
                     mean_f0.append(f0_single)
                 f0_index += 1
@@ -551,7 +555,6 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(decode_f0)):
             # 乱数の影響等で数値にずれが生じるので、10の-5乗までの近似値であれば許容する
             assert_f0_count += math.isclose(f0[i][0], decode_f0[i][0], rel_tol=10e-5)
-        print(len(decode_f0), assert_f0_count)
         self.assertTrue(assert_f0_count >= int(len(decode_f0) / 5) * 4)
         assert_phoneme_count = 0
         decode_phoneme = decode_args["phoneme"]
@@ -567,8 +570,6 @@ class TestSynthesisEngine(TestCase):
         true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
 
         true_result *= audio_query.volumeScale
-        # pre padding length分を切り取る
-        true_result = true_result[int(24000 * pre_padding_length) :]
 
         # TODO: resampyの部分は値の検証しようがないので、パスする
         if audio_query.outputSamplingRate != 24000:
