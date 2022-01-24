@@ -277,8 +277,6 @@ APIエンドポイントでコアのバージョンを指定する場合は`core
 python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
 ```
 
-### 
-
 ## コードフォーマット
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
