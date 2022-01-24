@@ -549,9 +549,8 @@ if __name__ == "__main__":
     parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
-    # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
-    # parser.add_argument("--enable_cancellable_synthesis", action="store_true")
-    # parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument("--enable_cancellable_synthesis", action="store_true")
+    parser.add_argument("--init_processes", type=int, default=2)
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
@@ -574,8 +573,10 @@ if __name__ == "__main__":
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 
     cancellable_engine = None
-    # if args.enable_cancellable_synthesis:
-    #     cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
+    # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
+    if args.enable_cancellable_synthesis:
+        # cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
+        raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
 
     uvicorn.run(
         generate_app(synthesis_engines, latest_core_version),
