@@ -15,7 +15,7 @@ def make_synthesis_engines(
     runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: int = 0,
     enable_mock: bool = True,
-) -> Dict[SynthesisEngineBase]:
+) -> Dict[str, SynthesisEngineBase]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 
