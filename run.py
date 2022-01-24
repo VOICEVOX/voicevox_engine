@@ -13,6 +13,7 @@ from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
+from click import core
 
 import soundfile
 import uvicorn
@@ -485,7 +486,7 @@ def generate_app(
         )
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(speaker_uuid: str):
+    def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
@@ -494,7 +495,7 @@ def generate_app(
         -------
         ret_data: SpeakerInfo
         """
-        speakers = json.loads(synthesis_engines[latest_core_version].speakers)
+        speakers = json.loads(select_engine(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]
