@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 
 
-def load_model_lib(runtime_dirs: List[Path]):
+def load_runtime_lib(runtime_dirs: List[Path]):
     if sys.platform == "win32":
         lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "onnxruntime.dll"]
         lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]

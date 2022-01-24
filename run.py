@@ -91,7 +91,7 @@ def generate_app(
             description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
         )
 
-    def select_engine(core_version: Optional[str]):
+    def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
             return synthesis_engines[latest_core_version]
         if core_version in synthesis_engines:
@@ -113,7 +113,7 @@ def generate_app(
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(
             text,
             speaker_id=speaker,
@@ -147,7 +147,7 @@ def generate_app(
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
@@ -203,7 +203,7 @@ def generate_app(
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         """
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         if is_kana:
             try:
                 accent_phrases = parse_kana(text, enable_interrogative)
@@ -235,7 +235,7 @@ def generate_app(
         speaker: int,
         core_version: Optional[str] = None,
     ):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
@@ -249,7 +249,7 @@ def generate_app(
         speaker: int,
         core_version: Optional[str] = None,
     ):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -265,7 +265,7 @@ def generate_app(
         speaker: int,
         core_version: Optional[str] = None,
     ):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -284,7 +284,7 @@ def generate_app(
         summary="音声合成する",
     )
     def synthesis(query: AudioQuery, speaker: int, core_version: Optional[str] = None):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         wave = engine.synthesis(query=query, speaker_id=speaker)
 
         with NamedTemporaryFile(delete=False) as f:
@@ -339,7 +339,7 @@ def generate_app(
         speaker: int,
         core_version: Optional[str] = None,
     ):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -391,7 +391,7 @@ def generate_app(
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
@@ -479,7 +479,7 @@ def generate_app(
     def speakers(
         core_version: Optional[str] = None,
     ):
-        engine = select_engine(core_version)
+        engine = get_engine(core_version)
         return Response(
             content=engine.speakers,
             media_type="application/json",
@@ -495,7 +495,7 @@ def generate_app(
         -------
         ret_data: SpeakerInfo
         """
-        speakers = json.loads(select_engine(core_version).speakers)
+        speakers = json.loads(get_engine(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]

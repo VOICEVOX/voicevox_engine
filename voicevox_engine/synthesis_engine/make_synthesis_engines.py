@@ -4,7 +4,7 @@ import traceback
 from pathlib import Path
 from typing import List, Optional
 
-from .core_wrapper import CoreWrapper, load_model_lib
+from .core_wrapper import CoreWrapper, load_runtime_lib
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
 
@@ -68,7 +68,7 @@ def make_synthesis_engines(
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
-    load_model_lib(runtime_dirs)
+    load_runtime_lib(runtime_dirs)
     synthesis_engines = {}
     for core_dir in voicelib_dirs:
         try:
