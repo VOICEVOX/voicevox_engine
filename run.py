@@ -12,7 +12,7 @@ from distutils.version import LooseVersion
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
@@ -49,7 +49,7 @@ def b64encode_str(s):
 
 
 def generate_app(
-    synthesis_engines: List[SynthesisEngineBase], latest_core_version: str
+    synthesis_engines: Dict[str, SynthesisEngineBase], latest_core_version: str
 ) -> FastAPI:
     root_dir = Path(__file__).parent
 
