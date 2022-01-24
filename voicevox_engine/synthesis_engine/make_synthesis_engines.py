@@ -2,7 +2,7 @@ import json
 import sys
 import traceback
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .core_wrapper import CoreWrapper, load_runtime_lib
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
@@ -15,7 +15,7 @@ def make_synthesis_engines(
     runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: int = 0,
     enable_mock: bool = True,
-) -> List[SynthesisEngineBase]:
+) -> Dict[SynthesisEngineBase]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 

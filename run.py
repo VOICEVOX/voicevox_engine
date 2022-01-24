@@ -13,7 +13,6 @@ from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import List, Optional
-from click import core
 
 import soundfile
 import uvicorn

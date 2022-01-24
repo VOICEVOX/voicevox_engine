@@ -3,7 +3,7 @@ import sys
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -33,7 +33,7 @@ def load_runtime_lib(runtime_dirs: List[Path]):
             pass
 
 
-def check_core_type(core_dir: Path):
+def check_core_type(core_dir: Path) -> Optional[str]:
     if sys.platform == "win32":
         if (core_dir / "core.dll").is_file() or (core_dir / "core_cpu.dll").is_file():
             return "libtorch"
@@ -228,7 +228,7 @@ class CoreWrapper:
         f0: np.ndarray,
         phoneme: np.ndarray,
         speaker_id: np.ndarray,
-    ):
+    ) -> np.ndarray:
         output = np.empty((length * 256,), dtype=np.float32)
         success = self.core.decode_forward(
             c_int(length),
