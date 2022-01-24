@@ -81,11 +81,16 @@ def make_synthesis_engines(
                     file=sys.stderr,
                 )
                 continue
+            try:
+                supported_devices = core.supported_devices()
+            except NameError:
+                supported_devices = None
             synthesis_engines[core_version] = SynthesisEngine(
                 yukarin_s_forwarder=core.yukarin_s_forward,
                 yukarin_sa_forwarder=core.yukarin_sa_forward,
                 decode_forwarder=core.decode_forward,
                 speakers=core.metas(),
+                supported_devices=supported_devices,
             )
         except Exception:
             if not enable_mock:
@@ -96,9 +101,12 @@ def make_synthesis_engines(
                 file=sys.stderr,
             )
             from ..dev.core import metas as mock_metas
+            from ..dev.core import supported_devices as mock_supported_devices
             from ..dev.synthesis_engine import MockSynthesisEngine
 
             if "0.0.0" not in synthesis_engines:
-                synthesis_engines["0.0.0"] = MockSynthesisEngine(speakers=mock_metas())
+                synthesis_engines["0.0.0"] = MockSynthesisEngine(
+                    speakers=mock_metas(), supported_devices=mock_supported_devices()
+                )
 
     return synthesis_engines

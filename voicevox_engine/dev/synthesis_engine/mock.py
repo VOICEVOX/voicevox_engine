@@ -22,6 +22,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         super().__init__()
 
         self.speakers = kwargs["speakers"]
+        self.supported_devices = kwargs["supported_devices"]
         self.default_sampling_rate = 24000
 
     def replace_phoneme_length(
