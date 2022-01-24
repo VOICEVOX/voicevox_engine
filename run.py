@@ -570,6 +570,7 @@ if __name__ == "__main__":
         runtime_dirs=args.runtime_dir,
         enable_mock=args.enable_mock,
     )
+    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 
     cancellable_engine = None
