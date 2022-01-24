@@ -36,7 +36,7 @@ RUN <<EOF
     mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
 
     if [ "${VOICEVOX_CORE_LIBRARY_NAME}" != "libcore.so" ]; then
-        # Create relative symbilic link
+        # Create relative symbolic link
         cd /opt/voicevox_core
         ln -sf "${VOICEVOX_CORE_LIBRARY_NAME}" libcore.so
         cd -
@@ -239,7 +239,7 @@ EOF
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./check_tts.py ./presets.yaml ./VERSION.txt ./user.dic /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 # Generate licenses.json
@@ -318,6 +318,20 @@ RUN <<EOF
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
 EOF
 
+# Generate licenses.json with build dependencies
+RUN <<EOF
+    set -eux
+
+    cd /opt/voicevox_engine
+
+    # Define temporary env vars
+    # /home/user/.local/bin is required to use the commands installed by pip
+    export PATH="/home/user/.local/bin:${PATH:-}"
+
+    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+EOF
+
 # Create build script
 RUN <<EOF
     set -eux
@@ -335,32 +349,61 @@ RUN <<EOF
 
         cd /opt/voicevox_engine_build
 
-        LIBRARY_PATH="/opt/voicevox_core:\${LIBRARY_PATH:-}" \
-            gosu user /opt/python/bin/python3 -m nuitka \
-                --output-dir=/opt/voicevox_engine_build \
-                --standalone \
-                --plugin-enable=numpy \
-                --follow-import-to=numpy \
-                --follow-import-to=aiofiles \
-                --include-package=uvicorn \
-                --include-package=anyio \
-                --include-package-data=pyopenjtalk \
-                --include-package-data=scipy \
-                --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
-                --include-data-file=/opt/voicevox_engine/licenses.json=./ \
-                --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-                --include-data-file=/opt/voicevox_core/*.bin=./ \
-                --include-data-file=/opt/voicevox_core/metas.json=./ \
-                --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
-                --follow-imports \
-                --no-prefer-source-code \
-                /opt/voicevox_engine/run.py
+        gosu user /opt/python/bin/python3 -m nuitka \
+            --output-dir=/opt/voicevox_engine_build \
+            --standalone \
+            --plugin-enable=numpy \
+            --plugin-enable=multiprocessing \
+            --follow-import-to=numpy \
+            --follow-import-to=aiofiles \
+            --include-package=uvicorn \
+            --include-package=anyio \
+            --include-package-data=pyopenjtalk \
+            --include-package-data=scipy \
+            --include-data-file=/opt/voicevox_engine/VERSION.txt=./ \
+            --include-data-file=/opt/voicevox_engine/licenses.json=./ \
+            --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
+            --include-data-file=/opt/voicevox_engine/user.dic=./ \
+            --include-data-file=/opt/voicevox_core/*.bin=./ \
+            --include-data-file=/opt/voicevox_core/metas.json=./ \
+            --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
+            --follow-imports \
+            --no-prefer-source-code \
+            /opt/voicevox_engine/run.py
 
-        # set relative path in libcore.so for searching onnxruntime
-        # LIBCORE_SO=/opt/voicevox_engine_build/run.dist/libcore.so
-        # patchelf --set-rpath \$(patchelf --print-rpath \${LIBCORE_SO} | sed -e 's%^/[^:]*%\$ORIGIN%') \${LIBCORE_SO}
+        # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
+        if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
+            mkdir -p /tmp/coredeps
 
-        # FIXME: pack CUDA/cuDNN shared libraries
+            # Copy provider libraries (libonnxruntime.so.{version} is copied by Nuitka)
+            cd /opt/onnxruntime/lib
+            cp libonnxruntime_*.so /tmp/coredeps/
+            cd -
+
+            # assert nvidia/cuda base image
+            cd /usr/local/cuda/lib64
+            cp libcublas.so.* libcublasLt.so.* libcudart.so.* libcufft.so.* libcurand.so.* /tmp/coredeps/
+            cd -
+
+            # remove unneed full version libraries
+            cd /tmp/coredeps
+            rm -f libcublas.so.*.* libcublasLt.so.*.* libcufft.so.*.* libcurand.so.*.*
+            rm -f libcudart.so.*.*.*
+            cd -
+
+            # assert nvidia/cuda base image
+            cd /usr/lib/x86_64-linux-gnu
+            cp libcudnn.so.* libcudnn_*_infer.so.* /tmp/coredeps/
+            cd -
+
+            # remove unneed full version libraries
+            cd /tmp/coredeps
+            rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
+            cd -
+
+            mv /tmp/coredeps/* /opt/voicevox_engine_build/run.dist/
+            rm -rf /tmp/coredeps
+        fi
 
         chmod +x /opt/voicevox_engine_build/run.dist/run
 EOD

@@ -32,6 +32,7 @@ class AccentPhrase(BaseModel):
     moras: List[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
+    is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
     def __hash__(self):
         items = [

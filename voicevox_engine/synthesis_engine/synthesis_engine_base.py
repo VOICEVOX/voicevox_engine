@@ -19,27 +19,8 @@ def mora_to_text(mora: str) -> str:
         return mora
 
 
-def add_interrogative_mora_if_last_phoneme_is_interrogative(
-    full_context_accent_phrase: full_context_label.AccentPhrase,
-    enable_interrogative: bool,
-) -> List[full_context_label.Mora]:
-    """
-    enable_interrogativeが有効になっていて与えられたfull_context_accent_phraseが疑問系だった場合、
-    accent_phraseのmoraに対して疑問系の発音を擬似的に行うMoraを末尾に一つ追加する
-    """
-    last_mora = full_context_accent_phrase.moras[-1]
-    return (
-        full_context_accent_phrase.moras
-        + [full_context_label.Mora(None, last_mora.vowel)]
-        if full_context_accent_phrase.is_interrogative and enable_interrogative
-        else full_context_accent_phrase.moras
-    )
-
-
 def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
-    interrogative_accent_phrase_marks: List[bool],
-    enable_interrogative: bool,
 ) -> List[AccentPhrase]:
     """
     enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
@@ -48,35 +29,37 @@ def adjust_interrogative_accent_phrases(
     """
     return [
         AccentPhrase(
-            moras=adjust_interrogative_moras(accent_phrase.moras)
-            if enable_interrogative and interrogative_accent_phrase_mark
-            else accent_phrase.moras,
+            moras=adjust_interrogative_moras(accent_phrase),
             accent=accent_phrase.accent,
             pause_mora=accent_phrase.pause_mora,
+            is_interrogative=accent_phrase.is_interrogative,
         )
-        for accent_phrase, interrogative_accent_phrase_mark in zip(
-            accent_phrases, interrogative_accent_phrase_marks
-        )
+        for accent_phrase in accent_phrases
     ]
 
 
-def adjust_interrogative_moras(moras: List[Mora]) -> List[Mora]:
-    if len(moras) <= 1:
+def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
+    moras = copy.deepcopy(accent_phrase.moras)
+    if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
+        interrogative_mora = make_interrogative_mora(moras[-1])
+        moras.append(interrogative_mora)
         return moras
-    moras = copy.deepcopy(moras)
-    moras[-1] = adjust_interrogative_mora(moras[-1], moras[-2])
-    return moras
+    else:
+        return moras
 
 
-def adjust_interrogative_mora(mora: Mora, before_mora: Mora) -> Mora:
-    mora = copy.deepcopy(mora)
+def make_interrogative_mora(last_mora: Mora) -> Mora:
     fix_vowel_length = 0.15
-    mora.vowel_length = fix_vowel_length
-
     adjust_pitch = 0.3
     max_pitch = 6.5
-    mora.pitch = min(before_mora.pitch + adjust_pitch, max_pitch)
-    return mora
+    return Mora(
+        text=openjtalk_mora2text[last_mora.vowel],
+        consonant=None,
+        consonant_length=None,
+        vowel=last_mora.vowel,
+        vowel_length=fix_vowel_length,
+        pitch=min(last_mora.pitch + adjust_pitch, max_pitch),
+    )
 
 
 def full_context_label_moras_to_moras(
@@ -157,21 +140,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         if len(utterance.breath_groups) == 0:
             return []
 
-        interrogative_accent_phrase_marks = [
-            accent_phrase.is_interrogative
-            for breath_group in utterance.breath_groups
-            for accent_phrase in breath_group.accent_phrases
-        ]
-
         accent_phrases = self.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(
-                    moras=full_context_label_moras_to_moras(
-                        add_interrogative_mora_if_last_phoneme_is_interrogative(
-                            accent_phrase,
-                            enable_interrogative,
-                        ),
-                    ),
+                    moras=full_context_label_moras_to_moras(accent_phrase.moras),
                     accent=accent_phrase.accent,
                     pause_mora=(
                         Mora(
@@ -188,6 +160,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                         )
                         else None
                     ),
+                    is_interrogative=accent_phrase.is_interrogative
+                    and enable_interrogative,
                 )
                 for i_breath_group, breath_group in enumerate(utterance.breath_groups)
                 for i_accent_phrase, accent_phrase in enumerate(
@@ -196,9 +170,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             ],
             speaker_id=speaker_id,
         )
-        return adjust_interrogative_accent_phrases(
-            accent_phrases, interrogative_accent_phrase_marks, enable_interrogative
-        )
+        return adjust_interrogative_accent_phrases(accent_phrases)
 
     @abstractmethod
     def synthesis(self, query: AudioQuery, speaker_id: int):
