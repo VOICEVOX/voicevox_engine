@@ -1,7 +1,6 @@
 import json
 import sys
 import traceback
-from copy import copy
 from pathlib import Path
 from typing import List, Optional
 
@@ -62,9 +61,9 @@ def make_synthesis_engines(
             runtime_dirs = [voicevox_dir]
     else:
         if voicelib_dirs is None:
-            voicelib_dirs = [copy(root_dir)]
+            voicelib_dirs = [root_dir]
         if runtime_dirs is None:
-            runtime_dirs = [copy(root_dir)]
+            runtime_dirs = [root_dir]
 
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
