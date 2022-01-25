@@ -119,7 +119,6 @@ def apply_word(**kwargs):
         accent_type=kwargs["accent_type"],
         mora_count=len(mora_prog.findall(kwargs["pronunciation"])),
         accent_associative_rule="*",
-        cost_percentile=50,
     )
     user_dict = read_dict(user_dict_path=_user_dict_path)
     id = user_dict.next_id

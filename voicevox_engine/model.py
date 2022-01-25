@@ -161,7 +161,6 @@ class UserDictWord(BaseModel):
     mora_count: int = Field(title="モーラ数")
     accent_type: int = Field(title="アクセント型")
     accent_associative_rule: str = Field(title="アクセント結合規則")
-    cost_percentile: conint(ge=0, le=100) = Field(title="コストのパーセンタイル値")
 
     @validator("surface")
     def convert_to_zenkaku(cls, surface):
