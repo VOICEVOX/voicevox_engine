@@ -99,38 +99,32 @@ def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
         return UserDictJson(**json.load(f))
 
 
-def apply_checked_word(word: UserDictWord, user_dict_path: Path = user_dict_path):
-    user_dict = read_dict(user_dict_path=user_dict_path)
-    id = user_dict.next_id
-    user_dict.next_id += 1
-    user_dict.words[id] = word
-    with open(user_dict_path, encoding="utf-8", mode="w") as f:
-        json.dump(user_dict.dict(), f, ensure_ascii=False)
-    update_dict(user_dict_path=user_dict_path)
-
-
 def apply_word(**kwargs):
     if "user_dict_path" in kwargs:
         _user_dict_path = kwargs["user_dict_path"]
     else:
         _user_dict_path = user_dict_path
-    apply_checked_word(
-        word=UserDictWord(
-            surface=kwargs["surface"],
-            cost=8600,
-            part_of_speech="名詞",
-            part_of_speech_detail_1="固有名詞",
-            part_of_speech_detail_2="一般",
-            part_of_speech_detail_3="*",
-            inflectional_type="*",
-            inflectional_form="*",
-            stem="*",
-            yomi=kwargs["pronunciation"],
-            pronunciation=kwargs["pronunciation"],
-            accent_type=kwargs["accent_type"],
-            mora_count=len(mora_prog.findall(kwargs["pronunciation"])),
-            accent_associative_rule="*",
-            cost_percentile=50,
-        ),
-        user_dict_path=_user_dict_path,
+    word = UserDictWord(
+        surface=kwargs["surface"],
+        cost=8600,
+        part_of_speech="名詞",
+        part_of_speech_detail_1="固有名詞",
+        part_of_speech_detail_2="一般",
+        part_of_speech_detail_3="*",
+        inflectional_type="*",
+        inflectional_form="*",
+        stem="*",
+        yomi=kwargs["pronunciation"],
+        pronunciation=kwargs["pronunciation"],
+        accent_type=kwargs["accent_type"],
+        mora_count=len(mora_prog.findall(kwargs["pronunciation"])),
+        accent_associative_rule="*",
+        cost_percentile=50,
     )
+    user_dict = read_dict(user_dict_path=_user_dict_path)
+    id = user_dict.next_id
+    user_dict.next_id += 1
+    user_dict.words[id] = word
+    with open(_user_dict_path, encoding="utf-8", mode="w") as f:
+        json.dump(user_dict.dict(), f, ensure_ascii=False)
+    update_dict(user_dict_path=_user_dict_path)
