@@ -158,12 +158,12 @@ class UserDictWord(BaseModel):
     stem: str = Field(title="原形")
     yomi: str = Field(title="読み")
     pronunciation: str = Field(title="発音")
-    accent_type: int = Field(title="アクセント型")
     mora_count: int = Field(title="モーラ数")
+    accent_type: int = Field(title="アクセント型")
     accent_associative_rule: str = Field(title="アクセント結合規則")
     cost_percentile: conint(ge=0, le=100) = Field(title="コストのパーセンタイル値")
 
-    @validator("surface", pre=True)
+    @validator("surface")
     def convert_to_zenkaku(cls, surface):
         return surface.translate(
             str.maketrans(
@@ -171,6 +171,12 @@ class UserDictWord(BaseModel):
                 "".join(chr(0xFF01 + i) for i in range(94)),
             )
         )
+
+    @validator("accent_type")
+    def check_accent_type(cls, accent_type, values):
+        if values["mora_count"] < accent_type:
+            raise ValueError("誤ったアクセント型です。")
+        return accent_type
 
 
 class UserDictJson(BaseModel):
