@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint, validator
 
 
 class Mora(BaseModel):
@@ -140,3 +140,43 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+
+class UserDictWord(BaseModel):
+    """
+    辞書のコンパイルに使われる情報
+    """
+
+    surface: str = Field(title="表層形")
+    cost: int = Field(title="コストの値")
+    part_of_speech: str = Field(title="品詞")
+    part_of_speech_detail_1: str = Field(title="品詞細分類1")
+    part_of_speech_detail_2: str = Field(title="品詞細分類2")
+    part_of_speech_detail_3: str = Field(title="品詞細分類3")
+    inflectional_type: str = Field(title="活用型")
+    inflectional_form: str = Field(title="活用形")
+    stem: str = Field(title="原形")
+    yomi: str = Field(title="読み")
+    pronunciation: str = Field(title="発音")
+    accent_type: int = Field(title="アクセント型")
+    mora_count: int = Field(title="モーラ数")
+    accent_associative_rule: str = Field(title="アクセント結合規則")
+    cost_percentile: conint(ge=0, le=100) = Field(title="コストのパーセンタイル値")
+
+    @validator("surface", pre=True)
+    def convert_to_zenkaku(cls, surface):
+        return surface.translate(
+            str.maketrans(
+                "".join(chr(0x21 + i) for i in range(94)),
+                "".join(chr(0xFF01 + i) for i in range(94)),
+            )
+        )
+
+
+class UserDictJson(BaseModel):
+    """
+    ユーザ辞書機能に使われるjsonファイルのフォーマット
+    """
+
+    next_id: int = Field(title="次に割り当てられるID")
+    words: Dict[int, UserDictWord] = Field(title="辞書のコンパイルに使われるワードの情報")

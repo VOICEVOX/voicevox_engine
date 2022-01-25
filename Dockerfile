@@ -198,7 +198,7 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./user.dic /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./presets.yaml ./user.dic ./default.csv /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 # Replace version
@@ -326,6 +326,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
             --include-data-file=/opt/voicevox_engine/user.dic=./ \
+            --include-data-file=/opt/voicevox_engine/default.csv=./ \
             --include-data-file=/opt/voicevox_core/*.bin=./ \
             --include-data-file=/opt/voicevox_core/metas.json=./ \
             --include-data-file=/opt/voicevox_core/*.so=./ \

@@ -303,6 +303,7 @@ python -m nuitka \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
     --include-data-file=user.dic=./ \
+    --include-data-file=default.csv=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
@@ -342,7 +343,7 @@ pip-compile requirements-test.in
 以下のコマンドでopenjtalkのユーザー辞書をコンパイルできます。
 
 ```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('user-dic.csv','user.dic')"
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
 ```
 
 ## GitHub Actions
