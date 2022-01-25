@@ -31,6 +31,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    SupportedDevicesInfo,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -535,7 +536,7 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.get("/supported_devices", response_model=List[Speaker], tags=["その他"])
+    @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
         core_version: Optional[str] = None,
     ):

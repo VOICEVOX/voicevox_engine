@@ -140,3 +140,12 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+
+class SupportedDevicesInfo(BaseModel):
+    """
+    対応しているデバイスの情報
+    """
+
+    cpu: bool = Field(title="CPUに対応しているか")
+    cuda: bool = Field(title="CUDA(GPU)に対応しているか")
