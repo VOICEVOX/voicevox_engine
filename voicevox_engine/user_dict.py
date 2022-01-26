@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from typing import Optional
 
 import pyopenjtalk
+from appdirs import user_data_dir
 
 from .model import UserDictJson, UserDictWord
 
@@ -15,15 +16,10 @@ if "__compiled__" in globals():
 else:
     root_dir = Path(__file__).parents[1]
 
-if sys.platform == "win32":
-    save_dir = Path.home() / "AppData" / "Roaming" / "voicevox-engine"
-elif sys.platform in ["linux", "darwin"]:
-    save_dir = Path.home() / ".voicevox-engine"
-else:
-    raise RuntimeError("不明なOSです。")
+save_dir = Path(user_data_dir("voicevox-engine"))
 
 if not save_dir.is_dir():
-    save_dir.mkdir()
+    save_dir.mkdir(parents=True)
 
 default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"

@@ -9,7 +9,9 @@ aiofiles==0.7.0
 anyio==3.3.4
     # via starlette
 appdirs==1.4.4
-    # via black
+    # via
+    #   -r requirements.in
+    #   black
 asgiref==3.4.1
     # via uvicorn
 atomicwrites==1.4.0

@@ -8,6 +8,8 @@ aiofiles==0.7.0
     # via -r requirements.in
 anyio==3.3.4
     # via starlette
+appdirs==1.4.4
+    # via -r requirements.in
 asgiref==3.4.1
     # via uvicorn
 cffi==1.15.0
