@@ -21,6 +21,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
+from pydantic import ValidationError
 
 # from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine import __version__
@@ -541,7 +542,7 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.post("/user_dict", response_model=bool, tags=["その他"])
+    @app.post("/user_dict", status_code=204, tags=["その他"])
     def update_user_dict(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
@@ -559,10 +560,12 @@ def generate_app(
             apply_word(
                 surface=surface, pronunciation=pronunciation, accent_type=accent_type
             )
-            return True
+            return
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n"+str(e))
         except Exception:
             traceback.print_exc()
-            return False
+            raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
 
     return app
 
