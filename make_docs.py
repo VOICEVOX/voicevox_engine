@@ -1,12 +1,11 @@
 import json
 
 import run
-
 from voicevox_engine.dev.core import mock as core
-from voicevox_engine.dev.synthesis_engine.mock import SynthesisEngine
+from voicevox_engine.dev.synthesis_engine.mock import MockSynthesisEngine
 
 if __name__ == "__main__":
-    app = run.generate_app(SynthesisEngine(speakers=core.metas()))
+    app = run.generate_app(MockSynthesisEngine(speakers=core.metas()))
     with open("docs/api/index.html", "w") as f:
         f.write(
             """<!DOCTYPE html>
