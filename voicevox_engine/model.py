@@ -174,7 +174,7 @@ class UserDictWord(BaseModel):
 
     @validator("pronunciation", pre=True)
     def check_is_katakana(cls, pronunciation):
-        if not fullmatch(r'[\u30A1-\u30F4]+', pronunciation):
+        if not fullmatch(r"[\u30A1-\u30F4]+", pronunciation):
             raise ValueError("発音はカタカナでなくてはいけません。")
         return pronunciation
 
@@ -188,7 +188,9 @@ class UserDictWord(BaseModel):
                 )
             )
         if 0 < mora_count < values["accent_type"]:
-            raise ValueError(f"誤ったアクセント型です({values['accent_type']})。 expect: 0 < accent_type < {mora_count}")
+            raise ValueError(
+                f"誤ったアクセント型です({values['accent_type']})。 expect: 0 < accent_type < {mora_count}"
+            )
         return mora_count
 
 

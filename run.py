@@ -20,8 +20,8 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
-from starlette.responses import FileResponse
 from pydantic import ValidationError
+from starlette.responses import FileResponse
 
 # from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine import __version__
@@ -562,7 +562,7 @@ def generate_app(
             )
             return
         except ValidationError as e:
-            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n"+str(e))
+            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
