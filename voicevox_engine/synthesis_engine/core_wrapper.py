@@ -51,7 +51,7 @@ def check_core_type(core_dir: Path) -> Optional[str]:
         ).is_file():
             return "onnxruntime"
     elif sys.platform == "darwin":
-        if (core_dir / "libcore_cpu_x64.dylib").is_file():
+        if (core_dir / "libcore_cpu_universal2.dylib").is_file():
             return "onnxruntime"
     return None
 
@@ -100,7 +100,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         if model_type == "onnxruntime":
             try:
                 return CDLL(
-                    str((core_dir / "libcore_cpu_x64.dylib").resolve(strict=True))
+                    str((core_dir / "libcore_cpu_universal2.dylib").resolve(strict=True))
                 )
             except OSError:
                 pass
