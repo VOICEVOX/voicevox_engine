@@ -15,7 +15,7 @@ build-linux-docker-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-ubuntu20.04
@@ -32,7 +32,7 @@ build-linux-docker-nvidia-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-nvidia-ubuntu20.04
@@ -52,7 +52,7 @@ build-linux-docker-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-ubuntu18.04
@@ -69,7 +69,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-nvidia-ubuntu18.04
@@ -134,7 +134,7 @@ build-linux-docker-build-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:focal \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-build-ubuntu20.04
@@ -152,7 +152,7 @@ build-linux-docker-build-nvidia-ubuntu20.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:focal \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-build-nvidia-ubuntu20.04
@@ -171,7 +171,7 @@ build-linux-docker-build-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=ubuntu:bionic \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
 
 .PHONY: run-linux-docker-build-ubuntu18.04
@@ -189,7 +189,7 @@ build-linux-docker-build-nvidia-ubuntu18.04:
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:bionic \
 		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz \
+		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
 .PHONY: run-linux-docker-build-nvidia-ubuntu18.04

@@ -56,6 +56,32 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # VOICEVOX CORE
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="VOICEVOX CORE",
+                version=None,
+                license="MIT license",
+                text=res.read().decode(),
+            )
+        )
+
+    # VOICEVOX ENGINE
+    with urllib.request.urlopen(
+        "https://github.com/VOICEVOX/voicevox_engine/blob/master/LGPL_LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="VOICEVOX CORE",
+                version=None,
+                license="LGPL license",
+                text=res.read().decode(),
+            )
+        )
+
     # world
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
@@ -78,6 +104,19 @@ def generate_licenses() -> List[License]:
                 name="PyTorch",
                 version="1.9.0",
                 license="BSD-style license",
+                text=res.read().decode(),
+            )
+        )
+
+    # onnxruntime
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="ONNX Runtime",
+                version="1.10.0",
+                license="MIT license",
                 text=res.read().decode(),
             )
         )

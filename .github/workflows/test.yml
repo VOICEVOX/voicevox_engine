@@ -40,7 +40,7 @@ jobs:
 
       - name: Install libraries for ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install libsndfile1-dev
+        run: sudo apt-get install libsndfile1
 
       - name: Install dependencies
         run: |
