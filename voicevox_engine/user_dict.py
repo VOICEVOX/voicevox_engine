@@ -36,7 +36,7 @@ mora_prog = re.compile("(?:[アイウエオカ-モヤユヨ-ロワ-ヶ][ァィ�
 def dict_hash(compiled_dict_path: Path = compiled_dict_path) -> Optional[str]:
     if not compiled_dict_path.is_file():
         return None
-    with open(compiled_dict_path, mode="rb") as f:
+    with compiled_dict_path.open(mode="rb") as f:
         return sha256(f.read()).hexdigest()
 
 
@@ -61,33 +61,32 @@ def update_dict(
         if not default_dict_path.is_file():
             print("Warning: Cannot find default dictionary.", file=sys.stderr)
             return
-        with open(default_dict_path, encoding="utf-8") as f2:
+        with default_dict_path.open(encoding="utf-8") as f2:
             default_dict = f2.read()
         if default_dict == default_dict.rstrip():
             default_dict += "\n"
         f.write(default_dict)
-        if user_dict_path.is_file():
-            user_dict = read_dict()
-            for id in user_dict.words:
-                word = user_dict.words[id]
-                f.write(
-                    "{},1348,1348,{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
-                        word.surface,
-                        word.cost,
-                        word.part_of_speech,
-                        word.part_of_speech_detail_1,
-                        word.part_of_speech_detail_2,
-                        word.part_of_speech_detail_3,
-                        word.inflectional_type,
-                        word.inflectional_form,
-                        word.stem,
-                        word.yomi,
-                        word.pronunciation,
-                        word.accent_type,
-                        word.mora_count,
-                        word.accent_associative_rule,
-                    )
+        user_dict = read_dict()
+        for id in user_dict.words:
+            word = user_dict.words[id]
+            f.write(
+                "{},1348,1348,{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
+                    word.surface,
+                    word.cost,
+                    word.part_of_speech,
+                    word.part_of_speech_detail_1,
+                    word.part_of_speech_detail_2,
+                    word.part_of_speech_detail_3,
+                    word.inflectional_type,
+                    word.inflectional_form,
+                    word.stem,
+                    word.yomi,
+                    word.pronunciation,
+                    word.accent_type,
+                    word.mora_count,
+                    word.accent_associative_rule,
                 )
+            )
     pyopenjtalk.unset_user_dict()
     old_dict_hash = dict_hash(compiled_dict_path)
     pyopenjtalk.create_user_dict(
@@ -104,7 +103,7 @@ def update_dict(
 def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
     if not user_dict_path.is_file():
         return UserDictJson(**{"next_id": 0, "words": {}})
-    with open(user_dict_path, encoding="utf-8") as f:
+    with user_dict_path.open(encoding="utf-8") as f:
         return UserDictJson(**json.load(f))
 
 
@@ -133,6 +132,6 @@ def apply_word(**kwargs):
     id = user_dict.next_id
     user_dict.next_id += 1
     user_dict.words[id] = word
-    with open(_user_dict_path, encoding="utf-8", mode="w") as f:
+    with _user_dict_path.open(encoding="utf-8", mode="w") as f:
         json.dump(user_dict.dict(), f, ensure_ascii=False)
     update_dict(user_dict_path=_user_dict_path)
