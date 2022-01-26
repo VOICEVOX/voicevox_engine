@@ -82,6 +82,19 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # onnxruntime
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="ONNX Runtime",
+                version="1.10.0",
+                license="MIT license",
+                text=res.read().decode(),
+            )
+        )
+
     # Python
     python_version = "3.7.12"
     with urllib.request.urlopen(

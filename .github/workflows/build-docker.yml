@@ -11,7 +11,7 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: '3.8.10'
-  VOICEVOX_CORE_VERSION: '0.10.preview.3'
+  VOICEVOX_CORE_VERSION: '0.10.preview.7'
   VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
@@ -32,49 +32,49 @@ jobs:
           - nvidia-ubuntu18.04
         include:
           # Ubuntu 20.04
-          - tag: ''
+          - tag: ""
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
 
     steps:
       - uses: actions/checkout@v2

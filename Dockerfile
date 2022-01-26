@@ -21,7 +21,7 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.10.preview.0 (ONNX)
-ARG VOICEVOX_CORE_VERSION=0.10.preview.3
+ARG VOICEVOX_CORE_VERSION=0.10.preview.7
 ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
 RUN <<EOF
     set -eux
@@ -68,7 +68,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
 RUN <<EOF
     set -eux
 

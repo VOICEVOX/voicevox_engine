@@ -11,8 +11,8 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: '3.8.10'
-  VOICEVOX_RESOURCE_VERSION: '0.10.preview.2'
-  VOICEVOX_CORE_VERSION: '0.10.preview.3'
+  VOICEVOX_RESOURCE_VERSION: '0.10.preview.3'
+  VOICEVOX_CORE_VERSION: '0.10.preview.7'
   VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
@@ -23,10 +23,10 @@ jobs:
       matrix:
         include:
         - os: macos-11
-          python_architecture: 'x64'
+          python_architecture: "x64"
           pip_cache_path: ~/Library/Caches/pip
-          voicevox_core_library_name: libcore_cpu_x64.dylib
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-osx-x64-1.9.0.tgz
+          voicevox_core_library_name: libcore_cpu_universal2.dylib
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
           artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -229,7 +229,6 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
 
-
   # Build Linux binary (push only buildcache image)
   build-linux:
     strategy:
@@ -245,7 +244,7 @@ jobs:
           base_image: ubuntu:bionic
           base_runtime_image: ubuntu:bionic
           voicevox_core_library_name: libcore_cpu_x64.so
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           artifact_name: linux-cpu
           nuitka_cache_path: nuitka_cache
         - tag: build-nvidia-ubuntu18.04
@@ -254,7 +253,7 @@ jobs:
           base_image: ubuntu:bionic
           base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
           voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           artifact_name: linux-nvidia
           nuitka_cache_path: nuitka_cache
 
@@ -358,7 +357,6 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
 
-
   build-windows:
     strategy:
       matrix:
@@ -367,7 +365,7 @@ jobs:
         - os: windows-2019
           python_architecture: 'x64'
           voicevox_core_dll_name: core_cpu_x64.dll
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-1.9.0.zip
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
           artifact_name: windows-cpu
           nuitka_cache_path: nuitka_cache
@@ -376,7 +374,7 @@ jobs:
         - os: windows-2019
           python_architecture: 'x64'
           voicevox_core_dll_name: core_gpu_x64_nvidia.dll
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-win-x64-gpu-1.9.0.zip
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
           cuda_version: '11.4.2'
           cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
           ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
@@ -635,7 +633,7 @@ jobs:
           NUITKA_CACHE_DIR: ${{ matrix.nuitka_cache_path }}
         run: |
           set -eux
-          
+
           # Replace version
           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
 
@@ -717,7 +715,6 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: |
             artifact/
-
 
   upload-to-release:
     if: github.event.release.tag_name != ''
