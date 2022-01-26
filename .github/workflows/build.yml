@@ -22,12 +22,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-11
-            python_architecture: "x64"
-            pip_cache_path: ~/Library/Caches/pip
-            voicevox_core_library_name: libcore_cpu_universal2.dylib
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
-            artifact_name: macos-x64
+        - os: macos-11
+          python_architecture: "x64"
+          pip_cache_path: ~/Library/Caches/pip
+          voicevox_core_library_name: libcore_cpu_universal2.dylib
+          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
+          artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
 
