@@ -24,6 +24,13 @@ class TestUserDictWords(TestCase):
             "accent_associative_rule": "*",
         }
 
+    def test_valid_word(self):
+        test_value = deepcopy(self.test_model)
+        try:
+            UserDictWord(**test_value)
+        except ValidationError as e:
+            self.fail(f"Unexpected Validation Error\n{str(e)}")
+
     def test_convert_to_zenkaku(self):
         test_value = deepcopy(self.test_model)
         test_value["surface"] = "test"
@@ -36,5 +43,11 @@ class TestUserDictWords(TestCase):
     def test_invalid_accent_type(self):
         test_value = deepcopy(self.test_model)
         test_value["accent_type"] = 4
+        with self.assertRaises(ValidationError):
+            UserDictWord(**test_value)
+
+    def test_invalid_accent_type_2(self):
+        test_value = deepcopy(self.test_model)
+        test_value["accent_type"] = -1
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
