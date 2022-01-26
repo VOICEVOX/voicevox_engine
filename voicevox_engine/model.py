@@ -187,7 +187,7 @@ class UserDictWord(BaseModel):
                     values["pronunciation"],
                 )
             )
-        if mora_count < values["accent_type"]:
+        if 0 < mora_count < values["accent_type"]:
             raise ValueError(f"誤ったアクセント型です({values['accent_type']})。 expect: 0 < accent_type < {mora_count}")
         return mora_count
 
