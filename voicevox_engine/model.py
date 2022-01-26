@@ -163,6 +163,9 @@ class UserDictWord(BaseModel):
     mora_count: Optional[int] = Field(title="モーラ数")
     accent_associative_rule: str = Field(title="アクセント結合規則")
 
+    class Config:
+        validate_assignment = True
+
     @validator("surface")
     def convert_to_zenkaku(cls, surface):
         return surface.translate(
