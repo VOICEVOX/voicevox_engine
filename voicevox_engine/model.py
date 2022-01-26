@@ -1,5 +1,5 @@
 from enum import Enum
-from re import findall
+from re import findall, fullmatch
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -172,7 +172,13 @@ class UserDictWord(BaseModel):
             )
         )
 
-    @validator("mora_count", pre=True, always=True)
+    @validator("pronunciation", pre=True)
+    def check_is_katakana(cls, pronunciation):
+        if not fullmatch(r'[\u30A1-\u30F4]+', pronunciation):
+            raise ValueError("発音はカタカナでなくてはいけません。")
+        return pronunciation
+
+    @validator("mora_count", pre=True)
     def check_mora_count_and_accent_type(cls, mora_count, values):
         if mora_count is None:
             mora_count = len(
