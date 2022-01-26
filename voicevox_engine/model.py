@@ -1,4 +1,5 @@
 from enum import Enum
+from re import findall
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -158,8 +159,8 @@ class UserDictWord(BaseModel):
     stem: str = Field(title="原形")
     yomi: str = Field(title="読み")
     pronunciation: str = Field(title="発音")
-    mora_count: int = Field(title="モーラ数")
     accent_type: int = Field(title="アクセント型")
+    mora_count: Optional[int] = Field(title="モーラ数")
     accent_associative_rule: str = Field(title="アクセント結合規則")
 
     @validator("surface")
@@ -171,11 +172,18 @@ class UserDictWord(BaseModel):
             )
         )
 
-    @validator("accent_type")
-    def check_accent_type(cls, accent_type, values):
-        if values["mora_count"] < accent_type:
+    @validator("mora_count", pre=True, always=True)
+    def check_mora_count_and_accent_type(cls, mora_count, values):
+        if mora_count is None:
+            mora_count = len(
+                findall(
+                    "(?:[アイウエオカ-モヤユヨ-ロワ-ヶ][ァィゥェォャュョヮ]|[アイウエオカ-モヤユヨ-ロワ-ヶー])",
+                    values["pronunciation"],
+                )
+            )
+        if mora_count < values["accent_type"]:
             raise ValueError("誤ったアクセント型です。")
-        return accent_type
+        return mora_count
 
 
 class UserDictJson(BaseModel):

@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 from hashlib import sha256
 from pathlib import Path
@@ -29,8 +28,6 @@ if not save_dir.is_dir():
 default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
 compiled_dict_path = save_dir / "user.dic"
-
-mora_prog = re.compile("(?:[アイウエオカ-モヤユヨ-ロワ-ヶ][ァィゥェォャュョヮ]|[アイウエオカ-モヤユヨ-ロワ-ヶー])")
 
 
 def dict_hash(compiled_dict_path: Path = compiled_dict_path) -> Optional[str]:
@@ -125,7 +122,6 @@ def apply_word(**kwargs):
         yomi=kwargs["pronunciation"],
         pronunciation=kwargs["pronunciation"],
         accent_type=kwargs["accent_type"],
-        mora_count=len(mora_prog.findall(kwargs["pronunciation"])),
         accent_associative_rule="*",
     )
     user_dict = read_dict(user_dict_path=_user_dict_path)
