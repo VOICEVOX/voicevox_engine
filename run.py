@@ -554,12 +554,6 @@ def generate_app(
             言葉の発音（カタカナ）
         accent_type: int
             アクセント型（音が下がる場所を指す）
-
-        Warnings
-        --------
-        ユーザ辞書の情報はuser_dict.jsonに格納されています。
-        また、デフォルトで適用される辞書の情報がvoicevox.csvに格納されています。
-        これらのファイルを直接変更しないでください。
         """
         try:
             apply_word(
