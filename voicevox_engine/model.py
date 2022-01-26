@@ -178,7 +178,7 @@ class UserDictWord(BaseModel):
             raise ValueError("発音はカタカナでなくてはいけません。")
         return pronunciation
 
-    @validator("mora_count", pre=True)
+    @validator("mora_count", pre=True, always=True)
     def check_mora_count_and_accent_type(cls, mora_count, values):
         if mora_count is None:
             mora_count = len(
