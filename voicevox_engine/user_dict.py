@@ -16,10 +16,19 @@ if "__compiled__" in globals():
 else:
     root_dir = Path(__file__).parents[1]
 
+if sys.platform == "win32":
+    save_dir = Path.home() / "AppData" / "Roaming" / "voicevox-engine"
+elif sys.platform in ["linux", "darwin"]:
+    save_dir = Path.home() / ".voicevox-engine"
+else:
+    raise RuntimeError("不明なOSです。")
+
+if not save_dir.is_dir():
+    save_dir.mkdir()
 
 default_dict_path = root_dir / "default.csv"
-user_dict_path = root_dir / "user_dict.json"
-compiled_dict_path = root_dir / "user.dic"
+user_dict_path = save_dir / "user_dict.json"
+compiled_dict_path = save_dir / "user.dic"
 
 mora_prog = re.compile("(?:[アイウエオカ-モヤユヨ-ロワ-ヶ][ァィゥェォャュョヮ]|[アイウエオカ-モヤユヨ-ロワ-ヶー])")
 

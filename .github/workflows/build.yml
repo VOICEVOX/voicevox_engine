@@ -186,7 +186,6 @@ jobs:
             --include-package-data=scipy \
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
-            --include-data-file=../user.dic=./ \
             --include-data-file=../default.csv=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
@@ -652,7 +651,6 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file="licenses.json=./" \
-            --include-data-file="user.dic=./" \
             --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
             --include-data-file=download/core/*.bin=./ \

@@ -302,7 +302,6 @@ python -m nuitka \
     --include-package-data=scipy \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
-    --include-data-file=user.dic=./ \
     --include-data-file=default.csv=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/libtorch/*.dll=./ \
