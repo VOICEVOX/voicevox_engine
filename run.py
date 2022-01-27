@@ -38,9 +38,6 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
-from voicevox_engine.synthesis_engine.synthesis_engine_base import (
-    adjust_interrogative_accent_phrases,
-)
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
@@ -215,7 +212,7 @@ def generate_app(
                 accent_phrases=accent_phrases, speaker_id=speaker
             )
 
-            return adjust_interrogative_accent_phrases(accent_phrases)
+            return accent_phrases
         else:
             return engine.create_accent_phrases(
                 text,

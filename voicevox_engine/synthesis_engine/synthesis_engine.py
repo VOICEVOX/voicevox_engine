@@ -354,7 +354,7 @@ class SynthesisEngine(SynthesisEngineBase):
 
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
