@@ -266,6 +266,10 @@ Macでのlibtorch版コアのサポートはしていません。
 ```bash
 python run.py --voicevox_dir="/path/to/voicevox"
 ```
+Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+```
 
 #### ライブラリを直接指定する
 [VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
@@ -275,6 +279,10 @@ python run.py --voicevox_dir="/path/to/voicevox"
 APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 ```bash
 python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+```
+Macでは、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
 ## コードフォーマット
