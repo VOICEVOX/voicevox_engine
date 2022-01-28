@@ -71,11 +71,11 @@ def generate_licenses() -> List[License]:
 
     # VOICEVOX ENGINE
     with urllib.request.urlopen(
-        "https://github.com/VOICEVOX/voicevox_engine/blob/master/LGPL_LICENSE"
+        "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
     ) as res:
         licenses.append(
             License(
-                name="VOICEVOX CORE",
+                name="VOICEVOX ENGINE",
                 version=None,
                 license="LGPL license",
                 text=res.read().decode(),
