@@ -169,9 +169,17 @@ class SynthesisEngine(SynthesisEngineBase):
         self.yukarin_sa_forwarder = yukarin_sa_forwarder
         self.decode_forwarder = decode_forwarder
 
-        self.speakers = speakers
-        self.supported_devices = supported_devices
+        self._speakers = speakers
+        self._supported_devices = supported_devices
         self.default_sampling_rate = 24000
+
+    @property
+    def speakers(self) -> str:
+        return self._speakers
+
+    @property
+    def supported_devices(self) -> Optional[str]:
+        return self._supported_devices
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

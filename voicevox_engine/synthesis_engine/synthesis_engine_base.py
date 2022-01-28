@@ -1,6 +1,6 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
@@ -78,6 +78,16 @@ def full_context_label_moras_to_moras(
 
 
 class SynthesisEngineBase(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def speakers(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def supported_devices(self) -> Optional[str]:
+        raise NotImplementedError
+
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from pyopenjtalk import tts
@@ -21,9 +21,17 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         super().__init__()
 
-        self.speakers = kwargs["speakers"]
-        self.supported_devices = kwargs["supported_devices"]
+        self._speakers = kwargs["speakers"]
+        self._supported_devices = kwargs["supported_devices"]
         self.default_sampling_rate = 24000
+
+    @property
+    def speakers(self) -> str:
+        return self._speakers
+
+    @property
+    def supported_devices(self) -> Optional[str]:
+        return self._supported_devices
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
