@@ -441,16 +441,6 @@ class TestParseKana(TestCase):
 
         expected_accent_phrases = a_question_mark_accent_phrases()
         expected_accent_phrases[-1].is_interrogative = True
-        expected_accent_phrases[-1].moras.append(
-            Mora(
-                text="ア",
-                consonant=None,
-                consonant_length=None,
-                vowel="a",
-                vowel_length=0.0,
-                pitch=0.0,
-            )
-        )
         self._interrogative_accent_phrase_marks_base(
             text="ア'？",
             enable_interrogative=True,
@@ -519,16 +509,6 @@ class TestParseKana(TestCase):
 
         expected_accent_phrases = gye_gye_gye_question_mark_accent_phrases()
         expected_accent_phrases[-1].is_interrogative = True
-        expected_accent_phrases[-1].moras.append(
-            Mora(
-                text="エ",
-                consonant=None,
-                consonant_length=None,
-                vowel="e",
-                vowel_length=0.0,
-                pitch=0.0,
-            )
-        )
         self._interrogative_accent_phrase_marks_base(
             text="ギェ'、ギェ'/ギェ'？",
             enable_interrogative=True,

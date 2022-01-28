@@ -64,7 +64,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
 
