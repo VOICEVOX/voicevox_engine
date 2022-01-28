@@ -180,10 +180,11 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
+        * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
         if is_kana:
             try:
-                accent_phrases = parse_kana(text, enable_interrogative)
+                accent_phrases = parse_kana(text)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
