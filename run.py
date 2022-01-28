@@ -184,7 +184,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         """
         if is_kana:
             try:
-                accent_phrases = parse_kana(text, enable_interrogative)
+                accent_phrases = parse_kana(text)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
