@@ -114,17 +114,6 @@ def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
 
     if enable_interrogative and is_interrogative_text:
         last_parsed_result = parsed_results[-1]
-        last_mora = last_parsed_result.moras[-1]
-        last_parsed_result.moras.append(
-            Mora(
-                text=openjtalk_mora2text[last_mora.vowel],
-                consonant=None,
-                consonant_length=None,
-                vowel=last_mora.vowel,
-                vowel_length=last_mora.vowel_length,
-                pitch=0,
-            )
-        )
         last_parsed_result.is_interrogative = True
 
     return parsed_results
