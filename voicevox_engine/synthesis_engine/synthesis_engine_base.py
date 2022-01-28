@@ -23,7 +23,7 @@ def adjust_interrogative_accent_phrases(
 ) -> List[AccentPhrase]:
     """
     enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
-    SynthesisEngineの実装によって調整されたあとの各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
+    各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
     NOTE: リファクタリング時に適切な場所へ移動させること
     """
     return [
@@ -169,10 +169,30 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             ],
             speaker_id=speaker_id,
         )
-        return adjust_interrogative_accent_phrases(accent_phrases)
+        return accent_phrases
+
+    def synthesis(self, query: AudioQuery, speaker_id: int):
+        """
+        音声合成クエリ内の疑問文指定されたMoraを変形した後、
+        継承先における実装`_synthesis_impl`を使い音声合成を行う
+        Parameters
+        ----------
+        query : AudioQuery
+            音声合成クエリ
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        wave : numpy.ndarray
+            音声合成結果
+        """
+        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
+        query = copy.deepcopy(query)
+        query.accent_phrases = adjust_interrogative_accent_phrases(query.accent_phrases)
+        return self._synthesis_impl(query, speaker_id)
 
     @abstractmethod
-    def synthesis(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters

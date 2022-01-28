@@ -116,7 +116,7 @@ class CancellableEngine:
             # プロセスが死んでいるので新しく作り直す
             self.procs_and_cons.put(self.start_new_proc())
 
-    def synthesis(
+    def _synthesis_impl(
         self, query: AudioQuery, speaker_id: Speaker, request: Request
     ) -> str:
         """
