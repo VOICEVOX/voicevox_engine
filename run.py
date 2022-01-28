@@ -220,10 +220,10 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def synthesis(
         query: AudioQuery,
         speaker: int,
-        enable_interrogative_upspeak: bool = Query(
+        enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
-        ),  # noqa: B008
+        ),
     ):
         wave = engine.synthesis(
             query=query,
