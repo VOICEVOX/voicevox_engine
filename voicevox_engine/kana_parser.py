@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from .mora_list import openjtalk_mora2text, openjtalk_text2mora
+from .mora_list import openjtalk_text2mora
 
 LOOP_LIMIT = 300
 UNVOICE_SYMBOL = "_"
