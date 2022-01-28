@@ -179,44 +179,35 @@ class TestSynthesisEngineBase(TestCase):
         )
         self.synthesis_engine._synthesis_impl = Mock()
 
-    def create_accent_phrases_test_base(
-        self, text: str, expected: List[AccentPhrase], enable_interrogative: bool
-    ):
-        actual = self.synthesis_engine.create_accent_phrases(
-            text, 1, enable_interrogative
-        )
+    def create_accent_phrases_test_base(self, text: str, expected: List[AccentPhrase]):
+        actual = self.synthesis_engine.create_accent_phrases(text, 1)
         self.assertEqual(
             expected,
             actual,
-            "case(text:"
-            + text
-            + ",enable_interrogative:"
-            + str(enable_interrogative)
-            + ")",
+            "case(text:" + text + ")",
         )
 
     def create_synthesis_test_base(
-        self, text: str, expected: List[AccentPhrase], enable_interrogative: bool
+        self,
+        text: str,
+        expected: List[AccentPhrase],
+        enable_interrogative_upspeak: bool,
     ):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
-        accent_phrases = self.synthesis_engine.create_accent_phrases(
-            text, 1, enable_interrogative
-        )
+        accent_phrases = self.synthesis_engine.create_accent_phrases(text, 1)
         query = create_mock_query(accent_phrases=accent_phrases)
-        self.synthesis_engine.synthesis(query, 0)
+        self.synthesis_engine.synthesis(
+            query, 0, enable_interrogative_upspeak=enable_interrogative_upspeak
+        )
         # _synthesis_implの第一引数に与えられたqueryを検証
         actual = self.synthesis_engine._synthesis_impl.call_args[0][0].accent_phrases
 
         self.assertEqual(
             expected,
             actual,
-            "case(text:"
-            + text
-            + ",enable_interrogative:"
-            + str(enable_interrogative)
-            + ")",
+            "case(text:" + text + ")",
         )
 
     def test_create_accent_phrases(self):
@@ -225,11 +216,7 @@ class TestSynthesisEngineBase(TestCase):
         """
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
-        self.create_accent_phrases_test_base(
-            text="これはありますか？",
-            expected=expected,
-            enable_interrogative=True,
-        )
+        self.create_accent_phrases_test_base(text="これはありますか？", expected=expected)
 
     def test_synthesis_interrogative(self):
         expected = koreha_arimasuka_base_expected()
@@ -247,21 +234,22 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="これはありますか？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = koreha_arimasuka_base_expected()
+        expected[-1].is_interrogative = True
         self.create_synthesis_test_base(
             text="これはありますか？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         expected = koreha_arimasuka_base_expected()
         self.create_synthesis_test_base(
             text="これはありますか",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         def nn_base_expected():
@@ -287,7 +275,7 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="ん",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = nn_base_expected()
@@ -305,14 +293,15 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="ん？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = nn_base_expected()
+        expected[-1].is_interrogative = True
         self.create_synthesis_test_base(
             text="ん？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         def ltu_base_expected():
@@ -338,7 +327,7 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="っ",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = ltu_base_expected()
@@ -346,14 +335,15 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="っ？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = ltu_base_expected()
+        expected[-1].is_interrogative = True
         self.create_synthesis_test_base(
             text="っ？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         def su_base_expected():
@@ -379,7 +369,7 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="す",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = su_base_expected()
@@ -397,12 +387,13 @@ class TestSynthesisEngineBase(TestCase):
         self.create_synthesis_test_base(
             text="す？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = su_base_expected()
+        expected[-1].is_interrogative = True
         self.create_synthesis_test_base(
             text="す？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
