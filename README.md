@@ -271,7 +271,7 @@ Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
 DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
 ```
 
-#### ライブラリを直接指定する
+#### 音声ライブラリを直接指定する
 [VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
 また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
 ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
