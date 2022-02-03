@@ -539,7 +539,7 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.post("/user_dict", status_code=204, tags=["その他"])
+    @app.post("/user_dict", tags=["その他"])
     def update_user_dict(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
@@ -557,7 +557,7 @@ def generate_app(
             apply_word(
                 surface=surface, pronunciation=pronunciation, accent_type=accent_type
             )
-            return
+            return Response(status_code=204)
         except ValidationError as e:
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
