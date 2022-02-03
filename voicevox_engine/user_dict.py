@@ -54,8 +54,7 @@ def update_dict(
         if not default_dict_path.is_file():
             print("Warning: Cannot find default dictionary.", file=sys.stderr)
             return
-        with default_dict_path.open(encoding="utf-8") as f2:
-            default_dict = f2.read()
+        default_dict = default_dict_path.read_text(encoding="utf-8")
         if default_dict == default_dict.rstrip():
             default_dict += "\n"
         f.write(default_dict)
@@ -126,4 +125,5 @@ def apply_word(**kwargs):
     user_dict.words[id] = word
     with _user_dict_path.open(encoding="utf-8", mode="w") as f:
         json.dump(user_dict.dict(), f, ensure_ascii=False)
+    _user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
     update_dict(user_dict_path=_user_dict_path)
