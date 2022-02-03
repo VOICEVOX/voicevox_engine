@@ -162,7 +162,9 @@ class SynthesisEngine(SynthesisEngineBase):
 
         speakers: coreから取得したspeakersに関するjsonデータの文字列
 
-        supported_devices: coreから取得した対応デバイスに関するjsonデータの文字列
+        supported_devices:
+            coreから取得した対応デバイスに関するjsonデータの文字列
+            Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
         self.yukarin_s_forwarder = yukarin_s_forwarder

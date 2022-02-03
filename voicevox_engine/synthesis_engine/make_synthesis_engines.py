@@ -84,6 +84,8 @@ def make_synthesis_engines(
             try:
                 supported_devices = core.supported_devices()
             except NameError:
+                # libtorch版コアは対応していないのでNameErrorになる
+                # 対応デバイスが不明であることを示すNoneを代入する
                 supported_devices = None
             synthesis_engines[core_version] = SynthesisEngine(
                 yukarin_s_forwarder=core.yukarin_s_forward,
