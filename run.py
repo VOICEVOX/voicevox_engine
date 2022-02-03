@@ -540,7 +540,7 @@ def generate_app(
         return ret_data
 
     @app.post("/user_dict", tags=["その他"])
-    def update_user_dict(surface: str, pronunciation: str, accent_type: int):
+    def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
 
