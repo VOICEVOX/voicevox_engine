@@ -177,19 +177,36 @@ class UserDictWord(BaseModel):
 
     @validator("pronunciation", pre=True)
     def check_is_katakana(cls, pronunciation):
-        if not fullmatch(r"[\u30A1-\u30F4]+", pronunciation):
-            raise ValueError("発音はカタカナでなくてはいけません。")
+        if not fullmatch(r"[ァ-ヴー]+", pronunciation):
+            raise ValueError("発音は有効なカタカナでなくてはいけません。")
+        sute_gana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]
+        for i in range(len(pronunciation)):
+            if pronunciation[i] in sute_gana:
+                if i < len(pronunciation) - 1 and pronunciation[i + 1] in sute_gana:
+                    raise ValueError("無効な発音です。(捨て仮名の連続)")
+            if pronunciation[i] == "ヮ":
+                if i != 0 and pronunciation[i - 1] not in ["ク", "グ"]:
+                    raise ValueError("無効な発音です。(「くゎ」「ぐゎ」以外の「ゎ」の使用)")
         return pronunciation
 
     @validator("mora_count", pre=True, always=True)
     def check_mora_count_and_accent_type(cls, mora_count, values):
+        if "pronunciation" not in values or "accent_type" not in values:
+            # 適切な場所でエラーを出すようにする
+            return mora_count
+
         if mora_count is None:
+            rule_others = "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
+            rule_line_i = "[キシチニヒミリギジビピ][ェャュョ]"
+            rule_line_u = "[ツフヴ][ァ]|[ウスツフヴズ][ィ]|[ウツフヴ][ェォ]"
+            rule_one_mora = "[ァ-ヴー]"
             mora_count = len(
                 findall(
-                    "(?:[アイウエオカ-モヤユヨ-ロワ-ヶ][ァィゥェォャュョヮ]|[アイウエオカ-モヤユヨ-ロワ-ヶー])",
+                    f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
                     values["pronunciation"],
                 )
             )
+
         if not 0 <= values["accent_type"] <= mora_count:
             raise ValueError(
                 "誤ったアクセント型です({})。 expect: 0 <= accent_type <= {}".format(
