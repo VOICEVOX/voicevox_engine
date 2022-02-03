@@ -9,13 +9,9 @@ import pyopenjtalk
 from appdirs import user_data_dir
 
 from .model import UserDictJson, UserDictWord
+from .utility import engine_root
 
-# nuitkaビルドをした際はグローバルに__compiled__が含まれる
-if "__compiled__" in globals():
-    root_dir = Path(sys.argv[0]).parent
-else:
-    root_dir = Path(__file__).parents[1]
-
+root_dir = engine_root()
 save_dir = Path(user_data_dir("voicevox-engine"))
 
 if not save_dir.is_dir():
