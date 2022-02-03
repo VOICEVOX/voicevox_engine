@@ -102,7 +102,7 @@ class TestMockSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
-        self.engine = MockSynthesisEngine(speakers="")
+        self.engine = MockSynthesisEngine(speakers="", supported_devices="")
 
     def test_replace_phoneme_length(self):
         self.assertEqual(

@@ -223,3 +223,12 @@ class UserDictJson(BaseModel):
 
     next_id: int = Field(title="次に割り当てられるID")
     words: Dict[int, UserDictWord] = Field(title="辞書のコンパイルに使われるワードの情報")
+
+
+class SupportedDevicesInfo(BaseModel):
+    """
+    対応しているデバイスの情報
+    """
+
+    cpu: bool = Field(title="CPUに対応しているか")
+    cuda: bool = Field(title="CUDA(GPU)に対応しているか")

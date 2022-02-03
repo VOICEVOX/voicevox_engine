@@ -33,6 +33,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    SupportedDevicesInfo,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -563,6 +564,18 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
+
+    @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
+    def supported_devices(
+        core_version: Optional[str] = None,
+    ):
+        supported_devices = get_engine(core_version).supported_devices
+        if supported_devices is None:
+            raise HTTPException(status_code=422, detail="非対応の機能です。")
+        return Response(
+            content=supported_devices,
+            media_type="application/json",
+        )
 
     return app
 

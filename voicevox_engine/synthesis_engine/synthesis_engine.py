@@ -132,6 +132,7 @@ class SynthesisEngine(SynthesisEngineBase):
         yukarin_sa_forwarder,
         decode_forwarder,
         speakers: str,
+        supported_devices: Optional[str] = None,
     ):
         """
         yukarin_s_forwarder: 音素列から、音素ごとの長さを求める関数
@@ -160,14 +161,27 @@ class SynthesisEngine(SynthesisEngineBase):
             return: 音声波形
 
         speakers: coreから取得したspeakersに関するjsonデータの文字列
+
+        supported_devices:
+            coreから取得した対応デバイスに関するjsonデータの文字列
+            Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
         self.yukarin_s_forwarder = yukarin_s_forwarder
         self.yukarin_sa_forwarder = yukarin_sa_forwarder
         self.decode_forwarder = decode_forwarder
 
-        self.speakers = speakers
+        self._speakers = speakers
+        self._supported_devices = supported_devices
         self.default_sampling_rate = 24000
+
+    @property
+    def speakers(self) -> str:
+        return self._speakers
+
+    @property
+    def supported_devices(self) -> Optional[str]:
+        return self._supported_devices
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
