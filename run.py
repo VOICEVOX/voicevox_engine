@@ -82,12 +82,6 @@ def generate_app(
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
 
-    def enable_interrogative_query_param() -> Query:
-        return Query(
-            default=True,
-            description="疑問系のテキストが与えられたら自動調整する機能を有効にする。現在は長音を付け足すことで擬似的に実装される",
-        )
-
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
             return synthesis_engines[latest_core_version]
@@ -101,21 +95,12 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(
-        text: str,
-        speaker: int,
-        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
-        core_version: Optional[str] = None,
-    ):
+    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        accent_phrases = engine.create_accent_phrases(
-            text,
-            speaker_id=speaker,
-            enable_interrogative=enable_interrogative,
-        )
+        accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -136,10 +121,7 @@ def generate_app(
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
     def audio_query_from_preset(
-        text: str,
-        preset_id: int,
-        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
-        core_version: Optional[str] = None,
+        text: str, preset_id: int, core_version: Optional[str] = None
     ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -156,9 +138,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text,
-            speaker_id=selected_preset.style_id,
-            enable_interrogative=enable_interrogative,
+            text, speaker_id=selected_preset.style_id
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -189,7 +169,6 @@ def generate_app(
         text: str,
         speaker: int,
         is_kana: bool = False,
-        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
         core_version: Optional[str] = None,
     ):
         """
@@ -199,11 +178,12 @@ def generate_app(
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
+        * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
         engine = get_engine(core_version)
         if is_kana:
             try:
-                accent_phrases = parse_kana(text, enable_interrogative)
+                accent_phrases = parse_kana(text)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
@@ -215,11 +195,7 @@ def generate_app(
 
             return accent_phrases
         else:
-            return engine.create_accent_phrases(
-                text,
-                speaker_id=speaker,
-                enable_interrogative=enable_interrogative,
-            )
+            return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
         "/mora_data",
@@ -280,9 +256,21 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する",
     )
-    def synthesis(query: AudioQuery, speaker: int, core_version: Optional[str] = None):
+    def synthesis(
+        query: AudioQuery,
+        speaker: int,
+        enable_interrogative_upspeak: bool = Query(  # noqa: B008
+            default=True,
+            description="疑問系のテキストが与えられたら語尾を自動調整する",
+        ),
+        core_version: Optional[str] = None,
+    ):
         engine = get_engine(core_version)
-        wave = engine.synthesis(query=query, speaker_id=speaker)
+        wave = engine.synthesis(
+            query=query,
+            speaker_id=speaker,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
+        )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(

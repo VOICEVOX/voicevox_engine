@@ -22,7 +22,7 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
+    enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
     各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
     NOTE: リファクタリング時に適切な場所へ移動させること
     """
@@ -139,9 +139,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             speaker_id=speaker_id,
         )
 
-    def create_accent_phrases(
-        self, text: str, speaker_id: int, enable_interrogative: bool
-    ) -> List[AccentPhrase]:
+    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
@@ -169,8 +167,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
                         )
                         else None
                     ),
-                    is_interrogative=accent_phrase.is_interrogative
-                    and enable_interrogative,
+                    is_interrogative=accent_phrase.is_interrogative,
                 )
                 for i_breath_group, breath_group in enumerate(utterance.breath_groups)
                 for i_accent_phrase, accent_phrase in enumerate(
@@ -181,7 +178,12 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         )
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int):
+    def synthesis(
+        self,
+        query: AudioQuery,
+        speaker_id: int,
+        enable_interrogative_upspeak: bool = True,
+    ) -> str:
         """
         音声合成クエリ内の疑問文指定されたMoraを変形した後、
         継承先における実装`_synthesis_impl`を使い音声合成を行う
@@ -191,6 +193,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             音声合成クエリ
         speaker_id : int
             話者ID
+        enable_interrogative_upspeak : bool
+            疑問系のテキストの語尾を自動調整する機能を有効にするか
         Returns
         -------
         wave : numpy.ndarray
@@ -198,7 +202,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         """
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        query.accent_phrases = adjust_interrogative_accent_phrases(query.accent_phrases)
+        if enable_interrogative_upspeak:
+            query.accent_phrases = adjust_interrogative_accent_phrases(
+                query.accent_phrases
+            )
         return self._synthesis_impl(query, speaker_id)
 
     @abstractmethod

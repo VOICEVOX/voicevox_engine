@@ -5,6 +5,6 @@ pip-licenses
 pip-tools
 pre-commit
 
-# 以下のパッケージはWindowsでは必要とされてるが、Linux上でpip-compileすると出力内容に含まれないため明示的に含めている
+# fow windows
 atomicwrites
 colorama

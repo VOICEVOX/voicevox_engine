@@ -33,7 +33,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         )
 
 
-def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
+def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     longest matchにより読み仮名からAccentPhraseを生成
     入力長Nに対し計算量O(N^2)
@@ -79,17 +79,15 @@ def _text_to_accent_phrase(phrase: str) -> List[AccentPhrase]:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
+def parse_kana(text: str) -> List[AccentPhrase]:
     """
     AquesTalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
     """
+
     parsed_results: List[AccentPhrase] = []
     phrase_base = 0
     if len(text) == 0:
         raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
-    is_interrogative_text = text[-1] == WIDE_INTERROGATION_MARK
-    if is_interrogative_text:
-        text = text[:-1]
 
     for i in range(len(text) + 1):
         if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
@@ -100,6 +98,15 @@ def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
                     position=str(len(parsed_results) + 1),
                 )
             phrase_base = i + 1
+
+            is_interrogative = WIDE_INTERROGATION_MARK in phrase
+            if is_interrogative:
+                if WIDE_INTERROGATION_MARK in phrase[:-1]:
+                    raise ParseKanaError(
+                        ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END, text=phrase
+                    )
+                phrase = phrase.replace(WIDE_INTERROGATION_MARK, "")
+
             accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
             if i < len(text) and text[i] == PAUSE_DELIMITER:
                 accent_phrase.pause_mora = Mora(
@@ -110,39 +117,27 @@ def parse_kana(text: str, enable_interrogative: bool) -> List[AccentPhrase]:
                     vowel_length=0,
                     pitch=0,
                 )
-            parsed_results.append(accent_phrase)
+            accent_phrase.is_interrogative = is_interrogative
 
-    if enable_interrogative and is_interrogative_text:
-        last_parsed_result = parsed_results[-1]
-        last_parsed_result.is_interrogative = True
+            parsed_results.append(accent_phrase)
 
     return parsed_results
 
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     text = ""
-    replace_vowel_to_interrogative = (
-        len(accent_phrases) > 0
-        and accent_phrases[-1].is_interrogative
-        and len(accent_phrases[-1].moras) > 0
-        and accent_phrases[-1].moras[-1].pitch > 0
-    )
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
             if mora.vowel in ["A", "I", "U", "E", "O"]:
                 text += UNVOICE_SYMBOL
 
-            # TODO: 疑問系が正式に対応したらここの処理をmora.textを追加した上で疑問符を追加する処理に変更する
-            if (
-                replace_vowel_to_interrogative
-                and i == len(accent_phrases) - 1
-                and j == len(phrase.moras) - 1
-            ):
-                text += WIDE_INTERROGATION_MARK
-            else:
-                text += mora.text
+            text += mora.text
             if j + 1 == phrase.accent:
                 text += ACCENT_SYMBOL
+
+        if phrase.is_interrogative:
+            text += WIDE_INTERROGATION_MARK
+
         if i < len(accent_phrases) - 1:
             if phrase.pause_mora is None:
                 text += NOPAUSE_DELIMITER
