@@ -13,7 +13,6 @@ env:
   PYTHON_VERSION: '3.8.10'
   VOICEVOX_RESOURCE_VERSION: '0.10.0'
   VOICEVOX_CORE_VERSION: '0.10.0'
-  VOICEVOX_CORE_SOURCE_VERSION: '0.10.0'
   VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
@@ -24,7 +23,7 @@ jobs:
       matrix:
         include:
         - os: macos-11
-          python_architecture: 'x64'
+          python_architecture: "x64"
           pip_cache_path: ~/Library/Caches/pip
           voicevox_core_library_name: libcore_cpu_universal2.dylib
           onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
@@ -144,44 +143,6 @@ jobs:
           ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
           rm download/core.zip
 
-      # Install VOICEVOX Core Python package
-      - name: Prepare VOICEVOX Core source cache
-        uses: actions/cache@v2
-        id: voicevox-core-source-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-source-${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
-      - name: Checkout VOICEVOX Core source
-        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          repository: VOICEVOX/voicevox_core
-          ref: ${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
-      - name: Install VOICEVOX Core Python package
-        shell: bash
-        run: |
-          set -eux
-
-          mkdir -p download/voicevox_core_source/core/lib
-
-          # Copy VOICEVOX Core dylib to core/lib
-          cp download/core/${{ matrix.voicevox_core_library_name }} download/voicevox_core_source/core/lib/libcore.dylib
-
-          cd download/voicevox_core_source
-          cp core/src/core.h core/lib/
-          cd -
-
-          # Copy ONNX Runtime dylib
-          cp download/onnxruntime/lib/libonnxruntime.*.dylib download/voicevox_core_source/core/lib/
-
-          # Install VOICEVOX Core Python package with libcore.dylib & libonnxruntime.*.dylib
-          cd download/voicevox_core_source
-          NUMPY_INCLUDE=`python -c "import numpy; print(numpy.get_include())"`
-          CPATH="$NUMPY_INCLUDE:${CPATH:-}" pip install .
-
       - name: Download PyOpenJTalk dictionary
         shell: bash
         run: |
@@ -228,7 +189,8 @@ jobs:
             --include-data-file=../user.dic=./ \
             --include-data-file=../download/core/*.bin=./ \
             --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=../download/onnxruntime/lib/libonnxruntime.*.dylib=./ \
+            --include-data-file=../download/core/${{ matrix.voicevox_core_library_name }}=./ \
+            --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
@@ -351,7 +313,6 @@ jobs:
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
@@ -648,49 +609,6 @@ jobs:
           unzip download/core.zip -d download/
           rm download/core.zip
 
-      # Install VOICEVOX Core Python package
-      - name: Prepare VOICEVOX Core source cache
-        uses: actions/cache@v2
-        id: voicevox-core-source-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-source-${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
-      - name: Checkout VOICEVOX Core source
-        if: steps.voicevox-core-source-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          repository: VOICEVOX/voicevox_core
-          ref: ${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
-          path: download/voicevox_core_source
-
-      - name: Install VOICEVOX Core Python package
-        shell: bash
-        run: |
-          set -eux
-
-          # Generate VOICEVOX Core LIB from DLL
-          cp download/core/${{ matrix.voicevox_core_dll_name }} download/voicevox_core_source/example/python/core.dll
-
-          cd download/voicevox_core_source/example/python
-          ./makelib.bat core
-          cd -
-
-          # Copy VOICEVOX Core DLL & LIB to core/lib
-          cd download/voicevox_core_source
-          mkdir -p core/lib
-          mv example/python/core.dll core/lib/
-          mv example/python/core.lib core/lib/
-          cp core/src/core.h core/lib/
-          cd -
-
-          # Copy ONNX Runtime DLLs
-          cp download/onnxruntime/lib/*.dll download/voicevox_core_source/core/lib/
-
-          # Install VOICEVOX Core Python package with core.dll & onnxruntime*.dll
-          cd download/voicevox_core_source
-          pip install .
-
       - name: Generate licenses.json
         shell: bash
         run: python generate_licenses.py > licenses.json
@@ -718,7 +636,7 @@ jobs:
 
           # Replace version
           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-          
+
           python -m nuitka \
             --standalone \
             --assume-yes-for-downloads \
@@ -735,6 +653,8 @@ jobs:
             --include-data-file="presets.yaml=./" \
             --include-data-file=download/core/*.bin=./ \
             --include-data-file="download/core/metas.json=./" \
+            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
+            --include-data-file="download/core/${{ matrix.voicevox_core_dll_name }}=./" \
             --include-data-dir="speaker_info=./speaker_info" \
             --msvc=14.2 \
             --follow-imports \
@@ -756,13 +676,6 @@ jobs:
         run: |
           set -eux
 
-          # Workaround: Move core.dll to run.dist/core/lib/
-          # Nuitka copies core.dll to run.dist/core.dll
-          # but core Python module will load core.dll from run.dist/core/lib/core.dll.
-          mkdir -p run.dist/core/lib
-          mv run.dist/core.dll run.dist/core/lib/
-          mv run.dist/onnxruntime.dll run.dist/core/lib/
-
           # Build artifact directory
           mkdir -p artifact
           ln -sf "$(pwd)/run.dist"/* artifact/
@@ -771,7 +684,7 @@ jobs:
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/core/lib/
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
 
             # CUDA
             ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/

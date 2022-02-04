@@ -13,7 +13,10 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .model import AudioQuery, Speaker
-from .synthesis_engine import make_synthesis_engine
+from .synthesis_engine import make_synthesis_engines
+
+# FIXME: coreのctypes実装への対応
+raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
 
 
 class CancellableEngine:
@@ -189,10 +192,11 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    engine = make_synthesis_engine(
+    engine = make_synthesis_engines(
         use_gpu=args.use_gpu,
         voicevox_dir=args.voicevox_dir,
         voicelib_dir=voicelib_dir,
+        runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
     )
     while True:

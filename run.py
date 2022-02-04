@@ -1,14 +1,18 @@
 import argparse
-import asyncio
+
+# import asyncio
 import base64
 import json
 import multiprocessing
 import os
+
+# import sys
 import zipfile
+from distutils.version import LooseVersion
 from functools import lru_cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
@@ -17,8 +21,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from starlette.responses import FileResponse
 
+# from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine import __version__
-from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
@@ -27,13 +31,14 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    SupportedDevicesInfo,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engine
+from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
 
@@ -41,10 +46,12 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
-def generate_app(engine: SynthesisEngineBase) -> FastAPI:
+def generate_app(
+    synthesis_engines: Dict[str, SynthesisEngineBase], latest_core_version: str
+) -> FastAPI:
     root_dir = Path(__file__).parent
 
-    default_sampling_rate = engine.default_sampling_rate
+    default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
     app = FastAPI(
         title="VOICEVOX ENGINE",
@@ -69,11 +76,18 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
     synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
-    @app.on_event("startup")
-    async def start_catch_disconnection():
-        if args.enable_cancellable_synthesis:
-            loop = asyncio.get_event_loop()
-            _ = loop.create_task(cancellable_engine.catch_disconnection())
+    # @app.on_event("startup")
+    # async def start_catch_disconnection():
+    #     if args.enable_cancellable_synthesis:
+    #         loop = asyncio.get_event_loop()
+    #         _ = loop.create_task(cancellable_engine.catch_disconnection())
+
+    def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
+        if core_version is None:
+            return synthesis_engines[latest_core_version]
+        if core_version in synthesis_engines:
+            return synthesis_engines[core_version]
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     @app.post(
         "/audio_query",
@@ -81,10 +95,11 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int):
+    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
+        engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -105,10 +120,13 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
-    def audio_query_from_preset(text: str, preset_id: int):
+    def audio_query_from_preset(
+        text: str, preset_id: int, core_version: Optional[str] = None
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
+        engine = get_engine(core_version)
         presets, err_detail = preset_loader.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
@@ -147,7 +165,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             }
         },
     )
-    def accent_phrases(text: str, speaker: int, is_kana: bool = False):
+    def accent_phrases(
+        text: str,
+        speaker: int,
+        is_kana: bool = False,
+        core_version: Optional[str] = None,
+    ):
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
@@ -157,6 +180,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
+        engine = get_engine(core_version)
         if is_kana:
             try:
                 accent_phrases = parse_kana(text)
@@ -179,7 +203,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
-    def mora_data(accent_phrases: List[AccentPhrase], speaker: int):
+    def mora_data(
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
@@ -188,7 +217,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
-    def mora_length(accent_phrases: List[AccentPhrase], speaker: int):
+    def mora_length(
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -199,7 +233,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["クエリ編集"],
         summary="アクセント句から音高を得る",
     )
-    def mora_pitch(accent_phrases: List[AccentPhrase], speaker: int):
+    def mora_pitch(
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
@@ -224,7 +263,9 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
+        core_version: Optional[str] = None,
     ):
+        engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
             speaker_id=speaker,
@@ -278,7 +319,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         tags=["音声合成"],
         summary="複数まとめて音声合成する",
     )
-    def multi_synthesis(queries: List[AudioQuery], speaker: int):
+    def multi_synthesis(
+        queries: List[AudioQuery],
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -324,11 +370,13 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         base_speaker: int,
         target_speaker: int,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
+        core_version: Optional[str] = None,
     ):
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
+        engine = get_engine(core_version)
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
@@ -405,15 +453,25 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
     def version() -> str:
         return __version__
 
+    @app.get("/core_versions", response_model=List[str], tags=["その他"])
+    def core_versions() -> List[str]:
+        return Response(
+            content=json.dumps(list(synthesis_engines.keys())),
+            media_type="application/json",
+        )
+
     @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
-    def speakers():
+    def speakers(
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
         return Response(
             content=engine.speakers,
             media_type="application/json",
         )
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(speaker_uuid: str):
+    def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
@@ -422,7 +480,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         -------
         ret_data: SpeakerInfo
         """
-        speakers = json.loads(engine.speakers)
+        speakers = json.loads(get_engine(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]
@@ -463,6 +521,18 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
+    @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
+    def supported_devices(
+        core_version: Optional[str] = None,
+    ):
+        supported_devices = get_engine(core_version).supported_devices
+        if supported_devices is None:
+            raise HTTPException(status_code=422, detail="非対応の機能です。")
+        return Response(
+            content=supported_devices,
+            media_type="application/json",
+        )
+
     return app
 
 
@@ -473,7 +543,9 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=50021)
     parser.add_argument("--use_gpu", action="store_true")
     parser.add_argument("--voicevox_dir", type=Path, default=None)
-    parser.add_argument("--voicelib_dir", type=Path, default=None)
+    parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
+    parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
+    parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
 
@@ -488,27 +560,24 @@ if __name__ == "__main__":
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
 
-    # voicelib_dir が Noneのとき、音声ライブラリの Python モジュールと同じディレクトリにあるとする
-    voicelib_dir: Optional[Path] = args.voicelib_dir
-    if voicelib_dir is None:
-        if args.voicevox_dir is not None:
-            voicelib_dir = args.voicevox_dir
-        else:
-            voicelib_dir = Path(__file__).parent  # core.__file__だとnuitkaビルド後にエラー
+    synthesis_engines = make_synthesis_engines(
+        use_gpu=args.use_gpu,
+        voicelib_dirs=args.voicelib_dir,
+        voicevox_dir=args.voicevox_dir,
+        runtime_dirs=args.runtime_dir,
+        enable_mock=args.enable_mock,
+    )
+    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 
     cancellable_engine = None
+    # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
+        # cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
+        raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
 
     uvicorn.run(
-        generate_app(
-            make_synthesis_engine(
-                use_gpu=args.use_gpu,
-                voicelib_dir=voicelib_dir,
-                voicevox_dir=args.voicevox_dir,
-                cpu_num_threads=cpu_num_threads,
-            )
-        ),
+        generate_app(synthesis_engines, latest_core_version),
         host=args.host,
         port=args.port,
     )

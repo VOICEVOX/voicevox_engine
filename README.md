@@ -258,6 +258,34 @@ VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッ
   python run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
+### 過去のバージョンのコアを使う
+VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
+Macでのlibtorch版コアのサポートはしていません。
+
+#### 過去のバイナリを指定する
+製品版VOICEVOXもしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
+```bash
+python run.py --voicevox_dir="/path/to/voicevox"
+```
+Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+```
+
+#### 音声ライブラリを直接指定する
+[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
+`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。   
+APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
+```bash
+python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+```
+Macでは、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
+```
+
 ## コードフォーマット
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。

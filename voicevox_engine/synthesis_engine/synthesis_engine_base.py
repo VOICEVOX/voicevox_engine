@@ -1,6 +1,6 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Optional
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
@@ -22,9 +22,13 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
-    各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
-    NOTE: リファクタリング時に適切な場所へ移動させること
+    <<<<<<< HEAD
+        enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
+    =======
+        enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
+    >>>>>>> master
+        各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
+        NOTE: リファクタリング時に適切な場所へ移動させること
     """
     return [
         AccentPhrase(
@@ -78,6 +82,16 @@ def full_context_label_moras_to_moras(
 
 
 class SynthesisEngineBase(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def speakers(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def supported_devices(self) -> Optional[str]:
+        raise NotImplementedError
+
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

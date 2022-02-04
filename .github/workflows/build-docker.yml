@@ -33,7 +33,7 @@ jobs:
           - nvidia-ubuntu18.04
         include:
           # Ubuntu 20.04
-          - tag: ''
+          - tag: ""
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
@@ -109,7 +109,6 @@ jobs:
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
