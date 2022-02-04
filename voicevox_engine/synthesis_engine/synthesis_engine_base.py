@@ -22,13 +22,9 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    <<<<<<< HEAD
-        enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
-    =======
-        enable_interrogativeが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
-    >>>>>>> master
-        各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
-        NOTE: リファクタリング時に適切な場所へ移動させること
+    enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
+    各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
+    NOTE: リファクタリング時に適切な場所へ移動させること
     """
     return [
         AccentPhrase(
