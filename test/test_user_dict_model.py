@@ -51,7 +51,6 @@ class TestUserDictWords(TestCase):
                 test_value["pronunciation"] = s + x
                 for accent_phrase in parse_kana(
                     test_value["pronunciation"] + "'",
-                    False,
                 ):
                     expected_count += len(accent_phrase.moras)
                 with self.subTest(s=s, x=x):
@@ -66,7 +65,6 @@ class TestUserDictWords(TestCase):
         expected_count = 0
         for accent_phrase in parse_kana(
             test_value["pronunciation"] + "'",
-            False,
         ):
             expected_count += len(accent_phrase.moras)
         self.assertEqual(
