@@ -1,9 +1,7 @@
 import json
 import sys
-from hashlib import sha256
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 import pyopenjtalk
 from appdirs import user_data_dir
@@ -20,13 +18,6 @@ if not save_dir.is_dir():
 default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
 compiled_dict_path = save_dir / "user.dic"
-
-
-def dict_hash(compiled_dict_path: Path = compiled_dict_path) -> Optional[str]:
-    if not compiled_dict_path.is_file():
-        return None
-    with compiled_dict_path.open(mode="rb") as f:
-        return sha256(f.read()).hexdigest()
 
 
 def user_dict_startup_processing(
@@ -75,17 +66,21 @@ def update_dict(
                     word.accent_associative_rule,
                 )
             )
-    pyopenjtalk.unset_user_dict()
-    old_dict_hash = dict_hash(compiled_dict_path)
+    tmp_dict_path = Path(NamedTemporaryFile(delete=False).name).resolve()
     pyopenjtalk.create_user_dict(
         str(Path(f.name).resolve(strict=True)),
-        str(compiled_dict_path.resolve()),
+        str(tmp_dict_path),
     )
-    if not compiled_dict_path.is_file():
+    if not tmp_dict_path.is_file():
         raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
-    pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
-    if old_dict_hash is not None and dict_hash(compiled_dict_path) == old_dict_hash:
-        raise RuntimeError("辞書のコンパイル時にエラーが発生しました。古い状態のユーザ辞書が適用されます。")
+    pyopenjtalk.unset_user_dict()
+    try:
+        tmp_dict_path.replace(compiled_dict_path)
+    except Exception:
+        print("Warning: 辞書の更新に失敗しました。古い辞書を使用します。", file=sys.stderr)
+    finally:
+        if compiled_dict_path.is_file():
+            pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
 
 def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
