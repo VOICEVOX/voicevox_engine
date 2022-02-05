@@ -76,8 +76,6 @@ def update_dict(
     pyopenjtalk.unset_user_dict()
     try:
         tmp_dict_path.replace(compiled_dict_path)
-    except Exception:
-        print("Warning: 辞書の更新に失敗しました。古い辞書を使用します。", file=sys.stderr)
     finally:
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
