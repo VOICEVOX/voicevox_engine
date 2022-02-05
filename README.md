@@ -57,7 +57,7 @@ curl -s \
 - アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
 - カナの手前に`_`を入れるとそのカナは無声化される
 - アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
-- 文末に`？`(全角)を入れることにより疑問文の発音ができる
+- アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -240,22 +240,23 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 python run.py
 ```
 
+### CPU スレッド数を指定する
 
-### CPUスレッド数を指定する
-CPUスレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どのCPUで、これは全体の処理能力の半分です）  
-もしIaaS上で実行していたり、専用サーバーで実行している場合など、  
-VOICEVOX ENGINEが使う処理能力を調節したい場合は、CPUスレッド数を指定することで実現できます。
+CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
+もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
+VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
 - 実行時引数で指定する
-    ```bash
-    python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
-    ```
+
+  ```bash
+  python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+  ```
 
 - 環境変数で指定する
-    ```bash
-    export VV_CPU_NUM_THREADS=4
-    python run.py --voicevox_dir=$VOICEVOX_DIR
-    ```
+  ```bash
+  export VV_CPU_NUM_THREADS=4
+  python run.py --voicevox_dir=$VOICEVOX_DIR
+  ```
 
 ### 過去のバージョンのコアを使う
 VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
@@ -358,8 +359,8 @@ pip-compile requirements-test.in
 
 ### ライセンス
 
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。  
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
 
 - MIT/Apache/BSD-3: OK
 - LGPL: OK （コアと動的分離されているため）
@@ -367,7 +368,7 @@ pip-compile requirements-test.in
 
 ## ユーザー辞書の更新について
 
-以下のコマンドでopenjtalkのユーザー辞書をコンパイルできます。
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
 
 ```bash
 python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
