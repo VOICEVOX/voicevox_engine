@@ -1,5 +1,5 @@
 import os
-import sys
+import platform
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
 from pathlib import Path
@@ -9,13 +9,13 @@ import numpy as np
 
 
 def load_runtime_lib(runtime_dirs: List[Path]):
-    if sys.platform == "win32":
+    if platform.system() == "Windows":
         lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "onnxruntime.dll"]
         lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
-    elif sys.platform == "linux":
+    elif platform.system() == "Linux":
         lib_file_names = ["libtorch.so", "libonnxruntime.so"]
         lib_names = ["torch", "onnxruntime"]
-    elif sys.platform == "darwin":
+    elif platform.system() == "Darwin":
         lib_file_names = ["libonnxruntime.dylib"]
         lib_names = ["onnxruntime"]
     else:
@@ -34,14 +34,14 @@ def load_runtime_lib(runtime_dirs: List[Path]):
 
 
 def check_core_type(core_dir: Path) -> Optional[str]:
-    if sys.platform == "win32":
+    if platform.system() == "Windows":
         if (core_dir / "core.dll").is_file() or (core_dir / "core_cpu.dll").is_file():
             return "libtorch"
         elif (core_dir / "core_gpu_x64_nvidia.dll").is_file() or (
             core_dir / "core_cpu_x64.dll"
         ).is_file():
             return "onnxruntime"
-    elif sys.platform == "linux":
+    elif platform.system() == "Linux":
         if (core_dir / "libcore.so").is_file() or (
             core_dir / "libcore_cpu.so"
         ).is_file():
@@ -50,7 +50,7 @@ def check_core_type(core_dir: Path) -> Optional[str]:
             core_dir / "libcore_cpu_x64.so"
         ).is_file():
             return "onnxruntime"
-    elif sys.platform == "darwin":
+    elif platform.system() == "Darwin":
         if (core_dir / "libcore_cpu_universal2.dylib").is_file():
             return "onnxruntime"
     return None
@@ -60,7 +60,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     model_type = check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
-    if sys.platform == "win32":
+    if platform.system() == "Windows":
         if model_type == "libtorch":
             if use_gpu:
                 try:
@@ -78,7 +78,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                 )
             except OSError:
                 return CDLL(str((core_dir / "core_cpu_x64.dll").resolve(strict=True)))
-    elif sys.platform == "linux":
+    elif platform.system() == "Linux":
         if model_type == "libtorch":
             if use_gpu:
                 try:
@@ -96,7 +96,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                 )
             except OSError:
                 return CDLL(str((core_dir / "libcore_cpu_x64.so").resolve(strict=True)))
-    elif sys.platform == "darwin":
+    elif platform.system() == "Darwin":
         if model_type == "onnxruntime":
             try:
                 return CDLL(
