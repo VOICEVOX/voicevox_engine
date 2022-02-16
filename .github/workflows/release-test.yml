@@ -21,14 +21,15 @@ jobs:
         include:
           - os: ubuntu-18.04
             target: linux-cpu
-          # - os: ubuntu-18.04
-          #   target: linux-nvidia
-          - os: macos-10.15
-            target: macos-x64
+          - os: ubuntu-18.04
+            target: linux-nvidia
+          # FIXME: なぜかハングする
+          # - os: macos-10.15
+          #   target: macos-x64
           - os: windows-2019
             target: windows-cpu
-          # - os: windows-2019
-          #   target: windows-nvidia
+          - os: windows-2019
+            target: windows-nvidia
 
     runs-on: ${{ matrix.os }}
 
