@@ -58,8 +58,8 @@ jobs:
       - name: Install libsndfile1
         if: startsWith(${{ matrix.target }}, "linux")
         run: |
-          apt update
-          apt install -y libsndfile1
+          sudo apt-get update
+          sudo apt-get install libsndfile1
 
       - name: Test
         shell: bash
