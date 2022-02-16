@@ -21,14 +21,14 @@ jobs:
         include:
           - os: ubuntu-18.04
             target: linux-cpu
-          - os: ubuntu-18.04
-            target: linux-nvidia
-          - os: macos-10.15
-            target: macos-x64
-          - os: windows-2019
-            target: windows-cpu
-          - os: windows-2019
-            target: windows-nvidia
+          # - os: ubuntu-18.04
+          #   target: linux-nvidia
+          # - os: macos-10.15
+          #   target: macos-x64
+          # - os: windows-2019
+          #   target: windows-cpu
+          # - os: windows-2019
+          #   target: windows-nvidia
 
     runs-on: ${{ matrix.os }}
 
@@ -44,6 +44,8 @@ jobs:
           curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.target }}.7z.txt"
           cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ env.RELEASE_URL }}/%"
           7z x "download/$(head -n1 download/list.txt)"
+          ls -l
+          ls -l *
 
       - name: Run
         shell: bash -euxv {0}
