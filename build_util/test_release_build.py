@@ -29,6 +29,6 @@ def test_release_build(dist_dir: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dist-dir", type=Path, default=Path("dist/"))
+    parser.add_argument("--dist_dir", type=Path, default=Path("dist/"))
     args = parser.parse_args()
     test_release_build(dist_dir=args.dist_dir)
