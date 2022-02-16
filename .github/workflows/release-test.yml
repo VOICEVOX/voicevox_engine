@@ -68,4 +68,4 @@ jobs:
 
       - name: Test
         shell: bash
-        run: python build_util/test_release_build.py --dist_dir dist/
+        run: python build_util/check_release_build.py --dist_dir dist/
