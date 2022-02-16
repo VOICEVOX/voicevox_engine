@@ -23,10 +23,10 @@ jobs:
             target: linux-cpu
           # - os: ubuntu-18.04
           #   target: linux-nvidia
-          # - os: macos-10.15
-          #   target: macos-x64
-          # - os: windows-2019
-          #   target: windows-cpu
+          - os: macos-10.15
+            target: macos-x64
+          - os: windows-2019
+            target: windows-cpu
           # - os: windows-2019
           #   target: windows-nvidia
 
@@ -38,6 +38,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8.10"
+          pip-cache: true
 
       - name: Download
         shell: bash -euxv {0}

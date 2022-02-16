@@ -7,6 +7,7 @@ import time
 from io import BytesIO
 from pathlib import Path
 from subprocess import Popen
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 import soundfile
@@ -15,9 +16,9 @@ base_url = "http://localhost:50021/"
 
 
 def test_release_build(dist_dir: Path) -> None:
-    # 起動
-    process = Popen(["./run"], cwd=dist_dir)
-    time.sleep(30)  # 待機
+    # # 起動
+    # process = Popen(["./run"], cwd=dist_dir)
+    # time.sleep(10)  # 待機
 
     # バージョン取得テスト
     req = Request(base_url + "version")
@@ -26,9 +27,7 @@ def test_release_build(dist_dir: Path) -> None:
 
     # テキスト -> クエリ
     text = "こんにちは、音声合成の世界へようこそ"
-    req = Request(base_url + "audio_query?speaker=1")
-    req.add_header("Content-Type", "application/json")
-    req.data = json.dumps({"text": text}).encode("utf-8")
+    req = Request(base_url + "audio_query?" + urlencode({"speaker": "1", "text": text}))
     with urlopen(req) as res:
         query = json.loads(res.read().decode("utf-8"))
 
