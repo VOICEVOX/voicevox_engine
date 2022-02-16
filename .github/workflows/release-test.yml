@@ -43,11 +43,10 @@ jobs:
           mkdir -p download
           curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.target }}.7z.txt"
           cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ env.RELEASE_URL }}/%"
-          7z x "download/$(head -n1 download/list.txt)"
-          ls -l
-          ls -l *
+          7z x "download/$(head -n1 download/list.txt)" -odist/
 
       - name: Run
         shell: bash -euxv {0}
         run: |
+          cd dist
           ./run
