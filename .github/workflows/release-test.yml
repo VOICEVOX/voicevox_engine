@@ -36,13 +36,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Download
-        shell: bash
+        shell: bash -euxv {0}
         env:
           RELEASE_URL: ${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}
         run: |
-          set -eux
-
           mkdir -p download
-          curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.voicevox_engine_asset_name }}.7z.txt"
+          curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.target }}.7z.txt"
           cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ env.RELEASE_URL }}/%"
           7z x "download/$(head -n1 download/list.txt)" -otmp/
