@@ -77,7 +77,25 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                     str((core_dir / "core_gpu_x64_nvidia.dll").resolve(strict=True))
                 )
             except OSError:
-                return CDLL(str((core_dir / "core_cpu_x64.dll").resolve(strict=True)))
+                machine = platform.machine()
+                if machine == "x86_64" or machine == "x64" or machine == "AMD64":
+                    return CDLL(
+                        str((core_dir / "core_cpu_x64.dll").resolve(strict=True))
+                    )
+                elif machine == "i386" or machine == "x86":
+                    return CDLL(
+                        str((core_dir / "core_cpu_x86.dll").resolve(strict=True))
+                    )
+                elif machine == "armv7l":
+                    return CDLL(
+                        str((core_dir / "core_cpu_arm.dll").resolve(strict=True))
+                    )
+                elif machine == "aarch64":
+                    return CDLL(
+                        str((core_dir / "core_cpu_arm64.dll").resolve(strict=True))
+                    )
+                else:
+                    raise RuntimeError(f"このコンピュータのアーキテクチャ {machine} で利用可能なコアがありません")
     elif platform.system() == "Linux":
         if model_type == "libtorch":
             if use_gpu:
@@ -95,7 +113,21 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                     str((core_dir / "libcore_gpu_x64_nvidia.so").resolve(strict=True))
                 )
             except OSError:
-                return CDLL(str((core_dir / "libcore_cpu_x64.so").resolve(strict=True)))
+                machine = platform.machine()
+                if machine == "x86_64" or machine == "x64" or machine == "AMD64":
+                    return CDLL(
+                        str((core_dir / "libcore_cpu_x64.so").resolve(strict=True))
+                    )
+                elif machine == "armv7l":
+                    return CDLL(
+                        str((core_dir / "libcore_cpu_armhf.so").resolve(strict=True))
+                    )
+                elif machine == "aarch64":
+                    return CDLL(
+                        str((core_dir / "libcore_cpu_arm64.so").resolve(strict=True))
+                    )
+                else:
+                    raise RuntimeError(f"このコンピュータのアーキテクチャ {machine} で利用可能なコアがありません")
     elif platform.system() == "Darwin":
         if model_type == "onnxruntime":
             try:
