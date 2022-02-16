@@ -7,6 +7,7 @@ import time
 from io import BytesIO
 from pathlib import Path
 from subprocess import Popen
+from typing import Optional
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -20,11 +21,13 @@ def test_release_build(dist_dir: Path) -> None:
     if not run_file.exists():
         run_file = dist_dir / "run.exe"
 
-    # 起動
-    process = Popen([run_file.absolute()], cwd=dist_dir)
-    time.sleep(10)  # 待機
+    error: Optional[Exception] = None
 
     try:
+        # 起動
+        process = Popen([run_file.absolute()], cwd=dist_dir)
+        time.sleep(10)  # 待機
+
         # バージョン取得テスト
         req = Request(base_url + "version")
         with urlopen(req) as res:
@@ -56,10 +59,14 @@ def test_release_build(dist_dir: Path) -> None:
         print(stdout.decode("utf-8"))
         print("--engine stderr--")
         print(stderr.decode("utf-8"))
-        raise e
+
+        error = e
 
     # 停止
     process.terminate()
+
+    if error:
+        raise error
 
 
 if __name__ == "__main__":
