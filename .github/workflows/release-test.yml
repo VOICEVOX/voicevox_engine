@@ -1,0 +1,45 @@
+name: Test Release Build
+
+on:
+  push:
+  workflow_run:
+    workflows:
+      - test
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  REPO_URL: "https://github.com/VOICEVOX/voicevox_engine"
+  VERSION: "0.10.4"
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            target: linux-cpu
+          - os: ubuntu-18.04
+            target: linux-nvidia
+          - os: macos-10.15
+            target: macos-x64
+          - os: windows-2019
+            target: windows-cpu
+          - os: windows-2019
+            target: windows-nvidia
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download
+        shell: bash
+        env:
+          RELEASE_URL: ${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}
+        run: |
+          mkdir -p download
+          curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.voicevox_engine_asset_name }}.7z.txt"
+          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ env.RELEASE_URL }}/%"
+          7z x "download/$(head -n1 download/list.txt)" -otmp/
