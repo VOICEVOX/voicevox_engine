@@ -61,6 +61,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install libsndfile1
 
+      - name: Install requirements
+        run: |
+          pip install -r requirements-test.txt
+
       - name: Test
         shell: bash
         run: python build_util/test_release_build.py --dist_dir dist/
