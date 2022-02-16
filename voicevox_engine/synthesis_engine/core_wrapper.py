@@ -37,18 +37,25 @@ def check_core_type(core_dir: Path) -> Optional[str]:
     if platform.system() == "Windows":
         if (core_dir / "core.dll").is_file() or (core_dir / "core_cpu.dll").is_file():
             return "libtorch"
-        elif (core_dir / "core_gpu_x64_nvidia.dll").is_file() or (
-            core_dir / "core_cpu_x64.dll"
-        ).is_file():
+        elif (
+            (core_dir / "core_gpu_x64_nvidia.dll").is_file()
+            or (core_dir / "core_cpu_x64.dll").is_file()
+            or (core_dir / "core_cpu_x86.dll").is_file()
+            or (core_dir / "core_cpu_arm.dll").is_file()
+            or (core_dir / "core_cpu_arm64.dll").is_file()
+        ):
             return "onnxruntime"
     elif platform.system() == "Linux":
         if (core_dir / "libcore.so").is_file() or (
             core_dir / "libcore_cpu.so"
         ).is_file():
             return "libtorch"
-        elif (core_dir / "libcore_gpu_x64_nvidia.so").is_file() or (
-            core_dir / "libcore_cpu_x64.so"
-        ).is_file():
+        elif (
+            (core_dir / "libcore_gpu_x64_nvidia.so").is_file()
+            or (core_dir / "libcore_cpu_x64.so").is_file()
+            or (core_dir / "libcore_cpu_armhf.so").is_file()
+            or (core_dir / "libcore_cpu_arm64.so").is_file()
+        ):
             return "onnxruntime"
     elif platform.system() == "Darwin":
         if (core_dir / "libcore_cpu_universal2.dylib").is_file():
