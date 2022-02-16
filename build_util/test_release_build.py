@@ -16,15 +16,12 @@ base_url = "http://localhost:50021/"
 
 
 def test_release_build(dist_dir: Path) -> None:
-    if (dist_dir / "run").exists():
-        run_file = "./run"
-    elif (dist_dir / "run.exe").exists():
-        run_file = "./run.exe"
-    else:
-        raise RuntimeError("run file not found")
+    run_file = dist_dir / "run"
+    if not run_file.exists():
+        run_file = dist_dir / "run.exe"
 
     # 起動
-    process = Popen([run_file], cwd=dist_dir)
+    process = Popen([run_file.absolute()], cwd=dist_dir)
     time.sleep(10)  # 待機
 
     try:
