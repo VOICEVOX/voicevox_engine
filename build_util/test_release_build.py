@@ -16,9 +16,9 @@ base_url = "http://localhost:50021/"
 
 
 def test_release_build(dist_dir: Path) -> None:
-    # # 起動
-    # process = Popen(["./run"], cwd=dist_dir)
-    # time.sleep(10)  # 待機
+    # 起動
+    process = Popen(["./run"], cwd=dist_dir)
+    time.sleep(10)  # 待機
 
     # バージョン取得テスト
     req = Request(base_url + "version")
