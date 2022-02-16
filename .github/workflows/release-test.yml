@@ -4,14 +4,14 @@ on:
   push:
   workflow_run:
     workflows:
-      - test
+      - build
     types:
       - completed
   workflow_dispatch:
 
 env:
   REPO_URL: "https://github.com/VOICEVOX/voicevox_engine"
-  VERSION: "0.10.4"
+  VERSION: ${{ github.event.release.tag_name }}
 
 jobs:
   test:
@@ -52,12 +52,12 @@ jobs:
           mv ${{ matrix.target }} dist/
 
       - name: chmod +x
-        if: startsWith(${{ matrix.target }}, "linux") || startsWith(${{ matrix.target }}, "macos")
+        if: startsWith(matrix.target, "linux") || startsWith(matrix.target, "macos")
         shell: bash
         run: chmod +x dist/run
 
       - name: Install libsndfile1
-        if: startsWith(${{ matrix.target }}, "linux")
+        if: startsWith(matrix.target, "linux")
         run: |
           sudo apt-get update
           sudo apt-get install libsndfile1
