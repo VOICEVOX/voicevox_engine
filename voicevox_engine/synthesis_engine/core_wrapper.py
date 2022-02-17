@@ -66,7 +66,7 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     model_type = check_core_type(core_dir)
     if model_type is None:
-        raise RuntimeError("コアが見つかりません")
+        raise RuntimeError("コアのタイプを判別できませんでした")
     if platform.system() == "Windows":
         if model_type == "libtorch":
             if use_gpu:
