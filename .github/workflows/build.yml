@@ -64,6 +64,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # FIXME: Nuitka cannot build with setuptools>=60.7.0
+      # https://github.com/Nuitka/Nuitka/issues/1406
+      - name: Downgrade setuptools
+        shell: bash
+        run: pip install setuptools==60.6.0
+
       - name: Install Python dependencies
         shell: bash
         run: |
