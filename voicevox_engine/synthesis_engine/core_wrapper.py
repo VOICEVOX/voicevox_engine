@@ -2,6 +2,7 @@ import os
 import platform
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
@@ -33,118 +34,203 @@ def load_runtime_lib(runtime_dirs: List[Path]):
             pass
 
 
-def check_core_type(core_dir: Path) -> Optional[str]:
-    if platform.system() == "Windows":
-        if (core_dir / "core.dll").is_file() or (core_dir / "core_cpu.dll").is_file():
-            return "libtorch"
-        elif (
-            (core_dir / "core_gpu_x64_nvidia.dll").is_file()
-            or (core_dir / "core_cpu_x64.dll").is_file()
-            or (core_dir / "core_cpu_x86.dll").is_file()
-            or (core_dir / "core_cpu_arm.dll").is_file()
-            or (core_dir / "core_cpu_arm64.dll").is_file()
+@dataclass(frozen=True)
+class CoreInfo:
+    name: str
+    platform: str
+    arch: str
+    core_type: str
+    is_gpu_core: bool
+
+
+CORE_INFOS = [
+    # Windows
+    CoreInfo(
+        name="core.dll",
+        platform="Windows",
+        arch="x86_64",
+        core_type="libtorch",
+        is_gpu_core=True,
+    ),
+    CoreInfo(
+        name="core_cpu.dll",
+        platform="Windows",
+        arch="x86_64",
+        core_type="libtorch",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="core_gpu_x64_nvidia.dll",
+        platform="Windows",
+        arch="x86_64",
+        core_type="onnxruntime",
+        is_gpu_core=True,
+    ),
+    CoreInfo(
+        name="core_cpu_x64.dll",
+        platform="Windows",
+        arch="x86_64",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="core_cpu_x86.dll",
+        platform="Windows",
+        arch="x86",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="core_cpu_arm.dll",
+        platform="Windows",
+        arch="armv7l",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="core_cpu_arm64.dll",
+        platform="Windows",
+        arch="aarch64",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    # Linux
+    CoreInfo(
+        name="libcore.so",
+        platform="Linux",
+        arch="x86_64",
+        core_type="libtorch",
+        is_gpu_core=True,
+    ),
+    CoreInfo(
+        name="libcore_cpu.so",
+        platform="Linux",
+        arch="x86_64",
+        core_type="libtorch",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="libcore_gpu_x64_nvidia.so",
+        platform="Linux",
+        arch="x86_64",
+        core_type="onnxruntime",
+        is_gpu_core=True,
+    ),
+    CoreInfo(
+        name="libcore_cpu_x64.so",
+        platform="Linux",
+        arch="x86_64",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="libcore_cpu_armhf.so",
+        platform="Linux",
+        arch="armv7l",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    CoreInfo(
+        name="libcore_cpu_arm64.so",
+        platform="Linux",
+        arch="aarch64",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+    # macOS
+    CoreInfo(
+        name="libcore_cpu_universal2.dylib",
+        platform="Darwin",
+        arch="universal",
+        core_type="onnxruntime",
+        is_gpu_core=False,
+    ),
+]
+
+
+def get_arch_name() -> Optional[str]:
+    """
+    platform.machine() が特定のアーキテクチャ上で複数パターンの文字列を返し得るので、
+    一意な文字列に変換する
+    サポート外のアーキテクチャである場合、None を返す
+    """
+    machine = platform.machine()
+    if machine == "x86_64" or machine == "x64" or machine == "AMD64":
+        return "x86_64"
+    elif machine == "i386" or machine == "x86":
+        return "x86"
+    elif machine in ["armv7l", "aarch64"]:
+        return machine
+    else:
+        return None
+
+
+def get_core_name(
+    arch_name: str, platform_name: str, model_type: str, is_gpu_core: bool
+) -> Optional[str]:
+    if platform_name == "Darwin":
+        if (not is_gpu_core) and (arch_name == "x86_64" or arch_name == "aarch64"):
+            arch_name = "universal"
+        else:
+            return None
+    for core_info in CORE_INFOS:
+        if (
+            core_info.platform == platform_name
+            and core_info.arch == arch_name
+            and core_info.core_type == model_type
+            and core_info.is_gpu_core == is_gpu_core
         ):
-            return "onnxruntime"
-    elif platform.system() == "Linux":
-        if (core_dir / "libcore.so").is_file() or (
-            core_dir / "libcore_cpu.so"
-        ).is_file():
-            return "libtorch"
-        elif (
-            (core_dir / "libcore_gpu_x64_nvidia.so").is_file()
-            or (core_dir / "libcore_cpu_x64.so").is_file()
-            or (core_dir / "libcore_cpu_armhf.so").is_file()
-            or (core_dir / "libcore_cpu_arm64.so").is_file()
-        ):
-            return "onnxruntime"
-    elif platform.system() == "Darwin":
-        if (core_dir / "libcore_cpu_universal2.dylib").is_file():
-            return "onnxruntime"
+            return core_info.name
     return None
+
+
+def get_suitable_core_name(model_type: str, is_gpu_core: bool) -> Optional[str]:
+    arch_name = get_arch_name()
+    if arch_name is None:
+        return None
+    platform_name = platform.system()
+    return get_core_name(arch_name, platform_name, model_type, is_gpu_core)
+
+
+def check_core_type(core_dir: Path) -> Optional[str]:
+    libtorch_core_names = [
+        get_suitable_core_name("libtorch", is_gpu_core=True),
+        get_suitable_core_name("libtorch", is_gpu_core=False),
+    ]
+    onnxruntime_core_names = [
+        get_suitable_core_name("onnxruntime", is_gpu_core=True),
+        get_suitable_core_name("onnxruntime", is_gpu_core=False),
+    ]
+    if any([(core_dir / name).is_file() for name in libtorch_core_names if name]):
+        return "libtorch"
+    elif any([(core_dir / name).is_file() for name in onnxruntime_core_names if name]):
+        return "onnxruntime"
+    else:
+        return None
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     model_type = check_core_type(core_dir)
     if model_type is None:
-        raise RuntimeError("コアのタイプを判別できませんでした")
-    if platform.system() == "Windows":
-        if model_type == "libtorch":
-            if use_gpu:
-                try:
-                    return CDLL(str((core_dir / "core.dll").resolve(strict=True)))
-                except OSError:
-                    pass
+        raise RuntimeError("コアが見つかりません")
+    if use_gpu or model_type == "onnxruntime":
+        core_name = get_suitable_core_name(model_type, is_gpu_core=True)
+        if core_name:
             try:
-                return CDLL(str((core_dir / "core_cpu.dll").resolve(strict=True)))
-            except OSError:
-                return CDLL(str((core_dir / "core.dll").resolve(strict=True)))
-        elif model_type == "onnxruntime":
-            try:
-                return CDLL(
-                    str((core_dir / "core_gpu_x64_nvidia.dll").resolve(strict=True))
-                )
-            except OSError:
-                machine = platform.machine()
-                if machine == "x86_64" or machine == "x64" or machine == "AMD64":
-                    return CDLL(
-                        str((core_dir / "core_cpu_x64.dll").resolve(strict=True))
-                    )
-                elif machine == "i386" or machine == "x86":
-                    return CDLL(
-                        str((core_dir / "core_cpu_x86.dll").resolve(strict=True))
-                    )
-                elif machine == "armv7l":
-                    return CDLL(
-                        str((core_dir / "core_cpu_arm.dll").resolve(strict=True))
-                    )
-                elif machine == "aarch64":
-                    return CDLL(
-                        str((core_dir / "core_cpu_arm64.dll").resolve(strict=True))
-                    )
-                else:
-                    raise RuntimeError(f"このコンピュータのアーキテクチャ {machine} で利用可能なコアがありません")
-    elif platform.system() == "Linux":
-        if model_type == "libtorch":
-            if use_gpu:
-                try:
-                    return CDLL(str((core_dir / "libcore.so").resolve(strict=True)))
-                except OSError:
-                    pass
-            try:
-                return CDLL(str((core_dir / "libcore_cpu.so").resolve(strict=True)))
-            except OSError:
-                return CDLL(str((core_dir / "libcore.so").resolve(strict=True)))
-        elif model_type == "onnxruntime":
-            try:
-                return CDLL(
-                    str((core_dir / "libcore_gpu_x64_nvidia.so").resolve(strict=True))
-                )
-            except OSError:
-                machine = platform.machine()
-                if machine == "x86_64" or machine == "x64" or machine == "AMD64":
-                    return CDLL(
-                        str((core_dir / "libcore_cpu_x64.so").resolve(strict=True))
-                    )
-                elif machine == "armv7l":
-                    return CDLL(
-                        str((core_dir / "libcore_cpu_armhf.so").resolve(strict=True))
-                    )
-                elif machine == "aarch64":
-                    return CDLL(
-                        str((core_dir / "libcore_cpu_arm64.so").resolve(strict=True))
-                    )
-                else:
-                    raise RuntimeError(f"このコンピュータのアーキテクチャ {machine} で利用可能なコアがありません")
-    elif platform.system() == "Darwin":
-        if model_type == "onnxruntime":
-            try:
-                return CDLL(
-                    str(
-                        (core_dir / "libcore_cpu_universal2.dylib").resolve(strict=True)
-                    )
-                )
+                return CDLL(str((core_dir / core_name).resolve(strict=True)))
             except OSError:
                 pass
+    core_name = get_suitable_core_name(model_type, is_gpu_core=False)
+    if core_name:
+        try:
+            return CDLL(str((core_dir / core_name).resolve(strict=True)))
+        except OSError:
+            if model_type == "libtorch":
+                core_name = get_suitable_core_name(model_type, is_gpu_core=True)
+                if core_name:
+                    return CDLL(str((core_dir / core_name).resolve(strict=True)))
+    else:
+        raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
     raise RuntimeError("コアの読み込みに失敗しました")
 
 
