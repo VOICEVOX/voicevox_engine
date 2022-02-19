@@ -237,7 +237,7 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 
 ```bash
 # モックでサーバー起動
-python run.py
+python run.py --enable_mock
 ```
 
 ### CPU スレッド数を指定する
