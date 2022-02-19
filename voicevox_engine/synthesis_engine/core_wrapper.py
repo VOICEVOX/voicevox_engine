@@ -224,14 +224,17 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError:
+        except OSError as err:
             if model_type == "libtorch":
                 core_name = get_suitable_core_name(model_type, is_gpu_core=True)
                 if core_name:
-                    return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                    try:
+                        return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                    except OSError as err_:
+                        err = err_
+            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
     else:
         raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
-    raise RuntimeError("コアの読み込みに失敗しました")
 
 
 class CoreWrapper:
