@@ -48,28 +48,28 @@ CORE_INFOS = [
     CoreInfo(
         name="core.dll",
         platform="Windows",
-        arch="x86_64",
+        arch="x64",
         core_type="libtorch",
         is_gpu_core=True,
     ),
     CoreInfo(
         name="core_cpu.dll",
         platform="Windows",
-        arch="x86_64",
+        arch="x64",
         core_type="libtorch",
         is_gpu_core=False,
     ),
     CoreInfo(
         name="core_gpu_x64_nvidia.dll",
         platform="Windows",
-        arch="x86_64",
+        arch="x64",
         core_type="onnxruntime",
         is_gpu_core=True,
     ),
     CoreInfo(
         name="core_cpu_x64.dll",
         platform="Windows",
-        arch="x86_64",
+        arch="x64",
         core_type="onnxruntime",
         is_gpu_core=False,
     ),
@@ -98,28 +98,28 @@ CORE_INFOS = [
     CoreInfo(
         name="libcore.so",
         platform="Linux",
-        arch="x86_64",
+        arch="x64",
         core_type="libtorch",
         is_gpu_core=True,
     ),
     CoreInfo(
         name="libcore_cpu.so",
         platform="Linux",
-        arch="x86_64",
+        arch="x64",
         core_type="libtorch",
         is_gpu_core=False,
     ),
     CoreInfo(
         name="libcore_gpu_x64_nvidia.so",
         platform="Linux",
-        arch="x86_64",
+        arch="x64",
         core_type="onnxruntime",
         is_gpu_core=True,
     ),
     CoreInfo(
         name="libcore_cpu_x64.so",
         platform="Linux",
-        arch="x86_64",
+        arch="x64",
         core_type="onnxruntime",
         is_gpu_core=False,
     ),
@@ -156,7 +156,7 @@ def get_arch_name() -> Optional[str]:
     """
     machine = platform.machine()
     if machine == "x86_64" or machine == "x64" or machine == "AMD64":
-        return "x86_64"
+        return "x64"
     elif machine == "i386" or machine == "x86":
         return "x86"
     elif machine in ["armv7l", "aarch64"]:
@@ -169,7 +169,7 @@ def get_core_name(
     arch_name: str, platform_name: str, model_type: str, is_gpu_core: bool
 ) -> Optional[str]:
     if platform_name == "Darwin":
-        if (not is_gpu_core) and (arch_name == "x86_64" or arch_name == "aarch64"):
+        if (not is_gpu_core) and (arch_name == "x64" or arch_name == "aarch64"):
             arch_name = "universal"
         else:
             return None
