@@ -333,7 +333,7 @@ python -m nuitka \
     --include-data-file=presets.yaml=./ \
     --include-data-file=user.dic=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
-    --include-data-file=C:/path/to/libtorch/*.dll=./ \
+    --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
