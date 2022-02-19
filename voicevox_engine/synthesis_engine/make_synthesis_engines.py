@@ -4,6 +4,7 @@ import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from ..utility import engine_root
 from .core_wrapper import CoreWrapper, load_runtime_lib
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
@@ -42,12 +43,7 @@ def make_synthesis_engines(
             + "( The library leaves the decision to the synthesis runtime )",
             file=sys.stderr,
         )
-    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
-    # https://nuitka.net/doc/user-manual.html#detecting-nuitka-at-run-time
-    if "__compiled__" in globals():
-        root_dir = Path(sys.argv[0]).parent
-    else:
-        root_dir = Path(__file__).parents[2]
+    root_dir = engine_root()
 
     if voicevox_dir is not None:
         if voicelib_dirs is not None:

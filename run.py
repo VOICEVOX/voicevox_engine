@@ -39,7 +39,11 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
-from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility import (
+    ConnectBase64WavesException,
+    connect_base64_waves,
+    engine_root,
+)
 
 
 def b64encode_str(s):
@@ -49,7 +53,7 @@ def b64encode_str(s):
 def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase], latest_core_version: str
 ) -> FastAPI:
-    root_dir = Path(__file__).parent
+    root_dir = engine_root()
 
     default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
@@ -489,20 +493,25 @@ def generate_app(
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
-            policy = Path(f"speaker_info/{speaker_uuid}/policy.md").read_text("utf-8")
+            policy = (root_dir / f"speaker_info/{speaker_uuid}/policy.md").read_text(
+                "utf-8"
+            )
             portrait = b64encode_str(
-                Path(f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
+                (root_dir / f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
             )
             style_infos = []
             for style in speaker["styles"]:
                 id = style["id"]
                 icon = b64encode_str(
-                    Path(f"speaker_info/{speaker_uuid}/icons/{id}.png").read_bytes()
+                    (
+                        root_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
+                    ).read_bytes()
                 )
                 voice_samples = [
                     b64encode_str(
-                        Path(
-                            "speaker_info/{}/voice_samples/{}_{}.wav".format(
+                        (
+                            root_dir
+                            / "speaker_info/{}/voice_samples/{}_{}.wav".format(
                                 speaker_uuid, id, str(j + 1).zfill(3)
                             )
                         ).read_bytes()
