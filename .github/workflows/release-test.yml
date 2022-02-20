@@ -24,7 +24,7 @@ env:
 
 jobs:
   test:
-    if: env.VERSION != ''  # masterにpushされたときもbuild workflowが実行されるので迂回
+    if: ${{ env.VERSION != '' }} # masterにpushされたときもbuild workflowが実行されるので迂回
     strategy:
       fail-fast: false
       matrix:
