@@ -5,6 +5,7 @@ import base64
 import json
 import multiprocessing
 import os
+import traceback
 
 # import sys
 import zipfile
@@ -19,6 +20,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
+from pydantic import ValidationError
 from starlette.responses import FileResponse
 
 # from voicevox_engine.cancellable_engine import CancellableEngine
@@ -39,6 +41,7 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
+from voicevox_engine.user_dict import apply_word, user_dict_startup_processing
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -85,6 +88,10 @@ def generate_app(
     #     if args.enable_cancellable_synthesis:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
+
+    @app.on_event("startup")
+    def apply_user_dict():
+        user_dict_startup_processing()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
@@ -529,6 +536,31 @@ def generate_app(
 
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
+
+    @app.post("/user_dict", tags=["その他"])
+    def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
+        """
+        ユーザ辞書に言葉を追加します。
+
+        Parameters
+        ----------
+        surface : str
+            言葉の表層形
+        pronunciation: str
+            言葉の発音（カタカナ）
+        accent_type: int
+            アクセント型（音が下がる場所を指す）
+        """
+        try:
+            apply_word(
+                surface=surface, pronunciation=pronunciation, accent_type=accent_type
+            )
+            return Response(status_code=204)
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
