@@ -543,7 +543,7 @@ def generate_app(
         return ret_data
 
     @app.get("/user_dict", response_model=Dict[int, UserDictWord], tags=["ユーザー辞書"])
-    def return_user_dict_words():
+    def get_user_dict_words():
         """
         ユーザ辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
