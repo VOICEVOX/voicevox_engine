@@ -34,6 +34,7 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
     SupportedDevicesInfo,
+    UserDictWord,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -41,7 +42,11 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
-from voicevox_engine.user_dict import apply_word, user_dict_startup_processing
+from voicevox_engine.user_dict import (
+    apply_word,
+    read_dict,
+    user_dict_startup_processing,
+)
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -537,7 +542,24 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.post("/user_dict", tags=["その他"])
+    @app.get("/user_dict", response_model=Dict[int, UserDictWord], tags=["ユーザー辞書"])
+    def get_user_dict_words():
+        """
+        ユーザ辞書に登録されている単語の一覧を返します。
+        単語の表層形(surface)は正規化済みの物を返します。
+
+        Returns
+        -------
+        Dict[int, UserDictWord]
+            単語のIDとその詳細
+        """
+        try:
+            return read_dict().words
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
+
+    @app.post("/user_dict", status_code=204, tags=["ユーザー辞書"])
     def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
