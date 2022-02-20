@@ -24,7 +24,7 @@ env:
 
 jobs:
   test:
-    if: env.VERSION != ''  # masterにpushされたときもbuild workflowが実行されるので迂回
+    if: github.event.inputs.version != '' || github.event.release.tag_name != '' # env.VERSIONはここでは使えない
     strategy:
       fail-fast: false
       matrix:
