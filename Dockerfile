@@ -183,7 +183,9 @@ COPY --from=compile-python-env /opt/python /opt/python
 ADD ./requirements.txt /tmp/
 RUN <<EOF
     # Install requirements
-    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools wheel
+    # FIXME: Nuitka cannot build with setuptools>=60.7.0
+    # https://github.com/Nuitka/Nuitka/issues/1406
+    gosu user /opt/python/bin/python3 -m pip install --upgrade pip setuptools==60.6.0 wheel
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
 EOF
 

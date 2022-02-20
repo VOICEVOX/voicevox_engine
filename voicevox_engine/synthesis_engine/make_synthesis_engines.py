@@ -35,8 +35,7 @@ def make_synthesis_engines(
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
         Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     enable_mock: bool, optional, default=True
-        コア読み込みに失敗したときにエラーを送出するかどうか
-        Falseだと代わりにmockが使用される
+        コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     """
     if cpu_num_threads == 0:
         print(
