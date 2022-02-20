@@ -7,10 +7,20 @@ on:
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      version:
+        description: "テストしたいタグ名"
+        required: true
+      repo_url:
+        description: "リポジトリのURL（省略可能）"
+        required: false
 
 env:
-  REPO_URL: "https://github.com/VOICEVOX/voicevox_engine"
-  VERSION: ${{ github.event.release.tag_name }}
+  REPO_URL:
+    |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
+    ${{ github.event.inputs.repo_url || format('{0}/{1}', github.server_url, github.repository) }}
+  VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
+    ${{ github.event.inputs.version || github.event.release.tag_name }}
 
 jobs:
   test:
