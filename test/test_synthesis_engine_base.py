@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
@@ -70,6 +70,104 @@ def decode_mock(
     return numpy.array(result)
 
 
+def koreha_arimasuka_base_expected():
+    return [
+        AccentPhrase(
+            moras=[
+                Mora(
+                    text="コ",
+                    consonant="k",
+                    consonant_length=2.44,
+                    vowel="o",
+                    vowel_length=2.88,
+                    pitch=4.38,
+                ),
+                Mora(
+                    text="レ",
+                    consonant="r",
+                    consonant_length=3.06,
+                    vowel="e",
+                    vowel_length=1.88,
+                    pitch=4.0,
+                ),
+                Mora(
+                    text="ワ",
+                    consonant="w",
+                    consonant_length=3.62,
+                    vowel="a",
+                    vowel_length=1.44,
+                    pitch=4.19,
+                ),
+            ],
+            accent=3,
+            pause_mora=None,
+            is_interrogative=False,
+        ),
+        AccentPhrase(
+            moras=[
+                Mora(
+                    text="ア",
+                    consonant=None,
+                    consonant_length=None,
+                    vowel="a",
+                    vowel_length=1.44,
+                    pitch=1.44,
+                ),
+                Mora(
+                    text="リ",
+                    consonant="r",
+                    consonant_length=3.06,
+                    vowel="i",
+                    vowel_length=2.31,
+                    pitch=4.44,
+                ),
+                Mora(
+                    text="マ",
+                    consonant="m",
+                    consonant_length=2.62,
+                    vowel="a",
+                    vowel_length=1.44,
+                    pitch=3.12,
+                ),
+                Mora(
+                    text="ス",
+                    consonant="s",
+                    consonant_length=3.19,
+                    vowel="U",
+                    vowel_length=1.38,
+                    pitch=0.0,
+                ),
+                Mora(
+                    text="カ",
+                    consonant="k",
+                    consonant_length=2.44,
+                    vowel="a",
+                    vowel_length=1.44,
+                    pitch=2.94,
+                ),
+            ],
+            accent=3,
+            pause_mora=None,
+            is_interrogative=False,
+        ),
+    ]
+
+
+def create_mock_query(accent_phrases):
+    return AudioQuery(
+        accent_phrases=accent_phrases,
+        speedScale=1,
+        pitchScale=0,
+        intonationScale=1,
+        volumeScale=1,
+        prePhonemeLength=0.1,
+        postPhonemeLength=0.1,
+        outputSamplingRate=24000,
+        outputStereo=False,
+        kana="",
+    )
+
+
 class TestSynthesisEngineBase(TestCase):
     def setUp(self):
         super().setUp()
@@ -79,106 +177,48 @@ class TestSynthesisEngineBase(TestCase):
             decode_forwarder=Mock(side_effect=decode_mock),
             speakers="",
         )
+        self.synthesis_engine._synthesis_impl = Mock()
 
-    def create_accent_phrases_test_base(
-        self, text: str, expected: List[AccentPhrase], enable_interrogative: bool
-    ):
-        actual = self.synthesis_engine.create_accent_phrases(
-            text, 1, enable_interrogative
-        )
+    def create_accent_phrases_test_base(self, text: str, expected: List[AccentPhrase]):
+        actual = self.synthesis_engine.create_accent_phrases(text, 1)
         self.assertEqual(
             expected,
             actual,
-            "case(text:"
-            + text
-            + ",enable_interrogative:"
-            + str(enable_interrogative)
-            + ")",
+            "case(text:" + text + ")",
+        )
+
+    def create_synthesis_test_base(
+        self,
+        text: str,
+        expected: List[AccentPhrase],
+        enable_interrogative_upspeak: bool,
+    ):
+        """音声合成時に疑問文モーラ処理を行っているかどうかを検証
+        (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
+        """
+        accent_phrases = self.synthesis_engine.create_accent_phrases(text, 1)
+        query = create_mock_query(accent_phrases=accent_phrases)
+        self.synthesis_engine.synthesis(
+            query, 0, enable_interrogative_upspeak=enable_interrogative_upspeak
+        )
+        # _synthesis_implの第一引数に与えられたqueryを検証
+        actual = self.synthesis_engine._synthesis_impl.call_args[0][0].accent_phrases
+
+        self.assertEqual(
+            expected,
+            actual,
+            "case(text:" + text + ")",
         )
 
     def test_create_accent_phrases(self):
-        def koreha_arimasuka_base_expected():
-            return [
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="コ",
-                            consonant="k",
-                            consonant_length=2.44,
-                            vowel="o",
-                            vowel_length=2.88,
-                            pitch=4.38,
-                        ),
-                        Mora(
-                            text="レ",
-                            consonant="r",
-                            consonant_length=3.06,
-                            vowel="e",
-                            vowel_length=1.88,
-                            pitch=4.0,
-                        ),
-                        Mora(
-                            text="ワ",
-                            consonant="w",
-                            consonant_length=3.62,
-                            vowel="a",
-                            vowel_length=1.44,
-                            pitch=4.19,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                    is_interrogative=False,
-                ),
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ア",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="a",
-                            vowel_length=1.44,
-                            pitch=1.44,
-                        ),
-                        Mora(
-                            text="リ",
-                            consonant="r",
-                            consonant_length=3.06,
-                            vowel="i",
-                            vowel_length=2.31,
-                            pitch=4.44,
-                        ),
-                        Mora(
-                            text="マ",
-                            consonant="m",
-                            consonant_length=2.62,
-                            vowel="a",
-                            vowel_length=1.44,
-                            pitch=3.12,
-                        ),
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=3.19,
-                            vowel="U",
-                            vowel_length=1.38,
-                            pitch=0.0,
-                        ),
-                        Mora(
-                            text="カ",
-                            consonant="k",
-                            consonant_length=2.44,
-                            vowel="a",
-                            vowel_length=1.44,
-                            pitch=2.94,
-                        ),
-                    ],
-                    accent=3,
-                    pause_mora=None,
-                    is_interrogative=False,
-                ),
-            ]
+        """accent_phrasesの作成時では疑問文モーラ処理を行わない
+        (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
+        """
+        expected = koreha_arimasuka_base_expected()
+        expected[-1].is_interrogative = True
+        self.create_accent_phrases_test_base(text="これはありますか？", expected=expected)
 
+    def test_synthesis_interrogative(self):
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
         expected[-1].moras += [
@@ -191,24 +231,25 @@ class TestSynthesisEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="これはありますか？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = koreha_arimasuka_base_expected()
-        self.create_accent_phrases_test_base(
+        expected[-1].is_interrogative = True
+        self.create_synthesis_test_base(
             text="これはありますか？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         expected = koreha_arimasuka_base_expected()
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="これはありますか",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         def nn_base_expected():
@@ -231,10 +272,10 @@ class TestSynthesisEngineBase(TestCase):
             ]
 
         expected = nn_base_expected()
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="ん",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = nn_base_expected()
@@ -249,17 +290,18 @@ class TestSynthesisEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="ん？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = nn_base_expected()
-        self.create_accent_phrases_test_base(
+        expected[-1].is_interrogative = True
+        self.create_synthesis_test_base(
             text="ん？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         def ltu_base_expected():
@@ -282,25 +324,26 @@ class TestSynthesisEngineBase(TestCase):
             ]
 
         expected = ltu_base_expected()
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="っ",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = ltu_base_expected()
         expected[-1].is_interrogative = True
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="っ？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = ltu_base_expected()
-        self.create_accent_phrases_test_base(
+        expected[-1].is_interrogative = True
+        self.create_synthesis_test_base(
             text="っ？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )
 
         def su_base_expected():
@@ -323,10 +366,10 @@ class TestSynthesisEngineBase(TestCase):
             ]
 
         expected = su_base_expected()
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="す",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = su_base_expected()
@@ -341,15 +384,16 @@ class TestSynthesisEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_accent_phrases_test_base(
+        self.create_synthesis_test_base(
             text="す？",
             expected=expected,
-            enable_interrogative=True,
+            enable_interrogative_upspeak=True,
         )
 
         expected = su_base_expected()
-        self.create_accent_phrases_test_base(
+        expected[-1].is_interrogative = True
+        self.create_synthesis_test_base(
             text="す？",
             expected=expected,
-            enable_interrogative=False,
+            enable_interrogative_upspeak=False,
         )

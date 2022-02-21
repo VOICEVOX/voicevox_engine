@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from typing.io import IO
 
 import numpy as np
@@ -22,8 +22,17 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         super().__init__()
 
-        self.speakers = kwargs["speakers"]
+        self._speakers = kwargs["speakers"]
+        self._supported_devices = kwargs["supported_devices"]
         self.default_sampling_rate = 24000
+
+    @property
+    def speakers(self) -> str:
+        return self._speakers
+
+    @property
+    def supported_devices(self) -> Optional[str]:
+        return self._supported_devices
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -65,7 +74,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
 

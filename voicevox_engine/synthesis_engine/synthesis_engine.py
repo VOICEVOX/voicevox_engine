@@ -13,9 +13,8 @@ from voicevox_engine.experimental.guided_extractor import (
     resample_ts,
 )
 from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
-
-from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
 from ..kana_parser import create_kana
+from ..acoustic_feature_extractor import OjtPhoneme
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
 
@@ -143,6 +142,7 @@ class SynthesisEngine(SynthesisEngineBase):
         yukarin_sa_forwarder,
         decode_forwarder,
         speakers: str,
+        supported_devices: Optional[str] = None,
     ):
         """
         yukarin_s_forwarder: 音素列から、音素ごとの長さを求める関数
@@ -171,14 +171,27 @@ class SynthesisEngine(SynthesisEngineBase):
             return: 音声波形
 
         speakers: coreから取得したspeakersに関するjsonデータの文字列
+
+        supported_devices:
+            coreから取得した対応デバイスに関するjsonデータの文字列
+            Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
         self.yukarin_s_forwarder = yukarin_s_forwarder
         self.yukarin_sa_forwarder = yukarin_sa_forwarder
         self.decode_forwarder = decode_forwarder
 
-        self.speakers = speakers
+        self._speakers = speakers
+        self._supported_devices = supported_devices
         self.default_sampling_rate = 24000
+
+    @property
+    def speakers(self) -> str:
+        return self._speakers
+
+    @property
+    def supported_devices(self) -> Optional[str]:
+        return self._supported_devices
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -365,7 +378,7 @@ class SynthesisEngine(SynthesisEngineBase):
 
         return accent_phrases
 
-    def synthesis(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
@@ -379,9 +392,6 @@ class SynthesisEngine(SynthesisEngineBase):
         wave : numpy.ndarray
             音声合成結果
         """
-
-        # TODO: rateを200にする意味がないので、テスト実装後リファクタする
-        rate = 200
 
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
@@ -406,16 +416,11 @@ class SynthesisEngine(SynthesisEngineBase):
             ]
             + [query.postPhonemeLength]
         )
-        # floatにキャストし、細かな値を四捨五入する
+        # floatにキャスト
         phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
-        phoneme_length = numpy.round(phoneme_length * rate) / rate
 
         # lengthにSpeed Scale(話速)を適用する
         phoneme_length /= query.speedScale
-
-        # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装
-        pre_padding_length = 0.4
-        phoneme_length[0] += pre_padding_length
 
         # pitch
         # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
@@ -439,6 +444,7 @@ class SynthesisEngine(SynthesisEngineBase):
 
         # forward decode
         # 音素の長さにrateを掛け、intにキャストする
+        rate = 24000 / 256
         phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
         # Phoneme IDを音素の長さ分繰り返す
@@ -455,10 +461,6 @@ class SynthesisEngine(SynthesisEngineBase):
         array[numpy.arange(len(phoneme)), phoneme] = 1
         phoneme = array
 
-        # f0とphonemeをそれぞれデコード用にリサンプリングする
-        f0 = SamplingData(array=f0, rate=rate).resample(24000 / 256)
-        phoneme = SamplingData(array=phoneme, rate=rate).resample(24000 / 256)
-
         # 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
         wave = self.decode_forwarder(
             length=phoneme.shape[0],
@@ -467,9 +469,6 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme=phoneme,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
         )
-
-        # TODO: 前の無音を少し長くすると最初のワードが途切れないワークアラウンド実装の後処理
-        wave = wave[int(self.default_sampling_rate * pre_padding_length) :]
 
         # volume: ゲイン適用
         wave *= query.volumeScale

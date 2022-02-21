@@ -1,15 +1,9 @@
 import re
-import sys
 from dataclasses import dataclass
 from itertools import chain
 from typing import Dict, List, Optional
 
 import pyopenjtalk
-
-try:
-    pyopenjtalk.set_user_dict("user.dic")
-except Exception:
-    print("Warning: Failed to read the user dictionary.", file=sys.stderr)
 
 
 @dataclass

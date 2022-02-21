@@ -1,20 +1,20 @@
 # VOICEVOX ENGINE
 
-[![build](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build.yml)
-[![releases](https://img.shields.io/github/v/release/Hiroshiba/voicevox_engine)](https://github.com/Hiroshiba/voicevox_engine/releases)
+[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
+[![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
 
-[![test](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Hiroshiba/voicevox_engine/badge.svg)](https://coveralls.io/github/Hiroshiba/voicevox_engine)
+[![test](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
 
-[![build-docker](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/Hiroshiba/voicevox_engine/actions/workflows/build-docker.yml)
+[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
 
 [VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
-（エディターは [VOICEVOX](https://github.com/Hiroshiba/voicevox/) 、
-コアは [VOICEVOX CORE](https://github.com/Hiroshiba/voicevox_core/) 、
-全体構成は [こちら](https://github.com/Hiroshiba/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
+（エディターは [VOICEVOX](https://github.com/VOICEVOX/voicevox/) 、
+コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
+全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## API ドキュメント
 
@@ -57,7 +57,7 @@ curl -s \
 - アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
 - カナの手前に`_`を入れるとそのカナは無声化される
 - アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
-- 文末に`？`(全角)を入れることにより疑問文の発音ができる
+- アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -237,7 +237,53 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 
 ```bash
 # モックでサーバー起動
-python run.py
+python run.py --enable_mock
+```
+
+### CPU スレッド数を指定する
+
+CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
+もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
+VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
+
+- 実行時引数で指定する
+
+  ```bash
+  python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+  ```
+
+- 環境変数で指定する
+  ```bash
+  export VV_CPU_NUM_THREADS=4
+  python run.py --voicevox_dir=$VOICEVOX_DIR
+  ```
+
+### 過去のバージョンのコアを使う
+VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
+Macでのlibtorch版コアのサポートはしていません。
+
+#### 過去のバイナリを指定する
+製品版VOICEVOXもしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
+```bash
+python run.py --voicevox_dir="/path/to/voicevox"
+```
+Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+```
+
+#### 音声ライブラリを直接指定する
+[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
+`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。   
+APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
+```bash
+python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+```
+Macでは、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
+```bash
+DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
 ## コードフォーマット
@@ -283,12 +329,11 @@ python -m nuitka \
     --include-package=anyio \
     --include-package-data=pyopenjtalk \
     --include-package-data=scipy \
-    --include-data-file=VERSION.txt=./ \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
-    --include-data-file=user.dic=./ \
+    --include-data-file=default.csv=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
-    --include-data-file=C:/path/to/libtorch/*.dll=./ \
+    --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
     --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
     --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
@@ -314,8 +359,8 @@ pip-compile requirements-test.in
 
 ### ライセンス
 
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。  
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
 
 - MIT/Apache/BSD-3: OK
 - LGPL: OK （コアと動的分離されているため）
@@ -323,10 +368,10 @@ pip-compile requirements-test.in
 
 ## ユーザー辞書の更新について
 
-以下のコマンドでopenjtalkのユーザー辞書をコンパイルできます。
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
 
 ```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('user-dic.csv','user.dic')"
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
 ```
 
 ## GitHub Actions

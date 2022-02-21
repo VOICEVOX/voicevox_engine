@@ -7,7 +7,7 @@ from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaE
 
 
 def parse_kana(text: str) -> List[AccentPhrase]:
-    accent_phrases = kana_parser.parse_kana(text, False)
+    accent_phrases = kana_parser.parse_kana(text)
     return accent_phrases
 
 
@@ -56,16 +56,13 @@ class TestParseKana(TestCase):
         for text in ["ヲ'", "ェ'"]:
             self.assertEqual(create_kana(parse_kana(text)), text)
 
-    def _interrogative_accent_phrase_marks_base(
-        self,
-        text: str,
-        enable_interrogative: bool,
-        expected_accent_phrases: List[AccentPhrase],
-    ):
-        accent_phrases = kana_parser.parse_kana(text, enable_interrogative)
+    def _accent_phrase_marks_base(
+        self, text: str, expected_accent_phrases: List[AccentPhrase]
+    ) -> None:
+        accent_phrases = kana_parser.parse_kana(text)
         self.assertEqual(expected_accent_phrases, accent_phrases)
 
-    def test_interrogative_accent_phrase_marks(self):
+    def test_accent_phrase_marks(self):
         def a_slash_a_accent_phrases():
             return [
                 AccentPhrase(
@@ -99,16 +96,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = a_slash_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ア'/ア'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
-        expected_accent_phrases = a_slash_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ア'/ア'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -152,16 +141,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = a_jp_comma_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ア'、ア'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
-        expected_accent_phrases = a_jp_comma_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ア'、ア'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -240,15 +221,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = a_slash_a_slash_a_slash_a_slash_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ア'/ア'/ア'/ア'/ア'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-        expected_accent_phrases = a_slash_a_slash_a_slash_a_slash_a_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ア'/ア'/ア'/ア'/ア'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -271,15 +245,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = su_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ス'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-        expected_accent_phrases = su_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ス'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -302,16 +269,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = under_score_su_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="_ス'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
-        expected_accent_phrases = under_score_su_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="_ス'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -334,16 +293,8 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = gye_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ギェ'",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
-        expected_accent_phrases = gye_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ギェ'",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -401,19 +352,12 @@ class TestParseKana(TestCase):
             ]
 
         expected_accent_phrases = gye_gye_gye_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ギェ'、ギェ'/ギェ'",
-            enable_interrogative=False,
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        expected_accent_phrases = gye_gye_gye_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
-            text="ギェ'、ギェ'/ギェ'",
-            enable_interrogative=True,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
+    def test_interrogative_accent_phrase_marks(self):
         def a_question_mark_accent_phrases():
             return [
                 AccentPhrase(
@@ -429,31 +373,13 @@ class TestParseKana(TestCase):
                     ],
                     accent=1,
                     pause_mora=None,
+                    is_interrogative=True,
                 ),
             ]
 
         expected_accent_phrases = a_question_mark_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ア'？",
-            enable_interrogative=False,
-            expected_accent_phrases=expected_accent_phrases,
-        )
-
-        expected_accent_phrases = a_question_mark_accent_phrases()
-        expected_accent_phrases[-1].is_interrogative = True
-        expected_accent_phrases[-1].moras.append(
-            Mora(
-                text="ア",
-                consonant=None,
-                consonant_length=None,
-                vowel="a",
-                vowel_length=0.0,
-                pitch=0.0,
-            )
-        )
-        self._interrogative_accent_phrase_marks_base(
-            text="ア'？",
-            enable_interrogative=True,
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -507,31 +433,98 @@ class TestParseKana(TestCase):
                     ],
                     accent=1,
                     pause_mora=None,
+                    is_interrogative=True,
                 ),
             ]
 
         expected_accent_phrases = gye_gye_gye_question_mark_accent_phrases()
-        self._interrogative_accent_phrase_marks_base(
+        self._accent_phrase_marks_base(
             text="ギェ'、ギェ'/ギェ'？",
-            enable_interrogative=False,
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        expected_accent_phrases = gye_gye_gye_question_mark_accent_phrases()
-        expected_accent_phrases[-1].is_interrogative = True
-        expected_accent_phrases[-1].moras.append(
-            Mora(
-                text="エ",
-                consonant=None,
-                consonant_length=None,
-                vowel="e",
-                vowel_length=0.0,
-                pitch=0.0,
-            )
+        def a_pause_a_question_pause_a_question_a_question_mark_accent_phrases():
+            return [
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ア",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="a",
+                            vowel_length=0.0,
+                            pitch=0.0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=Mora(
+                        text="、",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="pau",
+                        vowel_length=0.0,
+                        pitch=0.0,
+                    ),
+                ),
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ア",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="a",
+                            vowel_length=0.0,
+                            pitch=0.0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=Mora(
+                        text="、",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="pau",
+                        vowel_length=0.0,
+                        pitch=0.0,
+                    ),
+                    is_interrogative=True,
+                ),
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ア",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="a",
+                            vowel_length=0.0,
+                            pitch=0.0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                    is_interrogative=True,
+                ),
+                AccentPhrase(
+                    moras=[
+                        Mora(
+                            text="ア",
+                            consonant=None,
+                            consonant_length=None,
+                            vowel="a",
+                            vowel_length=0.0,
+                            pitch=0.0,
+                        ),
+                    ],
+                    accent=1,
+                    pause_mora=None,
+                    is_interrogative=True,
+                ),
+            ]
+
+        expected_accent_phrases = (
+            a_pause_a_question_pause_a_question_a_question_mark_accent_phrases()
         )
-        self._interrogative_accent_phrase_marks_base(
-            text="ギェ'、ギェ'/ギェ'？",
-            enable_interrogative=True,
+        self._accent_phrase_marks_base(
+            text="ア'、ア'？、ア'？/ア'？",
             expected_accent_phrases=expected_accent_phrases,
         )
 
@@ -563,8 +556,10 @@ class TestParseKanaException(TestCase):
         self.assertEqual(err.exception.kwargs, {"position": "2"})
 
         with self.assertRaises(ParseKanaError) as err:
-            kana_parser.parse_kana("ア？ア'", True)
-        self.assertEqual(err.exception.errcode, ParseKanaErrorCode.UNKNOWN_TEXT)
+            kana_parser.parse_kana("ア？ア'")
+        self.assertEqual(
+            err.exception.errcode, ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
+        )
 
 
 class TestCreateKana(TestCase):
@@ -644,14 +639,6 @@ class TestCreateKana(TestCase):
                             vowel_length=2.5,
                             pitch=2.5,
                         ),
-                        Mora(
-                            text="ア",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="a",
-                            vowel_length=2.5,
-                            pitch=2.5,
-                        ),
                     ],
                     accent=3,
                     pause_mora=None,
@@ -660,7 +647,7 @@ class TestCreateKana(TestCase):
             ]
 
         accent_phrases = koreha_arimasuka_accent_phrases()
-        self.assertEqual(create_kana(accent_phrases), "コレワ'/アリマ'_スカア")
+        self.assertEqual(create_kana(accent_phrases), "コレワ'/アリマ'_スカ")
 
         accent_phrases = koreha_arimasuka_accent_phrases()
         accent_phrases[-1].is_interrogative = True
@@ -698,4 +685,4 @@ class TestCreateKana(TestCase):
 
         accent_phrases = kya_accent_phrases()
         accent_phrases[-1].is_interrogative = True
-        self.assertEqual(create_kana(accent_phrases), "キャ'ッ")
+        self.assertEqual(create_kana(accent_phrases), "キャ'ッ？")

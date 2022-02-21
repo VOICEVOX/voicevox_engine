@@ -11,8 +11,10 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: '3.8.10'
-  VOICEVOX_CORE_VERSION: '0.10.preview.0'
-  VOICEVOX_CORE_SOURCE_VERSION: '0.10.preview.0'
+  VOICEVOX_CORE_VERSION: '0.10.0'
+  VOICEVOX_CORE_SOURCE_VERSION: '0.10.0'
+  VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
+    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
 jobs:
   build-docker:
@@ -31,49 +33,49 @@ jobs:
           - nvidia-ubuntu18.04
         include:
           # Ubuntu 20.04
-          - tag: ''
+          - tag: ""
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
             voicevox_core_library_name: libcore_cpu_x64.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.9.0/onnxruntime-linux-x64-gpu-1.9.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
 
     steps:
       - uses: actions/checkout@v2
@@ -91,15 +93,12 @@ jobs:
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v2
         env:
-          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
-          VERSIONED_IMAGE_TAG: |
+          IMAGE_TAG: |- # If it's a release, add the version, otherwise add the `latest`
             ${{ (
-              github.event.release.tag_name != '' && (
-                matrix.tag != '' && (
-                  format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, github.event.release.tag_name)
-                ) || format('{0}:{1}', env.IMAGE_NAME, github.event.release.tag_name)
-              )
-            ) || '' }}
+              matrix.tag != '' && (
+                format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, env.VOICEVOX_ENGINE_VERSION)
+              ) || format('{0}:{1}', env.IMAGE_NAME, env.VOICEVOX_ENGINE_VERSION)
+            ) }}
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -108,14 +107,12 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_SOURCE_VERSION=${{ env.VOICEVOX_CORE_SOURCE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           push: true
-          tags: |
-            ${{ env.IMAGE_TAG }}
-            ${{ env.VERSIONED_IMAGE_TAG }}
+          tags: ${{ env.IMAGE_TAG }}
           cache-from: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
           cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
