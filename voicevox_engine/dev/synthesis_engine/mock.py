@@ -126,8 +126,8 @@ class MockSynthesisEngine(SynthesisEngineBase):
     def guided_synthesis(
         self,
         query: AudioQuery,
-        speaker_id: int,
-        audio_file: Optional[IO],
+        speaker: int,
+        audio_file: IO,
         normalize: int,
     ) -> np.ndarray:
         """
@@ -137,7 +137,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         Parameters
         ----------
         query
-        speaker_id
+        speaker
         audio_file
         normalize
 
@@ -145,22 +145,22 @@ class MockSynthesisEngine(SynthesisEngineBase):
         -------
 
         """
-        return self.synthesis(query=query, speaker_id=speaker_id)
+        return self.synthesis(query=query, speaker_id=speaker)
 
     def guided_accent_phrases(
         self,
-        query: AudioQuery,
-        speaker_id: int,
-        audio_file: Optional[IO],
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        audio_file: IO,
         normalize: int,
-    ) -> AudioQuery:
+    ) -> List[AccentPhrase]:
         """
         guided_accent_phrases 入力accent_phrasesを変更せずにそのまま返します [Mock]
 
         Parameters
         ----------
         query
-        speaker_id
+        speaker
         audio_file
         normalize
 
@@ -168,4 +168,4 @@ class MockSynthesisEngine(SynthesisEngineBase):
         -------
 
         """
-        return query
+        return accent_phrases

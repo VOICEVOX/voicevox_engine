@@ -205,39 +205,43 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
 
     @app.post(
         "/guided_accent_phrase",
-        response_model=AudioQuery,
-        tags=["クエリ作成"],
-        summary="Create Audio Query Guided by External Audio",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="Create Accent Phrase from External Audio",
     )
     def guided_accent_phrase(
-        kana: str = Form(...),  # noqa: B008
-        speaker_id: int = Form(...),  # noqa: B008
-        normalize: int = Form(...),  # noqa: B008
+        text: str = Form(...), #noqa:B008
+        speaker: int = Form(...), #noqa:B008
+        is_kana: bool = Form(...), #noqa:B008
+        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
         audio_file: UploadFile = File(...),  # noqa: B008
+        normalize: bool = Form(...), #noqa:B008
     ):
-        try:
-            accent_phrases, _ = parse_kana(kana, False)
-            query = AudioQuery(
-                accent_phrases=accent_phrases,
-                speedScale=1,
-                pitchScale=0,
-                intonationScale=1,
-                volumeScale=1,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-                outputSamplingRate=default_sampling_rate,
-                outputStereo=False,
-                kana=kana,
+        if is_kana:
+            try:
+                accent_phrases = parse_kana(text, enable_interrogative)
+            except ParseKanaError as err:
+                raise HTTPException(
+                    status_code=400,
+                    detail=ParseKanaBadRequest(err).dict(),
+                )
+        else:
+            accent_phrases = engine.create_accent_phrases(
+                text,
+                speaker_id=speaker,
+                enable_interrogative=enable_interrogative,
             )
+
+        try:
             return engine.guided_accent_phrases(
-                query=query,
-                speaker_id=speaker_id,
+                accent_phrases=accent_phrases,
+                speaker=speaker,
                 audio_file=audio_file.file,
                 normalize=normalize,
             )
         except ParseKanaError as err:
             raise HTTPException(
-                status_code=400,
+                status_code=422,
                 detail=ParseKanaBadRequest(err).dict(),
             )
         except StopIteration:
@@ -448,18 +452,18 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         audio_file: UploadFile = File(...),  # noqa: B008
         stereo: int = Form(...),  # noqa: B008
         sample_rate: int = Form(...),  # noqa: B008
-        volumeScale: float = Form(...),  # noqa: B008
-        pitchScale: float = Form(...),  # noqa: B008
-        speedScale: float = Form(...),  # noqa: B008
+        volume_scale: float = Form(...),  # noqa: B008
+        pitch_scale: float = Form(...),  # noqa: B008
+        speed_scale: float = Form(...),  # noqa: B008
     ):
         try:
-            accent_phrases, _ = parse_kana(kana, False)
+            accent_phrases = parse_kana(kana, False)
             query = AudioQuery(
                 accent_phrases=accent_phrases,
-                speedScale=speedScale,
-                pitchScale=pitchScale,
+                speedScale=speed_scale,
+                pitchScale=pitch_scale,
                 intonationScale=1,
-                volumeScale=volumeScale,
+                volumeScale=volume_scale,
                 prePhonemeLength=0.1,
                 postPhonemeLength=0.1,
                 outputSamplingRate=sample_rate,
@@ -469,7 +473,7 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
             wave = engine.guided_synthesis(
                 audio_file=audio_file.file,
                 query=query,
-                speaker_id=speaker_id,
+                speaker=speaker_id,
                 normalize=normalize,
             )
 

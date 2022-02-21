@@ -13,9 +13,9 @@ import pyworld as pw
 from scipy.io import wavfile
 from scipy.signal import resample
 
-from .julius4seg import converter, sp_inserter
-from .julius4seg.sp_inserter import ModelType, space_symbols
-from .kana_parser import parse_kana
+from voicevox_engine.experimental.julius4seg import converter, sp_inserter
+from voicevox_engine.experimental.julius4seg.sp_inserter import ModelType, space_symbols
+from voicevox_engine.kana_parser import parse_kana
 
 JULIUS_SAMPLE_RATE = 16000
 FRAME_PERIOD = 1.0
@@ -73,9 +73,9 @@ def resample_ts(timestamp: str):
     return int((float(timestamp) * 0.9375))
 
 
-def get_normalize_scale(engine, kana: str, f0: np.ndarray, speaker_id: int):
+def get_normalize_diff(engine, kana: str, f0: np.ndarray, speaker_id: int):
     f0_avg = _no_nan(np.average(f0[f0 != 0]))
-    predicted_phrases, _ = parse_kana(kana, False)
+    predicted_phrases = parse_kana(kana, False)
     engine.replace_mora_data(predicted_phrases, speaker_id=speaker_id)
     pitch_list = []
     for phrase in predicted_phrases:
@@ -83,14 +83,14 @@ def get_normalize_scale(engine, kana: str, f0: np.ndarray, speaker_id: int):
             pitch_list.append(mora.pitch)
     pitch_list = np.array(pitch_list, dtype=np.float64)
     predicted_avg = _no_nan(np.average(pitch_list[pitch_list != 0]))
-    return predicted_avg / f0_avg
+    return predicted_avg - f0_avg
 
 
 def _no_nan(num):
     return 0.0 if np.isnan(num) else num
 
 
-def extract_guided_feature(audio_file: Optional[IO], kana: str):
+def extract_guided_feature(audio_file: IO, kana: str):
     _lazy_init()
     sr, wave = wavfile.read(audio_file)
     # stereo to mono

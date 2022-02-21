@@ -7,15 +7,16 @@ import numpy
 from scipy.signal import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
-from ..guided_extractor import (
+from voicevox_engine.experimental.guided_extractor import (
     PhraseInfo,
     extract_guided_feature,
-    get_normalize_scale,
+    get_normalize_diff,
     resample_ts,
 )
-from ..julius4seg.sp_inserter import frame_to_second
+from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
+from ..kana_parser import create_kana
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -489,8 +490,8 @@ class SynthesisEngine(SynthesisEngineBase):
     def guided_synthesis(
         self,
         query: AudioQuery,
-        speaker_id: int,
-        audio_file: Optional[IO],
+        speaker: int,
+        audio_file: IO,
         normalize: int,
     ):
         f0, phonemes = extract_guided_feature(audio_file, query.kana)
@@ -514,8 +515,8 @@ class SynthesisEngine(SynthesisEngineBase):
             phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
 
         if normalize:
-            f0 *= get_normalize_scale(
-                engine=self, kana=query.kana, f0=f0, speaker_id=speaker_id
+            f0 += get_normalize_diff(
+                engine=self, kana=query.kana, f0=f0, speaker_id=speaker
             )
 
         f0 *= 2 ** query.pitchScale
@@ -530,7 +531,7 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme_size=phone_list.shape[1],
             f0=f0[:, numpy.newaxis].astype(numpy.float32),
             phoneme=phone_list,
-            speaker_id=numpy.array([speaker_id], dtype=numpy.int64).reshape(-1),
+            speaker_id=numpy.array([speaker], dtype=numpy.int64).reshape(-1),
         )
 
         if query.volumeScale != 1:
@@ -549,12 +550,13 @@ class SynthesisEngine(SynthesisEngineBase):
 
     def guided_accent_phrases(
         self,
-        query: AudioQuery,
-        speaker_id: int,
-        audio_file: Optional[IO],
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        audio_file: IO,
         normalize: int,
-    ) -> AudioQuery:
-        f0, phonemes = extract_guided_feature(audio_file, query.kana)
+    ) -> List[AccentPhrase]:
+        kana = create_kana(accent_phrases=accent_phrases)
+        f0, phonemes = extract_guided_feature(audio_file, kana)
         timed_phonemes = frame_to_second(deepcopy(phonemes))
 
         phrase_info = []
@@ -570,14 +572,14 @@ class SynthesisEngine(SynthesisEngineBase):
             phrase_info.append(PhraseInfo(pitch, length, p))
 
         if normalize:
-            normalize_scale = get_normalize_scale(
-                engine=self, kana=query.kana, f0=f0, speaker_id=speaker_id
+            normalize_diff = get_normalize_diff(
+                engine=self, kana=kana, f0=f0, speaker_id=speaker
             )
             for p in phrase_info:
-                p.pitch = p.pitch * normalize_scale
+                p.pitch += normalize_diff
 
         idx = 1
-        for phrase in query.accent_phrases:
+        for phrase in accent_phrases:
             for mora in phrase.moras:
                 if mora.consonant is not None:
                     mora.pitch = (
@@ -601,4 +603,4 @@ class SynthesisEngine(SynthesisEngineBase):
                 )
                 idx += 1
 
-        return query
+        return accent_phrases

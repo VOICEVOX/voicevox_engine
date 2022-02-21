@@ -161,13 +161,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-/build
-/cache
-
-/licenses.json
-
 # Guided Synthesis temp files
-/voicevox_engine/dictation-kit*
+/voicevox_engine/experimental/dictation-kit*
 first_pass*
 second_pass*
 tmp.wav
