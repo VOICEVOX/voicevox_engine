@@ -36,7 +36,6 @@ def user_dict_startup_processing(
 
 def update_dict(
     default_dict_path: Path = default_dict_path,
-    user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
@@ -115,6 +114,7 @@ def apply_word(
     pronunciation: str,
     accent_type: int,
     user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
 ):
     word = create_word_from_kwargs(
         surface=surface, pronunciation=pronunciation, accent_type=accent_type
@@ -124,7 +124,7 @@ def apply_word(
     user_dict.next_id += 1
     user_dict.words[id] = word
     user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
-    update_dict(user_dict_path=user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
 
 
 def rewrite_word(
@@ -133,6 +133,7 @@ def rewrite_word(
     pronunciation: str,
     accent_type: int,
     user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
 ):
     word = create_word_from_kwargs(
         surface=surface, pronunciation=pronunciation, accent_type=accent_type
@@ -142,13 +143,17 @@ def rewrite_word(
         raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
     user_dict.words[id] = word
     user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
-    update_dict(user_dict_path=user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
 
 
-def delete_word(id: int, user_dict_path: Path = user_dict_path):
+def delete_word(
+    id: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
     user_dict = read_dict(user_dict_path=user_dict_path)
     if id not in user_dict.words:
         raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
     del user_dict.words[id]
     user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
-    update_dict(user_dict_path=user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
