@@ -122,16 +122,16 @@ def apply_word(**kwargs):
     update_dict(user_dict_path=_user_dict_path)
 
 
-def rewrite_word(**kwargs):
+def rewrite_word(id: int, **kwargs):
     if "user_dict_path" in kwargs:
         _user_dict_path = kwargs["user_dict_path"]
     else:
         _user_dict_path = user_dict_path
     word = create_word_from_kwargs(**kwargs)
     user_dict = read_dict(user_dict_path=_user_dict_path)
-    if kwargs["id"] not in user_dict.words:
+    if id not in user_dict.words:
         raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
-    user_dict.words[kwargs["id"]] = word
+    user_dict.words[id] = word
     _user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
     update_dict(user_dict_path=_user_dict_path)
 
