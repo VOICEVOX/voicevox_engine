@@ -118,8 +118,6 @@ def apply_word(**kwargs):
     id = user_dict.next_id
     user_dict.next_id += 1
     user_dict.words[id] = word
-    with _user_dict_path.open(encoding="utf-8", mode="w") as f:
-        json.dump(user_dict.dict(), f, ensure_ascii=False)
     _user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
     update_dict(user_dict_path=_user_dict_path)
 
