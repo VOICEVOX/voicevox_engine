@@ -635,8 +635,6 @@ def generate_app(
             return Response(status_code=204)
         except HTTPException:
             raise
-        except HTTPException:
-            raise
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
