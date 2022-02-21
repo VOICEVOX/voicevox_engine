@@ -13,8 +13,9 @@ from voicevox_engine.experimental.guided_extractor import (
     resample_ts,
 )
 from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
-from ..kana_parser import create_kana
+
 from ..acoustic_feature_extractor import OjtPhoneme
+from ..kana_parser import create_kana
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
 

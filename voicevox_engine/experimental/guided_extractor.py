@@ -74,7 +74,7 @@ def resample_ts(timestamp: str):
 
 def get_normalize_diff(engine, kana: str, f0: np.ndarray, speaker_id: int):
     f0_avg = _no_nan(np.average(f0[f0 != 0]))
-    predicted_phrases = parse_kana(kana, False)
+    predicted_phrases = parse_kana(kana)
     engine.replace_mora_data(predicted_phrases, speaker_id=speaker_id)
     pitch_list = []
     for phrase in predicted_phrases:

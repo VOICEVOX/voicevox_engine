@@ -223,13 +223,14 @@ def generate_app(
         text: str = Form(...),  # noqa:B008
         speaker: int = Form(...),  # noqa:B008
         is_kana: bool = Form(...),  # noqa:B008
-        enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
         audio_file: UploadFile = File(...),  # noqa: B008
         normalize: bool = Form(...),  # noqa:B008
+        core_version: Optional[str] = None,
     ):
+        engine = get_engine(core_version)
         if is_kana:
             try:
-                accent_phrases = parse_kana(text, enable_interrogative)
+                accent_phrases = parse_kana(text)
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400,
@@ -239,7 +240,6 @@ def generate_app(
             accent_phrases = engine.create_accent_phrases(
                 text,
                 speaker_id=speaker,
-                enable_interrogative=enable_interrogative,
             )
 
         try:
@@ -500,9 +500,11 @@ def generate_app(
         volume_scale: float = Form(...),  # noqa: B008
         pitch_scale: float = Form(...),  # noqa: B008
         speed_scale: float = Form(...),  # noqa: B008
+        core_version: Optional[str] = None,
     ):
+        engine = get_engine(core_version)
         try:
-            accent_phrases = parse_kana(kana, False)
+            accent_phrases = parse_kana(kana)
             query = AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=speed_scale,
