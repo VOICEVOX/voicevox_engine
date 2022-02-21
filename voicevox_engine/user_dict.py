@@ -89,9 +89,7 @@ def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
         return UserDictJson(**json.load(f))
 
 
-def create_word_from_kwargs(
-    surface: str, pronunciation: str, accent_type: int
-) -> UserDictWord:
+def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
     return UserDictWord(
         surface=surface,
         cost=8600,
@@ -116,7 +114,7 @@ def apply_word(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    word = create_word_from_kwargs(
+    word = create_word(
         surface=surface, pronunciation=pronunciation, accent_type=accent_type
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
@@ -135,7 +133,7 @@ def rewrite_word(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    word = create_word_from_kwargs(
+    word = create_word(
         surface=surface, pronunciation=pronunciation, accent_type=accent_type
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
