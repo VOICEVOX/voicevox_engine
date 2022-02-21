@@ -210,12 +210,12 @@ def generate_app(engine: SynthesisEngineBase) -> FastAPI:
         summary="Create Accent Phrase from External Audio",
     )
     def guided_accent_phrase(
-        text: str = Form(...), #noqa:B008
-        speaker: int = Form(...), #noqa:B008
-        is_kana: bool = Form(...), #noqa:B008
+        text: str = Form(...),  # noqa:B008
+        speaker: int = Form(...),  # noqa:B008
+        is_kana: bool = Form(...),  # noqa:B008
         enable_interrogative: bool = enable_interrogative_query_param(),  # noqa B008,
         audio_file: UploadFile = File(...),  # noqa: B008
-        normalize: bool = Form(...), #noqa:B008
+        normalize: bool = Form(...),  # noqa:B008
     ):
         if is_kana:
             try:

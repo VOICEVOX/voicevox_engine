@@ -6,7 +6,6 @@ from typing.io import IO
 import numpy
 from scipy.signal import resample
 
-from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
 from voicevox_engine.experimental.guided_extractor import (
     PhraseInfo,
     extract_guided_feature,
@@ -14,9 +13,11 @@ from voicevox_engine.experimental.guided_extractor import (
     resample_ts,
 )
 from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
+
+from ..acoustic_feature_extractor import OjtPhoneme, SamplingData
+from ..kana_parser import create_kana
 from ..model import AccentPhrase, AudioQuery, Mora
 from .synthesis_engine_base import SynthesisEngineBase
-from ..kana_parser import create_kana
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list

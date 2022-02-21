@@ -1,6 +1,6 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional
+from typing import List
 from typing.io import IO
 
 from .. import full_context_label

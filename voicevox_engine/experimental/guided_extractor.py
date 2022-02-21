@@ -3,7 +3,6 @@ import re
 import tarfile
 from os.path import exists
 from pathlib import PurePath
-from typing import Optional
 from typing.io import IO
 from urllib.request import urlretrieve
 
