@@ -167,6 +167,37 @@ curl -s \
     > audio.wav
 ```
 
+### Guidied Synthsis
+Currently, we have two apis which accept an uploaded audio file and return corresponding synthesis information.  
+Both of them recommend setting `is_kana` to be `true` and use `kana` section from `AudioQuery` for the best performance.  
+You can also get the kana text in AquesTalk section.  
+```bash
+# Returns an audio file which is synthesised referencing uploaded audio
+# this example needs a recording whose content is
+# "また 東寺のように 五大明王と 呼ばれる 主要な 明王の 中央に 配されることも多い"
+
+curl -L -X POST 'localhost:50021/guided_synthesis' \
+    -F 'kana="マ'\''タ、ト'\''オジノヨオニ、ゴダイミョオオ'\''オト、ヨ'\''/バレ'\''ル、シュ'\''ヨオナ、ミョオ'\''オオ/ノ'\''、チュ'\''ウオオニ、ハイサレルコ'\''/トモ'\''オオイ"' \
+    -F 'speaker_id="5"' \
+    -F 'audio_file=@"/full_path_to_your_recording"' \
+    -F 'normalize="true"' \
+    -F 'stereo="true"' \
+    -F 'sample_rate="24000"' \
+    -F 'volume_scale="1"' \
+    -F 'pitch_scale="0"' \
+    -F 'speed_scale="1"'
+
+# Returns a list of AccentPhrases
+
+curl -L -X POST 'localhost:50021/guided_accent_phrase' \
+    -F 'text="マ'\''タ、ト'\''オジノヨオニ、ゴダイミョオオ'\''オト、ヨ'\''/バレ'\''ル、シュ'\''ヨオナ、ミョオ'\''オオ/ノ'\''、チュ'\''ウオオニ、ハイサレルコ'\''/トモ'\''オオイ"' \
+    -F 'speaker="5"' \
+    -F 'audio_file=@"/full_path_to_your_recording"' \
+    -F 'normalize="true"' \
+    -F 'is_kana="true"' \
+    -F 'enable_interrogative="false"'
+```
+
 ### 話者の追加情報を取得するサンプルコード
 
 追加情報の中の portrait.png を取得するコードです。  
