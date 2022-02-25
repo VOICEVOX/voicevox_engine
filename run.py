@@ -44,7 +44,9 @@ from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
+    delete_word,
     read_dict,
+    rewrite_word,
     user_dict_startup_processing,
 )
 from voicevox_engine.utility import (
@@ -559,7 +561,7 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
-    @app.post("/user_dict", status_code=204, tags=["ユーザー辞書"])
+    @app.post("/user_dict_word", status_code=204, tags=["ユーザー辞書"])
     def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
@@ -583,6 +585,59 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
+
+    @app.put("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
+    def rewrite_user_dict_word(
+        surface: str, pronunciation: str, accent_type: int, id: int
+    ):
+        """
+        ユーザ辞書に登録されている言葉を更新します。
+
+        Parameters
+        ----------
+        surface : str
+            言葉の表層形
+        pronunciation: str
+            言葉の発音（カタカナ）
+        accent_type: int
+            アクセント型（音が下がる場所を指す）
+        id: int
+            更新する言葉のID
+        """
+        try:
+            rewrite_word(
+                surface=surface,
+                pronunciation=pronunciation,
+                accent_type=accent_type,
+                id=id,
+            )
+            return Response(status_code=204)
+        except HTTPException:
+            raise
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+
+    @app.delete("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
+    def delete_user_dict_word(id: int):
+        """
+        ユーザ辞書に登録されている言葉を削除します。
+
+        Parameters
+        ----------
+        id: int
+            削除する言葉のID
+        """
+        try:
+            delete_word(id=id)
+            return Response(status_code=204)
+        except HTTPException:
+            raise
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(

@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 
 import pyopenjtalk
 from appdirs import user_data_dir
+from fastapi import HTTPException
 
 from .model import UserDictJson, UserDictWord
 from .utility import engine_root
@@ -35,7 +36,6 @@ def user_dict_startup_processing(
 
 def update_dict(
     default_dict_path: Path = default_dict_path,
-    user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
@@ -89,13 +89,9 @@ def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
         return UserDictJson(**json.load(f))
 
 
-def apply_word(**kwargs):
-    if "user_dict_path" in kwargs:
-        _user_dict_path = kwargs["user_dict_path"]
-    else:
-        _user_dict_path = user_dict_path
-    word = UserDictWord(
-        surface=kwargs["surface"],
+def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
+    return UserDictWord(
+        surface=surface,
         cost=8600,
         part_of_speech="名詞",
         part_of_speech_detail_1="固有名詞",
@@ -104,16 +100,58 @@ def apply_word(**kwargs):
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
-        yomi=kwargs["pronunciation"],
-        pronunciation=kwargs["pronunciation"],
-        accent_type=kwargs["accent_type"],
+        yomi=pronunciation,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
         accent_associative_rule="*",
     )
-    user_dict = read_dict(user_dict_path=_user_dict_path)
+
+
+def apply_word(
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    word = create_word(
+        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+    )
+    user_dict = read_dict(user_dict_path=user_dict_path)
     id = user_dict.next_id
     user_dict.next_id += 1
     user_dict.words[id] = word
-    with _user_dict_path.open(encoding="utf-8", mode="w") as f:
-        json.dump(user_dict.dict(), f, ensure_ascii=False)
-    _user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
-    update_dict(user_dict_path=_user_dict_path)
+    user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
+    update_dict(compiled_dict_path=compiled_dict_path)
+
+
+def rewrite_word(
+    id: int,
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    word = create_word(
+        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+    )
+    user_dict = read_dict(user_dict_path=user_dict_path)
+    if id not in user_dict.words:
+        raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
+    user_dict.words[id] = word
+    user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
+    update_dict(compiled_dict_path=compiled_dict_path)
+
+
+def delete_word(
+    id: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    user_dict = read_dict(user_dict_path=user_dict_path)
+    if id not in user_dict.words:
+        raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
+    del user_dict.words[id]
+    user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
+    update_dict(compiled_dict_path=compiled_dict_path)
