@@ -586,7 +586,7 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
 
-    @app.put("/user_dict_word", status_code=204, tags=["ユーザー辞書"])
+    @app.put("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
         surface: str, pronunciation: str, accent_type: int, id: int
     ):
@@ -620,7 +620,7 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
 
-    @app.delete("/user_dict_word", status_code=204, tags=["ユーザー辞書"])
+    @app.delete("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
     def delete_user_dict_word(id: int):
         """
         ユーザ辞書に登録されている言葉を削除します。
