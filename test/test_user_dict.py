@@ -74,12 +74,24 @@ class TestUserDict(TestCase):
         )
 
     def test_apply_word_without_json(self):
+        user_dict_path = self.tmp_dir_path / "test_apply_word_without_json.json"
         apply_word(
             surface="test",
             pronunciation="テスト",
             accent_type=1,
-            user_dict_path=(self.tmp_dir_path / "test_apply_word_without_json.json"),
+            user_dict_path=user_dict_path,
             compiled_dict_path=(self.tmp_dir_path / "test_apply_word_without_json.dic"),
+        )
+        res = read_dict(user_dict_path=user_dict_path)
+        self.assertEqual(len(res.words), 1)
+        self.assertEqual(res.next_id, 1)
+        self.assertEqual(
+            (
+                res.words[0].surface,
+                res.words[0].pronunciation,
+                res.words[0].accent_type,
+            ),
+            ("ｔｅｓｔ", "テスト", 1),
         )
 
     def test_apply_word_with_json(self):
@@ -90,9 +102,20 @@ class TestUserDict(TestCase):
         apply_word(
             surface="test2",
             pronunciation="テストツー",
-            accent_type=1,
+            accent_type=3,
             user_dict_path=user_dict_path,
             compiled_dict_path=(self.tmp_dir_path / "test_apply_word_with_json.dic"),
+        )
+        res = read_dict(user_dict_path=user_dict_path)
+        self.assertEqual(len(res.words), 2)
+        self.assertEqual(res.next_id, 2)
+        self.assertEqual(
+            (
+                res.words[1].surface,
+                res.words[1].pronunciation,
+                res.words[1].accent_type,
+            ),
+            ("ｔｅｓｔ２", "テストツー", 3),
         )
 
     def test_rewrite_word_invalid_id(self):
