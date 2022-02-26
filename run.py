@@ -544,7 +544,7 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.get("/user_dict", response_model=Dict[int, UserDictWord], tags=["ユーザー辞書"])
+    @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
         """
         ユーザ辞書に登録されている単語の一覧を返します。
@@ -552,11 +552,11 @@ def generate_app(
 
         Returns
         -------
-        Dict[int, UserDictWord]
-            単語のIDとその詳細
+        Dict[str, UserDictWord]
+            単語のUUIDとその詳細
         """
         try:
-            return read_dict().words
+            return read_dict()
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
@@ -586,9 +586,9 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
 
-    @app.put("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
+    @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
-        surface: str, pronunciation: str, accent_type: int, id: int
+        surface: str, pronunciation: str, accent_type: int, word_uuid: str
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。
@@ -601,15 +601,15 @@ def generate_app(
             言葉の発音（カタカナ）
         accent_type: int
             アクセント型（音が下がる場所を指す）
-        id: int
-            更新する言葉のID
+        word_uuid: str
+            更新する言葉のUUID
         """
         try:
             rewrite_word(
                 surface=surface,
                 pronunciation=pronunciation,
                 accent_type=accent_type,
-                id=id,
+                word_uuid=word_uuid,
             )
             return Response(status_code=204)
         except HTTPException:
@@ -620,18 +620,18 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
 
-    @app.delete("/user_dict_word/{id}", status_code=204, tags=["ユーザー辞書"])
-    def delete_user_dict_word(id: int):
+    @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
+    def delete_user_dict_word(word_uuid: str):
         """
         ユーザ辞書に登録されている言葉を削除します。
 
         Parameters
         ----------
-        id: int
-            削除する言葉のID
+        word_uuid: str
+            削除する言葉のUUID
         """
         try:
-            delete_word(id=id)
+            delete_word(word_uuid=word_uuid)
             return Response(status_code=204)
         except HTTPException:
             raise
