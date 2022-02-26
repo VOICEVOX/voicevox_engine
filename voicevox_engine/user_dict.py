@@ -27,9 +27,9 @@ compiled_dict_path = save_dir / "user.dic"
 
 def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     user_dict = {word_uuid: word.dict() for word_uuid, word in user_dict.items()}
-    json.dump(
-        user_dict, user_dict_path.open(mode="w", encoding="utf-8"), ensure_ascii=False
-    )
+    # 予めjsonに変換できることを確かめる
+    user_dict_json = json.dumps(user_dict, ensure_ascii=False)
+    user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
 def user_dict_startup_processing(
