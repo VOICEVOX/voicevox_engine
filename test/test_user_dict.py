@@ -1,12 +1,13 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Dict
 from unittest import TestCase
 
 from fastapi import HTTPException
 from pyopenjtalk import unset_user_dict
 
-from voicevox_engine.model import UserDictJson, UserDictWord
+from voicevox_engine.model import UserDictWord
 from voicevox_engine.user_dict import (
     apply_word,
     create_word,
@@ -16,25 +17,33 @@ from voicevox_engine.user_dict import (
 )
 
 valid_dict_dict = {
-    "next_id": 1,
-    "words": {
-        "0": {
-            "surface": "ｔｅｓｔ",
-            "cost": 8600,
-            "part_of_speech": "名詞",
-            "part_of_speech_detail_1": "固有名詞",
-            "part_of_speech_detail_2": "一般",
-            "part_of_speech_detail_3": "*",
-            "inflectional_type": "*",
-            "inflectional_form": "*",
-            "stem": "*",
-            "yomi": "テスト",
-            "pronunciation": "テスト",
-            "accent_type": 1,
-            "accent_associative_rule": "*",
-        }
+    "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": {
+        "surface": "ｔｅｓｔ",
+        "cost": 8600,
+        "part_of_speech": "名詞",
+        "part_of_speech_detail_1": "固有名詞",
+        "part_of_speech_detail_2": "一般",
+        "part_of_speech_detail_3": "*",
+        "inflectional_type": "*",
+        "inflectional_form": "*",
+        "stem": "*",
+        "yomi": "テスト",
+        "pronunciation": "テスト",
+        "accent_type": 1,
+        "accent_associative_rule": "*",
     },
 }
+
+
+def get_new_word(user_dict: Dict[str, UserDictWord]):
+    assert len(user_dict) == 2 or (
+        len(user_dict) == 1 and "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e" not in user_dict
+    )
+    for word_uuid in user_dict.keys():
+        if word_uuid == "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e":
+            continue
+        return user_dict[word_uuid]
+    raise AssertionError
 
 
 class TestUserDict(TestCase):
@@ -49,7 +58,7 @@ class TestUserDict(TestCase):
     def test_read_not_exist_json(self):
         self.assertEqual(
             read_dict(user_dict_path=(self.tmp_dir_path / "not_exist.json")),
-            UserDictJson(**{"next_id": 0, "words": {}}),
+            {},
         )
 
     def test_create_word(self):
@@ -83,13 +92,13 @@ class TestUserDict(TestCase):
             compiled_dict_path=(self.tmp_dir_path / "test_apply_word_without_json.dic"),
         )
         res = read_dict(user_dict_path=user_dict_path)
-        self.assertEqual(len(res.words), 1)
-        self.assertEqual(res.next_id, 1)
+        self.assertEqual(len(res), 1)
+        new_word = get_new_word(res)
         self.assertEqual(
             (
-                res.words[0].surface,
-                res.words[0].pronunciation,
-                res.words[0].accent_type,
+                new_word.surface,
+                new_word.pronunciation,
+                new_word.accent_type,
             ),
             ("ｔｅｓｔ", "テスト", 1),
         )
@@ -107,13 +116,13 @@ class TestUserDict(TestCase):
             compiled_dict_path=(self.tmp_dir_path / "test_apply_word_with_json.dic"),
         )
         res = read_dict(user_dict_path=user_dict_path)
-        self.assertEqual(len(res.words), 2)
-        self.assertEqual(res.next_id, 2)
+        self.assertEqual(len(res), 2)
+        new_word = get_new_word(res)
         self.assertEqual(
             (
-                res.words[1].surface,
-                res.words[1].pronunciation,
-                res.words[1].accent_type,
+                new_word.surface,
+                new_word.pronunciation,
+                new_word.accent_type,
             ),
             ("ｔｅｓｔ２", "テストツー", 3),
         )
@@ -126,7 +135,7 @@ class TestUserDict(TestCase):
         self.assertRaises(
             HTTPException,
             rewrite_word,
-            id=1,
+            word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
             surface="test2",
             pronunciation="テストツー",
             accent_type=2,
@@ -140,16 +149,19 @@ class TestUserDict(TestCase):
             json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
         )
         rewrite_word(
-            id=0,
+            word_uuid="aab7dda2-0d97-43c8-8cb7-3f440dab9b4e",
             surface="test2",
             pronunciation="テストツー",
             accent_type=2,
             user_dict_path=user_dict_path,
             compiled_dict_path=(self.tmp_dir_path / "test_rewrite_word_valid_id.dic"),
         )
-        res = read_dict(user_dict_path=user_dict_path).words[0]
+        new_word = read_dict(user_dict_path=user_dict_path)[
+            "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"
+        ]
         self.assertEqual(
-            (res.surface, res.pronunciation, res.accent_type), ("ｔｅｓｔ２", "テストツー", 2)
+            (new_word.surface, new_word.pronunciation, new_word.accent_type),
+            ("ｔｅｓｔ２", "テストツー", 2),
         )
 
     def test_delete_word_invalid_id(self):
@@ -160,7 +172,7 @@ class TestUserDict(TestCase):
         self.assertRaises(
             HTTPException,
             delete_word,
-            id=1,
+            word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
             user_dict_path=user_dict_path,
             compiled_dict_path=(self.tmp_dir_path / "test_delete_word_invalid_id.dic"),
         )
@@ -171,8 +183,8 @@ class TestUserDict(TestCase):
             json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
         )
         delete_word(
-            id=0,
+            word_uuid="aab7dda2-0d97-43c8-8cb7-3f440dab9b4e",
             user_dict_path=user_dict_path,
             compiled_dict_path=(self.tmp_dir_path / "test_delete_word_valid_id.dic"),
         )
-        self.assertEqual(len(read_dict(user_dict_path=user_dict_path).words), 0)
+        self.assertEqual(len(read_dict(user_dict_path=user_dict_path)), 0)

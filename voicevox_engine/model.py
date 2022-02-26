@@ -217,15 +217,6 @@ class UserDictWord(BaseModel):
         return mora_count
 
 
-class UserDictJson(BaseModel):
-    """
-    ユーザ辞書機能に使われるjsonファイルのフォーマット
-    """
-
-    next_id: int = Field(title="次に割り当てられるID")
-    words: Dict[int, UserDictWord] = Field(title="辞書のコンパイルに使われるワードの情報")
-
-
 class SupportedDevicesInfo(BaseModel):
     """
     対応しているデバイスの情報
