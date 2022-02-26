@@ -1,6 +1,5 @@
 import json
 import sys
-import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict
@@ -96,14 +95,10 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
         return {}
     with user_dict_path.open(encoding="utf-8") as f:
-        try:
-            return {
-                str(UUID(word_uuid)): UserDictWord(**word)
-                for word_uuid, word in json.load(f).items()
-            }
-        except json.decoder.JSONDecodeError:
-            traceback.print_exc()
-            return {}
+        return {
+            str(UUID(word_uuid)): UserDictWord(**word)
+            for word_uuid, word in json.load(f).items()
+        }
 
 
 def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
