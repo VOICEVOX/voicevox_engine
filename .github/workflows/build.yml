@@ -763,3 +763,11 @@ jobs:
           tag: ${{ github.ref }} # == github.event.release.tag_name
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
+
+  run-release-test-workflow:
+    if: github.event.release.tag_name != ''
+    needs: [upload-to-release]
+    uses: ./.github/workflows/release-test.yml
+    with:
+      version: ${{ github.ref }} # == github.event.release.tag_name
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }}  # このリポジトリのURL

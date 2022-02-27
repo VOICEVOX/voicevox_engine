@@ -1,30 +1,34 @@
 name: Test Release Build
 
 on:
-  workflow_run:
-    workflows:
-      - build
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      repo_url:
+        type: string
+        required: false
   workflow_dispatch:
     inputs:
       version:
+        type: string
         description: "テストしたいタグ名"
         required: true
       repo_url:
+        type: string
         description: "リポジトリのURL（省略可能）"
         required: false
 
 env:
   REPO_URL:
     |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
-    ${{ github.event.inputs.repo_url || format('{0}/{1}', github.server_url, github.repository) }}
+    ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
-    ${{ github.event.inputs.version || github.event.release.tag_name }}
+    ${{ (github.event.inputs || inputs).version }}
 
 jobs:
   test:
-    if: github.event.inputs.version != '' || github.event.release.tag_name != '' # env.VERSIONはここでは使えない
     strategy:
       fail-fast: false
       matrix:
