@@ -2,11 +2,14 @@ import json
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Dict
+from uuid import UUID, uuid4
 
 import pyopenjtalk
 from appdirs import user_data_dir
+from fastapi import HTTPException
 
-from .model import UserDictJson, UserDictWord
+from .model import UserDictWord
 from .utility import engine_root
 
 root_dir = engine_root()
@@ -19,6 +22,13 @@ if not save_dir.is_dir():
 default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
 compiled_dict_path = save_dir / "user.dic"
+
+
+def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
+    user_dict = {word_uuid: word.dict() for word_uuid, word in user_dict.items()}
+    # 予めjsonに変換できることを確かめる
+    user_dict_json = json.dumps(user_dict, ensure_ascii=False)
+    user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
 def user_dict_startup_processing(
@@ -35,7 +45,6 @@ def user_dict_startup_processing(
 
 def update_dict(
     default_dict_path: Path = default_dict_path,
-    user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
@@ -47,8 +56,8 @@ def update_dict(
             default_dict += "\n"
         f.write(default_dict)
         user_dict = read_dict()
-        for id in user_dict.words:
-            word = user_dict.words[id]
+        for word_uuid in user_dict:
+            word = user_dict[word_uuid]
             f.write(
                 "{},1348,1348,{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
                     word.surface,
@@ -82,20 +91,19 @@ def update_dict(
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
 
-def read_dict(user_dict_path: Path = user_dict_path) -> UserDictJson:
+def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
-        return UserDictJson(**{"next_id": 0, "words": {}})
+        return {}
     with user_dict_path.open(encoding="utf-8") as f:
-        return UserDictJson(**json.load(f))
+        return {
+            str(UUID(word_uuid)): UserDictWord(**word)
+            for word_uuid, word in json.load(f).items()
+        }
 
 
-def apply_word(**kwargs):
-    if "user_dict_path" in kwargs:
-        _user_dict_path = kwargs["user_dict_path"]
-    else:
-        _user_dict_path = user_dict_path
-    word = UserDictWord(
-        surface=kwargs["surface"],
+def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
+    return UserDictWord(
+        surface=surface,
         cost=8600,
         part_of_speech="名詞",
         part_of_speech_detail_1="固有名詞",
@@ -104,16 +112,58 @@ def apply_word(**kwargs):
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
-        yomi=kwargs["pronunciation"],
-        pronunciation=kwargs["pronunciation"],
-        accent_type=kwargs["accent_type"],
+        yomi=pronunciation,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
         accent_associative_rule="*",
     )
-    user_dict = read_dict(user_dict_path=_user_dict_path)
-    id = user_dict.next_id
-    user_dict.next_id += 1
-    user_dict.words[id] = word
-    with _user_dict_path.open(encoding="utf-8", mode="w") as f:
-        json.dump(user_dict.dict(), f, ensure_ascii=False)
-    _user_dict_path.write_text(user_dict.json(ensure_ascii=False), encoding="utf-8")
-    update_dict(user_dict_path=_user_dict_path)
+
+
+def apply_word(
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+) -> str:
+    word = create_word(
+        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+    )
+    user_dict = read_dict(user_dict_path=user_dict_path)
+    word_uuid = str(uuid4())
+    user_dict[word_uuid] = word
+    write_to_json(user_dict, user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
+    return word_uuid
+
+
+def rewrite_word(
+    word_uuid: str,
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    word = create_word(
+        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+    )
+    user_dict = read_dict(user_dict_path=user_dict_path)
+    if word_uuid not in user_dict:
+        raise HTTPException(status_code=422, detail="UUIDに該当するワードが見つかりませんでした")
+    user_dict[word_uuid] = word
+    write_to_json(user_dict, user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
+
+
+def delete_word(
+    word_uuid: str,
+    user_dict_path: Path = user_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    user_dict = read_dict(user_dict_path=user_dict_path)
+    if word_uuid not in user_dict:
+        raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
+    del user_dict[word_uuid]
+    write_to_json(user_dict, user_dict_path)
+    update_dict(compiled_dict_path=compiled_dict_path)
