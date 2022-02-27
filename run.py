@@ -23,8 +23,8 @@ from fastapi.params import Query
 from pydantic import ValidationError
 from starlette.responses import FileResponse
 
-# from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine import __version__
+from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
@@ -310,15 +310,22 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する（キャンセル可能）",
     )
-    def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
+    def cancellable_synthesis(
+        query: AudioQuery,
+        speaker: int,
+        request: Request,
+        core_version: Optional[str] = None,
+    ):
         if not args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        f_name = cancellable_engine.synthesis(
-            query=query, speaker_id=speaker, request=request
+        f_name = cancellable_engine._synthesis_impl(
+            query=query, speaker_id=speaker, request=request, core_version=core_version,
         )
+        if f_name == "":
+            raise HTTPException(status_code=422, detail="不明なバージョンです")
 
         return FileResponse(f_name, media_type="audio/wav")
 
@@ -690,10 +697,8 @@ if __name__ == "__main__":
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 
     cancellable_engine = None
-    # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
     if args.enable_cancellable_synthesis:
-        # cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
-        raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
+        cancellable_engine = CancellableEngine(args)
 
     uvicorn.run(
         generate_app(synthesis_engines, latest_core_version),
