@@ -92,6 +92,82 @@ curl -s \
     > audio.wav
 ```
 
+### ユーザー辞書機能について
+
+APIからユーザ辞書の参照、単語の追加、編集、削除を行うことができます。
+
+#### 参照
+
+`/user_dict`にGETリクエストを投げることでユーザ辞書の一覧を取得することができます。
+```bash
+curl -s -X GET "localhost:50021/user_dict"
+```
+
+#### 単語追加
+
+`/user_dict_word`にPOSTリクエストを投げる事でユーザ辞書に単語を追加することができます。  
+URLパラメータとして、以下が必要です。
+- surface （辞書に登録する単語）
+- pronunciation （カタカナでの読み方）
+- accent_type （アクセント核位置、整数）
+
+アクセント核位置については、こちらの文章が参考になるかと思います。  
+〇型となっている数字の部分がアクセント核位置になります。  
+https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html  
+
+成功した場合の返り値は単語に割り当てられるUUIDの文字列になります。
+
+```bash
+surface="test"
+pronunciation="テスト"
+accent_type="1"
+
+curl -s -X POST "localhost:50021/user_dict_word" \
+    --get \
+    --data-urlencode "surface=$surface" \
+    --data-urlencode "pronunciation=$pronunciation" \
+    --data-urlencode "accent_type=$accent_type"
+```
+
+#### 単語修正
+
+`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザ辞書の単語を修正することができます。  
+URLパラメータとして、以下が必要です。
+- surface （辞書に登録するワード）
+- pronunciation （カタカナでの読み方）
+- accent_type （アクセント核位置、整数）
+
+word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+成功した場合の返り値は`204 No Content`になります。
+
+```bash
+surface="test2"
+pronunciation="テストツー"
+accent_type="2"
+# 環境によってword_uuidは適宜書き換えてください
+word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
+
+curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
+    --get \
+    --data-urlencode "surface=$surface" \
+    --data-urlencode "pronunciation=$pronunciation" \
+    --data-urlencode "accent_type=$accent_type"
+```
+
+### 単語削除
+
+`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザ辞書の単語を削除することができます。  
+
+word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+成功した場合の返り値は`204 No Content`になります。
+
+```bash
+# 環境によってword_uuidは適宜書き換えてください
+word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
+
+curl -s -X DELETE "localhost:50021/user_dict_word/$word_uuid"
+```
+
 ### プリセット機能について
 
 `presets.yaml`を編集することで話者や話速などのプリセットを使うことができます。
