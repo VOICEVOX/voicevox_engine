@@ -125,14 +125,16 @@ def apply_word(
     accent_type: int,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
-):
+) -> str:
     word = create_word(
         surface=surface, pronunciation=pronunciation, accent_type=accent_type
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
-    user_dict[str(uuid4())] = word
+    word_uuid = str(uuid4())
+    user_dict[word_uuid] = word
     write_to_json(user_dict, user_dict_path)
     update_dict(compiled_dict_path=compiled_dict_path)
+    return word_uuid
 
 
 def rewrite_word(
