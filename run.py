@@ -561,7 +561,7 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
-    @app.post("/user_dict_word", status_code=204, tags=["ユーザー辞書"])
+    @app.post("/user_dict_word", response_model=str, tags=["ユーザー辞書"])
     def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
         """
         ユーザ辞書に言葉を追加します。
@@ -576,10 +576,10 @@ def generate_app(
             アクセント型（音が下がる場所を指す）
         """
         try:
-            apply_word(
+            word_uuid = apply_word(
                 surface=surface, pronunciation=pronunciation, accent_type=accent_type
             )
-            return Response(status_code=204)
+            return Response(content=word_uuid)
         except ValidationError as e:
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
