@@ -764,8 +764,8 @@ jobs:
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
-      - name: Run release test workflow
-        uses: ./.github/workflows/release-test.yml
-        with:
-          version: ${{ github.ref }} # == github.event.release.tag_name
-          repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }}  # このリポジトリのURL
+  run-release-test-workflow:
+    uses: ./.github/workflows/release-test.yml
+    with:
+      version: ${{ github.ref }} # == github.event.release.tag_name
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }}  # このリポジトリのURL
