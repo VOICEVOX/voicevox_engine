@@ -20,8 +20,8 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# assert VOICEVOX_CORE_VERSION >= 0.10.0 (ONNX)
-ARG VOICEVOX_CORE_VERSION=0.10.0
+# assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
+ARG VOICEVOX_CORE_VERSION=0.11.0
 ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
 RUN <<EOF
     set -eux

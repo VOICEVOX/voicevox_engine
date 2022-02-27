@@ -10,10 +10,11 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-  PYTHON_VERSION: '3.8.10'
-  VOICEVOX_RESOURCE_VERSION: '0.10.0'
-  VOICEVOX_CORE_VERSION: '0.10.0'
-  VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
+  PYTHON_VERSION: "3.8.10"
+  VOICEVOX_RESOURCE_VERSION: "0.11.0"
+  VOICEVOX_CORE_VERSION: "0.11.0"
+  VOICEVOX_ENGINE_VERSION:
+    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
 jobs:
@@ -22,12 +23,12 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: macos-11
-          python_architecture: "x64"
-          pip_cache_path: ~/Library/Caches/pip
-          voicevox_core_library_name: libcore_cpu_universal2.dylib
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
-          artifact_name: macos-x64
+          - os: macos-11
+            python_architecture: "x64"
+            pip_cache_path: ~/Library/Caches/pip
+            voicevox_core_library_name: libcore_cpu_universal2.dylib
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
+            artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
 
@@ -240,24 +241,24 @@ jobs:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
         include:
-        - tag: build-cpu-ubuntu18.04
-          runtime_tag: cpu-ubuntu18.04 # for cache use
-          target: build-env
-          base_image: ubuntu:bionic
-          base_runtime_image: ubuntu:bionic
-          voicevox_core_library_name: libcore_cpu_x64.so
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
-          artifact_name: linux-cpu
-          nuitka_cache_path: nuitka_cache
-        - tag: build-nvidia-ubuntu18.04
-          runtime_tag: nvidia-ubuntu18.04 # for cache use
-          target: build-env
-          base_image: ubuntu:bionic
-          base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
-          voicevox_core_library_name: libcore_gpu_x64_nvidia.so
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
-          artifact_name: linux-nvidia
-          nuitka_cache_path: nuitka_cache
+          - tag: build-cpu-ubuntu18.04
+            runtime_tag: cpu-ubuntu18.04 # for cache use
+            target: build-env
+            base_image: ubuntu:bionic
+            base_runtime_image: ubuntu:bionic
+            voicevox_core_library_name: libcore_cpu_x64.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            artifact_name: linux-cpu
+            nuitka_cache_path: nuitka_cache
+          - tag: build-nvidia-ubuntu18.04
+            runtime_tag: nvidia-ubuntu18.04 # for cache use
+            target: build-env
+            base_image: ubuntu:bionic
+            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            artifact_name: linux-nvidia
+            nuitka_cache_path: nuitka_cache
 
     runs-on: ${{ matrix.os }}
 
@@ -363,26 +364,26 @@ jobs:
     strategy:
       matrix:
         include:
-        # Windows CPU
-        - os: windows-2019
-          python_architecture: 'x64'
-          voicevox_core_dll_name: core_cpu_x64.dll
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
-          ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
-          artifact_name: windows-cpu
-          nuitka_cache_path: nuitka_cache
-          pip_cache_path: ~\AppData\Local\pip\Cache
-        # Windows NVIDIA GPU
-        - os: windows-2019
-          python_architecture: 'x64'
-          voicevox_core_dll_name: core_gpu_x64_nvidia.dll
-          onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
-          cuda_version: '11.4.2'
-          cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
-          ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
-          artifact_name: windows-nvidia
-          nuitka_cache_path: nuitka_cache
-          pip_cache_path: ~\AppData\Local\pip\Cache
+          # Windows CPU
+          - os: windows-2019
+            python_architecture: "x64"
+            voicevox_core_dll_name: core_cpu_x64.dll
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
+            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
+            artifact_name: windows-cpu
+            nuitka_cache_path: nuitka_cache
+            pip_cache_path: ~\AppData\Local\pip\Cache
+          # Windows NVIDIA GPU
+          - os: windows-2019
+            python_architecture: "x64"
+            voicevox_core_dll_name: core_gpu_x64_nvidia.dll
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
+            cuda_version: "11.4.2"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
+            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
+            artifact_name: windows-nvidia
+            nuitka_cache_path: nuitka_cache
+            pip_cache_path: ~\AppData\Local\pip\Cache
 
     runs-on: ${{ matrix.os }}
 
@@ -770,4 +771,4 @@ jobs:
     uses: ./.github/workflows/release-test.yml
     with:
       version: ${{ github.ref }} # == github.event.release.tag_name
-      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }}  # このリポジトリのURL
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL

@@ -10,10 +10,10 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-  PYTHON_VERSION: '3.8.10'
-  VOICEVOX_CORE_VERSION: '0.10.0'
-  VOICEVOX_CORE_SOURCE_VERSION: '0.10.0'
-  VOICEVOX_ENGINE_VERSION: |- # releaseのときはタグが、それ以外はlatestがバージョン名に
+  PYTHON_VERSION: "3.8.10"
+  VOICEVOX_CORE_VERSION: "0.11.0"
+  VOICEVOX_ENGINE_VERSION:
+    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         tag:
-          - ''
+          - ""
           - cpu
           - cpu-ubuntu20.04
           - nvidia
@@ -93,7 +93,8 @@ jobs:
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v2
         env:
-          IMAGE_TAG: |- # If it's a release, add the version, otherwise add the `latest`
+          IMAGE_TAG:
+            |- # If it's a release, add the version, otherwise add the `latest`
             ${{ (
               matrix.tag != '' && (
                 format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, env.VOICEVOX_ENGINE_VERSION)
