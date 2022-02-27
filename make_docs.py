@@ -1,6 +1,6 @@
 import json
 
-import run
+import run  # noqa
 from voicevox_engine.dev.core import mock as core
 from voicevox_engine.dev.synthesis_engine.mock import MockSynthesisEngine
 
