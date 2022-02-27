@@ -14,7 +14,7 @@ def make_synthesis_engines(
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
     runtime_dirs: Optional[List[Path]] = None,
-    cpu_num_threads: int = 0,
+    cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
 ) -> Dict[str, SynthesisEngineBase]:
     """
@@ -37,12 +37,14 @@ def make_synthesis_engines(
     enable_mock: bool, optional, default=True
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     """
-    if cpu_num_threads == 0:
+    if cpu_num_threads == 0 or cpu_num_threads is None:
         print(
             "Warning: cpu_num_threads is set to 0. "
             + "( The library leaves the decision to the synthesis runtime )",
             file=sys.stderr,
         )
+        cpu_num_threads = 0
+
     root_dir = engine_root()
 
     if voicevox_dir is not None:

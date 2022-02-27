@@ -683,6 +683,7 @@ if __name__ == "__main__":
         voicelib_dirs=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
         runtime_dirs=args.runtime_dir,
+        cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
