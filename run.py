@@ -322,7 +322,10 @@ def generate_app(
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         f_name = cancellable_engine._synthesis_impl(
-            query=query, speaker_id=speaker, request=request, core_version=core_version,
+            query=query,
+            speaker_id=speaker,
+            request=request,
+            core_version=core_version,
         )
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")

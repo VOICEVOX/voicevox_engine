@@ -113,7 +113,11 @@ class CancellableEngine:
             self.procs_and_cons.put(self.start_new_proc())
 
     def _synthesis_impl(
-        self, query: AudioQuery, speaker_id: Speaker, request: Request, core_version: Optional[str]
+        self,
+        query: AudioQuery,
+        speaker_id: Speaker,
+        request: Request,
+        core_version: Optional[str],
     ) -> str:
         """
         音声合成を行う関数
