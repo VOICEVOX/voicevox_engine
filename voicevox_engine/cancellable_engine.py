@@ -1,9 +1,9 @@
 import argparse
 import asyncio
 import queue
+from distutils.version import LooseVersion
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
-from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
@@ -14,9 +14,6 @@ from fastapi import HTTPException, Request
 
 from .model import AudioQuery, Speaker
 from .synthesis_engine import make_synthesis_engines
-
-# FIXME: coreのctypes実装への対応
-raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
 
 
 class CancellableEngine:
@@ -36,14 +33,12 @@ class CancellableEngine:
         （音声合成中のプロセスは入っていない）
     """
 
-    def __init__(self, args, voicelib_dir, cpu_num_threads: Optional[int]) -> None:
+    def __init__(self, args: argparse.Namespace) -> None:
         """
         変数の初期化を行う
         また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
         self.args = args
-        self.voicelib_dir = voicelib_dir
-        self.cpu_num_threads = cpu_num_threads
         if not self.args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
@@ -73,9 +68,7 @@ class CancellableEngine:
             target=start_synthesis_subprocess,
             kwargs={
                 "args": self.args,
-                "voicelib_dir": self.voicelib_dir,
                 "sub_proc_con": sub_proc_con2,
-                "cpu_num_threads": self.cpu_num_threads,
             },
             daemon=True,
         )
@@ -120,7 +113,11 @@ class CancellableEngine:
             self.procs_and_cons.put(self.start_new_proc())
 
     def _synthesis_impl(
-        self, query: AudioQuery, speaker_id: Speaker, request: Request
+        self,
+        query: AudioQuery,
+        speaker_id: Speaker,
+        request: Request,
+        core_version: Optional[str],
     ) -> str:
         """
         音声合成を行う関数
@@ -134,6 +131,7 @@ class CancellableEngine:
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
+        core_version: str
 
         Returns
         -------
@@ -143,7 +141,7 @@ class CancellableEngine:
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
-            sub_proc_con1.send((query, speaker_id))
+            sub_proc_con1.send((query, speaker_id, core_version))
             f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
@@ -176,9 +174,7 @@ class CancellableEngine:
 
 def start_synthesis_subprocess(
     args: argparse.Namespace,
-    voicelib_dir: Path,
     sub_proc_con: Connection,
-    cpu_num_threads: Optional[int],
 ):
     """
     音声合成を行うサブプロセスで行うための関数
@@ -192,17 +188,28 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    engine = make_synthesis_engines(
+    synthesis_engines = make_synthesis_engines(
         use_gpu=args.use_gpu,
+        voicelib_dirs=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
-        voicelib_dir=voicelib_dir,
         runtime_dirs=args.runtime_dir,
-        cpu_num_threads=cpu_num_threads,
+        cpu_num_threads=args.cpu_num_threads,
+        enable_mock=args.enable_mock,
     )
+    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
     while True:
         try:
-            query, speaker_id = sub_proc_con.recv()
-            wave = engine.synthesis(query=query, speaker_id=speaker_id)
+            query, speaker_id, core_version = sub_proc_con.recv()
+            if core_version is None:
+                _engine = synthesis_engines[latest_core_version]
+            elif core_version in synthesis_engines:
+                _engine = synthesis_engines[core_version]
+            else:
+                # バージョンが見つからないエラー
+                sub_proc_con.send("")
+                continue
+            wave = _engine._synthesis_impl(query, speaker_id)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
