@@ -1,10 +1,11 @@
 import json
 
-import run  # noqa
 from voicevox_engine.dev.core import mock as core
 from voicevox_engine.dev.synthesis_engine.mock import MockSynthesisEngine
 
 if __name__ == "__main__":
+    import run
+
     app = run.generate_app(
         synthesis_engines={"mock": MockSynthesisEngine(speakers=core.metas())},
         latest_core_version="mock",
