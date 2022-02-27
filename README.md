@@ -154,7 +154,7 @@ curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
     --data-urlencode "accent_type=$accent_type"
 ```
 
-### 単語削除
+#### 単語削除
 
 `/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザ辞書の単語を削除することができます。  
 
