@@ -22,7 +22,7 @@ def test_release_build(dist_dir: Path) -> None:
 
     # 起動
     process = Popen([run_file.absolute()], cwd=dist_dir)
-    time.sleep(60)  # 待機
+    time.sleep(120)  # 待機
 
     # バージョン取得テスト
     req = Request(base_url + "version")
