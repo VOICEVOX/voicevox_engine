@@ -770,5 +770,5 @@ jobs:
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.ref }} # == github.event.release.tag_name
+      version: ${{ github.event.release.tag_name }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
