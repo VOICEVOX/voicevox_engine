@@ -151,6 +151,7 @@ class UserDictWord(BaseModel):
 
     surface: str = Field(title="表層形")
     cost: int = Field(title="コストの値")
+    context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
     part_of_speech_detail_2: str = Field(title="品詞細分類2")
@@ -223,6 +224,18 @@ class UserDictWord(BaseModel):
                 )
             )
         return mora_count
+
+
+class PartOfSpeechDetail(BaseModel):
+    """
+    品詞ごとの情報
+    """
+
+    part_of_speech: str = Field(title="品詞")
+    part_of_speech_detail_1: str = Field(title="品詞細分類1")
+    part_of_speech_detail_2: str = Field(title="品詞細分類2")
+    part_of_speech_detail_3: str = Field(title="品詞細分類3")
+    context_id: int = Field(title="文脈ID")
 
 
 class SupportedDevicesInfo(BaseModel):
