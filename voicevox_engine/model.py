@@ -180,10 +180,18 @@ class UserDictWord(BaseModel):
     def check_is_katakana(cls, pronunciation):
         if not fullmatch(r"[ァ-ヴー]+", pronunciation):
             raise ValueError("発音は有効なカタカナでなくてはいけません。")
-        sute_gana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]
+        sute_gana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ャ", "ュ", "ョ", "ヮ", "ッ"]
         for i in range(len(pronunciation)):
             if pronunciation[i] in sute_gana:
-                if i < len(pronunciation) - 1 and pronunciation[i + 1] in sute_gana:
+                # 「キャット」のように、捨て仮名が連続する可能性が考えられるので、
+                # 「ッ」に関しては「ッ」そのものが連続している場合と、「ッ」の後にほかの捨て仮名が連続する場合のみ無効とする
+                if i < len(pronunciation) - 1 and (
+                    pronunciation[i + 1] in sute_gana[:-1]
+                    or (
+                        pronunciation[i] == sute_gana[-1]
+                        and pronunciation[i + 1] == sute_gana[-1]
+                    )
+                ):
                     raise ValueError("無効な発音です。(捨て仮名の連続)")
             if pronunciation[i] == "ヮ":
                 if i != 0 and pronunciation[i - 1] not in ["ク", "グ"]:
