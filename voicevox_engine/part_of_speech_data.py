@@ -10,6 +10,13 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_3="*",
         context_id=1348,
     ),
+    "普通名詞": PartOfSpeechDetail(
+        part_of_speech="名詞",
+        part_of_speech_detail_1="一般",
+        part_of_speech_detail_2="*",
+        part_of_speech_detail_3="*",
+        context_id=1345,
+    ),
     "動詞": PartOfSpeechDetail(
         part_of_speech="動詞",
         part_of_speech_detail_1="自立",

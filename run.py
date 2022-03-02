@@ -590,7 +590,7 @@ def generate_app(
         accent_type: int
             アクセント型（音が下がる場所を指す）
         part_of_speech: str, optional
-            固有名詞、動詞、形容詞、語尾のいずれか
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         """
         try:
             word_uuid = apply_word(
@@ -628,7 +628,7 @@ def generate_app(
         word_uuid: str
             更新する言葉のUUID
         part_of_speech: str, optional
-            固有名詞、動詞、形容詞、語尾のいずれか
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         """
         try:
             rewrite_word(
