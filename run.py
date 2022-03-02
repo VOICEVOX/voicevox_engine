@@ -35,6 +35,7 @@ from voicevox_engine.model import (
     SpeakerInfo,
     SupportedDevicesInfo,
     UserDictWord,
+    WordTypes,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -576,7 +577,7 @@ def generate_app(
         surface: str,
         pronunciation: str,
         accent_type: int,
-        word_type: Optional[str] = None,
+        word_type: Optional[WordTypes] = None,
     ):
         """
         ユーザ辞書に言葉を追加します。
@@ -612,7 +613,7 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_uuid: str,
-        word_type: Optional[str] = None,
+        word_type: Optional[WordTypes] = None,
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。

@@ -240,6 +240,18 @@ class PartOfSpeechDetail(BaseModel):
     context_id: int = Field(title="文脈ID")
 
 
+class WordTypes(str, Enum):
+    """
+    fastapiでword_type引数を検証する時に使用するクラス
+    """
+
+    PROPER_NOUN = "固有名詞"
+    COMMON_NOUN = "普通名詞"
+    VERB = "動詞"
+    ADJECTIVE = "形容詞"
+    SUFFIX = "語尾"
+
+
 class SupportedDevicesInfo(BaseModel):
     """
     対応しているデバイスの情報
