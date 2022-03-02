@@ -108,13 +108,13 @@ def create_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    part_of_speech: Optional[str] = None,
+    word_type: Optional[str] = None,
 ) -> UserDictWord:
-    if part_of_speech is None:
-        part_of_speech = "固有名詞"
-    if part_of_speech not in part_of_speech_data.keys():
+    if word_type is None:
+        word_type = "固有名詞"
+    if word_type not in part_of_speech_data.keys():
         raise HTTPException(status_code=422, detail="不明な品詞です")
-    pos_detail = part_of_speech_data[part_of_speech]
+    pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
         context_id=pos_detail.context_id,
@@ -137,7 +137,7 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    part_of_speech: Optional[str] = None,
+    word_type: Optional[str] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
@@ -145,7 +145,7 @@ def apply_word(
         surface=surface,
         pronunciation=pronunciation,
         accent_type=accent_type,
-        part_of_speech=part_of_speech,
+        word_type=word_type,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     word_uuid = str(uuid4())
@@ -160,7 +160,7 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    part_of_speech: Optional[str] = None,
+    word_type: Optional[str] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
@@ -168,7 +168,7 @@ def rewrite_word(
         surface=surface,
         pronunciation=pronunciation,
         accent_type=accent_type,
-        part_of_speech=part_of_speech,
+        word_type=word_type,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
