@@ -35,6 +35,7 @@ from voicevox_engine.model import (
     SpeakerInfo,
     SupportedDevicesInfo,
     UserDictWord,
+    WordTypes,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -572,7 +573,12 @@ def generate_app(
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
     @app.post("/user_dict_word", response_model=str, tags=["ユーザー辞書"])
-    def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
+    def add_user_dict_word(
+        surface: str,
+        pronunciation: str,
+        accent_type: int,
+        word_type: Optional[WordTypes] = None,
+    ):
         """
         ユーザ辞書に言葉を追加します。
 
@@ -584,10 +590,15 @@ def generate_app(
             言葉の発音（カタカナ）
         accent_type: int
             アクセント型（音が下がる場所を指す）
+        word_type: str, optional
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         """
         try:
             word_uuid = apply_word(
-                surface=surface, pronunciation=pronunciation, accent_type=accent_type
+                surface=surface,
+                pronunciation=pronunciation,
+                accent_type=accent_type,
+                word_type=word_type,
             )
             return Response(content=word_uuid)
         except ValidationError as e:
@@ -598,7 +609,11 @@ def generate_app(
 
     @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
-        surface: str, pronunciation: str, accent_type: int, word_uuid: str
+        surface: str,
+        pronunciation: str,
+        accent_type: int,
+        word_uuid: str,
+        word_type: Optional[WordTypes] = None,
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。
@@ -613,6 +628,8 @@ def generate_app(
             アクセント型（音が下がる場所を指す）
         word_uuid: str
             更新する言葉のUUID
+        word_type: str, optional
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         """
         try:
             rewrite_word(
@@ -620,6 +637,7 @@ def generate_app(
                 pronunciation=pronunciation,
                 accent_type=accent_type,
                 word_uuid=word_uuid,
+                word_type=word_type,
             )
             return Response(status_code=204)
         except HTTPException:

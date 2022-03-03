@@ -151,6 +151,7 @@ class UserDictWord(BaseModel):
 
     surface: str = Field(title="表層形")
     cost: int = Field(title="コストの値")
+    context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
     part_of_speech_detail_2: str = Field(title="品詞細分類2")
@@ -223,6 +224,32 @@ class UserDictWord(BaseModel):
                 )
             )
         return mora_count
+
+
+class PartOfSpeechDetail(BaseModel):
+    """
+    品詞ごとの情報
+    """
+
+    part_of_speech: str = Field(title="品詞")
+    part_of_speech_detail_1: str = Field(title="品詞細分類1")
+    part_of_speech_detail_2: str = Field(title="品詞細分類2")
+    part_of_speech_detail_3: str = Field(title="品詞細分類3")
+    # context_idは辞書の左・右文脈IDのこと
+    # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
+    context_id: int = Field(title="文脈ID")
+
+
+class WordTypes(str, Enum):
+    """
+    fastapiでword_type引数を検証する時に使用するクラス
+    """
+
+    PROPER_NOUN = "固有名詞"
+    COMMON_NOUN = "普通名詞"
+    VERB = "動詞"
+    ADJECTIVE = "形容詞"
+    SUFFIX = "語尾"
 
 
 class SupportedDevicesInfo(BaseModel):

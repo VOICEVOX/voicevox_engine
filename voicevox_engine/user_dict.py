@@ -2,7 +2,7 @@ import json
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict
+from typing import Dict, Optional
 from uuid import UUID, uuid4
 
 import pyopenjtalk
@@ -10,6 +10,7 @@ from appdirs import user_data_dir
 from fastapi import HTTPException
 
 from .model import UserDictWord
+from .part_of_speech_data import part_of_speech_data
 from .utility import engine_root
 
 root_dir = engine_root()
@@ -59,8 +60,10 @@ def update_dict(
         for word_uuid in user_dict:
             word = user_dict[word_uuid]
             f.write(
-                "{},1348,1348,{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
+                "{},{},{},{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
                     word.surface,
+                    word.context_id,
+                    word.context_id,
                     word.cost,
                     word.part_of_speech,
                     word.part_of_speech_detail_1,
@@ -101,14 +104,25 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
         }
 
 
-def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
+def create_word(
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    word_type: Optional[str] = None,
+) -> UserDictWord:
+    if word_type is None:
+        word_type = "固有名詞"
+    if word_type not in part_of_speech_data.keys():
+        raise HTTPException(status_code=422, detail="不明な品詞です")
+    pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
+        context_id=pos_detail.context_id,
         cost=8600,
-        part_of_speech="名詞",
-        part_of_speech_detail_1="固有名詞",
-        part_of_speech_detail_2="一般",
-        part_of_speech_detail_3="*",
+        part_of_speech=pos_detail.part_of_speech,
+        part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
+        part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
+        part_of_speech_detail_3=pos_detail.part_of_speech_detail_3,
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
@@ -123,11 +137,15 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
+    word_type: Optional[str] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
     word = create_word(
-        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+        surface=surface,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
+        word_type=word_type,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     word_uuid = str(uuid4())
@@ -142,11 +160,15 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
+    word_type: Optional[str] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     word = create_word(
-        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+        surface=surface,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
+        word_type=word_type,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
