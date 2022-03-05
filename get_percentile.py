@@ -1,4 +1,5 @@
 import argparse
+import statistics
 from pathlib import Path
 from typing import List
 
@@ -40,7 +41,17 @@ def get_percentile(
             ):
                 costs.append(int(_cost))
     assert len(costs) > 0
-    return np.percentile(costs, np.arange(101)).astype(np.int64).tolist()
+    cost_min = min(costs) - 1
+    cost_1per = np.quantile(costs, 0.01).astype(np.int64)
+    cost_mode = statistics.mode(costs)
+    cost_99per = np.quantile(costs, 0.99).astype(np.int64)
+    cost_max = max(costs) + 1
+    return (
+        [cost_min]
+        + [int(cost_1per + (cost_mode - cost_1per) * i / 4) for i in range(5)]
+        + [int(cost_mode + (cost_99per - cost_mode) * i / 4) for i in range(1, 5)]
+        + [cost_max]
+    )
 
 
 if __name__ == "__main__":
