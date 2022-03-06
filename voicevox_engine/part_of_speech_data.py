@@ -9,7 +9,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_2="一般",
         part_of_speech_detail_3="*",
         context_id=1348,
-        cost_percentile=[
+        cost_candidates=[
             -988,
             3488,
             4768,
@@ -29,7 +29,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=1345,
-        cost_percentile=[
+        cost_candidates=[
             -4445,
             49,
             1473,
@@ -49,7 +49,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=642,
-        cost_percentile=[
+        cost_candidates=[
             3100,
             6160,
             6360,
@@ -69,7 +69,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=20,
-        cost_percentile=[
+        cost_candidates=[
             1527,
             3266,
             3561,
@@ -89,7 +89,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
         part_of_speech_detail_2="一般",
         part_of_speech_detail_3="*",
         context_id=1358,
-        cost_percentile=[
+        cost_candidates=[
             4399,
             5373,
             6041,

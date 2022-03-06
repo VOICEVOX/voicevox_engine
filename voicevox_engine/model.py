@@ -238,7 +238,7 @@ class PartOfSpeechDetail(BaseModel):
     # context_idは辞書の左・右文脈IDのこと
     # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
     context_id: int = Field(title="文脈ID")
-    cost_percentile: List[int] = Field(title="コストのパーセンタイル")
+    cost_candidates: List[int] = Field(title="コストのパーセンタイル")
 
 
 class WordTypes(str, Enum):

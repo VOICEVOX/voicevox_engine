@@ -1,15 +1,15 @@
 """
-voicevox_engine/part_of_speech_data.pyのcost_percentileを計算するプログラムです。
+voicevox_engine/part_of_speech_data.pyのcost_candidatesを計算するプログラムです。
 引数のnaist_jdic_pathには、open_jtalkのsrc/mecab-naist-jdic/naist-jdic.csvを指定してください。
 
 実行例:
-python get_percentile.py --naist_jdic_path=/path/to/naist-jdic.csv \
+python get_cost_candidates.py --naist_jdic_path=/path/to/naist-jdic.csv \
     --pos=名詞 \
     --pos_detail_1=固有名詞 \
     --pos_detail_2=一般 \
     --pos_detail_3=*
 
-cost_percentileの値の詳細は以下の通りです。
+cost_candidatesの値の詳細は以下の通りです。
 - 1番目の値はnaist_jdic内の同一品詞の最小コストから1を引いたもの、11番目の値は最大コストに1を足したものです。
 - 2番目の値はnaist_jdic内の同一品詞のコストの下位1%、10番目の値は99%の値です。
 - 6番目の値はnaist_jdic内の同一品詞のコストの最頻値です。
@@ -24,7 +24,7 @@ from typing import List
 import numpy as np
 
 
-def get_percentile(
+def get_candidates(
     naist_jdic_path: Path,
     pos: str,
     pos_detail_1: str,
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("--pos_detail_3", type=str)
     args = parser.parse_args()
     print(
-        get_percentile(
+        get_candidates(
             naist_jdic_path=args.naist_jdic_path,
             pos=args.pos,
             pos_detail_1=args.pos_detail_1,
