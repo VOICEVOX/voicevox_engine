@@ -109,16 +109,21 @@ def create_word(
     pronunciation: str,
     accent_type: int,
     word_type: Optional[str] = None,
+    priority: Optional[int] = None,
 ) -> UserDictWord:
     if word_type is None:
         word_type = "固有名詞"
     if word_type not in part_of_speech_data.keys():
         raise HTTPException(status_code=422, detail="不明な品詞です")
+    if priority is None:
+        priority = 5
+    if not 0 <= priority <= 10:
+        raise HTTPException(status_code=422, detail="優先度の値が無効です")
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
         context_id=pos_detail.context_id,
-        cost=8600,
+        cost=pos_detail.cost_candidates[priority],
         part_of_speech=pos_detail.part_of_speech,
         part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
         part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
@@ -138,6 +143,7 @@ def apply_word(
     pronunciation: str,
     accent_type: int,
     word_type: Optional[str] = None,
+    priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
@@ -146,6 +152,7 @@ def apply_word(
         pronunciation=pronunciation,
         accent_type=accent_type,
         word_type=word_type,
+        priority=priority,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     word_uuid = str(uuid4())
@@ -161,6 +168,7 @@ def rewrite_word(
     pronunciation: str,
     accent_type: int,
     word_type: Optional[str] = None,
+    priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
@@ -169,6 +177,7 @@ def rewrite_word(
         pronunciation=pronunciation,
         accent_type=accent_type,
         word_type=word_type,
+        priority=priority,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:

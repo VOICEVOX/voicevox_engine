@@ -20,7 +20,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
-from pydantic import ValidationError
+from pydantic import ValidationError, conint
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -578,6 +578,7 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_type: Optional[WordTypes] = None,
+        priority: Optional[conint(ge=0, le=10)] = None,
     ):
         """
         ユーザ辞書に言葉を追加します。
@@ -592,6 +593,10 @@ def generate_app(
             アクセント型（音が下がる場所を指す）
         word_type: str, optional
             固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        priority: int, optional
+            単語の優先度（0から10までの整数）
+            数字が小さいほど優先度が高くなる
+            1から9までの値を指定することを推奨
         """
         try:
             word_uuid = apply_word(
@@ -599,6 +604,7 @@ def generate_app(
                 pronunciation=pronunciation,
                 accent_type=accent_type,
                 word_type=word_type,
+                priority=priority,
             )
             return Response(content=word_uuid)
         except ValidationError as e:
@@ -614,6 +620,7 @@ def generate_app(
         accent_type: int,
         word_uuid: str,
         word_type: Optional[WordTypes] = None,
+        priority: Optional[conint(ge=0, le=10)] = None,
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。
@@ -630,6 +637,10 @@ def generate_app(
             更新する言葉のUUID
         word_type: str, optional
             固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        priority: int, optional
+            単語の優先度（0から10までの整数）
+            数字が小さいほど優先度が高くなる
+            1から9までの値を指定することを推奨
         """
         try:
             rewrite_word(
@@ -638,6 +649,7 @@ def generate_app(
                 accent_type=accent_type,
                 word_uuid=word_uuid,
                 word_type=word_type,
+                priority=priority,
             )
             return Response(status_code=204)
         except HTTPException:

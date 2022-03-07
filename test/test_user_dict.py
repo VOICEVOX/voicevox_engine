@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from pyopenjtalk import unset_user_dict
 
 from voicevox_engine.model import UserDictWord
+from voicevox_engine.part_of_speech_data import part_of_speech_data
 from voicevox_engine.user_dict import (
     apply_word,
     create_word,
@@ -67,7 +68,7 @@ class TestUserDict(TestCase):
             create_word(surface="test", pronunciation="テスト", accent_type=1),
             UserDictWord(
                 surface="ｔｅｓｔ",
-                cost=8600,
+                cost=part_of_speech_data["固有名詞"].cost_candidates[5],
                 part_of_speech="名詞",
                 part_of_speech_detail_1="固有名詞",
                 part_of_speech_detail_2="一般",
@@ -188,3 +189,17 @@ class TestUserDict(TestCase):
             compiled_dict_path=(self.tmp_dir_path / "test_delete_word_valid_id.dic"),
         )
         self.assertEqual(len(read_dict(user_dict_path=user_dict_path)), 0)
+
+    def test_priority(self):
+        for pos in part_of_speech_data:
+            for i in range(11):
+                self.assertEqual(
+                    create_word(
+                        surface="test",
+                        pronunciation="テスト",
+                        accent_type=1,
+                        word_type=pos,
+                        priority=i,
+                    ).cost,
+                    part_of_speech_data[pos].cost_candidates[i],
+                )
