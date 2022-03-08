@@ -10,7 +10,7 @@ from appdirs import user_data_dir
 from fastapi import HTTPException
 
 from .model import UserDictWord
-from .part_of_speech_data import part_of_speech_data
+from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root
 
 root_dir = engine_root()
@@ -117,13 +117,13 @@ def create_word(
         raise HTTPException(status_code=422, detail="不明な品詞です")
     if priority is None:
         priority = 5
-    if not 0 <= priority <= 10:
+    if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
         raise HTTPException(status_code=422, detail="優先度の値が無効です")
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
         context_id=pos_detail.context_id,
-        cost=pos_detail.cost_candidates[priority],
+        cost=pos_detail.cost_candidates[MAX_PRIORITY - priority],
         part_of_speech=pos_detail.part_of_speech,
         part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
         part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,

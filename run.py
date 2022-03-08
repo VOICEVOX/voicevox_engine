@@ -41,6 +41,7 @@ from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
+from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
@@ -578,7 +579,7 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=0, le=10)] = None,
+        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
         ユーザ辞書に言葉を追加します。
@@ -595,7 +596,7 @@ def generate_app(
             固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         priority: int, optional
             単語の優先度（0から10までの整数）
-            数字が小さいほど優先度が高くなる
+            数字が大きいほど優先度が高くなる
             1から9までの値を指定することを推奨
         """
         try:
@@ -620,7 +621,7 @@ def generate_app(
         accent_type: int,
         word_uuid: str,
         word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=0, le=10)] = None,
+        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。
@@ -639,7 +640,7 @@ def generate_app(
             固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
         priority: int, optional
             単語の優先度（0から10までの整数）
-            数字が小さいほど優先度が高くなる
+            数字が大きいほど優先度が高くなる
             1から9までの値を指定することを推奨
         """
         try:

@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from pyopenjtalk import unset_user_dict
 
 from voicevox_engine.model import UserDictWord
-from voicevox_engine.part_of_speech_data import part_of_speech_data
+from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
 from voicevox_engine.user_dict import (
     apply_word,
     create_word,
@@ -201,5 +201,5 @@ class TestUserDict(TestCase):
                         word_type=pos,
                         priority=i,
                     ).cost,
-                    part_of_speech_data[pos].cost_candidates[i],
+                    part_of_speech_data[pos].cost_candidates[MAX_PRIORITY - i],
                 )
