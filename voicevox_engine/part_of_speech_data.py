@@ -2,6 +2,9 @@ from typing import Dict
 
 from .model import PartOfSpeechDetail
 
+MIN_PRIORITY = 0
+MAX_PRIORITY = 10
+
 part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
     "固有名詞": PartOfSpeechDetail(
         part_of_speech="名詞",
