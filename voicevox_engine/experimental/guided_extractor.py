@@ -69,6 +69,10 @@ def _extract_julius():
 
 
 def resample_ts(timestamp: str):
+    """
+    0.9375 = 24000 / 256 / 1000 * 10
+    10 is for julius4seg produces timestamp in 10 ms
+    """
     return int((float(timestamp) * 0.9375))
 
 

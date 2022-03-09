@@ -229,6 +229,16 @@ def generate_app(
         normalize: bool = Form(...),  # noqa:B008
         core_version: Optional[str] = None,
     ):
+        """
+        Extracts f0 and aligned phonemes, calculates average f0 for every phoneme.
+        Returns a list of AccentPhrase.
+        **This API works in the resolution of phonemes.**
+        """
+        if not args.enable_guided_synthesis:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -495,15 +505,25 @@ def generate_app(
     def guided_synthesis(
         kana: str = Form(...),  # noqa: B008
         speaker_id: int = Form(...),  # noqa: B008
-        normalize: int = Form(...),  # noqa: B008
+        normalize: bool = Form(...),  # noqa: B008
         audio_file: UploadFile = File(...),  # noqa: B008
-        stereo: int = Form(...),  # noqa: B008
+        stereo: bool = Form(...),  # noqa: B008
         sample_rate: int = Form(...),  # noqa: B008
         volume_scale: float = Form(...),  # noqa: B008
         pitch_scale: float = Form(...),  # noqa: B008
         speed_scale: float = Form(...),  # noqa: B008
         core_version: Optional[str] = None,
     ):
+        """
+        Extracts and passes the f0 and aligned phonemes to engine.
+        Returns the synthesized audio.
+        **This API works in the resolution of frame.**
+        """
+        if not args.enable_guided_synthesis:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
         engine = get_engine(core_version)
         try:
             accent_phrases = parse_kana(kana)
@@ -799,6 +819,7 @@ if __name__ == "__main__":
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
+    parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
