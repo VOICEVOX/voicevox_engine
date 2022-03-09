@@ -192,7 +192,7 @@ class TestUserDict(TestCase):
 
     def test_priority(self):
         for pos in part_of_speech_data:
-            for i in range(11):
+            for i in range(MAX_PRIORITY + 1):
                 self.assertEqual(
                     create_word(
                         surface="test",
