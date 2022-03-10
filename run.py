@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from pydantic import ValidationError, conint
@@ -218,6 +218,76 @@ def generate_app(
             return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
+        "/guided_accent_phrase",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="Create Accent Phrase from External Audio",
+    )
+    def guided_accent_phrase(
+        text: str = Form(...),  # noqa:B008
+        speaker: int = Form(...),  # noqa:B008
+        is_kana: bool = Form(...),  # noqa:B008
+        audio_file: UploadFile = File(...),  # noqa: B008
+        normalize: bool = Form(...),  # noqa:B008
+        core_version: Optional[str] = None,
+    ):
+        """
+        Extracts f0 and aligned phonemes, calculates average f0 for every phoneme.
+        Returns a list of AccentPhrase.
+        **This API works in the resolution of phonemes.**
+        """
+        if not args.enable_guided_synthesis:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
+        engine = get_engine(core_version)
+        if is_kana:
+            try:
+                accent_phrases = parse_kana(text)
+            except ParseKanaError as err:
+                raise HTTPException(
+                    status_code=400,
+                    detail=ParseKanaBadRequest(err).dict(),
+                )
+        else:
+            accent_phrases = engine.create_accent_phrases(
+                text,
+                speaker_id=speaker,
+            )
+
+        try:
+            return engine.guided_accent_phrases(
+                accent_phrases=accent_phrases,
+                speaker=speaker,
+                audio_file=audio_file.file,
+                normalize=normalize,
+            )
+        except ParseKanaError as err:
+            raise HTTPException(
+                status_code=422,
+                detail=ParseKanaBadRequest(err).dict(),
+            )
+        except StopIteration:
+            print(traceback.format_exc())
+            raise HTTPException(
+                status_code=500,
+                detail="Failed in Forced Alignment",
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+            if str(e) == "Decode Failed":
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed in Forced Alignment",
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Internal Server Error",
+                )
+
+    @app.post(
         "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
@@ -378,7 +448,7 @@ def generate_app(
                             format="WAV",
                         )
                         wav_file.seek(0)
-                        zip_file.writestr(f"{str(i+1).zfill(3)}.wav", wav_file.read())
+                        zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
         return FileResponse(f.name, media_type="application/zip")
 
@@ -431,6 +501,90 @@ def generate_app(
             )
 
         return FileResponse(f.name, media_type="audio/wav")
+
+    @app.post(
+        "/guided_synthesis",
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="Audio synthesis guided by external audio and phonemes",
+    )
+    def guided_synthesis(
+        kana: str = Form(...),  # noqa: B008
+        speaker_id: int = Form(...),  # noqa: B008
+        normalize: bool = Form(...),  # noqa: B008
+        audio_file: UploadFile = File(...),  # noqa: B008
+        stereo: bool = Form(...),  # noqa: B008
+        sample_rate: int = Form(...),  # noqa: B008
+        volume_scale: float = Form(...),  # noqa: B008
+        pitch_scale: float = Form(...),  # noqa: B008
+        speed_scale: float = Form(...),  # noqa: B008
+        core_version: Optional[str] = None,
+    ):
+        """
+        Extracts and passes the f0 and aligned phonemes to engine.
+        Returns the synthesized audio.
+        **This API works in the resolution of frame.**
+        """
+        if not args.enable_guided_synthesis:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
+        engine = get_engine(core_version)
+        try:
+            accent_phrases = parse_kana(kana)
+            query = AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=speed_scale,
+                pitchScale=pitch_scale,
+                intonationScale=1,
+                volumeScale=volume_scale,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=sample_rate,
+                outputStereo=stereo,
+                kana=kana,
+            )
+            wave = engine.guided_synthesis(
+                audio_file=audio_file.file,
+                query=query,
+                speaker=speaker_id,
+                normalize=normalize,
+            )
+
+            with NamedTemporaryFile(delete=False) as f:
+                soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
+
+            return FileResponse(f.name, media_type="audio/wav")
+        except ParseKanaError as err:
+            raise HTTPException(
+                status_code=400,
+                detail=ParseKanaBadRequest(err).dict(),
+            )
+        except StopIteration:
+            print(traceback.format_exc())
+            raise HTTPException(
+                status_code=500,
+                detail="Failed in Forced Alignment.",
+            )
+        except Exception as e:
+            print(traceback.format_exc())
+            if str(e) == "Decode Failed":
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed in Forced Alignment.",
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Internal Server Error.",
+                )
 
     @app.post(
         "/connect_waves",
@@ -706,6 +860,7 @@ if __name__ == "__main__":
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
+    parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。

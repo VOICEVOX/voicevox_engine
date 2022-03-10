@@ -1,6 +1,7 @@
 import copy
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional
+from typing.io import IO
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
@@ -223,4 +224,24 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         wave : numpy.ndarray
             音声合成結果
         """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def guided_synthesis(
+        self,
+        query: AudioQuery,
+        speaker: int,
+        audio_file: IO,
+        normalize: int,
+    ):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def guided_accent_phrases(
+        self,
+        accent_phrases: List[AccentPhrase],
+        speaker: int,
+        audio_file: IO,
+        normalize: int,
+    ) -> List[AccentPhrase]:
         raise NotImplementedError()
