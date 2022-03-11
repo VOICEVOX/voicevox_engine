@@ -47,6 +47,7 @@ from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
+    import_user_dict,
     read_dict,
     rewrite_word,
     user_dict_startup_processing,
@@ -833,6 +834,27 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+
+    @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
+    def import_user_dict_words(
+        import_dict_data: Dict[str, UserDictWord], override: bool
+    ):
+        """
+        他のユーザー辞書をインポートします。
+
+        Parameters
+        ----------
+        import_dict_data: Dict[str, UserDictWord]
+            インポートするユーザー辞書のデータ
+        override: bool
+            重複したエントリがあった場合、上書きするかどうか
+        """
+        try:
+            import_user_dict(dict_data=import_dict_data, override=override)
+            return Response(status_code=204)
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
