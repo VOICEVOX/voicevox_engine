@@ -1,0 +1,59 @@
+name: upload-docs
+
+on:
+  push:
+    branches:
+      - "master"
+
+env:
+  PIP_CACHE_PATH: "~/.cache/pip"
+  PYTHON_VERSION: "3.8.10"
+  PUBLISH_DIR: "./docs/api"
+  PUBLISH_BRANCH: "gh-pages"
+  PYTHON_ARCHITECTURE: "x64"
+
+jobs:
+  upload-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ env.PYTHON_ARCHITECTURE }}
+
+      - name: Prepare Python dependencies cache
+        uses: actions/cache@v2
+        id: pip-cache
+        with:
+          path: ${{ env.PIP_CACHE_PATH }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install libraries for ubuntu
+        if: ${{ runner.os }} == 'ubuntu-latest'
+        run: sudo apt-get install libsndfile1
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          # FIXME: Nuitka cannot build with setuptools>=60.7.0
+          # https://github.com/Nuitka/Nuitka/issues/1406
+          pip install --upgrade pip setuptools==60.6.0 wheel
+          pip install -r requirements-dev.txt
+
+      - name: Make documents
+        shell: bash
+        run: |
+          python make_docs.py
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.PUBLISH_DIR }}
+          publish_branch: ${{ env.PUBLISH_BRANCH }}
