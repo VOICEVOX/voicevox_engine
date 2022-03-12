@@ -67,6 +67,13 @@ CORE_INFOS = [
         is_gpu_core=True,
     ),
     CoreInfo(
+        name="core_gpu_x64_directml.dll",
+        platform="Windows",
+        arch="x64",
+        core_type="onnxruntime",
+        is_gpu_core=True,
+    ),
+    CoreInfo(
         name="core_cpu_x64.dll",
         platform="Windows",
         arch="x64",
