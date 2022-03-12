@@ -12,7 +12,8 @@ import numpy as np
 def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
-        # (参考: https://github.com/microsoft/onnxruntime/issues/3360, https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616)
+        # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
+        # 参考 2. https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616
         lib_file_names = [
             "torch_cpu.dll",
             "torch_cuda.dll",
