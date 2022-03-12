@@ -189,10 +189,16 @@ def get_arch_name() -> Optional[str]:
 
 
 def get_core_name(
-    arch_name: str, platform_name: str, model_type: str, is_cuda_core: bool, is_directml_core: bool
+    arch_name: str,
+    platform_name: str,
+    model_type: str,
+    is_cuda_core: bool,
+    is_directml_core: bool,
 ) -> Optional[str]:
     if platform_name == "Darwin":
-        if (not is_cuda_core and not is_directml_core) and (arch_name == "x64" or arch_name == "aarch64"):
+        if (not is_cuda_core and not is_directml_core) and (
+            arch_name == "x64" or arch_name == "aarch64"
+        ):
             arch_name = "universal"
         else:
             return None
@@ -208,12 +214,16 @@ def get_core_name(
     return None
 
 
-def get_suitable_core_name(model_type: str, is_cuda_core: bool, is_directml_core: bool) -> Optional[str]:
+def get_suitable_core_name(
+    model_type: str, is_cuda_core: bool, is_directml_core: bool
+) -> Optional[str]:
     arch_name = get_arch_name()
     if arch_name is None:
         return None
     platform_name = platform.system()
-    return get_core_name(arch_name, platform_name, model_type, is_cuda_core, is_directml_core)
+    return get_core_name(
+        arch_name, platform_name, model_type, is_cuda_core, is_directml_core
+    )
 
 
 def check_core_type(core_dir: Path) -> Optional[str]:
@@ -223,9 +233,15 @@ def check_core_type(core_dir: Path) -> Optional[str]:
         get_suitable_core_name("libtorch", is_cuda_core=False, is_directml_core=False),
     ]
     onnxruntime_core_names = [
-        get_suitable_core_name("onnxruntime", is_cuda_core=True, is_directml_core=False),
-        get_suitable_core_name("onnxruntime", is_cuda_core=False, is_directml_core=True),
-        get_suitable_core_name("onnxruntime", is_cuda_core=False, is_directml_core=False),
+        get_suitable_core_name(
+            "onnxruntime", is_cuda_core=True, is_directml_core=False
+        ),
+        get_suitable_core_name(
+            "onnxruntime", is_cuda_core=False, is_directml_core=True
+        ),
+        get_suitable_core_name(
+            "onnxruntime", is_cuda_core=False, is_directml_core=False
+        ),
     ]
     if any([(core_dir / name).is_file() for name in libtorch_core_names if name]):
         return "libtorch"
@@ -240,25 +256,33 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
     if use_gpu or model_type == "onnxruntime":
-        core_name = get_suitable_core_name(model_type, is_cuda_core=True, is_directml_core=False)
+        core_name = get_suitable_core_name(
+            model_type, is_cuda_core=True, is_directml_core=False
+        )
         if core_name:
             try:
                 return CDLL(str((core_dir / core_name).resolve(strict=True)))
             except OSError:
                 pass
-        core_name = get_suitable_core_name(model_type, is_cuda_core=False, is_directml_core=True)
+        core_name = get_suitable_core_name(
+            model_type, is_cuda_core=False, is_directml_core=True
+        )
         if core_name:
             try:
                 return CDLL(str((core_dir / core_name).resolve(strict=True)))
             except OSError:
                 pass
-    core_name = get_suitable_core_name(model_type, is_cuda_core=False, is_directml_core=False)
+    core_name = get_suitable_core_name(
+        model_type, is_cuda_core=False, is_directml_core=False
+    )
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
         except OSError as err:
             if model_type == "libtorch":
-                core_name = get_suitable_core_name(model_type, is_cuda_core=True, is_directml_core=False)
+                core_name = get_suitable_core_name(
+                    model_type, is_cuda_core=True, is_directml_core=False
+                )
                 if core_name:
                     try:
                         return CDLL(str((core_dir / core_name).resolve(strict=True)))
