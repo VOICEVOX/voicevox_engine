@@ -13,7 +13,12 @@ def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # (参考: https://github.com/microsoft/onnxruntime/issues/3360, https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616)
-        lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "DirectML.dll", "onnxruntime.dll"]
+        lib_file_names = [
+            "torch_cpu.dll",
+            "torch_cuda.dll",
+            "DirectML.dll",
+            "onnxruntime.dll",
+        ]
         lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
     elif platform.system() == "Linux":
         lib_file_names = ["libtorch.so", "libonnxruntime.so"]
