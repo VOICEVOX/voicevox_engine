@@ -102,6 +102,14 @@ CORE_INFOS = [
         is_directml_core=False,
     ),
     CoreInfo(
+        name="core_gpu_x86_directml.dll",
+        platform="Windows",
+        arch="x86",
+        core_type="onnxruntime",
+        is_cuda_core=False,
+        is_directml_core=True,
+    ),
+    CoreInfo(
         name="core_cpu_arm.dll",
         platform="Windows",
         arch="armv7l",
@@ -110,12 +118,28 @@ CORE_INFOS = [
         is_directml_core=False,
     ),
     CoreInfo(
+        name="core_gpu_arm_directml.dll",
+        platform="Windows",
+        arch="armv7l",
+        core_type="onnxruntime",
+        is_cuda_core=False,
+        is_directml_core=True,
+    ),
+    CoreInfo(
         name="core_cpu_arm64.dll",
         platform="Windows",
         arch="aarch64",
         core_type="onnxruntime",
         is_cuda_core=False,
         is_directml_core=False,
+    ),
+    CoreInfo(
+        name="core_gpu_arm64_directml.dll",
+        platform="Windows",
+        arch="aarch64",
+        core_type="onnxruntime",
+        is_cuda_core=False,
+        is_directml_core=True,
     ),
     # Linux
     CoreInfo(
