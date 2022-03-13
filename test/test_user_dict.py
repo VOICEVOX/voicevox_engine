@@ -13,6 +13,7 @@ from voicevox_engine.user_dict import (
     apply_word,
     create_word,
     delete_word,
+    import_user_dict,
     read_dict,
     rewrite_word,
 )
@@ -34,6 +35,22 @@ valid_dict_dict = {
         "accent_associative_rule": "*",
     },
 }
+
+import_word = UserDictWord(
+    surface="ｔｅｓｔ２",
+    cost=5000,
+    part_of_speech="名詞",
+    part_of_speech_detail_1="固有名詞",
+    part_of_speech_detail_2="一般",
+    part_of_speech_detail_3="*",
+    inflectional_type="*",
+    inflectional_form="*",
+    stem="*",
+    yomi="テストツー",
+    pronunciation="テストツー",
+    accent_type=1,
+    accent_associative_rule="*",
+)
 
 
 def get_new_word(user_dict: Dict[str, UserDictWord]):
@@ -203,3 +220,58 @@ class TestUserDict(TestCase):
                     ).cost,
                     part_of_speech_data[pos].cost_candidates[MAX_PRIORITY - i],
                 )
+
+    def test_import_dict(self):
+        user_dict_path = self.tmp_dir_path / "test_import_dict.json"
+        compiled_dict_path = self.tmp_dir_path / "test_import_dict.dic"
+        user_dict_path.write_text(
+            json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
+        )
+        import_user_dict(
+            {"b1affe2a-d5f0-4050-926c-f28e0c1d9a98": import_word},
+            override=False,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
+        )
+        self.assertEqual(
+            read_dict(user_dict_path)["b1affe2a-d5f0-4050-926c-f28e0c1d9a98"],
+            import_word,
+        )
+        self.assertEqual(
+            read_dict(user_dict_path)["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"],
+            UserDictWord(**valid_dict_dict["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"]),
+        )
+
+    def test_import_dict_no_override(self):
+        user_dict_path = self.tmp_dir_path / "test_import_dict_no_override.json"
+        compiled_dict_path = self.tmp_dir_path / "test_import_dict_no_override.dic"
+        user_dict_path.write_text(
+            json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
+        )
+        import_user_dict(
+            {"aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": import_word},
+            override=False,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
+        )
+        self.assertEqual(
+            read_dict(user_dict_path)["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"],
+            UserDictWord(**valid_dict_dict["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"]),
+        )
+
+    def test_import_dict_override(self):
+        user_dict_path = self.tmp_dir_path / "test_import_dict_override.json"
+        compiled_dict_path = self.tmp_dir_path / "test_import_dict_override.dic"
+        user_dict_path.write_text(
+            json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
+        )
+        import_user_dict(
+            {"aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": import_word},
+            override=True,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
+        )
+        self.assertEqual(
+            read_dict(user_dict_path)["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"],
+            import_word,
+        )
