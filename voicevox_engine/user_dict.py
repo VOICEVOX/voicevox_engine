@@ -62,8 +62,9 @@ def update_dict(
             f.write(
                 (
                     "{surface},{context_id},{context_id},{cost},{part_of_speech},"
-                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},{part_of_speech_detail_3},"
-                    + "{inflectional_type},{inflectional_form},{stem},{yomi},{pronunciation},"
+                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
+                    + "{part_of_speech_detail_3},{inflectional_type},"
+                    + "{inflectional_form},{stem},{yomi},{pronunciation},"
                     + "{accent_type}/{mora_count},{accent_associative_rule}\n"
                 ).format(
                     surface=word.surface,
