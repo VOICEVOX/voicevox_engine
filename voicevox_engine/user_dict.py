@@ -60,23 +60,28 @@ def update_dict(
         for word_uuid in user_dict:
             word = user_dict[word_uuid]
             f.write(
-                "{},{},{},{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
-                    word.surface,
-                    word.context_id,
-                    word.context_id,
-                    word.cost,
-                    word.part_of_speech,
-                    word.part_of_speech_detail_1,
-                    word.part_of_speech_detail_2,
-                    word.part_of_speech_detail_3,
-                    word.inflectional_type,
-                    word.inflectional_form,
-                    word.stem,
-                    word.yomi,
-                    word.pronunciation,
-                    word.accent_type,
-                    word.mora_count,
-                    word.accent_associative_rule,
+                (
+                    "{surface},{context_id},{context_id},{cost},{part_of_speech},"
+                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},{part_of_speech_detail_3},"
+                    + "{inflectional_type},{inflectional_form},{stem},{yomi},{pronunciation},"
+                    + "{accent_type}/{mora_count},{accent_associative_rule}\n"
+                ).format(
+                    surface=word.surface,
+                    context_id=word.context_id,
+                    context_id=word.context_id,
+                    cost=word.cost,
+                    part_of_speech=word.part_of_speech,
+                    part_of_speech_detail_1=word.part_of_speech_detail_1,
+                    part_of_speech_detail_2=word.part_of_speech_detail_2,
+                    part_of_speech_detail_3=word.part_of_speech_detail_3,
+                    inflectional_type=word.inflectional_type,
+                    inflectional_form=word.inflectional_form,
+                    stem=word.stem,
+                    yomi=word.yomi,
+                    pronunciation=word.pronunciation,
+                    accent_type=word.accent_type,
+                    mora_count=word.mora_count,
+                    accent_associative_rule=word.accent_associative_rule,
                 )
             )
     tmp_dict_path = Path(NamedTemporaryFile(delete=False).name).resolve()
