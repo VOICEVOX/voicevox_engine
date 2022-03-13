@@ -68,7 +68,6 @@ def update_dict(
                 ).format(
                     surface=word.surface,
                     context_id=word.context_id,
-                    context_id=word.context_id,
                     cost=word.cost,
                     part_of_speech=word.part_of_speech,
                     part_of_speech_detail_1=word.part_of_speech_detail_1,
