@@ -233,4 +233,4 @@ class SupportedDevicesInfo(BaseModel):
 
     cpu: bool = Field(title="CPUに対応しているか")
     cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
-    dml: bool = Field(title="DirectML(Radeon GPU)に対応しているか")
+    dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
