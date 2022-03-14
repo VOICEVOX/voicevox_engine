@@ -203,3 +203,25 @@ def delete_word(
     del user_dict[word_uuid]
     write_to_json(user_dict, user_dict_path)
     update_dict(compiled_dict_path=compiled_dict_path)
+
+
+def import_user_dict(
+    dict_data: Dict[str, UserDictWord],
+    override: bool = False,
+    user_dict_path: Path = user_dict_path,
+    default_dict_path: Path = default_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    # 念のため型チェックを行う
+    for word_uuid, word in dict_data.items():
+        UUID(word_uuid)
+        assert type(word) == UserDictWord
+    old_dict = read_dict(user_dict_path=user_dict_path)
+    if override:
+        new_dict = {**old_dict, **dict_data}
+    else:
+        new_dict = {**dict_data, **old_dict}
+    write_to_json(user_dict=new_dict, user_dict_path=user_dict_path)
+    update_dict(
+        default_dict_path=default_dict_path, compiled_dict_path=compiled_dict_path
+    )
