@@ -3,6 +3,7 @@ import platform
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
 from dataclasses import dataclass
+from enum import Enum, auto
 from pathlib import Path
 from typing import List, Optional
 
@@ -11,7 +12,15 @@ import numpy as np
 
 def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
-        lib_file_names = ["torch_cpu.dll", "torch_cuda.dll", "onnxruntime.dll"]
+        # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
+        # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
+        # 参考 2. https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616
+        lib_file_names = [
+            "torch_cpu.dll",
+            "torch_cuda.dll",
+            "DirectML.dll",
+            "onnxruntime.dll",
+        ]
         lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
     elif platform.system() == "Linux":
         lib_file_names = ["libtorch.so", "libonnxruntime.so"]
@@ -34,13 +43,20 @@ def load_runtime_lib(runtime_dirs: List[Path]):
             pass
 
 
+class GPUType(Enum):
+    # NONEはCPUしか対応していないことを示す
+    NONE = auto()
+    CUDA = auto()
+    DIRECT_ML = auto()
+
+
 @dataclass(frozen=True)
 class CoreInfo:
     name: str
     platform: str
     arch: str
     core_type: str
-    is_gpu_core: bool
+    gpu_type: GPUType
 
 
 CORE_INFOS = [
@@ -50,49 +66,77 @@ CORE_INFOS = [
         platform="Windows",
         arch="x64",
         core_type="libtorch",
-        is_gpu_core=True,
+        gpu_type=GPUType.CUDA,
     ),
     CoreInfo(
         name="core_cpu.dll",
         platform="Windows",
         arch="x64",
         core_type="libtorch",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     CoreInfo(
         name="core_gpu_x64_nvidia.dll",
         platform="Windows",
         arch="x64",
         core_type="onnxruntime",
-        is_gpu_core=True,
+        gpu_type=GPUType.CUDA,
+    ),
+    CoreInfo(
+        name="core_gpu_x64_directml.dll",
+        platform="Windows",
+        arch="x64",
+        core_type="onnxruntime",
+        gpu_type=GPUType.DIRECT_ML,
     ),
     CoreInfo(
         name="core_cpu_x64.dll",
         platform="Windows",
         arch="x64",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     CoreInfo(
         name="core_cpu_x86.dll",
         platform="Windows",
         arch="x86",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
+    ),
+    CoreInfo(
+        name="core_gpu_x86_directml.dll",
+        platform="Windows",
+        arch="x86",
+        core_type="onnxruntime",
+        gpu_type=GPUType.DIRECT_ML,
     ),
     CoreInfo(
         name="core_cpu_arm.dll",
         platform="Windows",
         arch="armv7l",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
+    ),
+    CoreInfo(
+        name="core_gpu_arm_directml.dll",
+        platform="Windows",
+        arch="armv7l",
+        core_type="onnxruntime",
+        gpu_type=GPUType.DIRECT_ML,
     ),
     CoreInfo(
         name="core_cpu_arm64.dll",
         platform="Windows",
         arch="aarch64",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
+    ),
+    CoreInfo(
+        name="core_gpu_arm64_directml.dll",
+        platform="Windows",
+        arch="aarch64",
+        core_type="onnxruntime",
+        gpu_type=GPUType.DIRECT_ML,
     ),
     # Linux
     CoreInfo(
@@ -100,42 +144,42 @@ CORE_INFOS = [
         platform="Linux",
         arch="x64",
         core_type="libtorch",
-        is_gpu_core=True,
+        gpu_type=GPUType.CUDA,
     ),
     CoreInfo(
         name="libcore_cpu.so",
         platform="Linux",
         arch="x64",
         core_type="libtorch",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     CoreInfo(
         name="libcore_gpu_x64_nvidia.so",
         platform="Linux",
         arch="x64",
         core_type="onnxruntime",
-        is_gpu_core=True,
+        gpu_type=GPUType.CUDA,
     ),
     CoreInfo(
         name="libcore_cpu_x64.so",
         platform="Linux",
         arch="x64",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     CoreInfo(
         name="libcore_cpu_armhf.so",
         platform="Linux",
         arch="armv7l",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     CoreInfo(
         name="libcore_cpu_arm64.so",
         platform="Linux",
         arch="aarch64",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
     # macOS
     CoreInfo(
@@ -143,7 +187,7 @@ CORE_INFOS = [
         platform="Darwin",
         arch="universal",
         core_type="onnxruntime",
-        is_gpu_core=False,
+        gpu_type=GPUType.NONE,
     ),
 ]
 
@@ -166,10 +210,13 @@ def get_arch_name() -> Optional[str]:
 
 
 def get_core_name(
-    arch_name: str, platform_name: str, model_type: str, is_gpu_core: bool
+    arch_name: str,
+    platform_name: str,
+    model_type: str,
+    gpu_type: GPUType,
 ) -> Optional[str]:
     if platform_name == "Darwin":
-        if (not is_gpu_core) and (arch_name == "x64" or arch_name == "aarch64"):
+        if gpu_type == GPUType.NONE and (arch_name == "x64" or arch_name == "aarch64"):
             arch_name = "universal"
         else:
             return None
@@ -178,28 +225,33 @@ def get_core_name(
             core_info.platform == platform_name
             and core_info.arch == arch_name
             and core_info.core_type == model_type
-            and core_info.is_gpu_core == is_gpu_core
+            and core_info.gpu_type == gpu_type
         ):
             return core_info.name
     return None
 
 
-def get_suitable_core_name(model_type: str, is_gpu_core: bool) -> Optional[str]:
+def get_suitable_core_name(
+    model_type: str,
+    gpu_type: GPUType,
+) -> Optional[str]:
     arch_name = get_arch_name()
     if arch_name is None:
         return None
     platform_name = platform.system()
-    return get_core_name(arch_name, platform_name, model_type, is_gpu_core)
+    return get_core_name(arch_name, platform_name, model_type, gpu_type)
 
 
 def check_core_type(core_dir: Path) -> Optional[str]:
+    # libtorch版はDirectML未対応なので、ここでは`gpu_type=GPUType.DIRECT_ML`は入れない
     libtorch_core_names = [
-        get_suitable_core_name("libtorch", is_gpu_core=True),
-        get_suitable_core_name("libtorch", is_gpu_core=False),
+        get_suitable_core_name("libtorch", gpu_type=GPUType.CUDA),
+        get_suitable_core_name("libtorch", gpu_type=GPUType.NONE),
     ]
     onnxruntime_core_names = [
-        get_suitable_core_name("onnxruntime", is_gpu_core=True),
-        get_suitable_core_name("onnxruntime", is_gpu_core=False),
+        get_suitable_core_name("onnxruntime", gpu_type=GPUType.CUDA),
+        get_suitable_core_name("onnxruntime", gpu_type=GPUType.DIRECT_ML),
+        get_suitable_core_name("onnxruntime", gpu_type=GPUType.NONE),
     ]
     if any([(core_dir / name).is_file() for name in libtorch_core_names if name]):
         return "libtorch"
@@ -214,19 +266,25 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
     if use_gpu or model_type == "onnxruntime":
-        core_name = get_suitable_core_name(model_type, is_gpu_core=True)
+        core_name = get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
         if core_name:
             try:
                 return CDLL(str((core_dir / core_name).resolve(strict=True)))
             except OSError:
                 pass
-    core_name = get_suitable_core_name(model_type, is_gpu_core=False)
+        core_name = get_suitable_core_name(model_type, gpu_type=GPUType.DIRECT_ML)
+        if core_name:
+            try:
+                return CDLL(str((core_dir / core_name).resolve(strict=True)))
+            except OSError:
+                pass
+    core_name = get_suitable_core_name(model_type, gpu_type=GPUType.NONE)
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
         except OSError as err:
             if model_type == "libtorch":
-                core_name = get_suitable_core_name(model_type, is_gpu_core=True)
+                core_name = get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
                 if core_name:
                     try:
                         return CDLL(str((core_dir / core_name).resolve(strict=True)))
