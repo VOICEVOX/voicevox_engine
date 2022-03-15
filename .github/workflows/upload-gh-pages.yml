@@ -10,7 +10,6 @@ env:
   PYTHON_VERSION: "3.8.10"
   PUBLISH_DIR: "./docs/api"
   PUBLISH_BRANCH: "gh-pages"
-  PYTHON_ARCHITECTURE: "x64"
 
 jobs:
   upload-doc:
@@ -23,7 +22,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ env.PYTHON_ARCHITECTURE }}
 
       - name: Prepare Python dependencies cache
         uses: actions/cache@v2
@@ -35,16 +33,12 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install libraries for ubuntu
-        if: ${{ runner.os }} == 'ubuntu-latest'
         run: sudo apt-get install libsndfile1
 
       - name: Install Python dependencies
         shell: bash
         run: |
-          # FIXME: Nuitka cannot build with setuptools>=60.7.0
-          # https://github.com/Nuitka/Nuitka/issues/1406
-          pip install --upgrade pip setuptools==60.6.0 wheel
-          pip install -r requirements-dev.txt
+          pip install -r requirements.txt
 
       - name: Make documents
         shell: bash
