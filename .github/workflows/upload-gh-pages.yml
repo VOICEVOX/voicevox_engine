@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "master"
-      - "modify-api-doc-link"
 
 env:
   PIP_CACHE_PATH: "~/.cache/pip"
