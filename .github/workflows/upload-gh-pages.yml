@@ -11,7 +11,7 @@ env:
   PYTHON_VERSION: "3.8.10"
   PUBLISH_DIR: "./docs/api"
   PUBLISH_BRANCH: "gh-pages"
-  DESTINATION_DIR: "API"
+  DESTINATION_DIR: "api"
 
 jobs:
   upload-doc:
