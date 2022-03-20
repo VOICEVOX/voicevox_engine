@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from pydantic import ValidationError, conint
@@ -219,12 +219,12 @@ def generate_app(
             return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
-        "/guided_accent_phrase",
+        "/guided_accent_phrases",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
         summary="Create Accent Phrase from External Audio",
     )
-    def guided_accent_phrase(
+    def guided_accent_phrases(
         query: AudioQuery,
         speaker: int,
         core_version: Optional[str] = None,
@@ -519,7 +519,9 @@ def generate_app(
             )
 
             with NamedTemporaryFile(delete=False) as f:
-                soundfile.write(file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV")
+                soundfile.write(
+                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+                )
 
             return FileResponse(f.name, media_type="audio/wav")
         except ParseKanaError as err:
