@@ -43,6 +43,13 @@ class AccentPhrase(BaseModel):
         return hash(tuple(sorted(items)))
 
 
+class GuidedInfo(BaseModel):
+    enabled: bool = Field(title="If the guided feature is enabled for this sentence")
+    audioPath: str = Field(title="Full path to external audio source")
+    normalize: bool = Field(title="If true, the pitch will be normalized to predicted average")
+    precise: bool = Field(title="GUI parameter")
+
+
 class AudioQuery(BaseModel):
     """
     音声合成用のクエリ
@@ -58,6 +65,7 @@ class AudioQuery(BaseModel):
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+    guidedInfo: Optional[GuidedInfo] = Field(title="[Readonly] Setting for guided synthesis and guided accent phrases")
 
     def __hash__(self):
         items = [
