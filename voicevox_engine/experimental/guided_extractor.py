@@ -93,7 +93,7 @@ def _no_nan(num):
     return 0.0 if np.isnan(num) else num
 
 
-def extract_guided_feature(audio_file: IO, kana: str):
+def extract_guided_feature(audio_file: str, kana: str):
     _lazy_init()
     sr, wave = wavfile.read(audio_file)
     # stereo to mono

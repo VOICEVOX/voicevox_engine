@@ -49,6 +49,13 @@ class GuidedInfo(BaseModel):
     normalize: bool = Field(title="If true, the pitch will be normalized to predicted average")
     precise: bool = Field(title="GUI parameter")
 
+    def __hash__(self):
+        items = [
+            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            for k, v in self.__dict__.items()
+        ]
+        return hash(tuple(sorted(items)))
+
 
 class AudioQuery(BaseModel):
     """

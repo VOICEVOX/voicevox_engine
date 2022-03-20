@@ -222,11 +222,8 @@ def generate_app(
         summary="Create Accent Phrase from External Audio",
     )
     def guided_accent_phrase(
-        text: str = Form(...),  # noqa:B008
-        speaker: int = Form(...),  # noqa:B008
-        is_kana: bool = Form(...),  # noqa:B008
-        audio_file: UploadFile = File(...),  # noqa: B008
-        normalize: bool = Form(...),  # noqa:B008
+        query: AudioQuery,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         """
@@ -240,26 +237,10 @@ def generate_app(
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         engine = get_engine(core_version)
-        if is_kana:
-            try:
-                accent_phrases = parse_kana(text)
-            except ParseKanaError as err:
-                raise HTTPException(
-                    status_code=400,
-                    detail=ParseKanaBadRequest(err).dict(),
-                )
-        else:
-            accent_phrases = engine.create_accent_phrases(
-                text,
-                speaker_id=speaker,
-            )
-
         try:
             return engine.guided_accent_phrases(
-                accent_phrases=accent_phrases,
+                query=query,
                 speaker=speaker,
-                audio_file=audio_file.file,
-                normalize=normalize,
             )
         except ParseKanaError as err:
             raise HTTPException(
@@ -503,15 +484,8 @@ def generate_app(
         summary="Audio synthesis guided by external audio and phonemes",
     )
     def guided_synthesis(
-        kana: str = Form(...),  # noqa: B008
-        speaker_id: int = Form(...),  # noqa: B008
-        normalize: bool = Form(...),  # noqa: B008
-        audio_file: UploadFile = File(...),  # noqa: B008
-        stereo: bool = Form(...),  # noqa: B008
-        sample_rate: int = Form(...),  # noqa: B008
-        volume_scale: float = Form(...),  # noqa: B008
-        pitch_scale: float = Form(...),  # noqa: B008
-        speed_scale: float = Form(...),  # noqa: B008
+        query: AudioQuery,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         """
@@ -526,28 +500,13 @@ def generate_app(
             )
         engine = get_engine(core_version)
         try:
-            accent_phrases = parse_kana(kana)
-            query = AudioQuery(
-                accent_phrases=accent_phrases,
-                speedScale=speed_scale,
-                pitchScale=pitch_scale,
-                intonationScale=1,
-                volumeScale=volume_scale,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-                outputSamplingRate=sample_rate,
-                outputStereo=stereo,
-                kana=kana,
-            )
             wave = engine.guided_synthesis(
-                audio_file=audio_file.file,
                 query=query,
-                speaker=speaker_id,
-                normalize=normalize,
+                speaker=speaker,
             )
 
             with NamedTemporaryFile(delete=False) as f:
-                soundfile.write(file=f, data=wave, samplerate=sample_rate, format="WAV")
+                soundfile.write(file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV")
 
             return FileResponse(f.name, media_type="audio/wav")
         except ParseKanaError as err:

@@ -231,17 +231,14 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self,
         query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
+        core_version: Optional[str] = None,
     ):
         raise NotImplementedError()
 
     @abstractmethod
     def guided_accent_phrases(
         self,
-        accent_phrases: List[AccentPhrase],
+        query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
     ) -> List[AccentPhrase]:
         raise NotImplementedError()
