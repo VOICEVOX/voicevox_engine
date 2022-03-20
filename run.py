@@ -20,11 +20,11 @@ import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
-from pydantic import ValidationError
+from pydantic import ValidationError, conint
 from starlette.responses import FileResponse
 
-# from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine import __version__
+from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
@@ -35,16 +35,19 @@ from voicevox_engine.model import (
     SpeakerInfo,
     SupportedDevicesInfo,
     UserDictWord,
+    WordTypes,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
+from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset import Preset, PresetLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
+    import_user_dict,
     read_dict,
     rewrite_word,
     user_dict_startup_processing,
@@ -361,15 +364,25 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する（キャンセル可能）",
     )
-    def cancellable_synthesis(query: AudioQuery, speaker: int, request: Request):
+    def cancellable_synthesis(
+        query: AudioQuery,
+        speaker: int,
+        request: Request,
+        core_version: Optional[str] = None,
+    ):
         if not args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        f_name = cancellable_engine.synthesis(
-            query=query, speaker_id=speaker, request=request
+        f_name = cancellable_engine._synthesis_impl(
+            query=query,
+            speaker_id=speaker,
+            request=request,
+            core_version=core_version,
         )
+        if f_name == "":
+            raise HTTPException(status_code=422, detail="不明なバージョンです")
 
         return FileResponse(f_name, media_type="audio/wav")
 
@@ -675,7 +688,13 @@ def generate_app(
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
     @app.post("/user_dict_word", response_model=str, tags=["ユーザー辞書"])
-    def add_user_dict_word(surface: str, pronunciation: str, accent_type: int):
+    def add_user_dict_word(
+        surface: str,
+        pronunciation: str,
+        accent_type: int,
+        word_type: Optional[WordTypes] = None,
+        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
+    ):
         """
         ユーザ辞書に言葉を追加します。
 
@@ -687,10 +706,20 @@ def generate_app(
             言葉の発音（カタカナ）
         accent_type: int
             アクセント型（音が下がる場所を指す）
+        word_type: str, optional
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        priority: int, optional
+            単語の優先度（0から10までの整数）
+            数字が大きいほど優先度が高くなる
+            1から9までの値を指定することを推奨
         """
         try:
             word_uuid = apply_word(
-                surface=surface, pronunciation=pronunciation, accent_type=accent_type
+                surface=surface,
+                pronunciation=pronunciation,
+                accent_type=accent_type,
+                word_type=word_type,
+                priority=priority,
             )
             return Response(content=word_uuid)
         except ValidationError as e:
@@ -701,7 +730,12 @@ def generate_app(
 
     @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
-        surface: str, pronunciation: str, accent_type: int, word_uuid: str
+        surface: str,
+        pronunciation: str,
+        accent_type: int,
+        word_uuid: str,
+        word_type: Optional[WordTypes] = None,
+        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
         ユーザ辞書に登録されている言葉を更新します。
@@ -716,6 +750,12 @@ def generate_app(
             アクセント型（音が下がる場所を指す）
         word_uuid: str
             更新する言葉のUUID
+        word_type: str, optional
+            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        priority: int, optional
+            単語の優先度（0から10までの整数）
+            数字が大きいほど優先度が高くなる
+            1から9までの値を指定することを推奨
         """
         try:
             rewrite_word(
@@ -723,6 +763,8 @@ def generate_app(
                 pronunciation=pronunciation,
                 accent_type=accent_type,
                 word_uuid=word_uuid,
+                word_type=word_type,
+                priority=priority,
             )
             return Response(status_code=204)
         except HTTPException:
@@ -751,6 +793,27 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+
+    @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
+    def import_user_dict_words(
+        import_dict_data: Dict[str, UserDictWord], override: bool
+    ):
+        """
+        他のユーザー辞書をインポートします。
+
+        Parameters
+        ----------
+        import_dict_data: Dict[str, UserDictWord]
+            インポートするユーザー辞書のデータ
+        override: bool
+            重複したエントリがあった場合、上書きするかどうか
+        """
+        try:
+            import_user_dict(dict_data=import_dict_data, override=override)
+            return Response(status_code=204)
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
@@ -797,16 +860,15 @@ if __name__ == "__main__":
         voicelib_dirs=args.voicelib_dir,
         voicevox_dir=args.voicevox_dir,
         runtime_dirs=args.runtime_dir,
+        cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
 
     cancellable_engine = None
-    # make_synthesis_engine周りの仕様が変わったので一旦cancellable機能を停止する
     if args.enable_cancellable_synthesis:
-        # cancellable_engine = CancellableEngine(args, voicelib_dir, cpu_num_threads)
-        raise RuntimeError("現在のバージョンではcancellable機能を使用することはできません。")
+        cancellable_engine = CancellableEngine(args)
 
     uvicorn.run(
         generate_app(synthesis_engines, latest_core_version),

@@ -16,14 +16,18 @@ class MockSynthesisEngine(SynthesisEngineBase):
     SynthesisEngine [Mock]
     """
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        speakers: str,
+        supported_devices: Optional[str] = None,
+    ):
         """
         __init__ [Mock]
         """
         super().__init__()
 
-        self._speakers = kwargs["speakers"]
-        self._supported_devices = kwargs["supported_devices"]
+        self._speakers = speakers
+        self._supported_devices = supported_devices
         self.default_sampling_rate = 24000
 
     @property

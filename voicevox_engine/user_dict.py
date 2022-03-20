@@ -2,7 +2,7 @@ import json
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict
+from typing import Dict, Optional
 from uuid import UUID, uuid4
 
 import pyopenjtalk
@@ -10,6 +10,7 @@ from appdirs import user_data_dir
 from fastapi import HTTPException
 
 from .model import UserDictWord
+from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root
 
 root_dir = engine_root()
@@ -59,21 +60,28 @@ def update_dict(
         for word_uuid in user_dict:
             word = user_dict[word_uuid]
             f.write(
-                "{},1348,1348,{},{},{},{},{},{},{},{},{},{},{}/{},{}\n".format(
-                    word.surface,
-                    word.cost,
-                    word.part_of_speech,
-                    word.part_of_speech_detail_1,
-                    word.part_of_speech_detail_2,
-                    word.part_of_speech_detail_3,
-                    word.inflectional_type,
-                    word.inflectional_form,
-                    word.stem,
-                    word.yomi,
-                    word.pronunciation,
-                    word.accent_type,
-                    word.mora_count,
-                    word.accent_associative_rule,
+                (
+                    "{surface},{context_id},{context_id},{cost},{part_of_speech},"
+                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
+                    + "{part_of_speech_detail_3},{inflectional_type},"
+                    + "{inflectional_form},{stem},{yomi},{pronunciation},"
+                    + "{accent_type}/{mora_count},{accent_associative_rule}\n"
+                ).format(
+                    surface=word.surface,
+                    context_id=word.context_id,
+                    cost=word.cost,
+                    part_of_speech=word.part_of_speech,
+                    part_of_speech_detail_1=word.part_of_speech_detail_1,
+                    part_of_speech_detail_2=word.part_of_speech_detail_2,
+                    part_of_speech_detail_3=word.part_of_speech_detail_3,
+                    inflectional_type=word.inflectional_type,
+                    inflectional_form=word.inflectional_form,
+                    stem=word.stem,
+                    yomi=word.yomi,
+                    pronunciation=word.pronunciation,
+                    accent_type=word.accent_type,
+                    mora_count=word.mora_count,
+                    accent_associative_rule=word.accent_associative_rule,
                 )
             )
     tmp_dict_path = Path(NamedTemporaryFile(delete=False).name).resolve()
@@ -101,14 +109,30 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
         }
 
 
-def create_word(surface: str, pronunciation: str, accent_type: int) -> UserDictWord:
+def create_word(
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    word_type: Optional[str] = None,
+    priority: Optional[int] = None,
+) -> UserDictWord:
+    if word_type is None:
+        word_type = "固有名詞"
+    if word_type not in part_of_speech_data.keys():
+        raise HTTPException(status_code=422, detail="不明な品詞です")
+    if priority is None:
+        priority = 5
+    if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
+        raise HTTPException(status_code=422, detail="優先度の値が無効です")
+    pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
-        cost=8600,
-        part_of_speech="名詞",
-        part_of_speech_detail_1="固有名詞",
-        part_of_speech_detail_2="一般",
-        part_of_speech_detail_3="*",
+        context_id=pos_detail.context_id,
+        cost=pos_detail.cost_candidates[MAX_PRIORITY - priority],
+        part_of_speech=pos_detail.part_of_speech,
+        part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
+        part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
+        part_of_speech_detail_3=pos_detail.part_of_speech_detail_3,
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
@@ -123,11 +147,17 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
+    word_type: Optional[str] = None,
+    priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
     word = create_word(
-        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+        surface=surface,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
+        word_type=word_type,
+        priority=priority,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     word_uuid = str(uuid4())
@@ -142,11 +172,17 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
+    word_type: Optional[str] = None,
+    priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     word = create_word(
-        surface=surface, pronunciation=pronunciation, accent_type=accent_type
+        surface=surface,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
+        word_type=word_type,
+        priority=priority,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
@@ -167,3 +203,25 @@ def delete_word(
     del user_dict[word_uuid]
     write_to_json(user_dict, user_dict_path)
     update_dict(compiled_dict_path=compiled_dict_path)
+
+
+def import_user_dict(
+    dict_data: Dict[str, UserDictWord],
+    override: bool = False,
+    user_dict_path: Path = user_dict_path,
+    default_dict_path: Path = default_dict_path,
+    compiled_dict_path: Path = compiled_dict_path,
+):
+    # 念のため型チェックを行う
+    for word_uuid, word in dict_data.items():
+        UUID(word_uuid)
+        assert type(word) == UserDictWord
+    old_dict = read_dict(user_dict_path=user_dict_path)
+    if override:
+        new_dict = {**old_dict, **dict_data}
+    else:
+        new_dict = {**dict_data, **old_dict}
+    write_to_json(user_dict=new_dict, user_dict_path=user_dict_path)
+    update_dict(
+        default_dict_path=default_dict_path, compiled_dict_path=compiled_dict_path
+    )

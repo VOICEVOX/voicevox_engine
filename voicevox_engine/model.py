@@ -166,6 +166,7 @@ class UserDictWord(BaseModel):
 
     surface: str = Field(title="表層形")
     cost: int = Field(title="コストの値")
+    context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
     part_of_speech_detail_2: str = Field(title="品詞細分類2")
@@ -195,10 +196,18 @@ class UserDictWord(BaseModel):
     def check_is_katakana(cls, pronunciation):
         if not fullmatch(r"[ァ-ヴー]+", pronunciation):
             raise ValueError("発音は有効なカタカナでなくてはいけません。")
-        sute_gana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]
+        sute_gana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ャ", "ュ", "ョ", "ヮ", "ッ"]
         for i in range(len(pronunciation)):
             if pronunciation[i] in sute_gana:
-                if i < len(pronunciation) - 1 and pronunciation[i + 1] in sute_gana:
+                # 「キャット」のように、捨て仮名が連続する可能性が考えられるので、
+                # 「ッ」に関しては「ッ」そのものが連続している場合と、「ッ」の後にほかの捨て仮名が連続する場合のみ無効とする
+                if i < len(pronunciation) - 1 and (
+                    pronunciation[i + 1] in sute_gana[:-1]
+                    or (
+                        pronunciation[i] == sute_gana[-1]
+                        and pronunciation[i + 1] == sute_gana[-1]
+                    )
+                ):
                     raise ValueError("無効な発音です。(捨て仮名の連続)")
             if pronunciation[i] == "ヮ":
                 if i != 0 and pronunciation[i - 1] not in ["ク", "グ"]:
@@ -232,10 +241,38 @@ class UserDictWord(BaseModel):
         return mora_count
 
 
+class PartOfSpeechDetail(BaseModel):
+    """
+    品詞ごとの情報
+    """
+
+    part_of_speech: str = Field(title="品詞")
+    part_of_speech_detail_1: str = Field(title="品詞細分類1")
+    part_of_speech_detail_2: str = Field(title="品詞細分類2")
+    part_of_speech_detail_3: str = Field(title="品詞細分類3")
+    # context_idは辞書の左・右文脈IDのこと
+    # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
+    context_id: int = Field(title="文脈ID")
+    cost_candidates: List[int] = Field(title="コストのパーセンタイル")
+
+
+class WordTypes(str, Enum):
+    """
+    fastapiでword_type引数を検証する時に使用するクラス
+    """
+
+    PROPER_NOUN = "固有名詞"
+    COMMON_NOUN = "普通名詞"
+    VERB = "動詞"
+    ADJECTIVE = "形容詞"
+    SUFFIX = "語尾"
+
+
 class SupportedDevicesInfo(BaseModel):
     """
     対応しているデバイスの情報
     """
 
     cpu: bool = Field(title="CPUに対応しているか")
-    cuda: bool = Field(title="CUDA(GPU)に対応しているか")
+    cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
+    dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
