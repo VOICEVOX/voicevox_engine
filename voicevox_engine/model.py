@@ -268,14 +268,14 @@ class SupportedFunctionsInfo(BaseModel):
     エンジンの機能の情報
     """
 
-    support_adjust_mora: bool = Field(title="モーラが調整可能かどうか")
-    support_adjust_speed_scale: bool = Field(title="話速が調整可能かどうか")
-    support_adjust_pitch_scale: bool = Field(title="音高が調整可能かどうか")
-    support_adjust_intonation_scale: bool = Field(title="抑揚が調整可能かどうか")
-    support_adjust_volume_scale: bool = Field(title="音量が調整可能かどうか")
-    support_adjust_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
+    support_adjusting_mora: bool = Field(title="モーラが調整可能かどうか")
+    support_adjusting_speed_scale: bool = Field(title="話速が調整可能かどうか")
+    support_adjusting_pitch_scale: bool = Field(title="音高が調整可能かどうか")
+    support_adjusting_intonation_scale: bool = Field(title="抑揚が調整可能かどうか")
+    support_adjusting_volume_scale: bool = Field(title="音量が調整可能かどうか")
+    support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
     support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
-    support_switch_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+    support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
 
 
 class UpdateInfo(BaseModel):
