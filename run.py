@@ -542,6 +542,11 @@ def generate_app(
                     status_code=500,
                     detail="Failed in Forced Alignment.",
                 )
+            elif str(e) == "Wrong Audio Encoding Format":
+                raise HTTPException(
+                    status_code=500,
+                    detail=str(e),
+                )
             else:
                 raise HTTPException(
                     status_code=500,

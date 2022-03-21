@@ -245,10 +245,10 @@ curl -s \
 ```
 
 ### Guidied Synthsis
-Currently, we have two apis generating audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) respectively.  
+Currently, we have two apis generates audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) referencing an external audio source.  
 The `guidedInfo` section is necessary here, which, in the example below, is added in manually. In practice, it's handled by the electron GUI.  
 It's worth noting that different from `guided_accent_phrases`, `guided_synthesis` works in the resolution of frames, as a result they are not compatible with each other.  
-
+The external audio should be in wav format.  
 ```bash
 # guided_syhthesis returns an audio file which is synthesised referencing the external audio source
 

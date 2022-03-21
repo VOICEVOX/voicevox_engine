@@ -94,7 +94,10 @@ def _no_nan(num):
 
 def extract_guided_feature(audio_file: str, kana: str):
     _lazy_init()
-    sr, wave = wavfile.read(audio_file)
+    try:
+        sr, wave = wavfile.read(audio_file)
+    except ValueError:
+        raise Exception("Wrong Audio Encoding Format")
     # stereo to mono
     if len(wave.shape) == 2:
         wave = wave.sum(axis=1) / 2
