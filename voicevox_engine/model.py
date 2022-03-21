@@ -261,3 +261,52 @@ class SupportedDevicesInfo(BaseModel):
     cpu: bool = Field(title="CPUに対応しているか")
     cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
     dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
+
+
+class SupportedFunctionsInfo(BaseModel):
+    """
+    エンジンの機能の情報
+    """
+
+    support_adjust_mora: bool = Field(title="モーラが調整可能かどうか")
+    support_adjust_speed_scale: bool = Field(title="話速が調整可能かどうか")
+    support_adjust_pitch_scale: bool = Field(title="音高が調整可能かどうか")
+    support_adjust_intonation_scale: bool = Field(title="抑揚が調整可能かどうか")
+    support_adjust_volume_scale: bool = Field(title="音量が調整可能かどうか")
+    support_adjust_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
+    support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
+    support_switch_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+
+
+class UpdateInfo(BaseModel):
+    """
+    エンジンのアップデート情報
+    """
+
+    version: str = Field(title="エンジンのバージョン名")
+    descriptions: List[str] = Field(title="アップデートの詳細についての説明")
+    contributors: List[str] = Field(title="貢献者名")
+
+
+class LicenseInfo(BaseModel):
+    """
+    依存ライブラリのライセンス情報
+    """
+
+    name: str = Field(title="依存ライブラリ名")
+    version: Optional[str] = Field(title="依存ライブラリのバージョン")
+    license: Optional[str] = Field(title="依存ライブラリのライセンス名")
+    text: str = Field(title="依存ライブラリのライセンス本文")
+
+
+class EngineInfo(BaseModel):
+    """
+    エンジン自体に関する情報
+    """
+
+    name: str = Field(title="エンジン名")
+    icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
+    default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
+    engine_tos: str = Field(title="エンジンの利用規約")
+    update_info: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
+    dependencies_license: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
