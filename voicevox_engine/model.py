@@ -308,5 +308,5 @@ class EngineInfo(BaseModel):
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
     term_of_service: str = Field(title="エンジンの利用規約")
-    update_info: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
-    dependencies_license: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
+    update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
+    dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
