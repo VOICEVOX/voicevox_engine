@@ -263,7 +263,7 @@ class SupportedDevicesInfo(BaseModel):
     dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
 
 
-class SupportedFunctionsInfo(BaseModel):
+class SupportedFeaturesInfo(BaseModel):
     """
     エンジンの機能の情報
     """
