@@ -299,7 +299,7 @@ class LicenseInfo(BaseModel):
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
-class EngineInfo(BaseModel):
+class EngineManifest(BaseModel):
     """
     エンジン自体に関する情報
     """
