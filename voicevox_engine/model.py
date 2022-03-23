@@ -285,7 +285,7 @@ class UpdateInfo(BaseModel):
 
     version: str = Field(title="エンジンのバージョン名")
     descriptions: List[str] = Field(title="アップデートの詳細についての説明")
-    contributors: List[str] = Field(title="貢献者名")
+    contributors: Optional[List[str]] = Field(title="貢献者名")
 
 
 class LicenseInfo(BaseModel):
