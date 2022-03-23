@@ -308,6 +308,6 @@ class EngineManifest(BaseModel):
     name: str = Field(title="エンジン名")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
-    term_of_service: str = Field(title="エンジンの利用規約")
+    terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
