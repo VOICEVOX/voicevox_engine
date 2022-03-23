@@ -304,7 +304,7 @@ class EngineManifest(BaseModel):
     エンジン自体に関する情報
     """
 
-    manifest_version: int = Field(title="マニフェストのバージョン")
+    manifest_version: str = Field(title="マニフェストのバージョン")
     name: str = Field(title="エンジン名")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
