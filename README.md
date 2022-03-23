@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
 
 [![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
-[![docker](https://img.shields.io/docker/pulls/hiroshiba/voicevox_engine)](https://hub.docker.com/r/hiroshiba/voicevox_engine)
+[![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
 [VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
@@ -299,15 +299,15 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 ### CPU
 
 ```bash
-docker pull hiroshiba/voicevox_engine:cpu-ubuntu20.04-latest
-docker run --rm -it -p '127.0.0.1:50021:50021' hiroshiba/voicevox_engine:cpu-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+docker run --rm -it -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
 ```
 
 ### GPU
 
 ```bash
-docker pull hiroshiba/voicevox_engine:nvidia-ubuntu20.04-latest
-docker run --rm --gpus all -p '127.0.0.1:50021:50021' hiroshiba/voicevox_engine:nvidia-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
 
 ## 貢献者の方へ
