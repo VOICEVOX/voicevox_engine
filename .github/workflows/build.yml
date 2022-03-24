@@ -12,7 +12,7 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.11.4"
-  VOICEVOX_CORE_VERSION: "0.11.4"
+  VOICEVOX_CORE_VERSION: "0.12.0-preview.0"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
@@ -366,16 +366,26 @@ jobs:
         include:
           # Windows CPU
           - os: windows-2019
-            python_architecture: "x64"
+            architecture: "x64"
             voicevox_core_dll_name: core_cpu_x64.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
             nuitka_cache_path: nuitka_cache
             pip_cache_path: ~\AppData\Local\pip\Cache
+          # Windows DirectML
+          - os: windows-2019
+            architecture: "x64"
+            voicevox_core_dll_name: core_gpu_x64_directml.dll
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
+            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
+            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
+            artifact_name: windows-directml
+            nuitka_cache_path: nuitka_cache
+            pip_cache_path: ~\AppData\Local\pip\Cache
           # Windows NVIDIA GPU
           - os: windows-2019
-            python_architecture: "x64"
+            architecture: "x64"
             voicevox_core_dll_name: core_gpu_x64_nvidia.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
             cuda_version: "11.4.2"
@@ -478,7 +488,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.python_architecture }}
+          architecture: ${{ matrix.architecture }}
 
       # Install Python dependencies
       - name: Prepare Python dependencies cache
@@ -545,6 +555,33 @@ jobs:
         run: |
           echo "$HOME/download/ccache" >> $GITHUB_PATH
 
+      # Donwload DirectML
+      - name: Export DirectML url to calc hash
+        if: endswith(matrix.artifact_name, '-directml')
+        shell: bash
+        run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
+
+      - name: Cache DirectML
+        if: endswith(matrix.artifact_name, '-directml')
+        uses: actions/cache@v2
+        id: directml-cache
+        with:
+          key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
+          path: download/directml
+
+      - name: Download DirectML
+        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.artifact_name, '-directml')
+        shell: bash
+        run: |
+          curl -L "${{ matrix.directml_url }}" -o download/directml.zip
+          mkdir -p download/directml
+
+          # extract only dlls
+          unzip download/directml.zip bin/${{ matrix.architecture }}-win/DirectML.dll -d download/directml
+          rm download/directml.zip
+          mv download/directml/bin/${{ matrix.architecture }}-win/DirectML.dll download/directml/DirectML.dll
+          rm -r download/directml/bin
+
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
         shell: bash
@@ -564,10 +601,17 @@ jobs:
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
-          unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
-          rm download/onnxruntime.zip
+          if [[ ${{ matrix.artifact_name }} != *-directml ]]; then
+            unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
+            mv download/onnxruntime-* download/onnxruntime
+          else
+            mkdir -p download/onnxruntime/lib
+            unzip download/onnxruntime.zip runtimes/win-${{ matrix.architecture }}/native/*.dll -d download/onnxruntime
+            mv download/onnxruntime/runtimes/win-${{ matrix.architecture }}/native/*.dll download/onnxruntime/lib/
+            rm -r download/onnxruntime/runtimes
+          fi
 
-          mv download/onnxruntime-* download/onnxruntime
+          rm download/onnxruntime.zip
 
       - name: Show disk space (debug info)
         shell: bash
@@ -703,6 +747,11 @@ jobs:
             ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
           fi
 
+          if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
+            # DirectML
+            ln -sf "$(pwd)/download/directml"/DirectML.dll artifact/
+          fi
+
           # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
@@ -732,6 +781,7 @@ jobs:
           - linux-cpu
           - linux-nvidia
           - windows-cpu
+          - windows-directml
           - windows-nvidia
     steps:
       - uses: actions/checkout@v2
