@@ -564,6 +564,7 @@ class SynthesisEngine(SynthesisEngineBase):
                 clip = clip[clip != 0]
                 pitch = numpy.average(clip) if len(clip) != 0 else 0
             else:
+                print(p)
                 pitch = 0
             pitch = 0 if numpy.isnan(pitch) else pitch
             length = float(te) - float(ts)
@@ -574,7 +575,8 @@ class SynthesisEngine(SynthesisEngineBase):
                 engine=self, kana=kana, f0=f0, speaker_id=speaker
             )
             for p in phrase_info:
-                p.pitch += normalize_diff
+                if p.pitch != 0:
+                    p.pitch += normalize_diff
 
         idx = 1
         for phrase in query.accent_phrases:
@@ -591,6 +593,8 @@ class SynthesisEngine(SynthesisEngineBase):
                     mora.pitch = phrase_info[idx].pitch
                     mora.vowel_length = phrase_info[idx].length
                     idx += 1
+                if mora.vowel in unvoiced_mora_phoneme_list:
+                    mora.pitch = 0
             if phrase_info[idx].phoneme == "sp":
                 phrase.pause_mora = Mora(
                     text="、",

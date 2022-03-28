@@ -486,6 +486,7 @@ def generate_app(
 
     @app.post(
         "/guided_synthesis",
+        response_class=FileResponse,
         responses={
             200: {
                 "content": {
