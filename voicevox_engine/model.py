@@ -2,7 +2,7 @@ from enum import Enum
 from re import findall, fullmatch
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, conint, validator
 
 
 class Mora(BaseModel):
@@ -150,7 +150,7 @@ class UserDictWord(BaseModel):
     """
 
     surface: str = Field(title="表層形")
-    cost: int = Field(title="コストの値")
+    cost: conint(ge=-32768, le=32767) = Field(title="コストの値")
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
