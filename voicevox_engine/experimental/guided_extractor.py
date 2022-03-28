@@ -122,6 +122,11 @@ def extract_guided_feature(audio_file: str, kana: str):
     )
 
     phones = forced_align(julius_wave, julius_kana)
+
+    # a bit boundary check
+    f0[f0 > 6.5] = 6.5
+    f0[(0 < f0) & (f0 < 3)] = 3.0
+
     return f0, phones
 
 

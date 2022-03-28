@@ -520,8 +520,6 @@ class SynthesisEngine(SynthesisEngineBase):
             )
 
         f0 *= 2 ** query.pitchScale
-        f0[f0 > 6.5] = 6.5
-        f0[(0 < f0) & (f0 < 3)] = 3.0
 
         f0 = resample(f0, int(len(f0) / query.speedScale))
         phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))

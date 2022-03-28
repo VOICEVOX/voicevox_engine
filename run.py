@@ -245,11 +245,6 @@ def generate_app(
                 query=query,
                 speaker=speaker,
             )
-        except ParseKanaError as err:
-            raise HTTPException(
-                status_code=422,
-                detail=ParseKanaBadRequest(err).dict(),
-            )
         except StopIteration:
             print(traceback.format_exc())
             raise HTTPException(
