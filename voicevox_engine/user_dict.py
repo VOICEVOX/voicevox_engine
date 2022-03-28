@@ -218,6 +218,16 @@ def import_user_dict(
         assert type(word) == UserDictWord
         for pos_detail in part_of_speech_data.values():
             if pos_detail.context_id == word.context_id:
+                assert word.part_of_speech == pos_detail.part_of_speech
+                assert (
+                    word.part_of_speech_detail_1 == pos_detail.part_of_speech_detail_1
+                )
+                assert (
+                    word.part_of_speech_detail_2 == pos_detail.part_of_speech_detail_2
+                )
+                assert (
+                    word.part_of_speech_detail_3 == pos_detail.part_of_speech_detail_3
+                )
                 assert (
                     word.accent_associative_rule in pos_detail.accent_associative_rules
                 )
