@@ -304,9 +304,7 @@ class TestUserDict(TestCase):
         self.assertRaises(
             ValueError,
             import_user_dict,
-            {
-                "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": invalid_pos_word
-            },
+            {"aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": invalid_pos_word},
             override=True,
             user_dict_path=user_dict_path,
             compiled_dict_path=compiled_dict_path,
