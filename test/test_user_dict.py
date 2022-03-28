@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Dict
@@ -274,4 +275,39 @@ class TestUserDict(TestCase):
         self.assertEqual(
             read_dict(user_dict_path)["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"],
             import_word,
+        )
+
+    def test_import_invalid_word(self):
+        user_dict_path = self.tmp_dir_path / "test_import_invalid_dict.json"
+        compiled_dict_path = self.tmp_dir_path / "test_import_invalid_dict.dic"
+        invalid_accent_associative_rule_word = deepcopy(import_word)
+        invalid_accent_associative_rule_word.accent_associative_rule = "invalid"
+        user_dict_path.write_text(
+            json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
+        )
+        self.assertRaises(
+            AssertionError,
+            import_user_dict,
+            {
+                "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": invalid_accent_associative_rule_word
+            },
+            override=True,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
+        )
+        invalid_pos_word = deepcopy(import_word)
+        invalid_pos_word.context_id = 2
+        invalid_pos_word.part_of_speech = "フィラー"
+        invalid_pos_word.part_of_speech_detail_1 = "*"
+        invalid_pos_word.part_of_speech_detail_2 = "*"
+        invalid_pos_word.part_of_speech_detail_3 = "*"
+        self.assertRaises(
+            ValueError,
+            import_user_dict,
+            {
+                "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": invalid_pos_word
+            },
+            override=True,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
         )
