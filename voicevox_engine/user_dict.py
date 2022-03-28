@@ -217,7 +217,7 @@ def import_user_dict(
         UUID(word_uuid)
         assert type(word) == UserDictWord
         for pos_detail in part_of_speech_data.values():
-            if pos_detail.context_id == word.context_id:
+            if word.context_id == pos_detail.context_id:
                 assert word.part_of_speech == pos_detail.part_of_speech
                 assert (
                     word.part_of_speech_detail_1 == pos_detail.part_of_speech_detail_1
