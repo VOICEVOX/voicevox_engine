@@ -562,7 +562,6 @@ class SynthesisEngine(SynthesisEngineBase):
                 clip = clip[clip != 0]
                 pitch = numpy.average(clip) if len(clip) != 0 else 0
             else:
-                print(p)
                 pitch = 0
             pitch = 0 if numpy.isnan(pitch) else pitch
             length = float(te) - float(ts)
