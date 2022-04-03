@@ -259,17 +259,17 @@ curl -s \
     --get --data-urlencode text@text.txt \
     > query.json
 
+# if true, the average of f0 will be normalized to the predicted average
+normalize="true"
+# full path to your audio record
+audio_path="/home/.../sample.wav"
+
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
     "localhost:50021/guided_synthesis?speaker=1&normalize=$normalize&audio_path=$audio_path" \
     > audio.wav
-
-# if true, the average of f0 will be normalized to the predicted average
-normalize="true"
-# full path to your audio record
-audio_path="/home/.../sample.wav"
 
 # guided_accent_phrases returns a list of AccentPhrases
 curl -s \
