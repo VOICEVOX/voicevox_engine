@@ -517,9 +517,7 @@ class SynthesisEngine(SynthesisEngineBase):
             phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
 
         if normalize:
-            f0 += get_normalize_diff(
-                engine=self, kana=kana, f0=f0, speaker_id=speaker
-            )
+            f0 += get_normalize_diff(engine=self, kana=kana, f0=f0, speaker_id=speaker)
 
         f0 *= 2 ** query.pitchScale
 

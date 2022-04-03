@@ -1,6 +1,5 @@
 from logging import getLogger
 from typing import Any, Dict, List, Optional
-from typing.io import IO
 
 import numpy as np
 from pyopenjtalk import tts
@@ -182,4 +181,4 @@ class MockSynthesisEngine(SynthesisEngineBase):
         -------
 
         """
-        return accent_phrases
+        return query.accent_phrases
