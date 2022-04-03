@@ -491,10 +491,12 @@ class SynthesisEngine(SynthesisEngineBase):
         self,
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
         core_version: Optional[str] = None,
     ):
-        query.kana = create_kana(query.accent_phrases)
-        f0, phonemes = extract_guided_feature(query.guidedInfo.audioPath, query.kana)
+        kana = create_kana(query.accent_phrases)
+        f0, phonemes = extract_guided_feature(audio_path, kana)
 
         phone_list = numpy.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=numpy.float32)
 
@@ -514,9 +516,9 @@ class SynthesisEngine(SynthesisEngineBase):
                 p = "cl"
             phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
 
-        if query.guidedInfo.normalize:
+        if normalize:
             f0 += get_normalize_diff(
-                engine=self, kana=query.kana, f0=f0, speaker_id=speaker
+                engine=self, kana=kana, f0=f0, speaker_id=speaker
             )
 
         f0 *= 2 ** query.pitchScale
@@ -550,9 +552,11 @@ class SynthesisEngine(SynthesisEngineBase):
         self,
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
     ) -> List[AccentPhrase]:
         kana = create_kana(query.accent_phrases)
-        f0, phonemes = extract_guided_feature(query.guidedInfo.audioPath, kana)
+        f0, phonemes = extract_guided_feature(audio_path, kana)
         timed_phonemes = frame_to_second(deepcopy(phonemes))
 
         phrase_info = []
@@ -567,7 +571,7 @@ class SynthesisEngine(SynthesisEngineBase):
             length = float(te) - float(ts)
             phrase_info.append(PhraseInfo(pitch, length, p))
 
-        if query.guidedInfo.normalize:
+        if normalize:
             normalize_diff = get_normalize_diff(
                 engine=self, kana=kana, f0=f0, speaker_id=speaker
             )

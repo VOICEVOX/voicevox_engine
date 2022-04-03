@@ -230,6 +230,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self,
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
         core_version: Optional[str] = None,
     ):
         raise NotImplementedError()
@@ -239,5 +241,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self,
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
     ) -> List[AccentPhrase]:
         raise NotImplementedError()

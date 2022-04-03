@@ -227,6 +227,8 @@ def generate_app(
     def guided_accent_phrases(
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
         core_version: Optional[str] = None,
     ):
         """
@@ -244,6 +246,8 @@ def generate_app(
             return engine.guided_accent_phrases(
                 query=query,
                 speaker=speaker,
+                audio_path=audio_path,
+                normalize=normalize,
             )
         except StopIteration:
             print(traceback.format_exc())
@@ -495,6 +499,8 @@ def generate_app(
     def guided_synthesis(
         query: AudioQuery,
         speaker: int,
+        audio_path: str,
+        normalize: bool,
         core_version: Optional[str] = None,
     ):
         """
@@ -512,6 +518,8 @@ def generate_app(
             wave = engine.guided_synthesis(
                 query=query,
                 speaker=speaker,
+                audio_path=audio_path,
+                normalize=normalize,
             )
 
             with NamedTemporaryFile(delete=False) as f:
