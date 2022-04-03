@@ -246,9 +246,8 @@ curl -s \
 
 ### Guidied Synthsis
 Currently, we have two apis generates audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) referencing an external audio source.  
-The `guidedInfo` section is necessary here, which, in the example below, is added in manually. In practice, it's handled by the electron GUI.  
 It's worth noting that different from `guided_accent_phrases`, `guided_synthesis` works in the resolution of frames, as a result they are not compatible with each other.  
-The external audio should be in wav format.  
+**The external audio should be in wav format.**  
 ```bash
 # guided_syhthesis returns an audio file which is synthesised referencing the external audio source
 
@@ -260,38 +259,24 @@ curl -s \
     --get --data-urlencode text@text.txt \
     > query.json
 
-# use text editor to add the guidedInfo section manually, for it's not defined by default
-#
-#```
-# {
-#   "accent_phrases": [
-#    ...
-#   ],
-#   ...
-#   "kana": ...,
-#   "guidedInfo": {
-#     "enabled": true,
-#     "audioPath": "{full_path_to_the_aduio_source}",
-#     "normalize": true,
-#     "precise": false
-#   }
-# }
-#```
-vim query.json
-
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    localhost:50021/guided_synthesis?speaker=1 \
+    "localhost:50021/guided_synthesis?speaker=1&normalize=$normalize&audio_path=$audio_path" \
     > audio.wav
+
+# if true, the average of f0 will be normalized to the predicted average
+normalize="true"
+# full path to your audio record
+audio_path="/home/.../sample.wav"
 
 # guided_accent_phrases returns a list of AccentPhrases
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    localhost:50021/guided_accent_phrases?speaker=1 \
+    "http://localhost:50021/guided_accent_phrases?speaker=0&normalize=$normalize&audio_path=$audio_path" \
     > newphrases.json
 
 # replace the accent_phrases section in query
@@ -301,7 +286,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    localhost:50021/synthesis?speaker=1 \
+    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
