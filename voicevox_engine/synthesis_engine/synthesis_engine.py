@@ -1,7 +1,6 @@
 from copy import deepcopy
 from itertools import chain
 from typing import List, Optional, Tuple
-from typing.io import IO
 
 import numpy
 from scipy.signal import resample
@@ -492,10 +491,12 @@ class SynthesisEngine(SynthesisEngineBase):
         self,
         query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
+        audio_path: str,
+        normalize: bool,
+        core_version: Optional[str] = None,
     ):
-        f0, phonemes = extract_guided_feature(audio_file, query.kana)
+        kana = create_kana(query.accent_phrases)
+        f0, phonemes = extract_guided_feature(audio_path, kana)
 
         phone_list = numpy.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=numpy.float32)
 
@@ -516,13 +517,9 @@ class SynthesisEngine(SynthesisEngineBase):
             phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
 
         if normalize:
-            f0 += get_normalize_diff(
-                engine=self, kana=query.kana, f0=f0, speaker_id=speaker
-            )
+            f0 += get_normalize_diff(engine=self, kana=kana, f0=f0, speaker_id=speaker)
 
         f0 *= 2 ** query.pitchScale
-        f0[f0 > 6.5] = 6.5
-        f0[(0 < f0) & (f0 < 3)] = 3.0
 
         f0 = resample(f0, int(len(f0) / query.speedScale))
         phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))
@@ -551,13 +548,13 @@ class SynthesisEngine(SynthesisEngineBase):
 
     def guided_accent_phrases(
         self,
-        accent_phrases: List[AccentPhrase],
+        query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
+        audio_path: str,
+        normalize: bool,
     ) -> List[AccentPhrase]:
-        kana = create_kana(accent_phrases=accent_phrases)
-        f0, phonemes = extract_guided_feature(audio_file, kana)
+        kana = create_kana(query.accent_phrases)
+        f0, phonemes = extract_guided_feature(audio_path, kana)
         timed_phonemes = frame_to_second(deepcopy(phonemes))
 
         phrase_info = []
@@ -577,10 +574,12 @@ class SynthesisEngine(SynthesisEngineBase):
                 engine=self, kana=kana, f0=f0, speaker_id=speaker
             )
             for p in phrase_info:
-                p.pitch += normalize_diff
+                if p.pitch != 0:
+                    p.pitch += normalize_diff
 
         idx = 1
-        for phrase in accent_phrases:
+        for phrase in query.accent_phrases:
+            phrase.pause_mora = None
             for mora in phrase.moras:
                 if mora.consonant is not None:
                     mora.pitch = (
@@ -593,6 +592,8 @@ class SynthesisEngine(SynthesisEngineBase):
                     mora.pitch = phrase_info[idx].pitch
                     mora.vowel_length = phrase_info[idx].length
                     idx += 1
+                if mora.vowel in unvoiced_mora_phoneme_list:
+                    mora.pitch = 0
             if phrase_info[idx].phoneme == "sp":
                 phrase.pause_mora = Mora(
                     text="、",
@@ -604,4 +605,4 @@ class SynthesisEngine(SynthesisEngineBase):
                 )
                 idx += 1
 
-        return accent_phrases
+        return query.accent_phrases

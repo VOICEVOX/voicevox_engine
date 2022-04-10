@@ -1,6 +1,5 @@
 from logging import getLogger
 from typing import Any, Dict, List, Optional
-from typing.io import IO
 
 import numpy as np
 from pyopenjtalk import tts
@@ -140,8 +139,9 @@ class MockSynthesisEngine(SynthesisEngineBase):
         self,
         query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
+        audio_path: str,
+        normalize: bool,
+        core_version: Optional[str] = None,
     ) -> np.ndarray:
         """
         Open jtalk doesn't have a guided function [Mock]
@@ -151,7 +151,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         ----------
         query
         speaker
-        audio_file
+        audio_path
         normalize
 
         Returns
@@ -162,10 +162,10 @@ class MockSynthesisEngine(SynthesisEngineBase):
 
     def guided_accent_phrases(
         self,
-        accent_phrases: List[AccentPhrase],
+        query: AudioQuery,
         speaker: int,
-        audio_file: IO,
-        normalize: int,
+        audio_path: str,
+        normalize: bool,
     ) -> List[AccentPhrase]:
         """
         guided_accent_phrases 入力accent_phrasesを変更せずにそのまま返します [Mock]
@@ -174,11 +174,11 @@ class MockSynthesisEngine(SynthesisEngineBase):
         ----------
         query
         speaker
-        audio_file
+        audio_path
         normalize
 
         Returns
         -------
 
         """
-        return accent_phrases
+        return query.accent_phrases

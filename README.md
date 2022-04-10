@@ -245,34 +245,49 @@ curl -s \
 ```
 
 ### Guidied Synthsis
-Currently, we have two apis which accept an uploaded audio file and return corresponding synthesis information.  
-Both of them recommend setting `is_kana` to be `true` and use `kana` section from `AudioQuery` for the best performance.  
-You can also get the kana text in AquesTalk section.  
+Currently, we have two apis generates audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) referencing an external audio source.  
+It's worth noting that different from `guided_accent_phrases`, `guided_synthesis` works in the resolution of frames, as a result they are not compatible with each other.  
+**The external audio should be in wav format.**  
 ```bash
-# Returns an audio file which is synthesised referencing uploaded audio
-# this example needs a recording whose content is
-# "また 東寺のように 五大明王と 呼ばれる 主要な 明王の 中央に 配されることも多い"
+# guided_syhthesis returns an audio file which is synthesised referencing the external audio source
 
-curl -L -X POST 'localhost:50021/guided_synthesis' \
-    -F 'kana="マ'\''タ、ト'\''オジノヨオニ、ゴダイミョオオ'\''オト、ヨ'\''/バレ'\''ル、シュ'\''ヨオナ、ミョオ'\''オオ/ノ'\''、チュ'\''ウオオニ、ハイサレルコ'\''/トモ'\''オオイ"' \
-    -F 'speaker_id="5"' \
-    -F 'audio_file=@"/full_path_to_your_recording"' \
-    -F 'normalize="true"' \
-    -F 'stereo="true"' \
-    -F 'sample_rate="24000"' \
-    -F 'volume_scale="1"' \
-    -F 'pitch_scale="0"' \
-    -F 'speed_scale="1"'
+echo -n "また 東寺のように 五大明王と 呼ばれる 主要な 明王の 中央に 配されることも多い" > text.txt
 
-# Returns a list of AccentPhrases
+curl -s \
+    -X POST \
+    "localhost:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
 
-curl -L -X POST 'localhost:50021/guided_accent_phrase' \
-    -F 'text="マ'\''タ、ト'\''オジノヨオニ、ゴダイミョオオ'\''オト、ヨ'\''/バレ'\''ル、シュ'\''ヨオナ、ミョオ'\''オオ/ノ'\''、チュ'\''ウオオニ、ハイサレルコ'\''/トモ'\''オオイ"' \
-    -F 'speaker="5"' \
-    -F 'audio_file=@"/full_path_to_your_recording"' \
-    -F 'normalize="true"' \
-    -F 'is_kana="true"' \
-    -F 'enable_interrogative="false"'
+# if true, the average of f0 will be normalized to the predicted average
+normalize="true"
+# full path to your audio record
+audio_path="/home/.../sample.wav"
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "localhost:50021/guided_synthesis?speaker=1&normalize=$normalize&audio_path=$audio_path" \
+    > audio.wav
+
+# guided_accent_phrases returns a list of AccentPhrases
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "http://localhost:50021/guided_accent_phrases?speaker=0&normalize=$normalize&audio_path=$audio_path" \
+    > newphrases.json
+
+# replace the accent_phrases section in query
+cat query.json | sed -e "s/\[{.*}\]/$(cat newphrases.json)/g" > newquery.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @newquery.json \
+    "localhost:50021/synthesis?speaker=1" \
+    > audio.wav
 ```
 
 ### 話者の追加情報を取得するサンプルコード

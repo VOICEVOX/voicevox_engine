@@ -3,7 +3,6 @@ import re
 import tarfile
 from os.path import exists
 from pathlib import PurePath
-from typing.io import IO
 from urllib.request import urlretrieve
 
 import numpy as np
@@ -93,9 +92,12 @@ def _no_nan(num):
     return 0.0 if np.isnan(num) else num
 
 
-def extract_guided_feature(audio_file: IO, kana: str):
+def extract_guided_feature(audio_file: str, kana: str):
     _lazy_init()
-    sr, wave = wavfile.read(audio_file)
+    try:
+        sr, wave = wavfile.read(audio_file)
+    except ValueError:
+        raise Exception("Wrong Audio Encoding Format")
     # stereo to mono
     if len(wave.shape) == 2:
         wave = wave.sum(axis=1) / 2
@@ -120,6 +122,11 @@ def extract_guided_feature(audio_file: IO, kana: str):
     )
 
     phones = forced_align(julius_wave, julius_kana)
+
+    # a bit boundary check
+    f0[f0 > 6.5] = 6.5
+    f0[(0 < f0) & (f0 < 3)] = 3.0
+
     return f0, phones
 
 
