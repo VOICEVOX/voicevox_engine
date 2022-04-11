@@ -203,6 +203,8 @@ def get_arch_name() -> Optional[str]:
         return "x64"
     elif machine == "i386" or machine == "x86":
         return "x86"
+    elif machine == "arm64":
+        return "aarch64"
     elif machine in ["armv7l", "aarch64"]:
         return machine
     else:
