@@ -201,10 +201,10 @@ CORENAME_DICT = {
 }
 
 
-def is_version12_core_or_later(core_dir: Path) -> bool:
+def is_version_0_12_core_or_later(core_dir: Path) -> bool:
     """
-    core_dir で指定したディレクトリにあるコアライブラリが Version 12 以降であるかどうかを返す。
-    Version 12 以降と判定する条件は、
+    core_dir で指定したディレクトリにあるコアライブラリが Version 0.12 以降であるかどうかを返す。
+    Version 0.12 以降と判定する条件は、
 
     - core_dir に metas.json が存在しない
     - コアライブラリの名前が CORENAME_DICT の定義に従っている
@@ -290,7 +290,7 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
-    if is_version12_core_or_later(core_dir):
+    if is_version_0_12_core_or_later(core_dir):
         try:
             return CDLL((core_dir / CORENAME_DICT[platform.system()]).resolve(True))
         except OSError as err:
@@ -331,7 +331,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
 class CoreWrapper:
     def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
-        if is_version12_core_or_later(core_dir):
+        if is_version_0_12_core_or_later(core_dir):
             model_type = "onnxruntime"
         else:
             model_type = check_core_type(core_dir)
@@ -384,7 +384,7 @@ class CoreWrapper:
         cwd = os.getcwd()
         os.chdir(core_dir)
         try:
-            if is_version12_core_or_later(core_dir):
+            if is_version_0_12_core_or_later(core_dir):
                 if not self.core.initialize(use_gpu, cpu_num_threads):
                     raise Exception(self.core.last_error_message().decode("utf-8"))
             elif exist_cpu_num_threads:
