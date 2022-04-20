@@ -59,7 +59,7 @@ class CoreInfo:
     gpu_type: GPUType
 
 
-# version 12 より前のコアの情報
+# version 0.12 より前のコアの情報
 CORE_INFOS = [
     # Windows
     CoreInfo(
@@ -193,7 +193,7 @@ CORE_INFOS = [
 ]
 
 
-# version 12 以降のコアの名前
+# version 0.12 以降のコアの名前
 CORENAME_DICT = {
     "Windows": "core.dll",
     "Linux": "libcore.so",
