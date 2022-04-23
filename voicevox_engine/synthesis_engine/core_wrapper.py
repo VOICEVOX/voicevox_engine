@@ -59,6 +59,7 @@ class CoreInfo:
     gpu_type: GPUType
 
 
+# version 0.12 より前のコアの情報
 CORE_INFOS = [
     # Windows
     CoreInfo(
@@ -192,6 +193,31 @@ CORE_INFOS = [
 ]
 
 
+# version 0.12 以降のコアの名前
+CORENAME_DICT = {
+    "Windows": "core.dll",
+    "Linux": "libcore.so",
+    "Darwin": "libcore.dylib",
+}
+
+
+def is_version_0_12_core_or_later(core_dir: Path) -> bool:
+    """
+    core_dir で指定したディレクトリにあるコアライブラリが Version 0.12 以降であるかどうかを返す。
+    Version 0.12 以降と判定する条件は、
+
+    - core_dir に metas.json が存在しない
+    - コアライブラリの名前が CORENAME_DICT の定義に従っている
+
+    の両方が真のときである。
+    cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
+    """
+    return (
+        not (core_dir / "metas.json").exists()
+        and (core_dir / CORENAME_DICT[platform.system()]).is_file()
+    )
+
+
 def get_arch_name() -> Optional[str]:
     """
     platform.machine() が特定のアーキテクチャ上で複数パターンの文字列を返し得るので、
@@ -264,6 +290,12 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
+    if is_version_0_12_core_or_later(core_dir):
+        try:
+            return CDLL((core_dir / CORENAME_DICT[platform.system()]).resolve(True))
+        except OSError as err:
+            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+
     model_type = check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
@@ -299,7 +331,10 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
 class CoreWrapper:
     def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
-        model_type = check_core_type(core_dir)
+        if is_version_0_12_core_or_later(core_dir):
+            model_type = "onnxruntime"
+        else:
+            model_type = check_core_type(core_dir)
         self.core = load_core(core_dir, use_gpu)
         assert model_type is not None
 
@@ -349,7 +384,10 @@ class CoreWrapper:
         cwd = os.getcwd()
         os.chdir(core_dir)
         try:
-            if exist_cpu_num_threads:
+            if is_version_0_12_core_or_later(core_dir):
+                if not self.core.initialize(use_gpu, cpu_num_threads):
+                    raise Exception(self.core.last_error_message().decode("utf-8"))
+            elif exist_cpu_num_threads:
                 if not self.core.initialize(".", use_gpu, cpu_num_threads):
                     raise Exception(self.core.last_error_message().decode("utf-8"))
             else:
