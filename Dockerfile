@@ -202,6 +202,7 @@ ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
+ADD ./manifest_assets /opt/voicevox_engine/manifest_assets
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -218,7 +219,9 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/manifest_assets/dependency_licenses.json
+    # FIXME: VOICEVOX (editor) cannot build without licenses.json
+    cp /opt/voicevox_engine/manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
 # Keep this layer separated to use layer cache on download failed in local build
@@ -294,7 +297,9 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/manifest_assets/dependency_licenses.json
+    # FIXME: VOICEVOX (editor) cannot build without licenses.json
+    cp /opt/voicevox_engine/manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
 # Create build script
@@ -333,6 +338,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
+            --include-data-dir=/opt/voicevox_engine/manifest_assets=./manifest_assets \
             --follow-imports \
             --no-prefer-source-code \
             /opt/voicevox_engine/run.py
