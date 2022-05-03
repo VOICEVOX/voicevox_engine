@@ -154,7 +154,9 @@ class UserDictWord(BaseModel):
     """
 
     surface: str = Field(title="表層形")
-    cost: conint(ge=-32768, le=32767) = Field(title="コストの値")
+    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
+        title="優先度"
+    )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")

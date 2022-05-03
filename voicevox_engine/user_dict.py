@@ -27,9 +27,16 @@ compiled_dict_path = save_dir / "user.dic"
 
 
 def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
-    user_dict = {word_uuid: word.dict() for word_uuid, word in user_dict.items()}
+    converted_user_dict = {}
+    for word_uuid, word in user_dict.items():
+        word_dict = word.dict()
+        word_dict["cost"] = priority2cost(
+            word_dict["context_id"], word_dict["priority"]
+        )
+        del word_dict["priority"]
+        converted_user_dict[word_uuid] = word_dict
     # 予めjsonに変換できることを確かめる
-    user_dict_json = json.dumps(user_dict, ensure_ascii=False)
+    user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
@@ -70,7 +77,7 @@ def update_dict(
                 ).format(
                     surface=word.surface,
                     context_id=word.context_id,
-                    cost=word.cost,
+                    cost=priority2cost(word.context_id, word.priority),
                     part_of_speech=word.part_of_speech,
                     part_of_speech_detail_1=word.part_of_speech_detail_1,
                     part_of_speech_detail_2=word.part_of_speech_detail_2,
@@ -104,10 +111,19 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
         return {}
     with user_dict_path.open(encoding="utf-8") as f:
-        return {
-            str(UUID(word_uuid)): UserDictWord(**word)
-            for word_uuid, word in json.load(f).items()
-        }
+        result = {}
+        for word_uuid, word in json.load(f).items():
+            # 0.12以前の辞書はcontext_idがハードコーディングされており、1348(固有名詞)で固定であった
+            # UserDictWordに値をdictの内容を代入すれば、defaultの値として1348が補完されるが、
+            # そのあとにcostをpriorityに変換することは出来ない(バリデーションエラーに引っかかるため)
+            # そのため、この時点で固有名詞のcontext_idを代入してしまうようにする
+            if word.get("context_id") is None:
+                word["context_id"] = part_of_speech_data["固有名詞"].context_id
+            word["priority"] = cost2priority(word["context_id"], word["cost"])
+            del word["cost"]
+            result[str(UUID(word_uuid))] = UserDictWord(**word)
+
+        return result
 
 
 def create_word(
@@ -129,7 +145,7 @@ def create_word(
     return UserDictWord(
         surface=surface,
         context_id=pos_detail.context_id,
-        cost=pos_detail.cost_candidates[MAX_PRIORITY - priority],
+        priority=priority,
         part_of_speech=pos_detail.part_of_speech,
         part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
         part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
