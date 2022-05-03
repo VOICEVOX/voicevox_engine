@@ -269,7 +269,7 @@ def search_cost_candidates(context_id: int) -> List[int]:
     raise HTTPException(status_code=422, detail="品詞IDが不正です")
 
 
-def cost2priority(context_id: int, cost: conint(ge=-32768, le=32768)) -> int:
+def cost2priority(context_id: int, cost: conint(ge=-32768, le=32767)) -> int:
     cost_candidates = search_cost_candidates(context_id)
     # コストのパーセンタイルは確実に低いもの順で並んでいるので、低いものから比較し、値が近い・もしくは同じcostをpriorityとする
     # OpenJTalk側の辞書の更新が入ることでcostのパーセンタイルが変わり得る・そもそもVOICEVOXとして8600をデフォルト値としていたことから、
