@@ -144,6 +144,10 @@ class SpeakerInfo(BaseModel):
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
 
 
+USER_DICT_MIN_PRIORITY = 0
+USER_DICT_MAX_PRIORITY = 10
+
+
 class UserDictWord(BaseModel):
     """
     辞書のコンパイルに使われる情報
