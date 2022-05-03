@@ -2,12 +2,13 @@ import json
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
 import pyopenjtalk
 from appdirs import user_data_dir
 from fastapi import HTTPException
+from pydantic import conint
 
 from .model import UserDictWord
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
@@ -243,3 +244,30 @@ def import_user_dict(
     update_dict(
         default_dict_path=default_dict_path, compiled_dict_path=compiled_dict_path
     )
+
+
+def search_cost_candidates(context_id: int) -> List[int]:
+    for value in part_of_speech_data.values():
+        if value.context_id == context_id:
+            return value.cost_candidates
+    raise HTTPException(status_code=422, detail="品詞IDが不正です")
+
+
+def cost2priority(context_id: int, cost: conint(ge=-32768, le=32768)) -> int:
+    cost_candidates = search_cost_candidates(context_id)
+    # コストのパーセンタイルは確実に低いもの順で並んでいるので、低いものから比較し、値が近い・もしくは同じcostをpriorityとする
+    # OpenJTalk側の辞書の更新が入ることでcostのパーセンタイルが変わり得る・そもそもVOICEVOXとして8600をデフォルト値としていたことから、
+    # costとpriorityの対応付けは範囲指定(パーセンタイルの前の値<x<=パーセンタイルの今の値)になっている
+    for i, c in enumerate(cost_candidates):
+        if cost <= c:
+            return MAX_PRIORITY - i
+    # パーセンタイルを超えたコストが設定されている可能性はほぼ0だが、ユーザーが不正に改変した場合等は存在し得るので、
+    # MAXのpriorityを返すようにする
+    return MAX_PRIORITY
+
+
+def priority2cost(
+    context_id: int, priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)
+) -> int:
+    cost_candidates = search_cost_candidates(context_id)
+    return cost_candidates[MAX_PRIORITY - priority]
