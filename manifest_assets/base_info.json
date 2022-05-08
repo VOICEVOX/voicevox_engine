@@ -1,5 +1,5 @@
 {
-    "manifest_version": "1.0.0",
+    "manifest_version": "0.12.0",
     "name": "dummy name",
     "icon": "",
     "default_sampling_rate": 24000,
