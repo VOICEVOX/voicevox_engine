@@ -744,7 +744,8 @@ jobs:
 
             # cuDNN
             ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_cnn_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_ops_infer64*.dll artifact/
           fi
 
           if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
