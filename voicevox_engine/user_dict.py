@@ -216,6 +216,24 @@ def import_user_dict(
     for word_uuid, word in dict_data.items():
         UUID(word_uuid)
         assert type(word) == UserDictWord
+        for pos_detail in part_of_speech_data.values():
+            if word.context_id == pos_detail.context_id:
+                assert word.part_of_speech == pos_detail.part_of_speech
+                assert (
+                    word.part_of_speech_detail_1 == pos_detail.part_of_speech_detail_1
+                )
+                assert (
+                    word.part_of_speech_detail_2 == pos_detail.part_of_speech_detail_2
+                )
+                assert (
+                    word.part_of_speech_detail_3 == pos_detail.part_of_speech_detail_3
+                )
+                assert (
+                    word.accent_associative_rule in pos_detail.accent_associative_rules
+                )
+                break
+        else:
+            raise ValueError("対応していない品詞です")
     old_dict = read_dict(user_dict_path=user_dict_path)
     if override:
         new_dict = {**old_dict, **dict_data}

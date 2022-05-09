@@ -25,6 +25,14 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             9110,
             14176,
         ],
+        accent_associative_rules=[
+            "*",
+            "C1",
+            "C2",
+            "C3",
+            "C4",
+            "C5",
+        ],
     ),
     "普通名詞": PartOfSpeechDetail(
         part_of_speech="名詞",
@@ -44,6 +52,14 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             8170,
             8979,
             15001,
+        ],
+        accent_associative_rules=[
+            "*",
+            "C1",
+            "C2",
+            "C3",
+            "C4",
+            "C5",
         ],
     ),
     "動詞": PartOfSpeechDetail(
@@ -65,6 +81,9 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             8771,
             13433,
         ],
+        accent_associative_rules=[
+            "*",
+        ],
     ),
     "形容詞": PartOfSpeechDetail(
         part_of_speech="形容詞",
@@ -85,6 +104,9 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             7250,
             10001,
         ],
+        accent_associative_rules=[
+            "*",
+        ],
     ),
     "語尾": PartOfSpeechDetail(
         part_of_speech="名詞",
@@ -104,6 +126,14 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             12228,
             13622,
             15847,
+        ],
+        accent_associative_rules=[
+            "*",
+            "C1",
+            "C2",
+            "C3",
+            "C4",
+            "C5",
         ],
     ),
 }
