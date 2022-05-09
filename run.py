@@ -25,6 +25,8 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.engine_manifest import EngineManifestLoader
+from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
@@ -87,6 +89,7 @@ def generate_app(
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
     )
+    engine_manifest_loader = EngineManifestLoader(root_dir / "manifest_assets")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -837,6 +840,10 @@ def generate_app(
             content=supported_devices,
             media_type="application/json",
         )
+
+    @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
+    def engine_manifest():
+        return engine_manifest_loader.load_manifest()
 
     return app
 
