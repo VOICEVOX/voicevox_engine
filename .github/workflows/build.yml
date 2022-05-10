@@ -61,7 +61,7 @@ jobs:
         id: pip-cache
         with:
           path: ${{ matrix.pip_cache_path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-build.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -71,7 +71,7 @@ jobs:
           # FIXME: Nuitka cannot build with setuptools>=60.7.0
           # https://github.com/Nuitka/Nuitka/issues/1406
           pip install --upgrade pip setuptools==60.6.0 wheel
-          pip install -r requirements-dev.txt
+          pip install -r requirements-build.txt
 
       - name: Generate licenses.json
         shell: bash
@@ -501,7 +501,7 @@ jobs:
         id: pip-cache
         with:
           path: ${{ matrix.pip_cache_path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-build.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -511,7 +511,7 @@ jobs:
           # FIXME: Nuitka cannot build with setuptools>=60.7.0
           # https://github.com/Nuitka/Nuitka/issues/1406
           python -m pip install --upgrade pip setuptools==60.6.0 wheel
-          python -m pip install -r requirements-dev.txt
+          python -m pip install -r requirements-build.txt
 
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
