@@ -113,10 +113,9 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     with user_dict_path.open(encoding="utf-8") as f:
         result = {}
         for word_uuid, word in json.load(f).items():
-            # 0.12以前の辞書はcontext_idがハードコーディングされており、1348(固有名詞)で固定であった
-            # UserDictWordに値をdictの内容を代入すれば、defaultの値として1348が補完されるが、
-            # そのあとにcostをpriorityに変換することは出来ない(バリデーションエラーに引っかかるため)
-            # そのため、この時点で固有名詞のcontext_idを代入してしまうようにする
+            # cost2priorityで変換を行う際にcontext_idが必要となるが、
+            # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
+            # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
             if word.get("context_id") is None:
                 word["context_id"] = part_of_speech_data["固有名詞"].context_id
             word["priority"] = cost2priority(word["context_id"], word["cost"])
