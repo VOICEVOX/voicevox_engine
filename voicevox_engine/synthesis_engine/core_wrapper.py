@@ -330,7 +330,13 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
 
 class CoreWrapper:
-    def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
+    def __init__(
+        self,
+        use_gpu: bool,
+        core_dir: Path,
+        cpu_num_threads: int = 0,
+        load_all_models: bool = True,
+    ) -> None:
 
         self.core = load_core(core_dir, use_gpu)
 
@@ -344,9 +350,12 @@ class CoreWrapper:
         self.exist_suppoted_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
+        # TODO: version 0.12 から追加された load_model, is_model_loaded 関数に対応するため、
+        #       self.exist_load_model, self.exist_is_model_loaded 変数を定義する
 
         if is_version_0_12_core_or_later(core_dir):
             model_type = "onnxruntime"
+            # TODO: self.exist_load_model, self.exist_is_model_loaded 両方を True にする
         else:
             model_type = check_core_type(core_dir)
         assert model_type is not None
@@ -388,7 +397,7 @@ class CoreWrapper:
         os.chdir(core_dir)
         try:
             if is_version_0_12_core_or_later(core_dir):
-                if not self.core.initialize(use_gpu, cpu_num_threads):
+                if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
                     raise Exception(self.core.last_error_message().decode("utf-8"))
             elif exist_cpu_num_threads:
                 if not self.core.initialize(".", use_gpu, cpu_num_threads):
