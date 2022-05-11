@@ -331,12 +331,8 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
 class CoreWrapper:
     def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
-        if is_version_0_12_core_or_later(core_dir):
-            model_type = "onnxruntime"
-        else:
-            model_type = check_core_type(core_dir)
+
         self.core = load_core(core_dir, use_gpu)
-        assert model_type is not None
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -348,6 +344,13 @@ class CoreWrapper:
         self.exist_suppoted_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
+
+        if is_version_0_12_core_or_later(core_dir):
+            model_type = "onnxruntime"
+        else:
+            model_type = check_core_type(core_dir)
+        assert model_type is not None
+
         if model_type == "onnxruntime":
             self.core.supported_devices.restype = c_char_p
             self.core.finalize.restype = None
