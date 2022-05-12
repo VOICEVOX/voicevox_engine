@@ -27,7 +27,6 @@ jobs:
             python_architecture: "x64"
             pip_cache_path: ~/Library/Caches/pip
             voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
-            voicevox_core_library_name: libcore_cpu_universal2.dylib
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
             artifact_name: macos-x64
 
@@ -148,10 +147,10 @@ jobs:
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          # extracted like download/core/metas.json
+          # extracted like download/core/libcore.dylib
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
-          ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
-          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
+          rm download/core.zip
 
       - name: Download PyOpenJTalk dictionary
         shell: bash
@@ -197,9 +196,7 @@ jobs:
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../default.csv=./ \
-            --include-data-file=../download/core/*.bin=./ \
-            --include-data-file=../download/core/metas.json=./ \
-            --include-data-file=../download/core/${{ matrix.voicevox_core_library_name }}=./ \
+            --include-data-file=../download/core/libcore.dylib=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
@@ -255,7 +252,6 @@ jobs:
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            voicevox_core_library_name: libcore_cpu_x64.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
             artifact_name: linux-cpu
             nuitka_cache_path: nuitka_cache
@@ -265,7 +261,6 @@ jobs:
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
             artifact_name: linux-nvidia
             nuitka_cache_path: nuitka_cache
@@ -331,7 +326,6 @@ jobs:
             VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
             VOICEVOX_CORE_ASSET_NAME=${{ env.VOICEVOX_CORE_ASSET_NAME }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           load: true
@@ -383,7 +377,6 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
-            voicevox_core_dll_name: core_cpu_x64.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
@@ -393,7 +386,6 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
-            voicevox_core_dll_name: core_gpu_x64_directml.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
@@ -404,7 +396,6 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
-            voicevox_core_dll_name: core_gpu_x64_nvidia.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
             cuda_version: "11.4.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
@@ -677,8 +668,8 @@ jobs:
         shell: bash
         run: |
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
-          unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          unzip download/core.zip -d download/
+          rm download/core.zip
 
       - name: Generate licenses.json
         shell: bash
@@ -725,10 +716,8 @@ jobs:
             --include-data-file="licenses.json=./" \
             --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
-            --include-data-file=download/core/*.bin=./ \
-            --include-data-file="download/core/metas.json=./" \
             --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
-            --include-data-file="download/core/${{ matrix.voicevox_core_dll_name }}=./" \
+            --include-data-file="download/core/core.dll=./" \
             --include-data-dir="speaker_info=./speaker_info" \
             --include-data-dir="manifest_assets=./manifest_assets" \
             --msvc=14.2 \
