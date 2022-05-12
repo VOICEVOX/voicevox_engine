@@ -249,8 +249,6 @@ COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 
-cat /opt/voicevox_core/README.txt > /dev/stderr
-
 exec "\$@"
 EOF
 
