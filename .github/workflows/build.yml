@@ -12,7 +12,7 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.11.4"
-  VOICEVOX_CORE_VERSION: "0.12.0-preview.2"
+  VOICEVOX_CORE_VERSION: "0.12.0-preview.3"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
@@ -26,11 +26,15 @@ jobs:
           - os: macos-11
             python_architecture: "x64"
             pip_cache_path: ~/Library/Caches/pip
+            voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
             voicevox_core_library_name: libcore_cpu_universal2.dylib
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
             artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -145,9 +149,9 @@ jobs:
         shell: bash
         run: |
           # extracted like download/core/metas.json
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/core.zip" > download/core.zip
-          ditto -x -k --sequesterRsrc --rsrc download/core.zip download/
-          rm download/core.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
+          ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
       - name: Download PyOpenJTalk dictionary
         shell: bash
@@ -250,6 +254,7 @@ jobs:
             target: build-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             voicevox_core_library_name: libcore_cpu_x64.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
             artifact_name: linux-cpu
@@ -259,12 +264,16 @@ jobs:
             target: build-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             voicevox_core_library_name: libcore_gpu_x64_nvidia.so
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
             artifact_name: linux-nvidia
             nuitka_cache_path: nuitka_cache
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -320,6 +329,7 @@ jobs:
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
+            VOICEVOX_CORE_ASSET_NAME=${{ env.VOICEVOX_CORE_ASSET_NAME }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
@@ -372,6 +382,7 @@ jobs:
           # Windows CPU
           - os: windows-2019
             architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             voicevox_core_dll_name: core_cpu_x64.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
@@ -381,6 +392,7 @@ jobs:
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             voicevox_core_dll_name: core_gpu_x64_directml.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
@@ -391,6 +403,7 @@ jobs:
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
             voicevox_core_dll_name: core_gpu_x64_nvidia.dll
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
             cuda_version: "11.4.2"
@@ -401,6 +414,9 @@ jobs:
             pip_cache_path: ~\AppData\Local\pip\Cache
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -660,9 +676,9 @@ jobs:
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/core.zip" > download/core.zip
-          unzip download/core.zip -d download/
-          rm download/core.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
+          unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
+          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
       - name: Generate licenses.json
         shell: bash
