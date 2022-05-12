@@ -27,9 +27,12 @@ RUN <<EOF
     set -eux
 
     # Download Core
-    wget -nv --show-progress -c -O "./core.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
-    unzip "./core.zip"
-    rm ./core.zip
+    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
+    unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
+    mkdir -p core
+    mv "${VOICEVOX_CORE_ASSET_NAME}/*" core
+    rm -rf $VOICEVOX_CORE_ASSET_NAME
+    rm "./${VOICEVOX_CORE_ASSET_NAME}.zip"
 
     # Move Core Library to /opt/voicevox_core/
     mkdir /opt/voicevox_core
