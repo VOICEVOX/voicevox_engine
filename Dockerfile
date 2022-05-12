@@ -38,6 +38,9 @@ RUN <<EOF
     mkdir /opt/voicevox_core
     mv "./core/libcore.so" /opt/voicevox_core/
 
+    # Move documents to /opt/voicevox_core/
+    mv ./core/VERSION /opt/voicevox_core/
+
     rm -rf ./core
 
     # Add /opt/voicevox_core to dynamic library search path
