@@ -339,7 +339,7 @@ class CoreWrapper:
         use_gpu: bool,
         core_dir: Path,
         cpu_num_threads: int = 0,
-        load_all_models: bool = True,
+        load_all_models: bool = False,
     ) -> None:
 
         self.core = load_core(core_dir, use_gpu)
@@ -354,12 +354,17 @@ class CoreWrapper:
         self.exist_suppoted_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
-        # TODO: version 0.12 から追加された load_model, is_model_loaded 関数に対応するため、
-        #       self.exist_load_model, self.exist_is_model_loaded 変数を定義する
+        self.exist_load_model = False
+        self.exist_is_model_loaded = False
 
         if is_version_0_12_core_or_later(core_dir):
             model_type = "onnxruntime"
-            # TODO: self.exist_load_model, self.exist_is_model_loaded 両方を True にする
+            self.exist_load_model = True
+            self.exist_is_model_loaded = True
+            self.core.load_model.argtypes = (c_int,)
+            self.core.load_model.restype = c_bool
+            self.core.is_model_loaded.argtypes = (c_int,)
+            self.core.is_model_loaded.restype = c_bool
         else:
             model_type = check_core_type(core_dir)
         assert model_type is not None
@@ -411,6 +416,11 @@ class CoreWrapper:
                     raise Exception(self.core.last_error_message().decode("utf-8"))
         finally:
             os.chdir(cwd)
+    
+    def _lazy_init(self, speaker_id: int):
+        if self.exist_load_model and self.exist_load_model:
+            if not self.is_model_loaded(speaker_id):
+                self.load_model(speaker_id)
 
     def metas(self) -> str:
         return self.core.metas().decode("utf-8")
@@ -421,6 +431,7 @@ class CoreWrapper:
         phoneme_list: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
+        self._lazy_init(speaker_id[0])
         output = np.zeros((length,), dtype=np.float32)
         success = self.core.yukarin_s_forward(
             c_int(length),
@@ -443,6 +454,7 @@ class CoreWrapper:
         end_accent_phrase_list: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
+        self._lazy_init(speaker_id[0])
         output = np.empty(
             (
                 len(speaker_id),
@@ -473,6 +485,7 @@ class CoreWrapper:
         phoneme: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
+        self._lazy_init(speaker_id[0])
         output = np.empty((length * 256,), dtype=np.float32)
         success = self.core.decode_forward(
             c_int(length),
@@ -495,4 +508,14 @@ class CoreWrapper:
         if self.exist_finalize:
             self.core.finalize()
             return
+        raise NameError
+    
+    def load_model(self, speaker_id: int) -> bool:
+        if self.exist_load_model:
+            return self.core.load_model(c_int(speaker_id))
+        raise NameError
+    
+    def is_model_loaded(self, speaker_id: int) -> bool:
+        if self.exist_is_model_loaded:
+            return self.core.is_model_loaded(c_int(speaker_id))
         raise NameError
