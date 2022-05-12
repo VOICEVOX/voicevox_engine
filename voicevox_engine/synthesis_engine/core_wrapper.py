@@ -416,7 +416,7 @@ class CoreWrapper:
                     raise Exception(self.core.last_error_message().decode("utf-8"))
         finally:
             os.chdir(cwd)
-    
+
     def _lazy_init(self, speaker_id: int):
         if self.exist_load_model and self.exist_load_model:
             if not self.is_model_loaded(speaker_id):
@@ -509,12 +509,12 @@ class CoreWrapper:
             self.core.finalize()
             return
         raise NameError
-    
+
     def load_model(self, speaker_id: int) -> bool:
         if self.exist_load_model:
             return self.core.load_model(c_int(speaker_id))
         raise NameError
-    
+
     def is_model_loaded(self, speaker_id: int) -> bool:
         if self.exist_is_model_loaded:
             return self.core.is_model_loaded(c_int(speaker_id))
