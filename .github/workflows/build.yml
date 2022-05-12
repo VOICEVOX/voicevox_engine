@@ -32,9 +32,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    env:
-      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
-
     steps:
       - uses: actions/checkout@v2
 
@@ -146,6 +143,8 @@ jobs:
       - name: Download VOICEVOX Core release
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
+        env:
+          VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
         run: |
           # extracted like download/core/libcore.dylib
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
@@ -267,9 +266,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    env:
-      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
-
     steps:
       - uses: actions/checkout@v2
 
@@ -315,6 +311,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
           RUNTIME_IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.runtime_tag }}${{ (matrix.runtime_tag != '' && '-') || '' }}latest
+          VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -405,9 +402,6 @@ jobs:
             pip_cache_path: ~\AppData\Local\pip\Cache
 
     runs-on: ${{ matrix.os }}
-
-    env:
-      VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -666,6 +660,8 @@ jobs:
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
         shell: bash
+        env:
+          VOICEVOX_CORE_ASSET_NAME: "${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}"
         run: |
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/core.zip
           unzip download/core.zip -d download/
