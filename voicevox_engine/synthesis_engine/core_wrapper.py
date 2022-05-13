@@ -292,6 +292,7 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if is_version_0_12_core_or_later(core_dir):
         try:
+            # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある
             return CDLL(
                 str((core_dir / CORENAME_DICT[platform.system()]).resolve(strict=True))
             )
