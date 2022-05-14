@@ -21,25 +21,25 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
-ARG VOICEVOX_CORE_VERSION=0.11.4
-ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
+ARG VOICEVOX_CORE_ASSET_NAME=voicevox_core-linux-x64-cpu-0.12.0-preview.3
+ARG VOICEVOX_CORE_VERSION=0.12.0-preview.3
 RUN <<EOF
     set -eux
 
     # Download Core
-    wget -nv --show-progress -c -O "./core.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
-    unzip "./core.zip"
-    rm ./core.zip
+    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
+    unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
+    mkdir -p core
+    mv "${VOICEVOX_CORE_ASSET_NAME}"/* core
+    rm -rf $VOICEVOX_CORE_ASSET_NAME
+    rm "./${VOICEVOX_CORE_ASSET_NAME}.zip"
 
     # Move Core Library to /opt/voicevox_core/
     mkdir /opt/voicevox_core
-    mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
-
-    # Move Voice Library to /opt/voicevox_core/
-    mv ./core/*.bin ./core/metas.json /opt/voicevox_core/
+    mv "./core/libcore.so" /opt/voicevox_core/
 
     # Move documents to /opt/voicevox_core/
-    mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
+    mv ./core/VERSION /opt/voicevox_core/
 
     rm -rf ./core
 
@@ -249,7 +249,8 @@ COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 
-cat /opt/voicevox_core/README.txt > /dev/stderr
+# TODO: Display README for engine
+# cat /opt/voicevox_core/README.txt > /dev/stderr
 
 exec "\$@"
 EOF
@@ -333,8 +334,6 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
             --include-data-file=/opt/voicevox_engine/default.csv=./ \
-            --include-data-file=/opt/voicevox_core/*.bin=./ \
-            --include-data-file=/opt/voicevox_core/metas.json=./ \
             --include-data-file=/opt/voicevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
