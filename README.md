@@ -40,7 +40,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    localhost:50021/synthesis?speaker=1 \
+    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -88,7 +88,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    localhost:50021/synthesis?speaker=1 \
+    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
