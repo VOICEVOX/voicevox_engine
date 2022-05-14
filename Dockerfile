@@ -250,7 +250,7 @@ RUN <<EOF
     set -eux
 
     # README
-    wget -nv --show-progress -c -O /opt/voicevox_engine/README.md https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md
+    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 EOF
 
 # Create container start shell
