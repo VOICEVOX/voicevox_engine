@@ -39,8 +39,6 @@ RUN <<EOF
     mv "./core/libcore.so" /opt/voicevox_core/
 
     # Move documents to /opt/voicevox_core/
-    # TODO: add README into /opt/voicevox_core
-    # mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
     mv ./core/VERSION /opt/voicevox_core/
 
     rm -rf ./core
@@ -251,7 +249,7 @@ COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 
-# TODO: Display README for engine (remember to add README into /opt/voicevox_core)
+# TODO: Display README for engine
 # cat /opt/voicevox_core/README.txt > /dev/stderr
 
 exec "\$@"
