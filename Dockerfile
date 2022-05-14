@@ -244,13 +244,22 @@ RUN <<EOF
     fi
 EOF
 
+# Download Resource
+ARG VOICEVOX_RESOURCE_VERSION=0.12.0-preview.0
+RUN <<EOF
+    set -eux
+
+    # README
+    wget -nv --show-progress -c -O /opt/voicevox_engine/README.md https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md
+EOF
+
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 
-# TODO: Display README for engine
-# cat /opt/voicevox_core/README.txt > /dev/stderr
+# Display README for engine
+cat /opt/voicevox_engine/README.md > /dev/stderr
 
 exec "\$@"
 EOF
