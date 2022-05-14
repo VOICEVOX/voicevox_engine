@@ -1,9 +1,5 @@
 {
     "manifest_version": "0.12.0",
     "name": "dummy name",
-    "icon": "",
-    "default_sampling_rate": 24000,
-    "terms_of_service": "",
-    "update_infos": [],
-    "dependency_licenses": []
+    "default_sampling_rate": 24000
 }
