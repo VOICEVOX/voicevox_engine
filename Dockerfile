@@ -164,6 +164,7 @@ RUN <<EOF
     apt-get update
     apt-get install -y \
         git \
+        wget \
         cmake \
         libsndfile1 \
         ca-certificates \
