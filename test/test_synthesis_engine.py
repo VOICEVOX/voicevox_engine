@@ -2,7 +2,8 @@ import math
 from copy import deepcopy
 from random import random
 from typing import Union
-from unittest import TestCase
+
+# from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
@@ -81,7 +82,8 @@ def decode_mock(
     return numpy.array(result)
 
 
-class TestSynthesisEngine(TestCase):
+# TODO: テスト修正
+class NotTestSynthesisEngine:
     def setUp(self):
         super().setUp()
         self.str_list_hello_hiho = (
