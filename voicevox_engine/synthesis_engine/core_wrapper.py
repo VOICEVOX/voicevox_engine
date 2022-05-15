@@ -417,11 +417,6 @@ class CoreWrapper:
         finally:
             os.chdir(cwd)
 
-    def _lazy_init(self, speaker_id: int):
-        if self.exist_load_model and self.exist_load_model:
-            if not self.is_model_loaded(speaker_id):
-                self.load_model(speaker_id)
-
     def metas(self) -> str:
         return self.core.metas().decode("utf-8")
 
@@ -431,7 +426,6 @@ class CoreWrapper:
         phoneme_list: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
-        self._lazy_init(speaker_id[0])
         output = np.zeros((length,), dtype=np.float32)
         success = self.core.yukarin_s_forward(
             c_int(length),
@@ -454,7 +448,6 @@ class CoreWrapper:
         end_accent_phrase_list: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
-        self._lazy_init(speaker_id[0])
         output = np.empty(
             (
                 len(speaker_id),
@@ -485,7 +478,6 @@ class CoreWrapper:
         phoneme: np.ndarray,
         speaker_id: np.ndarray,
     ) -> np.ndarray:
-        self._lazy_init(speaker_id[0])
         output = np.empty((length * 256,), dtype=np.float32)
         success = self.core.decode_forward(
             c_int(length),
