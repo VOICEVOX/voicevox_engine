@@ -517,5 +517,5 @@ class CoreWrapper:
 
     def is_model_loaded(self, speaker_id: int) -> bool:
         if self.exist_is_model_loaded:
-            return self.core.is_model_loaded(c_int(speaker_id))
+            return self.core.is_model_loaded(c_long(speaker_id))
         raise NameError
