@@ -361,9 +361,9 @@ class CoreWrapper:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
-            self.core.load_model.argtypes = (c_int,)
+            self.core.load_model.argtypes = (c_long,)
             self.core.load_model.restype = c_bool
-            self.core.is_model_loaded.argtypes = (c_int,)
+            self.core.is_model_loaded.argtypes = (c_long,)
             self.core.is_model_loaded.restype = c_bool
         else:
             model_type = check_core_type(core_dir)
