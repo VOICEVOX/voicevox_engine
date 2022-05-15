@@ -280,11 +280,11 @@ RUN <<EOF
 EOF
 
 # Install Python build dependencies
-ADD ./requirements-dev.txt /tmp/
+ADD ./requirements-build.txt /tmp/
 RUN <<EOF
     set -eux
 
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-dev.txt
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-build.txt
 EOF
 
 # Generate licenses.json with build dependencies

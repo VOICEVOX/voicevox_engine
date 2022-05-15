@@ -336,7 +336,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-python -m pip install -r requirements-test.txt
+python -m pip install -r requirements-dev.txt
 
 # とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt
@@ -438,7 +438,7 @@ python make_docs.py
 Build Tools for Visual Studio 2019 が必要です。
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements-build.txt
 
 python generate_licenses.py > licenses.json
 
@@ -473,9 +473,9 @@ pip-tools を用いて依存ライブラリのバージョンを固定してい�
 `requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
 
 ```bash
-pip-compile requirements.in
-pip-compile requirements-dev.in
-pip-compile requirements-test.in
+pip-compile requirements.in # 実行に必要
+pip-compile requirements-build.in # ビルドに必要
+pip-compile requirements-dev.in # 開発に必要（ビルドには不要）
 ```
 
 ### ライセンス
