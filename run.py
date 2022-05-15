@@ -861,6 +861,7 @@ if __name__ == "__main__":
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
     parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument("--load_all_models", action="store_true")
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
@@ -880,6 +881,7 @@ if __name__ == "__main__":
         runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
+        load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))

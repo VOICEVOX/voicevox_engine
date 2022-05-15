@@ -16,6 +16,7 @@ from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
 from ..acoustic_feature_extractor import OjtPhoneme
 from ..kana_parser import create_kana
 from ..model import AccentPhrase, AudioQuery, Mora
+from .core_wrapper import CoreWrapper
 from .synthesis_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
@@ -138,20 +139,16 @@ def pre_process(
 class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
-        yukarin_s_forwarder,
-        yukarin_sa_forwarder,
-        decode_forwarder,
-        speakers: str,
-        supported_devices: Optional[str] = None,
+        core: CoreWrapper,
     ):
         """
-        yukarin_s_forwarder: 音素列から、音素ごとの長さを求める関数
+        core.yukarin_s_forward: 音素列から、音素ごとの長さを求める関数
             length: 音素列の長さ
             phoneme_list: 音素列
             speaker_id: 話者番号
             return: 音素ごとの長さ
 
-        yukarin_sa_forwarder: モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+        core.yukarin_sa_forward: モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
             length: モーラ列の長さ
             vowel_phoneme_list: 母音の音素列
             consonant_phoneme_list: 子音の音素列
@@ -162,7 +159,7 @@ class SynthesisEngine(SynthesisEngineBase):
             speaker_id: 話者番号
             return: モーラごとの音高
 
-        decode_forwarder: フレームごとの音素と音高から波形を求める関数
+        core.decode_forward: フレームごとの音素と音高から波形を求める関数
             length: フレームの長さ
             phoneme_size: 音素の種類数
             f0: フレームごとの音高
@@ -177,12 +174,12 @@ class SynthesisEngine(SynthesisEngineBase):
             Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
-        self.yukarin_s_forwarder = yukarin_s_forwarder
-        self.yukarin_sa_forwarder = yukarin_sa_forwarder
-        self.decode_forwarder = decode_forwarder
-
-        self._speakers = speakers
-        self._supported_devices = supported_devices
+        self.core = core
+        self._speakers = self.core.metas()
+        try:
+            self._supported_devices = self.core.supported_devices()
+        except NameError:
+            self._supported_devices = None
         self.default_sampling_rate = 24000
 
     @property
@@ -192,6 +189,14 @@ class SynthesisEngine(SynthesisEngineBase):
     @property
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
+
+    def _lazy_init(self, speaker_id: int):
+        try:
+            is_model_loaded = self.core.is_model_loaded(speaker_id)
+        except NameError:
+            return
+        if not is_model_loaded:
+            self.core.load_model(speaker_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -209,6 +214,8 @@ class SynthesisEngine(SynthesisEngineBase):
         accent_phrases : List[AccentPhrase]
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
@@ -220,8 +227,8 @@ class SynthesisEngine(SynthesisEngineBase):
         phoneme_list_s = numpy.array(
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
-        # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwarderにかけ、推論器によって適切な音素の長さを割り当てる
-        phoneme_length = self.yukarin_s_forwarder(
+        # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwardにかけ、推論器によって適切な音素の長さを割り当てる
+        phoneme_length = self.core.yukarin_s_forward(
             length=len(phoneme_list_s),
             phoneme_list=phoneme_list_s,
             speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
@@ -255,6 +262,8 @@ class SynthesisEngine(SynthesisEngineBase):
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -354,8 +363,8 @@ class SynthesisEngine(SynthesisEngineBase):
             dtype=numpy.int64,
         )
 
-        # 今までに生成された情報をyukarin_sa_forwarderにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        f0_list = self.yukarin_sa_forwarder(
+        # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
+        f0_list = self.core.yukarin_sa_forward(
             length=vowel_phoneme_list.shape[0],
             vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
             consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
@@ -392,7 +401,8 @@ class SynthesisEngine(SynthesisEngineBase):
         wave : numpy.ndarray
             音声合成結果
         """
-
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
@@ -461,8 +471,8 @@ class SynthesisEngine(SynthesisEngineBase):
         array[numpy.arange(len(phoneme)), phoneme] = 1
         phoneme = array
 
-        # 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
-        wave = self.decode_forwarder(
+        # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
+        wave = self.core.decode_forward(
             length=phoneme.shape[0],
             phoneme_size=phoneme.shape[1],
             f0=f0[:, numpy.newaxis],
@@ -495,6 +505,7 @@ class SynthesisEngine(SynthesisEngineBase):
         normalize: bool,
         core_version: Optional[str] = None,
     ):
+        self._lazy_init(speaker)
         kana = create_kana(query.accent_phrases)
         f0, phonemes = extract_guided_feature(audio_path, kana)
 
@@ -524,7 +535,7 @@ class SynthesisEngine(SynthesisEngineBase):
         f0 = resample(f0, int(len(f0) / query.speedScale))
         phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))
 
-        wave = self.decode_forwarder(
+        wave = self.core.decode_forward(
             length=phone_list.shape[0],
             phoneme_size=phone_list.shape[1],
             f0=f0[:, numpy.newaxis].astype(numpy.float32),

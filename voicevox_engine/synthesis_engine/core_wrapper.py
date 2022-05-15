@@ -339,7 +339,7 @@ class CoreWrapper:
         use_gpu: bool,
         core_dir: Path,
         cpu_num_threads: int = 0,
-        load_all_models: bool = True,
+        load_all_models: bool = False,
     ) -> None:
 
         self.core = load_core(core_dir, use_gpu)
@@ -354,12 +354,17 @@ class CoreWrapper:
         self.exist_suppoted_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
-        # TODO: version 0.12 から追加された load_model, is_model_loaded 関数に対応するため、
-        #       self.exist_load_model, self.exist_is_model_loaded 変数を定義する
+        self.exist_load_model = False
+        self.exist_is_model_loaded = False
 
         if is_version_0_12_core_or_later(core_dir):
             model_type = "onnxruntime"
-            # TODO: self.exist_load_model, self.exist_is_model_loaded 両方を True にする
+            self.exist_load_model = True
+            self.exist_is_model_loaded = True
+            self.core.load_model.argtypes = (c_long,)
+            self.core.load_model.restype = c_bool
+            self.core.is_model_loaded.argtypes = (c_long,)
+            self.core.is_model_loaded.restype = c_bool
         else:
             model_type = check_core_type(core_dir)
         assert model_type is not None
@@ -495,4 +500,14 @@ class CoreWrapper:
         if self.exist_finalize:
             self.core.finalize()
             return
+        raise NameError
+
+    def load_model(self, speaker_id: int) -> bool:
+        if self.exist_load_model:
+            return self.core.load_model(c_long(speaker_id))
+        raise NameError
+
+    def is_model_loaded(self, speaker_id: int) -> bool:
+        if self.exist_is_model_loaded:
+            return self.core.is_model_loaded(c_long(speaker_id))
         raise NameError
