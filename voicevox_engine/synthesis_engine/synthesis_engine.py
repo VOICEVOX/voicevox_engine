@@ -191,9 +191,12 @@ class SynthesisEngine(SynthesisEngineBase):
         return self._supported_devices
 
     def _lazy_init(self, speaker_id: int):
-        if self.core.exist_load_model and self.core.exist_load_model:
-            if not self.core.is_model_loaded(speaker_id):
-                self.core.load_model(speaker_id)
+        try:
+            is_model_loaded = self.core.is_model_loaded(speaker_id)
+        except NameError:
+            return
+        if not is_model_loaded:
+            self.core.load_model(speaker_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
