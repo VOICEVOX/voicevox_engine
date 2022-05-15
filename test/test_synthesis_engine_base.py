@@ -1,6 +1,5 @@
 from typing import List, Union
-
-# from unittest import TestCase
+from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
@@ -169,15 +168,26 @@ def create_mock_query(accent_phrases):
     )
 
 
-# TODO: テスト修正
-class NotTestSynthesisEngineBase:
+class MockCore:
+    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
+    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
+    decode_forward = Mock(side_effect=decode_mock)
+
+    def metas(self):
+        return ""
+
+    def supported_devices(self):
+        return ""
+
+    def is_model_loaded(self, speaker_id):
+        raise NameError
+
+
+class TestSynthesisEngineBase(TestCase):
     def setUp(self):
         super().setUp()
         self.synthesis_engine = SynthesisEngine(
-            yukarin_s_forwarder=Mock(side_effect=yukarin_s_mock),
-            yukarin_sa_forwarder=Mock(side_effect=yukarin_sa_mock),
-            decode_forwarder=Mock(side_effect=decode_mock),
-            speakers="",
+            core=MockCore(),
         )
         self.synthesis_engine._synthesis_impl = Mock()
 

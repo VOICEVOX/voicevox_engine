@@ -2,8 +2,7 @@ import math
 from copy import deepcopy
 from random import random
 from typing import Union
-
-# from unittest import TestCase
+from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
@@ -82,8 +81,22 @@ def decode_mock(
     return numpy.array(result)
 
 
-# TODO: テスト修正
-class NotTestSynthesisEngine:
+class MockCore:
+    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
+    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
+    decode_forward = Mock(side_effect=decode_mock)
+
+    def metas(self):
+        return ""
+
+    def supported_devices(self):
+        return ""
+
+    def is_model_loaded(self, speaker_id):
+        raise NameError
+
+
+class TestSynthesisEngine(TestCase):
     def setUp(self):
         super().setUp()
         self.str_list_hello_hiho = (
@@ -188,14 +201,12 @@ class NotTestSynthesisEngine:
                 pause_mora=None,
             ),
         ]
-        self.yukarin_s_mock = Mock(side_effect=yukarin_s_mock)
-        self.yukarin_sa_mock = Mock(side_effect=yukarin_sa_mock)
-        self.decode_mock = Mock(side_effect=decode_mock)
+        core = MockCore()
+        self.yukarin_s_mock = core.yukarin_s_forward
+        self.yukarin_sa_mock = core.yukarin_sa_forward
+        self.decode_mock = core.decode_forward
         self.synthesis_engine = SynthesisEngine(
-            yukarin_s_forwarder=self.yukarin_s_mock,
-            yukarin_sa_forwarder=self.yukarin_sa_mock,
-            decode_forwarder=self.decode_mock,
-            speakers="",
+            core=core,
         )
 
     def test_to_flatten_moras(self):
