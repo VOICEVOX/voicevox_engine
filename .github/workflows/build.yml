@@ -25,7 +25,6 @@ jobs:
         include:
           - os: macos-11
             python_architecture: "x64"
-            pip_cache_path: ~/Library/Caches/pip
             voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
             artifact_name: macos-x64
@@ -55,15 +54,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.python_architecture }}
-
-      - name: Prepare Python dependencies cache
-        uses: actions/cache@v2
-        id: pip-cache
-        with:
-          path: ${{ matrix.pip_cache_path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
 
       - name: Install Python dependencies
         shell: bash
@@ -137,7 +128,7 @@ jobs:
         uses: actions/cache@v2
         id: voicevox-core-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-${{ env.VOICEVOX_CORE_VERSION }}
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
           path: download/core
 
       - name: Download VOICEVOX Core release
@@ -381,7 +372,6 @@ jobs:
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
             nuitka_cache_path: nuitka_cache
-            pip_cache_path: ~\AppData\Local\pip\Cache
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
@@ -391,7 +381,6 @@ jobs:
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-directml
             nuitka_cache_path: nuitka_cache
-            pip_cache_path: ~\AppData\Local\pip\Cache
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
@@ -402,7 +391,6 @@ jobs:
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-nvidia
             nuitka_cache_path: nuitka_cache
-            pip_cache_path: ~\AppData\Local\pip\Cache
 
     runs-on: ${{ matrix.os }}
 
@@ -498,16 +486,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.architecture }}
-
-      # Install Python dependencies
-      - name: Prepare Python dependencies cache
-        uses: actions/cache@v2
-        id: pip-cache
-        with:
-          path: ${{ matrix.pip_cache_path }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/requirements-dev.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
 
       - name: Install Python dependencies
         shell: bash
@@ -657,7 +636,7 @@ jobs:
         uses: actions/cache@v2
         id: voicevox-core-cache
         with:
-          key: ${{ matrix.os }}-voicevox-core-${{ env.VOICEVOX_CORE_VERSION }}
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
           path: download/core
 
       - name: Download VOICEVOX Core
