@@ -224,24 +224,3 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             音声合成結果
         """
         raise NotImplementedError()
-
-    @abstractmethod
-    def guided_synthesis(
-        self,
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def guided_accent_phrases(
-        self,
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-    ) -> List[AccentPhrase]:
-        raise NotImplementedError()
