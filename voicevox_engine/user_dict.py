@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
+import numpy as np
 import pyopenjtalk
 from appdirs import user_data_dir
 from fastapi import HTTPException
@@ -270,15 +271,9 @@ def search_cost_candidates(context_id: int) -> List[int]:
 
 def cost2priority(context_id: int, cost: conint(ge=-32768, le=32767)) -> int:
     cost_candidates = search_cost_candidates(context_id)
-    # コストのパーセンタイルは確実に低いもの順で並んでいるので、低いものから比較し、値が近い・もしくは同じcostをpriorityとする
-    # OpenJTalk側の辞書の更新が入ることでcostのパーセンタイルが変わり得る・そもそもVOICEVOXとして8600をデフォルト値としていたことから、
-    # costとpriorityの対応付けは範囲指定(パーセンタイルの前の値<x<=パーセンタイルの今の値)になっている
-    for i, c in enumerate(cost_candidates):
-        if cost <= c:
-            return MAX_PRIORITY - i
-    # パーセンタイルを超えたコストが設定されている可能性はほぼ0だが、ユーザーが不正に改変した場合等は存在し得るので、
-    # MAXのpriorityを返すようにする
-    return MAX_PRIORITY
+    # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
+    # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
+    return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost))
 
 
 def priority2cost(
