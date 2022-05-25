@@ -273,6 +273,7 @@ def cost2priority(context_id: int, cost: conint(ge=-32768, le=32767)) -> int:
     cost_candidates = search_cost_candidates(context_id)
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
     # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
+    # この関数とpriority2cost関数によって、辞書ファイルのcostを操作しても最も近いpriorityのcostに上書きされる
     return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost))
 
 
