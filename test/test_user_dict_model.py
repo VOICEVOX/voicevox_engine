@@ -11,7 +11,7 @@ class TestUserDictWords(TestCase):
     def setUp(self):
         self.test_model = {
             "surface": "テスト",
-            "cost": 0,
+            "priority": 0,
             "part_of_speech": "名詞",
             "part_of_speech_detail_1": "固有名詞",
             "part_of_speech_detail_2": "一般",
