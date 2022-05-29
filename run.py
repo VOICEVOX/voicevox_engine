@@ -66,9 +66,12 @@ def b64encode_str(s):
 
 
 def generate_app(
-    synthesis_engines: Dict[str, SynthesisEngineBase], latest_core_version: str
+    synthesis_engines: Dict[str, SynthesisEngineBase],
+    latest_core_version: str,
+    root_dir: Optional[Path] = None,
 ) -> FastAPI:
-    root_dir = engine_root()
+    if root_dir is None:
+        root_dir = engine_root()
 
     default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
@@ -684,6 +687,24 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
+    @app.post("/initialize_speaker", tags=["その他"])
+    def initialize_speaker(speaker: int, core_version: Optional[str] = None):
+        """
+        指定されたspeaker_idの話者を初期化します。
+        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        """
+        engine = get_engine(core_version)
+        engine.initialize_speaker_synthesis(speaker)
+        return Response(status_code=204)
+
+    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
+    def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
+        """
+        指定されたspeaker_idの話者が初期化されているかどうかを返します。
+        """
+        engine = get_engine(core_version)
+        return engine.is_initialized_speaker_synthesis(speaker)
+
     @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
         """
@@ -890,8 +911,9 @@ if __name__ == "__main__":
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
+    root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
     uvicorn.run(
-        generate_app(synthesis_engines, latest_core_version),
+        generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
         host=args.host,
         port=args.port,
     )

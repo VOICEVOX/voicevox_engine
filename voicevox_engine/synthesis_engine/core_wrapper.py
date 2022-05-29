@@ -10,6 +10,10 @@ from typing import List, Optional
 import numpy as np
 
 
+class OldCoreError(Exception):
+    """古いコアが使用されている場合に発生するエラー"""
+
+
 def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
@@ -494,20 +498,20 @@ class CoreWrapper:
     def supported_devices(self) -> str:
         if self.exist_suppoted_devices:
             return self.core.supported_devices().decode("utf-8")
-        raise NameError
+        raise OldCoreError
 
     def finalize(self) -> None:
         if self.exist_finalize:
             self.core.finalize()
             return
-        raise NameError
+        raise OldCoreError
 
     def load_model(self, speaker_id: int) -> bool:
         if self.exist_load_model:
             return self.core.load_model(c_long(speaker_id))
-        raise NameError
+        raise OldCoreError
 
     def is_model_loaded(self, speaker_id: int) -> bool:
         if self.exist_is_model_loaded:
             return self.core.is_model_loaded(c_long(speaker_id))
-        raise NameError
+        raise OldCoreError
