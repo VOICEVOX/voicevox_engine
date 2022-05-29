@@ -16,7 +16,7 @@ from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
 from ..acoustic_feature_extractor import OjtPhoneme
 from ..kana_parser import create_kana
 from ..model import AccentPhrase, AudioQuery, Mora
-from .core_wrapper import CoreWrapper
+from .core_wrapper import CoreWrapper, OldCoreError
 from .synthesis_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
@@ -178,7 +178,7 @@ class SynthesisEngine(SynthesisEngineBase):
         self._speakers = self.core.metas()
         try:
             self._supported_devices = self.core.supported_devices()
-        except NameError:
+        except OldCoreError:
             self._supported_devices = None
         self.default_sampling_rate = 24000
 
@@ -190,13 +190,25 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def _lazy_init(self, speaker_id: int):
+    def initialize_speaker_synthesis(self, speaker_id: int):
         try:
-            is_model_loaded = self.core.is_model_loaded(speaker_id)
-        except NameError:
-            return
-        if not is_model_loaded:
             self.core.load_model(speaker_id)
+        except OldCoreError:
+            return  # コアが古い場合はどうしようもないので何もしない
+
+    def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
+        try:
+            return self.core.is_model_loaded(speaker_id)
+        except OldCoreError:
+            return True  # コアが古い場合はどうしようもないのでTrueを返す
+
+    def _lazy_init(self, speaker_id: int):
+        """
+        initialize済みでなければinitializeする
+        """
+        is_model_loaded = self.is_initialized_speaker_synthesis(speaker_id)
+        if not is_model_loaded:
+            self.initialize_speaker_synthesis(speaker_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

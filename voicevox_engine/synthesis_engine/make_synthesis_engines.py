@@ -48,8 +48,6 @@ def make_synthesis_engines(
         )
         cpu_num_threads = 0
 
-    root_dir = engine_root()
-
     if voicevox_dir is not None:
         if voicelib_dirs is not None:
             voicelib_dirs.append(voicevox_dir)
@@ -60,6 +58,7 @@ def make_synthesis_engines(
         else:
             runtime_dirs = [voicevox_dir]
     else:
+        root_dir = engine_root()
         if voicelib_dirs is None:
             voicelib_dirs = [root_dir]
         if runtime_dirs is None:

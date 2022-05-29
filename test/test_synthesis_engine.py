@@ -93,7 +93,7 @@ class MockCore:
         return ""
 
     def is_model_loaded(self, speaker_id):
-        raise NameError
+        return True
 
 
 class TestSynthesisEngine(TestCase):
