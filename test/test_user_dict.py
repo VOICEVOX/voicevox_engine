@@ -8,7 +8,7 @@ from unittest import TestCase
 from fastapi import HTTPException
 from pyopenjtalk import unset_user_dict
 
-from voicevox_engine.model import UserDictWord
+from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
 from voicevox_engine.user_dict import (
     apply_word,
@@ -23,7 +23,7 @@ from voicevox_engine.user_dict import (
 valid_dict_dict_json = {
     "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": {
         "surface": "ｔｅｓｔ",
-        "cost": part_of_speech_data["固有名詞"].cost_candidates[5],
+        "cost": part_of_speech_data[WordTypes.PROPER_NOUN].cost_candidates[5],
         "part_of_speech": "名詞",
         "part_of_speech_detail_1": "固有名詞",
         "part_of_speech_detail_2": "一般",
