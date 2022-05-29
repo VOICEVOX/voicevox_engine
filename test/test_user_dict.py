@@ -289,7 +289,7 @@ class TestUserDict(TestCase):
         invalid_accent_associative_rule_word = deepcopy(import_word)
         invalid_accent_associative_rule_word.accent_associative_rule = "invalid"
         user_dict_path.write_text(
-            json.dumps(valid_dict_dict, ensure_ascii=False), encoding="utf-8"
+            json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
         )
         self.assertRaises(
             AssertionError,
