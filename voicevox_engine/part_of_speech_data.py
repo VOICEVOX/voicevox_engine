@@ -1,12 +1,17 @@
 from typing import Dict
 
-from .model import USER_DICT_MAX_PRIORITY, USER_DICT_MIN_PRIORITY, PartOfSpeechDetail
+from .model import (
+    USER_DICT_MAX_PRIORITY,
+    USER_DICT_MIN_PRIORITY,
+    PartOfSpeechDetail,
+    WordTypes,
+)
 
 MIN_PRIORITY = USER_DICT_MIN_PRIORITY
 MAX_PRIORITY = USER_DICT_MAX_PRIORITY
 
-part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
-    "固有名詞": PartOfSpeechDetail(
+part_of_speech_data: Dict[WordTypes, PartOfSpeechDetail] = {
+    WordTypes.PROPER_NOUN: PartOfSpeechDetail(
         part_of_speech="名詞",
         part_of_speech_detail_1="固有名詞",
         part_of_speech_detail_2="一般",
@@ -34,7 +39,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             "C5",
         ],
     ),
-    "普通名詞": PartOfSpeechDetail(
+    WordTypes.COMMON_NOUN: PartOfSpeechDetail(
         part_of_speech="名詞",
         part_of_speech_detail_1="一般",
         part_of_speech_detail_2="*",
@@ -62,7 +67,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             "C5",
         ],
     ),
-    "動詞": PartOfSpeechDetail(
+    WordTypes.VERB: PartOfSpeechDetail(
         part_of_speech="動詞",
         part_of_speech_detail_1="自立",
         part_of_speech_detail_2="*",
@@ -85,7 +90,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             "*",
         ],
     ),
-    "形容詞": PartOfSpeechDetail(
+    WordTypes.ADJECTIVE: PartOfSpeechDetail(
         part_of_speech="形容詞",
         part_of_speech_detail_1="自立",
         part_of_speech_detail_2="*",
@@ -108,7 +113,7 @@ part_of_speech_data: Dict[str, PartOfSpeechDetail] = {
             "*",
         ],
     ),
-    "語尾": PartOfSpeechDetail(
+    WordTypes.SUFFIX: PartOfSpeechDetail(
         part_of_speech="名詞",
         part_of_speech_detail_1="接尾",
         part_of_speech_detail_2="一般",
