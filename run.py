@@ -687,7 +687,7 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.post("/initialize_speaker", tags=["その他"])
+    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(speaker: int, core_version: Optional[str] = None):
         """
         指定されたspeaker_idの話者を初期化します。
