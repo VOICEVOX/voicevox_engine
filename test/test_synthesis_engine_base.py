@@ -182,6 +182,7 @@ class MockCore:
     def is_model_loaded(self, speaker_id):
         return True
 
+
 class TestSynthesisEngineBase(TestCase):
     def setUp(self):
         super().setUp()
