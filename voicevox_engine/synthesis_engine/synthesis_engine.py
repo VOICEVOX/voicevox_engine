@@ -449,7 +449,7 @@ class SynthesisEngine(SynthesisEngineBase):
         f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
         f0 = numpy.array(f0_list, dtype=numpy.float32)
         # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
-        f0 *= 2**query.pitchScale
+        f0 *= 2 ** query.pitchScale
 
         # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
         voiced = f0 > 0
@@ -542,7 +542,7 @@ class SynthesisEngine(SynthesisEngineBase):
         if normalize:
             f0 += get_normalize_diff(engine=self, kana=kana, f0=f0, speaker_id=speaker)
 
-        f0 *= 2**query.pitchScale
+        f0 *= 2 ** query.pitchScale
 
         f0 = resample(f0, int(len(f0) / query.speedScale))
         phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))
