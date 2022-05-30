@@ -244,52 +244,6 @@ curl -s \
     > audio.wav
 ```
 
-### Guidied Synthsis
-Currently, we have two apis generates audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) referencing an external audio source.  
-It's worth noting that different from `guided_accent_phrases`, `guided_synthesis` works in the resolution of frames, as a result they are not compatible with each other.  
-**The external audio should be in wav format.**  
-```bash
-# guided_syhthesis returns an audio file which is synthesised referencing the external audio source
-
-echo -n "また 東寺のように 五大明王と 呼ばれる 主要な 明王の 中央に 配されることも多い" > text.txt
-
-curl -s \
-    -X POST \
-    "localhost:50021/audio_query?speaker=1" \
-    --get --data-urlencode text@text.txt \
-    > query.json
-
-# if true, the average of f0 will be normalized to the predicted average
-normalize="true"
-# full path to your audio record
-audio_path="/home/.../sample.wav"
-
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @query.json \
-    "localhost:50021/guided_synthesis?speaker=1&normalize=$normalize&audio_path=$audio_path" \
-    > audio.wav
-
-# guided_accent_phrases returns a list of AccentPhrases
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @query.json \
-    "http://localhost:50021/guided_accent_phrases?speaker=0&normalize=$normalize&audio_path=$audio_path" \
-    > newphrases.json
-
-# replace the accent_phrases section in query
-cat query.json | sed -e "s/\[{.*}\]/$(cat newphrases.json)/g" > newquery.json
-
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @newquery.json \
-    "localhost:50021/synthesis?speaker=1" \
-    > audio.wav
-```
-
 ### 話者の追加情報を取得するサンプルコード
 
 追加情報の中の portrait.png を取得するコードです。  

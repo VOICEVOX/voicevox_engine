@@ -225,56 +225,6 @@ def generate_app(
             return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
-        "/guided_accent_phrases",
-        response_model=List[AccentPhrase],
-        tags=["クエリ編集"],
-        summary="Create Accent Phrase from External Audio",
-    )
-    def guided_accent_phrases(
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        """
-        Extracts f0 and aligned phonemes, calculates average f0 for every phoneme.
-        Returns a list of AccentPhrase.
-        **This API works in the resolution of phonemes.**
-        """
-        if not args.enable_guided_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
-        engine = get_engine(core_version)
-        try:
-            return engine.guided_accent_phrases(
-                query=query,
-                speaker=speaker,
-                audio_path=audio_path,
-                normalize=normalize,
-            )
-        except StopIteration:
-            print(traceback.format_exc())
-            raise HTTPException(
-                status_code=500,
-                detail="Failed in Forced Alignment",
-            )
-        except Exception as e:
-            print(traceback.format_exc())
-            if str(e) == "Decode Failed":
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed in Forced Alignment",
-                )
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Internal Server Error",
-                )
-
-    @app.post(
         "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
@@ -488,80 +438,6 @@ def generate_app(
             )
 
         return FileResponse(f.name, media_type="audio/wav")
-
-    @app.post(
-        "/guided_synthesis",
-        response_class=FileResponse,
-        responses={
-            200: {
-                "content": {
-                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
-                },
-            }
-        },
-        tags=["音声合成"],
-        summary="Audio synthesis guided by external audio and phonemes",
-    )
-    def guided_synthesis(
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        """
-        Extracts and passes the f0 and aligned phonemes to engine.
-        Returns the synthesized audio.
-        **This API works in the resolution of frame.**
-        """
-        if not args.enable_guided_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
-        engine = get_engine(core_version)
-        try:
-            wave = engine.guided_synthesis(
-                query=query,
-                speaker=speaker,
-                audio_path=audio_path,
-                normalize=normalize,
-            )
-
-            with NamedTemporaryFile(delete=False) as f:
-                soundfile.write(
-                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-                )
-
-            return FileResponse(f.name, media_type="audio/wav")
-        except ParseKanaError as err:
-            raise HTTPException(
-                status_code=400,
-                detail=ParseKanaBadRequest(err).dict(),
-            )
-        except StopIteration:
-            print(traceback.format_exc())
-            raise HTTPException(
-                status_code=500,
-                detail="Failed in Forced Alignment.",
-            )
-        except Exception as e:
-            print(traceback.format_exc())
-            if str(e) == "Decode Failed":
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed in Forced Alignment.",
-                )
-            elif str(e) == "Wrong Audio Encoding Format":
-                raise HTTPException(
-                    status_code=500,
-                    detail=str(e),
-                )
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Internal Server Error.",
-                )
 
     @app.post(
         "/connect_waves",
@@ -880,7 +756,6 @@ if __name__ == "__main__":
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
-    parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
     parser.add_argument("--load_all_models", action="store_true")
 
