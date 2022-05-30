@@ -253,11 +253,11 @@ class WordTypes(str, Enum):
     fastapiでword_type引数を検証する時に使用するクラス
     """
 
-    PROPER_NOUN = "固有名詞"
-    COMMON_NOUN = "普通名詞"
-    VERB = "動詞"
-    ADJECTIVE = "形容詞"
-    SUFFIX = "語尾"
+    PROPER_NOUN = "PROPER_NOUN"
+    COMMON_NOUN = "COMMON_NOUN"
+    VERB = "VERB"
+    ADJECTIVE = "ADJECTIVE"
+    SUFFIX = "SUFFIX"
 
 
 class SupportedDevicesInfo(BaseModel):

@@ -11,7 +11,7 @@ from appdirs import user_data_dir
 from fastapi import HTTPException
 from pydantic import conint
 
-from .model import UserDictWord
+from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root
 
@@ -118,7 +118,9 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
             # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
             # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
             if word.get("context_id") is None:
-                word["context_id"] = part_of_speech_data["固有名詞"].context_id
+                word["context_id"] = part_of_speech_data[
+                    WordTypes.PROPER_NOUN
+                ].context_id
             word["priority"] = cost2priority(word["context_id"], word["cost"])
             del word["cost"]
             result[str(UUID(word_uuid))] = UserDictWord(**word)
@@ -130,11 +132,11 @@ def create_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[str] = None,
+    word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
 ) -> UserDictWord:
     if word_type is None:
-        word_type = "固有名詞"
+        word_type = WordTypes.PROPER_NOUN
     if word_type not in part_of_speech_data.keys():
         raise HTTPException(status_code=422, detail="不明な品詞です")
     if priority is None:
@@ -164,7 +166,7 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[str] = None,
+    word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
@@ -189,7 +191,7 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[str] = None,
+    word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
