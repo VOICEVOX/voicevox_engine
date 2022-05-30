@@ -22,7 +22,7 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG VOICEVOX_CORE_ASSET_NAME=voicevox_core-linux-x64-cpu-0.12.0-preview.3
-ARG VOICEVOX_CORE_VERSION=0.12.0-preview.3
+ARG VOICEVOX_CORE_VERSION=0.12.0
 RUN <<EOF
     set -eux
 
@@ -246,7 +246,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.12.0-preview.0
+ARG VOICEVOX_RESOURCE_VERSION=0.12.0
 RUN <<EOF
     set -eux
 
