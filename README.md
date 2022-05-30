@@ -94,11 +94,11 @@ curl -s \
 
 ### ユーザー辞書機能について
 
-APIからユーザ辞書の参照、単語の追加、編集、削除を行うことができます。
+APIからユーザー辞書の参照、単語の追加、編集、削除を行うことができます。
 
 #### 参照
 
-`/user_dict`にGETリクエストを投げることでユーザ辞書の一覧を取得することができます。
+`/user_dict`にGETリクエストを投げることでユーザー辞書の一覧を取得することができます。
 
 ```bash
 curl -s -X GET "localhost:50021/user_dict"
@@ -106,7 +106,7 @@ curl -s -X GET "localhost:50021/user_dict"
 
 #### 単語追加
 
-`/user_dict_word`にPOSTリクエストを投げる事でユーザ辞書に単語を追加することができます。  
+`/user_dict_word`にPOSTリクエストを投げる事でユーザー辞書に単語を追加することができます。  
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録する単語）
 - pronunciation （カタカナでの読み方）
@@ -132,13 +132,13 @@ curl -s -X POST "localhost:50021/user_dict_word" \
 
 #### 単語修正
 
-`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザ辞書の単語を修正することができます。  
+`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザー辞書の単語を修正することができます。  
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録するワード）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -157,9 +157,9 @@ curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
 
 #### 単語削除
 
-`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザ辞書の単語を削除することができます。  
+`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザー辞書の単語を削除することができます。  
 
-word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash

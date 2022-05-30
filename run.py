@@ -708,7 +708,7 @@ def generate_app(
     @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
         """
-        ユーザ辞書に登録されている単語の一覧を返します。
+        ユーザー辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
 
         Returns
@@ -731,7 +731,7 @@ def generate_app(
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
-        ユーザ辞書に言葉を追加します。
+        ユーザー辞書に言葉を追加します。
 
         Parameters
         ----------
@@ -761,7 +761,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書への追加に失敗しました。")
 
     @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
@@ -773,7 +773,7 @@ def generate_app(
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
-        ユーザ辞書に登録されている言葉を更新します。
+        ユーザー辞書に登録されている言葉を更新します。
 
         Parameters
         ----------
@@ -808,12 +808,12 @@ def generate_app(
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def delete_user_dict_word(word_uuid: str):
         """
-        ユーザ辞書に登録されている言葉を削除します。
+        ユーザー辞書に登録されている言葉を削除します。
 
         Parameters
         ----------
@@ -827,7 +827,7 @@ def generate_app(
             raise
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
     def import_user_dict_words(
