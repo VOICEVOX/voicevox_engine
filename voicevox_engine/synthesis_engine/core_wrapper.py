@@ -355,7 +355,7 @@ class CoreWrapper:
         self.core.decode_forward.restype = c_bool
         self.core.last_error_message.restype = c_char_p
 
-        self.exist_suppoted_devices = False
+        self.exist_supported_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
         self.exist_load_model = False
@@ -376,7 +376,7 @@ class CoreWrapper:
         if model_type == "onnxruntime":
             self.core.supported_devices.restype = c_char_p
             self.core.finalize.restype = None
-            self.exist_suppoted_devices = True
+            self.exist_supported_devices = True
             self.exist_finalize = True
             exist_cpu_num_threads = True
 
@@ -496,7 +496,7 @@ class CoreWrapper:
         return output
 
     def supported_devices(self) -> str:
-        if self.exist_suppoted_devices:
+        if self.exist_supported_devices:
             return self.core.supported_devices().decode("utf-8")
         raise OldCoreError
 
