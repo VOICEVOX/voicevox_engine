@@ -1,6 +1,8 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Tuple
+
+import numpy
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
@@ -90,15 +92,15 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     @abstractmethod
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
-    ) -> List[AccentPhrase]:
+        self, accent_phrases: List[AccentPhrase], speaker_id: str
+    ) -> Tuple[List[AccentPhrase], numpy.ndarray]:
         """
         accent_phrasesの母音・子音の長さを設定する
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : int
+        speaker_id : str
             話者ID
         Returns
         -------
@@ -109,7 +111,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     @abstractmethod
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
+        self, accent_phrases: List[AccentPhrase], speaker_id: str, pitches: Optional[numpy.ndarray]
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -117,8 +119,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : int
+        speaker_id : str
             話者ID
+        pitches : Optional[numpy.ndarray]
+            ピッチを取得済みの場合、そのピッチを入力
         Returns
         -------
         accent_phrases : List[AccentPhrase]
@@ -129,17 +133,19 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def replace_mora_data(
         self,
         accent_phrases: List[AccentPhrase],
-        speaker_id: int,
+        speaker_id: str,
     ) -> List[AccentPhrase]:
-        return self.replace_mora_pitch(
-            accent_phrases=self.replace_phoneme_length(
-                accent_phrases=accent_phrases,
-                speaker_id=speaker_id,
-            ),
+        accent_phrases, pitches = self.replace_phoneme_length(
+            accent_phrases=accent_phrases,
             speaker_id=speaker_id,
         )
+        return self.replace_mora_pitch(
+            accent_phrases=accent_phrases,
+            speaker_id=speaker_id,
+            pitches=pitches,
+        )
 
-    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
+    def create_accent_phrases(self, text: str, speaker_id: str) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
@@ -181,7 +187,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def synthesis(
         self,
         query: AudioQuery,
-        speaker_id: int,
+        speaker_id: str,
         enable_interrogative_upspeak: bool = True,
     ) -> str:
         """
@@ -191,7 +197,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : int
+        speaker_id : str
             話者ID
         enable_interrogative_upspeak : bool
             疑問系のテキストの語尾を自動調整する機能を有効にするか
@@ -209,14 +215,14 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         return self._synthesis_impl(query, speaker_id)
 
     @abstractmethod
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: str):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : int
+        speaker_id : str
             話者ID
         Returns
         -------
@@ -240,7 +246,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def guided_accent_phrases(
         self,
         query: AudioQuery,
-        speaker: int,
+        speaker: str,
         audio_path: str,
         normalize: bool,
     ) -> List[AccentPhrase]:

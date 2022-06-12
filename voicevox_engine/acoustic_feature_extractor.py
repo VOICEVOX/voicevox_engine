@@ -321,6 +321,38 @@ class OjtPhoneme(BasePhoneme):
         return phonemes
 
 
+class Accent:
+    """
+    アクセント群クラス
+
+    Attributes
+    ----------
+    accent_list : Sequence[str]
+        アクセントのリスト
+    """
+    accent_list: Sequence[str] = (
+        "[",
+        "]",
+        "#",
+        "?",
+        "_"
+    )
+
+    def __init__(self, accent: str):
+        self.accent = accent
+
+    @property
+    def accent_id(self):
+        """
+        accent_id (accent list内でのindex)を取得する
+        Returns
+        -------
+        id : int
+            accent_idを返す
+        """
+        return self.accent_list.index(self.accent)
+
+
 class PhonemeType(str, Enum):
     jvs = "jvs"
     openjtalk = "openjtalk"

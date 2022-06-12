@@ -116,7 +116,7 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
+    def audio_query(text: str, speaker: str, core_version: Optional[str] = None):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -188,7 +188,7 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        speaker: int,
+        speaker: str,
         is_kana: bool = False,
         core_version: Optional[str] = None,
     ):
@@ -226,7 +226,7 @@ def generate_app(
     )
     def guided_accent_phrases(
         query: AudioQuery,
-        speaker: int,
+        speaker: str,
         audio_path: str,
         normalize: bool,
         core_version: Optional[str] = None,
@@ -276,7 +276,7 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        speaker: str,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -290,7 +290,7 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        speaker: str,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -306,7 +306,7 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        speaker: str,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -329,7 +329,7 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        speaker: int,
+        speaker: str,
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
@@ -365,7 +365,7 @@ def generate_app(
     )
     def cancellable_synthesis(
         query: AudioQuery,
-        speaker: int,
+        speaker: str,
         request: Request,
         core_version: Optional[str] = None,
     ):
@@ -402,7 +402,7 @@ def generate_app(
     )
     def multi_synthesis(
         queries: List[AudioQuery],
-        speaker: int,
+        speaker: str,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -448,8 +448,8 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_speaker: int,
-        target_speaker: int,
+        base_speaker: str,
+        target_speaker: str,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: Optional[str] = None,
     ):
@@ -498,7 +498,7 @@ def generate_app(
     )
     def guided_synthesis(
         query: AudioQuery,
-        speaker: int,
+        speaker: str,
         audio_path: str,
         normalize: bool,
         core_version: Optional[str] = None,
@@ -852,7 +852,7 @@ if __name__ == "__main__":
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
-    parser.add_argument("--enable_guided_synthesis", action="store_true")
+    # parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。

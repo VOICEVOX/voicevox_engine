@@ -85,8 +85,7 @@ def make_synthesis_engines(
                 # 対応デバイスが不明であることを示すNoneを代入する
                 supported_devices = None
             synthesis_engines[core_version] = SynthesisEngine(
-                yukarin_s_forwarder=core.yukarin_s_forward,
-                yukarin_sa_forwarder=core.yukarin_sa_forward,
+                variance_forwarder=core.variance_forward,
                 decode_forwarder=core.decode_forward,
                 speakers=core.metas(),
                 supported_devices=supported_devices,

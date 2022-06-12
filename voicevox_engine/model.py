@@ -110,7 +110,7 @@ class SpeakerStyle(BaseModel):
     """
 
     name: str = Field(title="スタイル名")
-    id: int = Field(title="スタイルID")
+    id: str = Field(title="スタイルID")
 
 
 class Speaker(BaseModel):
@@ -129,7 +129,7 @@ class StyleInfo(BaseModel):
     スタイルの追加情報
     """
 
-    id: int = Field(title="スタイルID")
+    id: str = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
 
