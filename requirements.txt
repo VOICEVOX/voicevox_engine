@@ -40,7 +40,7 @@ pycparser==2.20
     # via cffi
 pydantic==1.8.2
     # via fastapi
-pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@a85521a0a0f298f08d9e9b24987b3c77eb4aaff5
+pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@07f242eed8e9c2b51e7ee908d46fc789406adefe
     # via -r requirements.in
 python-multipart==0.0.5
     # via -r requirements.in
