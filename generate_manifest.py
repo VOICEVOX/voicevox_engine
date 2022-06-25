@@ -9,7 +9,7 @@ def generate_manifest(base: str, icon_path: str) -> dict:
         manifest = json.load(f)
     manifest["version"] = os.getenv("VOICEVOX_ENGINE_VERSION")
     with open(icon_path, "rb") as f:
-        manifest["icon"] = base64.b64encode(f.read()).decode()
+        manifest["icon"] = base64.urlsafe_b64encode(f.read()).decode()
     return manifest
 
 
