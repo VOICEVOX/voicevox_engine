@@ -71,6 +71,12 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp manifest_assets/dependency_licenses.json licenses.json
 
+      - name: Generate manifest.json
+        shell: bash
+        run: |
+          python generate_manifest.py > manifest_assets/manifest.json
+          cp manifest_assets/manifest.json manifest.json
+
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
         shell: bash
@@ -187,6 +193,7 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file=../licenses.json=./ \
+            --include-data-file=../manifest.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../default.csv=./ \
             --include-data-file=../download/core/libcore.dylib=./ \
@@ -665,6 +672,12 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp manifest_assets/dependency_licenses.json licenses.json
 
+      - name: Generate manifest.json
+        shell: bash
+        run: |
+          python generate_manifest.py > manifest_assets/manifest.json
+          cp manifest_assets/manifest.json manifest.json
+
       - name: Cache Nuitka (ccache, module-cache)
         uses: actions/cache@v2
         id: nuitka-cache
@@ -701,6 +714,7 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file="licenses.json=./" \
+            --include-data-file="manifest.json=./"" \
             --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
             --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
