@@ -11,7 +11,7 @@ class EngineManifestLoader:
 
     def load_manifest(self) -> EngineManifest:
         manifest = EngineManifest(
-            **json.load((self.assets_dir / "base_info.json").open(encoding="utf-8")),
+            **json.load((self.assets_dir / "manifest.json").open(encoding="utf-8")),
             icon=b64encode((self.assets_dir / "icon.png").read_bytes()).decode("utf-8"),
             terms_of_service=(self.assets_dir / "terms_of_service.md").read_text(
                 encoding="utf-8"
