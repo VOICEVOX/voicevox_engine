@@ -283,7 +283,7 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する",
     )
-    def synthesis(
+    async def synthesis(
         query: AudioQuery,
         speaker: int,
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
@@ -319,7 +319,7 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する（キャンセル可能）",
     )
-    def cancellable_synthesis(
+    async def cancellable_synthesis(
         query: AudioQuery,
         speaker: int,
         request: Request,
@@ -356,7 +356,7 @@ def generate_app(
         tags=["音声合成"],
         summary="複数まとめて音声合成する",
     )
-    def multi_synthesis(
+    async def multi_synthesis(
         queries: List[AudioQuery],
         speaker: int,
         core_version: Optional[str] = None,
@@ -402,7 +402,7 @@ def generate_app(
         tags=["音声合成"],
         summary="2人の話者でモーフィングした音声を合成する",
     )
-    def _synthesis_morphing(
+    async def _synthesis_morphing(
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
