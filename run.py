@@ -319,7 +319,7 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する（キャンセル可能）",
     )
-    async def cancellable_synthesis(
+    def cancellable_synthesis( # FIXME: 同時実行するとエラーになるが、通信切断を検知したいのでasyncにできない
         query: AudioQuery,
         speaker: int,
         request: Request,
