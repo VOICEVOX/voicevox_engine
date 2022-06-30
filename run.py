@@ -100,7 +100,7 @@ def generate_app(
     synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
     # @app.on_event("startup")
-    # async def start_catch_disconnection():
+    # def start_catch_disconnection():
     #     if args.enable_cancellable_synthesis:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
@@ -283,7 +283,7 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する",
     )
-    async def synthesis(
+    def synthesis(
         query: AudioQuery,
         speaker: int,
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
@@ -319,7 +319,7 @@ def generate_app(
         tags=["音声合成"],
         summary="音声合成する（キャンセル可能）",
     )
-    def cancellable_synthesis( # FIXME: 同時実行するとエラーになるが、通信切断を検知したいのでasyncにできない
+    def cancellable_synthesis(  # FIXME: 同時実行するとエラーになるが、通信切断を検知したいのでasyncにできない
         query: AudioQuery,
         speaker: int,
         request: Request,
@@ -356,7 +356,7 @@ def generate_app(
         tags=["音声合成"],
         summary="複数まとめて音声合成する",
     )
-    async def multi_synthesis(
+    def multi_synthesis(
         queries: List[AudioQuery],
         speaker: int,
         core_version: Optional[str] = None,
@@ -402,7 +402,7 @@ def generate_app(
         tags=["音声合成"],
         summary="2人の話者でモーフィングした音声を合成する",
     )
-    async def _synthesis_morphing(
+    def _synthesis_morphing(
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
