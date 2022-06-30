@@ -1,5 +1,5 @@
-from itertools import chain
 import threading
+from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy
