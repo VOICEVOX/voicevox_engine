@@ -10,23 +10,33 @@ class EngineManifestLoader:
         self.assets_dir = assets_dir
 
     def load_manifest(self) -> EngineManifest:
+        manifest = json.loads(
+            (self.assets_dir / "manifest.json").read_text(encoding="utf-8")
+        )
+
         manifest = EngineManifest(
-            **json.load((self.assets_dir / "manifest.json").open(encoding="utf-8")),
-            icon=b64encode((self.assets_dir / "icon.png").read_bytes()).decode("utf-8"),
-            terms_of_service=(self.assets_dir / "terms_of_service.md").read_text(
-                encoding="utf-8"
+            manifest_version=manifest["manifest_version"],
+            name=manifest["name"],
+            uuid=manifest["uuid"],
+            url=manifest["url"],
+            default_sampling_rate=manifest["default_sampling_rate"],
+            icon=b64encode((self.assets_dir / manifest["icon"]).read_bytes()).decode(
+                "utf-8"
+            ),
+            terms_of_service=(self.assets_dir / manifest["terms_of_service"]).read_text(
+                "utf-8"
             ),
             update_infos=[
                 UpdateInfo(**update_info)
-                for update_info in json.load(
-                    (self.assets_dir / "update_infos.json").open(encoding="utf-8")
+                for update_info in json.loads(
+                    (self.assets_dir / manifest["update_infos"]).read_text("utf-8")
                 )
             ],
             dependency_licenses=[
                 LicenseInfo(**license_info)
-                for license_info in json.load(
-                    (self.assets_dir / "dependency_licenses.json").open(
-                        encoding="utf-8"
+                for license_info in json.loads(
+                    (self.assets_dir / manifest["dependency_licenses"]).read_text(
+                        "utf-8"
                     )
                 )
             ],

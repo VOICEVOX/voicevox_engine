@@ -1,14 +1,14 @@
 {
-    "manifest_version": "0.12.0",
-    "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06",
-    "command": "run",
-    "port": 50021,
-    "default_sampling_rate": 24000,
-
-    "version": "999.999.999",
-    "name": "VOICEVOX ENGINE",
-    "documents": {},
-    "url": "https://github.com/VOICEVOX/voicevox_engine",
-
-    "icon": "manifest_assets/icon.png"
+  "manifest_version": "0.12.0",
+  "name": "VOICEVOX ENGINE",
+  "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06",
+  "version": "999.999.999",
+  "url": "https://github.com/VOICEVOX/voicevox_engine",
+  "command": "run",
+  "port": 50021,
+  "icon": "icon.png",
+  "default_sampling_rate": 24000,
+  "terms_of_service": "terms_of_service.md",
+  "update_infos": "update_infos.json",
+  "dependency_licenses": "dependency_licenses.json"
 }
