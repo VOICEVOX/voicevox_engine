@@ -345,6 +345,7 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
             --include-data-file=/opt/voicevox_engine/default.csv=./ \
+            --include-data-file=/opt/voicevox_engine/engine_manifest.json=./ \
             --include-data-file=/opt/voicevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \

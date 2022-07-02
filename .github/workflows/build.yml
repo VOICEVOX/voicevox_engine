@@ -124,7 +124,7 @@ jobs:
           cp -r download/resource/character_info speaker_info
 
           # マニフェスト
-          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
             > engine_manifest.json.tmp
           mv engine_manifest.json.tmp engine_manifest.json
 
@@ -312,7 +312,7 @@ jobs:
           cp -r download/resource/character_info speaker_info
 
           # マニフェスト
-          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
             > engine_manifest.json.tmp
           mv engine_manifest.json.tmp engine_manifest.json
 
@@ -659,7 +659,7 @@ jobs:
           cp -r download/resource/character_info speaker_info
 
           # マニフェスト
-          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
             > engine_manifest.json.tmp
           mv engine_manifest.json.tmp engine_manifest.json
 
