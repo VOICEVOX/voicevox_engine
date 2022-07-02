@@ -93,7 +93,7 @@ def generate_app(
         preset_path=root_dir / "presets.yaml",
     )
     engine_manifest_loader = EngineManifestLoader(
-        root_dir / "engine_manifest.json", root_dir / "engine_manifest_assets"
+        root_dir / "engine_manifest.json", root_dir
     )
 
     # キャッシュを有効化
