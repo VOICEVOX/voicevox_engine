@@ -92,7 +92,9 @@ def generate_app(
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
     )
-    engine_manifest_loader = EngineManifestLoader(root_dir / "manifest_assets")
+    engine_manifest_loader = EngineManifestLoader(
+        root_dir / "engine_manifest.json", root_dir / "manifest_assets"
+    )
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する

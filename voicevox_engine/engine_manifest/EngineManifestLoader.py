@@ -6,13 +6,12 @@ from .EngineManifest import EngineManifest, LicenseInfo, UpdateInfo
 
 
 class EngineManifestLoader:
-    def __init__(self, assets_dir: Path):
+    def __init__(self, manifest_path: Path, assets_dir: Path):
+        self.manifest_path = manifest_path
         self.assets_dir = assets_dir
 
     def load_manifest(self) -> EngineManifest:
-        manifest = json.loads(
-            (self.assets_dir / "manifest.json").read_text(encoding="utf-8")
-        )
+        manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
 
         manifest = EngineManifest(
             manifest_version=manifest["manifest_version"],
