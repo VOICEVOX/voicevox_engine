@@ -21,12 +21,13 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
-ARG VOICEVOX_CORE_ASSET_NAME=voicevox_core-linux-x64-cpu-0.12.0-preview.3
+ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
 ARG VOICEVOX_CORE_VERSION=0.12.2
 RUN <<EOF
     set -eux
 
     # Download Core
+    VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
     wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
     unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
     mkdir -p core
@@ -246,7 +247,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.13.0-preview.1
+ARG VOICEVOX_RESOURCE_VERSION=0.13.0-preview.2
 RUN <<EOF
     set -eux
 

@@ -11,7 +11,7 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.1"
+  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.2"
   VOICEVOX_CORE_VERSION: "0.12.2"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseのときはタグが、それ以外はlatestがバージョン名に
