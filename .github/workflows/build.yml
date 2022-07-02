@@ -202,6 +202,7 @@ jobs:
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../default.csv=./ \
+            --include-data-file=../engine_manifest.json=./ \
             --include-data-file=../download/core/libcore.dylib=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
@@ -740,8 +741,9 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file="licenses.json=./" \
-            --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
+            --include-data-file="default.csv=./" \
+            --include-data-file="engine_manifest.json=./" \
             --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
             --include-data-file="download/core/core.dll=./" \
             --include-data-dir="speaker_info=./speaker_info" \
