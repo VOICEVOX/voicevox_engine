@@ -11,7 +11,7 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.12.1"
+  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.2"
   VOICEVOX_CORE_VERSION: "0.12.2"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseのときはタグが、それ以外はlatestがバージョン名に
@@ -67,9 +67,9 @@ jobs:
       - name: Generate licenses.json
         shell: bash
         run: |
-          python generate_licenses.py > manifest_assets/dependency_licenses.json
+          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp manifest_assets/dependency_licenses.json licenses.json
+          cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
@@ -122,7 +122,20 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+
+          # マニフェスト
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
+            > engine_manifest.json.tmp
+          mv engine_manifest.json.tmp engine_manifest.json
+
+          python build_util/merge_update_infos.py \
+            engine_manifest_assets/update_infos.json \
+            download/resource/engine/engine_manifest_assets/update_infos.json \
+            engine_manifest_assets/update_infos.json
+
+          for f in $(ls download/resource/engine/engine_manifest_assets/* | grep -v update_infos.json); do
+            cp $f ./engine_manifest_assets/
+          done
 
       - name: Prepare VOICEVOX Core release cache
         uses: actions/cache@v2
@@ -189,12 +202,13 @@ jobs:
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../default.csv=./ \
+            --include-data-file=../engine_manifest.json=./ \
             --include-data-file=../download/core/libcore.dylib=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
-            --include-data-dir=../manifest_assets=./manifest_assets \
+            --include-data-dir=../engine_manifest_assets=./engine_manifest_assets \
             --follow-imports \
             --no-prefer-source-code \
             ../run.py
@@ -296,7 +310,20 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+
+          # マニフェスト
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
+            > engine_manifest.json.tmp
+          mv engine_manifest.json.tmp engine_manifest.json
+
+          python build_util/merge_update_infos.py \
+            engine_manifest_assets/update_infos.json \
+            download/resource/engine/engine_manifest_assets/update_infos.json \
+            engine_manifest_assets/update_infos.json
+
+          for f in $(ls download/resource/engine/engine_manifest_assets/* | grep -v update_infos.json); do
+            cp $f ./engine_manifest_assets/
+          done
 
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
@@ -630,7 +657,20 @@ jobs:
           set -eux
           rm -r speaker_info
           cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+
+          # マニフェスト
+          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
+            > engine_manifest.json.tmp
+          mv engine_manifest.json.tmp engine_manifest.json
+
+          python build_util/merge_update_infos.py \
+            engine_manifest_assets/update_infos.json \
+            download/resource/engine/engine_manifest_assets/update_infos.json \
+            engine_manifest_assets/update_infos.json
+
+          for f in $(ls download/resource/engine/engine_manifest_assets/* | grep -v update_infos.json); do
+            cp $f ./engine_manifest_assets/
+          done
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache
@@ -661,9 +701,9 @@ jobs:
       - name: Generate licenses.json
         shell: bash
         run: |
-          python generate_licenses.py > manifest_assets/dependency_licenses.json
+          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp manifest_assets/dependency_licenses.json licenses.json
+          cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: Cache Nuitka (ccache, module-cache)
         uses: actions/cache@v2
@@ -701,12 +741,13 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file="licenses.json=./" \
-            --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
+            --include-data-file="default.csv=./" \
+            --include-data-file="engine_manifest.json=./" \
             --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
             --include-data-file="download/core/core.dll=./" \
             --include-data-dir="speaker_info=./speaker_info" \
-            --include-data-dir="manifest_assets=./manifest_assets" \
+            --include-data-dir="engine_manifest_assets=./engine_manifest_assets" \
             --msvc=14.2 \
             --follow-imports \
             --no-prefer-source-code \

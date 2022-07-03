@@ -1,7 +1,7 @@
 [
     {
         "version": "0.0.1",
-        "descriptions": "dummpy descriptions",
+        "descriptions": ["dummy descriptions"],
         "contributors": ["dummy contributor"]
     }
 ]
