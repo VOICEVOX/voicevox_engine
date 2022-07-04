@@ -400,6 +400,7 @@ jobs:
           path: build/run.dist/
 
   build-windows:
+    environment: ${{ github.event.inputs.code_signing && 'code_signing' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
