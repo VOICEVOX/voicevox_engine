@@ -7,6 +7,17 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
+      code_signing:
+        description: "コード署名する"
+        type: boolean
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
@@ -14,8 +25,8 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.2"
   VOICEVOX_CORE_VERSION: "0.12.2"
   VOICEVOX_ENGINE_VERSION:
-    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
-    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
+    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
   # Build Mac binary (x64 arch only)
@@ -798,6 +809,15 @@ jobs:
           # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
+      - name: Code signing
+        if: github.event.inputs.code_signing
+        shell: bash
+        run: |
+          bash build_util/codesign.bash "artifact/run.exe"
+        env:
+          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
@@ -855,6 +875,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }} # == github.event.release.tag_name
+          prelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
