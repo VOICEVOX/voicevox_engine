@@ -100,7 +100,7 @@ def generate_app(
     synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
     # @app.on_event("startup")
-    # def start_catch_disconnection():
+    # async def start_catch_disconnection():
     #     if args.enable_cancellable_synthesis:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
