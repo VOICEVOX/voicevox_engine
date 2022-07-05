@@ -819,13 +819,6 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-        # ブランチのデフォルト戻した？？？
-        # ブランチのデフォルト戻した？？？
-        # ブランチのデフォルト戻した？？？
-        # ブランチのデフォルト戻した？？？
-        # ブランチのデフォルト戻した？？？
-        # ブランチのデフォルト戻した？？？
-
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
@@ -892,5 +885,5 @@ jobs:
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.event.release.tag_name || github.event.inputs.version }}
+      version: ${{ github.event.release.tag_name || github.event.inputs.version }} # env.VOICEVOX_ENGINE_VERSIONが使えない
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
