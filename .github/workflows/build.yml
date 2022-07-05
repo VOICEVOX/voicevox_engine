@@ -842,7 +842,7 @@ jobs:
             artifact/
 
   upload-to-release:
-    if: env.VOICEVOX_ENGINE_VERSION != 'latest'
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [build-mac, build-linux, build-windows]
     runs-on: ubuntu-latest
     strategy:
@@ -888,7 +888,7 @@ jobs:
           file: ${{ matrix.artifact_name }}.7z.*
 
   run-release-test-workflow:
-    if: env.VOICEVOX_ENGINE_VERSION != 'latest'
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
