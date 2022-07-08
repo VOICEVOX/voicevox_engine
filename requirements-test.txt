@@ -14,7 +14,7 @@ appdirs==1.4.4
     #   black
 asgiref==3.4.1
     # via uvicorn
-atomicwrites==1.4.0
+atomicwrites==1.4.1
     # via pytest
 attrs==21.2.0
     # via
