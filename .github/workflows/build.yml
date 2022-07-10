@@ -811,7 +811,7 @@ jobs:
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
       - name: Code signing
-        if: github.event.inputs.code_signing
+        if: github.event.inputs.code_signing == 'true'
         shell: bash
         run: |
           bash build_util/codesign.bash "artifact/run.exe"
