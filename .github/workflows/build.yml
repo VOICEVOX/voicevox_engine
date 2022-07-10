@@ -400,7 +400,7 @@ jobs:
           path: build/run.dist/
 
   build-windows:
-    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment（false時の挙動は2022年7月10日時点で未定義動作）
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
@@ -876,7 +876,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
-          prerelease: ${{ github.event.inputs.prerelease }}
+          prelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
