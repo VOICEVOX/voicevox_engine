@@ -7,6 +7,17 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
+      code_signing:
+        description: "コード署名する"
+        type: boolean
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
@@ -14,8 +25,8 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.2"
   VOICEVOX_CORE_VERSION: "0.12.4"
   VOICEVOX_ENGINE_VERSION:
-    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
-    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
+    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
   # Build Mac binary (x64 arch only)
@@ -239,7 +250,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
@@ -383,12 +394,13 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
 
   build-windows:
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
@@ -798,6 +810,15 @@ jobs:
           # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
+      - name: Code signing
+        if: github.event.inputs.code_signing == 'true'
+        shell: bash
+        run: |
+          bash build_util/codesign.bash "artifact/run.exe"
+        env:
+          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
@@ -807,14 +828,14 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: |
             artifact/
 
   upload-to-release:
-    if: github.event.release.tag_name != ''
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [build-mac, build-linux, build-windows]
     runs-on: ubuntu-latest
     strategy:
@@ -854,14 +875,15 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }} # == github.event.release.tag_name
+          tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          prelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
   run-release-test-workflow:
-    if: github.event.release.tag_name != ''
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.event.release.tag_name }}
+      version: ${{ github.event.release.tag_name || github.event.inputs.version }} # env.VOICEVOX_ENGINE_VERSIONが使えない
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
