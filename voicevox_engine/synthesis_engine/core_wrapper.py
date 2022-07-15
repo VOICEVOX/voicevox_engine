@@ -294,7 +294,8 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
-    if is_version_0_12_core_or_later(core_dir):
+    # if is_version_0_12_core_or_later(core_dir):
+    if True:
         try:
             # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
             #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
@@ -360,7 +361,8 @@ class CoreWrapper:
         self.exist_load_model = False
         self.exist_is_model_loaded = False
 
-        if is_version_0_12_core_or_later(core_dir):
+        # if is_version_0_12_core_or_later(core_dir):
+        if True:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
@@ -368,8 +370,8 @@ class CoreWrapper:
             self.core.load_model.restype = c_bool
             self.core.is_model_loaded.argtypes = (c_char_p,)
             self.core.is_model_loaded.restype = c_bool
-        else:
-            model_type = check_core_type(core_dir)
+        # else:
+        #     model_type = check_core_type(core_dir)
         assert model_type is not None
 
         if model_type == "onnxruntime":
@@ -400,15 +402,17 @@ class CoreWrapper:
         cwd = os.getcwd()
         os.chdir(core_dir)
         try:
-            if is_version_0_12_core_or_later(core_dir):
-                if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
-            elif exist_cpu_num_threads:
-                if not self.core.initialize(".", use_gpu, cpu_num_threads):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
-            else:
-                if not self.core.initialize(".", use_gpu):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
+            # if is_version_0_12_core_or_later(core_dir):
+            #     if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
+            #         raise Exception(self.core.last_error_message().decode("utf-8"))
+            # elif exist_cpu_num_threads:
+            #     if not self.core.initialize(".", use_gpu, cpu_num_threads):
+            #         raise Exception(self.core.last_error_message().decode("utf-8"))
+            # else:
+            #     if not self.core.initialize(".", use_gpu):
+            #         raise Exception(self.core.last_error_message().decode("utf-8"))
+            if not self.core.initialize(".", use_gpu, cpu_num_threads, load_all_models):
+                raise Exception(self.core.last_error_message().decode("utf-8"))
         finally:
             os.chdir(cwd)
 
