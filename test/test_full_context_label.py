@@ -20,7 +20,7 @@ class TestBasePhonemes(TestCase):
         self.test_case_hello_hiho = [
             # sil (無音)
             "xx^xx-sil+k=o/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:xx_xx#xx_x@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
+            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
             + "@xx+xx&xx-xx|xx+xx/J:1_5/K:2+2-9",
             # k
             "xx^sil-k+o=N/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
