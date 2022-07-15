@@ -12,7 +12,7 @@ from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 def make_synthesis_engines(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
-    voicevox_dir: Optional[Path] = None,
+    sharevox_dir: Optional[Path] = None,
     runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
@@ -27,11 +27,11 @@ def make_synthesis_engines(
         音声ライブラリに GPU を使わせるか否か
     voicelib_dirs: List[Path], optional, defauld=None
         音声ライブラリ自体があるディレクトリのリスト
-    voicevox_dir: Path, optional, default=None
-        コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
+    sharevox_dir: Path, optional, default=None
+        コンパイル済みのsharevox、またはsharevox_engineがあるディレクトリ
     runtime_dirs: List[Path], optional, default=None
         コアで使用するライブラリのあるディレクトリのリスト
-        None のとき、voicevox_dir、カレントディレクトリになる
+        None のとき、sharevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional, default=None
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
         Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
@@ -48,15 +48,15 @@ def make_synthesis_engines(
         )
         cpu_num_threads = 0
 
-    if voicevox_dir is not None:
+    if sharevox_dir is not None:
         if voicelib_dirs is not None:
-            voicelib_dirs.append(voicevox_dir)
+            voicelib_dirs.append(sharevox_dir)
         else:
-            voicelib_dirs = [voicevox_dir]
+            voicelib_dirs = [sharevox_dir]
         if runtime_dirs is not None:
-            runtime_dirs.append(voicevox_dir)
+            runtime_dirs.append(sharevox_dir)
         else:
-            runtime_dirs = [voicevox_dir]
+            runtime_dirs = [sharevox_dir]
     else:
         root_dir = engine_root()
         if voicelib_dirs is None:
@@ -86,7 +86,7 @@ def make_synthesis_engines(
                 raise
             traceback.print_exc()
             print(
-                "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
+                "Notice: mock-library will be used. Try re-run with valid --sharevox_dir",
                 file=sys.stderr,
             )
             from ..dev.core import metas as mock_metas

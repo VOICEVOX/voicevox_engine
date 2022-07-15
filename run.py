@@ -753,7 +753,7 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=50021)
     parser.add_argument("--use_gpu", action="store_true")
-    parser.add_argument("--voicevox_dir", type=Path, default=None)
+    parser.add_argument("--sharevox_dir", type=Path, default=None)
     parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
@@ -775,7 +775,7 @@ if __name__ == "__main__":
     synthesis_engines = make_synthesis_engines(
         use_gpu=args.use_gpu,
         voicelib_dirs=args.voicelib_dir,
-        voicevox_dir=args.voicevox_dir,
+        sharevox_dir=args.sharevox_dir,
         runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
@@ -788,7 +788,7 @@ if __name__ == "__main__":
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
-    root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
+    root_dir = args.sharevox_dir if args.sharevox_dir is not None else engine_root()
     uvicorn.run(
         generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
         host=args.host,
