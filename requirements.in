@@ -8,4 +8,4 @@ scipy
 PyYAML
 pyworld
 appdirs
-git+https://github.com/VOICEVOX/pyopenjtalk@a85521a0a0f298f08d9e9b24987b3c77eb4aaff5#egg=pyopenjtalk
+git+https://github.com/VOICEVOX/pyopenjtalk@50b0296a9e1b666e5a09a41ec9e9284a2a9b608f#egg=pyopenjtalk

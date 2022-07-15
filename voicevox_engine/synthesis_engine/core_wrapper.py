@@ -10,6 +10,10 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 
+class OldCoreError(Exception):
+    """古いコアが使用されている場合に発生するエラー"""
+
+
 def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
@@ -59,6 +63,7 @@ class CoreInfo:
     gpu_type: GPUType
 
 
+# version 0.12 より前のコアの情報
 CORE_INFOS = [
     # Windows
     CoreInfo(
@@ -192,6 +197,31 @@ CORE_INFOS = [
 ]
 
 
+# version 0.12 以降のコアの名前
+CORENAME_DICT = {
+    "Windows": "core.dll",
+    "Linux": "libcore.so",
+    "Darwin": "libcore.dylib",
+}
+
+
+def is_version_0_12_core_or_later(core_dir: Path) -> bool:
+    """
+    core_dir で指定したディレクトリにあるコアライブラリが Version 0.12 以降であるかどうかを返す。
+    Version 0.12 以降と判定する条件は、
+
+    - core_dir に metas.json が存在しない
+    - コアライブラリの名前が CORENAME_DICT の定義に従っている
+
+    の両方が真のときである。
+    cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
+    """
+    return (
+        not (core_dir / "metas.json").exists()
+        and (core_dir / CORENAME_DICT[platform.system()]).is_file()
+    )
+
+
 def get_arch_name() -> Optional[str]:
     """
     platform.machine() が特定のアーキテクチャ上で複数パターンの文字列を返し得るので、
@@ -264,6 +294,16 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
+    if is_version_0_12_core_or_later(core_dir):
+        try:
+            # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
+            #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
+            return CDLL(
+                str((core_dir / CORENAME_DICT[platform.system()]).resolve(strict=True))
+            )
+        except OSError as err:
+            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+
     model_type = check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
@@ -298,10 +338,15 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
 
 class CoreWrapper:
-    def __init__(self, use_gpu: bool, core_dir: Path, cpu_num_threads: int = 0) -> None:
-        model_type = check_core_type(core_dir)
+    def __init__(
+        self,
+        use_gpu: bool,
+        core_dir: Path,
+        cpu_num_threads: int = 0,
+        load_all_models: bool = False,
+    ) -> None:
+
         self.core = load_core(core_dir, use_gpu)
-        assert model_type is not None
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -309,13 +354,28 @@ class CoreWrapper:
         self.core.decode_forward.restype = c_bool
         self.core.last_error_message.restype = c_char_p
 
-        self.exist_suppoted_devices = False
+        self.exist_supported_devices = False
         self.exist_finalize = False
         exist_cpu_num_threads = False
+        self.exist_load_model = False
+        self.exist_is_model_loaded = False
+
+        if is_version_0_12_core_or_later(core_dir):
+            model_type = "onnxruntime"
+            self.exist_load_model = True
+            self.exist_is_model_loaded = True
+            self.core.load_model.argtypes = (c_char_p,)
+            self.core.load_model.restype = c_bool
+            self.core.is_model_loaded.argtypes = (c_char_p,)
+            self.core.is_model_loaded.restype = c_bool
+        else:
+            model_type = check_core_type(core_dir)
+        assert model_type is not None
+
         if model_type == "onnxruntime":
             self.core.supported_devices.restype = c_char_p
             self.core.finalize.restype = None
-            self.exist_suppoted_devices = True
+            self.exist_supported_devices = True
             self.exist_finalize = True
             exist_cpu_num_threads = True
 
@@ -340,7 +400,10 @@ class CoreWrapper:
         cwd = os.getcwd()
         os.chdir(core_dir)
         try:
-            if exist_cpu_num_threads:
+            if is_version_0_12_core_or_later(core_dir):
+                if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
+                    raise Exception(self.core.last_error_message().decode("utf-8"))
+            elif exist_cpu_num_threads:
                 if not self.core.initialize(".", use_gpu, cpu_num_threads):
                     raise Exception(self.core.last_error_message().decode("utf-8"))
             else:
@@ -398,12 +461,22 @@ class CoreWrapper:
         return output
 
     def supported_devices(self) -> str:
-        if self.exist_suppoted_devices:
+        if self.exist_supported_devices:
             return self.core.supported_devices().decode("utf-8")
-        raise NameError
+        raise OldCoreError
 
     def finalize(self) -> None:
         if self.exist_finalize:
             self.core.finalize()
             return
-        raise NameError
+        raise OldCoreError
+
+    def load_model(self, speaker_id: str) -> bool:
+        if self.exist_load_model:
+            return self.core.load_model(speaker_id.encode("utf-8"))
+        raise OldCoreError
+
+    def is_model_loaded(self, speaker_id: str) -> bool:
+        if self.exist_is_model_loaded:
+            return self.core.is_model_loaded(speaker_id.encode("utf-8"))
+        raise OldCoreError

@@ -11,7 +11,8 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_CORE_VERSION: "0.11.4"
+  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.2"
+  VOICEVOX_CORE_VERSION: "0.12.4"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseのときはタグが、それ以外はlatestがバージョン名に
     ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
@@ -37,44 +38,44 @@ jobs:
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: libcore_cpu_x64.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: libcore_cpu_x64.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:focal
             base_runtime_image: ubuntu:focal
-            voicevox_core_library_name: libcore_cpu_x64.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
-            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:focal
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
-            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
-            voicevox_core_library_name: libcore_cpu_x64.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:bionic
             base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
-            voicevox_core_library_name: libcore_gpu_x64_nvidia.so
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
 
     steps:
@@ -100,6 +101,7 @@ jobs:
                 format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, env.VOICEVOX_ENGINE_VERSION)
               ) || format('{0}:{1}', env.IMAGE_NAME, env.VOICEVOX_ENGINE_VERSION)
             ) }}
+          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -109,8 +111,9 @@ jobs:
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
+            VOICEVOX_CORE_ASSET_NAME=${{ env.VOICEVOX_CORE_ASSET_NAME }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_CORE_LIBRARY_NAME=${{ matrix.voicevox_core_library_name }}
+            VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
           target: ${{ matrix.target }}
           push: true

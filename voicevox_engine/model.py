@@ -144,13 +144,19 @@ class SpeakerInfo(BaseModel):
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
 
 
+USER_DICT_MIN_PRIORITY = 0
+USER_DICT_MAX_PRIORITY = 10
+
+
 class UserDictWord(BaseModel):
     """
     辞書のコンパイルに使われる情報
     """
 
     surface: str = Field(title="表層形")
-    cost: conint(ge=-32768, le=32767) = Field(title="コストの値")
+    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
+        title="優先度"
+    )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
@@ -239,6 +245,7 @@ class PartOfSpeechDetail(BaseModel):
     # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
     context_id: int = Field(title="文脈ID")
     cost_candidates: List[int] = Field(title="コストのパーセンタイル")
+    accent_associative_rules: List[str] = Field(title="アクセント結合規則の一覧")
 
 
 class WordTypes(str, Enum):
@@ -246,11 +253,11 @@ class WordTypes(str, Enum):
     fastapiでword_type引数を検証する時に使用するクラス
     """
 
-    PROPER_NOUN = "固有名詞"
-    COMMON_NOUN = "普通名詞"
-    VERB = "動詞"
-    ADJECTIVE = "形容詞"
-    SUFFIX = "語尾"
+    PROPER_NOUN = "PROPER_NOUN"
+    COMMON_NOUN = "COMMON_NOUN"
+    VERB = "VERB"
+    ADJECTIVE = "ADJECTIVE"
+    SUFFIX = "SUFFIX"
 
 
 class SupportedDevicesInfo(BaseModel):
@@ -276,38 +283,3 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
     support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
-
-
-class UpdateInfo(BaseModel):
-    """
-    エンジンのアップデート情報
-    """
-
-    version: str = Field(title="エンジンのバージョン名")
-    descriptions: List[str] = Field(title="アップデートの詳細についての説明")
-    contributors: Optional[List[str]] = Field(title="貢献者名")
-
-
-class LicenseInfo(BaseModel):
-    """
-    依存ライブラリのライセンス情報
-    """
-
-    name: str = Field(title="依存ライブラリ名")
-    version: Optional[str] = Field(title="依存ライブラリのバージョン")
-    license: Optional[str] = Field(title="依存ライブラリのライセンス名")
-    text: str = Field(title="依存ライブラリのライセンス本文")
-
-
-class EngineManifest(BaseModel):
-    """
-    エンジン自体に関する情報
-    """
-
-    manifest_version: str = Field(title="マニフェストのバージョン")
-    name: str = Field(title="エンジン名")
-    icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
-    default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
-    terms_of_service: str = Field(title="エンジンの利用規約")
-    update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
-    dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")

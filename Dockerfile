@@ -21,25 +21,26 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
-ARG VOICEVOX_CORE_VERSION=0.11.4
-ARG VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so
+ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
+ARG VOICEVOX_CORE_VERSION=0.12.4
 RUN <<EOF
     set -eux
 
     # Download Core
-    wget -nv --show-progress -c -O "./core.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/core.zip"
-    unzip "./core.zip"
-    rm ./core.zip
+    VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
+    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
+    unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
+    mkdir -p core
+    mv "${VOICEVOX_CORE_ASSET_NAME}"/* core
+    rm -rf $VOICEVOX_CORE_ASSET_NAME
+    rm "./${VOICEVOX_CORE_ASSET_NAME}.zip"
 
     # Move Core Library to /opt/voicevox_core/
     mkdir /opt/voicevox_core
-    mv "./core/${VOICEVOX_CORE_LIBRARY_NAME}" /opt/voicevox_core/
-
-    # Move Voice Library to /opt/voicevox_core/
-    mv ./core/*.bin ./core/metas.json /opt/voicevox_core/
+    mv "./core/libcore.so" /opt/voicevox_core/
 
     # Move documents to /opt/voicevox_core/
-    mv ./core/README.txt ./core/VERSION /opt/voicevox_core/
+    mv ./core/VERSION /opt/voicevox_core/
 
     rm -rf ./core
 
@@ -164,6 +165,7 @@ RUN <<EOF
     apt-get update
     apt-get install -y \
         git \
+        wget \
         cmake \
         libsndfile1 \
         ca-certificates \
@@ -200,8 +202,9 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
+ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -218,7 +221,9 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    # FIXME: VOICEVOX (editor) cannot build without licenses.json
+    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
 # Keep this layer separated to use layer cache on download failed in local build
@@ -241,12 +246,22 @@ RUN <<EOF
     fi
 EOF
 
+# Download Resource
+ARG VOICEVOX_RESOURCE_VERSION=0.13.0-preview.2
+RUN <<EOF
+    set -eux
+
+    # README
+    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+EOF
+
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
 #!/bin/bash
 set -eux
 
-cat /opt/voicevox_core/README.txt > /dev/stderr
+# Display README for engine
+cat /opt/voicevox_engine/README.md > /dev/stderr
 
 exec "\$@"
 EOF
@@ -294,7 +309,9 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    # FIXME: VOICEVOX (editor) cannot build without licenses.json
+    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
 # Create build script
@@ -328,11 +345,11 @@ RUN <<EOF
             --include-data-file=/opt/voicevox_engine/licenses.json=./ \
             --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
             --include-data-file=/opt/voicevox_engine/default.csv=./ \
-            --include-data-file=/opt/voicevox_core/*.bin=./ \
-            --include-data-file=/opt/voicevox_core/metas.json=./ \
+            --include-data-file=/opt/voicevox_engine/engine_manifest.json=./ \
             --include-data-file=/opt/voicevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
             --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
+            --include-data-dir=/opt/voicevox_engine/engine_manifest_assets=./engine_manifest_assets \
             --follow-imports \
             --no-prefer-source-code \
             /opt/voicevox_engine/run.py

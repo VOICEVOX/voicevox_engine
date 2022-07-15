@@ -90,6 +90,31 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def supported_devices(self) -> Optional[str]:
         raise NotImplementedError
 
+    def initialize_speaker_synthesis(self, speaker_id: str):
+        """
+        指定した話者での音声合成を初期化する。何度も実行可能。
+        未実装の場合は何もしない
+        Parameters
+        ----------
+        speaker_id : int
+            話者ID
+        """
+        pass
+
+    def is_initialized_speaker_synthesis(self, speaker_id: str) -> bool:
+        """
+        指定した話者での音声合成が初期化されているかどうかを返す
+        Parameters
+        ----------
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        bool
+            初期化されているかどうか
+        """
+        return True
+
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: str
@@ -229,25 +254,4 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         wave : numpy.ndarray
             音声合成結果
         """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def guided_synthesis(
-        self,
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def guided_accent_phrases(
-        self,
-        query: AudioQuery,
-        speaker: str,
-        audio_path: str,
-        normalize: bool,
-    ) -> List[AccentPhrase]:
         raise NotImplementedError()

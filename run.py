@@ -25,6 +25,8 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.engine_manifest import EngineManifestLoader
+from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
@@ -64,9 +66,12 @@ def b64encode_str(s):
 
 
 def generate_app(
-    synthesis_engines: Dict[str, SynthesisEngineBase], latest_core_version: str
+    synthesis_engines: Dict[str, SynthesisEngineBase],
+    latest_core_version: str,
+    root_dir: Optional[Path] = None,
 ) -> FastAPI:
-    root_dir = engine_root()
+    if root_dir is None:
+        root_dir = engine_root()
 
     default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
@@ -86,6 +91,9 @@ def generate_app(
 
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
+    )
+    engine_manifest_loader = EngineManifestLoader(
+        root_dir / "engine_manifest.json", root_dir
     )
 
     # キャッシュを有効化
@@ -217,56 +225,6 @@ def generate_app(
             return accent_phrases
         else:
             return engine.create_accent_phrases(text, speaker_id=speaker)
-
-    @app.post(
-        "/guided_accent_phrases",
-        response_model=List[AccentPhrase],
-        tags=["クエリ編集"],
-        summary="Create Accent Phrase from External Audio",
-    )
-    def guided_accent_phrases(
-        query: AudioQuery,
-        speaker: str,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        """
-        Extracts f0 and aligned phonemes, calculates average f0 for every phoneme.
-        Returns a list of AccentPhrase.
-        **This API works in the resolution of phonemes.**
-        """
-        if not args.enable_guided_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
-        engine = get_engine(core_version)
-        try:
-            return engine.guided_accent_phrases(
-                query=query,
-                speaker=speaker,
-                audio_path=audio_path,
-                normalize=normalize,
-            )
-        except StopIteration:
-            print(traceback.format_exc())
-            raise HTTPException(
-                status_code=500,
-                detail="Failed in Forced Alignment",
-            )
-        except Exception as e:
-            print(traceback.format_exc())
-            if str(e) == "Decode Failed":
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed in Forced Alignment",
-                )
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Internal Server Error",
-                )
 
     @app.post(
         "/mora_data",
@@ -484,80 +442,6 @@ def generate_app(
         return FileResponse(f.name, media_type="audio/wav")
 
     @app.post(
-        "/guided_synthesis",
-        response_class=FileResponse,
-        responses={
-            200: {
-                "content": {
-                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
-                },
-            }
-        },
-        tags=["音声合成"],
-        summary="Audio synthesis guided by external audio and phonemes",
-    )
-    def guided_synthesis(
-        query: AudioQuery,
-        speaker: str,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        """
-        Extracts and passes the f0 and aligned phonemes to engine.
-        Returns the synthesized audio.
-        **This API works in the resolution of frame.**
-        """
-        if not args.enable_guided_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
-        engine = get_engine(core_version)
-        try:
-            wave = engine.guided_synthesis(
-                query=query,
-                speaker=speaker,
-                audio_path=audio_path,
-                normalize=normalize,
-            )
-
-            with NamedTemporaryFile(delete=False) as f:
-                soundfile.write(
-                    file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-                )
-
-            return FileResponse(f.name, media_type="audio/wav")
-        except ParseKanaError as err:
-            raise HTTPException(
-                status_code=400,
-                detail=ParseKanaBadRequest(err).dict(),
-            )
-        except StopIteration:
-            print(traceback.format_exc())
-            raise HTTPException(
-                status_code=500,
-                detail="Failed in Forced Alignment.",
-            )
-        except Exception as e:
-            print(traceback.format_exc())
-            if str(e) == "Decode Failed":
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed in Forced Alignment.",
-                )
-            elif str(e) == "Wrong Audio Encoding Format":
-                raise HTTPException(
-                    status_code=500,
-                    detail=str(e),
-                )
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Internal Server Error.",
-                )
-
-    @app.post(
         "/connect_waves",
         response_class=FileResponse,
         responses={
@@ -681,10 +565,28 @@ def generate_app(
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
+    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
+    def initialize_speaker(speaker: str, core_version: Optional[str] = None):
+        """
+        指定されたspeaker_idの話者を初期化します。
+        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        """
+        engine = get_engine(core_version)
+        engine.initialize_speaker_synthesis(speaker)
+        return Response(status_code=204)
+
+    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
+    def is_initialized_speaker(speaker: str, core_version: Optional[str] = None):
+        """
+        指定されたspeaker_idの話者が初期化されているかどうかを返します。
+        """
+        engine = get_engine(core_version)
+        return engine.is_initialized_speaker_synthesis(speaker)
+
     @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
         """
-        ユーザ辞書に登録されている単語の一覧を返します。
+        ユーザー辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
 
         Returns
@@ -707,7 +609,7 @@ def generate_app(
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
-        ユーザ辞書に言葉を追加します。
+        ユーザー辞書に言葉を追加します。
 
         Parameters
         ----------
@@ -717,8 +619,8 @@ def generate_app(
             言葉の発音（カタカナ）
         accent_type: int
             アクセント型（音が下がる場所を指す）
-        word_type: str, optional
-            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        word_type: WordTypes, optional
+            PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか
         priority: int, optional
             単語の優先度（0から10までの整数）
             数字が大きいほど優先度が高くなる
@@ -737,7 +639,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書への追加に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書への追加に失敗しました。")
 
     @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def rewrite_user_dict_word(
@@ -749,7 +651,7 @@ def generate_app(
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ):
         """
-        ユーザ辞書に登録されている言葉を更新します。
+        ユーザー辞書に登録されている言葉を更新します。
 
         Parameters
         ----------
@@ -761,8 +663,8 @@ def generate_app(
             アクセント型（音が下がる場所を指す）
         word_uuid: str
             更新する言葉のUUID
-        word_type: str, optional
-            固有名詞、普通名詞、動詞、形容詞、語尾のいずれか
+        word_type: WordTypes, optional
+            PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか
         priority: int, optional
             単語の優先度（0から10までの整数）
             数字が大きいほど優先度が高くなる
@@ -784,12 +686,12 @@ def generate_app(
             raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
     def delete_user_dict_word(word_uuid: str):
         """
-        ユーザ辞書に登録されている言葉を削除します。
+        ユーザー辞書に登録されている言葉を削除します。
 
         Parameters
         ----------
@@ -803,7 +705,7 @@ def generate_app(
             raise
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザ辞書の更新に失敗しました。")
+            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
     def import_user_dict_words(
@@ -838,6 +740,10 @@ def generate_app(
             media_type="application/json",
         )
 
+    @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
+    def engine_manifest():
+        return engine_manifest_loader.load_manifest()
+
     return app
 
 
@@ -852,8 +758,8 @@ if __name__ == "__main__":
     parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
     parser.add_argument("--enable_mock", action="store_true")
     parser.add_argument("--enable_cancellable_synthesis", action="store_true")
-    # parser.add_argument("--enable_guided_synthesis", action="store_true")
     parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument("--load_all_models", action="store_true")
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
@@ -873,6 +779,7 @@ if __name__ == "__main__":
         runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
+        load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
@@ -881,8 +788,9 @@ if __name__ == "__main__":
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
+    root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
     uvicorn.run(
-        generate_app(synthesis_engines, latest_core_version),
+        generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
         host=args.host,
         port=args.port,
     )

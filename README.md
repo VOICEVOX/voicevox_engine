@@ -40,7 +40,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    localhost:50021/synthesis?speaker=1 \
+    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -88,17 +88,17 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    localhost:50021/synthesis?speaker=1 \
+    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
 ### ユーザー辞書機能について
 
-APIからユーザ辞書の参照、単語の追加、編集、削除を行うことができます。
+APIからユーザー辞書の参照、単語の追加、編集、削除を行うことができます。
 
 #### 参照
 
-`/user_dict`にGETリクエストを投げることでユーザ辞書の一覧を取得することができます。
+`/user_dict`にGETリクエストを投げることでユーザー辞書の一覧を取得することができます。
 
 ```bash
 curl -s -X GET "localhost:50021/user_dict"
@@ -106,7 +106,7 @@ curl -s -X GET "localhost:50021/user_dict"
 
 #### 単語追加
 
-`/user_dict_word`にPOSTリクエストを投げる事でユーザ辞書に単語を追加することができます。  
+`/user_dict_word`にPOSTリクエストを投げる事でユーザー辞書に単語を追加することができます。  
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録する単語）
 - pronunciation （カタカナでの読み方）
@@ -132,13 +132,13 @@ curl -s -X POST "localhost:50021/user_dict_word" \
 
 #### 単語修正
 
-`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザ辞書の単語を修正することができます。  
+`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザー辞書の単語を修正することができます。  
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録するワード）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -157,9 +157,9 @@ curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
 
 #### 単語削除
 
-`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザ辞書の単語を削除することができます。  
+`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザー辞書の単語を削除することができます。  
 
-word_uuidは単語追加時に確認できるほか、ユーザ辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -241,52 +241,6 @@ curl -s \
     -X POST \
     -d @query.json \
     "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
-    > audio.wav
-```
-
-### Guidied Synthsis
-Currently, we have two apis generates audio (`guided_synthesis`) and a list of AccentPhrase (`guided_accent_phrases`) referencing an external audio source.  
-It's worth noting that different from `guided_accent_phrases`, `guided_synthesis` works in the resolution of frames, as a result they are not compatible with each other.  
-**The external audio should be in wav format.**  
-```bash
-# guided_syhthesis returns an audio file which is synthesised referencing the external audio source
-
-echo -n "また 東寺のように 五大明王と 呼ばれる 主要な 明王の 中央に 配されることも多い" > text.txt
-
-curl -s \
-    -X POST \
-    "localhost:50021/audio_query?speaker=1" \
-    --get --data-urlencode text@text.txt \
-    > query.json
-
-# if true, the average of f0 will be normalized to the predicted average
-normalize="true"
-# full path to your audio record
-audio_path="/home/.../sample.wav"
-
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @query.json \
-    "localhost:50021/guided_synthesis?speaker=1&normalize=$normalize&audio_path=$audio_path" \
-    > audio.wav
-
-# guided_accent_phrases returns a list of AccentPhrases
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @query.json \
-    "http://localhost:50021/guided_accent_phrases?speaker=0&normalize=$normalize&audio_path=$audio_path" \
-    > newphrases.json
-
-# replace the accent_phrases section in query
-cat query.json | sed -e "s/\[{.*}\]/$(cat newphrases.json)/g" > newquery.json
-
-curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @newquery.json \
-    "localhost:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -455,10 +409,9 @@ python -m nuitka \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
     --include-data-file=default.csv=./ \
+    --include-data-file=engine_manifest.json=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
-    --include-data-file=C:/音声ライブラリへのパス/*.bin=./ \
-    --include-data-file=C:/音声ライブラリへのパス/metas.json=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
     --include-data-dir=speaker_info=./speaker_info \
     --msvc=14.2 \

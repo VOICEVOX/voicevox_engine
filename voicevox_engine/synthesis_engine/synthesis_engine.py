@@ -1,21 +1,13 @@
-from copy import deepcopy
+import threading
 from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy
 from scipy.signal import resample
 
-from voicevox_engine.experimental.guided_extractor import (
-    PhraseInfo,
-    extract_guided_feature,
-    get_normalize_diff,
-    resample_ts,
-)
-from voicevox_engine.experimental.julius4seg.sp_inserter import frame_to_second
-
 from ..acoustic_feature_extractor import Accent, OjtPhoneme
-from ..kana_parser import create_kana
 from ..model import AccentPhrase, AudioQuery, Mora
+from .core_wrapper import CoreWrapper, OldCoreError
 from .synthesis_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
@@ -175,20 +167,17 @@ def pre_process(
 class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
-        variance_forwarder,
-        decode_forwarder,
-        speakers: str,
-        supported_devices: Optional[str] = None,
+        core: CoreWrapper,
     ):
         """
-        variance_forwarder: 音素ごとの音高と長さを求める関数
+        core.variance_forward: 音素列から、音素ごとの音高と長さを求める関数
             length: 音素列の長さ
             phonemes: 音素列
             accents: アクセント列
             speaker_id: 話者番号
             return: 音素ごとの音高・長さ
 
-        decode_forwarder: フレームごとの音素と音高から波形を求める関数
+        core.decode_forward: フレームごとの音素と音高から波形を求める関数
             length: フレームの長さ
             phonemes: 音素列
             pitches: 音素ごとの音高
@@ -203,11 +192,13 @@ class SynthesisEngine(SynthesisEngineBase):
             Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
-        self.variance_forwarder = variance_forwarder
-        self.decode_forwarder = decode_forwarder
-
-        self._speakers = speakers
-        self._supported_devices = supported_devices
+        self.core = core
+        self._speakers = self.core.metas()
+        self.mutex = threading.Lock()
+        try:
+            self._supported_devices = self.core.supported_devices()
+        except OldCoreError:
+            self._supported_devices = None
         self.default_sampling_rate = 48000
 
     @property
@@ -217,6 +208,27 @@ class SynthesisEngine(SynthesisEngineBase):
     @property
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
+
+    def initialize_speaker_synthesis(self, speaker_id: str):
+        try:
+            with self.mutex:
+                self.core.load_model(speaker_id)
+        except OldCoreError:
+            return  # コアが古い場合はどうしようもないので何もしない
+
+    def is_initialized_speaker_synthesis(self, speaker_id: str) -> bool:
+        try:
+            return self.core.is_model_loaded(speaker_id)
+        except OldCoreError:
+            return True  # コアが古い場合はどうしようもないのでTrueを返す
+
+    def _lazy_init(self, speaker_id: str):
+        """
+        initialize済みでなければinitializeする
+        """
+        is_model_loaded = self.is_initialized_speaker_synthesis(speaker_id)
+        if not is_model_loaded:
+            self.initialize_speaker_synthesis(speaker_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: str
@@ -234,6 +246,8 @@ class SynthesisEngine(SynthesisEngineBase):
         accent_phrases : List[AccentPhrase]
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_id_list, accent_id_list = pre_process(accent_phrases)
@@ -242,12 +256,13 @@ class SynthesisEngine(SynthesisEngineBase):
         # 推論器によって適切な音素ごとの音高・音素長を割り当てる
         pitches: numpy.ndarray
         durations: numpy.ndarray
-        pitches, durations = self.variance_forwarder(
-            length=len(phoneme_id_list),
-            phonemes=phoneme_id_list,
-            accents=accent_id_list,
-            speaker_id=speaker_id,
-        )
+        with self.mutex:
+            pitches, durations = self.core.variance_forward(
+                length=len(phoneme_id_list),
+                phonemes=phoneme_id_list,
+                accents=accent_id_list,
+                speaker_id=speaker_id,
+            )
 
         # variance_forwarderの結果をaccent_phrasesに反映する
         # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
@@ -281,6 +296,8 @@ class SynthesisEngine(SynthesisEngineBase):
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -293,12 +310,13 @@ class SynthesisEngine(SynthesisEngineBase):
         if pitches is None:
             # Phoneme IDのリスト(phoneme_id_list)とAccent IDのリスト(accent_id_list)をvariance_forwarderにかけ、
             # 推論器によって適切な音素ごとの音高・音素長を割り当てる
-            pitches, _ = self.variance_forwarder(
-                length=len(phoneme_id_list),
-                phonemes=phoneme_id_list,
-                accents=accent_id_list,
-                speaker_id=speaker_id,
-            )
+            with self.mutex:
+                pitches, _ = self.core.variance_forward(
+                    length=len(phoneme_id_list),
+                    phonemes=phoneme_id_list,
+                    accents=accent_id_list,
+                    speaker_id=speaker_id,
+                )
 
         # variance_forwarderの結果をaccent_phrasesに反映する
         # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
@@ -328,7 +346,8 @@ class SynthesisEngine(SynthesisEngineBase):
         wave : numpy.ndarray
             音声合成結果
         """
-
+        # モデルがロードされていない場合はロードする
+        self._lazy_init(speaker_id)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_id_list, _ = pre_process(query.accent_phrases)
@@ -373,13 +392,14 @@ class SynthesisEngine(SynthesisEngineBase):
             f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
 
         # 今まで生成された情報をdecode_forwarderにかけ、推論器によって音声波形を生成する
-        wave = self.decode_forwarder(
-            length=phoneme_id_list.shape[0],
-            phonemes=phoneme_id_list,
-            pitches=f0,
-            durations=durations,
-            speaker_id=speaker_id,
-        )
+        with self.mutex:
+            wave = self.core.decode_forward(
+                length=phoneme_id_list.shape[0],
+                phonemes=phoneme_id_list,
+                pitches=f0,
+                durations=durations,
+                speaker_id=speaker_id,
+            )
 
         # volume: ゲイン適用
         wave *= query.volumeScale
@@ -403,123 +423,3 @@ class SynthesisEngine(SynthesisEngineBase):
             wave = numpy.array([wave, wave]).T
 
         return wave
-
-    def guided_synthesis(
-        self,
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-        core_version: Optional[str] = None,
-    ):
-        kana = create_kana(query.accent_phrases)
-        f0, phonemes = extract_guided_feature(audio_path, kana)
-
-        phone_list = numpy.zeros((len(f0), OjtPhoneme.num_phoneme), dtype=numpy.float32)
-
-        for s, e, p in phonemes:
-            s, e = (resample_ts(v) for v in (s, e))
-            if p == "silB":
-                f0[:e] = 0.0
-                s += 1
-                p = "pau"
-            elif p == "silE":
-                f0[s:] = 0.0
-                p = "pau"
-            elif p == "sp":
-                f0[s:e] = 0.0
-                p = "pau"
-            elif p == "q":
-                p = "cl"
-            phone_list[s - 1 : e] = OjtPhoneme(start=s, end=e, phoneme=p).onehot
-
-        if normalize:
-            f0 += get_normalize_diff(engine=self, kana=kana, f0=f0, speaker_id=speaker)
-
-        f0 *= 2 ** query.pitchScale
-
-        f0 = resample(f0, int(len(f0) / query.speedScale))
-        phone_list = resample(phone_list, int(len(phone_list) / query.speedScale))
-
-        wave = self.decode_forwarder(
-            length=phone_list.shape[0],
-            phoneme_size=phone_list.shape[1],
-            f0=f0[:, numpy.newaxis].astype(numpy.float32),
-            phoneme=phone_list,
-            speaker_id=numpy.array([speaker], dtype=numpy.int64).reshape(-1),
-        )
-
-        if query.volumeScale != 1:
-            wave *= query.volumeScale
-
-        if query.outputSamplingRate != self.default_sampling_rate:
-            wave = resample(
-                wave,
-                query.outputSamplingRate * len(wave) // self.default_sampling_rate,
-            )
-
-        if query.outputStereo:
-            wave = numpy.array([wave, wave]).T
-
-        return wave
-
-    def guided_accent_phrases(
-        self,
-        query: AudioQuery,
-        speaker: int,
-        audio_path: str,
-        normalize: bool,
-    ) -> List[AccentPhrase]:
-        kana = create_kana(query.accent_phrases)
-        f0, phonemes = extract_guided_feature(audio_path, kana)
-        timed_phonemes = frame_to_second(deepcopy(phonemes))
-
-        phrase_info = []
-        for ((s, e, p), (ts, te, _tp)) in zip(phonemes, timed_phonemes):
-            if p not in unvoiced_mora_phoneme_list:
-                clip = f0[resample_ts(s) : resample_ts(e)]
-                clip = clip[clip != 0]
-                pitch = numpy.average(clip) if len(clip) != 0 else 0
-            else:
-                pitch = 0
-            pitch = 0 if numpy.isnan(pitch) else pitch
-            length = float(te) - float(ts)
-            phrase_info.append(PhraseInfo(pitch, length, p))
-
-        if normalize:
-            normalize_diff = get_normalize_diff(
-                engine=self, kana=kana, f0=f0, speaker_id=speaker
-            )
-            for p in phrase_info:
-                if p.pitch != 0:
-                    p.pitch += normalize_diff
-
-        idx = 1
-        for phrase in query.accent_phrases:
-            phrase.pause_mora = None
-            for mora in phrase.moras:
-                if mora.consonant is not None:
-                    mora.pitch = (
-                        phrase_info[idx].pitch + phrase_info[idx + 1].pitch
-                    ) / 2
-                    mora.consonant_length = phrase_info[idx].length
-                    mora.vowel_length = phrase_info[idx + 1].length
-                    idx += 2
-                else:
-                    mora.pitch = phrase_info[idx].pitch
-                    mora.vowel_length = phrase_info[idx].length
-                    idx += 1
-                if mora.vowel in unvoiced_mora_phoneme_list:
-                    mora.pitch = 0
-            if phrase_info[idx].phoneme == "sp":
-                phrase.pause_mora = Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=phrase_info[idx].length,
-                    pitch=0,
-                )
-                idx += 1
-
-        return query.accent_phrases
