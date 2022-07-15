@@ -1,27 +1,27 @@
-# VOICEVOX ENGINE
+# SHAREVOX ENGINE
 
-[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
-[![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
+[![build](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/build.yml)
+[![releases](https://img.shields.io/github/v/release/SHAREVOX/sharevox_engine)](https://github.com/SHAREVOX/sharevox_engine/releases)
 
-[![test](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
+[![test](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/SHAREVOX/sharevox_engine/badge.svg)](https://coveralls.io/github/SHAREVOX/sharevox_engine)
 
-[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
-[![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
+<!-- [![build-docker](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/SHAREVOX/sharevox_engine/actions/workflows/build-docker.yml)
+[![docker](https://img.shields.io/docker/pulls/sharevox/sharevox_engine)](https://hub.docker.com/r/sharevox/voicevox_engine) -->
 
-[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
+[SHAREVOX](https://sharevox.app/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
-（エディターは [VOICEVOX](https://github.com/VOICEVOX/voicevox/) 、
-コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
-全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
+（エディターは [SHAREVOX](https://github.com/SHAREVOX/sharevox/) 、
+コアは [SHAREVOX CORE](https://github.com/SHAREVOX/sharevox_core/) 、
+全体構成は [こちら](https://github.com/SHAREVOX/sharevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## API ドキュメント
 
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
+[API ドキュメント](https://sharevox.github.io/sharevox_engine/api/)をご参照ください。
 
-VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
-今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
+SHAREVOX エンジンもしくはエディタを起動した状態で http://localhost:50025/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+今後の方針などについては [SHAREVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
 
@@ -44,7 +44,7 @@ curl -s \
     > audio.wav
 ```
 
-生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
+<!--生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。-->
 
 `speaker` に指定する値は `/speakers` エンドポイントで得られる `styleId` です。互換性のために `speaker` という名前になっています。
 
@@ -262,7 +262,7 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 (`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
-
+<!--
 ## Docker イメージ
 
 ### CPU
@@ -278,7 +278,7 @@ docker run --rm -it -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubun
 docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
-
+-->
 ## 貢献者の方へ
 
 Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
@@ -299,16 +299,16 @@ python -m pip install -r requirements.txt
 ## 実行
 
 ```bash
-# 製品版 VOICEVOX でサーバーを起動
-VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+# 製品版 SHAREVOX でサーバーを起動
+SHAREVOX_DIR="C:/path/to/sharevox" # 製品版 SHAREVOX ディレクトリのパス
+python run.py --sharevox_dir=$SHAREVOX_DIR
 ```
 
 <!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
 ```bash
 # 音声ライブラリを差し替える
 VOICELIB_DIR="C:/path/to/your/tts-model"
-python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+python run.py --sharevox_dir=$SHAREVOX_DIR --voicelib_dir=$VOICELIB_DIR
 ```
 -->
 
@@ -321,20 +321,21 @@ python run.py --enable_mock
 
 CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
 もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
-VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
+SHAREVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
 - 実行時引数で指定する
 
   ```bash
-  python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+  python run.py --sahrevox_dir=$SHAREVOX_DIR --cpu_num_threads=4
   ```
 
 - 環境変数で指定する
   ```bash
   export VV_CPU_NUM_THREADS=4
-  python run.py --voicevox_dir=$VOICEVOX_DIR
+  python run.py --sharevox_dir=$SHAREVOX_DIR
   ```
 
+<!--
 ### 過去のバージョンのコアを使う
 VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
 Macでのlibtorch版コアのサポートはしていません。
@@ -348,19 +349,19 @@ Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
 ```bash
 DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
 ```
-
+-->
 #### 音声ライブラリを直接指定する
-[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
-また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
-ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
+[SHAREVOX Coreのzipファイル](https://github.com/SHAREVOX/sharevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
+<!-- また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  -->
 `--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。   
 APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 ```bash
-python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+python run.py --voicelib_dir="/path/to/sharevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
 ```
 Macでは、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
 ```bash
-DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
+DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/sharevox_core"
 ```
 
 ## コードフォーマット
@@ -381,7 +382,7 @@ pysen run format lint
 
 ## API ドキュメントの更新
 
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
+[API ドキュメント](https://sharevox.github.io/sharevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
 
 ```bash
 python make_docs.py
@@ -460,6 +461,8 @@ python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.
 | DOCKERHUB_TOKEN    | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## ライセンス
-
+<!--
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
 別ライセンスを取得したい場合は、ヒホ（twitter: @hiho_karuta）に求めてください。
+-->
+本ソフトウェアはLGPLv3でライセンスされています。
