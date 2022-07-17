@@ -110,21 +110,9 @@ jobs:
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
         shell: bash
-        run: |
-          set -eux
-          rm -r speaker_info
-          cp -r download/resource/character_info speaker_info
-          # マニフェスト
-          jq -s '.[0] * .[1]' engine_manifest.json download/resource/engine/engine_manifest.json \
-            > engine_manifest.json.tmp
-          mv engine_manifest.json.tmp engine_manifest.json
-          python build_util/merge_update_infos.py \
-            engine_manifest_assets/update_infos.json \
-            download/resource/engine/engine_manifest_assets/update_infos.json \
-            engine_manifest_assets/update_infos.json
-          for f in $(ls download/resource/engine/engine_manifest_assets/* | grep -v update_infos.json); do
-            cp $f ./engine_manifest_assets/
-          done
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash build_util/merge_voicevox_resource.bash
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v2
