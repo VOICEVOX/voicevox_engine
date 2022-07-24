@@ -1,9 +1,11 @@
+import base64
 from enum import Enum
 from re import findall, fullmatch
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, conint, validator
 
+from voicevox_engine.utility import engine_root
 
 class Mora(BaseModel):
     """
@@ -142,6 +144,50 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+    @staticmethod
+    def b64encode_str(s):
+        return base64.b64encode(s).decode("utf-8")
+
+    @classmethod
+    def from_local(cls, speaker: Speaker):
+        root_dir = engine_root()
+        policy = (root_dir / f"speaker_info/{speaker.speaker_uuid}/policy.md").read_text("utf-8")
+        portrait = cls.b64encode_str((root_dir / f"speaker_info/{speaker.speaker_uuid}/portrait.png").read_bytes())
+        style_infos = []
+        for style in speaker.styles:
+            id_ = style.id
+            icon = cls.b64encode_str((root_dir / f"speaker_info/{speaker.speaker_uuid}/icons/{id_}.png").read_bytes())
+            voice_samples = []
+            for j in range(3):
+                voice_samples.append(cls.b64encode_str(
+                    (root_dir / f"speaker_info/{speaker.speaker_uuid}/voice_samples/"
+                                f"{id_}_{str(j + 1).zfill(3)}.wav").read_bytes()
+                ))
+            style_infos.append(StyleInfo(id=id_, icon=icon, voice_samples=voice_samples))
+        return SpeakerInfo(policy=policy, portrait=portrait, style_infos=style_infos)
+
+
+class DownloadableModel(BaseModel):
+    """
+    ダンロードモデル情報（最新情報をwebで取得することを考慮して、ローカルの情報はない）
+    """
+
+    download_path: str = Field(title="音声ライブラリのダウンロードパス")
+    volume: str = Field(title="最新モデルのデータ容量")
+    speaker: Speaker = Field(title="話者情報")
+    speaker_info: SpeakerInfo = Field(title="話者の追加情報")
+
+
+class DownloadInfo(BaseModel):
+    """
+    ダウンロード話者情報（ローカルの情報が付与されたもの）
+    """
+
+    downloadable_model: DownloadableModel = Field(title="ダンロードモデル情報")
+    current_version: str = Field(title="現在のバージョン")
+    character_exists: bool = Field(title="このキャラクターのライブラリがローカルに存在するか")
+    latest_model_exists: bool = Field(title="最新モデルがローカルに存在するか")
 
 
 USER_DICT_MIN_PRIORITY = 0
