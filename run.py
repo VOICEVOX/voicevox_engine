@@ -5,7 +5,6 @@ import base64
 import json
 import multiprocessing
 import os
-import re
 import traceback
 
 # import sys
@@ -33,6 +32,7 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
+    DownloadableLibrary,
     ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
@@ -40,8 +40,6 @@ from voicevox_engine.model import (
     SupportedDevicesInfo,
     UserDictWord,
     WordTypes,
-    DownloadInfo,
-    DownloadableModel,
 )
 from voicevox_engine.morphing import synthesis_morphing
 from voicevox_engine.morphing import (
@@ -63,6 +61,10 @@ from voicevox_engine.utility import (
     connect_base64_waves,
     engine_root,
 )
+
+
+def b64encode_str(s):
+    return base64.b64encode(s).decode("utf-8")
 
 
 def generate_app(
@@ -528,69 +530,75 @@ def generate_app(
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
-            ret_data = SpeakerInfo.from_local(Speaker(**speaker))
+            policy = (root_dir / f"speaker_info/{speaker_uuid}/policy.md").read_text(
+                "utf-8"
+            )
+            portrait = b64encode_str(
+                (root_dir / f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
+            )
+            style_infos = []
+            for style in speaker["styles"]:
+                id = style["id"]
+                icon = b64encode_str(
+                    (
+                        root_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
+                    ).read_bytes()
+                )
+                voice_samples = [
+                    b64encode_str(
+                        (
+                            root_dir
+                            / "speaker_info/{}/voice_samples/{}_{}.wav".format(
+                                speaker_uuid, id, str(j + 1).zfill(3)
+                            )
+                        ).read_bytes()
+                    )
+                    for j in range(3)
+                ]
+                style_infos.append(
+                    {"id": id, "icon": icon, "voice_samples": voice_samples}
+                )
         except FileNotFoundError:
             import traceback
 
             traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
+        ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
         return ret_data
 
-    @app.get("/download_infos", response_model=List[DownloadInfo], tags=["その他"])
-    def download_infos(core_version: Optional[str] = None):
+    @app.get(
+        "/downloadable_libraries",
+        response_model=List[DownloadableLibrary],
+        tags=["その他"],
+    )
+    def download_infos(download_info_url: Optional[str] = None):
         """
         ダウンロード可能なモデル情報を返します。
+
         Returns
         -------
-        ret_data: List[Download_info]
+        ret_data: List[DownloadableLibrary]
         """
-
         try:
-            local_speakers = [Speaker(**speaker) for speaker in json.loads(get_engine(core_version).speakers)]
-            speaker_versions = {}
-            for speaker in local_speakers:
-                speaker_versions[speaker.speaker_uuid] = speaker.version
-
-            # ローカルのファイルからダウンロード情報を取得する場合
-            # with open("engine_manifest_assets/dummy_downloadable_models.json") as f:
-            #     downloadable_models: List[DownloadableModel] = [DownloadableModel(**d) for d in json.load(f)]
-
-            # APIでダウンロード情報を取得する場合（テスト用にCOEIROINKのAPIに繋いでいます）
-            response = requests.get("https://coeiroink.com/api/v1/download-infos", timeout=60)
-            downloadable_models: List[DownloadableModel] = [DownloadableModel(**d) for d in response.json()]
-
-            ret_data: List[DownloadInfo] = []
-            for downloadable_model in downloadable_models:
-                if downloadable_model.speaker.speaker_uuid in speaker_versions.keys():
-                    character_exists = True
-                    current_version = speaker_versions[downloadable_model.speaker.speaker_uuid]
-                    current_version_tuple = tuple(map(int,
-                                                      re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",
-                                                                   current_version).groups())
-                                                  )
-                    latest_version_tuple = tuple(map(int,
-                                                     re.fullmatch(r"(\d+)\.(\d+)\.(\d+)",
-                                                                  downloadable_model.speaker.version).groups())
-                                                 )
-                    if not current_version_tuple or not latest_version_tuple:
-                        raise ValueError("Wrong version format")
-                    if latest_version_tuple > current_version_tuple:
-                        latest_model_exists = False
-                    else:
-                        latest_model_exists = True
-                else:
-                    character_exists = False
-                    current_version = "None"
-                    latest_model_exists = False
-                ret_data.append(DownloadInfo(downloadable_model=downloadable_model,
-                                             current_version=current_version,
-                                             character_exists=character_exists,
-                                             latest_model_exists=latest_model_exists))
-        except Exception as e:
-            print(e)
-            ret_data = []
-        return ret_data
+            # APIからダウンロード可能な音声ライブラリを取得する場合
+            if download_info_url:
+                response = requests.get(download_info_url, timeout=60)
+                downloadable_libraries: List[DownloadableLibrary] = [
+                    DownloadableLibrary(**d) for d in response.json()
+                ]
+            # ローカルのファイルからダウンロード可能な音声ライブラリを取得する場合
+            else:
+                with open(
+                    "engine_manifest_assets/dummy_downloadable_libraries.json"
+                ) as f:
+                    downloadable_libraries: List[DownloadableLibrary] = [
+                        DownloadableLibrary(**d) for d in json.load(f)
+                    ]
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ダウンロード可能な音声ライブラリの取得に失敗しました。")
+        return downloadable_libraries
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(speaker: int, core_version: Optional[str] = None):

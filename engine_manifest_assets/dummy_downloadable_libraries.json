@@ -1,7 +1,7 @@
 [
   {
-    "download_path": "",
-    "volume": "0.1 GB",
+    "download_url": "",
+    "bytes": "1000",
     "speaker": {
       "name": "dummy1",
       "speaker_uuid": "dummy1",
