@@ -572,7 +572,7 @@ def generate_app(
         response_model=List[DownloadableLibrary],
         tags=["その他"],
     )
-    def download_infos(download_info_url: Optional[str] = None):
+    def downloadable_libraries():
         """
         ダウンロード可能なモデル情報を返します。
 
@@ -581,24 +581,25 @@ def generate_app(
         ret_data: List[DownloadableLibrary]
         """
         try:
+            manifest = engine_manifest_loader.load_manifest()
             # APIからダウンロード可能な音声ライブラリを取得する場合
-            if download_info_url:
-                response = requests.get(download_info_url, timeout=60)
-                downloadable_libraries: List[DownloadableLibrary] = [
+            if manifest.downloadable_libraries_url:
+                response = requests.get(manifest.downloadable_libraries_url, timeout=60)
+                ret_data: List[DownloadableLibrary] = [
                     DownloadableLibrary(**d) for d in response.json()
                 ]
             # ローカルのファイルからダウンロード可能な音声ライブラリを取得する場合
-            else:
-                with open(
-                    "engine_manifest_assets/dummy_downloadable_libraries.json"
-                ) as f:
-                    downloadable_libraries: List[DownloadableLibrary] = [
+            elif manifest.downloadable_libraries_path:
+                with open(manifest.downloadable_libraries_path) as f:
+                    ret_data: List[DownloadableLibrary] = [
                         DownloadableLibrary(**d) for d in json.load(f)
                     ]
+            else:
+                raise Exception
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ダウンロード可能な音声ライブラリの取得に失敗しました。")
-        return downloadable_libraries
+        return ret_data
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(speaker: int, core_version: Optional[str] = None):

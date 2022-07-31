@@ -38,3 +38,9 @@ class EngineManifest(BaseModel):
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
+    downloadable_libraries_path: Optional[str] = Field(
+        title="ダウンロード可能な音声ライブラリ情報を取得するためのローカルjsonパス"
+    )
+    downloadable_libraries_url: Optional[str] = Field(
+        title="ダウンロード可能な音声ライブラリ情報を取得するためのAPIのURL"
+    )
