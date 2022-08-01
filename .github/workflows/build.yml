@@ -7,15 +7,26 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
+      code_signing:
+        description: "コード署名する"
+        type: boolean
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.12.4"
+  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.3"
   VOICEVOX_CORE_VERSION: "0.12.5"
   VOICEVOX_ENGINE_VERSION:
-    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
-    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
+    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
   # Build Mac binary (x64 arch only)
@@ -67,9 +78,9 @@ jobs:
       - name: Generate licenses.json
         shell: bash
         run: |
-          python generate_licenses.py > manifest_assets/dependency_licenses.json
+          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp manifest_assets/dependency_licenses.json licenses.json
+          cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
@@ -118,11 +129,9 @@ jobs:
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
         shell: bash
-        run: |
-          set -eux
-          rm -r speaker_info
-          cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash build_util/merge_voicevox_resource.bash
 
       - name: Prepare VOICEVOX Core release cache
         uses: actions/cache@v2
@@ -189,12 +198,13 @@ jobs:
             --include-data-file=../licenses.json=./ \
             --include-data-file=../presets.yaml=./ \
             --include-data-file=../default.csv=./ \
+            --include-data-file=../engine_manifest.json=./ \
             --include-data-file=../download/core/libcore.dylib=./ \
             --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
             --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
             --include-data-dir=../speaker_info=./speaker_info \
-            --include-data-dir=../manifest_assets=./manifest_assets \
+            --include-data-dir=../engine_manifest_assets=./engine_manifest_assets \
             --follow-imports \
             --no-prefer-source-code \
             ../run.py
@@ -225,7 +235,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
@@ -292,11 +302,9 @@ jobs:
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
         shell: bash
-        run: |
-          set -eux
-          rm -r speaker_info
-          cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash build_util/merge_voicevox_resource.bash
 
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
@@ -356,12 +364,13 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: build/run.dist/
 
   build-windows:
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
@@ -626,11 +635,9 @@ jobs:
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
         shell: bash
-        run: |
-          set -eux
-          rm -r speaker_info
-          cp -r download/resource/character_info speaker_info
-          # cp -r download/resource/manifest_assets manifest_assets # TODO: リソースに追加されたらコメント解除
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash build_util/merge_voicevox_resource.bash
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache
@@ -661,9 +668,9 @@ jobs:
       - name: Generate licenses.json
         shell: bash
         run: |
-          python generate_licenses.py > manifest_assets/dependency_licenses.json
+          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp manifest_assets/dependency_licenses.json licenses.json
+          cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: Cache Nuitka (ccache, module-cache)
         uses: actions/cache@v2
@@ -701,12 +708,13 @@ jobs:
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
             --include-data-file="licenses.json=./" \
-            --include-data-file="default.csv=./" \
             --include-data-file="presets.yaml=./" \
+            --include-data-file="default.csv=./" \
+            --include-data-file="engine_manifest.json=./" \
             --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
             --include-data-file="download/core/core.dll=./" \
             --include-data-dir="speaker_info=./speaker_info" \
-            --include-data-dir="manifest_assets=./manifest_assets" \
+            --include-data-dir="engine_manifest_assets=./engine_manifest_assets" \
             --msvc=14.2 \
             --follow-imports \
             --no-prefer-source-code \
@@ -757,6 +765,15 @@ jobs:
           # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
+      - name: Code signing
+        if: github.event.inputs.code_signing == 'true'
+        shell: bash
+        run: |
+          bash build_util/codesign.bash "artifact/run.exe"
+        env:
+          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
       # FIXME: versioned name may be useful; but
       # actions/download-artifact and dawidd6/download-artifact do not support
       # wildcard / forward-matching yet.
@@ -766,14 +783,14 @@ jobs:
       - uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (github.event.release.tag_name != '' && github.event.release.tag_name) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: |
             artifact/
 
   upload-to-release:
-    if: github.event.release.tag_name != ''
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [build-mac, build-linux, build-windows]
     runs-on: ubuntu-latest
     strategy:
@@ -813,14 +830,15 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref }} # == github.event.release.tag_name
+          tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          prelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
   run-release-test-workflow:
-    if: github.event.release.tag_name != ''
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.event.release.tag_name }}
+      version: ${{ github.event.release.tag_name || github.event.inputs.version }} # env.VOICEVOX_ENGINE_VERSIONが使えない
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL

@@ -45,11 +45,10 @@ def user_dict_startup_processing(
     default_dict_path: Path = default_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    if not compiled_dict_path.is_file():
-        pyopenjtalk.create_user_dict(
-            str(default_dict_path.resolve(strict=True)),
-            str(compiled_dict_path.resolve()),
-        )
+    pyopenjtalk.create_user_dict(
+        str(default_dict_path.resolve(strict=True)),
+        str(compiled_dict_path.resolve()),
+    )
     pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
 

@@ -9,7 +9,7 @@ class UpdateInfo(BaseModel):
     """
 
     version: str = Field(title="エンジンのバージョン名")
-    descriptions: str = Field(title="アップデートの詳細についての説明")
+    descriptions: List[str] = Field(title="アップデートの詳細についての説明")
     contributors: Optional[List[str]] = Field(title="貢献者名")
 
 
@@ -31,6 +31,8 @@ class EngineManifest(BaseModel):
 
     manifest_version: str = Field(title="マニフェストのバージョン")
     name: str = Field(title="エンジン名")
+    uuid: str = Field(title="エンジンのUUID")
+    url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
     terms_of_service: str = Field(title="エンジンの利用規約")

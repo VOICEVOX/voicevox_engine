@@ -46,6 +46,12 @@ def test_release_build(dist_dir: Path) -> None:
         wave = res.read()
     soundfile.read(BytesIO(wave))
 
+    # エンジンマニフェスト
+    req = Request(base_url + "engine_manifest", method="GET")
+    with urlopen(req) as res:
+        manifest = json.loads(res.read().decode("utf-8"))
+        assert "uuid" in manifest
+
     # プロセスが稼働中であることを確認
     assert process.poll() is None
 

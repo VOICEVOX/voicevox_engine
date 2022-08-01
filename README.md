@@ -409,6 +409,7 @@ python -m nuitka \
     --include-data-file=licenses.json=./ \
     --include-data-file=presets.yaml=./ \
     --include-data-file=default.csv=./ \
+    --include-data-file=engine_manifest.json=./ \
     --include-data-file=C:/path/to/cuda/*.dll=./ \
     --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
     --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
