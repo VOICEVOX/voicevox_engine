@@ -15,6 +15,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
 
+import requests
 import soundfile
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -31,6 +32,7 @@ from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
+    DownloadableLibrary,
     ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
@@ -563,6 +565,40 @@ def generate_app(
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
+        return ret_data
+
+    @app.get(
+        "/downloadable_libraries",
+        response_model=List[DownloadableLibrary],
+        tags=["その他"],
+    )
+    def downloadable_libraries():
+        """
+        ダウンロード可能なモデル情報を返します。
+
+        Returns
+        -------
+        ret_data: List[DownloadableLibrary]
+        """
+        try:
+            manifest = engine_manifest_loader.load_manifest()
+            # APIからダウンロード可能な音声ライブラリを取得する場合
+            if manifest.downloadable_libraries_url:
+                response = requests.get(manifest.downloadable_libraries_url, timeout=60)
+                ret_data: List[DownloadableLibrary] = [
+                    DownloadableLibrary(**d) for d in response.json()
+                ]
+            # ローカルのファイルからダウンロード可能な音声ライブラリを取得する場合
+            elif manifest.downloadable_libraries_path:
+                with open(manifest.downloadable_libraries_path) as f:
+                    ret_data: List[DownloadableLibrary] = [
+                        DownloadableLibrary(**d) for d in json.load(f)
+                    ]
+            else:
+                raise Exception
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="ダウンロード可能な音声ライブラリの取得に失敗しました。")
         return ret_data
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])

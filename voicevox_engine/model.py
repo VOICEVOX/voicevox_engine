@@ -144,6 +144,17 @@ class SpeakerInfo(BaseModel):
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
 
 
+class DownloadableLibrary(BaseModel):
+    """
+    ダウンロード可能な音声ライブラリの情報（最新情報をwebで取得することを考慮して、ローカルの情報はない）
+    """
+
+    download_url: str = Field(title="音声ライブラリのダウンロードURL")
+    bytes: int = Field(title="音声ライブラリのバイト数")
+    speaker: Speaker = Field(title="話者情報")
+    speaker_info: SpeakerInfo = Field(title="話者の追加情報")
+
+
 USER_DICT_MIN_PRIORITY = 0
 USER_DICT_MAX_PRIORITY = 10
 

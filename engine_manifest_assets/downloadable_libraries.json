@@ -1,0 +1,45 @@
+[
+  {
+    "download_url": "",
+    "bytes": "1000",
+    "speaker": {
+      "name": "dummy1",
+      "speaker_uuid": "dummy1",
+      "styles": [
+        {
+          "name": "style1",
+          "id": 0
+        },
+        {
+          "name": "style2",
+          "id": 1
+        }
+      ],
+      "version": "0.0.1"
+    },
+    "speaker_info": {
+      "policy": "",
+      "portrait": "",
+      "style_infos": [
+        {
+          "id": 0,
+          "icon": "",
+          "voice_samples": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "id": 1,
+          "icon": "",
+          "voice_samples": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    }
+  }
+]
