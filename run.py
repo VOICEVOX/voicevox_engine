@@ -785,23 +785,55 @@ def generate_app(
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--host", type=str, default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=50021)
-    parser.add_argument("--use_gpu", action="store_true")
-    parser.add_argument("--voicevox_dir", type=Path, default=None)
-    parser.add_argument("--voicelib_dir", type=Path, default=None, action="append")
-    parser.add_argument("--runtime_dir", type=Path, default=None, action="append")
-    parser.add_argument("--enable_mock", action="store_true")
-    parser.add_argument("--enable_cancellable_synthesis", action="store_true")
+    parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
+    parser.add_argument(
+        "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
+    )
+    parser.add_argument("--port", type=int, default=50021, help="接続を受け付けるポート番号です。")
+    parser.add_argument(
+        "--use_gpu", action="store_true", help="指定するとGPUを使って音声合成するようになります。"
+    )
+    parser.add_argument(
+        "--voicevox_dir", type=Path, default=None, help="VOICEVOXのディレクトリパスです。"
+    )
+    parser.add_argument(
+        "--voicelib_dir",
+        type=Path,
+        default=None,
+        action="append",
+        help="VOICEVOX COREのディレクトリパスです。",
+    )
+    parser.add_argument(
+        "--runtime_dir",
+        type=Path,
+        default=None,
+        action="append",
+        help="VOICEVOX COREで使用するライブラリのディレクトリパスです。",
+    )
+    parser.add_argument(
+        "--enable_mock",
+        action="store_true",
+        help="指定するとVOICEVOX COREを使わずモックで音声合成を行います。",
+    )
+    parser.add_argument(
+        "--enable_cancellable_synthesis",
+        action="store_true",
+        help="指定すると音声合成を途中でキャンセルできるようになります。",
+    )
     parser.add_argument("--init_processes", type=int, default=2)
-    parser.add_argument("--load_all_models", action="store_true")
+    parser.add_argument(
+        "--load_all_models", action="store_true", help="指定すると起動時に全ての音声合成モデルを読み込みます。"
+    )
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
     # 環境変数にもない場合は、Noneのままとします。
     # VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合、エラー終了します。
     parser.add_argument(
-        "--cpu_num_threads", type=int, default=os.getenv("VV_CPU_NUM_THREADS") or None
+        "--cpu_num_threads",
+        type=int,
+        default=os.getenv("VV_CPU_NUM_THREADS") or None,
+        help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
+        "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
     )
 
     args = parser.parse_args()
