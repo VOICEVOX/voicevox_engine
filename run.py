@@ -832,7 +832,8 @@ if __name__ == "__main__":
         "--cpu_num_threads",
         type=int,
         default=os.getenv("VV_CPU_NUM_THREADS") or None,
-        help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
+        help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
+        "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
     )
 
     args = parser.parse_args()
