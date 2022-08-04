@@ -15,9 +15,9 @@ if __name__ == "__main__":
             """<!DOCTYPE html>
 <html lang="ja">
 <head>
-    <title>voicevox_engine API Document</title>
+    <title>sharevox_engine API Document</title>
     <meta charset="utf-8">
-    <link rel="shortcut icon" href="https://voicevox.hiroshiba.jp/favicon-32x32.png">
+    <link rel="shortcut icon" href="https://sharevox.app/favicon.ico">
 </head>
 <body>
     <div id="redoc-container"></div>

@@ -56,6 +56,32 @@ def generate_licenses() -> List[License]:
             )
         )
 
+    # SHAREVOX CORE
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/SHAREVOX/sharevox_core/main/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="SHAREVOX CORE",
+                version=None,
+                license="MIT license",
+                text=res.read().decode(),
+            )
+        )
+
+    # SHAREVOX ENGINE
+    with urllib.request.urlopen(
+        "https://raw.githubusercontent.com/SHAREVOX/sharevox_engine/master/LICENSE"
+    ) as res:
+        licenses.append(
+            License(
+                name="SHAREVOX ENGINE",
+                version=None,
+                license="LGPL license",
+                text=res.read().decode(),
+            )
+        )
+
     # VOICEVOX CORE
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE"

@@ -21,31 +21,31 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
-ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
+ARG VOICEVOX_CORE_ASSET_PREFIX=sharevox_core-linux-x64-cpu
 ARG VOICEVOX_CORE_VERSION=0.12.4
 RUN <<EOF
     set -eux
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
-    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
+    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/SHAREVOX/sharevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
     unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
     mkdir -p core
     mv "${VOICEVOX_CORE_ASSET_NAME}"/* core
     rm -rf $VOICEVOX_CORE_ASSET_NAME
     rm "./${VOICEVOX_CORE_ASSET_NAME}.zip"
 
-    # Move Core Library to /opt/voicevox_core/
-    mkdir /opt/voicevox_core
-    mv "./core/libcore.so" /opt/voicevox_core/
+    # Move Core Library to /opt/sharevox_core/
+    mkdir /opt/sharevox_core
+    mv "./core/libcore.so" /opt/sharevox_core/
 
-    # Move documents to /opt/voicevox_core/
-    mv ./core/VERSION /opt/voicevox_core/
+    # Move documents to /opt/sharevox_core/
+    mv ./core/VERSION /opt/sharevox_core/
 
     rm -rf ./core
 
-    # Add /opt/voicevox_core to dynamic library search path
-    echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
+    # Add /opt/sharevox_core to dynamic library search path
+    echo "/opt/sharevox_core" > /etc/ld.so.conf.d/sharevox_core.conf
 
     # Update dynamic library search cache
     ldconfig
@@ -154,7 +154,7 @@ EOF
 FROM ${BASE_RUNTIME_IMAGE} AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /opt/voicevox_engine
+WORKDIR /opt/sharevox_engine
 
 # libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
@@ -192,38 +192,38 @@ RUN <<EOF
 EOF
 
 # Copy VOICEVOX Core release
-# COPY --from=download-core-env /etc/ld.so.conf.d/voicevox_core.conf /etc/ld.so.conf.d/voicevox_core.conf
-COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
+# COPY --from=download-core-env /etc/ld.so.conf.d/sharevox_core.conf /etc/ld.so.conf.d/sharevox_core.conf
+COPY --from=download-core-env /opt/sharevox_core /opt/sharevox_core
 
 # Copy ONNX Runtime
 # COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
 # Add local files
-ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
-ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
-ADD ./speaker_info /opt/voicevox_engine/speaker_info
-ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
+ADD ./sharevox_engine /opt/sharevox_engine/sharevox_engine
+ADD ./docs /opt/sharevox_engine/docs
+ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/sharevox_engine/
+ADD ./speaker_info /opt/sharevox_engine/speaker_info
+ADD ./engine_manifest_assets /opt/sharevox_engine/engine_manifest_assets
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
-RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
+RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/sharevox_engine/voicevox_engine/__init__.py
 
 # Generate licenses.json
 RUN <<EOF
     set -eux
 
-    cd /opt/voicevox_engine
+    cd /opt/sharevox_engine
 
     # Define temporary env vars
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/sharevox_engine/engine_manifest_assets/dependency_licenses.json
     # FIXME: VOICEVOX (editor) cannot build without licenses.json
-    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
+    cp /opt/sharevox_engine/engine_manifest_assets/dependency_licenses.json /opt/sharevox_engine/licenses.json
 EOF
 
 # Keep this layer separated to use layer cache on download failed in local build
@@ -252,7 +252,7 @@ RUN <<EOF
     set -eux
 
     # README
-    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+    wget -nv --show-progress -c -O "/opt/sharevox_engine/README.md" "https://raw.githubusercontent.com/SHAREVOX/sharevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 EOF
 
 # Create container start shell
@@ -261,17 +261,17 @@ COPY --chmod=775 <<EOF /entrypoint.sh
 set -eux
 
 # Display README for engine
-cat /opt/voicevox_engine/README.md > /dev/stderr
+cat /opt/sharevox_engine/README.md > /dev/stderr
 
 exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/sharevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/sharevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Binary build environment (common to CPU, GPU)
 FROM runtime-env AS build-env
@@ -302,16 +302,16 @@ EOF
 RUN <<EOF
     set -eux
 
-    cd /opt/voicevox_engine
+    cd /opt/sharevox_engine
 
     # Define temporary env vars
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install pip-licenses
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/sharevox_engine/engine_manifest_assets/dependency_licenses.json
     # FIXME: VOICEVOX (editor) cannot build without licenses.json
-    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
+    cp /opt/sharevox_engine/engine_manifest_assets/dependency_licenses.json /opt/sharevox_engine/licenses.json
 EOF
 
 # Create build script
@@ -323,16 +323,16 @@ RUN <<EOF
         set -eux
 
         # chown general user c.z. mounted directory may be owned by root
-        mkdir -p /opt/voicevox_engine_build
-        chown -R user:user /opt/voicevox_engine_build
+        mkdir -p /opt/sharevox_engine_build
+        chown -R user:user /opt/sharevox_engine_build
 
         mkdir -p /home/user/.cache/Nuitka
         chown -R user:user /home/user/.cache/Nuitka
 
-        cd /opt/voicevox_engine_build
+        cd /opt/sharevox_engine_build
 
         gosu user /opt/python/bin/python3 -m nuitka \
-            --output-dir=/opt/voicevox_engine_build \
+            --output-dir=/opt/sharevox_engine_build \
             --standalone \
             --plugin-enable=numpy \
             --plugin-enable=multiprocessing \
@@ -342,17 +342,17 @@ RUN <<EOF
             --include-package=anyio \
             --include-package-data=pyopenjtalk \
             --include-package-data=scipy \
-            --include-data-file=/opt/voicevox_engine/licenses.json=./ \
-            --include-data-file=/opt/voicevox_engine/presets.yaml=./ \
-            --include-data-file=/opt/voicevox_engine/default.csv=./ \
-            --include-data-file=/opt/voicevox_engine/engine_manifest.json=./ \
-            --include-data-file=/opt/voicevox_core/*.so=./ \
+            --include-data-file=/opt/sharevox_engine/licenses.json=./ \
+            --include-data-file=/opt/sharevox_engine/presets.yaml=./ \
+            --include-data-file=/opt/sharevox_engine/default.csv=./ \
+            --include-data-file=/opt/sharevox_engine/engine_manifest.json=./ \
+            --include-data-file=/opt/sharevox_core/*.so=./ \
             --include-data-file=/opt/onnxruntime/lib/libonnxruntime.so=./ \
-            --include-data-dir=/opt/voicevox_engine/speaker_info=./speaker_info \
-            --include-data-dir=/opt/voicevox_engine/engine_manifest_assets=./engine_manifest_assets \
+            --include-data-dir=/opt/sharevox_engine/speaker_info=./speaker_info \
+            --include-data-dir=/opt/sharevox_engine/engine_manifest_assets=./engine_manifest_assets \
             --follow-imports \
             --no-prefer-source-code \
-            /opt/voicevox_engine/run.py
+            /opt/sharevox_engine/run.py
 
         # Copy libonnxruntime_providers_cuda.so and dependencies (CUDA/cuDNN)
         if [ -f "/opt/onnxruntime/lib/libonnxruntime_providers_cuda.so" ]; then
@@ -384,11 +384,11 @@ RUN <<EOF
             rm -f libcudnn.so.*.* libcudnn_*_infer.so.*.*
             cd -
 
-            mv /tmp/coredeps/* /opt/voicevox_engine_build/run.dist/
+            mv /tmp/coredeps/* /opt/sharevox_engine_build/run.dist/
             rm -rf /tmp/coredeps
         fi
 
-        chmod +x /opt/voicevox_engine_build/run.dist/run
+        chmod +x /opt/sharevox_engine_build/run.dist/run
 EOD
     chmod +x /build.sh
 EOF
