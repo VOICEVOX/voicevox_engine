@@ -298,6 +298,12 @@ python -m pip install -r requirements.txt
 
 ## 実行
 
+コマンドライン引数の詳細は以下のコマンドで確認してください。
+
+```bash
+python run.py --help
+```
+
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
