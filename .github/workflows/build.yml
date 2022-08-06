@@ -379,18 +379,14 @@ jobs:
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
-            nuitka_cache_path: nuitka_cache
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-directml
-            nuitka_cache_path: nuitka_cache
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
@@ -398,9 +394,7 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
             cuda_version: "11.4.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-nvidia
-            nuitka_cache_path: nuitka_cache
 
     runs-on: ${{ matrix.os }}
 
@@ -501,9 +495,6 @@ jobs:
       - name: Install Python dependencies
         shell: bash
         run: |
-          # FIXME: Nuitka cannot build with setuptools>=60.7.0
-          # https://github.com/Nuitka/Nuitka/issues/1406
-          python -m pip install --upgrade pip setuptools==60.6.0 wheel
           python -m pip install -r requirements-dev.txt
 
           # Download pyopenjtalk dictionary
@@ -526,32 +517,6 @@ jobs:
       - name: Create download directory
         shell: bash
         run: mkdir -p download/
-
-      # Install Ccache
-      - name: Export Ccache url to calc hash
-        shell: bash
-        run: echo "${{ matrix.ccache_url }}" > download/ccache_url.txt
-
-      - name: Prepare Ccache
-        uses: actions/cache@v2
-        id: ccache-cache
-        with:
-          key: ${{ matrix.os }}-ccache-${{ hashFiles('download/ccache_url.txt') }}
-          path: download/ccache
-
-      - name: Download Ccache
-        if: steps.ccache-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "${{ matrix.ccache_url }}" > download/ccache.zip
-          unzip download/ccache.zip -d download/
-          rm download/ccache.zip
-          mv download/ccache-*/ download/ccache
-
-      - name: Install Ccache
-        shell: bash
-        run: |
-          echo "$HOME/download/ccache" >> $GITHUB_PATH
 
       # Donwload DirectML
       - name: Export DirectML url to calc hash
@@ -672,52 +637,30 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
-      - name: Cache Nuitka (ccache, module-cache)
-        uses: actions/cache@v2
-        id: nuitka-cache
-        with:
-          path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-
-
       - name: Show disk space (debug info)
         shell: bash
         run: |
           df -h
 
-      - name: Build run.py with Nuitka
+      - name: Build run.py with PyInstaller
         shell: bash
-        env:
-          NUITKA_CACHE_DIR: ${{ matrix.nuitka_cache_path }}
         run: |
           set -eux
 
           # Replace version
           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
 
-          python -m nuitka \
-            --standalone \
-            --assume-yes-for-downloads \
-            --plugin-enable=numpy \
-            --plugin-enable=multiprocessing \
-            --follow-import-to=numpy \
-            --follow-import-to=aiofiles \
-            --include-package=uvicorn \
-            --include-package=anyio \
-            --include-package-data=pyopenjtalk \
-            --include-package-data=scipy \
-            --include-data-file="licenses.json=./" \
-            --include-data-file="presets.yaml=./" \
-            --include-data-file="default.csv=./" \
-            --include-data-file="engine_manifest.json=./" \
-            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
-            --include-data-file="download/core/core.dll=./" \
-            --include-data-dir="speaker_info=./speaker_info" \
-            --include-data-dir="engine_manifest_assets=./engine_manifest_assets" \
-            --msvc=14.2 \
-            --follow-imports \
-            --no-prefer-source-code \
+          pyinstaller \
+            --noconfirm \
+            --collect-data pyopenjtalk \
+            --add-data "licenses.json;." \
+            --add-data "presets.yaml;." \
+            --add-data "default.csv;." \
+            --add-data "engine_manifest.json;." \
+            --add-data "speaker_info;speaker_info" \
+            --add-data "engine_manifest_assets;engine_manifest_assets" \
+            --add-binary "download/onnxruntime/lib/onnxruntime.dll;." \
+            --add-binary "download/core/core.dll;." \
             run.py
 
       - name: Show disk space (debug info)
@@ -737,12 +680,12 @@ jobs:
 
           # Build artifact directory
           mkdir -p artifact
-          ln -sf "$(pwd)/run.dist"/* artifact/
+          ln -sf "$(pwd)/dist/run"/* artifact/
 
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
-            # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
+            # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
             ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
 
             # CUDA
