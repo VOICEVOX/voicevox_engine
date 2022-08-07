@@ -1,6 +1,6 @@
 -r requirements.in
 cython
-nuitka
+pyinstaller
 pip-licenses
 pip-tools
 pre-commit

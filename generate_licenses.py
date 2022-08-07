@@ -161,9 +161,14 @@ def generate_licenses() -> List[License]:
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
                 continue
-            elif license.name.lower() == "nuitka":
+            elif license.name.lower() == "future":
                 with urllib.request.urlopen(
-                    "https://raw.githubusercontent.com/Nuitka/Nuitka/develop/LICENSE.txt"
+                    "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt"  # noqa: B950
+                ) as res:
+                    license.text = res.read().decode()
+            elif license.name.lower() == "pefile":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE"  # noqa: B950
                 ) as res:
                     license.text = res.read().decode()
             elif license.name.lower() == "pyopenjtalk":
