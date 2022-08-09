@@ -434,7 +434,8 @@ pip-tools を用いて依存ライブラリのバージョンを固定してい�
 `requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
 
 ```bash
-pip-compile requirements.in
+# pip>=22 の場合 pip-tools がエラーになります
+pip-compile requirements.in  # こちらを更新する場合は下２つも更新する必要があります。
 pip-compile requirements-dev.in
 pip-compile requirements-test.in
 ```
