@@ -497,7 +497,7 @@ jobs:
 
           # Build artifact directory
           mkdir -p artifact
-          ln -sf "$(pwd)/dist/run"/* artifact/
+          ln -sf "$(pwd)/dist/run.dist"/* artifact/
 
           # Copy DLL dependencies
 
@@ -528,7 +528,7 @@ jobs:
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
         run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+          install_name_tool -add_rpath @executable_path/. dist/run.dist/run
 
       - name: Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
@@ -564,7 +564,7 @@ jobs:
         #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/run/
+          path: dist/run.dist/
 
   upload-to-release:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''

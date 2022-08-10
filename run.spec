@@ -83,5 +83,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='run',
+    name='run.dist',
 )
