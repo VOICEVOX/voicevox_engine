@@ -466,36 +466,18 @@ jobs:
         run: |
           set -eux
 
-          # Replace version
+          # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
             gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            pyinstaller \
-              --noconfirm \
-              --collect-data pyopenjtalk \
-              --add-data "licenses.json:." \
-              --add-data "presets.yaml:." \
-              --add-data "default.csv:." \
-              --add-data "engine_manifest.json:." \
-              --add-data "speaker_info:speaker_info" \
-              --add-data "engine_manifest_assets:engine_manifest_assets" \
-              --add-binary "download/onnxruntime/lib/libonnxruntime.dylib:." \
-              --add-binary "download/core/libcore.dylib:." \
-              run.py
+            echo 'LIBCORE_PATH=download/core/libcore.dylib' >> $GITHUB_ENV
+            echo 'LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib' >> $GITHUB_ENV
           else
             sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            pyinstaller \
-              --noconfirm \
-              --collect-data pyopenjtalk \
-              --add-data "licenses.json;." \
-              --add-data "presets.yaml;." \
-              --add-data "default.csv;." \
-              --add-data "engine_manifest.json;." \
-              --add-data "speaker_info;speaker_info" \
-              --add-data "engine_manifest_assets;engine_manifest_assets" \
-              --add-binary "download/onnxruntime/lib/onnxruntime.dll;." \
-              --add-binary "download/core/core.dll;." \
-              run.py
+            echo 'LIBCORE_PATH=download/core/core.dll;' >> $GITHUB_ENV
+            echo 'LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll' >> $GITHUB_ENV
           fi
+          
+          pyinstaller run.spec
 
       - name: Show disk space (debug info)
         shell: bash
