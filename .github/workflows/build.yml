@@ -477,7 +477,7 @@ jobs:
             echo 'LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll' >> $GITHUB_ENV
           fi
           
-          pyinstaller run.spec
+          pyinstaller --noconfirm run.spec
 
       - name: Show disk space (debug info)
         shell: bash
