@@ -1,7 +1,7 @@
 ---
 name: Question
 about: 質問 (既存のIssueや一般事例を良く調べてからしてください)
-labels: question
+labels: 要議論
 ---
 
 ## 質問の内容
