@@ -831,7 +831,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
-          prelease: ${{ github.event.inputs.prerelease }}
+          prerelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
