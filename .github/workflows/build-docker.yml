@@ -7,6 +7,10 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
@@ -14,8 +18,8 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.13.0"
   VOICEVOX_CORE_VERSION: "0.13.0"
   VOICEVOX_ENGINE_VERSION:
-    |- # releaseのときはタグが、それ以外はlatestがバージョン名に
-    ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
+    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
   build-docker:
