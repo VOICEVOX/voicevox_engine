@@ -1,4 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
+# このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
 from PyInstaller.utils.hooks import collect_data_files
 import os
 
