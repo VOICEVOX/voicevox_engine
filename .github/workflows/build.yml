@@ -461,24 +461,25 @@ jobs:
         run: |
           df -h
 
-      - name: Replace version & specify dynamic libraries
-        shell: bash
-        run: |
-          if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            echo 'LIBCORE_PATH=download/core/libcore.dylib' >> $GITHUB_ENV
-            echo 'LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib' >> $GITHUB_ENV
-          else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            echo 'LIBCORE_PATH=download/core/core.dll' >> $GITHUB_ENV
-            echo 'LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll' >> $GITHUB_ENV
-          fi
-
       - name: Build run.py with PyInstaller
         shell: bash
         run: |
           set -eux
-          pyinstaller --noconfirm run.spec          
+
+          # Replace version & specify dynamic libraries
+          if [[ ${{ matrix.os }} == macos-* ]]; then
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            LIBCORE_PATH=download/core/libcore.dylib
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
+          else
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            LIBCORE_PATH=download/core/core.dll
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+          fi
+
+          LIBCORE_PATH="$LIBCORE_PATH" \
+          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
+          pyinstaller --noconfirm run.spec        
 
       - name: Show disk space (debug info)
         shell: bash
