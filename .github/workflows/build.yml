@@ -316,7 +316,7 @@ jobs:
           if [[ ${{ matrix.os }} == macos-* ]]; then
             tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
           else
-            tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.so'
+            tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           fi
           rm download/onnxruntime.tgz
 
