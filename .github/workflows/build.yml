@@ -139,7 +139,7 @@ jobs:
             cp "${CUDA_ROOT}/lib64/"libcublasLt.so.* download/cuda/bin/
             cp "${CUDA_ROOT}/lib64/"libcudart.so.* download/cuda/bin/
             cp "${CUDA_ROOT}/lib64/"libcufft.so.* download/cuda/bin/
-            cp "${CUDA_ROOT}/lib64/"libcuranda.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
 
             # remove unneed full version libraries
             rm -f download/cuda/bin/libcublas.so.*.* 
