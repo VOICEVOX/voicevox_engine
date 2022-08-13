@@ -131,7 +131,7 @@ jobs:
 
           mkdir -p download/cuda/bin
           if [[ ${{ matrix.os }} == windows-* ]]; then
-            mv "${CUDA_ROOT}/bin/"*.so download/cuda/bin/
+            mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
             rm -rf "${CUDA_ROOT}"
           else
