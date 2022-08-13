@@ -410,6 +410,7 @@ jobs:
             else
               LIBCORE_PATH=download/core/libcore.so
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
+            fi
           fi
 
           LIBCORE_PATH="$LIBCORE_PATH" \
