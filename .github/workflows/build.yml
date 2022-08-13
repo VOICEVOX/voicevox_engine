@@ -370,8 +370,10 @@ jobs:
           # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           if [[ ${{ matrix.os }} == windows-* ]]; then
             7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          else
+          elif [[ ${{ matrix.os }} == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+          else
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
           fi
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
