@@ -212,6 +212,13 @@ jobs:
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Setup Build Essential
+        shell: bash
+        if: startsWith(matrix.os, 'ubuntu-')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential wget gcc g++
+
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
         id: setup-python
