@@ -62,13 +62,13 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
             artifact_name: macos-x64
           # Linux CPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
             artifact_name: linux-cpu
           # Linux NVIDIA GPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
@@ -211,13 +211,6 @@ jobs:
       - name: Setup MSVC
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Setup Build Essential
-        shell: bash
-        if: startsWith(matrix.os, 'ubuntu-')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential wget gcc g++
 
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
