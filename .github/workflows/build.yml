@@ -302,14 +302,8 @@ jobs:
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
-
-          # extract only dylibs
           mkdir -p download/onnxruntime
-          if [[ ${{ matrix.os }} == macos-* ]]; then
-            tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
-          else
-            tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
-          fi
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
 
       - name: Show disk space (debug info)
