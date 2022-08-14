@@ -122,7 +122,7 @@ jobs:
           cuda: ${{ matrix.cuda_version }}
 
       - name: Extract CUDA Dynamic Libraries
-        if: matrix.cuda_version != '' && matrix.os &&steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
