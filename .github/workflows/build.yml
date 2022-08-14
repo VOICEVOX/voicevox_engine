@@ -464,6 +464,26 @@ jobs:
           # pysoundfile
           ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
 
+      - name: Create symlink of CUDA dependencies
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        shell: bash
+        run: |
+          set -eux
+
+          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run.dist/
+
+          # CUDA
+          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run.dist/
+
+          # cuDNN
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run.dist/
+
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
         run: |
