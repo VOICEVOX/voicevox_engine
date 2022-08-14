@@ -419,35 +419,31 @@ jobs:
         run: |
           set -eux
 
-          # Build artifact directory
-          mkdir -p artifact
-          ln -sf "$(pwd)/dist/run.dist"/* artifact/
-
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run.dist/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run.dist/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run.dist/
           fi
 
           if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
             # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll artifact/
+            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run.dist/
           fi
 
           # pysoundfile
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" dist/run.dist/
 
       - name: Create symlink of CUDA dependencies
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
@@ -478,7 +474,7 @@ jobs:
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
-          bash build_util/codesign.bash "artifact/run.exe"
+          bash build_util/codesign.bash "dist/run.dist/run.exe"
         env:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
@@ -489,19 +485,7 @@ jobs:
       # Currently, It is good to use static artifact name for future binary test workflow.
       # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
       # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - name: Upload artifact (Windows)
-        if: startsWith(matrix.os, 'windows-')
-        uses: actions/upload-artifact@v2
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: |
-            artifact/
-
-      - name: Upload artifact (Mac/Linux)
-        if: startsWith(matrix.os, 'windows-') != true
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
