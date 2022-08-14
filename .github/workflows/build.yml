@@ -206,7 +206,7 @@ jobs:
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.architecture }}
@@ -215,8 +215,7 @@ jobs:
       - name: Install Python dependencies
         shell: bash
         run: |
-          # FIXME: Ubuntuでコマンドに失敗してしまったので応急処置でキャッシュを使わないようにしている
-          python -m pip install -r requirements-dev.txt --no-cache-dir
+          python -m pip install -r requirements-dev.txt
 
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
