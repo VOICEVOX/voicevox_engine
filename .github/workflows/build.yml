@@ -104,18 +104,9 @@ jobs:
           key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
-      # Reference: https://zenn.dev/takakurasato/scraps/d3e0ee6132a5c5
-      # https://developer.nvidia.com/blog/updating-the-cuda-linux-gpg-repository-key/
-      - name: Prepare CUDA apt key
-        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'ubuntu-')
-        shell: bash
-        run: |
-          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
-          sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
-
       - name: Setup CUDA
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.5
+        uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
           method: network
