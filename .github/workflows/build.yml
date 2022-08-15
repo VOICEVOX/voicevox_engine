@@ -29,136 +29,7 @@ env:
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
-  # Build Linux binary (push only buildcache image)
-  build-linux:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        tag:
-          - build-cpu-ubuntu18.04
-          - build-nvidia-ubuntu18.04
-        include:
-          - tag: build-cpu-ubuntu18.04
-            runtime_tag: cpu-ubuntu18.04 # for cache use
-            target: build-env
-            base_image: ubuntu:bionic
-            base_runtime_image: ubuntu:bionic
-            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
-            artifact_name: linux-cpu
-            nuitka_cache_path: nuitka_cache
-          - tag: build-nvidia-ubuntu18.04
-            runtime_tag: nvidia-ubuntu18.04 # for cache use
-            target: build-env
-            base_image: ubuntu:bionic
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
-            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
-            artifact_name: linux-nvidia
-            nuitka_cache_path: nuitka_cache
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v2
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: Checkout VOICEVOX RESOURCE
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
-        shell: bash
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
-
-      # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
-      # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-      - name: Create binary build environment with Docker
-        uses: docker/build-push-action@v2
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
-          RUNTIME_IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.runtime_tag }}${{ (matrix.runtime_tag != '' && '-') || '' }}latest
-          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-        with:
-          context: .
-          builder: ${{ steps.buildx.outputs.name }}
-          file: ./Dockerfile
-          build-args: |
-            BASE_IMAGE=${{ matrix.base_image }}
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
-            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
-            VOICEVOX_CORE_ASSET_NAME=${{ env.VOICEVOX_CORE_ASSET_NAME }}
-            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
-            ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
-          target: ${{ matrix.target }}
-          load: true
-          tags: |
-            ${{ env.IMAGE_TAG }}
-          cache-from: |
-            type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
-            type=registry,ref=${{ env.RUNTIME_IMAGE_TAG }}-buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
-
-      # Build run.py with Nuitka in Docker
-      - name: Cache Nuitka (ccache, module-cache)
-        uses: actions/cache@v2
-        id: nuitka-cache
-        with:
-          path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ matrix.tag }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-nuitka-${{ matrix.tag }}-
-
-      - name: Build run.py with Nuitka in Docker
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
-        run: |
-          docker run --rm \
-            -v "$(readlink -f "${{ matrix.nuitka_cache_path }}"):/home/user/.cache/Nuitka" \
-            -v "$(readlink -f "build"):/opt/voicevox_engine_build" \
-            "${{ env.IMAGE_TAG }}"
-
-      # FIXME: versioned name may be useful; but
-      # actions/download-artifact and dawidd6/download-artifact do not support
-      # wildcard / forward-matching yet.
-      # Currently, It is good to use static artifact name for future binary test workflow.
-      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
-      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - uses: actions/upload-artifact@v2
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: build/run.dist/
-
-  build-windows-and-mac:
+  build-all:
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment
     strategy:
       matrix:
@@ -190,6 +61,20 @@ jobs:
             voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
             artifact_name: macos-x64
+          # Linux CPU
+          - os: ubuntu-18.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            artifact_name: linux-cpu
+          # Linux NVIDIA GPU
+          - os: ubuntu-18.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            cuda_version: "11.4.2"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-linux-x64-v8.2.4.15.tgz
+            artifact_name: linux-nvidia
 
     runs-on: ${{ matrix.os }}
 
@@ -221,13 +106,13 @@ jobs:
 
       - name: Setup CUDA
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.5
+        uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
           method: network
           cuda: ${{ matrix.cuda_version }}
 
-      - name: Extract CUDA DLL
+      - name: Extract CUDA Dynamic Libraries
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -236,9 +121,24 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
-          mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
-          rm -rf "${CUDA_ROOT}"
+            rm -rf "${CUDA_ROOT}"
+          else
+            cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcublasLt.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcudart.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcufft.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cuda/bin/libcublas.so.*.* 
+            rm -f download/cuda/bin/libcublasLt.so.*.*
+            rm -f download/cuda/bin/libcufft.so.*.*
+            rm -f download/cuda/bin/libcurand.so.*.*
+            rm -f download/cuda/bin/libcudart.so.*.*.*
+          fi
 
       - name: Show disk space (debug info)
         if: matrix.cuda_version != ''
@@ -261,21 +161,37 @@ jobs:
           key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
           path: download/cudnn
 
-      - name: Download and extract cuDNN DLLs
+      - name: Download and extract cuDNN Dynamic Libraries
         if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
 
-          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+  
+            unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+  
+            mkdir -p download/cudnn/bin
+            mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
+            rm -rf download/cudnn_tmp
+  
+            rm download/cudnn.zip
+          else
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tgz
 
-          unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+            tar -zxf download/cudnn.tgz -C download/
+          
+            mkdir -p download/cudnn/bin
+            cp download/cuda/lib64/libcudnn.so.* download/cudnn/bin/
+            cp download/cuda/lib64/libcudnn_*_infer.so.* download/cudnn/bin/
 
-          mkdir -p download/cudnn/bin
-          mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
-          rm -rf download/cudnn_tmp
+            # remove unneed full version libraries
+            rm -f download/cudnn/bin/libcudnn.so.*.*
+            rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
 
-          rm download/cudnn.zip
+            rm download/cudnn.tgz
+          fi
 
       - name: Show disk space (debug info)
         if: matrix.cudnn_url != ''
@@ -290,7 +206,7 @@ jobs:
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.architecture }}
@@ -380,15 +296,13 @@ jobs:
 
           rm download/onnxruntime.zip
 
-      - name: Download ONNX Runtime (Mac)
-        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos-')
+      - name: Download ONNX Runtime (Mac/Linux)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
-
-          # extract only dylibs
           mkdir -p download/onnxruntime
-          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
 
       - name: Show disk space (debug info)
@@ -441,8 +355,10 @@ jobs:
           # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           if [[ ${{ matrix.os }} == windows-* ]]; then
             7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          else
+          elif [[ ${{ matrix.os }} == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+          else
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
           fi
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
@@ -473,8 +389,13 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
             sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            LIBCORE_PATH=download/core/core.dll
-            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+            if [[ ${{ matrix.os }} == windows-* ]]; then
+              LIBCORE_PATH=download/core/core.dll
+              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+            else
+              LIBCORE_PATH=download/core/libcore.so
+              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
+            fi
           fi
 
           LIBCORE_PATH="$LIBCORE_PATH" \
@@ -497,35 +418,51 @@ jobs:
         run: |
           set -eux
 
-          # Build artifact directory
-          mkdir -p artifact
-          ln -sf "$(pwd)/dist/run.dist"/* artifact/
-
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run.dist/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run.dist/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run.dist/
           fi
 
           if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
             # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll artifact/
+            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run.dist/
           fi
 
           # pysoundfile
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
+          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" dist/run.dist/
+
+      - name: Create symlink of CUDA dependencies
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        shell: bash
+        run: |
+          set -eux
+
+          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run.dist/
+
+          # CUDA
+          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run.dist/
+
+          # cuDNN
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run.dist/
 
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
@@ -536,7 +473,7 @@ jobs:
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
-          bash build_util/codesign.bash "artifact/run.exe"
+          bash build_util/codesign.bash "dist/run.dist/run.exe"
         env:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
@@ -547,19 +484,7 @@ jobs:
       # Currently, It is good to use static artifact name for future binary test workflow.
       # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
       # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - name: Upload artifact (Windows)
-        if: startsWith(matrix.os, 'windows-')
-        uses: actions/upload-artifact@v2
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: |
-            artifact/
-
-      - name: Upload artifact (Mac)
-        if: startsWith(matrix.os, 'macos-')
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
@@ -570,7 +495,7 @@ jobs:
 
   upload-to-release:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''
-    needs: [build-linux, build-windows-and-mac]
+    needs: [build-all]
     runs-on: ubuntu-latest
     strategy:
       matrix:
