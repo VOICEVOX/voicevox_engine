@@ -22,8 +22,8 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.3"
-  VOICEVOX_CORE_VERSION: "0.12.5"
+  VOICEVOX_RESOURCE_VERSION: "0.13.0"
+  VOICEVOX_CORE_VERSION: "0.13.0"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
@@ -831,7 +831,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
-          prelease: ${{ github.event.inputs.prerelease }}
+          prerelease: ${{ github.event.inputs.prerelease }}
           file_glob: true
           file: ${{ matrix.artifact_name }}.7z.*
 
