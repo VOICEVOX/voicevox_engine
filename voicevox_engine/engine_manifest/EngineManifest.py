@@ -24,6 +24,20 @@ class LicenseInfo(BaseModel):
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
+class SupportedFeatures(BaseModel):
+    """
+    エンジンが持つ機能の一覧
+    """
+
+    adjust_mora_pitch: bool = Field(title="モーラごとの音高の調整")
+    adjust_phoneme_length: bool = Field(title="音素ごとの長さの調整")
+    adjust_speed_scale: bool = Field(title="全体の話速の調整")
+    adjust_pitch_scale: bool = Field(title="全体の音高の調整")
+    adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
+    adjust_volume_scale: bool = Field(title="全体の音量の調整")
+    interrogative_upspeak: bool = Field(title="疑問文の自動調整")
+
+
 class EngineManifest(BaseModel):
     """
     エンジン自体に関する情報
@@ -44,3 +58,4 @@ class EngineManifest(BaseModel):
     downloadable_libraries_url: Optional[str] = Field(
         title="ダウンロード可能な音声ライブラリ情報を取得するためのAPIのURL"
     )
+    supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
