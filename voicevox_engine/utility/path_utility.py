@@ -21,5 +21,6 @@ def engine_root() -> Path:
 
 def get_save_dir():
     # FIXME: ファイル保存場所をエンジン固有のIDが入ったものにする
-    # FIXME: Windowsは`voicevox-engine/voicevox-engine`ディレクトリに保存されているので`VOICEVOX/voicevox-engine`に変更する
+    # FIXME: Windowsは`voicevox-engine/voicevox-engine`ディレクトリに保存されているので
+    # `VOICEVOX/voicevox-engine`に変更する
     return Path(user_data_dir("voicevox-engine"))
