@@ -17,7 +17,7 @@ from .utility import engine_root
 
 root_dir = engine_root()
 # FIXME: ファイル保存場所をエンジン固有のIDが入ったものにする
-save_dir = Path(user_data_dir("voicevox-engine"))
+save_dir = Path(user_data_dir("sharevox-engine"))
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
