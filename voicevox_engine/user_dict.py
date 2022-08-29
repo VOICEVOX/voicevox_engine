@@ -10,11 +10,9 @@ import pyopenjtalk
 from fastapi import HTTPException
 from pydantic import conint
 
-from voicevox_engine.utility.path_utility import get_save_dir
-
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import engine_root
+from .utility import engine_root, get_save_dir
 
 root_dir = engine_root()
 save_dir = get_save_dir()
