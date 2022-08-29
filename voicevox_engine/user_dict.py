@@ -7,17 +7,15 @@ from uuid import UUID, uuid4
 
 import numpy as np
 import pyopenjtalk
-from appdirs import user_data_dir
 from fastapi import HTTPException
 from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import engine_root
+from .utility import engine_root, get_save_dir
 
 root_dir = engine_root()
-# FIXME: ファイル保存場所をエンジン固有のIDが入ったものにする
-save_dir = Path(user_data_dir("voicevox-engine"))
+save_dir = get_save_dir()
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)

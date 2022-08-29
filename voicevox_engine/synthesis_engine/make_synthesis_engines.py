@@ -1,10 +1,9 @@
 import json
 import sys
-import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from ..utility import engine_root
+from ..utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
 from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
 
@@ -68,34 +67,56 @@ def make_synthesis_engines(
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
     load_runtime_lib(runtime_dirs)
-    synthesis_engines = {}
-    for core_dir in voicelib_dirs:
-        try:
-            core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
-            metas = json.loads(core.metas())
-            core_version = metas[0]["version"]
-            if core_version in synthesis_engines:
-                print(
-                    "Warning: Core loading is skipped because of version duplication.",
-                    file=sys.stderr,
-                )
-                continue
-            synthesis_engines[core_version] = SynthesisEngine(core=core)
-        except Exception:
-            if not enable_mock:
-                raise
-            traceback.print_exc()
-            print(
-                "Notice: mock-library will be used. Try re-run with valid --voicevox_dir",
-                file=sys.stderr,
-            )
-            from ..dev.core import metas as mock_metas
-            from ..dev.core import supported_devices as mock_supported_devices
-            from ..dev.synthesis_engine import MockSynthesisEngine
 
-            if "0.0.0" not in synthesis_engines:
-                synthesis_engines["0.0.0"] = MockSynthesisEngine(
-                    speakers=mock_metas(), supported_devices=mock_supported_devices()
-                )
+    synthesis_engines = {}
+
+    if not enable_mock:
+
+        def load_core_library(core_dir: Path, suppress_error: bool = False):
+            """
+            指定されたディレクトリにあるコアを読み込む。
+            ユーザーディレクトリの場合は存在しないこともあるので、エラーを抑制すると良い。
+            """
+            try:
+                core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
+                metas = json.loads(core.metas())
+                core_version = metas[0]["version"]
+                if core_version in synthesis_engines:
+                    print(
+                        "Warning: Core loading is skipped because of version duplication.",
+                        file=sys.stderr,
+                    )
+                else:
+                    synthesis_engines[core_version] = SynthesisEngine(core=core)
+            except Exception:
+                if not suppress_error:
+                    raise
+
+        for core_dir in voicelib_dirs:
+            load_core_library(core_dir)
+
+        # ユーザーディレクトリにあるコアを読み込む
+        user_voicelib_dirs = []
+        core_libraries_dir = get_save_dir() / "core_libraries"
+        core_libraries_dir.mkdir(exist_ok=True)
+        user_voicelib_dirs.append(core_libraries_dir)
+        for path in core_libraries_dir.glob("*"):
+            if not path.is_dir():
+                continue
+            user_voicelib_dirs.append(path)
+
+        for core_dir in user_voicelib_dirs:
+            load_core_library(core_dir, suppress_error=True)
+
+    else:
+        # モック追加
+        from ..dev.core import metas as mock_metas
+        from ..dev.core import supported_devices as mock_supported_devices
+        from ..dev.synthesis_engine import MockSynthesisEngine
+
+        if "0.0.0" not in synthesis_engines:
+            synthesis_engines["0.0.0"] = MockSynthesisEngine(
+                speakers=mock_metas(), supported_devices=mock_supported_devices()
+            )
 
     return synthesis_engines
