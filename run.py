@@ -57,7 +57,9 @@ from voicevox_engine.user_dict import (
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
+    copy_model_and_info,
     engine_root,
+    user_dir,
 )
 
 
@@ -528,24 +530,24 @@ def generate_app(
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
-            policy = (root_dir / f"speaker_info/{speaker_uuid}/policy.md").read_text(
+            policy = (user_dir / f"speaker_info/{speaker_uuid}/policy.md").read_text(
                 "utf-8"
             )
             portrait = b64encode_str(
-                (root_dir / f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
+                (user_dir / f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
             )
             style_infos = []
             for style in speaker["styles"]:
                 id = style["id"]
                 icon = b64encode_str(
                     (
-                        root_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
+                        user_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
                     ).read_bytes()
                 )
                 voice_samples = [
                     b64encode_str(
                         (
-                            root_dir
+                            user_dir
                             / "speaker_info/{}/voice_samples/{}_{}.wav".format(
                                 speaker_uuid, id, str(j + 1).zfill(3)
                             )
@@ -772,6 +774,9 @@ if __name__ == "__main__":
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
 
+    root_dir = args.sharevox_dir if args.sharevox_dir is not None else engine_root()
+    copy_model_and_info(root_dir)
+
     synthesis_engines = make_synthesis_engines(
         use_gpu=args.use_gpu,
         voicelib_dirs=args.voicelib_dir,
@@ -788,7 +793,6 @@ if __name__ == "__main__":
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
-    root_dir = args.sharevox_dir if args.sharevox_dir is not None else engine_root()
     uvicorn.run(
         generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
         host=args.host,

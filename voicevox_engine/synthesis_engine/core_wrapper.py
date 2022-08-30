@@ -9,6 +9,8 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
+from..utility.copy_model_and_info import model_dir
+
 
 class OldCoreError(Exception):
     """古いコアが使用されている場合に発生するエラー"""
@@ -411,7 +413,7 @@ class CoreWrapper:
             # else:
             #     if not self.core.initialize(".", use_gpu):
             #         raise Exception(self.core.last_error_message().decode("utf-8"))
-            if not self.core.initialize(".", use_gpu, cpu_num_threads, load_all_models):
+            if not self.core.initialize(str(model_dir).encode("utf-8"), use_gpu, cpu_num_threads, load_all_models):
                 raise Exception(self.core.last_error_message().decode("utf-8"))
         finally:
             os.chdir(cwd)
