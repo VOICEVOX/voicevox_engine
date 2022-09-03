@@ -126,7 +126,7 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: str, core_version: Optional[str] = None):
+    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -198,7 +198,7 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        speaker: str,
+        speaker: int,
         is_kana: bool = False,
         core_version: Optional[str] = None,
     ):
@@ -236,7 +236,7 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: List[AccentPhrase],
-        speaker: str,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -250,7 +250,7 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: List[AccentPhrase],
-        speaker: str,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -266,7 +266,7 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: List[AccentPhrase],
-        speaker: str,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -289,7 +289,7 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        speaker: str,
+        speaker: int,
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
@@ -325,7 +325,7 @@ def generate_app(
     )
     def cancellable_synthesis(
         query: AudioQuery,
-        speaker: str,
+        speaker: int,
         request: Request,
         core_version: Optional[str] = None,
     ):
@@ -362,7 +362,7 @@ def generate_app(
     )
     def multi_synthesis(
         queries: List[AudioQuery],
-        speaker: str,
+        speaker: int,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -408,8 +408,8 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_speaker: str,
-        target_speaker: str,
+        base_speaker: int,
+        target_speaker: int,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: Optional[str] = None,
     ):
@@ -568,17 +568,17 @@ def generate_app(
         return ret_data
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(speaker: str, core_version: Optional[str] = None):
+    def initialize_speaker(speaker: int, core_version: Optional[str] = None):
         """
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        engine.initialize_speaker_synthesis(speaker)
+        print(engine.initialize_speaker_synthesis(speaker))
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(speaker: str, core_version: Optional[str] = None):
+    def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
         """
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """

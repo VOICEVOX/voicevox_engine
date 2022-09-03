@@ -90,7 +90,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def supported_devices(self) -> Optional[str]:
         raise NotImplementedError
 
-    def initialize_speaker_synthesis(self, speaker_id: str):
+    def initialize_speaker_synthesis(self, speaker_id: int):
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
         未実装の場合は何もしない
@@ -101,7 +101,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         """
         pass
 
-    def is_initialized_speaker_synthesis(self, speaker_id: str) -> bool:
+    def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
         """
         指定した話者での音声合成が初期化されているかどうかを返す
         Parameters
@@ -117,7 +117,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     @abstractmethod
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], speaker_id: str
+        self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> Tuple[List[AccentPhrase], numpy.ndarray]:
         """
         accent_phrasesの母音・子音の長さを設定する
@@ -125,7 +125,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : str
+        speaker_id : int
             話者ID
         Returns
         -------
@@ -136,7 +136,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     @abstractmethod
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], speaker_id: str, pitches: Optional[numpy.ndarray]
+        self, accent_phrases: List[AccentPhrase], speaker_id: int, pitches: Optional[numpy.ndarray]
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -144,7 +144,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : str
+        speaker_id : int
             話者ID
         pitches : Optional[numpy.ndarray]
             ピッチを取得済みの場合、そのピッチを入力
@@ -158,7 +158,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def replace_mora_data(
         self,
         accent_phrases: List[AccentPhrase],
-        speaker_id: str,
+        speaker_id: int,
     ) -> List[AccentPhrase]:
         accent_phrases, pitches = self.replace_phoneme_length(
             accent_phrases=accent_phrases,
@@ -170,7 +170,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             pitches=pitches,
         )
 
-    def create_accent_phrases(self, text: str, speaker_id: str) -> List[AccentPhrase]:
+    def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:
             return []
 
@@ -212,7 +212,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def synthesis(
         self,
         query: AudioQuery,
-        speaker_id: str,
+        speaker_id: int,
         enable_interrogative_upspeak: bool = True,
     ) -> str:
         """
@@ -222,7 +222,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : str
+        speaker_id : int
             話者ID
         enable_interrogative_upspeak : bool
             疑問系のテキストの語尾を自動調整する機能を有効にするか
@@ -240,14 +240,14 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         return self._synthesis_impl(query, speaker_id)
 
     @abstractmethod
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: str):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : str
+        speaker_id : int
             話者ID
         Returns
         -------

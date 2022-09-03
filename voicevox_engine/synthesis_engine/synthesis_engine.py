@@ -209,20 +209,20 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def initialize_speaker_synthesis(self, speaker_id: str):
+    def initialize_speaker_synthesis(self, speaker_id: int):
         try:
             with self.mutex:
-                self.core.load_model(speaker_id)
+                return self.core.load_model(speaker_id)
         except OldCoreError:
             return  # コアが古い場合はどうしようもないので何もしない
 
-    def is_initialized_speaker_synthesis(self, speaker_id: str) -> bool:
+    def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
         try:
             return self.core.is_model_loaded(speaker_id)
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
-    def _lazy_init(self, speaker_id: str):
+    def _lazy_init(self, speaker_id: int):
         """
         initialize済みでなければinitializeする
         """
@@ -231,7 +231,7 @@ class SynthesisEngine(SynthesisEngineBase):
             self.initialize_speaker_synthesis(speaker_id)
 
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], speaker_id: str
+        self, accent_phrases: List[AccentPhrase], speaker_id: int
     ) -> Tuple[List[AccentPhrase], numpy.ndarray]:
         """
         accent_phrasesの母音・子音の長さを設定する
@@ -239,7 +239,7 @@ class SynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : str
+        speaker_id : int
             話者ID
         Returns
         -------
@@ -257,11 +257,12 @@ class SynthesisEngine(SynthesisEngineBase):
         pitches: numpy.ndarray
         durations: numpy.ndarray
         with self.mutex:
+            print(speaker_id)
             pitches, durations = self.core.variance_forward(
                 length=len(phoneme_id_list),
                 phonemes=phoneme_id_list,
                 accents=accent_id_list,
-                speaker_id=speaker_id,
+                speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
             )
 
         # variance_forwarderの結果をaccent_phrasesに反映する
@@ -279,7 +280,7 @@ class SynthesisEngine(SynthesisEngineBase):
         return accent_phrases, pitches
 
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], speaker_id: str, pitches: Optional[numpy.ndarray] = None
+        self, accent_phrases: List[AccentPhrase], speaker_id: int, pitches: Optional[numpy.ndarray] = None
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -287,7 +288,7 @@ class SynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : str
+        speaker_id : int
             話者ID
         pitches : Optional[numpy.ndarray]
             ピッチを取得済みの場合、そのピッチを入力
@@ -315,7 +316,7 @@ class SynthesisEngine(SynthesisEngineBase):
                     length=len(phoneme_id_list),
                     phonemes=phoneme_id_list,
                     accents=accent_id_list,
-                    speaker_id=speaker_id,
+                    speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
                 )
 
         # variance_forwarderの結果をaccent_phrasesに反映する
@@ -332,14 +333,14 @@ class SynthesisEngine(SynthesisEngineBase):
 
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: str):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : str
+        speaker_id : int
             話者ID
         Returns
         -------
@@ -398,7 +399,7 @@ class SynthesisEngine(SynthesisEngineBase):
                 phonemes=phoneme_id_list,
                 pitches=f0,
                 durations=durations,
-                speaker_id=speaker_id,
+                speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
             )
 
         # volume: ゲイン適用

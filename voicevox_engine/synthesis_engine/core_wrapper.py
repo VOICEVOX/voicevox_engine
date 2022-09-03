@@ -368,9 +368,9 @@ class CoreWrapper:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
-            self.core.load_model.argtypes = (c_char_p,)
+            self.core.load_model.argtypes = (c_long,)
             self.core.load_model.restype = c_bool
-            self.core.is_model_loaded.argtypes = (c_char_p,)
+            self.core.is_model_loaded.argtypes = (c_long,)
             self.core.is_model_loaded.restype = c_bool
         # else:
         #     model_type = check_core_type(core_dir)
@@ -388,7 +388,7 @@ class CoreWrapper:
             c_long,             # length
             POINTER(c_long),    # phonemes
             POINTER(c_long),    # accents
-            c_char_p,           # speaker_id
+            POINTER(c_long),    # speaker_id
             POINTER(c_float),   # pitch_output
             POINTER(c_float),   # duration_output
         )
@@ -397,7 +397,7 @@ class CoreWrapper:
             POINTER(c_long),    # phonemes
             POINTER(c_float),   # pitches
             POINTER(c_float),   # durations
-            c_char_p,           # speaker_id
+            POINTER(c_long),    # speaker_id
             POINTER(c_float),   # output
         )
 
@@ -426,7 +426,7 @@ class CoreWrapper:
         length: int,
         phonemes: np.ndarray,
         accents: np.ndarray,
-        speaker_id: str,
+        speaker_id: np.ndarray,
     ) -> Tuple[np.ndarray, np.ndarray]:
         pitches = np.zeros((length,), dtype=np.float32)
         durations = np.zeros((length,), dtype=np.float32)
@@ -434,7 +434,7 @@ class CoreWrapper:
             length,
             phonemes.ctypes.data_as(POINTER(c_long)),
             accents.ctypes.data_as(POINTER(c_long)),
-            speaker_id.encode("utf-8"),
+            speaker_id.ctypes.data_as(POINTER(c_long)),
             pitches.ctypes.data_as(POINTER(c_float)),
             durations.ctypes.data_as(POINTER(c_float)),
         )
@@ -448,7 +448,7 @@ class CoreWrapper:
         phonemes: np.ndarray,
         pitches: np.ndarray,
         durations: np.ndarray,
-        speaker_id: str,
+        speaker_id: np.ndarray,
     ) -> np.ndarray:
         wave_size = 0
         for i in range(length):
@@ -459,7 +459,7 @@ class CoreWrapper:
             phonemes.ctypes.data_as(POINTER(c_long)),
             pitches.ctypes.data_as(POINTER(c_float)),
             durations.ctypes.data_as(POINTER(c_float)),
-            speaker_id.encode("utf-8"),
+            speaker_id.ctypes.data_as(POINTER(c_long)),
             output.ctypes.data_as(POINTER(c_float)),
         )
         if not success:
@@ -477,12 +477,12 @@ class CoreWrapper:
             return
         raise OldCoreError
 
-    def load_model(self, speaker_id: str) -> bool:
+    def load_model(self, speaker_id: int) -> bool:
         if self.exist_load_model:
-            return self.core.load_model(speaker_id.encode("utf-8"))
+            return self.core.load_model(c_long(speaker_id))
         raise OldCoreError
 
-    def is_model_loaded(self, speaker_id: str) -> bool:
+    def is_model_loaded(self, speaker_id: int) -> bool:
         if self.exist_is_model_loaded:
-            return self.core.is_model_loaded(speaker_id.encode("utf-8"))
+            return self.core.is_model_loaded(c_long(speaker_id))
         raise OldCoreError
