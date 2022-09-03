@@ -52,9 +52,9 @@ def copy_model_and_info(root_dir: Path):
                 for icon_name in [os.path.basename(icon) for icon in icons]:
                     icon_path = speaker_dir / "icons" / icon_name
                     if not icon_path.is_file():
-                        shutil.copy2(root_speaker_info_dir / uuid / icon_name, icon_path)
-                voice_samples = glob.glob(str(root_speaker_info_dir / uuid / "voice_sample" / "*"))
+                        shutil.copy2(root_speaker_info_dir / uuid / "icons" / icon_name, icon_path)
+                voice_samples = glob.glob(str(root_speaker_info_dir / uuid / "voice_samples" / "*"))
                 for voice_sample_name in [os.path.basename(voice_sample) for voice_sample in voice_samples]:
-                    voice_sample_path = speaker_dir / "voice_sample" / voice_sample_name
+                    voice_sample_path = speaker_dir / "voice_samples" / voice_sample_name
                     if not voice_sample_path.is_file():
-                        shutil.copy2(root_speaker_info_dir / uuid / voice_sample_name, voice_sample_path)
+                        shutil.copy2(root_speaker_info_dir / uuid / "voice_samples" / voice_sample_name, voice_sample_path)
