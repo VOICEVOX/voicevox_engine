@@ -248,6 +248,10 @@ class SynthesisEngine(SynthesisEngineBase):
         """
         # モデルがロードされていない場合はロードする
         self._lazy_init(speaker_id)
+        # pre_processが空リストだとエラーを返すのでチェック
+        if len(accent_phrases) == 0:
+            return [], numpy.array([])
+
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_id_list, accent_id_list = pre_process(accent_phrases)
