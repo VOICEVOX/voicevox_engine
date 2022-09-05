@@ -748,7 +748,7 @@ def generate_app(
     def engine_manifest():
         return engine_manifest_loader.load_manifest()
 
-    @app.get("/sv_models")
+    @app.get("/sv_models", response_model=List[str], tags=["SVModel"])
     def get_sv_models():
         try:
             sv_models_list = get_all_sv_models()
@@ -757,11 +757,11 @@ def generate_app(
             # 読み出しができないのはサーバ側の問題なのでInternal Server Errorにする
             raise HTTPException(status_code=500, detail="SVモデルの取得に失敗しました。")
         return Response(
-            content=sv_models_list,
+            content=json.dumps(sv_models_list),
             media_type="application/json",
         )
 
-    @app.post("/sv_model")
+    @app.post("/sv_model", tags=["SVModel"])
     def post_sv_model(sv_model: SVModelInfo):
         """
         svモデルを登録します。
