@@ -1,0 +1,5 @@
+model
+speaker_info
+
+!testdata/model
+!testdata/speaker_info

@@ -283,3 +283,16 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
     support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+
+
+class SVModelInfo(BaseModel):
+    """
+    SVモデルの情報
+    """
+
+    uuid: str = Field(title="モデル固有のUUID")
+    variance_model: str = Field(title="variance_model.onnxをbase64エンコードした文字列")
+    embedder_model: str = Field("embedder_model.onnxをbase64エンコードした文字列")
+    decoder_model: str = Field("decoder_model.onnxをbase64エンコードした文字列")
+    metas: List[Speaker] = Field("metas.jsonをlistにしたモデルのメタ情報")
+    speaker_infos: Dict[str, SpeakerInfo] = Field("keyをspeakerInfoのUUIDとした複数のspeaker情報")
