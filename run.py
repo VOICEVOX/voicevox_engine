@@ -574,7 +574,7 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        print(engine.initialize_speaker_synthesis(speaker))
+        engine.initialize_speaker_synthesis(speaker)
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
