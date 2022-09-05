@@ -14,6 +14,8 @@ from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root, get_save_dir
 
+import shutil
+
 root_dir = engine_root()
 save_dir = get_save_dir()
 
@@ -99,7 +101,7 @@ def update_dict(
         raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
     pyopenjtalk.unset_user_dict()
     try:
-        tmp_dict_path.replace(compiled_dict_path)
+        shutil.move(tmp_dict_path, compiled_dict_path)
     finally:
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
