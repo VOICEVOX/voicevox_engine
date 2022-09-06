@@ -1,4 +1,5 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -105,7 +106,7 @@ def update_dict(
         raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
     pyopenjtalk.unset_user_dict()
     try:
-        tmp_dict_path.replace(compiled_dict_path)
+        shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
     finally:
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
