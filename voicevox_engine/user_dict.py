@@ -1,4 +1,5 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -13,8 +14,6 @@ from pydantic import conint
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root, get_save_dir
-
-import shutil
 
 root_dir = engine_root()
 save_dir = get_save_dir()
