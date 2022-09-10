@@ -94,6 +94,13 @@ jobs:
         shell: bash
         run: brew install gnu-sed
 
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      - name: Install patchelf
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
       # Download CUDA
       - name: Prepare CUDA DLL cache
         if: matrix.cuda_version != ''
@@ -451,6 +458,7 @@ jobs:
           set -eux
 
           # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
           ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run.dist/
 
           # CUDA
