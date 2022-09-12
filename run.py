@@ -18,10 +18,11 @@ from typing import Dict, List, Optional
 import requests
 import soundfile
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from pydantic import ValidationError, conint
+from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -291,7 +292,6 @@ def generate_app(
     def synthesis(
         query: AudioQuery,
         speaker: int,
-        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
@@ -310,9 +310,11 @@ def generate_app(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
-        background_tasks.add_task(delete_file, f.name)
-
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/cancellable_synthesis",
@@ -331,7 +333,6 @@ def generate_app(
         query: AudioQuery,
         speaker: int,
         request: Request,
-        background_tasks: BackgroundTasks,
         core_version: Optional[str] = None,
     ):
         if not args.enable_cancellable_synthesis:
@@ -348,9 +349,11 @@ def generate_app(
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-        background_tasks.add_task(delete_file, f_name)
-
-        return FileResponse(f_name, media_type="audio/wav")
+        return FileResponse(
+            f_name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f_name),
+        )
 
     @app.post(
         "/multi_synthesis",
@@ -370,7 +373,6 @@ def generate_app(
     def multi_synthesis(
         queries: List[AudioQuery],
         speaker: int,
-        background_tasks: BackgroundTasks,
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
@@ -399,9 +401,11 @@ def generate_app(
                         wav_file.seek(0)
                         zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
-        background_tasks.add_task(delete_file, f.name)
-
-        return FileResponse(f.name, media_type="application/zip")
+        return FileResponse(
+            f.name,
+            media_type="application/zip",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/synthesis_morphing",
@@ -420,7 +424,6 @@ def generate_app(
         query: AudioQuery,
         base_speaker: int,
         target_speaker: int,
-        background_tasks: BackgroundTasks,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: Optional[str] = None,
     ):
@@ -452,9 +455,11 @@ def generate_app(
                 format="WAV",
             )
 
-        background_tasks.add_task(delete_file, f.name)
-
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/connect_waves",
@@ -469,10 +474,7 @@ def generate_app(
         tags=["その他"],
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
-    def connect_waves(
-        waves: List[str],
-        background_tasks: BackgroundTasks,
-    ):
+    def connect_waves(waves: List[str]):
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
@@ -489,9 +491,11 @@ def generate_app(
                 format="WAV",
             )
 
-        background_tasks.add_task(delete_file, f.name)
-
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.get("/presets", response_model=List[Preset], tags=["その他"])
     def get_presets():
