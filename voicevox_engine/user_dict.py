@@ -1,6 +1,8 @@
 import json
+import os
 import shutil
 import sys
+import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -96,6 +98,10 @@ def update_dict(
         str(Path(f.name).resolve(strict=True)),
         str(tmp_dict_path),
     )
+    try:
+        os.remove(f.name)
+    except OSError:
+        traceback.print_exc()
     if not tmp_dict_path.is_file():
         raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
     pyopenjtalk.unset_user_dict()
