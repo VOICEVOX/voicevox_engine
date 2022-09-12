@@ -1,4 +1,6 @@
+import os
 import sys
+import traceback
 from pathlib import Path
 
 from appdirs import user_data_dir
@@ -24,3 +26,10 @@ def get_save_dir():
     # FIXME: Windowsは`voicevox-engine/voicevox-engine`ディレクトリに保存されているので
     # `VOICEVOX/voicevox-engine`に変更する
     return Path(user_data_dir("voicevox-engine"))
+
+
+def delete_file(file_path: str) -> None:
+    try:
+        os.remove(file_path)
+    except OSError:
+        traceback.print_exc()

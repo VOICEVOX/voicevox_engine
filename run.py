@@ -59,6 +59,7 @@ from voicevox_engine.user_dict import (
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
+    delete_file,
     engine_root,
 )
 
@@ -119,12 +120,6 @@ def generate_app(
         if core_version in synthesis_engines:
             return synthesis_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def delete_file(file_path: str) -> None:
-        try:
-            os.remove(file_path)
-        except OSError:
-            traceback.print_exc()
 
     @app.post(
         "/audio_query",
