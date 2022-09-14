@@ -22,6 +22,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
 from pydantic import ValidationError, conint
+from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -59,6 +60,7 @@ from voicevox_engine.user_dict import (
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
+    delete_file,
     engine_root,
 )
 
@@ -308,7 +310,11 @@ def generate_app(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/cancellable_synthesis",
@@ -343,7 +349,11 @@ def generate_app(
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-        return FileResponse(f_name, media_type="audio/wav")
+        return FileResponse(
+            f_name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f_name),
+        )
 
     @app.post(
         "/multi_synthesis",
@@ -391,7 +401,11 @@ def generate_app(
                         wav_file.seek(0)
                         zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
-        return FileResponse(f.name, media_type="application/zip")
+        return FileResponse(
+            f.name,
+            media_type="application/zip",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/synthesis_morphing",
@@ -441,7 +455,11 @@ def generate_app(
                 format="WAV",
             )
 
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/connect_waves",
@@ -473,7 +491,11 @@ def generate_app(
                 format="WAV",
             )
 
-            return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.get("/presets", response_model=List[Preset], tags=["その他"])
     def get_presets():
