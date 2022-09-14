@@ -197,7 +197,9 @@ CORE_INFOS = [
 ]
 
 
-# version 0.12 以降のコアの名前
+# version 0.12 以降のコアの名前の辞書
+# - version 0.12, 0.13 のコアの名前: core
+# - version 0.14 からのコアの名前: voicevox_core
 CORENAME_DICT = {
     "Windows": ("voicevox_core.dll", "core.dll"),
     "Linux": ("libvoicevox_core.so", "libcore.so"),
