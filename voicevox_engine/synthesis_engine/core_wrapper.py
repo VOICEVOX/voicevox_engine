@@ -197,17 +197,21 @@ CORE_INFOS = [
 ]
 
 
-# version 0.12 以降のコアの名前
+# version 0.12 以降のコアの名前の辞書
+# - version 0.12, 0.13 のコアの名前: core
+# - version 0.14 からのコアの名前: voicevox_core
 CORENAME_DICT = {
-    "Windows": "core.dll",
-    "Linux": "libcore.so",
-    "Darwin": "libcore.dylib",
+    "Windows": ("voicevox_core.dll", "core.dll"),
+    "Linux": ("libvoicevox_core.so", "libcore.so"),
+    "Darwin": ("libvoicevox_core.dylib", "libcore.dylib"),
 }
 
 
-def is_version_0_12_core_or_later(core_dir: Path) -> bool:
+def find_version_0_12_core_or_later(core_dir: Path) -> Optional[str]:
     """
-    core_dir で指定したディレクトリにあるコアライブラリが Version 0.12 以降であるかどうかを返す。
+    core_dir で指定したディレクトリにあるコアライブラリが Version 0.12 以降である場合、
+    見つかった共有ライブラリの名前を返す。
+
     Version 0.12 以降と判定する条件は、
 
     - core_dir に metas.json が存在しない
@@ -216,10 +220,14 @@ def is_version_0_12_core_or_later(core_dir: Path) -> bool:
     の両方が真のときである。
     cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
     """
-    return (
-        not (core_dir / "metas.json").exists()
-        and (core_dir / CORENAME_DICT[platform.system()]).is_file()
-    )
+    if (core_dir / "metas.json").exists():
+        return None
+
+    for core_name in CORENAME_DICT[platform.system()]:
+        if (core_dir / core_name).is_file():
+            return core_name
+
+    return None
 
 
 def get_arch_name() -> Optional[str]:
@@ -294,13 +302,12 @@ def check_core_type(core_dir: Path) -> Optional[str]:
 
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
-    if is_version_0_12_core_or_later(core_dir):
+    core_name = find_version_0_12_core_or_later(core_dir)
+    if core_name:
         try:
             # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
             #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
-            return CDLL(
-                str((core_dir / CORENAME_DICT[platform.system()]).resolve(strict=True))
-            )
+            return CDLL(str((core_dir / core_name).resolve(strict=True)))
         except OSError as err:
             raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
 
@@ -361,7 +368,10 @@ class CoreWrapper:
         self.exist_load_model = False
         self.exist_is_model_loaded = False
 
-        if is_version_0_12_core_or_later(core_dir):
+        is_version_0_12_core_or_later = (
+            find_version_0_12_core_or_later(core_dir) is not None
+        )
+        if is_version_0_12_core_or_later:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
@@ -409,7 +419,7 @@ class CoreWrapper:
         cwd = os.getcwd()
         os.chdir(core_dir)
         try:
-            if is_version_0_12_core_or_later(core_dir):
+            if is_version_0_12_core_or_later:
                 if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
                     raise Exception(self.core.last_error_message().decode("utf-8"))
             elif exist_cpu_num_threads:
