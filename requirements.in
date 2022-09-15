@@ -9,4 +9,4 @@ PyYAML
 pyworld
 appdirs
 requests
-git+https://github.com/VOICEVOX/pyopenjtalk@50b0296a9e1b666e5a09a41ec9e9284a2a9b608f#egg=pyopenjtalk
+git+https://github.com/VOICEVOX/pyopenjtalk@f4ade29ef9a4f43d8605103cb5bacc29e0b2ccae#egg=pyopenjtalk
