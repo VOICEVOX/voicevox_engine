@@ -49,6 +49,10 @@ def user_dict_startup_processing(
         str(compiled_dict_path.resolve()),
     )
     pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
+    if user_dict_path.is_file():
+        update_dict(
+            default_dict_path=default_dict_path, compiled_dict_path=compiled_dict_path
+        )
 
 
 def update_dict(
