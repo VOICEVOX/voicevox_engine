@@ -7,16 +7,12 @@ from appdirs import user_data_dir
 
 
 def engine_root() -> Path:
-    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
-    if "__compiled__" in globals():
-        root_dir = Path(sys.argv[0]).parent
-
-    # pyinstallerでビルドをした際はsys.frozenが設定される
-    elif getattr(sys, "frozen", False):
-        root_dir = Path(sys.argv[0]).parent
-
-    else:
+    if is_development():
         root_dir = Path(__file__).parents[2]
+
+    # Nuitka/Pyinstallerでビルドされている場合
+    else:
+        root_dir = Path(sys.argv[0]).parent
 
     return root_dir.resolve(strict=True)
 
