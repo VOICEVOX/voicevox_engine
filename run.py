@@ -5,12 +5,12 @@ import base64
 import json
 import multiprocessing
 import os
+import sys
 import traceback
-
-# import sys
 import zipfile
 from distutils.version import LooseVersion
 from functools import lru_cache
+from io import TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
@@ -807,6 +807,31 @@ def generate_app(
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
+
+    # 主にWindowsのエディタのログが文字化けする問題への対策
+    # stdout/stderrが非コンソールデバイスに接続されている場合はUTF-8で出力する
+    # 念のためWindows以外ではこの操作を行わないようにする
+    # FIXME: PowerShell環境でパイプやリダイレクトをすると文字化けする CMDでもUTF-8のログがパイプ先に送られることになる
+    if sys.platform == "win32":
+        # 念のためNoneチェックする https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
+        # キャラクタデバイスに接続されている場合はそのままにする
+        if sys.stdout is not None and not sys.stdout.isatty():
+            # 念のため情報を出力
+            print(
+                f"Change the encoding of stdout from {sys.stdout.encoding} to UTF-8",
+                file=sys.stderr,
+            )
+            # flush()しないとバッファに出力内容が残っている可能性がある
+            sys.stdout.flush()
+            sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+        if sys.stderr is not None and not sys.stderr.isatty():
+            print(
+                f"Change the encoding of stderr from {sys.stderr.encoding} to UTF-8",
+                file=sys.stderr,
+            )
+            sys.stderr.flush()
+            sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
         "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
