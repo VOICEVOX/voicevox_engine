@@ -69,6 +69,17 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
+def set_output_log_utf8() -> None:
+    # 念のためNoneチェックする https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
+    if sys.stdout is not None:
+        # flush()しないとバッファに出力内容が残っている可能性がある
+        sys.stdout.flush()
+        sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    if sys.stderr is not None:
+        sys.stderr.flush()
+        sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+
+
 def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
@@ -808,29 +819,16 @@ def generate_app(
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
-    # 主にWindowsのエディタのログが文字化けする問題への対策
-    # stdout/stderrが非コンソールデバイスに接続されている場合はUTF-8で出力する
-    # 念のためWindows以外ではこの操作を行わないようにする
-    # FIXME: PowerShell環境でパイプやリダイレクトをすると文字化けする CMDでもUTF-8のログがパイプ先に送られることになる
-    if sys.platform == "win32":
-        # 念のためNoneチェックする https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-        # キャラクタデバイスに接続されている場合はそのままにする
-        if sys.stdout is not None and not sys.stdout.isatty():
-            # 念のため情報を出力
-            print(
-                f"Change the encoding of stdout from {sys.stdout.encoding} to UTF-8",
-                file=sys.stderr,
-            )
-            # flush()しないとバッファに出力内容が残っている可能性がある
-            sys.stdout.flush()
-            sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-        if sys.stderr is not None and not sys.stderr.isatty():
-            print(
-                f"Change the encoding of stderr from {sys.stderr.encoding} to UTF-8",
-                file=sys.stderr,
-            )
-            sys.stderr.flush()
-            sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+    # stdout/stderrの文字コード指定
+    output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
+    if output_log_utf8 == "1":
+        set_output_log_utf8()
+    elif not (output_log_utf8 == "" or output_log_utf8 == "0"):
+        # 想定外の環境変数が設定されていた場合とりあえず警告だけしておく
+        print(
+            "WARNING:  invalid VV_OUTPUT_LOG_UTF8 environment variable value",
+            file=sys.stderr,
+        )
 
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
@@ -883,7 +881,17 @@ if __name__ == "__main__":
         "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
     )
 
+    parser.add_argument(
+        "--output_log_utf8",
+        action="store_true",
+        help="指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
+        "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
+    )
+
     args = parser.parse_args()
+
+    if args.output_log_utf8:
+        set_output_log_utf8()
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
 
