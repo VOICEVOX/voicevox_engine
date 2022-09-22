@@ -70,14 +70,24 @@ def b64encode_str(s):
 
 
 def set_output_log_utf8() -> None:
+    """
+    stdout/stderrのエンコーディングをUTF-8に切り替える関数
+    """
     # 念のためNoneチェックする https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
     if sys.stdout is not None:
-        # flush()しないとバッファに出力内容が残っている可能性がある
-        sys.stdout.flush()
-        sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+        # stdoutはTextIOBaseのサブクラスで必ずしもreconfigure()が実装されているとは限らない?
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except AttributeError:
+            # flush()しないとバッファに出力内容が残っている可能性がある
+            sys.stdout.flush()
+            sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     if sys.stderr is not None:
-        sys.stderr.flush()
-        sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+        try:
+            sys.stderr.reconfigure(encoding="utf-8")
+        except AttributeError:
+            sys.stderr.flush()
+            sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 
 def generate_app(
@@ -822,6 +832,7 @@ if __name__ == "__main__":
     # stdout/stderrの文字コード指定
     output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
     if output_log_utf8 == "1":
+        # VV_OUTPUT_LOG_UTF8 の値が1ならUTF-8に切り替える
         set_output_log_utf8()
     elif not (output_log_utf8 == "" or output_log_utf8 == "0"):
         # 想定外の環境変数が設定されていた場合とりあえず警告だけしておく
