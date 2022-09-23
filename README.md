@@ -331,6 +331,12 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 python run.py --enable_mock
 ```
 
+```bash
+# ログをUTF8に変更
+python run.py --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
+```
+
 ### CPU スレッド数を指定する
 
 CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
@@ -346,25 +352,6 @@ VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッ
 - 環境変数で指定する
   ```bash
   export VV_CPU_NUM_THREADS=4
-  python run.py --voicevox_dir=$VOICEVOX_DIR
-  ```
-
-### ログのエンコーディングをUTF-8に指定する
-
-未指定の場合は環境によって自動選択されます。  
-自動選択が原因で文字化けが発生する場合はUTF-8に固定することで対応がしやすくなります。
-
-- 実行時引数で指定する
-
-  ```bash
-  python run.py --voicevox_dir=$VOICEVOX_DIR --output_log_utf8
-  ```
-
-- 環境変数で指定する
-
-  ```bash
-  # 1の場合はUTF-8、0または空文字で自動選択になります。
-  export VV_OUTPUT_LOG_UTF8=1
   python run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 

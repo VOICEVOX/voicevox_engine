@@ -73,13 +73,13 @@ def set_output_log_utf8() -> None:
     """
     stdout/stderrのエンコーディングをUTF-8に切り替える関数
     """
-    # 念のためNoneチェックする https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
+    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
     if sys.stdout is not None:
-        # stdoutはTextIOBaseのサブクラスで必ずしもreconfigure()が実装されているとは限らない?
+        # 必ずしもreconfigure()が実装されているとは限らない
         try:
             sys.stdout.reconfigure(encoding="utf-8")
         except AttributeError:
-            # flush()しないとバッファに出力内容が残っている可能性がある
+            # バッファを全て出力する
             sys.stdout.flush()
             sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     if sys.stderr is not None:
@@ -829,13 +829,10 @@ def generate_app(
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
-    # stdout/stderrの文字コード指定
     output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
     if output_log_utf8 == "1":
-        # VV_OUTPUT_LOG_UTF8 の値が1ならUTF-8に切り替える
         set_output_log_utf8()
     elif not (output_log_utf8 == "" or output_log_utf8 == "0"):
-        # 想定外の環境変数が設定されていた場合とりあえず警告だけしておく
         print(
             "WARNING:  invalid VV_OUTPUT_LOG_UTF8 environment variable value",
             file=sys.stderr,
@@ -889,7 +886,7 @@ if __name__ == "__main__":
         type=int,
         default=os.getenv("VV_CPU_NUM_THREADS") or None,
         help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
-        "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
+        "VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。",
     )
 
     parser.add_argument(
