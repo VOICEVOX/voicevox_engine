@@ -5,12 +5,12 @@ import base64
 import json
 import multiprocessing
 import os
+import sys
 import traceback
-
-# import sys
 import zipfile
 from distutils.version import LooseVersion
 from functools import lru_cache
+from io import TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
@@ -67,6 +67,27 @@ from voicevox_engine.utility import (
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
+
+
+def set_output_log_utf8() -> None:
+    """
+    stdout/stderrのエンコーディングをUTF-8に切り替える関数
+    """
+    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
+    if sys.stdout is not None:
+        # 必ずしもreconfigure()が実装されているとは限らない
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except AttributeError:
+            # バッファを全て出力する
+            sys.stdout.flush()
+            sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    if sys.stderr is not None:
+        try:
+            sys.stderr.reconfigure(encoding="utf-8")
+        except AttributeError:
+            sys.stderr.flush()
+            sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 
 def generate_app(
@@ -807,6 +828,16 @@ def generate_app(
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
+
+    output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
+    if output_log_utf8 == "1":
+        set_output_log_utf8()
+    elif not (output_log_utf8 == "" or output_log_utf8 == "0"):
+        print(
+            "WARNING:  invalid VV_OUTPUT_LOG_UTF8 environment variable value",
+            file=sys.stderr,
+        )
+
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
         "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
@@ -855,10 +886,20 @@ if __name__ == "__main__":
         type=int,
         default=os.getenv("VV_CPU_NUM_THREADS") or None,
         help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
-        "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
+        "VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。",
+    )
+
+    parser.add_argument(
+        "--output_log_utf8",
+        action="store_true",
+        help="指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
+        "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
     )
 
     args = parser.parse_args()
+
+    if args.output_log_utf8:
+        set_output_log_utf8()
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
 

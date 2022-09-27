@@ -331,6 +331,12 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 python run.py --enable_mock
 ```
 
+```bash
+# ログをUTF8に変更
+python run.py --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
+```
+
 ### CPU スレッド数を指定する
 
 CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
