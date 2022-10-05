@@ -40,24 +40,6 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
-def user_dict_startup_processing(
-    default_dict_path: Path = default_dict_path,
-    user_dict_path: Path = user_dict_path,
-    compiled_dict_path: Path = compiled_dict_path,
-):
-    pyopenjtalk.create_user_dict(
-        str(default_dict_path.resolve(strict=True)),
-        str(compiled_dict_path.resolve()),
-    )
-    pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
-    if user_dict_path.is_file():
-        update_dict(
-            default_dict_path=default_dict_path,
-            user_dict_path=user_dict_path,
-            compiled_dict_path=compiled_dict_path,
-        )
-
-
 def update_dict(
     default_dict_path: Path = default_dict_path,
     user_dict_path: Path = user_dict_path,

@@ -55,7 +55,7 @@ from voicevox_engine.user_dict import (
     import_user_dict,
     read_dict,
     rewrite_word,
-    user_dict_startup_processing,
+    update_dict,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
@@ -134,7 +134,7 @@ def generate_app(
 
     @app.on_event("startup")
     def apply_user_dict():
-        user_dict_startup_processing()
+        update_dict()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
