@@ -6,7 +6,7 @@ from typing import Dict
 from unittest import TestCase
 
 from fastapi import HTTPException
-from pyopenjtalk import unset_user_dict
+from pyopenjtalk import g2p, unset_user_dict
 
 from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
@@ -17,6 +17,7 @@ from voicevox_engine.user_dict import (
     import_user_dict,
     read_dict,
     rewrite_word,
+    user_dict_startup_processing,
 )
 
 # jsonとして保存される正しい形式の辞書データ
@@ -315,3 +316,33 @@ class TestUserDict(TestCase):
             user_dict_path=user_dict_path,
             compiled_dict_path=compiled_dict_path,
         )
+
+    def test_startup_processing(self):
+        user_dict_path = self.tmp_dir_path / "test_startup_processing_dict.json"
+        compiled_dict_path = self.tmp_dir_path / "test_startup_processing_dict.dic"
+        user_dict_startup_processing(
+            user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
+        )
+        test_text = "テスト用の文字列"
+        success_pronunciation = "デフォルトノジショデハゼッタイニセイセイサレナイヨミ"
+
+        # 既に辞書に登録されていないか確認する
+        self.assertNotEqual(g2p(text=test_text, kana=True), success_pronunciation)
+
+        apply_word(
+            surface=test_text,
+            pronunciation=success_pronunciation,
+            accent_type=1,
+            priority=10,
+            user_dict_path=user_dict_path,
+            compiled_dict_path=compiled_dict_path,
+        )
+        self.assertEqual(g2p(text=test_text, kana=True), success_pronunciation)
+
+        # 疑似的にエンジンを再起動する
+        unset_user_dict()
+        user_dict_startup_processing(
+            user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
+        )
+
+        self.assertEqual(g2p(text=test_text, kana=True), success_pronunciation)
