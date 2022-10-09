@@ -17,7 +17,7 @@ from voicevox_engine.user_dict import (
     import_user_dict,
     read_dict,
     rewrite_word,
-    user_dict_startup_processing,
+    update_dict,
 )
 
 # jsonとして保存される正しい形式の辞書データ
@@ -317,10 +317,10 @@ class TestUserDict(TestCase):
             compiled_dict_path=compiled_dict_path,
         )
 
-    def test_startup_processing(self):
-        user_dict_path = self.tmp_dir_path / "test_startup_processing_dict.json"
-        compiled_dict_path = self.tmp_dir_path / "test_startup_processing_dict.dic"
-        user_dict_startup_processing(
+    def test_update_dict(self):
+        user_dict_path = self.tmp_dir_path / "test_update_dict.json"
+        compiled_dict_path = self.tmp_dir_path / "test_update_dict.dic"
+        update_dict(
             user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
         )
         test_text = "テスト用の文字列"
@@ -341,7 +341,7 @@ class TestUserDict(TestCase):
 
         # 疑似的にエンジンを再起動する
         unset_user_dict()
-        user_dict_startup_processing(
+        update_dict(
             user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
         )
 
