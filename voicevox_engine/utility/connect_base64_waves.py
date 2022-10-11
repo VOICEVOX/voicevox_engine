@@ -13,7 +13,7 @@ class ConnectBase64WavesException(Exception):
         self.message = message
 
 
-def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, float]]:
+def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
     if len(waves) == 0:
         raise ConnectBase64WavesException("wavファイルが含まれていません")
 
@@ -32,7 +32,7 @@ def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, float]]:
     return waves_nparray_sr
 
 
-def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, float]:
+def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, int]:
     waves_nparray_sr = decode_base64_waves(waves)
 
     max_sampling_rate = max(waves_nparray_sr, key=operator.itemgetter(1))[1]
