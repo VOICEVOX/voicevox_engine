@@ -1,9 +1,11 @@
 import base64
 import io
+import operator
 from typing import List, Tuple
 
 import numpy as np
 import soundfile
+from scipy.signal import resample
 
 
 class ConnectBase64WavesException(Exception):
@@ -11,36 +13,38 @@ class ConnectBase64WavesException(Exception):
         self.message = message
 
 
-def decode_base64_waves(waves: List[str]) -> Tuple[List[np.ndarray], float]:
+def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, float]]:
     if len(waves) == 0:
         raise ConnectBase64WavesException("wavファイルが含まれていません")
 
-    waves_nparray = []
-    for i in range(len(waves)):
+    waves_nparray_sr = []
+    for wave in waves:
         try:
-            wav_bin = base64.standard_b64decode(waves[i])
+            wav_bin = base64.standard_b64decode(wave)
         except ValueError:
             raise ConnectBase64WavesException("base64デコードに失敗しました")
         try:
-            _data, _sampling_rate = soundfile.read(io.BytesIO(wav_bin))
+            _data = soundfile.read(io.BytesIO(wav_bin))
         except Exception:
             raise ConnectBase64WavesException("wavファイルを読み込めませんでした")
-        if i == 0:
-            sampling_rate = _sampling_rate
-            channels = _data.ndim
-        else:
-            if sampling_rate != _sampling_rate:
-                raise ConnectBase64WavesException("ファイル間でサンプリングレートが異なります")
-            if channels != _data.ndim:
-                if channels == 1:
-                    _data = _data.T[0]
-                else:
-                    _data = np.array([_data, _data]).T
-        waves_nparray.append(_data)
+        waves_nparray_sr.append(_data)
 
-    return waves_nparray, sampling_rate
+    return waves_nparray_sr
 
 
 def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, float]:
-    waves_nparray_list, sampling_rate = decode_base64_waves(waves)
-    return np.concatenate(waves_nparray_list), sampling_rate
+    waves_nparray_sr = decode_base64_waves(waves)
+
+    max_sampling_rate = max(waves_nparray_sr, key=operator.itemgetter(1))[1]
+    max_channels = max(map(lambda x: x[0].ndim, waves_nparray_sr))
+    assert 0 < max_channels <= 2
+
+    waves_nparray_list = []
+    for nparray, sr in waves_nparray_sr:
+        if sr != max_sampling_rate:
+            nparray = resample(nparray, max_sampling_rate * len(nparray) // sr)
+        if nparray.ndim < max_channels:
+            nparray = np.array([nparray, nparray]).T
+        waves_nparray_list.append(nparray)
+
+    return np.concatenate(waves_nparray_list), max_sampling_rate
