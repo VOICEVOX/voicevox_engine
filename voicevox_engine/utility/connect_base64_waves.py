@@ -35,8 +35,8 @@ def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
 def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, int]:
     waves_nparray_sr = decode_base64_waves(waves)
 
-    max_sampling_rate = max(waves_nparray_sr, key=operator.itemgetter(1))[1]
-    max_channels = max(map(lambda x: x[0].ndim, waves_nparray_sr))
+    max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
+    max_channels = max([x.ndim for x, _ in waves_nparray_sr])
     assert 0 < max_channels <= 2
 
     waves_nparray_list = []
