@@ -1,6 +1,5 @@
 import base64
 import io
-import operator
 from typing import List, Tuple
 
 import numpy as np
@@ -14,6 +13,17 @@ class ConnectBase64WavesException(Exception):
 
 
 def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
+    """
+    base64エンコードされた複数のwavデータをデコードする
+    Parameters
+    ----------
+    waves: list[str]
+        base64エンコードされたwavデータのリスト
+    Returns
+    -------
+    waves_nparray_sr: List[Tuple[np.ndarray, int]]
+        (NumPy配列の音声波形データ, サンプリングレート) 形式のタプルのリスト
+    """
     if len(waves) == 0:
         raise ConnectBase64WavesException("wavファイルが含まれていません")
 
