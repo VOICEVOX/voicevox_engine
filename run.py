@@ -81,13 +81,17 @@ def set_output_log_utf8() -> None:
         except AttributeError:
             # バッファを全て出力する
             sys.stdout.flush()
-            sys.stdout = TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+            sys.stdout = TextIOWrapper(
+                sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
+            )
     if sys.stderr is not None:
         try:
             sys.stderr.reconfigure(encoding="utf-8")
         except AttributeError:
             sys.stderr.flush()
-            sys.stderr = TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
+            sys.stderr = TextIOWrapper(
+                sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
+            )
 
 
 def generate_app(

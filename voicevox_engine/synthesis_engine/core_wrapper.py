@@ -421,13 +421,25 @@ class CoreWrapper:
         try:
             if is_version_0_12_core_or_later:
                 if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
+                    raise Exception(
+                        self.core.last_error_message().decode(
+                            "utf-8", "backslashreplace"
+                        )
+                    )
             elif exist_cpu_num_threads:
                 if not self.core.initialize(".", use_gpu, cpu_num_threads):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
+                    raise Exception(
+                        self.core.last_error_message().decode(
+                            "utf-8", "backslashreplace"
+                        )
+                    )
             else:
                 if not self.core.initialize(".", use_gpu):
-                    raise Exception(self.core.last_error_message().decode("utf-8"))
+                    raise Exception(
+                        self.core.last_error_message().decode(
+                            "utf-8", "backslashreplace"
+                        )
+                    )
         finally:
             os.chdir(cwd)
 
@@ -448,7 +460,9 @@ class CoreWrapper:
             output.ctypes.data_as(POINTER(c_float)),
         )
         if not success:
-            raise Exception(self.core.last_error_message().decode("utf-8"))
+            raise Exception(
+                self.core.last_error_message().decode("utf-8", "backslashreplace")
+            )
         return output
 
     def yukarin_sa_forward(
@@ -481,7 +495,9 @@ class CoreWrapper:
             output.ctypes.data_as(POINTER(c_float)),
         )
         if not success:
-            raise Exception(self.core.last_error_message().decode("utf-8"))
+            raise Exception(
+                self.core.last_error_message().decode("utf-8", "backslashreplace")
+            )
         return output
 
     def decode_forward(
@@ -502,7 +518,9 @@ class CoreWrapper:
             output.ctypes.data_as(POINTER(c_float)),
         )
         if not success:
-            raise Exception(self.core.last_error_message().decode("utf-8"))
+            raise Exception(
+                self.core.last_error_message().decode("utf-8", "backslashreplace")
+            )
         return output
 
     def supported_devices(self) -> str:
