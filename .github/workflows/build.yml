@@ -827,13 +827,13 @@ jobs:
           mv archives.txt "${{ matrix.artifact_name }}.7z.txt"
 
       - name: Upload splitted archives to Release assets
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
           prerelease: ${{ github.event.inputs.prerelease }}
-          file_glob: true
-          file: ${{ matrix.artifact_name }}.7z.*
+          tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          files: |-
+            ${{ matrix.artifact_name }}.7z.*
+          target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''
