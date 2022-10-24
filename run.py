@@ -910,7 +910,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--force_cors_policy",
         action="store_true",
-        help="オリジン間リソース共有ポリシーを、app://.とhttp://localhost:portに限定します。"
+        help="オリジン間リソース共有ポリシーを、app://.に限定します。その他のオリジンは--allow_originオプションで追加できます。"
     )
 
     parser.add_argument(
