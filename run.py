@@ -113,7 +113,7 @@ def generate_app(
     #CORS設定
     allowed_origins=["*"]
     if(args.force_cors_policy):
-        allowed_origins=["app://.", "http://localhost:"+args.port]
+        allowed_origins=["app://.", "http://localhost:"+str(args.port)]
 
     app.add_middleware(
         CORSMiddleware,
