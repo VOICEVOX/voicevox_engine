@@ -113,7 +113,7 @@ def generate_app(
     #CORS設定
     allowed_origins=["*"]
     if(args.force_cors_policy):
-        allowed_origins=["app://.", "http://localhost:"+str(args.port)]
+        allowed_origins=["app://."]+args.allow_origin
 
     app.add_middleware(
         CORSMiddleware,
@@ -910,6 +910,13 @@ if __name__ == "__main__":
         action="store_true",
         help="オリジン間リソース共有ポリシーを、app://.とhttp://localhost:portに限定します。"
     )
+
+    parser.add_argument(
+        "-allow_origin",
+        nargs="*",
+        help="許可するオリジンを指定します。複数指定する場合は、その数だけ--allow_originを記述します。"
+    )
+
     args = parser.parse_args()
 
     if args.output_log_utf8:
