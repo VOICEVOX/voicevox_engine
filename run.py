@@ -905,6 +905,11 @@ if __name__ == "__main__":
         "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
     )
 
+    parser.add_argument(
+        "--force_cors_policy",
+        action="store_true",
+        help="オリジン間リソース共有ポリシーを、app://.とhttp://localhost:portに限定します。"
+    )
     args = parser.parse_args()
 
     if args.output_log_utf8:
