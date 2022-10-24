@@ -912,7 +912,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-allow_origin",
+        "--allow_origin",
         nargs="*",
         help="許可するオリジンを指定します。複数指定する場合は、その数だけ--allow_originを記述します。"
     )
