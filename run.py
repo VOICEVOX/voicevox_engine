@@ -110,12 +110,12 @@ def generate_app(
         version=__version__,
     )
 
-    #CORS設定
-    allowed_origins=["*"]
-    if(args.cors_policy_mode=="localapps"):
-        allowed_origins=["app://."]
-        if (args.allow_origin):
-            allowed_origins+=args.allow_origin
+    # CORS設定
+    allowed_origins = ["*"]
+    if args.cors_policy_mode == "localapps":
+        allowed_origins = ["app://."]
+        if args.allow_origin:
+            allowed_origins += args.allow_origin
 
     app.add_middleware(
         CORSMiddleware,
@@ -912,13 +912,11 @@ if __name__ == "__main__":
         "--cors_policy_mode",
         choices=["all", "localapps"],
         default="localapps",
-        help="allまたはlocalappsを指定。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
+        help="allまたはlocalappsを指定。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
     )
 
     parser.add_argument(
-        "--allow_origin",
-        nargs="*",
-        help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
+        "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
     args = parser.parse_args()
