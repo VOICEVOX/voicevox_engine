@@ -112,7 +112,7 @@ def generate_app(
 
     #CORS設定
     allowed_origins=["*"]
-    if(args.force_cors_policy):
+    if(args.cors_policy_mode=="localapps"):
         allowed_origins=["app://."]
         if (args.allow_origin):
             allowed_origins+=args.allow_origin
@@ -909,9 +909,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--force_cors_policy",
-        action="store_true",
-        help="オリジン間リソース共有ポリシーを、app://.に限定します。その他のオリジンはallow_originオプションで追加できます。"
+        "--cors_policy_mode",
+        choices=["all", "localapps"],
+        default="localapps",
+        help="allまたはlocalappsを指定。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
     )
 
     parser.add_argument(
