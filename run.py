@@ -918,7 +918,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--allow_origin",
         nargs="*",
-        help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って指定できます。"
+        help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
     args = parser.parse_args()
