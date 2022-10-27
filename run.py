@@ -912,7 +912,9 @@ if __name__ == "__main__":
         "--cors_policy_mode",
         choices=["all", "localapps"],
         default="localapps",
-        help="allまたはlocalappsを指定。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
+        help="allまたはlocalappsを指定。allはすべてを許可します。"
+        "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+        "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
     )
 
     parser.add_argument(
