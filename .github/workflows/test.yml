@@ -23,10 +23,10 @@ jobs:
           path: ~\AppData\Local\pip\Cache
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload coverage result
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: report
           path: report/
