@@ -116,6 +116,12 @@ def generate_app(
         allowed_origins = ["app://."]
         if args.allow_origin:
             allowed_origins += args.allow_origin
+            if "*" in args.allow_origin:
+                print(
+                    'WARNING: Deprecated use of argument "*" in allow_origin. '
+                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
+                    file=sys.stderr,
+                )
 
     app.add_middleware(
         CORSMiddleware,
