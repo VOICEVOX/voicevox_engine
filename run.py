@@ -9,6 +9,7 @@ import sys
 import traceback
 import zipfile
 from distutils.version import LooseVersion
+from enum import Enum
 from functools import lru_cache
 from io import TextIOWrapper
 from pathlib import Path
@@ -65,6 +66,11 @@ from voicevox_engine.utility import (
 )
 
 
+class CorsPolicyMode(str, Enum):
+    all = "all"
+    localapps = "localapps"
+
+
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
@@ -98,7 +104,10 @@ def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
     root_dir: Optional[Path] = None,
+    cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
+    allow_origin: Optional[List[str]] = None,
 ) -> FastAPI:
+    breakpoint()
     if root_dir is None:
         root_dir = engine_root()
 
@@ -112,11 +121,11 @@ def generate_app(
 
     # CORS設定
     allowed_origins = ["*"]
-    if args.cors_policy_mode == "localapps":
+    if cors_policy_mode == "localapps":
         allowed_origins = ["app://."]
-        if args.allow_origin:
-            allowed_origins += args.allow_origin
-            if "*" in args.allow_origin:
+        if allow_origin is not None:
+            allowed_origins += allow_origin
+            if "*" in allow_origin:
                 print(
                     'WARNING: Deprecated use of argument "*" in allow_origin. '
                     'Use option "--cors_policy_mod all" instead. See "--help" for more.',
@@ -916,8 +925,9 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--cors_policy_mode",
-        choices=["all", "localapps"],
-        default="localapps",
+        type=CorsPolicyMode,
+        choices=list(CorsPolicyMode),
+        default=CorsPolicyMode.localapps,
         help="allまたはlocalappsを指定。allはすべてを許可します。"
         "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
         "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
@@ -952,7 +962,13 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
     uvicorn.run(
-        generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
+        generate_app(
+            synthesis_engines,
+            latest_core_version,
+            root_dir=root_dir,
+            cors_policy_mode=args.cors_policy_mode,
+            allow_origin=args.allow_origin,
+        ),
         host=args.host,
         port=args.port,
     )
