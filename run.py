@@ -110,10 +110,24 @@ def generate_app(
         version=__version__,
     )
 
+    # CORS設定
+    allowed_origins = ["*"]
+    if args.cors_policy_mode == "localapps":
+        allowed_origins = ["app://."]
+        if args.allow_origin:
+            allowed_origins += args.allow_origin
+            if "*" in args.allow_origin:
+                print(
+                    'WARNING: Deprecated use of argument "*" in allow_origin. '
+                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
+                    file=sys.stderr,
+                )
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=allowed_origins,
         allow_credentials=True,
+        allow_origin_regex="^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$",
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -898,6 +912,19 @@ if __name__ == "__main__":
         action="store_true",
         help="指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
         "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
+    )
+
+    parser.add_argument(
+        "--cors_policy_mode",
+        choices=["all", "localapps"],
+        default="localapps",
+        help="allまたはlocalappsを指定。allはすべてを許可します。"
+        "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+        "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
+    )
+
+    parser.add_argument(
+        "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
     args = parser.parse_args()
