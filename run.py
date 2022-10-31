@@ -107,7 +107,6 @@ def generate_app(
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
 ) -> FastAPI:
-    breakpoint()
     if root_dir is None:
         root_dir = engine_root()
 
