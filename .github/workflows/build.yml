@@ -429,27 +429,24 @@ jobs:
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run.dist/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run.dist/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run.dist/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run.dist/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run.dist/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run.dist/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
           fi
 
           if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
             # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run.dist/
+            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
           fi
-
-          # pysoundfile
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" dist/run.dist/
 
       - name: Create symlink of CUDA dependencies
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
@@ -459,29 +456,29 @@ jobs:
 
           # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
           patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
-          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run.dist/
+          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
 
           # CUDA
-          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run.dist/
-          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run.dist/
-          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run.dist/
-          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run.dist/
-          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
 
           # cuDNN
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run.dist/
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run.dist/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
 
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
         run: |
-          install_name_tool -add_rpath @executable_path/. dist/run.dist/run
+          install_name_tool -add_rpath @executable_path/. dist/run/run
 
       - name: Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
-          bash build_util/codesign.bash "dist/run.dist/run.exe"
+          bash build_util/codesign.bash "dist/run/run.exe"
         env:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
@@ -499,7 +496,7 @@ jobs:
         #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/run.dist/
+          path: dist/run/
 
   upload-to-release:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''
