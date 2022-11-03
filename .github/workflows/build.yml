@@ -448,9 +448,6 @@ jobs:
             ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
           fi
 
-          # pysoundfile
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" dist/run/
-
       - name: Create symlink of CUDA dependencies
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
         shell: bash
