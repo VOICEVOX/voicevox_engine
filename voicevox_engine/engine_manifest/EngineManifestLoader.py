@@ -39,5 +39,9 @@ class EngineManifestLoader:
             ],
             downloadable_libraries_path=manifest["downloadable_libraries_path"],
             downloadable_libraries_url=manifest["downloadable_libraries_url"],
+            supported_features={
+                key: item["value"]
+                for key, item in manifest["supported_features"].items()
+            },
         )
         return manifest

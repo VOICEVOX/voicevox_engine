@@ -16,6 +16,10 @@
 コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
 全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
+## ダウンロード
+
+[こちら](https://github.com/VOICEVOX/voicevox_engine/releases/latest)から対応するエンジンをダウンロードしてください。
+
 ## API ドキュメント
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
@@ -263,6 +267,10 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
+## アップデート
+
+エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
+
 ## Docker イメージ
 
 ### CPU
@@ -287,6 +295,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 ## 環境構築
 
 `Python 3.8.10` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
 # 開発に必要なライブラリのインストール
@@ -321,6 +330,12 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 ```bash
 # モックでサーバー起動
 python run.py --enable_mock
+```
+
+```bash
+# ログをUTF8に変更
+python run.py --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
 ### CPU スレッド数を指定する
@@ -434,7 +449,8 @@ pip-tools を用いて依存ライブラリのバージョンを固定してい�
 `requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
 
 ```bash
-pip-compile requirements.in
+# pip>=22 の場合 pip-tools がエラーになります
+pip-compile requirements.in  # こちらを更新する場合は下２つも更新する必要があります。
 pip-compile requirements-dev.in
 pip-compile requirements-test.in
 ```

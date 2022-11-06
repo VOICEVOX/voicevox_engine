@@ -22,15 +22,15 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.13.0-preview.3"
-  VOICEVOX_CORE_VERSION: "0.12.5"
+  VOICEVOX_RESOURCE_VERSION: "0.13.2"
+  VOICEVOX_CORE_VERSION: "0.13.2"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
   build-all:
-    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' }} # コード署名用のenvironment
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
@@ -79,7 +79,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Show disk space (debug info)
         shell: bash
@@ -104,7 +104,7 @@ jobs:
       # Download CUDA
       - name: Prepare CUDA DLL cache
         if: matrix.cuda_version != ''
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cuda-dll-cache
         with:
           # update this key when ONNX Runtime CUDA dependency changed
@@ -161,7 +161,7 @@ jobs:
 
       - name: Prepare cuDNN cache
         if: matrix.cudnn_url != ''
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cudnn-dll-cache
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
@@ -253,7 +253,7 @@ jobs:
 
       - name: Cache DirectML
         if: endswith(matrix.artifact_name, '-directml')
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: directml-cache
         with:
           key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
@@ -278,7 +278,7 @@ jobs:
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
       - name: Prepare ONNX Runtime cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: onnxruntime-cache
         with:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
@@ -319,7 +319,7 @@ jobs:
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -327,7 +327,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -490,7 +490,7 @@ jobs:
       # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
       # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
         #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
@@ -512,7 +512,7 @@ jobs:
           - windows-directml
           - windows-nvidia
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
@@ -521,7 +521,7 @@ jobs:
               p7zip-full
 
       - name: Download and extract artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact_name }}/
@@ -536,13 +536,13 @@ jobs:
           mv archives.txt "${{ matrix.artifact_name }}.7z.txt"
 
       - name: Upload splitted archives to Release assets
-        uses: svenstaro/upload-release-action@v2
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.VOICEVOX_ENGINE_VERSION }}
-          prelease: ${{ github.event.inputs.prerelease }}
-          file_glob: true
-          file: ${{ matrix.artifact_name }}.7z.*
+          prerelease: ${{ github.event.inputs.prerelease }}
+          tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          files: |-
+            ${{ matrix.artifact_name }}.7z.*
+          target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''

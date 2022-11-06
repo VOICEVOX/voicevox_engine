@@ -1,5 +1,5 @@
 {
-    "manifest_version": "0.13.0",
+    "manifest_version": "0.13.1",
     "name": "DUMMY VOICEVOX ENGINE",
     "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06",
     "version": "999.999.999",
@@ -12,5 +12,42 @@
     "update_infos": "engine_manifest_assets/update_infos.json",
     "dependency_licenses": "engine_manifest_assets/dependency_licenses.json",
     "downloadable_libraries_path": null,
-    "downloadable_libraries_url": null
+    "downloadable_libraries_url": null,
+    "supported_features": {
+        "adjust_mora_pitch": {
+            "type": "bool",
+            "value": true,
+            "name": "モーラごとの音高の調整"
+        },
+        "adjust_phoneme_length": {
+            "type": "bool",
+            "value": true,
+            "name": "音素ごとの長さの調整"
+        },
+        "adjust_speed_scale": {
+            "type": "bool",
+            "value": true,
+            "name": "全体の話速の調整"
+        },
+        "adjust_pitch_scale": {
+            "type": "bool",
+            "value": true,
+            "name": "全体の音高の調整"
+        },
+        "adjust_intonation_scale": {
+            "type": "bool",
+            "value": true,
+            "name": "全体の抑揚の調整"
+        },
+        "adjust_volume_scale": {
+            "type": "bool",
+            "value": true,
+            "name": "全体の音量の調整"
+        },
+        "interrogative_upspeak": {
+            "type": "bool",
+            "value": true,
+            "name": "疑問文の自動調整"
+        }
+    }
 }
