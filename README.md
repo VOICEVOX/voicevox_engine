@@ -410,35 +410,18 @@ python make_docs.py
 
 ## ビルド
 
-Build Tools for Visual Studio 2019 が必要です。
+この方法でビルドしたものは、リリースで公開されているものとは異なります。
+また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
 
 ```bash
 python -m pip install -r requirements-dev.txt
 
 python generate_licenses.py > licenses.json
 
-python -m nuitka \
-    --standalone \
-    --plugin-enable=numpy \
-    --plugin-enable=multiprocessing \
-    --follow-import-to=numpy \
-    --follow-import-to=aiofiles \
-    --include-package=uvicorn \
-    --include-package=anyio \
-    --include-package-data=pyopenjtalk \
-    --include-package-data=scipy \
-    --include-data-file=licenses.json=./ \
-    --include-data-file=presets.yaml=./ \
-    --include-data-file=default.csv=./ \
-    --include-data-file=engine_manifest.json=./ \
-    --include-data-file=C:/path/to/cuda/*.dll=./ \
-    --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
-    --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
-    --include-data-dir=speaker_info=./speaker_info \
-    --msvc=14.2 \
-    --follow-imports \
-    --no-prefer-source-code \
-    run.py
+# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+LIBCORE_PATH="/path/to/libcore" \
+    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+    pyinstaller --noconfirm run.spec
 ```
 
 ## 依存関係
