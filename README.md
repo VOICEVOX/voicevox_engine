@@ -410,6 +410,9 @@ python make_docs.py
 
 ## ビルド
 
+この方法でビルドしたものは、リリースで公開されているものとは異なります。
+また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
+
 ```bash
 python -m pip install -r requirements-dev.txt
 
