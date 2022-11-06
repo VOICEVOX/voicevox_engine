@@ -140,7 +140,6 @@ build-linux-docker-build-ubuntu20.04:
 .PHONY: run-linux-docker-build-ubuntu20.04
 run-linux-docker-build-ubuntu20.04:
 	docker run --rm -it \
-		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
 		voicevox/voicevox_engine:build-cpu-ubuntu20.04-latest $(CMD)
 
@@ -158,7 +157,6 @@ build-linux-docker-build-nvidia-ubuntu20.04:
 .PHONY: run-linux-docker-build-nvidia-ubuntu20.04
 run-linux-docker-build-nvidia-ubuntu20.04:
 	docker run --rm -it \
-		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
 		voicevox/voicevox_engine:build-nvidia-ubuntu20.04-latest $(CMD)
 
@@ -177,7 +175,6 @@ build-linux-docker-build-ubuntu18.04:
 .PHONY: run-linux-docker-build-ubuntu18.04
 run-linux-docker-build-ubuntu18.04:
 	docker run --rm -it \
-		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
 		voicevox/voicevox_engine:build-cpu-ubuntu18.04-latest $(CMD)
 
@@ -195,6 +192,5 @@ build-linux-docker-build-nvidia-ubuntu18.04:
 .PHONY: run-linux-docker-build-nvidia-ubuntu18.04
 run-linux-docker-build-nvidia-ubuntu18.04:
 	docker run --rm -it \
-		-v "$(shell pwd)/cache/Nuitka:/home/user/.cache/Nuitka" \
 		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
 		voicevox/voicevox_engine:build-nvidia-ubuntu18.04-latest $(CMD)
