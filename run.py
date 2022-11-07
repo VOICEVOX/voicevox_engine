@@ -5,6 +5,7 @@ import base64
 import json
 import multiprocessing
 import os
+import re
 import sys
 import traceback
 import zipfile
@@ -22,6 +23,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
@@ -119,6 +121,8 @@ def generate_app(
     )
 
     # CORS設定
+    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+    compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
     if cors_policy_mode == "localapps":
         allowed_origins = ["app://."]
@@ -139,6 +143,26 @@ def generate_app(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def block_origin_middleware(request: Request, call_next):
+        isValidOrigin: bool = False
+        if request.headers["Origin"] is None:
+            isValidOrigin = True
+        elif "*" in allowed_origins:
+            isValidOrigin = True
+        elif request.headers["Origin"] in allowed_origins:
+            isValidOrigin = True
+        elif compiled_localhost_regex.fullmatch(request.headers["Origin"]):
+            isValidOrigin = True
+
+        if isValidOrigin:
+            response = await call_next(request)
+            return response
+        else:
+            return JSONResponse(
+                status_code=403, content={"detail": "Origin not allowed"}
+            )
 
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
