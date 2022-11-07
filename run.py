@@ -147,7 +147,7 @@ def generate_app(
     @app.middleware("http")
     async def block_origin_middleware(request: Request, call_next):
         isValidOrigin: bool = False
-        if request.headers["Origin"] is None:
+        if "Origin" not in request.headers:
             isValidOrigin = True
         elif "*" in allowed_origins:
             isValidOrigin = True
