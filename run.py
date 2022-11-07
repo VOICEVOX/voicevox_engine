@@ -157,8 +157,7 @@ def generate_app(
             isValidOrigin = True
 
         if isValidOrigin:
-            response = await call_next(request)
-            return response
+            return await call_next(request)
         else:
             return JSONResponse(
                 status_code=403, content={"detail": "Origin not allowed"}
