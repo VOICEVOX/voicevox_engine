@@ -29,347 +29,7 @@ env:
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
-  # Build Mac binary (x64 arch only)
-  build-mac:
-    strategy:
-      matrix:
-        include:
-          - os: macos-11
-            python_architecture: "x64"
-            voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
-            artifact_name: macos-x64
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install CCache
-        shell: bash
-        run: brew install ccache
-
-      # NOTE: The default sed of macOS is BSD sed.
-      #       There is a difference in specification between BSD sed and GNU sed,
-      #       so you need to install GNU sed.
-      - name: Install GNU sed on macOS
-        shell: bash
-        run: brew install gnu-sed
-
-      - name: Create download and build directory
-        run: mkdir download build
-
-      - name: Setup Python
-        id: setup-python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.python_architecture }}
-          cache: pip
-
-      - name: Install Python dependencies
-        shell: bash
-        run: |
-          # FIXME: Nuitka cannot build with setuptools>=60.7.0
-          # https://github.com/Nuitka/Nuitka/issues/1406
-          pip install --upgrade pip setuptools==60.6.0 wheel
-          pip install -r requirements-dev.txt
-
-      - name: Generate licenses.json
-        shell: bash
-        run: |
-          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
-          # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp engine_manifest_assets/dependency_licenses.json licenses.json
-
-      # Download ONNX Runtime
-      - name: Export ONNX Runtime url to calc hash
-        shell: bash
-        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
-
-      - name: Prepare ONNX Runtime cache
-        uses: actions/cache@v3
-        id: onnxruntime-dylib-cache
-        with:
-          key: ${{ matrix.os }}-onnxruntime-dylib-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
-          path: download/onnxruntime
-
-      - name: Download ONNX Runtime
-        if: steps.onnxruntime-dylib-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
-
-          # extract only dylibs
-          mkdir -p download/onnxruntime
-          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1 'onnxruntime-*/lib/*.dylib'
-          rm download/onnxruntime.tgz
-
-      - name: Show disk space (debug info)
-        shell: bash
-        run: |
-          df -h
-
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v3
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: Checkout VOICEVOX RESOURCE
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
-        shell: bash
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
-
-      - name: Prepare VOICEVOX Core release cache
-        uses: actions/cache@v3
-        id: voicevox-core-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-          path: download/core
-
-      - name: Download VOICEVOX Core release
-        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
-        shell: bash
-        env:
-          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-        run: |
-          # extracted like download/core/libcore.dylib
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
-          mkdir -p download/core
-          mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
-          rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
-          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-
-      - name: Download PyOpenJTalk dictionary
-        shell: bash
-        run: |
-          set -eux
-
-          # Download pyopenjtalk dictionary
-          # try 5 times, sleep 5 seconds before retry
-          for i in $(seq 5); do
-            EXIT_CODE=0
-            python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
-
-            if [ "$EXIT_CODE" = "0" ]; then
-              break
-            fi
-
-            sleep 5
-          done
-
-          if [ "$EXIT_CODE" != "0" ]; then
-            exit "$EXIT_CODE"
-          fi
-
-      - name: Build run.py
-        run: |
-          set -eux
-
-          # Replace version
-          gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" ../voicevox_engine/__init__.py
-
-          # Nuitka does not copy grandchild dependencies. Explicitly copy libonnxruntime
-          python -m nuitka \
-            --output-dir=./ \
-            --standalone \
-            --plugin-enable=numpy \
-            --plugin-enable=multiprocessing \
-            --follow-import-to=numpy \
-            --follow-import-to=aiofiles \
-            --include-package=uvicorn \
-            --include-package=anyio \
-            --include-package-data=pyopenjtalk \
-            --include-package-data=scipy \
-            --include-data-file=../licenses.json=./ \
-            --include-data-file=../presets.yaml=./ \
-            --include-data-file=../default.csv=./ \
-            --include-data-file=../engine_manifest.json=./ \
-            --include-data-file=../download/core/libcore.dylib=./ \
-            --include-data-file=../download/onnxruntime/lib/libonnxruntime.dylib=./ \
-            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/scipy/.dylibs/*.dylib=./scipy/.dylibs/ \
-            --include-data-file=${{ env.pythonLocation }}/lib/python*/site-packages/_soundfile_data/*=./_soundfile_data/ \
-            --include-data-dir=../speaker_info=./speaker_info \
-            --include-data-dir=../engine_manifest_assets=./engine_manifest_assets \
-            --follow-imports \
-            --no-prefer-source-code \
-            ../run.py
-        working-directory: build
-
-      - name: Set @rpath to @executable_path
-        run: |
-          install_name_tool -add_rpath @executable_path/. build/run.dist/run
-
-      # NOTE: This task should ideally be done by Nuitka in the `Build run.py` step.
-      # Please remove this step when you have solved the problem with Nuitka.
-      - name: Copy the missing .dylib files into the distribution
-        run: |
-          python build_util/macos/copy_missing_dylibs.py build/run.dist/
-
-      # NOTE: This task should ideally be done by Nuitka in the `Build run.py` step.
-      # Please remove this step when you have solved the problem with Nuitka.
-      - name: Fix the rpaths of the .dylib files in the distribution
-        run: |
-          python build_util/macos/fix_rpaths.py build/run.dist/
-
-      # FIXME: versioned name may be useful; but
-      # actions/download-artifact and dawidd6/download-artifact do not support
-      # wildcard / forward-matching yet.
-      # Currently, It is good to use static artifact name for future binary test workflow.
-      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
-      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - uses: actions/upload-artifact@v3
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: build/run.dist/
-
-  # Build Linux binary (push only buildcache image)
-  build-linux:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        tag:
-          - build-cpu-ubuntu18.04
-          - build-nvidia-ubuntu18.04
-        include:
-          - tag: build-cpu-ubuntu18.04
-            runtime_tag: cpu-ubuntu18.04 # for cache use
-            target: build-env
-            base_image: ubuntu:bionic
-            base_runtime_image: ubuntu:bionic
-            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
-            artifact_name: linux-cpu
-            nuitka_cache_path: nuitka_cache
-          - tag: build-nvidia-ubuntu18.04
-            runtime_tag: nvidia-ubuntu18.04 # for cache use
-            target: build-env
-            base_image: ubuntu:bionic
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
-            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
-            artifact_name: linux-nvidia
-            nuitka_cache_path: nuitka_cache
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v3
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: Checkout VOICEVOX RESOURCE
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
-        shell: bash
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
-
-      # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
-      # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-      - name: Create binary build environment with Docker
-        uses: docker/build-push-action@v3
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
-          RUNTIME_IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.runtime_tag }}${{ (matrix.runtime_tag != '' && '-') || '' }}latest
-          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-        with:
-          context: .
-          builder: ${{ steps.buildx.outputs.name }}
-          file: ./Dockerfile
-          build-args: |
-            BASE_IMAGE=${{ matrix.base_image }}
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
-            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
-            VOICEVOX_CORE_ASSET_NAME=${{ env.VOICEVOX_CORE_ASSET_NAME }}
-            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
-            VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
-            ONNXRUNTIME_URL=${{ matrix.onnxruntime_url }}
-          target: ${{ matrix.target }}
-          load: true
-          tags: |
-            ${{ env.IMAGE_TAG }}
-          cache-from: |
-            type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
-            type=registry,ref=${{ env.RUNTIME_IMAGE_TAG }}-buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
-
-      # Build run.py with Nuitka in Docker
-      - name: Cache Nuitka (ccache, module-cache)
-        uses: actions/cache@v3
-        id: nuitka-cache
-        with:
-          path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ matrix.tag }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-nuitka-${{ matrix.tag }}-
-
-      - name: Build run.py with Nuitka in Docker
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_NAME }}:${{ matrix.tag }}${{ (matrix.tag != '' && '-') || '' }}latest
-        run: |
-          docker run --rm \
-            -v "$(readlink -f "${{ matrix.nuitka_cache_path }}"):/home/user/.cache/Nuitka" \
-            -v "$(readlink -f "build"):/opt/voicevox_engine_build" \
-            "${{ env.IMAGE_TAG }}"
-
-      # FIXME: versioned name may be useful; but
-      # actions/download-artifact and dawidd6/download-artifact do not support
-      # wildcard / forward-matching yet.
-      # Currently, It is good to use static artifact name for future binary test workflow.
-      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
-      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - uses: actions/upload-artifact@v3
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: build/run.dist/
-
-  build-windows:
+  build-all:
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
@@ -379,18 +39,14 @@ jobs:
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
-            nuitka_cache_path: nuitka_cache
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-directml
-            nuitka_cache_path: nuitka_cache
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
@@ -398,9 +54,27 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
             cuda_version: "11.4.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
-            ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-nvidia
-            nuitka_cache_path: nuitka_cache
+          # Mac CPU (x64 arch only)
+          - os: macos-11
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
+            artifact_name: macos-x64
+          # Linux CPU
+          - os: ubuntu-18.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            artifact_name: linux-cpu
+          # Linux NVIDIA GPU
+          - os: ubuntu-18.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            cuda_version: "11.4.2"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-linux-x64-v8.2.4.15.tgz
+            artifact_name: linux-nvidia
 
     runs-on: ${{ matrix.os }}
 
@@ -411,6 +85,21 @@ jobs:
         shell: bash
         run: |
           df -h
+
+      # NOTE: The default sed of macOS is BSD sed.
+      #       There is a difference in specification between BSD sed and GNU sed,
+      #       so you need to install GNU sed.
+      - name: Install GNU sed on macOS
+        if: startsWith(matrix.os, 'macos-')
+        shell: bash
+        run: brew install gnu-sed
+
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      - name: Install patchelf
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
 
       # Download CUDA
       - name: Prepare CUDA DLL cache
@@ -424,13 +113,13 @@ jobs:
 
       - name: Setup CUDA
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.5
+        uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
           method: network
           cuda: ${{ matrix.cuda_version }}
 
-      - name: Extract CUDA DLL
+      - name: Extract CUDA Dynamic Libraries
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
@@ -439,9 +128,24 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
-          mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
-          rm -rf "${CUDA_ROOT}"
+            rm -rf "${CUDA_ROOT}"
+          else
+            cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcublasLt.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcudart.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcufft.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cuda/bin/libcublas.so.*.* 
+            rm -f download/cuda/bin/libcublasLt.so.*.*
+            rm -f download/cuda/bin/libcufft.so.*.*
+            rm -f download/cuda/bin/libcurand.so.*.*
+            rm -f download/cuda/bin/libcudart.so.*.*.*
+          fi
 
       - name: Show disk space (debug info)
         if: matrix.cuda_version != ''
@@ -464,21 +168,37 @@ jobs:
           key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
           path: download/cudnn
 
-      - name: Download and extract cuDNN DLLs
+      - name: Download and extract cuDNN Dynamic Libraries
         if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
 
-          curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+  
+            unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+  
+            mkdir -p download/cudnn/bin
+            mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
+            rm -rf download/cudnn_tmp
+  
+            rm download/cudnn.zip
+          else
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tgz
 
-          unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+            tar -zxf download/cudnn.tgz -C download/
+          
+            mkdir -p download/cudnn/bin
+            cp download/cuda/lib64/libcudnn.so.* download/cudnn/bin/
+            cp download/cuda/lib64/libcudnn_*_infer.so.* download/cudnn/bin/
 
-          mkdir -p download/cudnn/bin
-          mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
-          rm -rf download/cudnn_tmp
+            # remove unneed full version libraries
+            rm -f download/cudnn/bin/libcudnn.so.*.*
+            rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
 
-          rm download/cudnn.zip
+            rm download/cudnn.tgz
+          fi
 
       - name: Show disk space (debug info)
         if: matrix.cudnn_url != ''
@@ -487,9 +207,10 @@ jobs:
           df -h
 
       - name: Setup MSVC
+        if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Python install path: C:/hostedtoolcache/windows/Python
+      # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
         id: setup-python
         uses: actions/setup-python@v4
@@ -501,9 +222,6 @@ jobs:
       - name: Install Python dependencies
         shell: bash
         run: |
-          # FIXME: Nuitka cannot build with setuptools>=60.7.0
-          # https://github.com/Nuitka/Nuitka/issues/1406
-          python -m pip install --upgrade pip setuptools==60.6.0 wheel
           python -m pip install -r requirements-dev.txt
 
           # Download pyopenjtalk dictionary
@@ -526,32 +244,6 @@ jobs:
       - name: Create download directory
         shell: bash
         run: mkdir -p download/
-
-      # Install Ccache
-      - name: Export Ccache url to calc hash
-        shell: bash
-        run: echo "${{ matrix.ccache_url }}" > download/ccache_url.txt
-
-      - name: Prepare Ccache
-        uses: actions/cache@v3
-        id: ccache-cache
-        with:
-          key: ${{ matrix.os }}-ccache-${{ hashFiles('download/ccache_url.txt') }}
-          path: download/ccache
-
-      - name: Download Ccache
-        if: steps.ccache-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "${{ matrix.ccache_url }}" > download/ccache.zip
-          unzip download/ccache.zip -d download/
-          rm download/ccache.zip
-          mv download/ccache-*/ download/ccache
-
-      - name: Install Ccache
-        shell: bash
-        run: |
-          echo "$HOME/download/ccache" >> $GITHUB_PATH
 
       # Donwload DirectML
       - name: Export DirectML url to calc hash
@@ -587,13 +279,13 @@ jobs:
 
       - name: Prepare ONNX Runtime cache
         uses: actions/cache@v3
-        id: onnxruntime-dll-cache
+        id: onnxruntime-cache
         with:
-          key: ${{ matrix.os }}-onnxruntime-dll-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
-      - name: Download ONNX Runtime
-        if: steps.onnxruntime-dll-cache.outputs.cache-hit != 'true'
+      - name: Download ONNX Runtime (Windows)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
@@ -610,6 +302,15 @@ jobs:
           fi
 
           rm download/onnxruntime.zip
+
+      - name: Download ONNX Runtime (Mac/Linux)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        shell: bash
+        run: |
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+          mkdir -p download/onnxruntime
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
+          rm download/onnxruntime.tgz
 
       - name: Show disk space (debug info)
         shell: bash
@@ -659,7 +360,13 @@ jobs:
           #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。
           #       回避策として、unzip コマンドの代わりに 7z コマンドを用いて zip ファイルを解凍する。
           # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          elif [[ ${{ matrix.os }} == mac-* ]]; then
+            ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+          else
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
+          fi
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
@@ -672,53 +379,35 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
-      - name: Cache Nuitka (ccache, module-cache)
-        uses: actions/cache@v3
-        id: nuitka-cache
-        with:
-          path: ${{ matrix.nuitka_cache_path }}
-          key: ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-nuitka-${{ matrix.artifact_name }}-
-
       - name: Show disk space (debug info)
         shell: bash
         run: |
           df -h
 
-      - name: Build run.py with Nuitka
+      - name: Build run.py with PyInstaller
         shell: bash
-        env:
-          NUITKA_CACHE_DIR: ${{ matrix.nuitka_cache_path }}
         run: |
           set -eux
 
-          # Replace version
-          sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+          # Replace version & specify dynamic libraries
+          if [[ ${{ matrix.os }} == macos-* ]]; then
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            LIBCORE_PATH=download/core/libcore.dylib
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
+          else
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            if [[ ${{ matrix.os }} == windows-* ]]; then
+              LIBCORE_PATH=download/core/core.dll
+              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+            else
+              LIBCORE_PATH=download/core/libcore.so
+              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
+            fi
+          fi
 
-          python -m nuitka \
-            --standalone \
-            --assume-yes-for-downloads \
-            --plugin-enable=numpy \
-            --plugin-enable=multiprocessing \
-            --follow-import-to=numpy \
-            --follow-import-to=aiofiles \
-            --include-package=uvicorn \
-            --include-package=anyio \
-            --include-package-data=pyopenjtalk \
-            --include-package-data=scipy \
-            --include-data-file="licenses.json=./" \
-            --include-data-file="presets.yaml=./" \
-            --include-data-file="default.csv=./" \
-            --include-data-file="engine_manifest.json=./" \
-            --include-data-file="download/onnxruntime/lib/onnxruntime.dll=./" \
-            --include-data-file="download/core/core.dll=./" \
-            --include-data-dir="speaker_info=./speaker_info" \
-            --include-data-dir="engine_manifest_assets=./engine_manifest_assets" \
-            --msvc=14.2 \
-            --follow-imports \
-            --no-prefer-source-code \
-            run.py
+          LIBCORE_PATH="$LIBCORE_PATH" \
+          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
+          pyinstaller --noconfirm run.spec        
 
       - name: Show disk space (debug info)
         shell: bash
@@ -726,6 +415,7 @@ jobs:
           df -h
 
       - name: Create artifact directory with symlink
+        if: startsWith(matrix.os, 'windows-')
         shell: bash
         env:
           PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
@@ -735,41 +425,60 @@ jobs:
         run: |
           set -eux
 
-          # Build artifact directory
-          mkdir -p artifact
-          ln -sf "$(pwd)/run.dist"/* artifact/
-
           # Copy DLL dependencies
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
-            # ONNX Runtime providers (Nuitka does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll artifact/
+            # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll artifact/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll artifact/
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll artifact/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll artifact/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
           fi
 
           if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
             # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll artifact/
+            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
           fi
 
-          # pysoundfile
-          ln -sf "${{ env.PYTHON_SITE_PACKAGES_DIR }}/_soundfile_data" artifact/
-
-      - name: Code signing
-        if: github.event.inputs.code_signing == 'true'
+      - name: Create symlink of CUDA dependencies
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
         shell: bash
         run: |
-          bash build_util/codesign.bash "artifact/run.exe"
+          set -eux
+
+          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
+          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
+
+          # CUDA
+          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
+
+          # cuDNN
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
+
+      - name: Set @rpath to @executable_path
+        if: startsWith(matrix.os, 'macos-')
+        run: |
+          install_name_tool -add_rpath @executable_path/. dist/run/run
+
+      - name: Code signing
+        if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
+        shell: bash
+        run: |
+          bash build_util/codesign.bash "dist/run/run.exe"
         env:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
@@ -780,18 +489,18 @@ jobs:
       # Currently, It is good to use static artifact name for future binary test workflow.
       # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
       # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
-      - uses: actions/upload-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
         #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
-          path: |
-            artifact/
+          path: dist/run/
 
   upload-to-release:
     if: (github.event.release.tag_name || github.event.inputs.version) != ''
-    needs: [build-mac, build-linux, build-windows]
+    needs: [build-all]
     runs-on: ubuntu-latest
     strategy:
       matrix:
