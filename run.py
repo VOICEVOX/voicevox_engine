@@ -120,7 +120,7 @@ def generate_app(
         version=__version__,
     )
 
-    # CORS設定
+    # CORS用のヘッダを生成するミドルウェア
     localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
@@ -139,21 +139,24 @@ def generate_app(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_origin_regex="^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$",
+        allow_origin_regex=localhost_regex,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
+    # 許可されていないOriginを遮断するミドルウェア
     @app.middleware("http")
     async def block_origin_middleware(request: Request, call_next):
         isValidOrigin: bool = False
-        if "Origin" not in request.headers:
+        if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
             isValidOrigin = True
-        elif "*" in allowed_origins:
+        elif "*" in allowed_origins:  # すべてを許可する設定の場合
             isValidOrigin = True
-        elif request.headers["Origin"] in allowed_origins:
+        elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
             isValidOrigin = True
-        elif compiled_localhost_regex.fullmatch(request.headers["Origin"]):
+        elif compiled_localhost_regex.fullmatch(
+            request.headers["Origin"]
+        ):  # localhostの場合
             isValidOrigin = True
 
         if isValidOrigin:
