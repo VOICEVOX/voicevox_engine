@@ -177,10 +177,10 @@ jobs:
           if [[ ${{ matrix.os }} == windows-* ]]; then
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
   
-            unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+            unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
   
             mkdir -p download/cudnn/bin
-            mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
+            mv download/cudnn_tmp/cudnn-*/bin/*.dll download/cudnn/bin/
             rm -rf download/cudnn_tmp
   
             rm download/cudnn.zip
@@ -190,8 +190,8 @@ jobs:
             tar -Jxf download/cudnn.tgz -C download/
           
             mkdir -p download/cudnn/bin
-            cp download/cuda/lib64/libcudnn.so.* download/cudnn/bin/
-            cp download/cuda/lib64/libcudnn_*_infer.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn_*_infer.so.* download/cudnn/bin/
 
             # remove unneed full version libraries
             rm -f download/cudnn/bin/libcudnn.so.*.*
