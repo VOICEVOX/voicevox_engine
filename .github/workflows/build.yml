@@ -62,13 +62,13 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-osx-x86_64-1.11.1.tgz
             artifact_name: macos-x64
           # Linux CPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-1.11.1.tgz
             artifact_name: linux-cpu
           # Linux NVIDIA GPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-gpu-1.11.1.tgz
