@@ -187,7 +187,7 @@ jobs:
           else
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tgz
 
-            tar -zxf download/cudnn.tgz -C download/
+            tar -Jxf download/cudnn.tgz -C download/
           
             mkdir -p download/cudnn/bin
             cp download/cuda/lib64/libcudnn.so.* download/cudnn/bin/
