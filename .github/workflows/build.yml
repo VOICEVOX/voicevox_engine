@@ -392,15 +392,15 @@ jobs:
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
             gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            LIBCORE_PATH=download/core/libcore.dylib
+            LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
             sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
-              LIBCORE_PATH=download/core/core.dll
+              LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
             else
-              LIBCORE_PATH=download/core/libcore.so
+              LIBCORE_PATH=download/core/libvoicevox_core.so
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
             fi
           fi
