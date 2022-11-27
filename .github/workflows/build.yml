@@ -185,9 +185,9 @@ jobs:
   
             rm download/cudnn.zip
           else
-            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tgz
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
 
-            tar -Jxf download/cudnn.tgz -C download/
+            tar -Jxf download/cudnn.tar.xz -C download/
           
             mkdir -p download/cudnn/bin
             cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
@@ -197,7 +197,7 @@ jobs:
             rm -f download/cudnn/bin/libcudnn.so.*.*
             rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
 
-            rm download/cudnn.tgz
+            rm download/cudnn.tar.xz
           fi
 
       - name: Show disk space (debug info)
