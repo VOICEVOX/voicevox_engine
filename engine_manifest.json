@@ -48,6 +48,11 @@
             "type": "bool",
             "value": true,
             "name": "疑問文の自動調整"
+        },
+        "synthesis_morphing" : {
+            "type": "bool",
+            "value": true,
+            "name": "2人の話者でモーフィングした音声を合成"
         }
     }
 }
