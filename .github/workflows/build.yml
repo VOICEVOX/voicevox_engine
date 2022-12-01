@@ -23,7 +23,7 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.13.2"
-  VOICEVOX_CORE_VERSION: "0.13.2"
+  VOICEVOX_CORE_VERSION: "0.14.0-preview.2"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
@@ -38,42 +38,42 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-win-x64-1.11.1.zip
             artifact_name: windows-cpu
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
-            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/Microsoft.ML.OnnxRuntime.DirectML.1.11.1.zip
+            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.9.0
             artifact_name: windows-directml
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
-            cuda_version: "11.4.2"
-            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-win-x64-gpu-1.11.1.zip
+            cuda_version: "11.6.0"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip
             artifact_name: windows-nvidia
           # Mac CPU (x64 arch only)
           - os: macos-11
             architecture: "x64"
-            voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
+            voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-osx-x86_64-1.11.1.tgz
             artifact_name: macos-x64
           # Linux CPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-1.11.1.tgz
             artifact_name: linux-cpu
           # Linux NVIDIA GPU
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
-            cuda_version: "11.4.2"
-            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-linux-x64-v8.2.4.15.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-gpu-1.11.1.tgz
+            cuda_version: "11.6.0"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz
             artifact_name: linux-nvidia
 
     runs-on: ${{ matrix.os }}
@@ -177,27 +177,27 @@ jobs:
           if [[ ${{ matrix.os }} == windows-* ]]; then
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
   
-            unzip download/cudnn.zip cuda/bin/*.dll -d download/cudnn_tmp
+            unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
   
             mkdir -p download/cudnn/bin
-            mv download/cudnn_tmp/cuda/bin/*.dll download/cudnn/bin/
+            mv download/cudnn_tmp/cudnn-*/bin/*.dll download/cudnn/bin/
             rm -rf download/cudnn_tmp
   
             rm download/cudnn.zip
           else
-            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tgz
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
 
-            tar -zxf download/cudnn.tgz -C download/
+            tar -Jxf download/cudnn.tar.xz -C download/
           
             mkdir -p download/cudnn/bin
-            cp download/cuda/lib64/libcudnn.so.* download/cudnn/bin/
-            cp download/cuda/lib64/libcudnn_*_infer.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn_*_infer.so.* download/cudnn/bin/
 
             # remove unneed full version libraries
             rm -f download/cudnn/bin/libcudnn.so.*.*
             rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
 
-            rm download/cudnn.tgz
+            rm download/cudnn.tar.xz
           fi
 
       - name: Show disk space (debug info)
@@ -392,15 +392,15 @@ jobs:
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
             gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
-            LIBCORE_PATH=download/core/libcore.dylib
+            LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
             sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
-              LIBCORE_PATH=download/core/core.dll
+              LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
             else
-              LIBCORE_PATH=download/core/libcore.so
+              LIBCORE_PATH=download/core/libvoicevox_core.so
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
             fi
           fi
