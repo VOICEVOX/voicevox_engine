@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.3-labs
 
-ARG BASE_IMAGE=ubuntu:focal
+ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
 # Download VOICEVOX Core shared object
