@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.3-labs
+# syntax=docker/dockerfile:1.4
 
 ARG BASE_IMAGE=ubuntu:focal
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
