@@ -342,7 +342,7 @@ jobs:
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
