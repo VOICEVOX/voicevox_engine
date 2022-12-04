@@ -94,6 +94,7 @@ run-linux-docker-download-core-env-ubuntu18.04:
 	docker run --rm -it $(ARGS) \
 		voicevox/voicevox_engine:download-core-env-ubuntu18.04 $(CMD)
 
+
 # ONNX Runtime env for test
 .PHONY: build-linux-docker-download-onnxruntime-env-ubuntu18.04
 build-linux-docker-download-onnxruntime-env-ubuntu18.04:
@@ -122,75 +123,3 @@ build-linux-docker-compile-python-env:
 run-linux-docker-compile-python-env:
 	docker run --rm -it $(ARGS) \
 		voicevox/voicevox_engine:compile-python-env $(CMD)
-
-
-# Build linux binary in Docker
-## Ubuntu 20.04
-.PHONY: build-linux-docker-build-ubuntu20.04
-build-linux-docker-build-ubuntu20.04:
-	docker buildx build . \
-		-t voicevox/voicevox_engine:build-cpu-ubuntu20.04-latest \
-		--target build-env \
-		--progress plain \
-		--build-arg BASE_IMAGE=ubuntu:20.04 \
-		--build-arg BASE_RUNTIME_IMAGE=ubuntu:20.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
-
-.PHONY: run-linux-docker-build-ubuntu20.04
-run-linux-docker-build-ubuntu20.04:
-	docker run --rm -it \
-		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
-		voicevox/voicevox_engine:build-cpu-ubuntu20.04-latest $(CMD)
-
-.PHONY: build-linux-docker-build-nvidia-ubuntu20.04
-build-linux-docker-build-nvidia-ubuntu20.04:
-	docker buildx build . \
-		-t voicevox/voicevox_engine:build-nvidia-ubuntu20.04-latest \
-		--target build-env \
-		--progress plain \
-		--build-arg BASE_IMAGE=ubuntu:20.04 \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
-
-.PHONY: run-linux-docker-build-nvidia-ubuntu20.04
-run-linux-docker-build-nvidia-ubuntu20.04:
-	docker run --rm -it \
-		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
-		voicevox/voicevox_engine:build-nvidia-ubuntu20.04-latest $(CMD)
-
-## Ubuntu 18.04
-.PHONY: build-linux-docker-build-ubuntu18.04
-build-linux-docker-build-ubuntu18.04:
-	docker buildx build . \
-		-t voicevox/voicevox_engine:build-cpu-ubuntu18.04-latest \
-		--target build-env \
-		--progress plain \
-		--build-arg BASE_IMAGE=ubuntu:18.04 \
-		--build-arg BASE_RUNTIME_IMAGE=ubuntu:18.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_cpu_x64.so $(ARGS)
-
-.PHONY: run-linux-docker-build-ubuntu18.04
-run-linux-docker-build-ubuntu18.04:
-	docker run --rm -it \
-		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
-		voicevox/voicevox_engine:build-cpu-ubuntu18.04-latest $(CMD)
-
-.PHONY: build-linux-docker-build-nvidia-ubuntu18.04
-build-linux-docker-build-nvidia-ubuntu18.04:
-	docker buildx build . \
-		-t voicevox/voicevox_engine:build-nvidia-ubuntu18.04-latest \
-		--target build-env \
-		--progress plain \
-		--build-arg BASE_IMAGE=ubuntu:18.04 \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04 \
-		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz \
-		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
-
-.PHONY: run-linux-docker-build-nvidia-ubuntu18.04
-run-linux-docker-build-nvidia-ubuntu18.04:
-	docker run --rm -it \
-		-v "$(shell pwd)/build:/opt/voicevox_engine_build" $(ARGS) \
-		voicevox/voicevox_engine:build-nvidia-ubuntu18.04-latest $(CMD)
