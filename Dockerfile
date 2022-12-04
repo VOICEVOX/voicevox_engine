@@ -120,9 +120,7 @@ RUN <<EOF
 EOF
 
 ARG PYTHON_VERSION=3.8.10
-# FIXME: Lock pyenv version with git tag
-# 90d0d20508a91e7ea1e609e8aa9f9d1a28bb563e (including 3.7.12) not released yet (2021-09-12)
-ARG PYENV_VERSION=master
+ARG PYENV_VERSION=v2.3.7
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
