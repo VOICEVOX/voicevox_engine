@@ -585,6 +585,64 @@ def generate_app(
             raise HTTPException(status_code=422, detail=err_detail)
         return presets
 
+    @app.post("/set_preset", response_model=int, tags=["その他"])
+    def set_preset(preset: Preset):
+        """
+        新しいプリセットを追加します
+
+        Parameters
+        -------
+        preset: Preset
+            新しいプリセット。
+            プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。
+
+        Returns
+        -------
+        id: int
+            追加したプリセットのプリセットID
+        """
+        id, err_detail = preset_loader.set_preset(preset)
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
+        return id
+
+    @app.post("/update_preset", response_model=int, tags=["その他"])
+    def update_preset(preset: Preset):
+        """
+        既存のプリセットを更新します
+
+        Parameters
+        -------
+        preset: Preset
+            更新するプリセット。
+            プリセットIDが更新対象と一致している必要があります。
+
+        Returns
+        -------
+        id: int
+            更新したプリセットのプリセットID
+        """
+        id, err_detail = preset_loader.update_preset(preset)
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
+        return id
+
+    @app.post("/delete_preset", status_code=204, tags=["その他"])
+    def delete_preset(id: int):
+        """
+        既存のプリセットを更新します
+
+        Parameters
+        -------
+        id: int
+            削除するプリセットID
+
+        """
+        _, err_detail = preset_loader.delete_preset(id)
+        if err_detail:
+            raise HTTPException(status_code=422, detail=err_detail)
+        return Response(status_code=204)
+
     @app.get("/version", tags=["その他"])
     def version() -> str:
         return __version__
