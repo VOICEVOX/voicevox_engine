@@ -1,7 +1,7 @@
 from .Preset import Preset
-from .PresetLoader import PresetLoader
+from .PresetManager import PresetManager
 
 __all__ = [
     "Preset",
-    "PresetLoader",
+    "PresetManager",
 ]

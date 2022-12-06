@@ -50,7 +50,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.preset import Preset, PresetLoader
+from voicevox_engine.preset import Preset, PresetManager
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
@@ -166,7 +166,7 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    preset_loader = PresetLoader(
+    preset_manager = PresetManager(
         preset_path=root_dir / "presets.yaml",
     )
     engine_manifest_loader = EngineManifestLoader(
@@ -233,7 +233,7 @@ def generate_app(
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        presets, err_detail = preset_loader.load_presets()
+        presets, err_detail = preset_manager.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
         for preset in presets:
@@ -580,13 +580,13 @@ def generate_app(
         presets: List[Preset]
             プリセットのリスト
         """
-        presets, err_detail = preset_loader.load_presets()
+        presets, err_detail = preset_manager.load_presets()
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
         return presets
 
-    @app.post("/set_preset", response_model=int, tags=["その他"])
-    def set_preset(preset: Preset):
+    @app.post("/add_preset", response_model=int, tags=["その他"])
+    def add_preset(preset: Preset):
         """
         新しいプリセットを追加します
 
@@ -601,7 +601,7 @@ def generate_app(
         id: int
             追加したプリセットのプリセットID
         """
-        id, err_detail = preset_loader.set_preset(preset)
+        id, err_detail = preset_manager.add_preset(preset)
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
         return id
@@ -622,7 +622,7 @@ def generate_app(
         id: int
             更新したプリセットのプリセットID
         """
-        id, err_detail = preset_loader.update_preset(preset)
+        id, err_detail = preset_manager.update_preset(preset)
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
         return id
@@ -638,7 +638,7 @@ def generate_app(
             削除するプリセットID
 
         """
-        _, err_detail = preset_loader.delete_preset(id)
+        _, err_detail = preset_manager.delete_preset(id)
         if err_detail:
             raise HTTPException(status_code=422, detail=err_detail)
         return Response(status_code=204)

@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from .Preset import Preset
 
 
-class PresetLoader:
+class PresetManager:
     def __init__(
         self,
         preset_path: Path,
@@ -58,7 +58,7 @@ class PresetLoader:
         self.last_modified_time = _last_modified_time
         return self.presets, ""
 
-    def set_preset(self, preset: Preset):
+    def add_preset(self, preset: Preset):
         """
         YAMLファイルに新規のプリセットを追加する
 
