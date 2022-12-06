@@ -541,7 +541,7 @@ jobs:
           # Output splitted archive list
           ls ${{ matrix.artifact_name }}.7z.* > archives_7z.txt
           mv archives_7z.txt "${{ matrix.artifact_name }}.7z.txt"
-          ls ${{ matrix.artifact_name }}.*.vvpp ${{ matrix.artifact_name }}.vvpp > archives_vvpp.txt
+          ls ${{ matrix.artifact_name }}.*.vvpp ${{ matrix.artifact_name }}.vvpp > archives_vvpp.txt || true
           mv archives_vvpp.txt "${{ matrix.artifact_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
