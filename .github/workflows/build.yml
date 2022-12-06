@@ -551,6 +551,7 @@ jobs:
           tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
           files: |-
             ${{ matrix.artifact_name }}.7z.*
+            ${{ matrix.artifact_name }}.vvpp
             ${{ matrix.artifact_name }}.*.vvpp
             ${{ matrix.artifact_name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
