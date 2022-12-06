@@ -534,11 +534,14 @@ jobs:
           # Compress to artifact.001.vvpp
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
           split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
+          if [ "$(ls ${{ matrix.artifact_name }}.*.vvpp | wc -l)" == 1 ]; then
+            mv ${{ matrix.artifact_name }}.001.vvpp ${{ matrix.artifact_name }}.vvpp
+          fi
 
           # Output splitted archive list
           ls ${{ matrix.artifact_name }}.7z.* > archives_7z.txt
           mv archives_7z.txt "${{ matrix.artifact_name }}.7z.txt"
-          ls ${{ matrix.artifact_name }}.*.vvpp > archives_vvpp.txt
+          ls ${{ matrix.artifact_name }}.*.vvpp ${{ matrix.artifact_name }}.vvpp > archives_vvpp.txt
           mv archives_vvpp.txt "${{ matrix.artifact_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
