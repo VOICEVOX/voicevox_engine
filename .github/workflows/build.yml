@@ -528,12 +528,12 @@ jobs:
 
       - name: Rearchive and split artifact
         run: |
-          # Compresse to artifact.7z.001, artifact.7z.002, ...
+          # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v2g a "${{ matrix.artifact_name }}.7z" "${{ matrix.artifact_name }}/"
           
           # Compress to artifact.001.vvpp
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
-          split -b 2G -d -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
+          split -b 2G --numeric-suffixes 1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
 
           # Output splitted archive list
           ls ${{ matrix.artifact_name }}.7z.* > archives_7z.txt
