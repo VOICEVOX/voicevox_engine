@@ -4,6 +4,7 @@ import yaml
 from pydantic import ValidationError
 
 from .Preset import Preset
+from .PresetError import PresetError
 
 
 class PresetManager:
@@ -21,8 +22,8 @@ class PresetManager:
 
         Returns
         -------
-        ret: tuple[Preset, str]
-            プリセットとエラー文のタプル
+        ret: List[Preset]
+            プリセットのリスト
         """
         _presets = []
 
@@ -30,9 +31,9 @@ class PresetManager:
         try:
             _last_modified_time = self.preset_path.stat().st_mtime
             if _last_modified_time == self.last_modified_time:
-                return self.presets, ""
+                return self.presets
         except OSError:
-            return None, "プリセットの設定ファイルが見つかりません"
+            raise PresetError("プリセットの設定ファイルが見つかりません")
 
         try:
             with open(self.preset_path, encoding="utf-8") as f:
@@ -40,23 +41,23 @@ class PresetManager:
                 if obj is None:
                     raise FileNotFoundError
         except FileNotFoundError:
-            return None, "プリセットの設定ファイルが空の内容です"
+            raise PresetError("プリセットの設定ファイルが空の内容です")
 
         for preset in obj:
             try:
                 _presets.append(Preset(**preset))
             except ValidationError:
-                return None, "プリセットの設定ファイルにミスがあります"
+                raise PresetError("プリセットの設定ファイルにミスがあります")
 
         # idが一意か確認
         if len([preset.id for preset in _presets]) != len(
             {preset.id for preset in _presets}
         ):
-            return None, "プリセットのidに重複があります"
+            raise PresetError("プリセットのidに重複があります")
 
         self.presets = _presets
         self.last_modified_time = _last_modified_time
-        return self.presets, ""
+        return self.presets
 
     def add_preset(self, preset: Preset):
         """
@@ -69,14 +70,12 @@ class PresetManager:
 
         Returns
         -------
-        ret: tuple[int, str]
-            追加したプリセットのプリセットIDとエラー文のタプル
+        ret: int
+            追加したプリセットのプリセットID
         """
 
         # 手動でファイルが更新されているかも知れないので、最新のYAMLファイルを読み直す
-        _, err_detail = self.load_presets()
-        if err_detail:
-            return -1, err_detail
+        self.load_presets()
 
         # IDが0未満、または存在するIDなら新しいIDを決定し、配列に追加
         if preset.id < 0 or preset.id in {preset.id for preset in self.presets}:
@@ -94,9 +93,9 @@ class PresetManager:
                 )
         except FileNotFoundError:
             self.presets.pop()
-            return -1, "プリセットの設定ファイルに書き込み失敗しました"
+            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
 
-        return preset.id, ""
+        return preset.id
 
     def update_preset(self, preset: Preset):
         """
@@ -109,14 +108,12 @@ class PresetManager:
 
         Returns
         -------
-        ret: tuple[int, str]
-            更新したプリセットのプリセットIDとエラー文のタプル
+        ret: int
+            更新したプリセットのプリセットID
         """
 
         # 手動でファイルが更新されているかも知れないので、最新のYAMLファイルを読み直す
-        _, err_detail = self.load_presets()
-        if err_detail:
-            return -1, err_detail
+        self.load_presets()
 
         # IDが存在するか探索
         for i in range(len(self.presets)):
@@ -124,7 +121,7 @@ class PresetManager:
                 self.presets[i] = preset
                 break
         else:
-            return -1, "更新先のプリセットが存在しません"
+            raise PresetError("更新先のプリセットが存在しません")
 
         # ファイルに書き込み
         try:
@@ -136,9 +133,9 @@ class PresetManager:
                     sort_keys=False,
                 )
         except FileNotFoundError:
-            return -1, "プリセットの設定ファイルに書き込み失敗しました"
+            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
 
-        return preset.id, ""
+        return preset.id
 
     def delete_preset(self, id: int):
         """
@@ -151,14 +148,12 @@ class PresetManager:
 
         Returns
         -------
-        ret: tuple[int, str]
-            更新したプリセットのプリセットIDとエラー文のタプル
+        ret: int
+            更新したプリセットのプリセットID
         """
 
         # 手動でファイルが更新されているかも知れないので、最新のYAMLファイルを読み直す
-        _, err_detail = self.load_presets()
-        if err_detail:
-            return -1, err_detail
+        self.load_presets()
 
         # IDが存在するか探索
         buf = None
@@ -169,7 +164,7 @@ class PresetManager:
                 buf_index = i
                 break
         else:
-            return -1, "削除対象のプリセットが存在しません"
+            raise PresetError("削除対象のプリセットが存在しません")
 
         # ファイルに書き込み
         try:
@@ -182,6 +177,6 @@ class PresetManager:
                 )
         except FileNotFoundError:
             self.presets.insert(buf_index, buf)
-            return -1, "プリセットの設定ファイルに書き込み失敗しました"
+            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
 
-        return id, ""
+        return id
