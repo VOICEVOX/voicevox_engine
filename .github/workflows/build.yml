@@ -531,9 +531,11 @@ jobs:
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v2g a "${{ matrix.artifact_name }}.7z" "${{ matrix.artifact_name }}/"
           
-          # Compress to artifact.001.vvpp
+          # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
           split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
+          
+          # Rename to artifact.vvpp if there are only artifact.001.vvpp
           if [ "$(ls ${{ matrix.artifact_name }}.*.vvpp | wc -l)" == 1 ]; then
             mv ${{ matrix.artifact_name }}.001.vvpp ${{ matrix.artifact_name }}.vvpp
           fi
@@ -541,7 +543,7 @@ jobs:
           # Output splitted archive list
           ls ${{ matrix.artifact_name }}.7z.* > archives_7z.txt
           mv archives_7z.txt "${{ matrix.artifact_name }}.7z.txt"
-          ls ${{ matrix.artifact_name }}.*.vvpp ${{ matrix.artifact_name }}.vvpp > archives_vvpp.txt || true
+          ls ${{ matrix.artifact_name }}*.vvpp > archives_vvpp.txt
           mv archives_vvpp.txt "${{ matrix.artifact_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
@@ -551,8 +553,7 @@ jobs:
           tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
           files: |-
             ${{ matrix.artifact_name }}.7z.*
-            ${{ matrix.artifact_name }}.vvpp
-            ${{ matrix.artifact_name }}.*.vvpp
+            ${{ matrix.artifact_name }}*.vvpp
             ${{ matrix.artifact_name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
