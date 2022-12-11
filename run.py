@@ -233,9 +233,10 @@ def generate_app(
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        presets, err_detail = preset_manager.load_presets()
-        if err_detail:
-            raise HTTPException(status_code=422, detail=err_detail)
+        try:
+            presets = preset_manager.load_presets()
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
