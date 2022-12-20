@@ -20,10 +20,11 @@ from typing import Dict, List, Optional
 import requests
 import soundfile
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, Form, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
@@ -51,6 +52,7 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset import Preset, PresetLoader
+from voicevox_engine.setting import Setting, SettingLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
@@ -172,6 +174,10 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
+
+    setting_loader = SettingLoader(root_dir / "setting.yml")
+
+    setting_ui_template = Jinja2Templates(directory=root_dir / "ui_template")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -875,6 +881,45 @@ def generate_app(
     def engine_manifest():
         return engine_manifest_loader.load_manifest()
 
+    @app.get("/setting", response_class=HTMLResponse)
+    def setting_get(request: Request):
+        settings = setting_loader.load_setting_file()
+
+        cors_policy_mode = settings.cors_policy_mode
+        allow_origin = settings.allow_origin
+
+        return setting_ui_template.TemplateResponse(
+            "ui.html",
+            {
+                "request": request,
+                "cors_policy_mode": cors_policy_mode,
+                "allow_origin": allow_origin,
+            },
+        )
+
+    @app.post("/setting", response_class=HTMLResponse)
+    def setting_post(
+        request: Request,
+        cors_policy_mode: Optional[str] = Form(None),
+        allow_origin: Optional[str] = Form(None),
+    ):
+        settings = Setting(
+            cors_policy_mode=cors_policy_mode,
+            allow_origin=allow_origin,
+        )
+
+        # 更新した設定へ上書き
+        setting_loader.dump_setting_file(settings)
+
+        return setting_ui_template.TemplateResponse(
+            "ui.html",
+            {
+                "request": request,
+                "cors_policy_mode": cors_policy_mode,
+                "allow_origin": allow_origin,
+            },
+        )
+
     return app
 
 
@@ -986,13 +1031,28 @@ if __name__ == "__main__":
         cancellable_engine = CancellableEngine(args)
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
+
+    cors_policy_mode = (
+        SettingLoader(root_dir / "setting.yml").load_setting_file().cors_policy_mode
+        if SettingLoader(root_dir / "setting.yml").load_setting_file().cors_policy_mode
+        is not CorsPolicyMode.localapps
+        else args.cors_policy_mode
+    )
+
+    allow_origin = (
+        SettingLoader(root_dir / "setting.yml").load_setting_file().allow_origin
+        if SettingLoader(root_dir / "setting.yml").load_setting_file().allow_origin
+        is not None
+        else args.allow_origin
+    )
+
     uvicorn.run(
         generate_app(
             synthesis_engines,
             latest_core_version,
             root_dir=root_dir,
-            cors_policy_mode=args.cors_policy_mode,
-            allow_origin=args.allow_origin,
+            cors_policy_mode=cors_policy_mode,
+            allow_origin=allow_origin,
         ),
         host=args.host,
         port=args.port,
