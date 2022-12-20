@@ -900,8 +900,8 @@ def generate_app(
     @app.post("/setting", response_class=HTMLResponse)
     def setting_post(
         request: Request,
-        cors_policy_mode: Optional[str] = Form(None),
-        allow_origin: Optional[str] = Form(None),
+        cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
+        allow_origin: Optional[str] = Form(None),  # noqa: B008
     ):
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
