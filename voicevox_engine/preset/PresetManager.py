@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import List
 
 import yaml
-from pydantic import ValidationError
+from pydantic import ValidationError, parse_obj_as
 
 from .Preset import Preset
 from .PresetError import PresetError
@@ -25,7 +26,6 @@ class PresetManager:
         ret: List[Preset]
             プリセットのリスト
         """
-        _presets = []
 
         # 設定ファイルのタイムスタンプを確認
         try:
@@ -43,9 +43,8 @@ class PresetManager:
         except FileNotFoundError:
             raise PresetError("プリセットの設定ファイルが空の内容です")
 
-        for preset in obj:
             try:
-                _presets.append(Preset(**preset))
+            _presets = parse_obj_as(List[Preset], obj)
             except ValidationError:
                 raise PresetError("プリセットの設定ファイルにミスがあります")
 
@@ -86,7 +85,7 @@ class PresetManager:
         try:
             with open(self.preset_path, mode="w", encoding="utf-8") as f:
                 yaml.safe_dump(
-                    [vars(preset) for preset in self.presets],
+                    [preset.dict() for preset in self.presets],
                     f,
                     allow_unicode=True,
                     sort_keys=False,
@@ -127,7 +126,7 @@ class PresetManager:
         try:
             with open(self.preset_path, mode="w", encoding="utf-8") as f:
                 yaml.safe_dump(
-                    [vars(preset) for preset in self.presets],
+                    [preset.dict() for preset in self.presets],
                     f,
                     allow_unicode=True,
                     sort_keys=False,
@@ -170,7 +169,7 @@ class PresetManager:
         try:
             with open(self.preset_path, mode="w", encoding="utf-8") as f:
                 yaml.safe_dump(
-                    [vars(preset) for preset in self.presets],
+                    [preset.dict() for preset in self.presets],
                     f,
                     allow_unicode=True,
                     sort_keys=False,
