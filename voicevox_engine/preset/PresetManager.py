@@ -91,6 +91,8 @@ class PresetManager:
             self.presets.pop()
             if isinstance(err, FileNotFoundError):
                 raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+            else:
+                raise err
 
         return preset.id
 
@@ -136,6 +138,8 @@ class PresetManager:
                 self.presets[prev_preset[0]] = prev_preset[1]
             if isinstance(err, FileNotFoundError):
                 raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+            else:
+                raise err
 
         return preset.id
 
