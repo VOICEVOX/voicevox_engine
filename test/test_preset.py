@@ -258,6 +258,7 @@ class TestPresetManager(TestCase):
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
             preset_manager.update_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
+        self.assertEqual(preset_manager.presets[0].name, "test")
         remove(temp_path)
 
     def test_delete_preset(self):

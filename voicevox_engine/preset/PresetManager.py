@@ -36,14 +36,14 @@ class PresetManager:
             raise PresetError("プリセットの設定ファイルが見つかりません")
 
         with open(self.preset_path, mode="r", encoding="utf-8") as f:
-                obj = yaml.safe_load(f)
-                if obj is None:
-            raise PresetError("プリセットの設定ファイルが空の内容です")
+            obj = yaml.safe_load(f)
+            if obj is None:
+                raise PresetError("プリセットの設定ファイルが空の内容です")
 
-            try:
+        try:
             _presets = parse_obj_as(List[Preset], obj)
-            except ValidationError:
-                raise PresetError("プリセットの設定ファイルにミスがあります")
+        except ValidationError:
+            raise PresetError("プリセットの設定ファイルにミスがあります")
 
         # idが一意か確認
         if len([preset.id for preset in _presets]) != len(
@@ -87,9 +87,10 @@ class PresetManager:
                     allow_unicode=True,
                     sort_keys=False,
                 )
-        except FileNotFoundError:
+        except Exception as err:
             self.presets.pop()
-            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+            if isinstance(err, FileNotFoundError):
+                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
 
         return preset.id
 
@@ -112,8 +113,10 @@ class PresetManager:
         self.load_presets()
 
         # IDが存在するか探索
+        prev_preset = (-1, None)
         for i in range(len(self.presets)):
             if self.presets[i].id == preset.id:
+                prev_preset = (i, self.presets[i])
                 self.presets[i] = preset
                 break
         else:
@@ -128,8 +131,11 @@ class PresetManager:
                     allow_unicode=True,
                     sort_keys=False,
                 )
-        except FileNotFoundError:
-            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+        except Exception as err:
+            if prev_preset != (-1, None):
+                self.presets[prev_preset[0]] = prev_preset[1]
+            if isinstance(err, FileNotFoundError):
+                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
 
         return preset.id
 
