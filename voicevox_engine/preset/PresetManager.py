@@ -35,12 +35,9 @@ class PresetManager:
         except OSError:
             raise PresetError("プリセットの設定ファイルが見つかりません")
 
-        try:
-            with open(self.preset_path, encoding="utf-8") as f:
+        with open(self.preset_path, mode="r", encoding="utf-8") as f:
                 obj = yaml.safe_load(f)
                 if obj is None:
-                    raise FileNotFoundError
-        except FileNotFoundError:
             raise PresetError("プリセットの設定ファイルが空の内容です")
 
             try:
