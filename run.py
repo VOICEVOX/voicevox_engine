@@ -1032,18 +1032,16 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
 
+    settings = SettingLoader(root_dir / "setting.yml").load_setting_file()
+
     cors_policy_mode = (
-        SettingLoader(root_dir / "setting.yml").load_setting_file().cors_policy_mode
-        if SettingLoader(root_dir / "setting.yml").load_setting_file().cors_policy_mode
-        is not CorsPolicyMode.localapps
-        else args.cors_policy_mode
+        args.cors_policy_mode
+        if args.cors_policy_mode is not CorsPolicyMode.localapps
+        else settings.cors_policy_mode
     )
 
     allow_origin = (
-        SettingLoader(root_dir / "setting.yml").load_setting_file().allow_origin
-        if SettingLoader(root_dir / "setting.yml").load_setting_file().allow_origin
-        is not None
-        else args.allow_origin
+        args.allow_origin if args.allow_origin is not None else settings.allow_origin
     )
 
     uvicorn.run(
