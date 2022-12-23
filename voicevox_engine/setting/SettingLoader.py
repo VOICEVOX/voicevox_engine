@@ -22,5 +22,5 @@ class SettingLoader:
     def dump_setting_file(self, settings: Setting) -> None:
         settings_dict = settings.dict()
 
-        with open("setting.yml", "w") as file:
-            yaml.dump(settings_dict, file)
+        with open("setting.yml", mode="w", encoding="utf-8") as f:
+            yaml.dump(settings_dict, f)
