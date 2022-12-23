@@ -908,6 +908,10 @@ def generate_app(
             allow_origin=allow_origin,
         )
 
+        # None文字列が返された場合上書きをする
+        if settings.allow_origin == "None":
+            settings.allow_origin = None
+
         # 更新した設定へ上書き
         setting_loader.dump_setting_file(settings)
 
