@@ -440,9 +440,9 @@ poetry add --group test package-name # テスト依存の追加
 
 poetry upgrade # 依存をまとめてアップグレード
 
-poetry export -o requirements.txt
-poetry export --with dev -o requirements-dev.txt
-poetry export --with test -o requirements-test.txt
+poetry export --without-hashes -o requirements.txt
+poetry export --without-hashes --with dev -o requirements-dev.txt
+poetry export --without-hashes --with test -o requirements-test.txt
 ```
 
 ### ライセンス
