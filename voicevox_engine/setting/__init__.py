@@ -1,4 +1,4 @@
-from .Setting import Setting
+from .Setting import CorsPolicyMode, Setting
 from .SettingLoader import SettingLoader
 
-__all__ = ["Setting", "SettingLoader"]
+__all__ = ["Setting", "SettingLoader", "CorsPolicyMode"]

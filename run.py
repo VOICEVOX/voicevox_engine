@@ -10,7 +10,6 @@ import sys
 import traceback
 import zipfile
 from distutils.version import LooseVersion
-from enum import Enum
 from functools import lru_cache
 from io import TextIOWrapper
 from pathlib import Path
@@ -52,7 +51,7 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.setting import Setting, SettingLoader
+from voicevox_engine.setting import CorsPolicyMode, Setting, SettingLoader
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
@@ -68,11 +67,6 @@ from voicevox_engine.utility import (
     delete_file,
     engine_root,
 )
-
-
-class CorsPolicyMode(str, Enum):
-    all = "all"
-    localapps = "localapps"
 
 
 def b64encode_str(s):
