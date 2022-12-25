@@ -512,7 +512,7 @@ jobs:
           - windows-directml
           - windows-nvidia
     env:
-      package_name: voicevox_engine-${{ env.VOICEVOX_ENGINE_VERSION }}-${{ matrix.artifact_name }}
+      package_name: voicevox_engine-${{ matrix.artifact_name }}-${{ env.VOICEVOX_ENGINE_VERSION }}
     steps:
       - uses: actions/checkout@v3
 
