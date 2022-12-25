@@ -435,8 +435,8 @@ Poetry を用いて依存ライブラリのバージョンを固定していま�
 pipx install poetry # Poetry のインストール
 
 poetry add package-name # ランタイム依存の追加
-poetry add --group dev # 開発依存の追加
-poetry add --group test # テスト依存の追加
+poetry add --group dev package-name # 開発依存の追加
+poetry add --group test package-name # テスト依存の追加
 
 poetry upgrade # 依存をまとめてアップグレード
 
