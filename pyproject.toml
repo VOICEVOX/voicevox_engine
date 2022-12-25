@@ -67,7 +67,7 @@ colorama = "^0.4.4"
 optional = true
 
 [tool.poetry.group.test.dependencies]
-pysen = {version = "^0.9.1", extras = ["lint"]}
+pysen = {version = "~0", extras = ["lint"]}
 pytest = "^6.2.5"
 coveralls = "^3.2.0"
 
