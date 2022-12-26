@@ -25,8 +25,8 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.13.3"
   VOICEVOX_CORE_VERSION: "0.14.0-preview.2"
   VOICEVOX_ENGINE_VERSION:
-    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
+    |- # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列.
+    ${{ github.event.release.tag_name || github.event.inputs.version }}
 
 jobs:
   build-all:
@@ -391,11 +391,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION || 'latest' }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION || 'latest' }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -499,7 +499,7 @@ jobs:
           path: dist/run/
 
   upload-to-release:
-    if: (github.event.release.tag_name || github.event.inputs.version) != ''
+    if: env.VOICEVOX_ENGINE_VERSION != ''
     needs: [build-all]
     runs-on: ubuntu-latest
     strategy:
@@ -511,9 +511,12 @@ jobs:
           - windows-cpu
           - windows-directml
           - windows-nvidia
-    env:
-      package_name: voicevox_engine-${{ matrix.artifact_name }}-${{ env.VOICEVOX_ENGINE_VERSION }}
     steps:
+      - name: declare variables
+        id: vars
+        run: |
+          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ env.VOICEVOX_ENGINE_VERSION }}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v3
 
       - name: Install dependencies
@@ -531,22 +534,22 @@ jobs:
       - name: Rearchive and split artifact
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v2g a "${{ env.package_name }}.7z" "${{ matrix.artifact_name }}/"
+          7z -r -v2g a "${{ steps.vars.package-name }}.7z" "${{ matrix.artifact_name }}/"
 
           # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
-          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ env.package_name }}.
+          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.package-name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvpp
-          if [ "$(ls ${{ env.package_name }}.*.vvpp | wc -l)" == 1 ]; then
-            mv ${{ env.package_name }}.001.vvpp ${{ env.package_name }}.vvpp
+          if [ "$(ls ${{ steps.vars.package-name }}.*.vvpp | wc -l)" == 1 ]; then
+            mv ${{ steps.vars.package-name }}.001.vvpp ${{ steps.vars.package-name }}.vvpp
           fi
 
           # Output splitted archive list
-          ls ${{ env.package_name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ env.package_name }}.7z.txt"
-          ls ${{ env.package_name }}*.vvpp > archives_vvpp.txt
-          mv archives_vvpp.txt "${{ env.package_name }}.vvpp.txt"
+          ls ${{ steps.vars.package-name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.package-name }}.7z.txt"
+          ls ${{ steps.vars.package-name }}*.vvpp > archives_vvpp.txt
+          mv archives_vvpp.txt "${{ steps.vars.package-name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
         uses: softprops/action-gh-release@v1
@@ -554,15 +557,15 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
           files: |-
-            ${{ env.package_name }}.7z.*
-            ${{ env.package_name }}*.vvpp
-            ${{ env.package_name }}.vvpp.txt
+            ${{ steps.vars.package-name }}.7z.*
+            ${{ steps.vars.package-name }}*.vvpp
+            ${{ steps.vars.package-name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
-    if: (github.event.release.tag_name || github.event.inputs.version) != ''
+    if: env.VOICEVOX_ENGINE_VERSION != ''
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.event.release.tag_name || github.event.inputs.version }} # env.VOICEVOX_ENGINE_VERSIONが使えない
+      version: ${{ env.VOICEVOX_ENGINE_VERSION }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
