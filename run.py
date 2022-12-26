@@ -1012,7 +1012,7 @@ if __name__ == "__main__":
         "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
-    parser.add_argument("--setting_file", type=Path, help="設定ファイルを手動で設定います。")
+    parser.add_argument("--setting_file", type=Path, help="設定ファイルを指定できます。")
 
     args = parser.parse_args()
 
