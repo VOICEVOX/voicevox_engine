@@ -887,6 +887,9 @@ def generate_app(
         cors_policy_mode = settings.cors_policy_mode
         allow_origin = settings.allow_origin
 
+        if allow_origin is None:
+            allow_origin = ""
+
         return setting_ui_template.TemplateResponse(
             "ui.html",
             {
@@ -907,12 +910,11 @@ def generate_app(
             allow_origin=allow_origin,
         )
 
-        # None文字列が返された場合上書きをする
-        if settings.allow_origin == "None":
-            settings.allow_origin = None
-
         # 更新した設定へ上書き
         setting_loader.dump_setting_file(settings)
+
+        if allow_origin is None:
+            allow_origin = ""
 
         return setting_ui_template.TemplateResponse(
             "ui.html",
