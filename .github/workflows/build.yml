@@ -29,11 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       voicevox-engine-version: ${{ steps.vars.outputs.voicevox-engine-version }}
+      voicevox-engine-version-or-latest: ${{ steps.vars.outputs.voicevox-engine-version-or-latest }}
     steps:
       - name: declare variables
         id: vars
+        shell: bash
         run: |
-          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列.
+          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
           echo "voicevox-engine-version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
           : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
           echo "voicevox-engine-version-or-latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
@@ -91,6 +93,7 @@ jobs:
     steps:
       - name: declare variables
         id: vars
+        shell: bash
         run: |
           echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
@@ -498,17 +501,8 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-      # FIXME: versioned name may be useful; but
-      # actions/download-artifact and dawidd6/download-artifact do not support
-      # wildcard / forward-matching yet.
-      # Currently, It is good to use static artifact name for future binary test workflow.
-      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
-      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
       - name: Upload artifact
         uses: actions/upload-artifact@v3
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (needs.config.outputs.voicevox-engine-version != 'latest' && needs.config.outputs.voicevox-engine-version) || github.sha) }}
         with:
           name: ${{ steps.vars.outputs.artifact-name }}
           path: dist/run/
@@ -529,6 +523,7 @@ jobs:
     steps:
       - name: declare variables
         id: vars
+        shell: bash
         run: |
           echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version }}" >> $GITHUB_OUTPUT
           : # this is exactly same as `steps.vars.outputs.artifact-name` in `build-all` job,

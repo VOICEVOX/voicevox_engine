@@ -51,6 +51,7 @@ jobs:
     steps:
       - name: declare variables
         id: vars
+        shell: bash
         run: |
           echo "release-url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
           echo "package-name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
