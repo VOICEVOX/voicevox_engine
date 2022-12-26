@@ -28,7 +28,7 @@ jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
     outputs:
-      voicevox-engine-version: ${{ steps.vars.outputs.voicevox-engine-version }}
+      voicevox-engine-version: ${{ steps.outputs.vars.outputs.voicevox-engine-version }}
     steps:
       - name: declare variables
         id: vars
@@ -542,22 +542,22 @@ jobs:
       - name: Rearchive and split artifact
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v2g a "${{ steps.vars.package-name }}.7z" "${{ matrix.artifact_name }}/"
+          7z -r -v2g a "${{ steps.outputs.vars.package-name }}.7z" "${{ matrix.artifact_name }}/"
 
           # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
-          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.package-name }}.
+          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.outputs.vars.package-name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvpp
-          if [ "$(ls ${{ steps.vars.package-name }}.*.vvpp | wc -l)" == 1 ]; then
-            mv ${{ steps.vars.package-name }}.001.vvpp ${{ steps.vars.package-name }}.vvpp
+          if [ "$(ls ${{ steps.outputs.vars.package-name }}.*.vvpp | wc -l)" == 1 ]; then
+            mv ${{ steps.outputs.vars.package-name }}.001.vvpp ${{ steps.outputs.vars.package-name }}.vvpp
           fi
 
           # Output splitted archive list
-          ls ${{ steps.vars.package-name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ steps.vars.package-name }}.7z.txt"
-          ls ${{ steps.vars.package-name }}*.vvpp > archives_vvpp.txt
-          mv archives_vvpp.txt "${{ steps.vars.package-name }}.vvpp.txt"
+          ls ${{ steps.outputs.vars.package-name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.outputs.vars.package-name }}.7z.txt"
+          ls ${{ steps.outputs.vars.package-name }}*.vvpp > archives_vvpp.txt
+          mv archives_vvpp.txt "${{ steps.outputs.vars.package-name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
         uses: softprops/action-gh-release@v1
@@ -565,9 +565,9 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           tag_name: ${{ needs.config.outputs.voicevox-engine-version }}
           files: |-
-            ${{ steps.vars.package-name }}.7z.*
-            ${{ steps.vars.package-name }}*.vvpp
-            ${{ steps.vars.package-name }}.vvpp.txt
+            ${{ steps.outputs.vars.package-name }}.7z.*
+            ${{ steps.outputs.vars.package-name }}*.vvpp
+            ${{ steps.outputs.vars.package-name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
