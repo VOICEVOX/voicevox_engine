@@ -511,11 +511,14 @@ jobs:
           - windows-cpu
           - windows-directml
           - windows-nvidia
+    outputs:
+      voicevox-engine-version: ${{ steps.vars.voicevox-engine-version }}
     steps:
       - name: declare variables
         id: vars
         run: |
           echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ env.VOICEVOX_ENGINE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "voicevox-engine-version={{ env.VOICEVOX_ENGINE_VERSION }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -567,5 +570,5 @@ jobs:
     needs: [upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ env.VOICEVOX_ENGINE_VERSION }}
+      version: ${{ needs.upload-to-release.outputs.voicevox-engine-version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
