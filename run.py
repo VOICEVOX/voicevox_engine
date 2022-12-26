@@ -51,7 +51,13 @@ from voicevox_engine.morphing import (
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset import Preset, PresetLoader
-from voicevox_engine.setting import CorsPolicyMode, Setting, SettingLoader
+from voicevox_engine.setting import (
+    USER_SETTING_PATH,
+    CorsPolicyMode,
+    Setting,
+    SettingLoader,
+    setup_setting_file,
+)
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
     apply_word,
@@ -101,6 +107,7 @@ def set_output_log_utf8() -> None:
 def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
+    setting_loader: SettingLoader,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
@@ -169,9 +176,7 @@ def generate_app(
         root_dir / "engine_manifest.json", root_dir
     )
 
-    setting_loader = SettingLoader(root_dir / "setting.yml")
-
-    setting_ui_template = Jinja2Templates(directory=root_dir / "ui_template")
+    setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -1005,6 +1010,8 @@ if __name__ == "__main__":
         "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
+    parser.add_argument("--setting_file", type=Path, help="設定ファイルを手動で設定います。")
+
     args = parser.parse_args()
 
     if args.output_log_utf8:
@@ -1030,7 +1037,14 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
 
-    settings = SettingLoader(root_dir / "setting.yml").load_setting_file()
+    if not USER_SETTING_PATH.is_file():
+        setup_setting_file()
+
+    setting_file_path = args.setting_file if args.setting_file else USER_SETTING_PATH
+
+    setting_loader = SettingLoader(setting_file_path)
+
+    settings = setting_loader.load_setting_file()
 
     cors_policy_mode = (
         args.cors_policy_mode
@@ -1046,6 +1060,7 @@ if __name__ == "__main__":
         generate_app(
             synthesis_engines,
             latest_core_version,
+            setting_loader,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
