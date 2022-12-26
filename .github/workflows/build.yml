@@ -35,6 +35,8 @@ jobs:
         run: |
           : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列.
           echo "voicevox-engine-version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
+          echo "voicevox-engine-version-or-latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
 
   build-all:
     needs: [config]
@@ -87,6 +89,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: declare variables
+        id: vars
+        run: |
+          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v3
 
       - name: Show disk space (debug info)
@@ -399,11 +406,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version || 'latest' }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version-or-latest }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version || 'latest' }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version-or-latest }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -503,7 +510,7 @@ jobs:
         #   VERSIONED_ARTIFACT_NAME: |
         #     ${{ format('{0}-{1}', matrix.artifact_name, (needs.config.outputs.voicevox-engine-version != 'latest' && needs.config.outputs.voicevox-engine-version) || github.sha) }}
         with:
-          name: ${{ matrix.artifact_name }}
+          name: ${{ steps.vars.outputs.artifact-name }}
           path: dist/run/
 
   upload-to-release:
@@ -524,6 +531,9 @@ jobs:
         id: vars
         run: |
           echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version }}" >> $GITHUB_OUTPUT
+          : # this is exactly same as `steps.vars.outputs.artifact-name` in `build-all` job,
+          : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
+          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -536,7 +546,7 @@ jobs:
       - name: Download and extract artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.artifact_name }}
+          name: ${{ steps.vars.outputs.artifact-name }}
           path: ${{ matrix.artifact_name }}/
 
       - name: Rearchive and split artifact
