@@ -66,8 +66,8 @@ jobs:
         shell: bash -euxv {0}
         run: |
           mkdir -p download
-          curl -L -o "download/list.txt" "${{ steps.vars.release-url }}/${{ steps.vars.package-name }}.7z.txt"
-          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ steps.vars.release-url }}/%"
+          curl -L -o "download/list.txt" "${{ steps.vars.outputs.release-url }}/${{ steps.vars.outputs.package-name }}.7z.txt"
+          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ steps.vars.outputs.release-url }}/%"
           7z x "download/$(head -n1 download/list.txt)"
           mv ${{ matrix.target }} dist/
 
