@@ -20,16 +20,24 @@ on:
         type: boolean
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.13.3"
   VOICEVOX_CORE_VERSION: "0.14.0-preview.2"
-  VOICEVOX_ENGINE_VERSION:
-    |- # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列.
-    ${{ github.event.release.tag_name || github.event.inputs.version }}
 
 jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    uses: ubuntu-latest
+    outputs:
+      voicevox-engine-version: ${{ steps.vars.outputs.voicevox-engine-version }}
+    steps:
+      - name: declare variables
+        id: vars
+        run: |
+          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列.
+          echo "voicevox-engine-version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
   build-all:
+    needs: [config]
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
@@ -391,11 +399,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION || 'latest' }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version || 'latest' }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION || 'latest' }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version || 'latest' }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -493,14 +501,14 @@ jobs:
         uses: actions/upload-artifact@v3
         # env:
         #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
+        #     ${{ format('{0}-{1}', matrix.artifact_name, (needs.config.outputs.voicevox-engine-version != 'latest' && needs.config.outputs.voicevox-engine-version) || github.sha) }}
         with:
           name: ${{ matrix.artifact_name }}
           path: dist/run/
 
   upload-to-release:
-    if: env.VOICEVOX_ENGINE_VERSION != ''
-    needs: [build-all]
+    if: needs.config.outputs.voicevox-engine-version != ''
+    needs: [config, build-all]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -511,14 +519,11 @@ jobs:
           - windows-cpu
           - windows-directml
           - windows-nvidia
-    outputs:
-      voicevox-engine-version: ${{ steps.vars.voicevox-engine-version }}
     steps:
       - name: declare variables
         id: vars
         run: |
-          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ env.VOICEVOX_ENGINE_VERSION }}" >> $GITHUB_OUTPUT
-          echo "voicevox-engine-version={{ env.VOICEVOX_ENGINE_VERSION }}" >> $GITHUB_OUTPUT
+          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -558,7 +563,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          tag_name: ${{ needs.config.outputs.voicevox-engine-version }}
           files: |-
             ${{ steps.vars.package-name }}.7z.*
             ${{ steps.vars.package-name }}*.vvpp
@@ -566,9 +571,9 @@ jobs:
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
-    if: env.VOICEVOX_ENGINE_VERSION != ''
-    needs: [upload-to-release]
+    if: needs.config.outputs.voicevox-engine-version != ''
+    needs: [config, upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ needs.upload-to-release.outputs.voicevox-engine-version }}
+      version: ${{ needs.config.outputs.voicevox-engine-version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
