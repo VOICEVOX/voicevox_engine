@@ -69,7 +69,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.10.0.tgz
 RUN <<EOF
     set -eux
 

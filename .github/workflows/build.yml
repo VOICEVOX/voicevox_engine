@@ -37,7 +37,7 @@ jobs:
           - os: macos-11
             python_architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-universal2-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-universal2-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-universal2-1.13.1.tgz
             artifact_name: macos-x64
 
     runs-on: ${{ matrix.os }}
@@ -244,7 +244,7 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
@@ -255,16 +255,16 @@ jobs:
             base_image: ubuntu:bionic
             base_runtime_image: ubuntu:bionic
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
             artifact_name: linux-cpu
             nuitka_cache_path: nuitka_cache
           - tag: build-nvidia-ubuntu18.04
             runtime_tag: nvidia-ubuntu18.04 # for cache use
             target: build-env
             base_image: ubuntu:bionic
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
             artifact_name: linux-nvidia
             nuitka_cache_path: nuitka_cache
 
@@ -378,7 +378,7 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-1.10.0.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-cpu
             nuitka_cache_path: nuitka_cache
@@ -386,8 +386,8 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/Microsoft.ML.OnnxRuntime.DirectML.1.10.0.zip
-            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.0
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
+            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-directml
             nuitka_cache_path: nuitka_cache
@@ -395,8 +395,8 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-win-x64-gpu-1.10.0.zip
-            cuda_version: "11.4.2"
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
+            cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.2.4/cudnn-11.4-windows-x64-v8.2.4.15.zip
             ccache_url: https://github.com/ccache/ccache/releases/download/v4.4.1/ccache-4.4.1-windows-64.zip
             artifact_name: windows-nvidia
@@ -424,7 +424,7 @@ jobs:
 
       - name: Setup CUDA
         if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.5
+        uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
           method: network

@@ -115,7 +115,7 @@ def generate_licenses() -> List[License]:
         licenses.append(
             License(
                 name="ONNX Runtime",
-                version="1.10.0",
+                version="1.13.1",
                 license="MIT license",
                 text=res.read().decode(),
             )
