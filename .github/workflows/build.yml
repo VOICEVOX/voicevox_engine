@@ -244,7 +244,7 @@ jobs:
   build-linux:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         tag:
           - build-cpu-ubuntu18.04
           - build-nvidia-ubuntu18.04
