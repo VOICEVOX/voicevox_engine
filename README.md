@@ -9,7 +9,7 @@
 [![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
-[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
+[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
 （エディターは [VOICEVOX](https://github.com/VOICEVOX/voicevox/) 、
@@ -24,7 +24,7 @@
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
 
-VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。
 今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
@@ -110,15 +110,15 @@ curl -s -X GET "localhost:50021/user_dict"
 
 #### 単語追加
 
-`/user_dict_word`にPOSTリクエストを投げる事でユーザー辞書に単語を追加することができます。  
+`/user_dict_word`にPOSTリクエストを投げる事でユーザー辞書に単語を追加することができます。
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録する単語）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-アクセント核位置については、こちらの文章が参考になるかと思います。  
-〇型となっている数字の部分がアクセント核位置になります。  
-https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html  
+アクセント核位置については、こちらの文章が参考になるかと思います。
+〇型となっている数字の部分がアクセント核位置になります。
+https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html
 
 成功した場合の返り値は単語に割り当てられるUUIDの文字列になります。
 
@@ -136,13 +136,13 @@ curl -s -X POST "localhost:50021/user_dict_word" \
 
 #### 単語修正
 
-`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザー辞書の単語を修正することができます。  
+`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザー辞書の単語を修正することができます。
 URLパラメータとして、以下が必要です。
 - surface （辞書に登録するワード）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -161,9 +161,9 @@ curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
 
 #### 単語削除
 
-`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザー辞書の単語を削除することができます。  
+`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザー辞書の単語を削除することができます。
 
-word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -250,7 +250,7 @@ curl -s \
 
 ### 話者の追加情報を取得するサンプルコード
 
-追加情報の中の portrait.png を取得するコードです。  
+追加情報の中の portrait.png を取得するコードです。
 （[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
 
 ```bash
@@ -262,10 +262,24 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 
 ### キャンセル可能な音声合成
 
-`/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。  
-(`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
-この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
+`/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。
+(`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)
+この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。
 音声合成に必要なパラメータは`/synthesis`と同様です。
+
+### CORS設定
+
+VOICEVOXではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Originなし以外のOriginからリクエストを受け入れないようになっています。
+そのため、一部のサードパーティアプリからのレスポンスを受け取れない可能性があります。
+
+これを回避する方法として、エンジンから設定できるUIを用意しています。
+
+#### 設定方法
+
+1. <http://127.0.0.1:50021/setting> にアクセスします。
+2. 利用するアプリに合わせて設定を変更、追加してください。
+3. 保存ボタンを押して、変更を確定してください。
+4. 設定の適用にはエンジンの再起動が必要です。必要に応じて再起動をしてください。
 
 ## アップデート
 
@@ -340,8 +354,8 @@ python run.py --output_log_utf8
 
 ### CPU スレッド数を指定する
 
-CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
-もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
+CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）
+もし IaaS 上で実行していたり、専用サーバーで実行している場合など、
 VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
 - 実行時引数で指定する
@@ -357,7 +371,7 @@ VOICEVOX ENGINE が使う処理能力を調節したい場合は、CPU スレッ
   ```
 
 ### 過去のバージョンのコアを使う
-VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
+VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。
 Macでのlibtorch版コアのサポートはしていません。
 
 #### 過去のバイナリを指定する
@@ -371,10 +385,10 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voi
 ```
 
 #### 音声ライブラリを直接指定する
-[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
-また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
-ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
-`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。   
+[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。
+ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。
+`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。
 APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 ```bash
 python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
@@ -440,7 +454,7 @@ pip-compile requirements-test.in
 
 ### ライセンス
 
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。
 主要ライセンスの可否は以下の通りです。
 
 - MIT/Apache/BSD-3: OK
