@@ -640,7 +640,7 @@ def generate_app(
                     ).read_bytes()
                 )
                 style_portrait_path = (
-                    root_dir / f"speaker_info/{speaker_uuid}/style_portrait/{id}.png"
+                    root_dir / f"speaker_info/{speaker_uuid}/portraits/{id}.png"
                 )
                 style_portrait = (
                     b64encode_str(style_portrait_path.read_bytes())
