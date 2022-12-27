@@ -220,7 +220,7 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/pip3 install pip-licenses==3.5.3 # FIXME: 応急処置。詳細→https://github.com/VOICEVOX/voicevox_engine/issues/544
     gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     # FIXME: VOICEVOX (editor) cannot build without licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
@@ -308,7 +308,7 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/pip3 install pip-licenses==3.5.3 # FIXME: 応急処置。詳細→https://github.com/VOICEVOX/voicevox_engine/issues/544
     gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     # FIXME: VOICEVOX (editor) cannot build without licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
