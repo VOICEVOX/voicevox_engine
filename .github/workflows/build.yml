@@ -131,7 +131,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       - name: Prepare VOICEVOX Core release cache
         uses: actions/cache@v2
@@ -304,7 +304,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       # NOTE: `load: true` may silently fail when the GitHub Actions disk (14GB) is full.
       # https://docs.github.com/ja/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
@@ -637,7 +637,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache

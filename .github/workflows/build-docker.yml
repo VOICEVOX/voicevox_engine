@@ -116,7 +116,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v2
