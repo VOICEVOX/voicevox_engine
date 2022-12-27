@@ -56,7 +56,6 @@ from voicevox_engine.setting import (
     CorsPolicyMode,
     Setting,
     SettingLoader,
-    setup_setting_file,
 )
 from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
 from voicevox_engine.user_dict import (
@@ -1012,7 +1011,9 @@ if __name__ == "__main__":
         "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
-    parser.add_argument("--setting_file", type=Path, help="設定ファイルを指定できます。")
+    parser.add_argument(
+        "--setting_file", type=Path, default=USER_SETTING_PATH, help="設定ファイルを指定できます。"
+    )
 
     args = parser.parse_args()
 
@@ -1039,10 +1040,7 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
 
-    if not USER_SETTING_PATH.is_file():
-        setup_setting_file()
-
-    setting_file_path = args.setting_file if args.setting_file else USER_SETTING_PATH
+    setting_file_path = args.setting_file
 
     setting_loader = SettingLoader(setting_file_path)
 
