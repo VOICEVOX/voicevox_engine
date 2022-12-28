@@ -31,7 +31,7 @@ build-linux-docker-nvidia-ubuntu20.04:
 		--target runtime-nvidia-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:20.04 \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04 \
+		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04 \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
@@ -68,7 +68,7 @@ build-linux-docker-nvidia-ubuntu18.04:
 		--target runtime-nvidia-env \
 		--progress plain \
 		--build-arg BASE_IMAGE=ubuntu:18.04 \
-		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04 \
+		--build-arg BASE_RUNTIME_IMAGE=nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu18.04 \
 		--build-arg ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz \
 		--build-arg VOICEVOX_CORE_LIBRARY_NAME=libcore_gpu_x64_nvidia.so $(ARGS)
 
