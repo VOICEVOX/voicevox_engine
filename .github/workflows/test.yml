@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     branches:
-      - '**'
+      - "**"
   workflow_dispatch:
 
 jobs:
@@ -12,21 +12,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest]  # [ubuntu-20.04, macos-latest, windows-latest]
-        python: ['3.8.10']
+        os: [ubuntu-20.04, windows-latest] # [ubuntu-20.04, macos-latest, windows-latest]
+        python: ["3.8.10"]
         include:
-        - os: ubuntu-20.04
-          path: ~/.cache/pip
-        # - os: macos-latest
-        #   path: ~/Library/Caches/pip
-        - os: windows-latest
-          path: ~\AppData\Local\pip\Cache
+          - os: ubuntu-20.04
+            path: ~/.cache/pip
+          # - os: macos-latest
+          #   path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload coverage result
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: report
           path: report/

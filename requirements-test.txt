@@ -104,7 +104,7 @@ pydantic==1.8.2
     # via fastapi
 pyflakes==2.3.1
     # via flake8
-pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@50b0296a9e1b666e5a09a41ec9e9284a2a9b608f
+pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@f4ade29ef9a4f43d8605103cb5bacc29e0b2ccae
     # via -r requirements.in
 pyparsing==3.0.1
     # via packaging

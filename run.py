@@ -5,12 +5,14 @@ import base64
 import json
 import multiprocessing
 import os
+import re
+import sys
 import traceback
-
-# import sys
 import zipfile
 from distutils.version import LooseVersion
+from enum import Enum
 from functools import lru_cache
+from io import TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
@@ -21,7 +23,9 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Query
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError, conint
+from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -54,23 +58,56 @@ from voicevox_engine.user_dict import (
     import_user_dict,
     read_dict,
     rewrite_word,
-    user_dict_startup_processing,
+    update_dict,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
+    delete_file,
     engine_root,
 )
+
+
+class CorsPolicyMode(str, Enum):
+    all = "all"
+    localapps = "localapps"
 
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
+def set_output_log_utf8() -> None:
+    """
+    stdout/stderrのエンコーディングをUTF-8に切り替える関数
+    """
+    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
+    if sys.stdout is not None:
+        # 必ずしもreconfigure()が実装されているとは限らない
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except AttributeError:
+            # バッファを全て出力する
+            sys.stdout.flush()
+            sys.stdout = TextIOWrapper(
+                sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
+            )
+    if sys.stderr is not None:
+        try:
+            sys.stderr.reconfigure(encoding="utf-8")
+        except AttributeError:
+            sys.stderr.flush()
+            sys.stderr = TextIOWrapper(
+                sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
+            )
+
+
 def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
     root_dir: Optional[Path] = None,
+    cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
+    allow_origin: Optional[List[str]] = None,
 ) -> FastAPI:
     if root_dir is None:
         root_dir = engine_root()
@@ -83,13 +120,51 @@ def generate_app(
         version=__version__,
     )
 
+    # CORS用のヘッダを生成するミドルウェア
+    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+    compiled_localhost_regex = re.compile(localhost_regex)
+    allowed_origins = ["*"]
+    if cors_policy_mode == "localapps":
+        allowed_origins = ["app://."]
+        if allow_origin is not None:
+            allowed_origins += allow_origin
+            if "*" in allow_origin:
+                print(
+                    'WARNING: Deprecated use of argument "*" in allow_origin. '
+                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
+                    file=sys.stderr,
+                )
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=allowed_origins,
         allow_credentials=True,
+        allow_origin_regex=localhost_regex,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # 許可されていないOriginを遮断するミドルウェア
+    @app.middleware("http")
+    async def block_origin_middleware(request: Request, call_next):
+        isValidOrigin: bool = False
+        if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
+            isValidOrigin = True
+        elif "*" in allowed_origins:  # すべてを許可する設定の場合
+            isValidOrigin = True
+        elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
+            isValidOrigin = True
+        elif compiled_localhost_regex.fullmatch(
+            request.headers["Origin"]
+        ):  # localhostの場合
+            isValidOrigin = True
+
+        if isValidOrigin:
+            return await call_next(request)
+        else:
+            return JSONResponse(
+                status_code=403, content={"detail": "Origin not allowed"}
+            )
 
     preset_loader = PresetLoader(
         preset_path=root_dir / "presets.yaml",
@@ -111,7 +186,7 @@ def generate_app(
 
     @app.on_event("startup")
     def apply_user_dict():
-        user_dict_startup_processing()
+        update_dict()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
@@ -308,7 +383,11 @@ def generate_app(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/cancellable_synthesis",
@@ -343,7 +422,11 @@ def generate_app(
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-        return FileResponse(f_name, media_type="audio/wav")
+        return FileResponse(
+            f_name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f_name),
+        )
 
     @app.post(
         "/multi_synthesis",
@@ -391,7 +474,11 @@ def generate_app(
                         wav_file.seek(0)
                         zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
-        return FileResponse(f.name, media_type="application/zip")
+        return FileResponse(
+            f.name,
+            media_type="application/zip",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/synthesis_morphing",
@@ -441,7 +528,11 @@ def generate_app(
                 format="WAV",
             )
 
-        return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.post(
         "/connect_waves",
@@ -473,7 +564,11 @@ def generate_app(
                 format="WAV",
             )
 
-            return FileResponse(f.name, media_type="audio/wav")
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
 
     @app.get("/presets", response_model=List[Preset], tags=["その他"])
     def get_presets():
@@ -785,6 +880,16 @@ def generate_app(
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
+
+    output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
+    if output_log_utf8 == "1":
+        set_output_log_utf8()
+    elif not (output_log_utf8 == "" or output_log_utf8 == "0"):
+        print(
+            "WARNING:  invalid VV_OUTPUT_LOG_UTF8 environment variable value",
+            file=sys.stderr,
+        )
+
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
         "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
@@ -833,10 +938,34 @@ if __name__ == "__main__":
         type=int,
         default=os.getenv("VV_CPU_NUM_THREADS") or None,
         help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
-        "VV_CPU_NUM_THREADSに値がなかった、または数値でなかった場合はエラー終了します。",
+        "VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。",
+    )
+
+    parser.add_argument(
+        "--output_log_utf8",
+        action="store_true",
+        help="指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
+        "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
+    )
+
+    parser.add_argument(
+        "--cors_policy_mode",
+        type=CorsPolicyMode,
+        choices=list(CorsPolicyMode),
+        default=CorsPolicyMode.localapps,
+        help="allまたはlocalappsを指定。allはすべてを許可します。"
+        "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+        "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
+    )
+
+    parser.add_argument(
+        "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
     )
 
     args = parser.parse_args()
+
+    if args.output_log_utf8:
+        set_output_log_utf8()
 
     cpu_num_threads: Optional[int] = args.cpu_num_threads
 
@@ -858,7 +987,13 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
     uvicorn.run(
-        generate_app(synthesis_engines, latest_core_version, root_dir=root_dir),
+        generate_app(
+            synthesis_engines,
+            latest_core_version,
+            root_dir=root_dir,
+            cors_policy_mode=args.cors_policy_mode,
+            allow_origin=args.allow_origin,
+        ),
         host=args.host,
         port=args.port,
     )

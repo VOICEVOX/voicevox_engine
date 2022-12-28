@@ -33,11 +33,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             target: linux-cpu
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             target: linux-nvidia
-          - os: macos-10.15
+          - os: macos-11
             target: macos-x64
           - os: windows-2019
             target: windows-cpu

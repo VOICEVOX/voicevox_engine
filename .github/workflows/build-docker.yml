@@ -40,64 +40,64 @@ jobs:
           # Ubuntu 20.04
           - tag: ""
             target: runtime-env
-            base_image: ubuntu:focal
-            base_runtime_image: ubuntu:focal
+            base_image: ubuntu:20.04
+            base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: cpu
             target: runtime-env
-            base_image: ubuntu:focal
-            base_runtime_image: ubuntu:focal
+            base_image: ubuntu:20.04
+            base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
-            base_image: ubuntu:focal
-            base_runtime_image: ubuntu:focal
+            base_image: ubuntu:20.04
+            base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: nvidia
             target: runtime-nvidia-env
-            base_image: ubuntu:focal
+            base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
-            base_image: ubuntu:focal
+            base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
-            base_image: ubuntu:bionic
-            base_runtime_image: ubuntu:bionic
+            base_image: ubuntu:18.04
+            base_runtime_image: ubuntu:18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
-            base_image: ubuntu:bionic
+            base_image: ubuntu:18.04
             base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -119,7 +119,7 @@ jobs:
         run: bash build_util/process_voicevox_resource.bash
 
       - name: Build and Deploy Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         env:
           IMAGE_TAG:
             |- # If it's a release, add the version, otherwise add the `latest`

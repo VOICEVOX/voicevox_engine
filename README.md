@@ -16,6 +16,10 @@
 コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
 全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
+## ダウンロード
+
+[こちら](https://github.com/VOICEVOX/voicevox_engine/releases/latest)から対応するエンジンをダウンロードしてください。
+
 ## API ドキュメント
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
@@ -263,6 +267,10 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
+## アップデート
+
+エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
+
 ## Docker イメージ
 
 ### CPU
@@ -287,6 +295,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 ## 環境構築
 
 `Python 3.8.10` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
 # 開発に必要なライブラリのインストール
@@ -321,6 +330,12 @@ python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 ```bash
 # モックでサーバー起動
 python run.py --enable_mock
+```
+
+```bash
+# ログをUTF8に変更
+python run.py --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
 ### CPU スレッド数を指定する
@@ -395,35 +410,18 @@ python make_docs.py
 
 ## ビルド
 
-Build Tools for Visual Studio 2019 が必要です。
+この方法でビルドしたものは、リリースで公開されているものとは異なります。
+また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
 
 ```bash
 python -m pip install -r requirements-dev.txt
 
 python generate_licenses.py > licenses.json
 
-python -m nuitka \
-    --standalone \
-    --plugin-enable=numpy \
-    --plugin-enable=multiprocessing \
-    --follow-import-to=numpy \
-    --follow-import-to=aiofiles \
-    --include-package=uvicorn \
-    --include-package=anyio \
-    --include-package-data=pyopenjtalk \
-    --include-package-data=scipy \
-    --include-data-file=licenses.json=./ \
-    --include-data-file=presets.yaml=./ \
-    --include-data-file=default.csv=./ \
-    --include-data-file=engine_manifest.json=./ \
-    --include-data-file=C:/path/to/cuda/*.dll=./ \
-    --include-data-file=C:/path/to/onnxruntime/lib/*.dll=./ \
-    --include-data-dir=.venv/Lib/site-packages/_soundfile_data=./_soundfile_data \
-    --include-data-dir=speaker_info=./speaker_info \
-    --msvc=14.2 \
-    --follow-imports \
-    --no-prefer-source-code \
-    run.py
+# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+LIBCORE_PATH="/path/to/libcore" \
+    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+    pyinstaller --noconfirm run.spec
 ```
 
 ## 依存関係

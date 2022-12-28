@@ -2,7 +2,17 @@ End User License Agreement
 --------------------------
 
 NVIDIA Software License Agreement and CUDA Supplement to
-Software License Agreement.
+Software License Agreement. Last updated: October 8, 2021
+
+The CUDA Toolkit End User License Agreement applies to the
+NVIDIA CUDA Toolkit, the NVIDIA CUDA Samples, the NVIDIA
+Display Driver, NVIDIA Nsight tools (Visual Studio Edition),
+and the associated documentation on CUDA APIs, programming
+model and development tools. If you do not agree with the
+terms and conditions of the license agreement, then do not
+download or use the software.
+
+Last updated: October 8, 2021.
 
 
 Preface
@@ -100,10 +110,6 @@ Windows platform:
 
 1. License Agreement for NVIDIA Software Development Kits
 ---------------------------------------------------------
-
-
-Release Date: July 26, 2018
----------------------------
 
 
 Important Notice—Read before downloading, installing,
@@ -249,16 +255,21 @@ in some cases make changes that introduce incompatibilities in
 future versions of the SDK.
 
 
-1.1.6. Third Party Licenses
+1.1.6. Components Under Other Licenses
 
 The SDK may come bundled with, or otherwise include or be
-distributed with, third party software licensed by a NVIDIA
-supplier and/or open source software provided under an open
-source license. Use of third party software is subject to the
-third-party license terms, or in the absence of third party
-terms, the terms of this Agreement. Copyright to third party
-software is held by the copyright holders indicated in the
-third-party software or license.
+distributed with, NVIDIA or third-party components with
+separate legal notices or terms as may be described in
+proprietary notices accompanying the SDK. If and to the extent
+there is a conflict between the terms in this Agreement and
+the license terms associated with the component, the license
+terms associated with the components control only to the
+extent necessary to resolve the conflict.
+
+Subject to the other terms of this Agreement, you may use the
+SDK to develop and test applications released under Open
+Source Initiative (OSI) approved open source software
+licenses.
 
 
 1.1.7. Reservation of Rights
@@ -302,28 +313,40 @@ SDK:
 
       c. Redistributable at no charge.
 
-  6. Unless you have an agreement with NVIDIA for this
-    purpose, you may not use the SDK with any system or
-    application where the use or failure of the system or
-    application can reasonably be expected to threaten or
-    result in personal injury, death, or catastrophic loss.
-    Examples include use in nuclear, avionics, navigation,
+  6.  You acknowledge that the SDK as delivered is not tested
+    or certified by NVIDIA for use in connection with the
+    design, construction, maintenance, and/or operation of any
+    system where the use or failure of such system could
+    result in a situation that threatens the safety of human
+    life or results in catastrophic damages (each, a "Critical
+    Application"). Examples of Critical Applications include
+    use in avionics, navigation, autonomous vehicle
+    applications, ai solutions for automotive products,
     military, medical, life support or other life critical
-    applications. NVIDIA does not design, test or manufacture
-    the SDK for these critical uses and NVIDIA shall not be
-    liable to you or any third party, in whole or in part, for
-    any claims or damages arising from such uses.
+    applications. NVIDIA shall not be liable to you or any
+    third party, in whole or in part, for any claims or
+    damages arising from such uses. You are solely responsible
+    for ensuring that any product or service developed with
+    the SDK as a whole includes sufficient features to comply
+    with all applicable legal and regulatory standards and
+    requirements.
 
-  7. You agree to defend, indemnify and hold harmless NVIDIA
+  7.  You agree to defend, indemnify and hold harmless NVIDIA
     and its affiliates, and their respective employees,
     contractors, agents, officers and directors, from and
     against any and all claims, damages, obligations, losses,
     liabilities, costs or debt, fines, restitutions and
     expenses (including but not limited to attorney’s fees
     and costs incident to establishing the right of
-    indemnification) arising out of or related to your use of
-    the SDK outside of the scope of this Agreement, or not in
-    compliance with its terms.
+    indemnification) arising out of or related to products or
+    services that use the SDK in or for Critical Applications,
+    and for use of the SDK outside of the scope of this
+    Agreement or not in compliance with its terms.
+
+  8. You may not reverse engineer, decompile or disassemble
+    any portion of the output generated using SDK elements for
+    the purpose of translating such output artifacts to target
+    a non-NVIDIA platform.
 
 
 1.3. Ownership
@@ -331,8 +354,8 @@ SDK:
   1.  NVIDIA or its licensors hold all rights, title and
     interest in and to the SDK and its modifications and
     derivative works, including their respective intellectual
-    property rights, subject to your rights described here .
-    This SDK may include software and materials from
+    property rights, subject to your rights under Section
+    1.3.2. This SDK may include software and materials from
     NVIDIA’s licensors, and these licensors are intended
     third party beneficiaries that may enforce this Agreement
     with respect to their intellectual property rights.
@@ -341,7 +364,7 @@ SDK:
     applications and your derivative works of the sample
     source code delivered in the SDK, including their
     respective intellectual property rights, subject to
-    NVIDIA’s rights described here .
+    NVIDIA’s rights under Section 1.3.1.
 
   3. You may, but don’t have to, provide to NVIDIA
     suggestions, feature requests or other feedback regarding
@@ -521,10 +544,6 @@ parties.
 2. CUDA Toolkit Supplement to Software License Agreement for
 NVIDIA Software Development Kits
 ------------------------------------------------------------
-
-
-Release date: August 16, 2018
------------------------------
 
 The terms in this supplement govern your use of the NVIDIA
 CUDA Toolkit SDK under the terms of your license agreement
@@ -782,6 +801,10 @@ Component
 
 NVIDIA JPEG Library
 
+Windows
+
+nvjpeg.lib, nvjpeg.dll
+
 Linux
 
 libnvjpeg.so, libnvjpeg_static.a
@@ -909,15 +932,16 @@ libcuda.so, libnvidia-ptxjitcompiler.so
 
 Component
 
-PTX Compiler Static Library (nvPTXCompiler.h)
+NVIDIA CUDA File IO Libraries and Header
 
-Windows
+All
 
-nvptxcompiler_static.lib
+cufile.h
 
 Linux
 
-libnvptxcompiler_static.a
+libcufile.so, libcufile_rdma.so, libcufile_static.a,
+libcufile_rdma_static.a
 
 The NVIDIA CUDA Driver Libraries are only distributable in
 applications that meet this criteria:
@@ -971,7 +995,7 @@ conditions:
     distribution of this product by NVIDIA CORPORATION.
 
     Component          License
-    CUDA-GDB           GPL v3
+    CUDA-GDB           GPL v3  
 
   2. Licensee represents and warrants that any and all third
     party licensing and/or royalty payment obligations in
@@ -992,30 +1016,30 @@ conditions:
 
     Boost Software License - Version 1.0 - August 17th, 2003
     . . . .
-
-    Permission is hereby granted, free of charge, to any person or
-    organization obtaining a copy of the software and accompanying
-    documentation covered by this license (the "Software") to use,
-    reproduce, display, distribute, execute, and transmit the Software,
-    and to prepare derivative works of the Software, and to permit
-    third-parties to whom the Software is furnished to do so, all
+    
+    Permission is hereby granted, free of charge, to any person or 
+    organization obtaining a copy of the software and accompanying 
+    documentation covered by this license (the "Software") to use, 
+    reproduce, display, distribute, execute, and transmit the Software, 
+    and to prepare derivative works of the Software, and to permit 
+    third-parties to whom the Software is furnished to do so, all 
     subject to the following:
-
-    The copyright notices in the Software and this entire statement,
-    including the above license grant, this restriction and the following
-    disclaimer, must be included in all copies of the Software, in whole
-    or in part, and all derivative works of the Software, unless such
-    copies or derivative works are solely in the form of machine-executable
+    
+    The copyright notices in the Software and this entire statement, 
+    including the above license grant, this restriction and the following 
+    disclaimer, must be included in all copies of the Software, in whole 
+    or in part, and all derivative works of the Software, unless such 
+    copies or derivative works are solely in the form of machine-executable 
     object code generated by a source language processor.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND
-    NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR
-    ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR
-    OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-    OTHER DEALINGS IN THE SOFTWARE.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND 
+    NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR 
+    ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR 
+    OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING 
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+    OTHER DEALINGS IN THE SOFTWARE.  
 
   4. Licensee's use of the LLVM third party component is
     subject to the following terms and conditions:
@@ -1025,48 +1049,47 @@ conditions:
     ======================================================
     University of Illinois/NCSA
     Open Source License
-
+    
     Copyright (c) 2003-2010 University of Illinois at Urbana-Champaign.
     All rights reserved.
-
+    
     Developed by:
-
+    
         LLVM Team
-
+    
         University of Illinois at Urbana-Champaign
-
+    
         http://llvm.org
-
+    
     Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to
+    of this software and associated documentation files (the "Software"), to 
     deal with the Software without restriction, including without limitation the
-    rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-    sell copies of the Software, and to permit persons to whom the Software is
+    rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+    sell copies of the Software, and to permit persons to whom the Software is 
     furnished to do so, subject to the following conditions:
-
-    *  Redistributions of source code must retain the above copyright notice,
+    
+    *  Redistributions of source code must retain the above copyright notice, 
        this list of conditions and the following disclaimers.
-
-    *  Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimers in the
+    
+    *  Redistributions in binary form must reproduce the above copyright 
+       notice, this list of conditions and the following disclaimers in the 
        documentation and/or other materials provided with the distribution.
-
+    
     *  Neither the names of the LLVM Team, University of Illinois at Urbana-
        Champaign, nor the names of its contributors may be used to endorse or
-       promote products derived from this Software without specific prior
+       promote products derived from this Software without specific prior 
        written permission.
-
+    
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
-    THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+    THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
     OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
     ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-    DEALINGS WITH THE SOFTWARE.
+    DEALINGS WITH THE SOFTWARE.  
 
-  5. Licensee's use (e.g. nvprof) of the PCRE third party
-    component is subject to the following terms and
-    conditions:
+  5. Licensee's use of the PCRE third party component is
+    subject to the following terms and conditions:
 
     ------------
     PCRE LICENCE
@@ -1074,13 +1097,13 @@ conditions:
     PCRE is a library of functions to support regular expressions whose syntax
     and semantics are as close as possible to those of the Perl 5 language.
     Release 8 of PCRE is distributed under the terms of the "BSD" licence, as
-    specified below. The documentation for PCRE, supplied in the "doc"
+    specified below. The documentation for PCRE, supplied in the "doc" 
     directory, is distributed under the same terms as the software itself. The
-    basic library functions are written in C and are freestanding. Also
+    basic library functions are written in C and are freestanding. Also 
     included in the distribution is a set of C++ wrapper functions, and a just-
-    in-time compiler that can be used to optimize pattern matching. These are
+    in-time compiler that can be used to optimize pattern matching. These are 
     both optional features that can be omitted when the library is built.
-
+    
     THE BASIC LIBRARY FUNCTIONS
     ---------------------------
     Written by:       Philip Hazel
@@ -1090,7 +1113,7 @@ conditions:
     Cambridge, England.
     Copyright (c) 1997-2012 University of Cambridge
     All rights reserved.
-
+    
     PCRE JUST-IN-TIME COMPILATION SUPPORT
     -------------------------------------
     Written by:       Zoltan Herczeg
@@ -1098,7 +1121,7 @@ conditions:
     Emain domain:     freemail.hu
     Copyright(c) 2010-2012 Zoltan Herczeg
     All rights reserved.
-
+    
     STACK-LESS JUST-IN-TIME COMPILER
     --------------------------------
     Written by:       Zoltan Herczeg
@@ -1106,7 +1129,7 @@ conditions:
     Emain domain:     freemail.hu
     Copyright(c) 2009-2012 Zoltan Herczeg
     All rights reserved.
-
+    
     THE C++ WRAPPER FUNCTIONS
     -------------------------
     Contributed by:   Google Inc.
@@ -1117,30 +1140,30 @@ conditions:
     -----------------
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
-
-      * Redistributions of source code must retain the above copyright notice,
+    
+      * Redistributions of source code must retain the above copyright notice, 
         this list of conditions and the following disclaimer.
-
-      * Redistributions in binary form must reproduce the above copyright
-        notice, this list of conditions and the following disclaimer in the
+    
+      * Redistributions in binary form must reproduce the above copyright 
+        notice, this list of conditions and the following disclaimer in the 
         documentation and/or other materials provided with the distribution.
-
-      * Neither the name of the University of Cambridge nor the name of Google
-        Inc. nor the names of their contributors may be used to endorse or
-        promote products derived from this software without specific prior
+    
+      * Neither the name of the University of Cambridge nor the name of Google 
+        Inc. nor the names of their contributors may be used to endorse or 
+        promote products derived from this software without specific prior 
         written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+    POSSIBILITY OF SUCH DAMAGE.  
 
   6. Some of the cuBLAS library routines were written by or
     derived from code written by Vasily Volkov and are subject
@@ -1148,9 +1171,9 @@ conditions:
     follows:
 
     Copyright (c) 2007-2009, Regents of the University of California
-
+    
     All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1164,7 +1187,7 @@ conditions:
           the names of its contributors may be used to endorse or promote
           products derived from this software without specific prior
           written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -1175,7 +1198,7 @@ conditions:
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
     STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
     IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+    POSSIBILITY OF SUCH DAMAGE.  
 
   7. Some of the cuBLAS library routines were written by or
     derived from code written by Davide Barbieri and are
@@ -1183,9 +1206,9 @@ conditions:
     License as follows:
 
     Copyright (c) 2008-2009 Davide Barbieri @ University of Rome Tor Vergata.
-
+    
     All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1198,7 +1221,7 @@ conditions:
         * The name of the author may not be used to endorse or promote
           products derived from this software without specific prior
           written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
     IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -1209,7 +1232,7 @@ conditions:
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
     STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
     IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
+    POSSIBILITY OF SUCH DAMAGE.  
 
   8. Some of the cuBLAS library routines were derived from
     code developed by the University of Tennessee and are
@@ -1217,9 +1240,9 @@ conditions:
     License as follows:
 
     Copyright (c) 2010 The University of Tennessee.
-
+    
     All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1232,7 +1255,7 @@ conditions:
         * Neither the name of the copyright holders nor the names of its
           contributors may be used to endorse or promote products derived
           from this software without specific prior written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1243,7 +1266,7 @@ conditions:
     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   9. Some of the cuBLAS library routines were written by or
     derived from code written by Jonathan Hogg and are subject
@@ -1251,9 +1274,9 @@ conditions:
     follows:
 
     Copyright (c) 2012, The Science and Technology Facilities Council (STFC).
-
+    
     All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1266,7 +1289,7 @@ conditions:
         * Neither the name of the STFC nor the names of its contributors
           may be used to endorse or promote products derived from this
           software without specific prior written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1277,7 +1300,7 @@ conditions:
     BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
     WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
     OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   10. Some of the cuBLAS library routines were written by or
     derived from code written by Ahmad M. Abdelfattah, David
@@ -1289,21 +1312,21 @@ conditions:
       Ahmad Abdelfattah (ahmad.ahmad@kaust.edu.sa)
       David Keyes (david.keyes@kaust.edu.sa)
       Hatem Ltaief (hatem.ltaief@kaust.edu.sa)
-
+    
       Redistribution  and  use  in  source and binary forms, with or without
       modification,  are  permitted  provided  that the following conditions
       are met:
-
+    
       * Redistributions  of  source  code  must  retain  the above copyright
         notice,  this  list  of  conditions  and  the  following  disclaimer.
       * Redistributions  in  binary  form must reproduce the above copyright
         notice,  this list of conditions and the following disclaimer in the
         documentation  and/or other materials provided with the distribution.
       * Neither  the  name of the King Abdullah University of Science and
-        Technology nor the names of its contributors may be used to endorse
-        or promote products derived from this software without specific prior
+        Technology nor the names of its contributors may be used to endorse 
+        or promote products derived from this software without specific prior 
         written permission.
-
+    
       THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
       ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
       LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1314,18 +1337,18 @@ conditions:
       DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
       THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
       (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-      OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+      OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE  
 
   11. Some of the cuSPARSE library routines were written by or
     derived from code written by Li-Wen Chang and are subject
     to the NCSA Open Source License as follows:
 
     Copyright (c) 2012, University of Illinois.
-
+    
     All rights reserved.
-
+    
     Developed by: IMPACT Group, University of Illinois, http://impact.crhc.illinois.edu
-
+    
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
     "Software"), to deal with the Software without restriction, including
@@ -1343,7 +1366,7 @@ conditions:
           the names of its contributors may be used to endorse or promote
           products derived from this Software without specific prior
           written permission.
-
+    
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -1351,7 +1374,7 @@ conditions:
     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
     IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
-    SOFTWARE.
+    SOFTWARE.  
 
   12. Some of the cuRAND library routines were written by or
     derived from code written by Mutsuo Saito and Makoto
@@ -1359,10 +1382,10 @@ conditions:
 
     Copyright (c) 2009, 2010 Mutsuo Saito, Makoto Matsumoto and Hiroshima
     University. All rights reserved.
-
+    
     Copyright (c) 2011 Mutsuo Saito, Makoto Matsumoto, Hiroshima
     University and University of Tokyo.  All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1376,7 +1399,7 @@ conditions:
           its contributors may be used to endorse or promote products
           derived from this software without specific prior written
           permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1387,16 +1410,16 @@ conditions:
     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   13. Some of the cuRAND library routines were derived from
     code developed by D. E. Shaw Research and are subject to
     the following license:
 
     Copyright 2010-2011, D. E. Shaw Research.
-
+    
     All rights reserved.
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
@@ -1409,7 +1432,7 @@ conditions:
         * Neither the name of D. E. Shaw Research nor the names of its
           contributors may be used to endorse or promote products derived
           from this software without specific prior written permission.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1420,7 +1443,7 @@ conditions:
     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   14. Some of the Math library routines were written by or
     derived from code developed by Norbert Juffa and are
@@ -1428,47 +1451,47 @@ conditions:
 
     Copyright (c) 2015-2017, Norbert Juffa
     All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
+    
+    Redistribution and use in source and binary forms, with or without 
     modification, are permitted provided that the following conditions
     are met:
-
-    1. Redistributions of source code must retain the above copyright
+    
+    1. Redistributions of source code must retain the above copyright 
        notice, this list of conditions and the following disclaimer.
-
+    
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
        documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
     A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
     HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
     LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   15. Licensee's use of the lz4 third party component is
     subject to the following terms and conditions:
 
     Copyright (C) 2011-2013, Yann Collet.
     BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-
+    
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
     met:
-
+    
         * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
         * Redistributions in binary form must reproduce the above
     copyright notice, this list of conditions and the following disclaimer
     in the documentation and/or other materials provided with the
     distribution.
-
+    
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -1479,37 +1502,37 @@ conditions:
     DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
     THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
   16. The NPP library uses code from the Boost Math Toolkit,
     and is subject to the following license:
 
     Boost Software License - Version 1.0 - August 17th, 2003
     . . . .
-
-    Permission is hereby granted, free of charge, to any person or
-    organization obtaining a copy of the software and accompanying
-    documentation covered by this license (the "Software") to use,
-    reproduce, display, distribute, execute, and transmit the Software,
-    and to prepare derivative works of the Software, and to permit
-    third-parties to whom the Software is furnished to do so, all
+    
+    Permission is hereby granted, free of charge, to any person or 
+    organization obtaining a copy of the software and accompanying 
+    documentation covered by this license (the "Software") to use, 
+    reproduce, display, distribute, execute, and transmit the Software, 
+    and to prepare derivative works of the Software, and to permit 
+    third-parties to whom the Software is furnished to do so, all 
     subject to the following:
-
-    The copyright notices in the Software and this entire statement,
-    including the above license grant, this restriction and the following
-    disclaimer, must be included in all copies of the Software, in whole
-    or in part, and all derivative works of the Software, unless such
-    copies or derivative works are solely in the form of machine-executable
+    
+    The copyright notices in the Software and this entire statement, 
+    including the above license grant, this restriction and the following 
+    disclaimer, must be included in all copies of the Software, in whole 
+    or in part, and all derivative works of the Software, unless such 
+    copies or derivative works are solely in the form of machine-executable 
     object code generated by a source language processor.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND
-    NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR
-    ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR
-    OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-    OTHER DEALINGS IN THE SOFTWARE.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND 
+    NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR 
+    ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR 
+    OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING 
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+    OTHER DEALINGS IN THE SOFTWARE.  
 
   17. Portions of the Nsight Eclipse Edition is subject to the
     following license:
@@ -1520,7 +1543,7 @@ conditions:
     Version 1.0 ("EPL"). A copy of the EPL is available at http://
     www.eclipse.org/legal/epl-v10.html. For purposes of the EPL, "Program"
     will mean the Content.
-
+    
     If you did not receive this Content directly from the Eclipse
     Foundation, the Content is being redistributed by another party
     ("Redistributor") and different terms and conditions may apply to your
@@ -1528,60 +1551,60 @@ conditions:
     license that was provided with the Content. If no such license exists,
     contact the Redistributor. Unless otherwise indicated below, the terms
     and conditions of the EPL still apply to any source code in the
-    Content and such source code may be obtained at http://www.eclipse.org.
+    Content and such source code may be obtained at http://www.eclipse.org.  
 
   18. Some of the cuBLAS library routines uses code from
     OpenAI, which is subject to the following license:
 
-    License URL
+    License URL 
     https://github.com/openai/openai-gemm/blob/master/LICENSE
-
-    License Text
+    
+    License Text 
     The MIT License
-
+    
     Copyright (c) 2016 OpenAI (http://openai.com), 2016 Google Inc.
-
+    
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
     in the Software without restriction, including without limitation the rights
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
     furnished to do so, subject to the following conditions:
-
+    
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
-
+    
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
+    THE SOFTWARE.   
 
   19. Licensee's use of the Visual Studio Setup Configuration
     Samples is subject to the following license:
 
-    The MIT License (MIT)
+    The MIT License (MIT) 
     Copyright (C) Microsoft Corporation. All rights reserved.
-
-    Permission is hereby granted, free of charge, to any person
-    obtaining a copy of this software and associated documentation
-    files (the "Software"), to deal in the Software without restriction,
-    including without limitation the rights to use, copy, modify, merge,
-    publish, distribute, sublicense, and/or sell copies of the Software,
-    and to permit persons to whom the Software is furnished to do so,
+    
+    Permission is hereby granted, free of charge, to any person 
+    obtaining a copy of this software and associated documentation 
+    files (the "Software"), to deal in the Software without restriction, 
+    including without limitation the rights to use, copy, modify, merge, 
+    publish, distribute, sublicense, and/or sell copies of the Software, 
+    and to permit persons to whom the Software is furnished to do so, 
     subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included
+    
+    The above copyright notice and this permission notice shall be included 
     in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
 
   20. Licensee's use of linmath.h header for CPU functions for
     GL vector/matrix operations from lunarG is subject to the

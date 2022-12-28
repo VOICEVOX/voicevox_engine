@@ -2,6 +2,8 @@ import copy
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional
 
+import numpy as np
+
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
@@ -88,7 +90,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def supported_devices(self) -> Optional[str]:
         raise NotImplementedError
 
-    def initialize_speaker_synthesis(self, speaker_id: int):
+    def initialize_speaker_synthesis(self, speaker_id: int):  # noqa: B027
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
         未実装の場合は何もしない
@@ -208,7 +210,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         query: AudioQuery,
         speaker_id: int,
         enable_interrogative_upspeak: bool = True,
-    ) -> str:
+    ) -> np.ndarray:
         """
         音声合成クエリ内の疑問文指定されたMoraを変形した後、
         継承先における実装`_synthesis_impl`を使い音声合成を行う
@@ -234,7 +236,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         return self._synthesis_impl(query, speaker_id)
 
     @abstractmethod
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters

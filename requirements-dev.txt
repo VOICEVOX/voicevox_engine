@@ -6,6 +6,8 @@
 #
 aiofiles==0.7.0
     # via -r requirements.in
+altgraph==0.17.2
+    # via pyinstaller
 anyio==3.3.4
     # via starlette
 appdirs==1.4.4
@@ -44,6 +46,8 @@ fastapi==0.70.0
     # via -r requirements.in
 filelock==3.4.0
     # via virtualenv
+future==0.18.2
+    # via pefile
 h11==0.12.0
     # via uvicorn
 identify==2.4.0
@@ -54,14 +58,14 @@ idna==3.3
     #   requests
 nodeenv==1.6.0
     # via pre-commit
-nuitka==0.6.17.4
-    # via -r requirements-dev.in
 numpy==1.20.0
     # via
     #   -r requirements.in
     #   pyopenjtalk
     #   pyworld
     #   scipy
+pefile==2022.5.30
+    # via pyinstaller
 pep517==0.12.0
     # via pip-tools
 pip-licenses==3.5.3
@@ -78,10 +82,16 @@ pycparser==2.20
     # via cffi
 pydantic==1.8.2
     # via fastapi
-pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@50b0296a9e1b666e5a09a41ec9e9284a2a9b608f
+pyinstaller==5.3
+    # via -r requirements-dev.in
+pyinstaller-hooks-contrib==2022.8
+    # via pyinstaller
+pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@f4ade29ef9a4f43d8605103cb5bacc29e0b2ccae
     # via -r requirements.in
 python-multipart==0.0.5
     # via -r requirements.in
+pywin32-ctypes==0.2.0
+    # via pyinstaller
 pyworld==0.3.0
     # via -r requirements.in
 pyyaml==6.0

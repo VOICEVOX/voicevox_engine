@@ -122,7 +122,7 @@ def generate_licenses() -> List[License]:
         )
 
     # Python
-    python_version = "3.7.12"
+    python_version = "3.8.10"
     with urllib.request.urlopen(
         f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
     ) as res:
@@ -161,9 +161,14 @@ def generate_licenses() -> List[License]:
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
                 continue
-            elif license.name.lower() == "nuitka":
+            elif license.name.lower() == "future":
                 with urllib.request.urlopen(
-                    "https://raw.githubusercontent.com/Nuitka/Nuitka/develop/LICENSE.txt"
+                    "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt"  # noqa: B950
+                ) as res:
+                    license.text = res.read().decode()
+            elif license.name.lower() == "pefile":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE"  # noqa: B950
                 ) as res:
                     license.text = res.read().decode()
             elif license.name.lower() == "pyopenjtalk":
@@ -257,32 +262,30 @@ def generate_licenses() -> List[License]:
         )
 
     # cuda
-    # license text from CUDA 11.1.1
-    # https://developer.nvidia.com/cuda-11.1.1-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exelocal # noqa: B950
-    # https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda_11.4.2_471.41_win10.exe # noqa: B950
-    # cuda_11.1.1_456.81_win10.exe (cuda_documentation/Doc/EULA.txt)
+    # license text from CUDA 11.6.0
+    # https://developer.nvidia.com/cuda-11-6-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
+    # https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe # noqa: B950
+    # cuda_11.6.0_511.23_windows.exe (cuda_documentation/Doc/EULA.txt)
     licenses.append(
         License(
             name="CUDA Toolkit",
-            version="11.1.1",
+            version="11.6.0",
             license=None,
             text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
         )
     )
     # cudnn
     # license text from
-    # cuDNN v7.6.5 (November 18th, 2019), for CUDA 10.2, cuDNN Library for Windows 10
+    # cuDNN v8.4.1 (May 27th, 2022), for CUDA 11.x, cuDNN Library for Windows
     # https://developer.nvidia.com/rdp/cudnn-archive # noqa: B950
-    # https://developer.nvidia.com/compute/machine-learning/cudnn/secure/7.6.5.32/Production/10.2_20191118/cudnn-10.2-windows10-x64-v7.6.5.32.zip # noqa: B950
-    # cudnn-10.2-windows10-x64-v7.6.5.32.zip (cuda/NVIDIA_SLA_cuDNN_Support.txt)
+    # https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip # noqa: B950
+    # cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip (cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive/LICENSE) # noqa: B950
     licenses.append(
         License(
             name="cuDNN",
-            version="7.6.5",
+            version="8.4.1",
             license=None,
-            text=Path("docs/licenses/cuda/NVIDIA_SLA_cuDNN_Support.txt").read_text(
-                encoding="utf8"
-            ),
+            text=Path("docs/licenses/cudnn/LICENSE").read_text(encoding="utf8"),
         )
     )
 
