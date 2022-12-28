@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
     branches:
-      - '**'
+      - "**"
   workflow_dispatch:
 
 jobs:
@@ -12,15 +12,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest]  # [ubuntu-20.04, macos-latest, windows-latest]
-        python: ['3.8.10']
+        os: [ubuntu-20.04, windows-latest] # [ubuntu-20.04, macos-latest, windows-latest]
+        python: ["3.8.10"]
         include:
-        - os: ubuntu-20.04
-          path: ~/.cache/pip
-        # - os: macos-latest
-        #   path: ~/Library/Caches/pip
-        - os: windows-latest
-          path: ~\AppData\Local\pip\Cache
+          - os: ubuntu-20.04
+            path: ~/.cache/pip
+          # - os: macos-latest
+          #   path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
 
     steps:
       - uses: actions/checkout@v3

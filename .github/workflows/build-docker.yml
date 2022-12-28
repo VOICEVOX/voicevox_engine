@@ -15,8 +15,8 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.13.2"
-  VOICEVOX_CORE_VERSION: "0.13.2"
+  VOICEVOX_RESOURCE_VERSION: "0.13.3"
+  VOICEVOX_CORE_VERSION: "0.13.3"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
     ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
@@ -43,44 +43,44 @@ jobs:
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: cpu
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: cpu-ubuntu20.04
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
           # Ubuntu 18.04
           - tag: cpu-ubuntu18.04
             target: runtime-env
             base_image: ubuntu:18.04
             base_runtime_image: ubuntu:18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
           - tag: nvidia-ubuntu18.04
             target: runtime-nvidia-env
             base_image: ubuntu:18.04
-            base_runtime_image: nvidia/cuda:11.4.2-cudnn8-runtime-ubuntu18.04
+            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu18.04
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-gpu-1.10.0.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
 
     steps:
       - uses: actions/checkout@v3
@@ -116,7 +116,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v3

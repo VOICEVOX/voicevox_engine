@@ -22,7 +22,7 @@ on:
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.13.2"
+  VOICEVOX_RESOURCE_VERSION: "0.13.3"
   VOICEVOX_CORE_VERSION: "0.14.0-preview.2"
   VOICEVOX_ENGINE_VERSION:
     |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
@@ -38,41 +38,41 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-win-x64-1.11.1.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
             artifact_name: windows-cpu
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/Microsoft.ML.OnnxRuntime.DirectML.1.11.1.zip
-            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.9.0
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
+            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
             artifact_name: windows-directml
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-win-x64-gpu-1.11.1.zip
-            cuda_version: "11.6.0"
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
+            cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip
             artifact_name: windows-nvidia
           # Mac CPU (x64 arch only)
           - os: macos-11
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-osx-x86_64-1.11.1.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
             artifact_name: macos-x64
           # Linux CPU
           - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-1.11.1.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
             artifact_name: linux-cpu
           # Linux NVIDIA GPU
           - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.11.1/onnxruntime-linux-x64-gpu-1.11.1.tgz
-            cuda_version: "11.6.0"
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
+            cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz
             artifact_name: linux-nvidia
 
@@ -176,19 +176,19 @@ jobs:
 
           if [[ ${{ matrix.os }} == windows-* ]]; then
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
-  
+
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
-  
+
             mkdir -p download/cudnn/bin
             mv download/cudnn_tmp/cudnn-*/bin/*.dll download/cudnn/bin/
             rm -rf download/cudnn_tmp
-  
+
             rm download/cudnn.zip
           else
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
 
             tar -Jxf download/cudnn.tar.xz -C download/
-          
+
             mkdir -p download/cudnn/bin
             cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
             cp download/cudnn-*/lib/libcudnn_*_infer.so.* download/cudnn/bin/
@@ -338,7 +338,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/merge_voicevox_resource.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache
@@ -407,7 +407,7 @@ jobs:
 
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec        
+          pyinstaller --noconfirm run.spec
 
       - name: Show disk space (debug info)
         shell: bash
@@ -530,11 +530,11 @@ jobs:
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v2g a "${{ matrix.artifact_name }}.7z" "${{ matrix.artifact_name }}/"
-          
+
           # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
           split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
-          
+
           # Rename to artifact.vvpp if there are only artifact.001.vvpp
           if [ "$(ls ${{ matrix.artifact_name }}.*.vvpp | wc -l)" == 1 ]; then
             mv ${{ matrix.artifact_name }}.001.vvpp ${{ matrix.artifact_name }}.vvpp
