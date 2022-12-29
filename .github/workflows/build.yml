@@ -28,17 +28,17 @@ jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
     outputs:
-      voicevox-engine-version: ${{ steps.vars.outputs.voicevox-engine-version }}
-      voicevox-engine-version-or-latest: ${{ steps.vars.outputs.voicevox-engine-version-or-latest }}
+      version: ${{ steps.vars.outputs.version }}
+      version-or-latest: ${{ steps.vars.outputs.version-or-latest }}
     steps:
       - name: declare variables
         id: vars
         shell: bash
         run: |
           : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
-          echo "voicevox-engine-version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
           : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
-          echo "voicevox-engine-version-or-latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+          echo "version-or-latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
 
   build-all:
     needs: [config]
@@ -95,7 +95,7 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -409,11 +409,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version-or-latest }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version-or-latest }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.voicevox-engine-version-or-latest }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version-or-latest }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -508,7 +508,7 @@ jobs:
           path: dist/run/
 
   upload-to-release:
-    if: needs.config.outputs.voicevox-engine-version != ''
+    if: needs.config.outputs.version != ''
     needs: [config, build-all]
     runs-on: ubuntu-latest
     strategy:
@@ -525,10 +525,10 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version }}" >> $GITHUB_OUTPUT
+          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
           : # this is exactly same as `steps.vars.outputs.artifact-name` in `build-all` job,
           : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
-          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.voicevox-engine-version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -568,7 +568,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ needs.config.outputs.voicevox-engine-version }}
+          tag_name: ${{ needs.config.outputs.version }}
           files: |-
             ${{ steps.vars.outputs.package-name }}.7z.*
             ${{ steps.vars.outputs.package-name }}*.vvpp
@@ -576,9 +576,9 @@ jobs:
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
-    if: needs.config.outputs.voicevox-engine-version != ''
+    if: needs.config.outputs.version != ''
     needs: [config, upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ needs.config.outputs.voicevox-engine-version }}
+      version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
