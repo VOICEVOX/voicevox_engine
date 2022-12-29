@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.vars.outputs.version }}
-      version-or-latest: ${{ steps.vars.outputs.version-or-latest }}
+      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
     steps:
       - name: declare variables
         id: vars
@@ -38,7 +38,7 @@ jobs:
           : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
           echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
           : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
-          echo "version-or-latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
 
   build-all:
     needs: [config]
@@ -95,7 +95,7 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "artifact_name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -409,11 +409,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version-or-latest }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version-or-latest }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -504,7 +504,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.vars.outputs.artifact-name }}
+          name: ${{ steps.vars.outputs.artifact_name }}
           path: dist/run/
 
   upload-to-release:
@@ -525,10 +525,10 @@ jobs:
         id: vars
         shell: bash
         run: |
-          echo "package-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
-          : # this is exactly same as `steps.vars.outputs.artifact-name` in `build-all` job,
+          echo "package_name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
+          : # this is exactly same as `steps.vars.outputs.artifact_name` in `build-all` job,
           : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
-          echo "artifact-name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version-or-latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "artifact_name=voicevox_engine-${{ matrix.artifact_name }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v3
 
@@ -541,28 +541,28 @@ jobs:
       - name: Download and extract artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ steps.vars.outputs.artifact-name }}
+          name: ${{ steps.vars.outputs.artifact_name }}
           path: ${{ matrix.artifact_name }}/
 
       - name: Rearchive and split artifact
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v2g a "${{ steps.vars.outputs.package-name }}.7z" "${{ matrix.artifact_name }}/"
+          7z -r -v2g a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.artifact_name }}/"
 
           # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
           (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
-          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.outputs.package-name }}.
+          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvpp
-          if [ "$(ls ${{ steps.vars.outputs.package-name }}.*.vvpp | wc -l)" == 1 ]; then
-            mv ${{ steps.vars.outputs.package-name }}.001.vvpp ${{ steps.vars.outputs.package-name }}.vvpp
+          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvpp | wc -l)" == 1 ]; then
+            mv ${{ steps.vars.outputs.package_name }}.001.vvpp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
           # Output splitted archive list
-          ls ${{ steps.vars.outputs.package-name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ steps.vars.outputs.package-name }}.7z.txt"
-          ls ${{ steps.vars.outputs.package-name }}*.vvpp > archives_vvpp.txt
-          mv archives_vvpp.txt "${{ steps.vars.outputs.package-name }}.vvpp.txt"
+          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+          ls ${{ steps.vars.outputs.package_name }}*.vvpp > archives_vvpp.txt
+          mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
         uses: softprops/action-gh-release@v1
@@ -570,9 +570,9 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           tag_name: ${{ needs.config.outputs.version }}
           files: |-
-            ${{ steps.vars.outputs.package-name }}.7z.*
-            ${{ steps.vars.outputs.package-name }}*.vvpp
-            ${{ steps.vars.outputs.package-name }}.vvpp.txt
+            ${{ steps.vars.outputs.package_name }}.7z.*
+            ${{ steps.vars.outputs.package_name }}*.vvpp
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
