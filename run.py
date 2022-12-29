@@ -939,6 +939,8 @@ if __name__ == "__main__":
             file=sys.stderr,
         )
 
+    default_cors_policy_mode = CorsPolicyMode.localapps
+
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
         "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
@@ -1001,7 +1003,7 @@ if __name__ == "__main__":
         "--cors_policy_mode",
         type=CorsPolicyMode,
         choices=list(CorsPolicyMode),
-        default=CorsPolicyMode.localapps,
+        default=default_cors_policy_mode,
         help="allまたはlocalappsを指定。allはすべてを許可します。"
         "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
         "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
@@ -1040,15 +1042,13 @@ if __name__ == "__main__":
 
     root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
 
-    setting_file_path = args.setting_file
-
-    setting_loader = SettingLoader(setting_file_path)
+    setting_loader = SettingLoader(args.setting_file)
 
     settings = setting_loader.load_setting_file()
 
     cors_policy_mode = (
         args.cors_policy_mode
-        if args.cors_policy_mode is not CorsPolicyMode.localapps
+        if args.cors_policy_mode is not default_cors_policy_mode
         else settings.cors_policy_mode
     )
 

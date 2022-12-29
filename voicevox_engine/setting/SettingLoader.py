@@ -10,7 +10,7 @@ USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
 class SettingLoader:
-    def __init__(self, setting_file_path: Path = USER_SETTING_PATH) -> None:
+    def __init__(self, setting_file_path: Path) -> None:
         self.setting_file_path = setting_file_path
 
     def load_setting_file(self) -> Setting:
