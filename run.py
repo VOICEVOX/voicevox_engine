@@ -1003,7 +1003,7 @@ if __name__ == "__main__":
         "--cors_policy_mode",
         type=CorsPolicyMode,
         choices=list(CorsPolicyMode),
-        default=default_cors_policy_mode,
+        default=None,
         help="allまたはlocalappsを指定。allはすべてを許可します。"
         "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
         "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
@@ -1048,7 +1048,7 @@ if __name__ == "__main__":
 
     cors_policy_mode = (
         args.cors_policy_mode
-        if args.cors_policy_mode is not default_cors_policy_mode
+        if args.cors_policy_mode is not None
         else settings.cors_policy_mode
     )
 

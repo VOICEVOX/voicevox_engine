@@ -35,7 +35,9 @@
                         aria-label="cors_policy_mode"
                         name="cors_policy_mode"
                     >
-                        <option selected>{{ cors_policy_mode }}</option>
+                        <option selected value="{{ cors_policy_mode }}">
+                            現在値: {{ cors_policy_mode }}
+                        </option>
                         <option value="localapps">localapps</option>
                         <option value="all">all</option>
                     </select>
