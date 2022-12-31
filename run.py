@@ -662,7 +662,7 @@ def generate_app(
                     {
                         "id": id,
                         "icon": icon,
-                        "style_portrait": style_portrait,
+                        "portrait": style_portrait,
                         "voice_samples": voice_samples,
                     }
                 )
