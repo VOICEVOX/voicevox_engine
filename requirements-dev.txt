@@ -56,6 +56,10 @@ idna==3.3
     # via
     #   anyio
     #   requests
+jinja2==3.1.2
+    # via -r requirements.in
+markupsafe==2.1.1
+    # via jinja2
 nodeenv==1.6.0
     # via pre-commit
 numpy==1.20.0
