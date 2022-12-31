@@ -643,6 +643,14 @@ def generate_app(
                         root_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
                     ).read_bytes()
                 )
+                style_portrait_path = (
+                    root_dir / f"speaker_info/{speaker_uuid}/portraits/{id}.png"
+                )
+                style_portrait = (
+                    b64encode_str(style_portrait_path.read_bytes())
+                    if style_portrait_path.exists()
+                    else None
+                )
                 voice_samples = [
                     b64encode_str(
                         (
@@ -655,7 +663,12 @@ def generate_app(
                     for j in range(3)
                 ]
                 style_infos.append(
-                    {"id": id, "icon": icon, "voice_samples": voice_samples}
+                    {
+                        "id": id,
+                        "icon": icon,
+                        "portrait": style_portrait,
+                        "voice_samples": voice_samples,
+                    }
                 )
         except FileNotFoundError:
             import traceback
