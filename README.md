@@ -1,3 +1,6 @@
+自動アサインチェック
+
+
 # VOICEVOX ENGINE
 
 [![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
