@@ -892,7 +892,7 @@ def generate_app(
     def engine_manifest():
         return engine_manifest_loader.load_manifest()
 
-    @app.get("/setting", response_class=HTMLResponse)
+    @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
     def setting_get(request: Request):
         settings = setting_loader.load_setting_file()
 
@@ -911,7 +911,7 @@ def generate_app(
             },
         )
 
-    @app.post("/setting", response_class=HTMLResponse)
+    @app.post("/setting", response_class=HTMLResponse, tags=["設定"])
     def setting_post(
         request: Request,
         cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
