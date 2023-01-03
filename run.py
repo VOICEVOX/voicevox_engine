@@ -892,7 +892,7 @@ def generate_app(
     def engine_manifest():
         return engine_manifest_loader.load_manifest()
 
-    @app.get("/setting", response_class=HTMLResponse, tags=["その他"])
+    @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
     def setting_get(request: Request):
         settings = setting_loader.load_setting_file()
 
