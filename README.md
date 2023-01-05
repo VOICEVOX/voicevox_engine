@@ -447,13 +447,17 @@ Poetry を用いて依存ライブラリのバージョンを固定していま�
 ```bash
 pipx install poetry # Poetry のインストール
 
-poetry add package-name # ランタイム依存の追加
-poetry add --group dev package-name # 開発依存の追加
-poetry add --group test package-name # テスト依存の追加
+# パッケージを追加する場合
+poetry add `パッケージ名`
+poetry add --group dev `パッケージ名` # 開発依存の追加
+poetry add --group test `パッケージ名` # テスト依存の追加
 
-poetry upgrade # 依存をまとめてアップグレード
+# パッケージをアップデートする場合
+poetry update `パッケージ名`
+poetry update # 全部更新
 
-poetry export --without-hashes -o requirements.txt
+# requirements.txtの更新
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 ```
