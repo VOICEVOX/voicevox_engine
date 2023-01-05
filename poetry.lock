@@ -1287,14 +1287,14 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "pip-licenses"
-version = "3.5.3"
+version = "3.5.5"
 description = "Dump the software license list of Python packages installed with pip."
 category = "dev"
 optional = false
-python-versions = "~=3.6"
+python-versions = "~=3.7"
 files = [
-    {file = "pip-licenses-3.5.3.tar.gz", hash = "sha256:f44860e00957b791c6c6005a3328f2d5eaeee96ddb8e7d87d4b0aa25b02252e4"},
-    {file = "pip_licenses-3.5.3-py3-none-any.whl", hash = "sha256:59c148d6a03784bf945d232c0dc0e9de4272a3675acaa0361ad7712398ca86ba"},
+    {file = "pip-licenses-3.5.5.tar.gz", hash = "sha256:748cfd7aca6e05032f9fa85691301295f4d943e87955be6914ca49abe3c075a4"},
+    {file = "pip_licenses-3.5.5-py3-none-any.whl", hash = "sha256:6129c116bab2b202d90d6e3a96092df4ad84c0c4d57bb70192fc03f8bf06d181"},
 ]
 
 [package.dependencies]
