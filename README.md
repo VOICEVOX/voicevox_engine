@@ -441,12 +441,10 @@ LIBCORE_PATH="/path/to/libcore" \
 
 ### 更新
 
-Poetry を用いて依存ライブラリのバージョンを固定しています。
+[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
 以下のコマンドで操作できます:
 
 ```bash
-pipx install poetry # Poetry のインストール
-
 # パッケージを追加する場合
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
