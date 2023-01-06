@@ -19,9 +19,8 @@ from typing import Dict, List, Optional
 import requests
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Request, Response
+from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.params import Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
@@ -714,13 +713,20 @@ def generate_app(
         return ret_data
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(speaker: int, core_version: Optional[str] = None):
+    def initialize_speaker(
+        speaker: int,
+        skip_reinit: bool = Query(  # noqa: B008
+            False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
+        ),
+        core_version: Optional[str] = None,
+    ):
         """
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        engine.initialize_speaker_synthesis(speaker)
+        # API からの実行では必ず初期化を実行する (初期化済みの話者でもスキップしない)
+        engine.initialize_speaker_synthesis(speaker_id=speaker, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
