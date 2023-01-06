@@ -182,12 +182,22 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def initialize_speaker_synthesis(self, speaker_id: int):
+    def _do_initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
         try:
             with self.mutex:
-                self.core.load_model(speaker_id)
+                # 以下の条件のいずれかを満たす場合, 初期化を実行する
+                # 1. 引数 skip_reinit が False の場合
+                # 2. 話者が初期化されていない場合
+                if (not skip_reinit) or (not self.core.is_model_loaded(speaker_id)):
+                    print("init!")
+                    self.core.load_model(speaker_id)
         except OldCoreError:
-            return  # コアが古い場合はどうしようもないので何もしない
+            pass  # コアが古い場合はどうしようもないので何もしない
+
+    def initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
+        self._do_initialize_speaker_synthesis(
+            speaker_id=speaker_id, skip_reinit=skip_reinit
+        )
 
     def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
         try:
@@ -199,9 +209,7 @@ class SynthesisEngine(SynthesisEngineBase):
         """
         initialize済みでなければinitializeする
         """
-        is_model_loaded = self.is_initialized_speaker_synthesis(speaker_id)
-        if not is_model_loaded:
-            self.initialize_speaker_synthesis(speaker_id)
+        self._do_initialize_speaker_synthesis(speaker_id=speaker_id, skip_reinit=True)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int

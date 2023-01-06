@@ -90,7 +90,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def supported_devices(self) -> Optional[str]:
         raise NotImplementedError
 
-    def initialize_speaker_synthesis(self, speaker_id: int):  # noqa: B027
+    def initialize_speaker_synthesis(  # noqa: B027
+        self, speaker_id: int, skip_reinit: bool
+    ):
+
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
         未実装の場合は何もしない
@@ -98,6 +101,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         ----------
         speaker_id : int
             話者ID
+        skip_reinit : bool
+            True の場合, 既に初期化済みの話者の再初期化をスキップします
         """
         pass
 
