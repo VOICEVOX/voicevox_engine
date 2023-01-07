@@ -145,17 +145,17 @@ class PresetManager:
 
     def delete_preset(self, id: int):
         """
-        YAMLファイルのプリセットを更新する
+        YAMLファイルのプリセットを削除する
 
         Parameters
         ----------
         id: int
-            更新するプリセットを渡す
+            削除するプリセットのプリセットIDを渡す
 
         Returns
         -------
         ret: int
-            更新したプリセットのプリセットID
+            削除したプリセットのプリセットID
         """
 
         # 手動でファイルが更新されているかも知れないので、最新のYAMLファイルを読み直す

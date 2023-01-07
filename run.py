@@ -634,12 +634,12 @@ def generate_app(
     @app.post("/delete_preset", status_code=204, tags=["その他"])
     def delete_preset(id: int):
         """
-        既存のプリセットを更新します
+        既存のプリセットを削除します
 
         Parameters
         -------
         id: int
-            削除するプリセットID
+            削除するプリセットのプリセットID
 
         """
         try:
