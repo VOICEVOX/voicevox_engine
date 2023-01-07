@@ -725,7 +725,6 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        # API からの実行では必ず初期化を実行する (初期化済みの話者でもスキップしない)
         engine.initialize_speaker_synthesis(speaker_id=speaker, skip_reinit=skip_reinit)
         return Response(status_code=204)
 

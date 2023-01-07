@@ -182,34 +182,22 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def _do_initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
+    def initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
                 # 1. 引数 skip_reinit が False の場合
                 # 2. 話者が初期化されていない場合
                 if (not skip_reinit) or (not self.core.is_model_loaded(speaker_id)):
-                    print("init!")
                     self.core.load_model(speaker_id)
         except OldCoreError:
             pass  # コアが古い場合はどうしようもないので何もしない
-
-    def initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
-        self._do_initialize_speaker_synthesis(
-            speaker_id=speaker_id, skip_reinit=skip_reinit
-        )
 
     def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
         try:
             return self.core.is_model_loaded(speaker_id)
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
-
-    def _lazy_init(self, speaker_id: int):
-        """
-        initialize済みでなければinitializeする
-        """
-        self._do_initialize_speaker_synthesis(speaker_id=speaker_id, skip_reinit=True)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], speaker_id: int
@@ -228,7 +216,7 @@ class SynthesisEngine(SynthesisEngineBase):
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self._lazy_init(speaker_id)
+        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
@@ -277,7 +265,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self._lazy_init(speaker_id)
+        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -417,7 +405,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
-        self._lazy_init(speaker_id)
+        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
@@ -452,7 +440,7 @@ class SynthesisEngine(SynthesisEngineBase):
         f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
         f0 = numpy.array(f0_list, dtype=numpy.float32)
         # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
-        f0 *= 2 ** query.pitchScale
+        f0 *= 2**query.pitchScale
 
         # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
         voiced = f0 > 0
