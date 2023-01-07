@@ -131,6 +131,7 @@ class StyleInfo(BaseModel):
 
     id: int = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    portrait: Optional[str] = Field(title="当該スタイルのportrait.pngをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
 
 

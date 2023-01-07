@@ -66,28 +66,10 @@ NVIDIA CUDA Samples
 
 Description
 
-This package includes over 100+ CUDA examples that demonstrate
-various CUDA programming principles, and efficient CUDA
-implementation of algorithms in specific application domains.
-
-
-Default Install Location of CUDA Samples
-
-Windows platform:
-
-%ProgramData%\NVIDIA Corporation\CUDA Samples\v#.#
-
-Linux platform:
-
-/usr/local/cuda-#.#/samples
-
-and
-
-$HOME/NVIDIA_CUDA-#.#_Samples
-
-Mac platform:
-
-/Developer/NVIDIA/CUDA-#.#/samples
+CUDA Samples are now located in
+https://github.com/nvidia/cuda-samples, which includes
+instructions for obtaining, building, and running the samples.
+They are no longer included in the CUDA toolkit.
 
 
 NVIDIA Nsight Visual Studio Edition (Windows only)

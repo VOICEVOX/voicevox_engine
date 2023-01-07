@@ -2,6 +2,7 @@ import json
 
 from voicevox_engine.dev.core import mock as core
 from voicevox_engine.dev.synthesis_engine.mock import MockSynthesisEngine
+from voicevox_engine.setting import USER_SETTING_PATH, SettingLoader
 
 if __name__ == "__main__":
     import run
@@ -9,6 +10,7 @@ if __name__ == "__main__":
     app = run.generate_app(
         synthesis_engines={"mock": MockSynthesisEngine(speakers=core.metas())},
         latest_core_version="mock",
+        setting_loader=SettingLoader(USER_SETTING_PATH),
     )
     with open("docs/api/index.html", "w") as f:
         f.write(

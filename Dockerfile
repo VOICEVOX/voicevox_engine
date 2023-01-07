@@ -22,7 +22,7 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
-ARG VOICEVOX_CORE_VERSION=0.13.2
+ARG VOICEVOX_CORE_VERSION=0.13.3
 RUN <<EOF
     set -eux
 
@@ -69,7 +69,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-x64-1.10.0.tgz
+ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
 RUN <<EOF
     set -eux
 
@@ -197,8 +197,9 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
+ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setting.yml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
+ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
 
 # Replace version
@@ -215,7 +216,7 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install pip-licenses
+    gosu user /opt/python/bin/pip3 install pip-licenses==3.5.3 # FIXME: 応急処置。詳細→https://github.com/VOICEVOX/voicevox_engine/issues/544
     gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     # FIXME: VOICEVOX (editor) cannot build without licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
@@ -242,7 +243,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.13.2
+ARG VOICEVOX_RESOURCE_VERSION=0.13.3
 RUN <<EOF
     set -eux
 

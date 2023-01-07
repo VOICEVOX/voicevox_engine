@@ -115,14 +115,14 @@ def generate_licenses() -> List[License]:
         licenses.append(
             License(
                 name="ONNX Runtime",
-                version="1.11.1",
+                version="1.13.1",
                 license="MIT license",
                 text=res.read().decode(),
             )
         )
 
     # Python
-    python_version = "3.7.12"
+    python_version = "3.8.10"
     with urllib.request.urlopen(
         f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
     ) as res:
@@ -136,8 +136,8 @@ def generate_licenses() -> List[License]:
         )
 
     # pip
-    licenses_json = json.loads(
-        subprocess.run(
+    try:
+        pip_licenses_output = subprocess.run(
             "pip-licenses "
             "--from=mixed "
             "--format=json "
@@ -149,7 +149,12 @@ def generate_licenses() -> List[License]:
             check=True,
             env=os.environ,
         ).stdout.decode()
-    )
+    except subprocess.CalledProcessError as err:
+        raise Exception(
+            f"command output:\n{err.stderr and err.stderr.decode()}"
+        ) from err
+
+    licenses_json = json.loads(pip_licenses_output)
     for license_json in licenses_json:
         license = License(
             name=license_json["Name"],
@@ -262,14 +267,14 @@ def generate_licenses() -> List[License]:
         )
 
     # cuda
-    # license text from CUDA 11.6.0
-    # https://developer.nvidia.com/cuda-11-6-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
-    # https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_511.23_windows.exe # noqa: B950
-    # cuda_11.6.0_511.23_windows.exe (cuda_documentation/Doc/EULA.txt)
+    # license text from CUDA 11.6.2
+    # https://developer.nvidia.com/cuda-11-6-2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
+    # https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_511.65_windows.exe # noqa: B950
+    # cuda_11.6.2_511.65_windows.exe (cuda_documentation/Doc/EULA.txt)
     licenses.append(
         License(
             name="CUDA Toolkit",
-            version="11.6.0",
+            version="11.6.2",
             license=None,
             text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
         )

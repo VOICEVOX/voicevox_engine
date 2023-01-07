@@ -8,6 +8,9 @@ fi
 rm -r speaker_info
 cp -r $DOWNLOAD_RESOURCE_PATH/character_info speaker_info
 
+# .png_largeファイルを消去する
+rm speaker_info/*/icons/*.png_large
+
 # マニフェスト
 jq -s '.[0] * .[1]' engine_manifest.json $DOWNLOAD_RESOURCE_PATH/engine/engine_manifest.json \
     > engine_manifest.json.tmp
