@@ -9,13 +9,11 @@ from voicevox_engine.preset import Preset, PresetError, PresetManager
 class TestPresetManager(TestCase):
     def test_validation(self):
         preset_manager = PresetManager(preset_path=Path("test/presets-test-1.yaml"))
-        preset_manager.PRESET_FILE_NAME = "test/presets-test-1.yaml"
         presets = preset_manager.load_presets()
         self.assertFalse(presets is None)
 
     def test_validation_same(self):
         preset_manager = PresetManager(preset_path=Path("test/presets-test-1.yaml"))
-        preset_manager.PRESET_FILE_NAME = "test/presets-test-1.yaml"
         presets = preset_manager.load_presets()
         presets2 = preset_manager.load_presets()
         self.assertFalse(presets is None)
