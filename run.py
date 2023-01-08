@@ -117,7 +117,7 @@ def generate_app(
     default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
     app = FastAPI(
-        title="VOICEVOX ENGINE",
+        title="VOICEVOX Engine",
         description="VOICEVOXの音声合成エンジンです。",
         version=__version__,
     )
