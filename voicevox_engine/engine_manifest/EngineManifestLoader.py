@@ -16,6 +16,7 @@ class EngineManifestLoader:
         manifest = EngineManifest(
             manifest_version=manifest["manifest_version"],
             name=manifest["name"],
+            brand_name=manifest["brand_name"],
             uuid=manifest["uuid"],
             url=manifest["url"],
             default_sampling_rate=manifest["default_sampling_rate"],
