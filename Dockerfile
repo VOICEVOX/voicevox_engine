@@ -22,7 +22,7 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
-ARG VOICEVOX_CORE_VERSION=0.13.3
+ARG VOICEVOX_CORE_VERSION=0.14.0-preview.3
 RUN <<EOF
     set -eux
 
@@ -201,6 +201,7 @@ ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setti
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
+ADD ./model /opt/voicevox_engine/model
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
