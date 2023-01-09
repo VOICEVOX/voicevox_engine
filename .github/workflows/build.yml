@@ -372,6 +372,11 @@ jobs:
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
           rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
+      - name: Copy VOICEVOX Core Models
+        shell: bash
+        run: |
+          cp -r download/core/model ./
+
       - name: Generate licenses.json
         shell: bash
         run: |
