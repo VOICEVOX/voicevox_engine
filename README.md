@@ -413,9 +413,10 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
-## API ドキュメントの更新
+## API ドキュメントの確認
 
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）の内容を更新します。
+[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
+次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
 python make_docs.py
