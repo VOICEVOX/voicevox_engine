@@ -195,7 +195,6 @@ ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setti
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
-ADD ./model /opt/voicevox_engine/model
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
