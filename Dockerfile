@@ -36,7 +36,8 @@ RUN <<EOF
     rm "./${VOICEVOX_CORE_ASSET_NAME}.zip"
 
     # Move Core to /opt/voicevox_core/
-    mv ./core/ /opt/voicevox_core/
+    mkdir /opt/voicevox_core
+    mv ./core/* /opt/voicevox_core/
 
     # Add /opt/voicevox_core to dynamic library search path
     echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
