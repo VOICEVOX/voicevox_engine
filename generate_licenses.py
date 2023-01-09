@@ -196,6 +196,26 @@ def generate_licenses() -> List[License]:
                     "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt"  # noqa: B950
                 ) as res:
                     license.text = res.read().decode()
+            elif license.name.lower() == "jsonschema":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING"
+                ) as res:
+                    license.text = res.read().decode()
+            elif license.name.lower() == "lockfile":
+                with urllib.request.urlopen(
+                    "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE"
+                ) as res:
+                    license.text = res.read().decode()
+            elif license.name.lower() == "platformdirs":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE"
+                ) as res:
+                    license.text = res.read().decode()
+            elif license.name.lower() == "webencodings":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"
+                ) as res:
+                    license.text = res.read().decode()
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")

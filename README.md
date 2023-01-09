@@ -442,14 +442,23 @@ LIBCORE_PATH="/path/to/libcore" \
 
 ### 更新
 
-pip-tools を用いて依存ライブラリのバージョンを固定しています。
-`requirements*.in`ファイルを修正後、以下のコマンドで更新できます。
+[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
+以下のコマンドで操作できます:
 
 ```bash
-# pip>=22 の場合 pip-tools がエラーになります
-pip-compile requirements.in  # こちらを更新する場合は下２つも更新する必要があります。
-pip-compile requirements-dev.in
-pip-compile requirements-test.in
+# パッケージを追加する場合
+poetry add `パッケージ名`
+poetry add --group dev `パッケージ名` # 開発依存の追加
+poetry add --group test `パッケージ名` # テスト依存の追加
+
+# パッケージをアップデートする場合
+poetry update `パッケージ名`
+poetry update # 全部更新
+
+# requirements.txtの更新
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
+poetry export --without-hashes --with dev -o requirements-dev.txt
+poetry export --without-hashes --with test -o requirements-test.txt
 ```
 
 ### ライセンス
