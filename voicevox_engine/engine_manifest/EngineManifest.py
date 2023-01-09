@@ -46,6 +46,7 @@ class EngineManifest(BaseModel):
 
     manifest_version: str = Field(title="マニフェストのバージョン")
     name: str = Field(title="エンジン名")
+    brand_name: str = Field(title="ブランド名")
     uuid: str = Field(title="エンジンのUUID")
     url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
