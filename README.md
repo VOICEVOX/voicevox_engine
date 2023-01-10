@@ -430,7 +430,8 @@ python make_docs.py
 ```bash
 python -m pip install -r requirements-dev.txt
 
-python generate_licenses.py > licenses.json
+OUTPUT_LICENSE_JSON_PATH=licenses.json \
+bash build_util/create_venv_and_generate_licenses.bash
 
 # ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
 LIBCORE_PATH="/path/to/libcore" \
