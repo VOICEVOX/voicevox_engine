@@ -1,6 +1,6 @@
 set -eux
 
-if [ -v "${DOWNLOAD_RESOURCE_PATH}" ]; then
+if [ ! -v DOWNLOAD_RESOURCE_PATH ]; then
     echo "DOWNLOAD_RESOURCE_PATHが未定義です"
     exit 1
 fi

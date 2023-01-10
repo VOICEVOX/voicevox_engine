@@ -2,11 +2,11 @@
 
 set -eu
 
-if [ -v "${CERT_BASE64}" ]; then
+if [ ! -v CERT_BASE64 ]; then
     echo "CERT_BASE64が未定義です"
     exit 1
 fi
-if [ -v "${CERT_PASSWORD}" ]; then
+if [ ! -v CERT_PASSWORD ]; then
     echo "CERT_PASSWORDが未定義です"
     exit 1
 fi

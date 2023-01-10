@@ -398,7 +398,8 @@ jobs:
       - name: Generate licenses.json
         shell: bash
         run: |
-          python generate_licenses.py > engine_manifest_assets/dependency_licenses.json
+          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+          bash build_util/create_venv_and_generate_licenses.bash
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
