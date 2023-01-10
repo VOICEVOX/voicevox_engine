@@ -20,16 +20,28 @@ on:
         type: boolean
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.13.3"
   VOICEVOX_CORE_VERSION: "0.14.0-preview.3"
-  VOICEVOX_ENGINE_VERSION:
-    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+    steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+
   build-all:
+    needs: [config]
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
@@ -39,14 +51,14 @@ jobs:
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
-            artifact_name: windows-cpu
+            target: windows-cpu
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
-            artifact_name: windows-directml
+            target: windows-directml
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
@@ -54,19 +66,19 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
             cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip
-            artifact_name: windows-nvidia
+            target: windows-nvidia
           # Mac CPU (x64 arch only)
           - os: macos-11
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
-            artifact_name: macos-x64
+            target: macos-x64
           # Linux CPU
           - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
-            artifact_name: linux-cpu
+            target: linux-cpu
           # Linux NVIDIA GPU
           - os: ubuntu-20.04
             architecture: "x64"
@@ -74,11 +86,17 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
             cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz
-            artifact_name: linux-nvidia
+            target: linux-nvidia
 
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "artifact_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v3
 
       - name: Show disk space (debug info)
@@ -96,7 +114,7 @@ jobs:
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: Install patchelf
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
@@ -247,12 +265,12 @@ jobs:
 
       # Donwload DirectML
       - name: Export DirectML url to calc hash
-        if: endswith(matrix.artifact_name, '-directml')
+        if: endswith(matrix.target, '-directml')
         shell: bash
         run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
 
       - name: Cache DirectML
-        if: endswith(matrix.artifact_name, '-directml')
+        if: endswith(matrix.target, '-directml')
         uses: actions/cache@v3
         id: directml-cache
         with:
@@ -260,7 +278,7 @@ jobs:
           path: download/directml
 
       - name: Download DirectML
-        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.artifact_name, '-directml')
+        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
         shell: bash
         run: |
           curl -L "${{ matrix.directml_url }}" -o download/directml.zip
@@ -291,7 +309,7 @@ jobs:
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
-          if [[ ${{ matrix.artifact_name }} != *-directml ]]; then
+          if [[ ${{ matrix.target }} != *-directml ]]; then
             unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
             mv download/onnxruntime-* download/onnxruntime
           else
@@ -396,11 +414,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ env.VOICEVOX_ENGINE_VERSION }}\"/" voicevox_engine/__init__.py
+            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
             if [[ ${{ matrix.os }} == windows-* ]]; then
               LIBCORE_PATH=download/core/voicevox_core.dll
               LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -448,13 +466,13 @@ jobs:
             ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
           fi
 
-          if [[ ${{ matrix.artifact_name }} == *-directml ]]; then
+          if [[ ${{ matrix.target }} == *-directml ]]; then
             # DirectML
             ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
           fi
 
       - name: Create symlink of CUDA dependencies
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.artifact_name, 'nvidia')
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
         shell: bash
         run: |
           set -eux
@@ -488,28 +506,19 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-      # FIXME: versioned name may be useful; but
-      # actions/download-artifact and dawidd6/download-artifact do not support
-      # wildcard / forward-matching yet.
-      # Currently, It is good to use static artifact name for future binary test workflow.
-      # https://github.com/actions/toolkit/blob/ea81280a4d48fb0308d40f8f12ae00d117f8acb9/packages/artifact/src/internal/artifact-client.ts#L147
-      # https://github.com/dawidd6/action-download-artifact/blob/af92a8455a59214b7b932932f2662fdefbd78126/main.js#L113
       - name: Upload artifact
         uses: actions/upload-artifact@v3
-        # env:
-        #   VERSIONED_ARTIFACT_NAME: |
-        #     ${{ format('{0}-{1}', matrix.artifact_name, (env.VOICEVOX_ENGINE_VERSION != 'latest' && env.VOICEVOX_ENGINE_VERSION) || github.sha) }}
         with:
-          name: ${{ matrix.artifact_name }}
+          name: ${{ steps.vars.outputs.artifact_name }}
           path: dist/run/
 
   upload-to-release:
-    if: (github.event.release.tag_name || github.event.inputs.version) != ''
-    needs: [build-all]
+    if: needs.config.outputs.version != ''
+    needs: [config, build-all]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        artifact_name:
+        target:
           - macos-x64
           - linux-cpu
           - linux-nvidia
@@ -517,6 +526,15 @@ jobs:
           - windows-directml
           - windows-nvidia
     steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
+          : # this is exactly same as `steps.vars.outputs.artifact_name` in `build-all` job,
+          : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
+          echo "artifact_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v3
 
       - name: Install dependencies
@@ -528,44 +546,44 @@ jobs:
       - name: Download and extract artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_name }}/
+          name: ${{ steps.vars.outputs.artifact_name }}
+          path: ${{ matrix.target }}/
 
       - name: Rearchive and split artifact
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v2g a "${{ matrix.artifact_name }}.7z" "${{ matrix.artifact_name }}/"
+          7z -r -v2g a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
           # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
-          (cd "${{ matrix.artifact_name }}" && zip -r - . > ../compressed.zip)
-          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ matrix.artifact_name }}.
+          (cd "${{ matrix.target }}" && zip -r - . > ../compressed.zip)
+          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvpp
-          if [ "$(ls ${{ matrix.artifact_name }}.*.vvpp | wc -l)" == 1 ]; then
-            mv ${{ matrix.artifact_name }}.001.vvpp ${{ matrix.artifact_name }}.vvpp
+          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvpp | wc -l)" == 1 ]; then
+            mv ${{ steps.vars.outputs.package_name }}.001.vvpp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
           # Output splitted archive list
-          ls ${{ matrix.artifact_name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ matrix.artifact_name }}.7z.txt"
-          ls ${{ matrix.artifact_name }}*.vvpp > archives_vvpp.txt
-          mv archives_vvpp.txt "${{ matrix.artifact_name }}.vvpp.txt"
+          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+          ls ${{ steps.vars.outputs.package_name }}*.vvpp > archives_vvpp.txt
+          mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
         uses: softprops/action-gh-release@v1
         with:
           prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ env.VOICEVOX_ENGINE_VERSION }}
+          tag_name: ${{ needs.config.outputs.version }}
           files: |-
-            ${{ matrix.artifact_name }}.7z.*
-            ${{ matrix.artifact_name }}*.vvpp
-            ${{ matrix.artifact_name }}.vvpp.txt
+            ${{ steps.vars.outputs.package_name }}.7z.*
+            ${{ steps.vars.outputs.package_name }}*.vvpp
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
   run-release-test-workflow:
-    if: (github.event.release.tag_name || github.event.inputs.version) != ''
-    needs: [upload-to-release]
+    if: needs.config.outputs.version != ''
+    needs: [config, upload-to-release]
     uses: ./.github/workflows/release-test.yml
     with:
-      version: ${{ github.event.release.tag_name || github.event.inputs.version }} # env.VOICEVOX_ENGINE_VERSIONが使えない
+      version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL

@@ -43,10 +43,19 @@ jobs:
             target: windows-cpu
           - os: windows-2019
             target: windows-nvidia
+          - os: windows-2019
+            target: windows-directml
 
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+
       - uses: actions/checkout@v2
 
       - uses: actions/setup-python@v2
@@ -56,12 +65,10 @@ jobs:
 
       - name: Download
         shell: bash -euxv {0}
-        env:
-          RELEASE_URL: ${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}
         run: |
           mkdir -p download
-          curl -L -o "download/list.txt" "${{ env.RELEASE_URL }}/${{ matrix.target }}.7z.txt"
-          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ env.RELEASE_URL }}/%"
+          curl -L -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
+          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
           7z x "download/$(head -n1 download/list.txt)"
           mv ${{ matrix.target }} dist/
 
