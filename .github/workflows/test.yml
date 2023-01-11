@@ -69,13 +69,5 @@ jobs:
       - name: Check licenses
         shell: bash
         run: |
-          python -m venv venv
-
-          if [ -d "venv/Scripts" ]; then
-            source venv/Scripts/activate
-          else
-            source venv/bin/activate
-          fi
-
-          python -m pip install -r requirements-license.txt
-          python generate_licenses.py > /dev/null
+          OUTPUT_LICENSE_JSON_PATH=/dev/null \
+          bash build_util/create_venv_and_generate_licenses.bash
