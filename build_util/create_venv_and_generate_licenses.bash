@@ -10,7 +10,11 @@ fi
 VENV_PATH="licenses_venv"
 
 python -m venv $VENV_PATH
-source $VENV_PATH/bin/activate
+if [ -d "$VENV_PATH/Scripts" ]; then
+    source $VENV_PATH/Scripts/activate
+else
+    source $VENV_PATH/bin/activate
+fi
 
 pip install -r requirements-license.txt
 python generate_licenses.py >$OUTPUT_LICENSE_JSON_PATH
