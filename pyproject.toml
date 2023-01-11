@@ -66,9 +66,6 @@ pysen = {version = "~0", extras = ["lint"]}
 pytest = "^6.2.5"
 coveralls = "^3.2.0"
 
-[tool.poetry.group.license]
-optional = true
-
 [tool.poetry.group.license.dependencies]
 pip-licenses = "^3.5.3"
 
