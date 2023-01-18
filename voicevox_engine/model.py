@@ -113,14 +113,14 @@ class SpeakerStyle(BaseModel):
     id: int = Field(title="スタイルID")
 
 
-class SpeakerSupportSynthesisMorphing(str, Enum):
-    PERMIT = "PERMIT"  # 全て許可
-    SELF_MORPHING_ONLY = "SELF_MORPHING_ONLY"  # 同じ話者内でのみ許可
-    PROHIBIT = "PROHIBIT"  # 全て禁止
+class SpeakerSupporPermitedSynthesisMorphing(str, Enum):
+    ALL = "ALL"  # 全て許可
+    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
+    NOTHING = "NOTHING"  # 全て禁止
 
     @classmethod
-    def _missing_(cls, value: object) -> "SpeakerSupportSynthesisMorphing":
-        return SpeakerSupportSynthesisMorphing.PERMIT
+    def _missing_(cls, value: object) -> "SpeakerSupporPermitedSynthesisMorphing":
+        return SpeakerSupporPermitedSynthesisMorphing.ALL
 
 
 class SpeakerSupportedFeatures(BaseModel):
@@ -128,8 +128,10 @@ class SpeakerSupportedFeatures(BaseModel):
     話者の対応機能の情報
     """
 
-    synthesis_morphing: Optional[SpeakerSupportSynthesisMorphing] = Field(
-        title="モーフィング機能への対応", default=SpeakerSupportSynthesisMorphing(None)
+    permited_synthesis_morphing: Optional[
+        SpeakerSupporPermitedSynthesisMorphing
+    ] = Field(
+        title="モーフィング機能への対応", default=SpeakerSupporPermitedSynthesisMorphing(None)
     )
 
 

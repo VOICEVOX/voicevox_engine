@@ -1,7 +1,7 @@
 {
     "speakerName": "dummy3",
     "speakerUuid": "dummy3uuid",
-    "supportedFeatures": {"synthesisMorphing": "PROHIBIT"},
+    "supportedFeatures": {"permitedSynthesisMorphing": "NOTHING"},
     "styles": [
         {
             "styleId": 8
