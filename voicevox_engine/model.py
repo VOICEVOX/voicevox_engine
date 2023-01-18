@@ -114,9 +114,9 @@ class SpeakerStyle(BaseModel):
 
 
 class SpeakerSupportSynthesisMorphing(str, Enum):
-    PERMIT = "PERMIT" # 全て許可
-    SELF_MORPHING_ONLY = "SELF_MORPHING_ONLY" # 同じ話者内でのみ許可
-    PROHIBIT = "PROHIBIT" # 全て禁止
+    PERMIT = "PERMIT"  # 全て許可
+    SELF_MORPHING_ONLY = "SELF_MORPHING_ONLY"  # 同じ話者内でのみ許可
+    PROHIBIT = "PROHIBIT"  # 全て禁止
 
     @classmethod
     def _missing_(cls, value: object) -> "SpeakerSupportSynthesisMorphing":

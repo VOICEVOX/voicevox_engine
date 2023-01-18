@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -48,46 +49,70 @@ def create_morphing_parameter(
 
 
 def is_synthesis_morphing_permitted(
-    engine: SynthesisEngineBase, base_speaker: int, target_speaker: int
+    engine: SynthesisEngineBase,
+    speaker_info_folder: Path,
+    base_speaker: int,
+    target_speaker: int,
 ) -> Optional[bool]:
     """
     指定されたspeakerがモーフィング可能かどうか返す
     speakerが見つからない場合はNoneを返す
     """
 
-    speakers = json.loads(engine.speakers)
-    base_speaker_info, target_speaker_info = None, None
-    for speaker in speakers:
-        style_id_arr = tuple(map(lambda style: style["id"], speaker["styles"]))
-        if base_speaker_info is None and base_speaker in style_id_arr:
-            base_speaker_info = speaker
-        if target_speaker_info is None and target_speaker in style_id_arr:
-            target_speaker_info = speaker
+    core_speakers = json.loads(engine.speakers)
+    base_speaker_core_info, target_speaker_core_info = None, None
+    for speaker in core_speakers:
+        style_id_arr = tuple(style["id"] for style in speaker["styles"])
+        if base_speaker_core_info is None and base_speaker in style_id_arr:
+            base_speaker_core_info = speaker
+        if target_speaker_core_info is None and target_speaker in style_id_arr:
+            target_speaker_core_info = speaker
 
-    if base_speaker_info is None or target_speaker_info is None:
+    if base_speaker_core_info is None or target_speaker_core_info is None:
         return None
 
-    base_speaker_morphing_info: SpeakerSupportSynthesisMorphing = base_speaker_info.get(
-        "supported_features", dict()
-    ).get("synthesis_morphing", SpeakerSupportSynthesisMorphing(None))
+    base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
+    target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
 
-    target_speaker_morphing_info: SpeakerSupportSynthesisMorphing = (
-        target_speaker_info.get("supported_features", dict()).get(
-            "synthesis_morphing", SpeakerSupportSynthesisMorphing(None)
+    # FIXME: engineのmetasロード処理をPresetLoaderのように纏める
+    base_speaker_engine_info = json.loads(
+        (speaker_info_folder / f"{base_speaker_uuid}" / "metas.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    target_speaker_engine_info = json.loads(
+        (speaker_info_folder / f"{target_speaker_uuid}" / "metas.json").read_text(
+            encoding="utf-8"
         )
     )
 
+    # FIXME: 他にsupported_featuresができたら共通化する
+    base_speaker_morphing_info: SpeakerSupportSynthesisMorphing = (
+        base_speaker_engine_info.get("supportedFeatures", dict()).get(
+            "synthesisMorphing", SpeakerSupportSynthesisMorphing(None)
+        )
+    )
+
+    target_speaker_morphing_info: SpeakerSupportSynthesisMorphing = (
+        target_speaker_engine_info.get("supportedFeatures", dict()).get(
+            "synthesisMorphing", SpeakerSupportSynthesisMorphing(None)
+        )
+    )
+
+    # 禁止されている場合はFalse
     if (
         base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PROHIBIT
         or target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PROHIBIT
     ):
         return False
+    # 同一話者のみの場合は同一話者判定
     if (
         base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.SELF_MORPHING_ONLY
         or target_speaker_morphing_info
         == SpeakerSupportSynthesisMorphing.SELF_MORPHING_ONLY
     ):
-        return base_speaker_info["speaker_uuid"] == target_speaker_info["speaker_uuid"]
+        return base_speaker_uuid == target_speaker_uuid
+    # 念のため許可されているかチェック
     return (
         base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PERMIT
         and target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PERMIT

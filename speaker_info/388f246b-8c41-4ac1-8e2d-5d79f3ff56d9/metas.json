@@ -1,6 +1,7 @@
 {
     "speakerName": "dummy2",
     "speakerUuid": "dummy2uuid",
+    "supportedFeatures": {"synthesisMorphing": "SELF_MORPHING_ONLY"},
     "styles": [
         {
             "styleId": 3

@@ -502,7 +502,7 @@ def generate_app(
         engine = get_engine(core_version)
 
         is_permitted = is_synthesis_morphing_permitted(
-            engine, base_speaker, target_speaker
+            engine, root_dir / "speaker_info", base_speaker, target_speaker
         )
 
         if is_permitted is None:
@@ -537,7 +537,7 @@ def generate_app(
         engine = get_engine(core_version)
 
         is_permitted = is_synthesis_morphing_permitted(
-            engine, base_speaker, target_speaker
+            engine, root_dir / "speaker_info", base_speaker, target_speaker
         )
         if is_permitted is None:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
