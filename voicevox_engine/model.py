@@ -166,6 +166,12 @@ class SpeakerInfo(BaseModel):
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
 
 
+class SpeakerNotFoundError(LookupError):
+    def __init__(self, speaker: int, *args: object, **kywrds: object) -> None:
+        self.speaker = speaker
+        super().__init__(f"speaker {speaker} is not found.", *args, **kywrds)
+
+
 class DownloadableLibrary(BaseModel):
     """
     ダウンロード可能な音声ライブラリの情報（最新情報をwebで取得することを考慮して、ローカルの情報はない）

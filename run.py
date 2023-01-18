@@ -40,6 +40,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
     WordTypes,
@@ -501,14 +502,15 @@ def generate_app(
         """
         engine = get_engine(core_version)
 
-        is_permitted = is_synthesis_morphing_permitted(
-            engine, root_dir / "speaker_info", base_speaker, target_speaker
-        )
-
-        if is_permitted is None:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
-
-        return is_permitted
+        try:
+            is_permitted = is_synthesis_morphing_permitted(
+                engine, root_dir / "speaker_info", base_speaker, target_speaker
+            )
+            return is_permitted
+        except SpeakerNotFoundError as e:
+            raise HTTPException(
+                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
+            )
 
     @app.post(
         "/synthesis_morphing",
@@ -536,15 +538,18 @@ def generate_app(
         """
         engine = get_engine(core_version)
 
-        is_permitted = is_synthesis_morphing_permitted(
-            engine, root_dir / "speaker_info", base_speaker, target_speaker
-        )
-        if is_permitted is None:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
-        if not is_permitted:
+        try:
+            is_permitted = is_synthesis_morphing_permitted(
+                engine, root_dir / "speaker_info", base_speaker, target_speaker
+            )
+            if not is_permitted:
+                raise HTTPException(
+                    status_code=400,
+                    detail="指定された話者ペアでのモーフィングはできません",
+                )
+        except SpeakerNotFoundError as e:
             raise HTTPException(
-                status_code=400,
-                detail="指定された話者ペアでのモーフィング機能は禁止されています",
+                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
             )
 
         # 生成したパラメータはキャッシュされる

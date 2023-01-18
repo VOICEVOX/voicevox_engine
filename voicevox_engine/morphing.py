@@ -2,14 +2,13 @@ import json
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pyworld as pw
 
 from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
 
-from .model import AudioQuery, SpeakerSupportSynthesisMorphing
+from .model import AudioQuery, SpeakerNotFoundError, SpeakerSupportSynthesisMorphing
 from .synthesis_engine import SynthesisEngine
 
 
@@ -53,10 +52,10 @@ def is_synthesis_morphing_permitted(
     speaker_info_folder: Path,
     base_speaker: int,
     target_speaker: int,
-) -> Optional[bool]:
+) -> bool:
     """
     指定されたspeakerがモーフィング可能かどうか返す
-    speakerが見つからない場合はNoneを返す
+    speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
     core_speakers = json.loads(engine.speakers)
@@ -69,7 +68,9 @@ def is_synthesis_morphing_permitted(
             target_speaker_core_info = speaker
 
     if base_speaker_core_info is None or target_speaker_core_info is None:
-        return None
+        raise SpeakerNotFoundError(
+            base_speaker if base_speaker_core_info is None else target_speaker
+        )
 
     base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
     target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
