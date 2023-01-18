@@ -125,7 +125,7 @@ class SpeakerSupportSynthesisMorphing(str, Enum):
 
 class SpeakerSupportedFeatures(BaseModel):
     """
-    スピーカーの対応機能
+    話者の対応機能の情報
     """
 
     synthesis_morphing: Optional[SpeakerSupportSynthesisMorphing] = Field(
