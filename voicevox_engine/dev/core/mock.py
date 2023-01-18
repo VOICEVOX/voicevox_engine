@@ -89,6 +89,7 @@ def metas() -> str:
                     {"name": "style2", "id": 5},
                     {"name": "style3", "id": 7},
                 ],
+                "supported_features": {"synthesis_morphing": "SELF_MORPHING_ONLY"},
                 "speaker_uuid": "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9",
                 "version": "mock",
             },
@@ -97,6 +98,7 @@ def metas() -> str:
                 "styles": [
                     {"name": "style0", "id": 8},
                 ],
+                "supported_features": {"synthesis_morphing": "PERMIT"},
                 "speaker_uuid": "35b2c544-660e-401e-b503-0e14c635303a",
                 "version": "mock",
             },
@@ -105,6 +107,7 @@ def metas() -> str:
                 "styles": [
                     {"name": "style0", "id": 9},
                 ],
+                "supported_features": {"synthesis_morphing": "PROHIBIT"},
                 "speaker_uuid": "b1a81618-b27b-40d2-b0ea-27a9ad408c4b",
                 "version": "mock",
             },
