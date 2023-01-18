@@ -1,10 +1,14 @@
+import json
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import pyworld as pw
 
-from .model import AudioQuery
+from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
+
+from .model import AudioQuery, SpeakerSupportSynthesisMorphing
 from .synthesis_engine import SynthesisEngine
 
 
@@ -40,6 +44,53 @@ def create_morphing_parameter(
         base_aperiodicity=base_aperiodicity,
         base_spectrogram=base_spectrogram,
         target_spectrogram=target_spectrogram,
+    )
+
+
+def is_synthesis_morphing_permitted(
+    engine: SynthesisEngineBase, base_speaker: int, target_speaker: int
+) -> Optional[bool]:
+    """
+    指定されたspeakerがモーフィング可能かどうか返す
+    speakerが見つからない場合はNoneを返す
+    """
+
+    speakers = json.loads(engine.speakers)
+    base_speaker_info, target_speaker_info = None, None
+    for speaker in speakers:
+        style_id_arr = tuple(map(lambda style: style["id"], speaker["styles"]))
+        if base_speaker_info is None and base_speaker in style_id_arr:
+            base_speaker_info = speaker
+        if target_speaker_info is None and target_speaker in style_id_arr:
+            target_speaker_info = speaker
+
+    if base_speaker_info is None or target_speaker_info is None:
+        return None
+
+    base_speaker_morphing_info: SpeakerSupportSynthesisMorphing = base_speaker_info.get(
+        "supported_features", dict()
+    ).get("synthesis_morphing", SpeakerSupportSynthesisMorphing(None))
+
+    target_speaker_morphing_info: SpeakerSupportSynthesisMorphing = (
+        target_speaker_info.get("supported_features", dict()).get(
+            "synthesis_morphing", SpeakerSupportSynthesisMorphing(None)
+        )
+    )
+
+    if (
+        base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PROHIBIT
+        or target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PROHIBIT
+    ):
+        return False
+    if (
+        base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.SELF_MORPHING_ONLY
+        or target_speaker_morphing_info
+        == SpeakerSupportSynthesisMorphing.SELF_MORPHING_ONLY
+    ):
+        return base_speaker_info["speaker_uuid"] == target_speaker_info["speaker_uuid"]
+    return (
+        base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PREMIT
+        and target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PREMIT
     )
 
 

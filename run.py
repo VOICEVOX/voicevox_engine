@@ -44,7 +44,7 @@ from voicevox_engine.model import (
     UserDictWord,
     WordTypes,
 )
-from voicevox_engine.morphing import synthesis_morphing
+from voicevox_engine.morphing import is_synthesis_morphing_permitted, synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
@@ -508,6 +508,17 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
         engine = get_engine(core_version)
+
+        is_permitted = is_synthesis_morphing_permitted(
+            engine, base_speaker, target_speaker
+        )
+        if is_permitted is None:
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+        if not is_permitted:
+            raise HTTPException(
+                status_code=400,
+                detail="指定された話者ペアでのモーフィング機能は禁止されています",
+            )
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(

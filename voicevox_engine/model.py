@@ -113,6 +113,26 @@ class SpeakerStyle(BaseModel):
     id: int = Field(title="スタイルID")
 
 
+class SpeakerSupportSynthesisMorphing(str, Enum):
+    PREMIT = "PREMIT"
+    SELF_MORPHING_ONLY = "SELF_MORPHING_ONLY"
+    PROHIBIT = "PROHIBIT"
+
+    @classmethod
+    def _missing_(cls, value: object) -> "SpeakerSupportSynthesisMorphing":
+        return SpeakerSupportSynthesisMorphing.PREMIT
+
+
+class SpeakerSupportedFeatures(BaseModel):
+    """
+    スピーカーの対応機能
+    """
+
+    synthesis_morphing: Optional[SpeakerSupportSynthesisMorphing] = Field(
+        title="モーフィング機能への対応", default=SpeakerSupportSynthesisMorphing(None)
+    )
+
+
 class Speaker(BaseModel):
     """
     スピーカー情報
@@ -120,6 +140,7 @@ class Speaker(BaseModel):
 
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="スピーカーのUUID")
+    supported_features: Optional[SpeakerSupportedFeatures] = Field(title="スピーカーの対応機能")
     styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
     version: str = Field("スピーカーのバージョン")
 
