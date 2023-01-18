@@ -89,8 +89,8 @@ def is_synthesis_morphing_permitted(
     ):
         return base_speaker_info["speaker_uuid"] == target_speaker_info["speaker_uuid"]
     return (
-        base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PREMIT
-        and target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PREMIT
+        base_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PERMIT
+        and target_speaker_morphing_info == SpeakerSupportSynthesisMorphing.PERMIT
     )
 
 

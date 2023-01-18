@@ -114,13 +114,13 @@ class SpeakerStyle(BaseModel):
 
 
 class SpeakerSupportSynthesisMorphing(str, Enum):
-    PREMIT = "PREMIT"
+    PERMIT = "PERMIT"
     SELF_MORPHING_ONLY = "SELF_MORPHING_ONLY"
     PROHIBIT = "PROHIBIT"
 
     @classmethod
     def _missing_(cls, value: object) -> "SpeakerSupportSynthesisMorphing":
-        return SpeakerSupportSynthesisMorphing.PREMIT
+        return SpeakerSupportSynthesisMorphing.PERMIT
 
 
 class SpeakerSupportedFeatures(BaseModel):
