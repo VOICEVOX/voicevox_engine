@@ -104,8 +104,6 @@ def is_synthesis_morphing_permitted(
         )
     )
 
-    print(base_speaker_morphing_info, target_speaker_morphing_info)
-    print(base_speaker_uuid, target_speaker_uuid)
     # 禁止されている場合はFalse
     if (
         base_speaker_morphing_info == SpeakerSupporPermitedSynthesisMorphing.NOTHING
