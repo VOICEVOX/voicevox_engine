@@ -113,6 +113,28 @@ class SpeakerStyle(BaseModel):
     id: int = Field(title="スタイルID")
 
 
+class SpeakerSupporPermitedSynthesisMorphing(str, Enum):
+    ALL = "ALL"  # 全て許可
+    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
+    NOTHING = "NOTHING"  # 全て禁止
+
+    @classmethod
+    def _missing_(cls, value: object) -> "SpeakerSupporPermitedSynthesisMorphing":
+        return SpeakerSupporPermitedSynthesisMorphing.ALL
+
+
+class SpeakerSupportedFeatures(BaseModel):
+    """
+    話者の対応機能の情報
+    """
+
+    permited_synthesis_morphing: Optional[
+        SpeakerSupporPermitedSynthesisMorphing
+    ] = Field(
+        title="モーフィング機能への対応", default=SpeakerSupporPermitedSynthesisMorphing(None)
+    )
+
+
 class Speaker(BaseModel):
     """
     スピーカー情報
@@ -120,6 +142,7 @@ class Speaker(BaseModel):
 
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="スピーカーのUUID")
+    supported_features: Optional[SpeakerSupportedFeatures] = Field(title="スピーカーの対応機能")
     styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
     version: str = Field("スピーカーのバージョン")
 
@@ -143,6 +166,12 @@ class SpeakerInfo(BaseModel):
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
+
+
+class SpeakerNotFoundError(LookupError):
+    def __init__(self, speaker: int, *args: object, **kywrds: object) -> None:
+        self.speaker = speaker
+        super().__init__(f"speaker {speaker} is not found.", *args, **kywrds)
 
 
 class DownloadableLibrary(BaseModel):

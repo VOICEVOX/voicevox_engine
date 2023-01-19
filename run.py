@@ -40,11 +40,12 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
     WordTypes,
 )
-from voicevox_engine.morphing import synthesis_morphing
+from voicevox_engine.morphing import is_synthesis_morphing_permitted, synthesis_morphing
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
@@ -483,6 +484,34 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
+    @app.get(
+        "/is_morphable",
+        response_model=bool,
+        tags=["音声合成"],
+        summary="2人の話者でモーフィングが可能かどうか返す",
+    )
+    def is_morphable(
+        base_speaker: int,
+        target_speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        """
+        指定された2人の話者でモーフィング機能を利用可能か返します。
+        モーフィングの許可/禁止は`/speakers`の`speaker.supportedFeatures.synthesisMorphing`に記載されています。
+        プロパティが存在しない場合は、モーフィングが許可されているとみなします。
+        """
+        engine = get_engine(core_version)
+
+        try:
+            is_permitted = is_synthesis_morphing_permitted(
+                engine, root_dir / "speaker_info", base_speaker, target_speaker
+            )
+            return is_permitted
+        except SpeakerNotFoundError as e:
+            raise HTTPException(
+                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
+            )
+
     @app.post(
         "/synthesis_morphing",
         response_class=FileResponse,
@@ -508,6 +537,20 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
         engine = get_engine(core_version)
+
+        try:
+            is_permitted = is_synthesis_morphing_permitted(
+                engine, root_dir / "speaker_info", base_speaker, target_speaker
+            )
+            if not is_permitted:
+                raise HTTPException(
+                    status_code=400,
+                    detail="指定された話者ペアでのモーフィングはできません",
+                )
+        except SpeakerNotFoundError as e:
+            raise HTTPException(
+                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
+            )
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(

@@ -1,10 +1,18 @@
+import json
 from copy import deepcopy
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pyworld as pw
 
-from .model import AudioQuery
+from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
+
+from .model import (
+    AudioQuery,
+    SpeakerNotFoundError,
+    SpeakerSupporPermitedSynthesisMorphing,
+)
 from .synthesis_engine import SynthesisEngine
 
 
@@ -40,6 +48,80 @@ def create_morphing_parameter(
         base_aperiodicity=base_aperiodicity,
         base_spectrogram=base_spectrogram,
         target_spectrogram=target_spectrogram,
+    )
+
+
+def is_synthesis_morphing_permitted(
+    engine: SynthesisEngineBase,
+    speaker_info_folder: Path,
+    base_speaker: int,
+    target_speaker: int,
+) -> bool:
+    """
+    指定されたspeakerがモーフィング可能かどうか返す
+    speakerが見つからない場合はSpeakerNotFoundErrorを送出する
+    """
+
+    core_speakers = json.loads(engine.speakers)
+    base_speaker_core_info, target_speaker_core_info = None, None
+    for speaker in core_speakers:
+        style_id_arr = tuple(style["id"] for style in speaker["styles"])
+        if base_speaker_core_info is None and base_speaker in style_id_arr:
+            base_speaker_core_info = speaker
+        if target_speaker_core_info is None and target_speaker in style_id_arr:
+            target_speaker_core_info = speaker
+
+    if base_speaker_core_info is None or target_speaker_core_info is None:
+        raise SpeakerNotFoundError(
+            base_speaker if base_speaker_core_info is None else target_speaker
+        )
+
+    base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
+    target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
+
+    # FIXME: engineのmetasロード処理をPresetLoaderのように纏める
+    base_speaker_engine_info = json.loads(
+        (speaker_info_folder / f"{base_speaker_uuid}" / "metas.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    target_speaker_engine_info = json.loads(
+        (speaker_info_folder / f"{target_speaker_uuid}" / "metas.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    # FIXME: 他にsupported_featuresができたら共通化する
+    base_speaker_morphing_info: SpeakerSupporPermitedSynthesisMorphing = (
+        base_speaker_engine_info.get("supportedFeatures", dict()).get(
+            "permitedSynthesisMorphing", SpeakerSupporPermitedSynthesisMorphing(None)
+        )
+    )
+
+    target_speaker_morphing_info: SpeakerSupporPermitedSynthesisMorphing = (
+        target_speaker_engine_info.get("supportedFeatures", dict()).get(
+            "permitedSynthesisMorphing", SpeakerSupporPermitedSynthesisMorphing(None)
+        )
+    )
+
+    # 禁止されている場合はFalse
+    if (
+        base_speaker_morphing_info == SpeakerSupporPermitedSynthesisMorphing.NOTHING
+        or target_speaker_morphing_info
+        == SpeakerSupporPermitedSynthesisMorphing.NOTHING
+    ):
+        return False
+    # 同一話者のみの場合は同一話者判定
+    if (
+        base_speaker_morphing_info == SpeakerSupporPermitedSynthesisMorphing.SELF_ONLY
+        or target_speaker_morphing_info
+        == SpeakerSupporPermitedSynthesisMorphing.SELF_ONLY
+    ):
+        return base_speaker_uuid == target_speaker_uuid
+    # 念のため許可されているかチェック
+    return (
+        base_speaker_morphing_info == SpeakerSupporPermitedSynthesisMorphing.ALL
+        and target_speaker_morphing_info == SpeakerSupporPermitedSynthesisMorphing.ALL
     )
 
 
