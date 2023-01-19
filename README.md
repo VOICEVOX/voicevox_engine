@@ -98,11 +98,11 @@ curl -s \
 
 ### ユーザー辞書機能について
 
-API からユーザー辞書の参照、単語の追加、編集、削除を行うことができます。
+APIからユーザー辞書の参照、単語の追加、編集、削除を行うことができます。
 
 #### 参照
 
-`/user_dict`に GET リクエストを投げることでユーザー辞書の一覧を取得することができます。
+`/user_dict`にGETリクエストを投げることでユーザー辞書の一覧を取得することができます。
 
 ```bash
 curl -s -X GET "localhost:50021/user_dict"
@@ -110,18 +110,17 @@ curl -s -X GET "localhost:50021/user_dict"
 
 #### 単語追加
 
-`/user_dict_word`に POST リクエストを投げる事でユーザー辞書に単語を追加することができます。  
-URL パラメータとして、以下が必要です。
-
+`/user_dict_word`にPOSTリクエストを投げる事でユーザー辞書に単語を追加することができます。  
+URLパラメータとして、以下が必要です。
 - surface （辞書に登録する単語）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
 アクセント核位置については、こちらの文章が参考になるかと思います。  
 〇型となっている数字の部分がアクセント核位置になります。  
-https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html
+https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html  
 
-成功した場合の返り値は単語に割り当てられる UUID の文字列になります。
+成功した場合の返り値は単語に割り当てられるUUIDの文字列になります。
 
 ```bash
 surface="test"
@@ -137,14 +136,13 @@ curl -s -X POST "localhost:50021/user_dict_word" \
 
 #### 単語修正
 
-`/user_dict_word/{word_uuid}`に PUT リクエストを投げる事でユーザー辞書の単語を修正することができます。  
-URL パラメータとして、以下が必要です。
-
+`/user_dict_word/{word_uuid}`にPUTリクエストを投げる事でユーザー辞書の単語を修正することができます。  
+URLパラメータとして、以下が必要です。
 - surface （辞書に登録するワード）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -163,9 +161,9 @@ curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
 
 #### 単語削除
 
-`/user_dict_word/{word_uuid}`に DELETE リクエストを投げる事でユーザー辞書の単語を削除することができます。
+`/user_dict_word/{word_uuid}`にDELETEリクエストを投げる事でユーザー辞書の単語を削除することができます。  
 
-word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
+word_uuidは単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -269,11 +267,11 @@ curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
-### CORS 設定
+### CORS設定
 
-VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
+VOICEVOXではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Originなし以外のOriginからリクエストを受け入れないようになっています。
 そのため、一部のサードパーティアプリからのレスポンスを受け取れない可能性があります。  
-これを回避する方法として、エンジンから設定できる UI を用意しています。
+これを回避する方法として、エンジンから設定できるUIを用意しています。
 
 #### 設定方法
 
@@ -372,38 +370,29 @@ CPU スレッド数が未指定の場合は、論理コア数の半分か物理�
   ```
 
 ### 過去のバージョンのコアを使う
-
-VOICEVOX Core 0.5.4 以降のコアを使用する事が可能です。  
-Mac での libtorch 版コアのサポートはしていません。
+VOICEVOX Core 0.5.4以降のコアを使用する事が可能です。  
+Macでのlibtorch版コアのサポートはしていません。
 
 #### 過去のバイナリを指定する
-
-製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
-
+製品版VOICEVOXもしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 ```bash
 python run.py --voicevox_dir="/path/to/voicevox"
 ```
-
-Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
-
+Macでは、`DYLD_LIBRARY_PATH`の指定が必要です。
 ```bash
 DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
 ```
 
 #### 音声ライブラリを直接指定する
-
-[VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
+[VOICEVOX Coreのzipファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
 また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
-ただし、システムの探索パス上に libtorch、onnxruntime がある場合、`--runtime_dir`引数の指定は不要です。  
-`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。  
-API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
-
+ただし、システムの探索パス上にlibtorch、onnxruntimeがある場合、`--runtime_dir`引数の指定は不要です。  
+`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。   
+APIエンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 ```bash
 python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
 ```
-
-Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
-
+Macでは、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
 ```bash
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
@@ -436,7 +425,7 @@ python make_docs.py
 ## ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
-また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
+また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
 
 ```bash
 python -m pip install -r requirements-dev.txt
