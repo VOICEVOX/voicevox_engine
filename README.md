@@ -50,7 +50,7 @@ curl -s \
 
 生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
 
-`speaker` に指定する値は `/speakers` エンドポイントで得られる `styleId` です。互換性のために `speaker` という名前になっています。
+`speaker` に指定する値は `/speakers` エンドポイントで得られる `style_id` です。互換性のために `speaker` という名前になっています。
 
 ### 読み方を AquesTalk 記法で取得・修正するサンプルコード
 
@@ -312,7 +312,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-python -m pip install -r requirements-test.txt
+python -m pip install -r requirements-dev.txt -r requirements-test.txt
 
 # とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt

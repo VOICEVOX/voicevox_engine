@@ -1,22 +1,3 @@
 {
-    "speakerName": "dummy2",
-    "speakerUuid": "dummy2uuid",
-    "supportedFeatures": {"permitedSynthesisMorphing": "SELF_ONLY"},
-    "styles": [
-        {
-            "styleId": 3
-        },
-        {
-            "styleName": "style2",
-            "styleId": 1
-        },
-        {
-            "styleName": "style3",
-            "styleId": 7
-        },
-        {
-            "styleName": "style4",
-            "styleId": 5
-        }
-    ]
+  "supported_features": { "permited_synthesis_morphing": "SELF_ONLY" }
 }

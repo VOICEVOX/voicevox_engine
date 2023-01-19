@@ -93,14 +93,14 @@ def is_synthesis_morphing_permitted(
 
     # FIXME: 他にsupported_featuresができたら共通化する
     base_speaker_morphing_info: SpeakerSupporPermitedSynthesisMorphing = (
-        base_speaker_engine_info.get("supportedFeatures", dict()).get(
-            "permitedSynthesisMorphing", SpeakerSupporPermitedSynthesisMorphing(None)
+        base_speaker_engine_info.get("supported_features", dict()).get(
+            "permited_synthesis_morphing", SpeakerSupporPermitedSynthesisMorphing(None)
         )
     )
 
     target_speaker_morphing_info: SpeakerSupporPermitedSynthesisMorphing = (
-        target_speaker_engine_info.get("supportedFeatures", dict()).get(
-            "permitedSynthesisMorphing", SpeakerSupporPermitedSynthesisMorphing(None)
+        target_speaker_engine_info.get("supported_features", dict()).get(
+            "permited_synthesis_morphing", SpeakerSupporPermitedSynthesisMorphing(None)
         )
     )
 
