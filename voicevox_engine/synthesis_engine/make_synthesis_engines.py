@@ -24,7 +24,7 @@ def make_synthesis_engines(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
-    voicelib_dirs: List[Path], optional, defauld=None
+    voicelib_dirs: List[Path], optional, default=None
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir: Path, optional, default=None
         コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
