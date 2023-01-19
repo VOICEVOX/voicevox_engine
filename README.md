@@ -314,7 +314,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ```bash
 # 開発に必要なライブラリのインストール
-python -m pip install -r requirements-test.txt
+python -m pip install -r requirements-dev.txt -r requirements-test.txt
 
 # とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt
