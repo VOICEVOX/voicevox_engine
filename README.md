@@ -430,7 +430,8 @@ python make_docs.py
 ```bash
 python -m pip install -r requirements-dev.txt
 
-python generate_licenses.py > licenses.json
+OUTPUT_LICENSE_JSON_PATH=licenses.json \
+bash build_util/create_venv_and_generate_licenses.bash
 
 # ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
 LIBCORE_PATH="/path/to/libcore" \
@@ -456,9 +457,10 @@ poetry update `パッケージ名`
 poetry update # 全部更新
 
 # requirements.txtの更新
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
 ### ライセンス

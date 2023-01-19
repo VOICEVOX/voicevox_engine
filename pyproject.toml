@@ -56,7 +56,6 @@ pyopenjtalk = {git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "f4ade29ef
 [tool.poetry.group.dev.dependencies]
 cython = "^0.29.24"
 pyinstaller = "^5.3"
-pip-licenses = "^3.5.3"
 pre-commit = "^2.16.0"
 atomicwrites = "^1.4.0"
 colorama = "^0.4.4"
@@ -66,6 +65,9 @@ poetry = "^1.3.1"
 pysen = {version = "~0", extras = ["lint"]}
 pytest = "^6.2.5"
 coveralls = "^3.2.0"
+
+[tool.poetry.group.license.dependencies]
+pip-licenses = "^3.5.3"
 
 [build-system]
 requires = ["poetry-core"]
