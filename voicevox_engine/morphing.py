@@ -11,7 +11,7 @@ from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngi
 from .model import (
     AudioQuery,
     SpeakerNotFoundError,
-    SpeakerSupportPermitedSynthesisMorphing,
+    SpeakerSupportPermittedSynthesisMorphing,
 )
 from .synthesis_engine import SynthesisEngine
 
@@ -92,36 +92,38 @@ def is_synthesis_morphing_permitted(
     )
 
     # FIXME: 他にsupported_featuresができたら共通化する
-    base_speaker_morphing_info: SpeakerSupportPermitedSynthesisMorphing = (
+    base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
         base_speaker_engine_info.get("supported_features", dict()).get(
-            "permited_synthesis_morphing", SpeakerSupportPermitedSynthesisMorphing(None)
+            "permitted_synthesis_morphing",
+            SpeakerSupportPermittedSynthesisMorphing(None),
         )
     )
 
-    target_speaker_morphing_info: SpeakerSupportPermitedSynthesisMorphing = (
+    target_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
         target_speaker_engine_info.get("supported_features", dict()).get(
-            "permited_synthesis_morphing", SpeakerSupportPermitedSynthesisMorphing(None)
+            "permitted_synthesis_morphing",
+            SpeakerSupportPermittedSynthesisMorphing(None),
         )
     )
 
     # 禁止されている場合はFalse
     if (
-        base_speaker_morphing_info == SpeakerSupportPermitedSynthesisMorphing.NOTHING
+        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.NOTHING
         or target_speaker_morphing_info
-        == SpeakerSupportPermitedSynthesisMorphing.NOTHING
+        == SpeakerSupportPermittedSynthesisMorphing.NOTHING
     ):
         return False
     # 同一話者のみの場合は同一話者判定
     if (
-        base_speaker_morphing_info == SpeakerSupportPermitedSynthesisMorphing.SELF_ONLY
+        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY
         or target_speaker_morphing_info
-        == SpeakerSupportPermitedSynthesisMorphing.SELF_ONLY
+        == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY
     ):
         return base_speaker_uuid == target_speaker_uuid
     # 念のため許可されているかチェック
     return (
-        base_speaker_morphing_info == SpeakerSupportPermitedSynthesisMorphing.ALL
-        and target_speaker_morphing_info == SpeakerSupportPermitedSynthesisMorphing.ALL
+        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.ALL
+        and target_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.ALL
     )
 
 
