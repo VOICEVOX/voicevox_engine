@@ -413,6 +413,19 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
+## タイポチェック
+
+[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
+[typos をインストール](https://github.com/crate-ci/typos#install) した後
+
+```bash
+typos
+```
+
+でタイポチェックを行えます。
+もし誤判定やチェックから除外すべきファイルがあれば
+[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+
 ## API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  

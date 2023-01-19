@@ -78,7 +78,7 @@ class TestUserDictWords(TestCase):
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
-    def test_invalid_pronunciation_invalid_sute_gana(self):
+    def test_invalid_pronunciation_invalid_sutegana(self):
         test_value = deepcopy(self.test_model)
         test_value["pronunciation"] = "アィウェォ"
         with self.assertRaises(ValidationError):

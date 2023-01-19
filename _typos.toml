@@ -1,0 +1,11 @@
+# Files for typos
+# Instruction:  https://github.com/marketplace/actions/typos-action#getting-started
+
+[default.extend-identifiers]
+
+[default.extend-words]
+ba="ba" # 7zコマンドの-baオプション
+datas="datas" # PyInstallerの引数
+
+[files]
+extend-exclude = ["package-lock.json", "src/store/project.ts", "*.svg"]
