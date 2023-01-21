@@ -8,11 +8,8 @@ import pyworld as pw
 
 from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
 
-from .model import (
-    AudioQuery,
-    SpeakerNotFoundError,
-    SpeakerSupportPermittedSynthesisMorphing,
-)
+from .metas.Metas import SpeakerSupportPermittedSynthesisMorphing
+from .model import AudioQuery, SpeakerNotFoundError
 from .synthesis_engine import SynthesisEngine
 
 

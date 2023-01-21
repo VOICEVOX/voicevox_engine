@@ -32,6 +32,7 @@ from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -174,6 +175,8 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
+
+    metas_store = MetasStore(root_dir / "speaker_info")
 
     setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
 
@@ -647,8 +650,10 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
+        speakers = json.loads(engine.speakers)
+        content = json.dumps(metas_store.combine_metas(speakers))
         return Response(
-            content=engine.speakers,
+            content=content,
             media_type="application/json",
         )
 
