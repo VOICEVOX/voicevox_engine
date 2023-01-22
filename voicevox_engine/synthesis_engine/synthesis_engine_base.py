@@ -80,6 +80,7 @@ def full_context_label_moras_to_moras(
 
 
 class SynthesisEngineBase(metaclass=ABCMeta):
+    # FIXME: jsonではなくModelを返すようにする
     @property
     @abstractmethod
     def speakers(self) -> str:
