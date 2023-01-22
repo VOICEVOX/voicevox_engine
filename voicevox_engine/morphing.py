@@ -1,5 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import List
 from itertools import chain
 
 import numpy as np
@@ -8,7 +9,7 @@ import pyworld as pw
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
 
-from .metas.Metas import SpeakerSupportPermittedSynthesisMorphing
+from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing
 from .model import AudioQuery, SpeakerNotFoundError
 from .synthesis_engine import SynthesisEngine
 
@@ -49,18 +50,14 @@ def create_morphing_parameter(
 
 
 def get_morphable_targets(
-    engine: SynthesisEngineBase,
-    metas_store: MetasStore,
+    speakers: List[Speaker],
     base_speaker: int,
 ):
-    speakers = metas_store.load_combined_metas(engine=engine)
-
     morphable_targets = dict()
     for style in chain.from_iterable(speaker.styles for speaker in speakers):
         morphable_targets[style.id] = dict(
             is_morphable=is_synthesis_morphing_permitted(
-                engine=engine,
-                metas_store=metas_store,
+                speakers=speakers,
                 base_speaker=base_speaker,
                 target_speaker=style.id,
             )
@@ -69,8 +66,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    engine: SynthesisEngineBase,
-    metas_store: MetasStore,
+    speakers: List[Speaker],
     base_speaker: int,
     target_speaker: int,
 ) -> bool:
@@ -79,7 +75,6 @@ def is_synthesis_morphing_permitted(
     speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
-    speakers = metas_store.load_combined_metas(engine=engine)
     base_speaker_info, target_speaker_info = None, None
     for speaker in speakers:
         style_id_arr = tuple(style.id for style in speaker.styles)

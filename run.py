@@ -510,8 +510,9 @@ def generate_app(
         engine = get_engine(core_version)
 
         try:
+            speakers = metas_store.load_combined_metas(engine=engine)
             return get_morphable_targets(
-                engine=engine, metas_store=metas_store, base_speaker=base_speaker
+                speakers=speakers, base_speaker=base_speaker
             )
         except SpeakerNotFoundError as e:
             raise HTTPException(
@@ -545,8 +546,9 @@ def generate_app(
         engine = get_engine(core_version)
 
         try:
+            speakers = metas_store.load_combined_metas(engine=engine)
             is_permitted = is_synthesis_morphing_permitted(
-                engine, metas_store, base_speaker, target_speaker
+                speakers, base_speaker, target_speaker
             )
             if not is_permitted:
                 raise HTTPException(
