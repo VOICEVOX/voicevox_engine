@@ -56,4 +56,3 @@ class MetasStore:
     @property
     def loaded_metas(self) -> Dict[str, EngineSpeaker]:
         return self._loaded_metas
-

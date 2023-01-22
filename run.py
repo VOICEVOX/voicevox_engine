@@ -655,7 +655,6 @@ def generate_app(
         engine = get_engine(core_version)
         return metas_store.load_combined_metas(engine=engine)
 
-
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
         """
