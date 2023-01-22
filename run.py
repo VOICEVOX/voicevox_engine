@@ -48,7 +48,7 @@ from voicevox_engine.model import (
     WordTypes,
 )
 from voicevox_engine.morphing import (
-    get_morphing_targets,
+    get_morphable_targets,
     is_synthesis_morphing_permitted,
     synthesis_morphing,
 )
@@ -510,7 +510,7 @@ def generate_app(
         engine = get_engine(core_version)
 
         try:
-            return get_morphing_targets(
+            return get_morphable_targets(
                 engine=engine, metas=metas_store, base_speaker=base_speaker
             )
         except SpeakerNotFoundError as e:

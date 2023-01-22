@@ -49,16 +49,16 @@ def create_morphing_parameter(
     )
 
 
-def get_morphing_targets(
+def get_morphable_targets(
     engine: SynthesisEngineBase,
     metas: MetasStore,
     base_speaker: int,
 ):
     speakers = metas.combine_metas(json.loads(engine.speakers))
 
-    morphing_targets = dict()
+    morphable_targets = dict()
     for style in chain.from_iterable(speaker["styles"] for speaker in speakers):
-        morphing_targets[style["id"]] = dict(
+        morphable_targets[style["id"]] = dict(
             is_morphable=is_synthesis_morphing_permitted(
                 engine=engine,
                 metas=metas,
@@ -66,7 +66,7 @@ def get_morphing_targets(
                 target_speaker=style["id"],
             )
         )
-    return morphing_targets
+    return morphable_targets
 
 
 def is_synthesis_morphing_permitted(
