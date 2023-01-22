@@ -106,6 +106,10 @@ class ParseKanaBadRequest(BaseModel):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
+class MorphableTargetInfo(BaseModel):
+    is_morphable: bool = Field(title="指定したbaseに対してモーフィングの可否")
+
+
 class SpeakerNotFoundError(LookupError):
     def __init__(self, speaker: int, *args: object, **kywrds: object) -> None:
         self.speaker = speaker

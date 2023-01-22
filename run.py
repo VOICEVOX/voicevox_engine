@@ -37,6 +37,7 @@ from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
     DownloadableLibrary,
+    MorphableTargetInfo,
     ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
@@ -46,7 +47,11 @@ from voicevox_engine.model import (
     UserDictWord,
     WordTypes,
 )
-from voicevox_engine.morphing import is_synthesis_morphing_permitted, synthesis_morphing
+from voicevox_engine.morphing import (
+    get_morphing_targets,
+    is_synthesis_morphing_permitted,
+    synthesis_morphing,
+)
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
@@ -488,28 +493,26 @@ def generate_app(
         )
 
     @app.get(
-        "/is_morphable",
-        response_model=bool,
+        "/morphable_targets",
+        response_model=Dict[int, MorphableTargetInfo],
         tags=["音声合成"],
-        summary="2人の話者でモーフィングが可能かどうか返す",
+        summary="base_speakersに指定した話者に対してエンジン内の話者がモーフィングが可能かどうか返す",
     )
-    def is_morphable(
+    def morphable_targets(
         base_speaker: int,
-        target_speaker: int,
         core_version: Optional[str] = None,
     ):
         """
-        指定された2人の話者でモーフィング機能を利用可能か返します。
+        指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         """
         engine = get_engine(core_version)
 
         try:
-            is_permitted = is_synthesis_morphing_permitted(
-                engine, metas_store, base_speaker, target_speaker
+            return get_morphing_targets(
+                engine=engine, metas=metas_store, base_speaker=base_speaker
             )
-            return is_permitted
         except SpeakerNotFoundError as e:
             raise HTTPException(
                 status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"

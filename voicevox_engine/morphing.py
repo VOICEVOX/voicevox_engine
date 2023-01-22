@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from dataclasses import dataclass
+from itertools import chain
 
 import numpy as np
 import pyworld as pw
@@ -46,6 +47,26 @@ def create_morphing_parameter(
         base_spectrogram=base_spectrogram,
         target_spectrogram=target_spectrogram,
     )
+
+
+def get_morphing_targets(
+    engine: SynthesisEngineBase,
+    metas: MetasStore,
+    base_speaker: int,
+):
+    speakers = metas.combine_metas(json.loads(engine.speakers))
+
+    morphing_targets = dict()
+    for style in chain.from_iterable(speaker["styles"] for speaker in speakers):
+        morphing_targets[style["id"]] = dict(
+            is_morphable=is_synthesis_morphing_permitted(
+                engine=engine,
+                metas=metas,
+                base_speaker=base_speaker,
+                target_speaker=style["id"],
+            )
+        )
+    return morphing_targets
 
 
 def is_synthesis_morphing_permitted(
