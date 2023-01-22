@@ -8,7 +8,7 @@ import pyworld as pw
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, SpeakerNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, SpeakerNotFoundError
 from .synthesis_engine import SynthesisEngine
 
 
@@ -50,12 +50,12 @@ def create_morphing_parameter(
 def get_morphable_targets(
     speakers: List[Speaker],
     base_speaker: int,
-):
+) -> Dict[int, MorphableTargetInfo]:
     speaker_lookup = construct_lookup(speakers)
 
     morphable_targets = dict()
     for style in chain.from_iterable(speaker.styles for speaker in speakers):
-        morphable_targets[style.id] = dict(
+        morphable_targets[style.id] = MorphableTargetInfo(
             is_morphable=is_synthesis_morphing_permitted(
                 speaker_lookup=speaker_lookup,
                 base_speaker=base_speaker,
