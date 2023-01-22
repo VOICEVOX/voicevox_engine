@@ -27,7 +27,7 @@ class MetasStore:
         )
         return speaker
 
-    def speaker_metas(self, speaker_uuid: str):
+    def speaker_engine_metas(self, speaker_uuid: str):
         return self.loaded_metas[speaker_uuid]
 
     def combine_metas(self, core_metas):
@@ -37,7 +37,7 @@ class MetasStore:
         """
 
         return [
-            {**speaker_meta, **self.speaker_metas(speaker_meta["speaker_uuid"])}
+            {**speaker_meta, **self.speaker_engine_metas(speaker_meta["speaker_uuid"])}
             for speaker_meta in core_metas
         ]
 
