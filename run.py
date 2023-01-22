@@ -653,14 +653,8 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
-        content = metas_store.metas_to_raw(
-            metas_store.load_combined_metas(engine=engine)
-        )
+        return metas_store.load_combined_metas(engine=engine)
 
-        return Response(
-            content=json.dumps(content),
-            media_type="application/json",
-        )
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):

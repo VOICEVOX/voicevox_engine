@@ -57,6 +57,3 @@ class MetasStore:
     def loaded_metas(self) -> Dict[str, EngineSpeaker]:
         return self._loaded_metas
 
-    @staticmethod
-    def metas_to_raw(speakers: List[Speaker]):
-        return [speaker.dict() for speaker in speakers]
