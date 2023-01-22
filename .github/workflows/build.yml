@@ -555,13 +555,13 @@ jobs:
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v2g a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
-          # Compress to artifact.001.vvpp,artifact.002.vvpp, ...
+          # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
           (cd "${{ matrix.target }}" && zip -r - . > ../compressed.zip)
-          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvpp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
+          split -b 2G --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
-          # Rename to artifact.vvpp if there are only artifact.001.vvpp
-          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvpp | wc -l)" == 1 ]; then
-            mv ${{ steps.vars.outputs.package_name }}.001.vvpp ${{ steps.vars.outputs.package_name }}.vvpp
+          # Rename to artifact.vvpp if there are only artifact.001.vvppp
+          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+            mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
           # Output splitted archive list
