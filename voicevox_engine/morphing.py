@@ -1,11 +1,11 @@
 import json
 from copy import deepcopy
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 import pyworld as pw
 
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
 
 from .metas.Metas import SpeakerSupportPermittedSynthesisMorphing
@@ -50,7 +50,7 @@ def create_morphing_parameter(
 
 def is_synthesis_morphing_permitted(
     engine: SynthesisEngineBase,
-    speaker_info_folder: Path,
+    metas: MetasStore,
     base_speaker: int,
     target_speaker: int,
 ) -> bool:
@@ -76,17 +76,8 @@ def is_synthesis_morphing_permitted(
     base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
     target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
 
-    # FIXME: engineのmetasロード処理をPresetLoaderのように纏める
-    base_speaker_engine_info = json.loads(
-        (speaker_info_folder / f"{base_speaker_uuid}" / "metas.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    target_speaker_engine_info = json.loads(
-        (speaker_info_folder / f"{target_speaker_uuid}" / "metas.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    base_speaker_engine_info = metas.speaker_metas(f"{base_speaker_uuid}")
+    target_speaker_engine_info = metas.speaker_metas(f"{target_speaker_uuid}")
 
     # FIXME: 他にsupported_featuresができたら共通化する
     base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (

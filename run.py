@@ -507,7 +507,7 @@ def generate_app(
 
         try:
             is_permitted = is_synthesis_morphing_permitted(
-                engine, root_dir / "speaker_info", base_speaker, target_speaker
+                engine, metas_store, base_speaker, target_speaker
             )
             return is_permitted
         except SpeakerNotFoundError as e:
@@ -543,7 +543,7 @@ def generate_app(
 
         try:
             is_permitted = is_synthesis_morphing_permitted(
-                engine, root_dir / "speaker_info", base_speaker, target_speaker
+                engine, metas_store, base_speaker, target_speaker
             )
             if not is_permitted:
                 raise HTTPException(
