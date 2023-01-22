@@ -1,12 +1,13 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
-from typing import List
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
 
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing
+from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, SpeakerNotFoundError
 from .synthesis_engine import SynthesisEngine
 
@@ -50,11 +51,13 @@ def get_morphable_targets(
     speakers: List[Speaker],
     base_speaker: int,
 ):
+    speaker_lookup = construct_lookup(speakers)
+
     morphable_targets = dict()
     for style in chain.from_iterable(speaker.styles for speaker in speakers):
         morphable_targets[style.id] = dict(
             is_morphable=is_synthesis_morphing_permitted(
-                speakers=speakers,
+                speaker_lookup=speaker_lookup,
                 base_speaker=base_speaker,
                 target_speaker=style.id,
             )
@@ -63,7 +66,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speakers: List[Speaker],
+    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
     base_speaker: int,
     target_speaker: int,
 ) -> bool:
@@ -72,18 +75,16 @@ def is_synthesis_morphing_permitted(
     speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
-    base_speaker_info, target_speaker_info = None, None
-    for speaker in speakers:
-        style_id_arr = tuple(style.id for style in speaker.styles)
-        if base_speaker_info is None and base_speaker in style_id_arr:
-            base_speaker_info = speaker
-        if target_speaker_info is None and target_speaker in style_id_arr:
-            target_speaker_info = speaker
+    base_speaker_data = speaker_lookup[base_speaker]
+    target_speaker_data = speaker_lookup[target_speaker]
 
-    if base_speaker_info is None or target_speaker_info is None:
+    if base_speaker_data is None or target_speaker_data is None:
         raise SpeakerNotFoundError(
-            base_speaker if base_speaker_info is None else target_speaker
+            base_speaker if base_speaker_data is None else target_speaker
         )
+
+    base_speaker_info, _ = base_speaker_data
+    target_speaker_info, _ = target_speaker_data
 
     base_speaker_uuid = base_speaker_info.speaker_uuid
     target_speaker_uuid = target_speaker_info.speaker_uuid

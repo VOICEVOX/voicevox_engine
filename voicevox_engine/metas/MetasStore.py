@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
-from voicevox_engine.metas.Metas import CoreSpeaker, EngineSpeaker, Speaker
+from voicevox_engine.metas.Metas import CoreSpeaker, EngineSpeaker, Speaker, StyleInfo
 
 if TYPE_CHECKING:
     from voicevox_engine.synthesis_engine.synthesis_engine_base import (
@@ -23,6 +23,7 @@ class MetasStore:
             )
             for folder in engine_speakers_path.iterdir()
         }
+        self._lookup = None
 
     def speaker_engine_metas(self, speaker_uuid: str) -> EngineSpeaker:
         return self.loaded_metas[speaker_uuid]
@@ -58,3 +59,11 @@ class MetasStore:
     @property
     def loaded_metas(self) -> Dict[str, EngineSpeaker]:
         return self._loaded_metas
+
+
+def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleInfo]]:
+    lookup_table = dict()
+    for speaker in speakers:
+        for style in speaker.styles:
+            lookup_table[style.id] = (speaker, style)
+    return lookup_table

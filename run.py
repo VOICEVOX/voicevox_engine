@@ -32,7 +32,7 @@ from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -545,8 +545,9 @@ def generate_app(
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
+            speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
-                speakers, base_speaker, target_speaker
+                speaker_lookup, base_speaker, target_speaker
             )
             if not is_permitted:
                 raise HTTPException(
