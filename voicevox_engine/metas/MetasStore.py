@@ -6,6 +6,10 @@ from voicevox_engine.metas.Metas import SpeakerSupportPermittedSynthesisMorphing
 
 
 class MetasStore:
+    """
+    話者やスタイルのメタ情報を管理する
+    """
+
     def __init__(self, engine_speakers_path: Path) -> None:
         self._engine_speakers_path = engine_speakers_path
         self._loaded_metas = {
