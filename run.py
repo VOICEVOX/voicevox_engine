@@ -511,9 +511,7 @@ def generate_app(
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
-            return get_morphable_targets(
-                speakers=speakers, base_speaker=base_speaker
-            )
+            return get_morphable_targets(speakers=speakers, base_speaker=base_speaker)
         except SpeakerNotFoundError as e:
             raise HTTPException(
                 status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"

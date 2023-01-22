@@ -1,13 +1,10 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List
 from itertools import chain
+from typing import List
 
 import numpy as np
 import pyworld as pw
-
-from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing
 from .model import AudioQuery, SpeakerNotFoundError
