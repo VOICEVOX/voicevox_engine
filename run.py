@@ -500,7 +500,7 @@ def generate_app(
     ):
         """
         指定された2人の話者でモーフィング機能を利用可能か返します。
-        モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesisMorphing`に記載されています。
+        モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         """
         engine = get_engine(core_version)
