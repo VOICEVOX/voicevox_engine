@@ -1,14 +1,31 @@
 import json
 from pathlib import Path
+from typing import Dict
+
+from voicevox_engine.metas.Metas import SpeakerSupportPermittedSynthesisMorphing
 
 
 class MetasStore:
     def __init__(self, engine_speakers_path: Path) -> None:
         self._engine_speakers_path = engine_speakers_path
         self._loaded_metas = {
-            folder.name: json.loads((folder / "metas.json").read_text(encoding="utf-8"))
+            folder.name: self.fill_missing_speaker_properties(
+                json.loads((folder / "metas.json").read_text(encoding="utf-8"))
+            )
             for folder in engine_speakers_path.iterdir()
         }
+
+    @staticmethod
+    def fill_missing_speaker_properties(speaker: Dict):
+        speaker.setdefault(
+            "supported_features",
+            dict(),
+        )
+        speaker["supported_features"].setdefault(
+            "permitted_synthesis_morphing",
+            SpeakerSupportPermittedSynthesisMorphing(None),
+        )
+        return speaker
 
     def speaker_metas(self, speaker_uuid: str):
         return self.loaded_metas[speaker_uuid]

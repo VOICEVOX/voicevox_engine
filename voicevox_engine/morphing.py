@@ -59,39 +59,28 @@ def is_synthesis_morphing_permitted(
     speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
-    core_speakers = json.loads(engine.speakers)
-    base_speaker_core_info, target_speaker_core_info = None, None
-    for speaker in core_speakers:
+    speakers = metas.combine_metas(json.loads(engine.speakers))
+    base_speaker_info, target_speaker_info = None, None
+    for speaker in speakers:
         style_id_arr = tuple(style["id"] for style in speaker["styles"])
-        if base_speaker_core_info is None and base_speaker in style_id_arr:
-            base_speaker_core_info = speaker
-        if target_speaker_core_info is None and target_speaker in style_id_arr:
-            target_speaker_core_info = speaker
+        if base_speaker_info is None and base_speaker in style_id_arr:
+            base_speaker_info = speaker
+        if target_speaker_info is None and target_speaker in style_id_arr:
+            target_speaker_info = speaker
 
-    if base_speaker_core_info is None or target_speaker_core_info is None:
+    if base_speaker_info is None or target_speaker_info is None:
         raise SpeakerNotFoundError(
-            base_speaker if base_speaker_core_info is None else target_speaker
+            base_speaker if base_speaker_info is None else target_speaker
         )
 
-    base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
-    target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
+    base_speaker_uuid = base_speaker_info["speaker_uuid"]
+    target_speaker_uuid = target_speaker_info["speaker_uuid"]
 
-    base_speaker_engine_info = metas.speaker_metas(f"{base_speaker_uuid}")
-    target_speaker_engine_info = metas.speaker_metas(f"{target_speaker_uuid}")
-
-    # FIXME: 他にsupported_featuresができたら共通化する
     base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        base_speaker_engine_info.get("supported_features", dict()).get(
-            "permitted_synthesis_morphing",
-            SpeakerSupportPermittedSynthesisMorphing(None),
-        )
+        base_speaker_info["supported_features"]["permitted_synthesis_morphing"]
     )
-
     target_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        target_speaker_engine_info.get("supported_features", dict()).get(
-            "permitted_synthesis_morphing",
-            SpeakerSupportPermittedSynthesisMorphing(None),
-        )
+        target_speaker_info["supported_features"]["permitted_synthesis_morphing"]
     )
 
     # 禁止されている場合はFalse
