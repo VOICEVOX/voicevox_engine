@@ -511,7 +511,7 @@ def generate_app(
 
         try:
             return get_morphable_targets(
-                engine=engine, metas=metas_store, base_speaker=base_speaker
+                engine=engine, metas_store=metas_store, base_speaker=base_speaker
             )
         except SpeakerNotFoundError as e:
             raise HTTPException(
