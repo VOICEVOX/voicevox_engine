@@ -1,4 +1,3 @@
-import json
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
@@ -54,16 +53,16 @@ def get_morphable_targets(
     metas: MetasStore,
     base_speaker: int,
 ):
-    speakers = metas.combine_metas(json.loads(engine.speakers))
+    speakers = metas.load_combined_metas(engine=engine)
 
     morphable_targets = dict()
-    for style in chain.from_iterable(speaker["styles"] for speaker in speakers):
-        morphable_targets[style["id"]] = dict(
+    for style in chain.from_iterable(speaker.styles for speaker in speakers):
+        morphable_targets[style.id] = dict(
             is_morphable=is_synthesis_morphing_permitted(
                 engine=engine,
                 metas=metas,
                 base_speaker=base_speaker,
-                target_speaker=style["id"],
+                target_speaker=style.id,
             )
         )
     return morphable_targets
@@ -80,10 +79,10 @@ def is_synthesis_morphing_permitted(
     speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
-    speakers = metas.combine_metas(json.loads(engine.speakers))
+    speakers = metas.load_combined_metas(engine=engine)
     base_speaker_info, target_speaker_info = None, None
     for speaker in speakers:
-        style_id_arr = tuple(style["id"] for style in speaker["styles"])
+        style_id_arr = tuple(style.id for style in speaker.styles)
         if base_speaker_info is None and base_speaker in style_id_arr:
             base_speaker_info = speaker
         if target_speaker_info is None and target_speaker in style_id_arr:
@@ -94,14 +93,15 @@ def is_synthesis_morphing_permitted(
             base_speaker if base_speaker_info is None else target_speaker
         )
 
-    base_speaker_uuid = base_speaker_info["speaker_uuid"]
-    target_speaker_uuid = target_speaker_info["speaker_uuid"]
+    base_speaker_uuid = base_speaker_info.speaker_uuid
+    target_speaker_uuid = target_speaker_info.speaker_uuid
 
     base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        base_speaker_info["supported_features"]["permitted_synthesis_morphing"]
+        base_speaker_info.supported_features.permitted_synthesis_morphing
     )
+
     target_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        target_speaker_info["supported_features"]["permitted_synthesis_morphing"]
+        target_speaker_info.supported_features.permitted_synthesis_morphing
     )
 
     # 禁止されている場合はFalse

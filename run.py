@@ -653,10 +653,12 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
-        speakers = json.loads(engine.speakers)
-        content = json.dumps(metas_store.combine_metas(speakers))
+        content = metas_store.metas_to_raw(
+            metas_store.load_combined_metas(engine=engine)
+        )
+
         return Response(
-            content=content,
+            content=json.dumps(content),
             media_type="application/json",
         )
 

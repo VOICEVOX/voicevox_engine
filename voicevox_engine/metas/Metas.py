@@ -28,9 +28,7 @@ class SpeakerSupportedFeatures(BaseModel):
     話者の対応機能の情報
     """
 
-    permitted_synthesis_morphing: Optional[
-        SpeakerSupportPermittedSynthesisMorphing
-    ] = Field(
+    permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
         title="モーフィング機能への対応", default=SpeakerSupportPermittedSynthesisMorphing(None)
     )
 
@@ -51,7 +49,9 @@ class EngineSpeaker(BaseModel):
     エンジンに含まれるスピーカー情報
     """
 
-    supported_features: Optional[SpeakerSupportedFeatures] = Field(title="スピーカーの対応機能")
+    supported_features: SpeakerSupportedFeatures = Field(
+        title="スピーカーの対応機能", default_factory=SpeakerSupportedFeatures
+    )
 
 
 class Speaker(CoreSpeaker, EngineSpeaker):
