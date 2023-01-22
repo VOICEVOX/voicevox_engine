@@ -41,6 +41,8 @@ class MetasStore:
             for speaker_meta in core_metas
         ]
 
+    # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
+    # SynthesisEngineBaseによる循環importを修正する
     def load_combined_metas(self, engine: "SynthesisEngineBase") -> List[Speaker]:
         """
         与えられたエンジンから、コア・エンジン両方の情報を含んだMetasを返す
