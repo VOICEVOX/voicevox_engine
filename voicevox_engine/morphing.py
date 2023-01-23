@@ -51,6 +51,10 @@ def get_morphable_targets(
     speakers: List[Speaker],
     base_speakers: List[int],
 ) -> List[Dict[int, MorphableTargetInfo]]:
+    """
+    speakers: 全話者の情報
+    base_speakers: モーフィング可能か判定したいベースの話者リスト（スタイルID）
+    """
     speaker_lookup = construct_lookup(speakers)
 
     morphable_targets_arr = []
