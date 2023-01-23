@@ -567,7 +567,7 @@ jobs:
           # Output splitted archive list
           ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
           mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
-          ls ${{ steps.vars.outputs.package_name }}*.vvpp > archives_vvpp.txt
+          ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
       - name: Upload splitted archives to Release assets
@@ -577,7 +577,8 @@ jobs:
           tag_name: ${{ needs.config.outputs.version }}
           files: |-
             ${{ steps.vars.outputs.package_name }}.7z.*
-            ${{ steps.vars.outputs.package_name }}*.vvpp
+            ${{ steps.vars.outputs.package_name }}.vvpp
+            ${{ steps.vars.outputs.package_name }}*.vvppp
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
           target_commitish: ${{ github.sha }}
 
