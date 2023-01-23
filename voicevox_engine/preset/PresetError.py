@@ -1,0 +1,2 @@
+class PresetError(Exception):
+    pass

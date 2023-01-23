@@ -56,7 +56,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.preset import Preset, PresetLoader
+from voicevox_engine.preset import Preset, PresetError, PresetManager
 from voicevox_engine.setting import (
     USER_SETTING_PATH,
     CorsPolicyMode,
@@ -174,7 +174,7 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    preset_loader = PresetLoader(
+    preset_manager = PresetManager(
         preset_path=root_dir / "presets.yaml",
     )
     engine_manifest_loader = EngineManifestLoader(
@@ -245,9 +245,10 @@ def generate_app(
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        presets, err_detail = preset_loader.load_presets()
-        if err_detail:
-            raise HTTPException(status_code=422, detail=err_detail)
+        try:
+            presets = preset_manager.load_presets()
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -633,10 +634,72 @@ def generate_app(
         presets: List[Preset]
             プリセットのリスト
         """
-        presets, err_detail = preset_loader.load_presets()
-        if err_detail:
-            raise HTTPException(status_code=422, detail=err_detail)
+        try:
+            presets = preset_manager.load_presets()
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         return presets
+
+    @app.post("/add_preset", response_model=int, tags=["その他"])
+    def add_preset(preset: Preset):
+        """
+        新しいプリセットを追加します
+
+        Parameters
+        -------
+        preset: Preset
+            新しいプリセット。
+            プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。
+
+        Returns
+        -------
+        id: int
+            追加したプリセットのプリセットID
+        """
+        try:
+            id = preset_manager.add_preset(preset)
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
+        return id
+
+    @app.post("/update_preset", response_model=int, tags=["その他"])
+    def update_preset(preset: Preset):
+        """
+        既存のプリセットを更新します
+
+        Parameters
+        -------
+        preset: Preset
+            更新するプリセット。
+            プリセットIDが更新対象と一致している必要があります。
+
+        Returns
+        -------
+        id: int
+            更新したプリセットのプリセットID
+        """
+        try:
+            id = preset_manager.update_preset(preset)
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
+        return id
+
+    @app.post("/delete_preset", status_code=204, tags=["その他"])
+    def delete_preset(id: int):
+        """
+        既存のプリセットを削除します
+
+        Parameters
+        -------
+        id: int
+            削除するプリセットのプリセットID
+
+        """
+        try:
+            preset_manager.delete_preset(id)
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
+        return Response(status_code=204)
 
     @app.get("/version", tags=["その他"])
     def version() -> str:
