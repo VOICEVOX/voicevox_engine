@@ -22,7 +22,7 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
-ARG VOICEVOX_CORE_VERSION=0.14.0-preview.3
+ARG VOICEVOX_CORE_VERSION=0.14.0-preview.4
 RUN <<EOF
     set -eux
 
