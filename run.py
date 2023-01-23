@@ -32,10 +32,12 @@ from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
     DownloadableLibrary,
+    MorphableTargetInfo,
     ParseKanaBadRequest,
     ParseKanaError,
     Speaker,
@@ -45,7 +47,11 @@ from voicevox_engine.model import (
     UserDictWord,
     WordTypes,
 )
-from voicevox_engine.morphing import is_synthesis_morphing_permitted, synthesis_morphing
+from voicevox_engine.morphing import (
+    get_morphable_targets,
+    is_synthesis_morphing_permitted,
+    synthesis_morphing,
+)
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
@@ -174,6 +180,8 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
+
+    metas_store = MetasStore(root_dir / "speaker_info")
 
     setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
 
@@ -484,29 +492,26 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get(
-        "/is_morphable",
-        response_model=bool,
+    @app.post(
+        "/morphable_targets",
+        response_model=List[Dict[int, MorphableTargetInfo]],
         tags=["音声合成"],
-        summary="2人の話者でモーフィングが可能かどうか返す",
+        summary="base_speakersに指定した話者に対してエンジン内の話者がモーフィングが可能かどうか返す",
     )
-    def is_morphable(
-        base_speaker: int,
-        target_speaker: int,
+    def morphable_targets(
+        base_speakers: List[int],
         core_version: Optional[str] = None,
     ):
         """
-        指定された2人の話者でモーフィング機能を利用可能か返します。
-        モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesisMorphing`に記載されています。
+        指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
+        モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         """
         engine = get_engine(core_version)
 
         try:
-            is_permitted = is_synthesis_morphing_permitted(
-                engine, root_dir / "speaker_info", base_speaker, target_speaker
-            )
-            return is_permitted
+            speakers = metas_store.load_combined_metas(engine=engine)
+            return get_morphable_targets(speakers=speakers, base_speakers=base_speakers)
         except SpeakerNotFoundError as e:
             raise HTTPException(
                 status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
@@ -539,8 +544,10 @@ def generate_app(
         engine = get_engine(core_version)
 
         try:
+            speakers = metas_store.load_combined_metas(engine=engine)
+            speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
-                engine, root_dir / "speaker_info", base_speaker, target_speaker
+                speaker_lookup, base_speaker, target_speaker
             )
             if not is_permitted:
                 raise HTTPException(
@@ -647,10 +654,7 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
-        return Response(
-            content=engine.speakers,
-            media_type="application/json",
-        )
+        return metas_store.load_combined_metas(engine=engine)
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
