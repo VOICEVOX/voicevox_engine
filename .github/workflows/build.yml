@@ -21,7 +21,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.14.0-preview.2"
+  VOICEVOX_RESOURCE_VERSION: "0.14.0-preview.3"
   VOICEVOX_CORE_VERSION: "0.14.0-preview.3"
 
 jobs:
