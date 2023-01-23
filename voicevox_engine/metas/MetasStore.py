@@ -64,7 +64,7 @@ def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleI
     """
     `{style.id: StyleInfo}`の変換テーブル
     """
-    
+
     lookup_table = dict()
     for speaker in speakers:
         for style in speaker.styles:
