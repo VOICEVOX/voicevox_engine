@@ -108,7 +108,7 @@ class ParseKanaBadRequest(BaseModel):
 
 class MorphableTargetInfo(BaseModel):
 
-    is_morphable: bool = Field(title="指定したbaseに対してモーフィングの可否")
+    is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
     # FIXME: add reason property
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
 
