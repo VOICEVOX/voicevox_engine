@@ -23,7 +23,6 @@ class MetasStore:
             )
             for folder in engine_speakers_path.iterdir()
         }
-        self._lookup = None
 
     def speaker_engine_metas(self, speaker_uuid: str) -> EngineSpeaker:
         return self.loaded_metas[speaker_uuid]
