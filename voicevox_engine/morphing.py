@@ -49,20 +49,24 @@ def create_morphing_parameter(
 
 def get_morphable_targets(
     speakers: List[Speaker],
-    base_speaker: int,
-) -> Dict[int, MorphableTargetInfo]:
+    base_speakers: List[int],
+) -> List[Dict[int, MorphableTargetInfo]]:
     speaker_lookup = construct_lookup(speakers)
 
-    morphable_targets = dict()
-    for style in chain.from_iterable(speaker.styles for speaker in speakers):
-        morphable_targets[style.id] = MorphableTargetInfo(
-            is_morphable=is_synthesis_morphing_permitted(
-                speaker_lookup=speaker_lookup,
-                base_speaker=base_speaker,
-                target_speaker=style.id,
+    morphable_targets_arr = []
+    for base_speaker in base_speakers:
+        morphable_targets = dict()
+        for style in chain.from_iterable(speaker.styles for speaker in speakers):
+            morphable_targets[style.id] = MorphableTargetInfo(
+                is_morphable=is_synthesis_morphing_permitted(
+                    speaker_lookup=speaker_lookup,
+                    base_speaker=base_speaker,
+                    target_speaker=style.id,
+                )
             )
-        )
-    return morphable_targets
+        morphable_targets_arr.append(morphable_targets)
+
+    return morphable_targets_arr
 
 
 def is_synthesis_morphing_permitted(

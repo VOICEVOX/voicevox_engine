@@ -492,14 +492,14 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get(
+    @app.post(
         "/morphable_targets",
-        response_model=Dict[int, MorphableTargetInfo],
+        response_model=List[Dict[int, MorphableTargetInfo]],
         tags=["音声合成"],
         summary="base_speakersに指定した話者に対してエンジン内の話者がモーフィングが可能かどうか返す",
     )
     def morphable_targets(
-        base_speaker: int,
+        base_speakers: List[int],
         core_version: Optional[str] = None,
     ):
         """
@@ -511,7 +511,7 @@ def generate_app(
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
-            return get_morphable_targets(speakers=speakers, base_speaker=base_speaker)
+            return get_morphable_targets(speakers=speakers, base_speakers=base_speakers)
         except SpeakerNotFoundError as e:
             raise HTTPException(
                 status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
