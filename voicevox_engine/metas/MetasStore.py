@@ -61,6 +61,10 @@ class MetasStore:
 
 
 def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleInfo]]:
+    """
+    `{style.id: StyleInfo}`の変換テーブル
+    """
+    
     lookup_table = dict()
     for speaker in speakers:
         for style in speaker.styles:
