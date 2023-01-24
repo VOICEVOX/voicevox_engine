@@ -495,9 +495,9 @@ def generate_app(
 
     @app.post(
         "/morphable_targets",
-        response_model=List[Dict[int, MorphableTargetInfo]],
+        response_model=List[Dict[str, MorphableTargetInfo]],
         tags=["音声合成"],
-        summary="base_speakersに指定した話者に対してエンジン内の話者がモーフィングが可能かどうか返す",
+        summary="指定した話者に対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
         base_speakers: List[int],
@@ -507,12 +507,20 @@ def generate_app(
         指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
+        返り値の話者はstring型なので注意。
         """
         engine = get_engine(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
-            return get_morphable_targets(speakers=speakers, base_speakers=base_speakers)
+            morphable_targets = get_morphable_targets(
+                speakers=speakers, base_speakers=base_speakers
+            )
+            # jsonはint型のキーを持てないので、string型に変換する
+            return [
+                {str(k): v for k, v in morphable_target.items()}
+                for morphable_target in morphable_targets
+            ]
         except SpeakerNotFoundError as e:
             raise HTTPException(
                 status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
