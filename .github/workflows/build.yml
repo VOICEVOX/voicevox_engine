@@ -66,6 +66,7 @@ jobs:
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
             cuda_version: "11.6.2"
             cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip
+            zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
             target: windows-nvidia
           # Mac CPU (x64 arch only)
           - os: macos-11
@@ -217,6 +218,33 @@ jobs:
 
             rm download/cudnn.tar.xz
           fi
+
+      # Donwload zlib
+      - name: Export zlib url to calc hash
+        if: matrix.zlib_url != ''
+        shell: bash
+        run: echo "${{ matrix.zlib_url }}" >> download/zlib_url.txt
+
+      - name: Cache zlib
+        if: matrix.zlib_url != ''
+        uses: actions/cache@v3
+        id: zlib-cache
+        with:
+          key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
+          path: download/zlib
+
+      - name: Download zlib
+        if: steps.zlib-cache.outputs.cache-hit != 'true' && matrix.zlib_url != ''
+        shell: bash
+        run: |
+          curl -L "${{ matrix.zlib_url }}" -o download/zlib.zip
+          mkdir -p download/zlib
+
+          # extract only dlls
+          unzip download/zlib.zip dll_${{ matrix.architecture }}/zlibwapi.dll -d download/zlib
+          rm download/zlib.zip
+          mv download/zlib/dll_${{ matrix.architecture }}/zlibwapi.dll download/zlib/zlibwapi.dll
+          rm -r download/zlib/dll_${{ matrix.architecture }}
 
       - name: Show disk space (debug info)
         if: matrix.cudnn_url != ''
@@ -465,6 +493,9 @@ jobs:
             # cuDNN
             ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
             ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
+
+            # zlib
+            ln -sf "$(pwd)/download/zlib"/zlibwapi.dll dist/run/
           fi
 
           if [[ ${{ matrix.target }} == *-directml ]]; then
