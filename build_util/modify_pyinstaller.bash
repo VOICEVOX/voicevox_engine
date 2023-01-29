@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# PyInstallerをカスタマイズしてから再インストールする
+# 良いGPUが自動的に選択されるようにしている
+# https://github.com/VOICEVOX/voicevox_engine/issues/502
+
 set -eux
 
 pyinstaller_version=$(pyinstaller -v)
