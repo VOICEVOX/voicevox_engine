@@ -270,6 +270,11 @@ jobs:
         run: |
           python -m pip install -r requirements-dev.txt
 
+          if [ "$RUNNER_OS" = Windows ]; then
+            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
+            ./build_util/modify_pyinstaller.bash
+          fi
+
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for i in $(seq 5); do
