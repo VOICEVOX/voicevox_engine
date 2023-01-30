@@ -1124,15 +1124,19 @@ if __name__ == "__main__":
         "--cpu_num_threads",
         type=int,
         default=os.getenv("VV_CPU_NUM_THREADS") or None,
-        help="音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
-        "VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。",
+        help=(
+            "音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。"
+            "VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。"
+        ),
     )
 
     parser.add_argument(
         "--output_log_utf8",
         action="store_true",
-        help="指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
-        "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。",
+        help=(
+            "指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。"
+            "VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。"
+        ),
     )
 
     parser.add_argument(
@@ -1140,13 +1144,15 @@ if __name__ == "__main__":
         type=CorsPolicyMode,
         choices=list(CorsPolicyMode),
         default=None,
-        help="allまたはlocalappsを指定。allはすべてを許可します。"
-        "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
-        "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。",
+        help=(
+            "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
+            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+            "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
+        ),
     )
 
     parser.add_argument(
-        "--allow_origin", nargs="*", help="許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。"
+        "--allow_origin", nargs="*", help="許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
     )
 
     parser.add_argument(

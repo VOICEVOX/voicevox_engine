@@ -5,8 +5,12 @@ from pydantic import BaseModel, Field
 
 
 class CorsPolicyMode(str, Enum):
-    all = "all"
-    localapps = "localapps"
+    """
+    CORSの許可モード
+    """
+
+    all = "all"  # 全てのオリジンからのリクエストを許可
+    localapps = "localapps"  # ローカルアプリケーションからのリクエストを許可
 
 
 class Setting(BaseModel):
