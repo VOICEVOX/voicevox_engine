@@ -1195,7 +1195,13 @@ if __name__ == "__main__":
     )
 
     allow_origin = (
-        args.allow_origin if args.allow_origin is not None else settings.allow_origin
+        args.allow_origin
+        if args.allow_origin is not None
+        else (
+            settings.allow_origin.split(" ")
+            if settings.allow_origin is not None
+            else None
+        )
     )
 
     uvicorn.run(
