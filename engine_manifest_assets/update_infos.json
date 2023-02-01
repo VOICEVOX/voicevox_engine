@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.14.1",
+    "descriptions": [" AquesTalkライクな記法で生成した音声のバグを修正"],
+    "contributors": []
+  },
+  {
     "version": "0.14.0",
     "descriptions": [
       "コアをRust言語に移行",
