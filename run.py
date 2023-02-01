@@ -1194,15 +1194,11 @@ if __name__ == "__main__":
         else settings.cors_policy_mode
     )
 
-    allow_origin = (
-        args.allow_origin
-        if args.allow_origin is not None
-        else (
-            settings.allow_origin.split(" ")
-            if settings.allow_origin is not None
-            else None
-        )
-    )
+    allow_origin = None
+    if args.allow_origin is not None:
+        allow_origin = args.allow_origin
+    elif settings.allow_origin is not None:
+        allow_origin = settings.allow_origin.split(" ")
 
     uvicorn.run(
         generate_app(
