@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import queue
-from voicevox_engine.utility import parse_core_version
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from tempfile import NamedTemporaryFile
@@ -14,6 +13,7 @@ from fastapi import HTTPException, Request
 
 from .model import AudioQuery
 from .synthesis_engine import make_synthesis_engines
+from .utility import parse_core_version
 
 
 class CancellableEngine:
