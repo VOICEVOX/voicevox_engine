@@ -74,9 +74,9 @@ from voicevox_engine.user_dict import (
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
     connect_base64_waves,
-    parse_core_version,
     delete_file,
     engine_root,
+    parse_core_version,
 )
 
 
@@ -1176,7 +1176,9 @@ if __name__ == "__main__":
         load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = str(max([parse_core_version(ver) for ver in synthesis_engines]))
+    latest_core_version = str(
+        max([parse_core_version(ver) for ver in synthesis_engines])
+    )
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
