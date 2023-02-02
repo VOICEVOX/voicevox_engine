@@ -1,7 +1,7 @@
 import argparse
 import asyncio
 import queue
-from distutils.version import LooseVersion
+from voicevox_engine.utility import parse_core_version
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from tempfile import NamedTemporaryFile
@@ -197,7 +197,7 @@ def start_synthesis_subprocess(
         enable_mock=args.enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
+    latest_core_version = str(max([parse_core_version(ver) for ver in synthesis_engines]))
     while True:
         try:
             query, speaker_id, core_version = sub_proc_con.recv()
