@@ -38,7 +38,7 @@ description = ""
 authors = ["Hiroshiba <hihokaruta@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "~3.8"
+python = "~3.8,>=3.8.1"
 numpy = "^1.20.0"
 fastapi = "^0.70.0"
 python-multipart = "^0.0.5"
