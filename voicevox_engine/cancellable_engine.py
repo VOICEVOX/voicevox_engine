@@ -13,7 +13,7 @@ from fastapi import HTTPException, Request
 
 from .model import AudioQuery
 from .synthesis_engine import make_synthesis_engines
-from .utility import parse_core_version
+from .utility.core_version import get_latest_core_version
 
 
 class CancellableEngine:
@@ -197,9 +197,7 @@ def start_synthesis_subprocess(
         enable_mock=args.enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = str(
-        max([parse_core_version(ver) for ver in synthesis_engines])
-    )
+    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
     while True:
         try:
             query, speaker_id, core_version = sub_proc_con.recv()
