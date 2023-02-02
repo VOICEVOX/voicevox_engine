@@ -3,7 +3,7 @@ from unittest import TestCase
 from voicevox_engine.utility.core_version import parse_core_version, get_latest_core_version
 
 
-class TestParseCoreVersion(TestCase):
+class TestCoreVersion(TestCase):
     def test_parse_core_version(self):
         parse_core_version("0.1.0")
         parse_core_version("0.10.preview.1")
