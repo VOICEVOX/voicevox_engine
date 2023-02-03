@@ -39,7 +39,6 @@ build-linux-docker-nvidia-ubuntu20.04:
 run-linux-docker-nvidia-ubuntu20.04:
 	docker run --rm -it \
 		--gpus all \
-		--runtime=nvidia \
 		-p '127.0.0.1:50021:50021' $(ARGS) \
 		voicevox/voicevox_engine:nvidia-ubuntu20.04-latest $(CMD)
 
@@ -77,7 +76,6 @@ build-linux-docker-nvidia-ubuntu18.04:
 run-linux-docker-nvidia-ubuntu18.04:
 	docker run --rm -it \
 		--gpus all \
-		--runtime=nvidia \
 		-p '127.0.0.1:50021:50021' $(ARGS) \
 		voicevox/voicevox_engine:nvidia-ubuntu18.04-latest $(CMD)
 
