@@ -300,6 +300,16 @@ docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
 
+#### トラブルシューティング
+
+リクエストを送ったら、次のエラーを吐いて500が帰ってくることがあります。
+
+```
+Exception: 無効なmodel_indexです: 0
+```
+
+この場合、二行目の`docker run`に`--runtime=nvidia`というオプションをつけて、再度実行してみてください。
+
 ## 貢献者の方へ
 
 Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
