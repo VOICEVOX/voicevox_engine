@@ -300,6 +300,9 @@ docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
 
+#### トラブルシューティング
+GPU版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
+
 ## 貢献者の方へ
 
 Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
