@@ -502,6 +502,10 @@ python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.
 | DOCKERHUB_USERNAME | Docker Hub ユーザ名                                                     |
 | DOCKERHUB_TOKEN    | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
+## 事例紹介
+
+**[voicevox-client](https://github.com/tuna2134/voicevox-client) [@tuna2134](https://github.com/tuna2134)** ･･･ VOICEVOX ENGINE のためのPythonラッパー
+
 ## ライセンス
 
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
