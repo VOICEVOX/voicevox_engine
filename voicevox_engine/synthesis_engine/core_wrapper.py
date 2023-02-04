@@ -424,15 +424,15 @@ class CoreWrapper:
         os.chdir(core_dir)
         try:
             if is_version_0_12_core_or_later:
-                self.with_boolean_result(self.core.initialize)(
+                self.handle_bool_result(self.core.initialize)(
                     use_gpu, cpu_num_threads, load_all_models
                 )
             elif exist_cpu_num_threads:
-                self.with_boolean_result(self.core.initialize)(
+                self.handle_bool_result(self.core.initialize)(
                     ".", use_gpu, cpu_num_threads
                 )
             else:
-                self.with_boolean_result(self.core.initialize)(".", use_gpu)
+                self.handle_bool_result(self.core.initialize)(".", use_gpu)
         finally:
             os.chdir(cwd)
 
@@ -446,7 +446,7 @@ class CoreWrapper:
         speaker_id: np.ndarray,
     ) -> np.ndarray:
         output = np.zeros((length,), dtype=np.float32)
-        self.with_boolean_result(self.core.yukarin_s_forward)(
+        self.handle_bool_result(self.core.yukarin_s_forward)(
             c_int(length),
             phoneme_list.ctypes.data_as(POINTER(c_long)),
             speaker_id.ctypes.data_as(POINTER(c_long)),
@@ -472,7 +472,7 @@ class CoreWrapper:
             ),
             dtype=np.float32,
         )
-        self.with_boolean_result(self.core.yukarin_sa_forward)(
+        self.handle_bool_result(self.core.yukarin_sa_forward)(
             c_int(length),
             vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
             consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
@@ -517,7 +517,7 @@ class CoreWrapper:
 
     def load_model(self, speaker_id: int) -> bool:
         if self.exist_load_model:
-            return self.with_boolean_result(self.core.load_model)(c_long(speaker_id))
+            return self.handle_bool_result(self.core.load_model)(c_long(speaker_id))
         raise OldCoreError
 
     def is_model_loaded(self, speaker_id: int) -> bool:
@@ -525,7 +525,7 @@ class CoreWrapper:
             return self.core.is_model_loaded(c_long(speaker_id))
         raise OldCoreError
 
-    def with_boolean_result(self, func):
+    def handle_bool_result(self, func):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             if result:
