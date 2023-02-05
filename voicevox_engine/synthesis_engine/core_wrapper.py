@@ -14,6 +14,10 @@ class OldCoreError(Exception):
     """古いコアが使用されている場合に発生するエラー"""
 
 
+class CoreError(Exception):
+    """コア呼び出しで発生したエラー"""
+
+
 def load_runtime_lib(runtime_dirs: List[Path]):
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
@@ -420,26 +424,15 @@ class CoreWrapper:
         os.chdir(core_dir)
         try:
             if is_version_0_12_core_or_later:
-                if not self.core.initialize(use_gpu, cpu_num_threads, load_all_models):
-                    raise Exception(
-                        self.core.last_error_message().decode(
-                            "utf-8", "backslashreplace"
-                        )
-                    )
+                self.assert_core_success(
+                    self.core.initialize(use_gpu, cpu_num_threads, load_all_models)
+                )
             elif exist_cpu_num_threads:
-                if not self.core.initialize(".", use_gpu, cpu_num_threads):
-                    raise Exception(
-                        self.core.last_error_message().decode(
-                            "utf-8", "backslashreplace"
-                        )
-                    )
+                self.assert_core_success(
+                    self.core.initialize(".", use_gpu, cpu_num_threads)
+                )
             else:
-                if not self.core.initialize(".", use_gpu):
-                    raise Exception(
-                        self.core.last_error_message().decode(
-                            "utf-8", "backslashreplace"
-                        )
-                    )
+                self.assert_core_success(self.core.initialize(".", use_gpu))
         finally:
             os.chdir(cwd)
 
@@ -453,16 +446,14 @@ class CoreWrapper:
         speaker_id: np.ndarray,
     ) -> np.ndarray:
         output = np.zeros((length,), dtype=np.float32)
-        success = self.core.yukarin_s_forward(
-            c_int(length),
-            phoneme_list.ctypes.data_as(POINTER(c_long)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
-        )
-        if not success:
-            raise Exception(
-                self.core.last_error_message().decode("utf-8", "backslashreplace")
+        self.assert_core_success(
+            self.core.yukarin_s_forward(
+                c_int(length),
+                phoneme_list.ctypes.data_as(POINTER(c_long)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
             )
+        )
         return output
 
     def yukarin_sa_forward(
@@ -483,21 +474,19 @@ class CoreWrapper:
             ),
             dtype=np.float32,
         )
-        success = self.core.yukarin_sa_forward(
-            c_int(length),
-            vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
-            consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
-            start_accent_list.ctypes.data_as(POINTER(c_long)),
-            end_accent_list.ctypes.data_as(POINTER(c_long)),
-            start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-            end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
-        )
-        if not success:
-            raise Exception(
-                self.core.last_error_message().decode("utf-8", "backslashreplace")
+        self.assert_core_success(
+            self.core.yukarin_sa_forward(
+                c_int(length),
+                vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                start_accent_list.ctypes.data_as(POINTER(c_long)),
+                end_accent_list.ctypes.data_as(POINTER(c_long)),
+                start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
             )
+        )
         return output
 
     def decode_forward(
@@ -509,18 +498,16 @@ class CoreWrapper:
         speaker_id: np.ndarray,
     ) -> np.ndarray:
         output = np.empty((length * 256,), dtype=np.float32)
-        success = self.core.decode_forward(
-            c_int(length),
-            c_int(phoneme_size),
-            f0.ctypes.data_as(POINTER(c_float)),
-            phoneme.ctypes.data_as(POINTER(c_float)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
-        )
-        if not success:
-            raise Exception(
-                self.core.last_error_message().decode("utf-8", "backslashreplace")
+        self.assert_core_success(
+            self.core.decode_forward(
+                c_int(length),
+                c_int(phoneme_size),
+                f0.ctypes.data_as(POINTER(c_float)),
+                phoneme.ctypes.data_as(POINTER(c_float)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
             )
+        )
         return output
 
     def supported_devices(self) -> str:
@@ -534,12 +521,18 @@ class CoreWrapper:
             return
         raise OldCoreError
 
-    def load_model(self, speaker_id: int) -> bool:
+    def load_model(self, speaker_id: int) -> None:
         if self.exist_load_model:
-            return self.core.load_model(c_long(speaker_id))
+            self.assert_core_success(self.core.load_model(c_long(speaker_id)))
         raise OldCoreError
 
     def is_model_loaded(self, speaker_id: int) -> bool:
         if self.exist_is_model_loaded:
             return self.core.is_model_loaded(c_long(speaker_id))
         raise OldCoreError
+
+    def assert_core_success(self, result: bool) -> None:
+        if not result:
+            raise CoreError(
+                self.core.last_error_message().decode("utf-8", "backslashreplace")
+            )
