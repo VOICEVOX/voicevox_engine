@@ -424,15 +424,15 @@ class CoreWrapper:
         os.chdir(core_dir)
         try:
             if is_version_0_12_core_or_later:
-                self.handle_bool_result(self.core.initialize)(
-                    use_gpu, cpu_num_threads, load_all_models
+                self.assert_core_success(
+                    self.core.initialize(use_gpu, cpu_num_threads, load_all_models)
                 )
             elif exist_cpu_num_threads:
-                self.handle_bool_result(self.core.initialize)(
-                    ".", use_gpu, cpu_num_threads
+                self.assert_core_success(
+                    self.core.initialize(".", use_gpu, cpu_num_threads)
                 )
             else:
-                self.handle_bool_result(self.core.initialize)(".", use_gpu)
+                self.assert_core_success(self.core.initialize(".", use_gpu))
         finally:
             os.chdir(cwd)
 
@@ -446,11 +446,13 @@ class CoreWrapper:
         speaker_id: np.ndarray,
     ) -> np.ndarray:
         output = np.zeros((length,), dtype=np.float32)
-        self.handle_bool_result(self.core.yukarin_s_forward)(
-            c_int(length),
-            phoneme_list.ctypes.data_as(POINTER(c_long)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
+        self.assert_core_success(
+            self.core.yukarin_s_forward(
+                c_int(length),
+                phoneme_list.ctypes.data_as(POINTER(c_long)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
         )
         return output
 
@@ -472,16 +474,18 @@ class CoreWrapper:
             ),
             dtype=np.float32,
         )
-        self.handle_bool_result(self.core.yukarin_sa_forward)(
-            c_int(length),
-            vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
-            consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
-            start_accent_list.ctypes.data_as(POINTER(c_long)),
-            end_accent_list.ctypes.data_as(POINTER(c_long)),
-            start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-            end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
+        self.assert_core_success(
+            self.core.yukarin_sa_forward(
+                c_int(length),
+                vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                start_accent_list.ctypes.data_as(POINTER(c_long)),
+                end_accent_list.ctypes.data_as(POINTER(c_long)),
+                start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
         )
         return output
 
@@ -494,13 +498,15 @@ class CoreWrapper:
         speaker_id: np.ndarray,
     ) -> np.ndarray:
         output = np.empty((length * 256,), dtype=np.float32)
-        self.core.with_boolean_result(self.core.decode_forward)(
-            c_int(length),
-            c_int(phoneme_size),
-            f0.ctypes.data_as(POINTER(c_float)),
-            phoneme.ctypes.data_as(POINTER(c_float)),
-            speaker_id.ctypes.data_as(POINTER(c_long)),
-            output.ctypes.data_as(POINTER(c_float)),
+        self.assert_core_success(
+            self.core.decode_forward(
+                c_int(length),
+                c_int(phoneme_size),
+                f0.ctypes.data_as(POINTER(c_float)),
+                phoneme.ctypes.data_as(POINTER(c_float)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
         )
         return output
 
@@ -515,9 +521,9 @@ class CoreWrapper:
             return
         raise OldCoreError
 
-    def load_model(self, speaker_id: int) -> bool:
+    def load_model(self, speaker_id: int) -> None:
         if self.exist_load_model:
-            return self.handle_bool_result(self.core.load_model)(c_long(speaker_id))
+            self.assert_core_success(self.core.load_model(c_long(speaker_id)))
         raise OldCoreError
 
     def is_model_loaded(self, speaker_id: int) -> bool:
@@ -525,14 +531,8 @@ class CoreWrapper:
             return self.core.is_model_loaded(c_long(speaker_id))
         raise OldCoreError
 
-    def handle_bool_result(self, func):
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            if result:
-                return True
-            else:
-                raise CoreError(
-                    self.core.last_error_message().decode("utf-8", "backslashreplace")
-                )
-
-        return wrapper
+    def assert_core_success(self, result: bool) -> None:
+        if not result:
+            raise CoreError(
+                self.core.last_error_message().decode("utf-8", "backslashreplace")
+            )
