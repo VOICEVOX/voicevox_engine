@@ -16,7 +16,6 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
 
-import requests
 import soundfile
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
@@ -29,6 +28,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.downloadable_library import fetch_downloadable_libraries
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
@@ -237,52 +237,6 @@ def generate_app(
         response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
-    )
-    def audio_query_from_preset(
-        text: str, preset_id: int, core_version: Optional[str] = None
-    ):
-        """
-        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
-        engine = get_engine(core_version)
-        try:
-            presets = preset_manager.load_presets()
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        for preset in presets:
-            if preset.id == preset_id:
-                selected_preset = preset
-                break
-        else:
-            raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
-
-        accent_phrases = engine.create_accent_phrases(
-            text, speaker_id=selected_preset.style_id
-        )
-        return AudioQuery(
-            accent_phrases=accent_phrases,
-            speedScale=selected_preset.speedScale,
-            pitchScale=selected_preset.pitchScale,
-            intonationScale=selected_preset.intonationScale,
-            volumeScale=selected_preset.volumeScale,
-            prePhonemeLength=selected_preset.prePhonemeLength,
-            postPhonemeLength=selected_preset.postPhonemeLength,
-            outputSamplingRate=default_sampling_rate,
-            outputStereo=False,
-            kana=create_kana(accent_phrases),
-        )
-
-    @app.post(
-        "/accent_phrases",
-        response_model=List[AccentPhrase],
-        tags=["クエリ編集"],
-        summary="テキストからアクセント句を得る",
-        responses={
-            400: {
-                "description": "読み仮名のパースに失敗",
-                "model": ParseKanaBadRequest,
-            }
-        },
     )
     def accent_phrases(
         text: str,
@@ -809,26 +763,11 @@ def generate_app(
         -------
         ret_data: List[DownloadableLibrary]
         """
-        try:
-            manifest = engine_manifest_loader.load_manifest()
-            # APIからダウンロード可能な音声ライブラリを取得する場合
-            if manifest.downloadable_libraries_url:
-                response = requests.get(manifest.downloadable_libraries_url, timeout=60)
-                ret_data: List[DownloadableLibrary] = [
-                    DownloadableLibrary(**d) for d in response.json()
-                ]
-            # ローカルのファイルからダウンロード可能な音声ライブラリを取得する場合
-            elif manifest.downloadable_libraries_path:
-                with open(manifest.downloadable_libraries_path) as f:
-                    ret_data: List[DownloadableLibrary] = [
-                        DownloadableLibrary(**d) for d in json.load(f)
-                    ]
-            else:
-                raise Exception
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ダウンロード可能な音声ライブラリの取得に失敗しました。")
-        return ret_data
+        manifest = engine_manifest_loader.load_manifest()
+        # APIからダウンロード可能な音声ライブラリを取得する場合
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+        return fetch_downloadable_libraries()
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(

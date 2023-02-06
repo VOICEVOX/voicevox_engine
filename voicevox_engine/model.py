@@ -124,6 +124,8 @@ class DownloadableLibrary(BaseModel):
     ダウンロード可能な音声ライブラリの情報（最新情報をwebで取得することを考慮して、ローカルの情報はない）
     """
 
+    name: str = Field(title="音声ライブラリの名前")
+    version: str = Field(title="音声ライブラリのバージョン")
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
     speaker: Speaker = Field(title="話者情報")
