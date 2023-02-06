@@ -37,6 +37,7 @@ class SupportedFeatures(BaseModel):
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
     synthesis_morphing: bool = Field(title="2人の話者でモーフィングした音声を合成")
+    manage_library: bool = Field(title="ライブラリのインストール・アンインストール")
 
 
 class EngineManifest(BaseModel):
@@ -54,10 +55,4 @@ class EngineManifest(BaseModel):
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    downloadable_libraries_path: Optional[str] = Field(
-        title="ダウンロード可能な音声ライブラリ情報を取得するためのローカルjsonパス"
-    )
-    downloadable_libraries_url: Optional[str] = Field(
-        title="ダウンロード可能な音声ライブラリ情報を取得するためのAPIのURL"
-    )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")

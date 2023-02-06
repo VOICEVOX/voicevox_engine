@@ -54,6 +54,11 @@
             "type": "bool",
             "value": true,
             "name": "2人の話者でモーフィングした音声を合成"
+        },
+        "manage_library": {
+            "type": "bool",
+            "value": true,
+            "name": "ライブラリのインストール・アンインストール"
         }
     }
 }
