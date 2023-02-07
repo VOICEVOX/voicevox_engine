@@ -238,6 +238,52 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
+    def audio_query_from_preset(
+        text: str, preset_id: int, core_version: Optional[str] = None
+    ):
+        """
+        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        """
+        engine = get_engine(core_version)
+        try:
+            presets = preset_manager.load_presets()
+        except PresetError as err:
+            raise HTTPException(status_code=422, detail=str(err))
+        for preset in presets:
+            if preset.id == preset_id:
+                selected_preset = preset
+                break
+        else:
+            raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
+
+        accent_phrases = engine.create_accent_phrases(
+            text, speaker_id=selected_preset.style_id
+        )
+        return AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=selected_preset.speedScale,
+            pitchScale=selected_preset.pitchScale,
+            intonationScale=selected_preset.intonationScale,
+            volumeScale=selected_preset.volumeScale,
+            prePhonemeLength=selected_preset.prePhonemeLength,
+            postPhonemeLength=selected_preset.postPhonemeLength,
+            outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
+            kana=create_kana(accent_phrases),
+        )
+
+    @app.post(
+        "/accent_phrases",
+        response_model=List[AccentPhrase],
+        tags=["クエリ編集"],
+        summary="テキストからアクセント句を得る",
+        responses={
+            400: {
+                "description": "読み仮名のパースに失敗",
+                "model": ParseKanaBadRequest,
+            }
+        },
+    )
     def accent_phrases(
         text: str,
         speaker: int,
