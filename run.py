@@ -11,21 +11,14 @@ import traceback
 import zipfile
 from distutils.version import LooseVersion
 from functools import lru_cache
-from io import TextIOWrapper, BytesIO
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import (
-    FastAPI,
-    Form,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-)
+from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -35,9 +28,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.downloadable_library import (
-    LibraryManager,
-)
+from voicevox_engine.downloadable_library import LibraryManager
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
