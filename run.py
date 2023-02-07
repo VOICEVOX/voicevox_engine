@@ -11,14 +11,21 @@ import traceback
 import zipfile
 from distutils.version import LooseVersion
 from functools import lru_cache
-from io import TextIOWrapper
+from io import TextIOWrapper, BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import (
+    FastAPI,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -28,7 +35,9 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.downloadable_library import fetch_downloadable_libraries
+from voicevox_engine.downloadable_library import (
+    LibraryManager,
+)
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
@@ -180,6 +189,7 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
+    library_manager = LibraryManager(root_dir / "libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
@@ -799,21 +809,60 @@ def generate_app(
     @app.get(
         "/downloadable_libraries",
         response_model=List[DownloadableLibrary],
-        tags=["その他"],
+        tags=["ライブラリ管理"],
     )
     def downloadable_libraries():
         """
-        ダウンロード可能なモデル情報を返します。
+        ダウンロード可能なライブラリの情報を返します。
 
         Returns
         -------
         ret_data: List[DownloadableLibrary]
         """
         manifest = engine_manifest_loader.load_manifest()
-        # APIからダウンロード可能な音声ライブラリを取得する場合
         if not manifest.supported_features.manage_library:
             raise HTTPException(status_code=501, detail="この機能は実装されていません")
-        return fetch_downloadable_libraries()
+        return library_manager.downloadable_libraries()
+
+    @app.get(
+        "/installed_libraries",
+        response_model=List[DownloadableLibrary],
+        tags=["ライブラリ管理"],
+    )
+    def installed_libraries():
+        """
+        インストールしたライブラリの情報を返します。
+
+        Returns
+        -------
+        ret_data: List[DownloadableLibrary]
+        """
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+        return library_manager.installed_libraries()
+
+    @app.post(
+        "/install_library/{library_uuid}",
+        status_code=204,
+        tags=["ライブラリ管理"],
+    )
+    async def install_library(library_uuid: str, request: Request):
+        """
+        ライブラリをインストールします。
+        ライブラリのZIPファイルをリクエストボディとして送信してください。
+
+        Parameters
+        ----------
+        library_uuid: str
+            ライブラリのID
+        """
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+        archive = BytesIO(await request.body())
+        library_manager.install_library(library_uuid, archive)
+        return Response(status_code=204)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
