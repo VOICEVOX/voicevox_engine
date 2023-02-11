@@ -204,7 +204,7 @@ def generate_app(
 
     @app.on_event("startup")
     def apply_shared_dict():
-       fetch_shared_dict()
+        threading.Thread(target=fetch_shared_dict).start()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
