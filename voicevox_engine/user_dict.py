@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -92,6 +93,10 @@ def update_dict(
     pyopenjtalk.unset_user_dict()
     try:
         shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
+    except OSError:
+        traceback.print_exc()
+        if tmp_dict_path.exists():
+            delete_file(tmp_dict_path.name)
     finally:
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
