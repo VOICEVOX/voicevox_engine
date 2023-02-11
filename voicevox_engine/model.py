@@ -157,6 +157,8 @@ class UserDictWord(BaseModel):
     mora_count: Optional[int] = Field(title="モーラ数")
     accent_associative_rule: str = Field(title="アクセント結合規則")
 
+    is_shared: bool = Field(title="単語を共有するかどうか", default=False)
+
     class Config:
         validate_assignment = True
 

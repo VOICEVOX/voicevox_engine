@@ -878,6 +878,7 @@ def generate_app(
         accent_type: int,
         word_type: Optional[WordTypes] = None,
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
+        is_shared: bool = False,
     ):
         """
         ユーザー辞書に言葉を追加します。
@@ -896,6 +897,8 @@ def generate_app(
             単語の優先度（0から10までの整数）
             数字が大きいほど優先度が高くなる
             1から9までの値を指定することを推奨
+        is_shared: bool, optional
+            単語を共有に追加するかどうか
         """
         try:
             word_uuid = apply_word(
@@ -904,6 +907,7 @@ def generate_app(
                 accent_type=accent_type,
                 word_type=word_type,
                 priority=priority,
+                is_shared=is_shared,
             )
             return Response(content=word_uuid)
         except ValidationError as e:
@@ -920,6 +924,7 @@ def generate_app(
         word_uuid: str,
         word_type: Optional[WordTypes] = None,
         priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
+        is_shared: bool = False,
     ):
         """
         ユーザー辞書に登録されている言葉を更新します。
@@ -940,6 +945,8 @@ def generate_app(
             単語の優先度（0から10までの整数）
             数字が大きいほど優先度が高くなる
             1から9までの値を指定することを推奨
+        is_shared: bool, optional
+            単語を共有するかどうか
         """
         try:
             rewrite_word(
@@ -949,6 +956,7 @@ def generate_app(
                 word_uuid=word_uuid,
                 word_type=word_type,
                 priority=priority,
+                is_shared=is_shared,
             )
             return Response(status_code=204)
         except HTTPException:

@@ -123,6 +123,7 @@ def create_word(
     accent_type: int,
     word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
+    is_shared: bool = False,
 ) -> UserDictWord:
     if word_type is None:
         word_type = WordTypes.PROPER_NOUN
@@ -148,6 +149,8 @@ def create_word(
         pronunciation=pronunciation,
         accent_type=accent_type,
         accent_associative_rule="*",
+        mora_count=None,
+        is_shared=is_shared,
     )
 
 
@@ -157,6 +160,7 @@ def apply_word(
     accent_type: int,
     word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
+    is_shared: bool = False,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
@@ -166,6 +170,7 @@ def apply_word(
         accent_type=accent_type,
         word_type=word_type,
         priority=priority,
+        is_shared=is_shared,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     word_uuid = str(uuid4())
@@ -182,6 +187,7 @@ def rewrite_word(
     accent_type: int,
     word_type: Optional[WordTypes] = None,
     priority: Optional[int] = None,
+    is_shared: bool = False,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
@@ -191,6 +197,7 @@ def rewrite_word(
         accent_type=accent_type,
         word_type=word_type,
         priority=priority,
+        is_shared=is_shared,
     )
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
