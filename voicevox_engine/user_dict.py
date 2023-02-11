@@ -8,15 +8,18 @@ from uuid import UUID, uuid4
 
 import numpy as np
 import pyopenjtalk
+import requests
 from fastapi import HTTPException
 from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import delete_file, engine_root, get_save_dir
+from .utility import delete_file, engine_root, get_save_dir, async_request
 
 root_dir = engine_root()
 save_dir = get_save_dir()
+# FIXME: リリース時には置き換える
+telemetry_url = "http://localhost:50023/telemetry"
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
@@ -177,6 +180,18 @@ def apply_word(
     user_dict[word_uuid] = word
     write_to_json(user_dict, user_dict_path)
     update_dict(user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path)
+    if is_shared:
+        send_telemetry(
+            "apply_word",
+            {
+                "word_uuid": word_uuid,
+                "surface": surface,
+                "pronunciation": pronunciation,
+                "accent_type": accent_type,
+                "word_type": word_type,
+                "priority": priority,
+            },
+        )
     return word_uuid
 
 
@@ -202,6 +217,26 @@ def rewrite_word(
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
         raise HTTPException(status_code=422, detail="UUIDに該当するワードが見つかりませんでした")
+    if user_dict[word_uuid].is_shared and not is_shared:
+        send_telemetry(
+            "delete_word",
+            {
+                "word_uuid": word_uuid,
+            },
+        )
+    elif is_shared:
+        send_telemetry(
+            "rewrite_word" if user_dict[word_uuid].is_shared else "apply_word",
+            {
+                "word_uuid": word_uuid,
+                "surface": surface,
+                "pronunciation": pronunciation,
+                "accent_type": accent_type,
+                "word_type": word_type,
+                "priority": priority,
+            },
+        )
+
     user_dict[word_uuid] = word
     write_to_json(user_dict, user_dict_path)
     update_dict(user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path)
@@ -215,6 +250,11 @@ def delete_word(
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
         raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
+    if user_dict[word_uuid].is_shared:
+        send_telemetry(
+            "delete_word",
+            {"word_uuid": word_uuid},
+        )
     del user_dict[word_uuid]
     write_to_json(user_dict, user_dict_path)
     update_dict(user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path)
@@ -282,3 +322,16 @@ def priority2cost(
 ) -> int:
     cost_candidates = search_cost_candidates(context_id)
     return cost_candidates[MAX_PRIORITY - priority]
+
+
+def send_telemetry(event, properties):
+    async_request(
+        requests.Request(
+            "POST",
+            telemetry_url,
+            json={
+                "event": event,
+                "properties": properties,
+            },
+        )
+    )
