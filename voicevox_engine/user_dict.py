@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+from logging import getLogger
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -19,13 +20,16 @@ from .utility import delete_file, engine_root, get_save_dir, async_request
 root_dir = engine_root()
 save_dir = get_save_dir()
 # FIXME: リリース時には置き換える
-telemetry_url = "http://localhost:50023/telemetry"
+shared_dict_host = "http://localhost:50023"
+shared_dict_collect_url = shared_dict_host + "/shared_dict/collect"
+shared_dict_get_url = shared_dict_host + "/shared_dict"
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
 default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
+shared_dict_path = save_dir / "shared_dict.json"
 compiled_dict_path = save_dir / "user.dic"
 
 
@@ -43,9 +47,40 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
+def fetch_shared_dict() -> None:
+    logger = getLogger("uvicorn")
+    logger.info("Fetching shared dict...")
+    shared_dict = requests.get(
+        url=shared_dict_get_url,
+        headers={"Content-Type": "application/json"},
+    )
+    if shared_dict.status_code != 200:
+        logger.error("Failed to fetch shared dict, %s", shared_dict.status_code)
+        return
+    shared_dict_json = shared_dict.json()
+    logger.info("Fetched shared dict, %s items.", len(shared_dict.json()))
+    write_to_json(
+        {
+            k: create_word(
+                surface=v["surface"],
+                pronunciation=v["pronunciation"],
+                accent_type=v["accent_type"],
+                word_type=v["word_type"],
+                priority=v["priority"],
+                is_shared=True,
+            )
+            for k, v in shared_dict_json.items()
+        },
+        shared_dict_path,
+    )
+
+    update_dict()
+
+
 def update_dict(
     default_dict_path: Path = default_dict_path,
     user_dict_path: Path = user_dict_path,
+    shared_dict_path: Path = shared_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
     with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
@@ -57,8 +92,13 @@ def update_dict(
             default_dict += "\n"
         f.write(default_dict)
         user_dict = read_dict(user_dict_path=user_dict_path)
-        for word_uuid in user_dict:
-            word = user_dict[word_uuid]
+        shared_dict = read_dict(user_dict_path=shared_dict_path)
+        for word in (
+            {
+                **user_dict,
+                **shared_dict,
+            }
+        ).values():
             f.write(
                 (
                     "{surface},{context_id},{context_id},{cost},{part_of_speech},"
@@ -328,7 +368,7 @@ def send_telemetry(event, properties):
     async_request(
         requests.Request(
             "POST",
-            telemetry_url,
+            shared_dict_collect_url,
             json={
                 "event": event,
                 "properties": properties,
