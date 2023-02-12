@@ -16,7 +16,7 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import delete_file, engine_root, get_save_dir, async_request
+from .utility import async_request, delete_file, engine_root, get_save_dir
 
 root_dir = engine_root()
 save_dir = get_save_dir()
