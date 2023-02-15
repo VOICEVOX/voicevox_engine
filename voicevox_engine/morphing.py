@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
+from scipy.signal import resample
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
@@ -134,6 +135,9 @@ def synthesis_morphing_parameter(
 ) -> MorphingParameter:
     query = deepcopy(query)
 
+    # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
+    query.outputSamplingRate = engine.default_sampling_rate
+
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
@@ -152,6 +156,7 @@ def synthesis_morphing_parameter(
 def synthesis_morphing(
     morph_param: MorphingParameter,
     morph_rate: float,
+    output_fs: int,
     output_stereo: bool = False,
 ) -> np.ndarray:
     """
@@ -192,6 +197,9 @@ def synthesis_morphing(
         morph_param.fs,
         morph_param.frame_period,
     )
+
+    if output_fs != morph_param.fs:
+        y_h = resample(y_h, output_fs * len(y_h) // morph_param.fs)
 
     if output_stereo:
         y_h = np.array([y_h, y_h]).T
