@@ -16,7 +16,7 @@ from .synthesis_engine import SynthesisEngine
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class MorphingParameter:
-    fs: float
+    fs: int
     frame_period: float
     base_f0: np.ndarray
     base_aperiodicity: np.ndarray
@@ -27,7 +27,7 @@ class MorphingParameter:
 def create_morphing_parameter(
     base_wave: np.ndarray,
     target_wave: np.ndarray,
-    fs: float,
+    fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
     base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
