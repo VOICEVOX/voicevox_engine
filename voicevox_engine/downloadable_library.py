@@ -39,7 +39,7 @@ class LibraryManager:
             if downloadable_library.uuid == library_id:
                 library_info = downloadable_library.dict()
                 break
-        if library_info is None:
+        else:
             raise HTTPException(status_code=404, detail="指定されたライブラリが見つかりません。")
         library_dir = self.root_dir / library_id
         if not library_dir.exists():
