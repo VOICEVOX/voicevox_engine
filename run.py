@@ -1,6 +1,6 @@
 import argparse
 
-# import asyncio
+import asyncio
 import base64
 import json
 import multiprocessing
@@ -852,7 +852,10 @@ def generate_app(
         if not manifest.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         archive = BytesIO(await request.body())
-        library_manager.install_library(library_uuid, archive)
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None, library_manager.install_library, library_uuid, archive
+        )
         return Response(status_code=204)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
