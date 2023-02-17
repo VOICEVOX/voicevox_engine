@@ -21,7 +21,7 @@ from .utility import async_request, delete_file, engine_root, get_save_dir
 root_dir = engine_root()
 save_dir = get_save_dir()
 # FIXME: リリース時には置き換える
-shared_dict_host = "http://localhost:50023"
+shared_dict_host = "https://vv-dict-telemetry-test.deno.dev"
 shared_dict_collect_url = shared_dict_host + "/shared_dict/collect"
 shared_dict_get_url = shared_dict_host + "/shared_dict"
 
