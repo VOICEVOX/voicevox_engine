@@ -29,7 +29,7 @@ class LibraryManager:
         library = []
         for library_dir in self.root_dir.iterdir():
             if library_dir.is_dir():
-                with open(library_dir / INFO_FILE) as f:
+                with open(library_dir / INFO_FILE, encoding="utf-8") as f:
                     library.append(json.load(f))
         return library
 
@@ -44,7 +44,7 @@ class LibraryManager:
         library_dir = self.root_dir / library_id
         if not library_dir.exists():
             library_dir.mkdir()
-        with open(library_dir / INFO_FILE, "w") as f:
+        with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
