@@ -812,7 +812,7 @@ def generate_app(
         """
         manifest = engine_manifest_loader.load_manifest()
         if not manifest.supported_features.manage_library:
-            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.downloadable_libraries()
 
     @app.get(
@@ -830,7 +830,7 @@ def generate_app(
         """
         manifest = engine_manifest_loader.load_manifest()
         if not manifest.supported_features.manage_library:
-            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.installed_libraries()
 
     @app.post(
@@ -850,7 +850,7 @@ def generate_app(
         """
         manifest = engine_manifest_loader.load_manifest()
         if not manifest.supported_features.manage_library:
-            raise HTTPException(status_code=501, detail="この機能は実装されていません")
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
         archive = BytesIO(await request.body())
         library_manager.install_library(library_uuid, archive)
         return Response(status_code=204)
