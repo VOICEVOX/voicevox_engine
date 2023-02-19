@@ -42,8 +42,7 @@ class LibraryManager:
         else:
             raise HTTPException(status_code=404, detail="指定されたライブラリが見つかりません。")
         library_dir = self.root_dir / library_id
-        if not library_dir.exists():
-            library_dir.mkdir()
+        library_dir.mkdir(exist_ok=True)
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
         with zipfile.ZipFile(file) as zf:
