@@ -37,7 +37,7 @@ class SupportedFeatures(BaseModel):
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
     synthesis_morphing: bool = Field(title="2人の話者でモーフィングした音声を合成")
-    manage_library: bool = Field(title="ライブラリのインストール・アンインストール")
+    manage_library: bool = Field(title="音声ライブラリのインストール・アンインストール")
 
 
 class EngineManifest(BaseModel):

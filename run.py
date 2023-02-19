@@ -799,11 +799,11 @@ def generate_app(
     @app.get(
         "/downloadable_libraries",
         response_model=List[DownloadableLibrary],
-        tags=["ライブラリ管理"],
+        tags=["音声ライブラリ管理"],
     )
     def downloadable_libraries():
         """
-        ダウンロード可能なライブラリの情報を返します。
+        ダウンロード可能な音声ライブラリの情報を返します。
 
         Returns
         -------
@@ -817,11 +817,11 @@ def generate_app(
     @app.get(
         "/installed_libraries",
         response_model=List[DownloadableLibrary],
-        tags=["ライブラリ管理"],
+        tags=["音声ライブラリ管理"],
     )
     def installed_libraries():
         """
-        インストールしたライブラリの情報を返します。
+        インストールした音声ライブラリの情報を返します。
 
         Returns
         -------
@@ -835,17 +835,17 @@ def generate_app(
     @app.post(
         "/install_library/{library_uuid}",
         status_code=204,
-        tags=["ライブラリ管理"],
+        tags=["音声ライブラリ管理"],
     )
     async def install_library(library_uuid: str, request: Request):
         """
-        ライブラリをインストールします。
-        ライブラリのZIPファイルをリクエストボディとして送信してください。
+        音声ライブラリをインストールします。
+        音声ライブラリのZIPファイルをリクエストボディとして送信してください。
 
         Parameters
         ----------
         library_uuid: str
-            ライブラリのID
+            音声ライブラリのID
         """
         manifest = engine_manifest_loader.load_manifest()
         if not manifest.supported_features.manage_library:
