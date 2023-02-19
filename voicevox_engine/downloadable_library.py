@@ -11,7 +11,7 @@ from voicevox_engine.model import DownloadableLibrary
 
 __all__ = ["LibraryManager"]
 
-INFO_FILE = "library_info.json"
+INFO_FILE = "metas.json"
 
 
 class LibraryManager:
@@ -39,7 +39,7 @@ class LibraryManager:
                 library_info = downloadable_library.dict()
                 break
         else:
-            raise HTTPException(status_code=404, detail="指定されたライブラリが見つかりません。")
+            raise HTTPException(status_code=404, detail="指定された音声ライブラリが見つかりません。")
         library_dir = self.root_dir / library_id
         library_dir.mkdir(exist_ok=True)
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
