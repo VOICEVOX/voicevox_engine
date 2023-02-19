@@ -57,7 +57,7 @@
         },
         "manage_library": {
             "type": "bool",
-            "value": true,
+            "value": false,
             "name": "ライブラリのインストール・アンインストール"
         }
     }
