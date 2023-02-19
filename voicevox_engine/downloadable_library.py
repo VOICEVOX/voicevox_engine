@@ -33,7 +33,6 @@ class LibraryManager:
         return library
 
     def install_library(self, library_id: str, file: BytesIO):
-        library_info = None
         for downloadable_library in self.downloadable_libraries():
             if downloadable_library.uuid == library_id:
                 library_info = downloadable_library.dict()
