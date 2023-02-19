@@ -17,8 +17,7 @@ INFO_FILE = "library_info.json"
 class LibraryManager:
     def __init__(self, root_dir: Path):
         self.root_dir = root_dir
-        if not self.root_dir.exists():
-            self.root_dir.mkdir()
+        self.root_dir.mkdir(exist_ok=True)
 
     def downloadable_libraries(self):
         url = "http://localhost:50022"
