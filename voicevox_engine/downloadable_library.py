@@ -47,7 +47,7 @@ class LibraryManager:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
-                raise HTTPException(status_code=422, detail="ZIPファイルが壊れています。")
+                raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
 
             zf.extractall(library_dir)
         return library_dir
