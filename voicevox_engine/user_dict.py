@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import threading
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -13,7 +14,7 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import delete_file, engine_root, get_save_dir
+from .utility import delete_file, engine_root, get_save_dir, mutex_wrapper
 
 root_dir = engine_root()
 save_dir = get_save_dir()
@@ -26,6 +27,11 @@ user_dict_path = save_dir / "user_dict.json"
 compiled_dict_path = save_dir / "user.dic"
 
 
+mutex_user_dict = threading.Lock()
+mutex_openjtalk_dict = threading.Lock()
+
+
+@mutex_wrapper(mutex_user_dict)
 def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     converted_user_dict = {}
     for word_uuid, word in user_dict.items():
@@ -40,6 +46,7 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
+@mutex_wrapper(mutex_openjtalk_dict)
 def update_dict(
     default_dict_path: Path = default_dict_path,
     user_dict_path: Path = user_dict_path,
@@ -97,6 +104,7 @@ def update_dict(
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
 
+@mutex_wrapper(mutex_user_dict)
 def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
         return {}
@@ -114,7 +122,7 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
             del word["cost"]
             result[str(UUID(word_uuid))] = UserDictWord(**word)
 
-        return result
+    return result
 
 
 def create_word(
