@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import threading
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -25,6 +26,8 @@ default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
 compiled_dict_path = save_dir / "user.dic"
 
+mutex = threading.Lock()
+
 
 def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     converted_user_dict = {}
@@ -37,7 +40,8 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
         converted_user_dict[word_uuid] = word_dict
     # 予めjsonに変換できることを確かめる
     user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
-    user_dict_path.write_text(user_dict_json, encoding="utf-8")
+    with mutex:
+        user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
 def update_dict(
@@ -53,7 +57,8 @@ def update_dict(
         if default_dict == default_dict.rstrip():
             default_dict += "\n"
         f.write(default_dict)
-        user_dict = read_dict(user_dict_path=user_dict_path)
+        with mutex:
+            user_dict = read_dict(user_dict_path=user_dict_path)
         for word_uuid in user_dict:
             word = user_dict[word_uuid]
             f.write(
@@ -100,7 +105,7 @@ def update_dict(
 def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
         return {}
-    with user_dict_path.open(encoding="utf-8") as f:
+    with mutex, user_dict_path.open(encoding="utf-8") as f:
         result = {}
         for word_uuid, word in json.load(f).items():
             # cost2priorityで変換を行う際にcontext_idが必要となるが、
