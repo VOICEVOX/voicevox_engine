@@ -2,7 +2,6 @@ import json
 import shutil
 import sys
 import threading
-import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
@@ -99,10 +98,6 @@ def update_dict(
     try:
         with mutex_openjtalk_dict:
             shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
-    except OSError:
-        traceback.print_exc()
-        if tmp_dict_path.exists():
-            delete_file(tmp_dict_path.name)
     finally:
         with mutex_openjtalk_dict:
             if compiled_dict_path.is_file():
