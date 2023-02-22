@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.14.3",
+    "descriptions": [
+      "キャラクター「†聖騎士 紅桜†」「雀松朱司」「麒ヶ島宗麟」を追加",
+      "同時書き込みで辞書が破損する問題を修正"
+    ],
+    "contributors": ["Hiroshiba"]
+  },
+  {
+    "version": "0.14.2",
+    "descriptions": ["DirectML版の生成が遅い問題を修正"],
+    "contributors": []
+  },
+  {
+    "version": "0.14.1",
+    "descriptions": ["AquesTalkライクな記法で生成した音声のバグを修正"],
+    "contributors": []
+  },
+  {
     "version": "0.14.0",
     "descriptions": [
       "コアをRust言語に移行",
