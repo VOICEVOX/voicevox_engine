@@ -179,7 +179,7 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
-    library_manager = LibraryManager(root_dir / "libraries")
+    library_manager = LibraryManager(root_dir, root_dir / "libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
