@@ -3,7 +3,6 @@ import sys
 import threading
 import traceback
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
@@ -52,20 +51,11 @@ def update_dict(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    tmp_csv_path: Optional[Path] = None
-    tmp_compiled_path: Optional[Path] = None
+    random_uuid = uuid4()
+    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_uuid}"
+    tmp_compiled_path = save_dir / f".tmp.dict_compiled-{random_uuid}"
 
     try:
-        # 一時ファイルを作成
-        # NamedTemporaryFileが作るディレクトリは環境によって.resolve()に失敗するので、別のディレクトリ内に作る
-        tmp_csv_file = NamedTemporaryFile(prefix="tmp_csv_", delete=False, dir=save_dir)
-        tmp_csv_path = Path(tmp_csv_file.name).resolve()
-
-        tmp_compiled_file = NamedTemporaryFile(
-            prefix="tmp_compiled_", delete=False, dir=save_dir
-        )
-        tmp_compiled_path = Path(tmp_compiled_file.name).resolve()
-
         # 辞書.csvを作成
         csv_text = ""
         if not default_dict_path.is_file():
@@ -121,9 +111,9 @@ def update_dict(
 
     finally:
         # 後処理
-        if tmp_csv_path is not None and tmp_csv_path.exists():
+        if tmp_csv_path.exists():
             tmp_csv_path.unlink()
-        if tmp_compiled_path is not None and tmp_compiled_path.exists():
+        if tmp_compiled_path.exists():
             tmp_compiled_path.unlink()
 
 
