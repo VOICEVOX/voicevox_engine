@@ -76,6 +76,7 @@ from voicevox_engine.utility import (
     connect_base64_waves,
     delete_file,
     engine_root,
+    get_save_dir,
 )
 
 
@@ -179,7 +180,7 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
-    library_manager = LibraryManager(root_dir, root_dir / "libraries")
+    library_manager = LibraryManager(root_dir, get_save_dir() / "installed_libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
