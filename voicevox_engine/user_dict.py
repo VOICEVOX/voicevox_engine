@@ -1,5 +1,4 @@
 import json
-import shutil
 import sys
 import threading
 import traceback
@@ -15,7 +14,7 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import delete_file, engine_root, get_save_dir, mutex_wrapper
+from .utility import engine_root, get_save_dir, mutex_wrapper
 
 root_dir = engine_root()
 save_dir = get_save_dir()
