@@ -21,12 +21,12 @@ class LibraryManager:
         self.library_root_dir.mkdir(exist_ok=True)
 
     def downloadable_libraries(self):
-        ## ダウンロード情報をネットワーク上から取得する場合
+        # == ダウンロード情報をネットワーク上から取得する場合
         # url = "https://example.com/downloadable_libraries.json"
         # response = requests.get(url)
         # return list(map(DownloadableLibrary.parse_obj, response.json()))
 
-        ## ダウンロード情報をjsonファイルから取得する場合
+        # == ダウンロード情報をjsonファイルから取得する場合
         # with open(
         #     self.root_dir / "engine_manifest_assets" / "downloadable_libraries.json",
         #     encoding="utf-8",
