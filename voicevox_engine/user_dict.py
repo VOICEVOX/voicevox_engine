@@ -52,58 +52,66 @@ def update_dict(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    with NamedTemporaryFile(
-        encoding="utf-8", mode="w", delete=False, dir=save_dir
-    ) as f:
-        if not default_dict_path.is_file():
-            print("Warning: Cannot find default dictionary.", file=sys.stderr)
-            return
-        default_dict = default_dict_path.read_text(encoding="utf-8")
-        if default_dict == default_dict.rstrip():
-            default_dict += "\n"
-        f.write(default_dict)
-        user_dict = read_dict(user_dict_path=user_dict_path)
-        for word_uuid in user_dict:
-            word = user_dict[word_uuid]
-            f.write(
-                (
-                    "{surface},{context_id},{context_id},{cost},{part_of_speech},"
-                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
-                    + "{part_of_speech_detail_3},{inflectional_type},"
-                    + "{inflectional_form},{stem},{yomi},{pronunciation},"
-                    + "{accent_type}/{mora_count},{accent_associative_rule}\n"
-                ).format(
-                    surface=word.surface,
-                    context_id=word.context_id,
-                    cost=priority2cost(word.context_id, word.priority),
-                    part_of_speech=word.part_of_speech,
-                    part_of_speech_detail_1=word.part_of_speech_detail_1,
-                    part_of_speech_detail_2=word.part_of_speech_detail_2,
-                    part_of_speech_detail_3=word.part_of_speech_detail_3,
-                    inflectional_type=word.inflectional_type,
-                    inflectional_form=word.inflectional_form,
-                    stem=word.stem,
-                    yomi=word.yomi,
-                    pronunciation=word.pronunciation,
-                    accent_type=word.accent_type,
-                    mora_count=word.mora_count,
-                    accent_associative_rule=word.accent_associative_rule,
-                )
-            )
-    tmp_dict_path = Path(NamedTemporaryFile(delete=False, dir=save_dir).name).resolve()
-    pyopenjtalk.create_user_dict(
-        str(Path(f.name).resolve(strict=True)),
-        str(tmp_dict_path),
-    )
-    delete_file(f.name)
-    if not tmp_dict_path.is_file():
-        raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
-    pyopenjtalk.unset_user_dict()
     try:
-        shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
+        with NamedTemporaryFile(
+            encoding="utf-8", mode="w", delete=False, dir=save_dir
+        ) as f:
+            if not default_dict_path.is_file():
+                print("Warning: Cannot find default dictionary.", file=sys.stderr)
+                return
+            default_dict = default_dict_path.read_text(encoding="utf-8")
+            if default_dict == default_dict.rstrip():
+                default_dict += "\n"
+            f.write(default_dict)
+            user_dict = read_dict(user_dict_path=user_dict_path)
+            for word_uuid in user_dict:
+                word = user_dict[word_uuid]
+                f.write(
+                    (
+                        "{surface},{context_id},{context_id},{cost},{part_of_speech},"
+                        + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
+                        + "{part_of_speech_detail_3},{inflectional_type},"
+                        + "{inflectional_form},{stem},{yomi},{pronunciation},"
+                        + "{accent_type}/{mora_count},{accent_associative_rule}\n"
+                    ).format(
+                        surface=word.surface,
+                        context_id=word.context_id,
+                        cost=priority2cost(word.context_id, word.priority),
+                        part_of_speech=word.part_of_speech,
+                        part_of_speech_detail_1=word.part_of_speech_detail_1,
+                        part_of_speech_detail_2=word.part_of_speech_detail_2,
+                        part_of_speech_detail_3=word.part_of_speech_detail_3,
+                        inflectional_type=word.inflectional_type,
+                        inflectional_form=word.inflectional_form,
+                        stem=word.stem,
+                        yomi=word.yomi,
+                        pronunciation=word.pronunciation,
+                        accent_type=word.accent_type,
+                        mora_count=word.mora_count,
+                        accent_associative_rule=word.accent_associative_rule,
+                    )
+                )
+        tmp_dict_path = Path(
+            NamedTemporaryFile(delete=False, dir=save_dir).name
+        ).resolve()
+        pyopenjtalk.create_user_dict(
+            str(Path(f.name).resolve(strict=True)),
+            str(tmp_dict_path),
+        )
+        delete_file(f.name)
+        if not tmp_dict_path.is_file():
+            raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
+        pyopenjtalk.unset_user_dict()
+        try:
+            shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
+        finally:
+            if compiled_dict_path.is_file():
+                pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
     finally:
-        if compiled_dict_path.is_file():
-            pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
+        if Path(f.name).exists():
+            delete_file(f.name)
+        if tmp_dict_path.exists():
+            delete_file(str(tmp_dict_path))
 
 
 @mutex_wrapper(mutex_user_dict)
