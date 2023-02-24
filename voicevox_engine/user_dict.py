@@ -53,60 +53,79 @@ def update_dict(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
+    tmp_csv_path: Optional[Path] = None
+    tmp_compiled_path: Optional[Path] = None
+
+    try:
+        # 一時ファイルを作成
+        # NamedTemporaryFileが作るディレクトリは環境によって.resolve()に失敗するので、別のディレクトリ内に作る
+        tmp_csv_file = NamedTemporaryFile(prefix="tmp_csv_", delete=False, dir=save_dir)
+        tmp_csv_path = Path(tmp_csv_file.name).resolve()
+
+        tmp_compiled_file = NamedTemporaryFile(
+            prefix="tmp_compiled_", delete=False, dir=save_dir
+        )
+        tmp_compiled_path = Path(tmp_compiled_file.name).resolve()
+
+        # 辞書.csvを作成
+        csv_text = ""
         if not default_dict_path.is_file():
             print("Warning: Cannot find default dictionary.", file=sys.stderr)
             return
         default_dict = default_dict_path.read_text(encoding="utf-8")
         if default_dict == default_dict.rstrip():
             default_dict += "\n"
-        f.write(default_dict)
+        csv_text += default_dict
         user_dict = read_dict(user_dict_path=user_dict_path)
         for word_uuid in user_dict:
             word = user_dict[word_uuid]
-            f.write(
-                (
-                    "{surface},{context_id},{context_id},{cost},{part_of_speech},"
-                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
-                    + "{part_of_speech_detail_3},{inflectional_type},"
-                    + "{inflectional_form},{stem},{yomi},{pronunciation},"
-                    + "{accent_type}/{mora_count},{accent_associative_rule}\n"
-                ).format(
-                    surface=word.surface,
-                    context_id=word.context_id,
-                    cost=priority2cost(word.context_id, word.priority),
-                    part_of_speech=word.part_of_speech,
-                    part_of_speech_detail_1=word.part_of_speech_detail_1,
-                    part_of_speech_detail_2=word.part_of_speech_detail_2,
-                    part_of_speech_detail_3=word.part_of_speech_detail_3,
-                    inflectional_type=word.inflectional_type,
-                    inflectional_form=word.inflectional_form,
-                    stem=word.stem,
-                    yomi=word.yomi,
-                    pronunciation=word.pronunciation,
-                    accent_type=word.accent_type,
-                    mora_count=word.mora_count,
-                    accent_associative_rule=word.accent_associative_rule,
-                )
+            csv_text += (
+                "{surface},{context_id},{context_id},{cost},{part_of_speech},"
+                + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
+                + "{part_of_speech_detail_3},{inflectional_type},"
+                + "{inflectional_form},{stem},{yomi},{pronunciation},"
+                + "{accent_type}/{mora_count},{accent_associative_rule}\n"
+            ).format(
+                surface=word.surface,
+                context_id=word.context_id,
+                cost=priority2cost(word.context_id, word.priority),
+                part_of_speech=word.part_of_speech,
+                part_of_speech_detail_1=word.part_of_speech_detail_1,
+                part_of_speech_detail_2=word.part_of_speech_detail_2,
+                part_of_speech_detail_3=word.part_of_speech_detail_3,
+                inflectional_type=word.inflectional_type,
+                inflectional_form=word.inflectional_form,
+                stem=word.stem,
+                yomi=word.yomi,
+                pronunciation=word.pronunciation,
+                accent_type=word.accent_type,
+                mora_count=word.mora_count,
+                accent_associative_rule=word.accent_associative_rule,
             )
-    tmp_dict_path = Path(NamedTemporaryFile(delete=False).name).resolve()
-    pyopenjtalk.create_user_dict(
-        str(Path(f.name).resolve(strict=True)),
-        str(tmp_dict_path),
-    )
-    delete_file(f.name)
-    if not tmp_dict_path.is_file():
-        raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
-    pyopenjtalk.unset_user_dict()
-    try:
-        shutil.move(tmp_dict_path, compiled_dict_path)  # ドライブを跨ぐためPath.replaceが使えない
-    except OSError:
-        traceback.print_exc()
-        if tmp_dict_path.exists():
-            delete_file(tmp_dict_path.name)
-    finally:
+        tmp_csv_path.write_text(csv_text, encoding="utf-8")
+
+        # 辞書.csvをOpenJTalk用にコンパイル
+        pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
+        if not tmp_compiled_path.is_file():
+            raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
+
+        # コンパイル済み辞書の置き換え・読み込み
+        pyopenjtalk.unset_user_dict()
+        tmp_compiled_path.replace(compiled_dict_path)
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
+
+    except Exception as e:
+        print("Error: Failed to update dictionary.", file=sys.stderr)
+        print(e, file=sys.stderr)
+        raise e
+
+    finally:
+        # 後処理
+        if tmp_csv_path is not None and tmp_csv_path.exists():
+            tmp_csv_path.unlink()
+        if tmp_compiled_path is not None and tmp_compiled_path.exists():
+            tmp_compiled_path.unlink()
 
 
 @mutex_wrapper(mutex_user_dict)
