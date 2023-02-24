@@ -52,7 +52,9 @@ def update_dict(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    with NamedTemporaryFile(encoding="utf-8", mode="w", delete=False) as f:
+    with NamedTemporaryFile(
+        encoding="utf-8", mode="w", delete=False, dir=save_dir
+    ) as f:
         if not default_dict_path.is_file():
             print("Warning: Cannot find default dictionary.", file=sys.stderr)
             return
@@ -88,7 +90,7 @@ def update_dict(
                     accent_associative_rule=word.accent_associative_rule,
                 )
             )
-    tmp_dict_path = Path(NamedTemporaryFile(delete=False).name).resolve()
+    tmp_dict_path = Path(NamedTemporaryFile(delete=False, dir=save_dir).name).resolve()
     pyopenjtalk.create_user_dict(
         str(Path(f.name).resolve(strict=True)),
         str(tmp_dict_path),
