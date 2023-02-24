@@ -106,7 +106,7 @@ def update_dict(
 
     except Exception as e:
         print("Error: Failed to update dictionary.", file=sys.stderr)
-        print(e, file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         raise e
 
     finally:
