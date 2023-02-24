@@ -51,9 +51,9 @@ def update_dict(
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ):
-    random_uuid = uuid4()
-    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_uuid}"
-    tmp_compiled_path = save_dir / f".tmp.dict_compiled-{random_uuid}"
+    random_string = uuid4()
+    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}"
+    tmp_compiled_path = save_dir / f".tmp.dict_compiled-{random_string}"
 
     try:
         # 辞書.csvを作成
