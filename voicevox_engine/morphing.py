@@ -198,6 +198,7 @@ def synthesis_morphing(
         morph_param.frame_period,
     )
 
+    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
         y_h = resample(y_h, output_fs * len(y_h) // morph_param.fs)
 
