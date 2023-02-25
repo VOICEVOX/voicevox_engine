@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
+from scipy.signal import resample
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
@@ -15,7 +16,7 @@ from .synthesis_engine import SynthesisEngine
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class MorphingParameter:
-    fs: float
+    fs: int
     frame_period: float
     base_f0: np.ndarray
     base_aperiodicity: np.ndarray
@@ -26,7 +27,7 @@ class MorphingParameter:
 def create_morphing_parameter(
     base_wave: np.ndarray,
     target_wave: np.ndarray,
-    fs: float,
+    fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
     base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
@@ -134,6 +135,9 @@ def synthesis_morphing_parameter(
 ) -> MorphingParameter:
     query = deepcopy(query)
 
+    # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
+    query.outputSamplingRate = engine.default_sampling_rate
+
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
@@ -152,6 +156,7 @@ def synthesis_morphing_parameter(
 def synthesis_morphing(
     morph_param: MorphingParameter,
     morph_rate: float,
+    output_fs: int,
     output_stereo: bool = False,
 ) -> np.ndarray:
     """
@@ -192,6 +197,10 @@ def synthesis_morphing(
         morph_param.fs,
         morph_param.frame_period,
     )
+
+    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
+    if output_fs != morph_param.fs:
+        y_h = resample(y_h, output_fs * len(y_h) // morph_param.fs)
 
     if output_stereo:
         y_h = np.array([y_h, y_h]).T

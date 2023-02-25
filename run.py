@@ -579,6 +579,7 @@ def generate_app(
         morph_wave = synthesis_morphing(
             morph_param=morph_param,
             morph_rate=morph_rate,
+            output_fs=query.outputSamplingRate,
             output_stereo=query.outputStereo,
         )
 
@@ -586,7 +587,7 @@ def generate_app(
             soundfile.write(
                 file=f,
                 data=morph_wave,
-                samplerate=morph_param.fs,
+                samplerate=query.outputSamplingRate,
                 format="WAV",
             )
 
