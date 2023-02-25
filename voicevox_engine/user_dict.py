@@ -25,7 +25,7 @@ logger = getLogger("uvicorn")
 # FIXME: リリース時には置き換える
 try:
     urls = requests.get(
-        "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/6ca05d646213a771514316b45e16bb94c66dcf64/urls.json"
+        "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/55f597a29d4fdf3ddb93aa684615e48d9415cae0/urls.json"
     ).json()
     telemetry_gas_url = urls["telemetry"]
     info = requests.get(
