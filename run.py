@@ -68,7 +68,6 @@ from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
-    fetch_shared_dict,
     import_user_dict,
     read_dict,
     rewrite_word,
@@ -202,9 +201,9 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    @app.on_event("startup")
-    def apply_shared_dict():
-        threading.Thread(target=fetch_shared_dict).start()
+    # @app.on_event("startup")
+    # def apply_shared_dict():
+    #     threading.Thread(target=fetch_shared_dict).start()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:

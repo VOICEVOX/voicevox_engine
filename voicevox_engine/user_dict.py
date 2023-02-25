@@ -21,14 +21,26 @@ from .utility import delete_file, engine_root, get_save_dir, mutex_wrapper
 
 root_dir = engine_root()
 save_dir = get_save_dir()
+logger = getLogger("uvicorn")
 # FIXME: リリース時には置き換える
 try:
     urls = requests.get(
         "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/6ca05d646213a771514316b45e16bb94c66dcf64/urls.json"
     ).json()
-    shared_dict_gas_url = urls["shared_dict"]
-except Exception:
-    shared_dict_gas_url = None
+    telemetry_gas_url = urls["telemetry"]
+    info = requests.get(
+        telemetry_gas_url,
+    ).json()
+    if info["api_version"] != 1:
+        logger.error(
+            f"Invalid version: API version is {info['api_version']}, expected 1"
+        )
+        raise Exception("Invalid version")
+    logger.info("Telemetry API version: 1")
+except Exception as e:
+    logger.error(f"Failed to telemetry url, {e}, {traceback.format_exc()}")
+
+    telemetry_gas_url = None
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
@@ -58,37 +70,36 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
-def fetch_shared_dict() -> None:
-    logger = getLogger("uvicorn")
-    if shared_dict_gas_url is None:
-        logger.error("Failed to fetch shared dict, shared_dict_gas_url is None.")
-        return
-    logger.info("Fetching shared dict...")
-    shared_dict = requests.get(
-        url=shared_dict_gas_url,
-        headers={"Content-Type": "application/json"},
-    )
-    if shared_dict.status_code != 200:
-        logger.error("Failed to fetch shared dict, %s", shared_dict.status_code)
-        return
-    shared_dict_rows = shared_dict.json()
-    logger.info("Fetched shared dict, %s items.", len(shared_dict.json()))
-    write_to_json(
-        {
-            row[0]: create_word(
-                surface=row[1],
-                pronunciation=row[2],
-                accent_type=int(row[3]),
-                word_type=row[4] or None,
-                priority=int(row[5]),
-                is_shared=True,
-            )
-            for row in shared_dict_rows
-        },
-        shared_dict_path,
-    )
+# def fetch_shared_dict() -> None:
+#     if shared_dict_gas_url is None:
+#         logger.error("Failed to fetch shared dict, shared_dict_gas_url is None.")
+#         return
+#     logger.info("Fetching shared dict...")
+#     shared_dict = requests.get(
+#         url=shared_dict_gas_url,
+#         headers={"Content-Type": "application/json"},
+#     )
+#     if shared_dict.status_code != 200:
+#         logger.error("Failed to fetch shared dict, %s", shared_dict.status_code)
+#         return
+#     shared_dict_rows = shared_dict.json()
+#     logger.info("Fetched shared dict, %s items.", len(shared_dict.json()))
+#     write_to_json(
+#         {
+#             row[0]: create_word(
+#                 surface=row[1],
+#                 pronunciation=row[2],
+#                 accent_type=int(row[3]),
+#                 word_type=row[4] or None,
+#                 priority=int(row[5]),
+#                 is_shared=True,
+#             )
+#             for row in shared_dict_rows
+#         },
+#         shared_dict_path,
+#     )
 
-    update_dict()
+#     update_dict()
 
 
 @mutex_wrapper(mutex_openjtalk_dict)
@@ -385,7 +396,7 @@ def priority2cost(
 
 
 def send_telemetry(event, properties):
-    if shared_dict_gas_url is None:
+    if telemetry_gas_url is None:
         return
     logger = getLogger("uvicorn")
     logger.info(f"send telemetry: {event}, {properties}")
@@ -393,7 +404,7 @@ def send_telemetry(event, properties):
     def run():
         request = requests.Request(
             "POST",
-            shared_dict_gas_url,
+            telemetry_gas_url,
             json={
                 "event": event,
                 "properties": properties,
