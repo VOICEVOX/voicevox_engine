@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import threading
 import traceback
 from logging import getLogger
 from pathlib import Path
@@ -16,14 +17,18 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import async_request, delete_file, engine_root, get_save_dir
+from .utility import delete_file, engine_root, get_save_dir
 
 root_dir = engine_root()
 save_dir = get_save_dir()
 # FIXME: リリース時には置き換える
-shared_dict_host = "https://vv-dict-telemetry-test.deno.dev"
-shared_dict_collect_url = shared_dict_host + "/shared_dict/collect"
-shared_dict_get_url = shared_dict_host + "/shared_dict"
+try:
+    urls = requests.get(
+        "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/6ca05d646213a771514316b45e16bb94c66dcf64/urls.json"
+    ).json()
+    shared_dict_gas_url = urls["shared_dict"]
+except Exception:
+    shared_dict_gas_url = None
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
@@ -50,27 +55,30 @@ def write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path):
 
 def fetch_shared_dict() -> None:
     logger = getLogger("uvicorn")
+    if shared_dict_gas_url is None:
+        logger.error("Failed to fetch shared dict, shared_dict_gas_url is None.")
+        return
     logger.info("Fetching shared dict...")
     shared_dict = requests.get(
-        url=shared_dict_get_url,
+        url=shared_dict_gas_url,
         headers={"Content-Type": "application/json"},
     )
     if shared_dict.status_code != 200:
         logger.error("Failed to fetch shared dict, %s", shared_dict.status_code)
         return
-    shared_dict_json = shared_dict.json()
+    shared_dict_rows = shared_dict.json()
     logger.info("Fetched shared dict, %s items.", len(shared_dict.json()))
     write_to_json(
         {
-            k: create_word(
-                surface=v["surface"],
-                pronunciation=v["pronunciation"],
-                accent_type=v["accent_type"],
-                word_type=v["word_type"],
-                priority=v["priority"],
+            row[0]: create_word(
+                surface=row[1],
+                pronunciation=row[2],
+                accent_type=int(row[3]),
+                word_type=row[4] or None,
+                priority=int(row[5]),
                 is_shared=True,
             )
-            for k, v in shared_dict_json.items()
+            for row in shared_dict_rows
         },
         shared_dict_path,
     )
@@ -370,13 +378,24 @@ def priority2cost(
 
 
 def send_telemetry(event, properties):
-    async_request(
-        requests.Request(
+    if shared_dict_gas_url is None:
+        return
+    logger = getLogger("uvicorn")
+    logger.info(f"send telemetry: {event}, {properties}")
+
+    def run():
+        request = requests.Request(
             "POST",
-            shared_dict_collect_url,
+            shared_dict_gas_url,
             json={
                 "event": event,
                 "properties": properties,
             },
         )
-    )
+        result = requests.Session().send(request.prepare())
+        if result.text == "ok":
+            logger.info("telemetry sent successfully")
+        else:
+            logger.error(f"telemetry sending failed: {result.text}")
+
+    threading.Thread(target=run).start()

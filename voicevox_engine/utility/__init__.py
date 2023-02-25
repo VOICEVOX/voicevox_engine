@@ -1,4 +1,3 @@
-from .async_request import async_request
 from .connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -13,5 +12,4 @@ __all__ = [
     "delete_file",
     "engine_root",
     "get_save_dir",
-    "async_request",
 ]
