@@ -15,8 +15,7 @@ INFO_FILE = "metas.json"
 
 
 class LibraryManager:
-    def __init__(self, root_dir: Path, library_root_dir: Path):
-        self.root_dir = root_dir
+    def __init__(self, library_root_dir: Path):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
 
