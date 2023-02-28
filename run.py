@@ -68,11 +68,11 @@ from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
+    fetch_telemetry_gas_url,
     import_user_dict,
     read_dict,
     rewrite_word,
     update_dict,
-    fetch_telemetry_gas_url,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
