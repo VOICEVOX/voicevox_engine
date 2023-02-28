@@ -22,25 +22,8 @@ from .utility import delete_file, engine_root, get_save_dir, mutex_wrapper
 root_dir = engine_root()
 save_dir = get_save_dir()
 logger = getLogger("uvicorn")
-# FIXME: リリース時には置き換える
-try:
-    urls = requests.get(
-        "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/55f597a29d4fdf3ddb93aa684615e48d9415cae0/urls.json"
-    ).json()
-    telemetry_gas_url = urls["telemetry"]
-    info = requests.get(
-        telemetry_gas_url,
-    ).json()
-    if info["api_version"] != 1:
-        logger.error(
-            f"Invalid version: API version is {info['api_version']}, expected 1"
-        )
-        raise Exception("Invalid version")
-    logger.info("Telemetry API version: 1")
-except Exception as e:
-    logger.error(f"Failed to telemetry url, {e}, {traceback.format_exc()}")
 
-    telemetry_gas_url = None
+telemetry_gas_url: Optional[str] = None
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
@@ -49,6 +32,32 @@ default_dict_path = root_dir / "default.csv"
 user_dict_path = save_dir / "user_dict.json"
 shared_dict_path = save_dir / "shared_dict.json"
 compiled_dict_path = save_dir / "user.dic"
+
+
+def fetch_telemetry_gas_url() -> None:
+    global telemetry_gas_url
+    try:
+        urls = requests.get(
+            # FIXME: リリース時には置き換える
+            "https://gist.githubusercontent.com/sevenc-nanashi/a92b0d27fa464cf63738a993e8917084/raw/55f597a29d4fdf3ddb93aa684615e48d9415cae0/urls.json"
+        ).json()
+        # telemetry_gas_urlがNoneかどうかでAPIを有効にするかどうかを判断するので、
+        # まだtelemetry_gas_urlを代入しない。
+        tmp_telemetry_gas_url: str = urls["telemetry"]
+        info = requests.get(
+            tmp_telemetry_gas_url,
+        ).json()
+        if info["api_version"] != 1:
+            logger.error(
+                f"Invalid version: API version is {info['api_version']}, expected 1"
+            )
+            raise Exception("Invalid version")
+        logger.info("Telemetry API version: 1, telemetry enabled.")
+        telemetry_gas_url = tmp_telemetry_gas_url
+    except Exception as e:
+        logger.error(f"Failed to telemetry url, {e}, {traceback.format_exc()}")
+
+        telemetry_gas_url = None
 
 
 mutex_user_dict = threading.Lock()

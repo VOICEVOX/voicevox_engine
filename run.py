@@ -72,6 +72,7 @@ from voicevox_engine.user_dict import (
     read_dict,
     rewrite_word,
     update_dict,
+    fetch_telemetry_gas_url,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
@@ -201,9 +202,9 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    # @app.on_event("startup")
-    # def apply_shared_dict():
-    #     threading.Thread(target=fetch_shared_dict).start()
+    @app.on_event("startup")
+    def fetch_telemetry_gas_url_on_startup():
+        fetch_telemetry_gas_url()
 
     def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
         if core_version is None:
