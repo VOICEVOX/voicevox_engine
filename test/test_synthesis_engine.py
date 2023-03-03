@@ -535,7 +535,7 @@ class TestSynthesisEngine(TestCase):
         mean_f0 = []
         for i, phoneme_length in enumerate(phoneme_length_list):
             f0_single = numpy.array(f0_list[f0_index], dtype=numpy.float32) * (
-                2 ** audio_query.pitchScale
+                2**audio_query.pitchScale
             )
             for _ in range(int(round(phoneme_length * (24000 / 256)))):
                 f0.append([f0_single])

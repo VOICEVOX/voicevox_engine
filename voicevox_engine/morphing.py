@@ -1,25 +1,22 @@
-import json
 from copy import deepcopy
 from dataclasses import dataclass
-from pathlib import Path
+from itertools import chain
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
+from scipy.signal import resample
 
-from voicevox_engine.synthesis_engine.synthesis_engine_base import SynthesisEngineBase
-
-from .model import (
-    AudioQuery,
-    SpeakerNotFoundError,
-    SpeakerSupportPermittedSynthesisMorphing,
-)
+from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .metas.MetasStore import construct_lookup
+from .model import AudioQuery, MorphableTargetInfo, SpeakerNotFoundError
 from .synthesis_engine import SynthesisEngine
 
 
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class MorphingParameter:
-    fs: float
+    fs: int
     frame_period: float
     base_f0: np.ndarray
     base_aperiodicity: np.ndarray
@@ -30,7 +27,7 @@ class MorphingParameter:
 def create_morphing_parameter(
     base_wave: np.ndarray,
     target_wave: np.ndarray,
-    fs: float,
+    fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
     base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
@@ -51,9 +48,34 @@ def create_morphing_parameter(
     )
 
 
+def get_morphable_targets(
+    speakers: List[Speaker],
+    base_speakers: List[int],
+) -> List[Dict[int, MorphableTargetInfo]]:
+    """
+    speakers: 全話者の情報
+    base_speakers: モーフィング可能か判定したいベースの話者リスト（スタイルID）
+    """
+    speaker_lookup = construct_lookup(speakers)
+
+    morphable_targets_arr = []
+    for base_speaker in base_speakers:
+        morphable_targets = dict()
+        for style in chain.from_iterable(speaker.styles for speaker in speakers):
+            morphable_targets[style.id] = MorphableTargetInfo(
+                is_morphable=is_synthesis_morphing_permitted(
+                    speaker_lookup=speaker_lookup,
+                    base_speaker=base_speaker,
+                    target_speaker=style.id,
+                )
+            )
+        morphable_targets_arr.append(morphable_targets)
+
+    return morphable_targets_arr
+
+
 def is_synthesis_morphing_permitted(
-    engine: SynthesisEngineBase,
-    speaker_info_folder: Path,
+    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
     base_speaker: int,
     target_speaker: int,
 ) -> bool:
@@ -62,48 +84,26 @@ def is_synthesis_morphing_permitted(
     speakerが見つからない場合はSpeakerNotFoundErrorを送出する
     """
 
-    core_speakers = json.loads(engine.speakers)
-    base_speaker_core_info, target_speaker_core_info = None, None
-    for speaker in core_speakers:
-        style_id_arr = tuple(style["id"] for style in speaker["styles"])
-        if base_speaker_core_info is None and base_speaker in style_id_arr:
-            base_speaker_core_info = speaker
-        if target_speaker_core_info is None and target_speaker in style_id_arr:
-            target_speaker_core_info = speaker
+    base_speaker_data = speaker_lookup[base_speaker]
+    target_speaker_data = speaker_lookup[target_speaker]
 
-    if base_speaker_core_info is None or target_speaker_core_info is None:
+    if base_speaker_data is None or target_speaker_data is None:
         raise SpeakerNotFoundError(
-            base_speaker if base_speaker_core_info is None else target_speaker
+            base_speaker if base_speaker_data is None else target_speaker
         )
 
-    base_speaker_uuid = base_speaker_core_info["speaker_uuid"]
-    target_speaker_uuid = target_speaker_core_info["speaker_uuid"]
+    base_speaker_info, _ = base_speaker_data
+    target_speaker_info, _ = target_speaker_data
 
-    # FIXME: engineのmetasロード処理をPresetLoaderのように纏める
-    base_speaker_engine_info = json.loads(
-        (speaker_info_folder / f"{base_speaker_uuid}" / "metas.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    target_speaker_engine_info = json.loads(
-        (speaker_info_folder / f"{target_speaker_uuid}" / "metas.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    base_speaker_uuid = base_speaker_info.speaker_uuid
+    target_speaker_uuid = target_speaker_info.speaker_uuid
 
-    # FIXME: 他にsupported_featuresができたら共通化する
     base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        base_speaker_engine_info.get("supported_features", dict()).get(
-            "permitted_synthesis_morphing",
-            SpeakerSupportPermittedSynthesisMorphing(None),
-        )
+        base_speaker_info.supported_features.permitted_synthesis_morphing
     )
 
     target_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        target_speaker_engine_info.get("supported_features", dict()).get(
-            "permitted_synthesis_morphing",
-            SpeakerSupportPermittedSynthesisMorphing(None),
-        )
+        target_speaker_info.supported_features.permitted_synthesis_morphing
     )
 
     # 禁止されている場合はFalse
@@ -135,6 +135,9 @@ def synthesis_morphing_parameter(
 ) -> MorphingParameter:
     query = deepcopy(query)
 
+    # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
+    query.outputSamplingRate = engine.default_sampling_rate
+
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
@@ -153,6 +156,7 @@ def synthesis_morphing_parameter(
 def synthesis_morphing(
     morph_param: MorphingParameter,
     morph_rate: float,
+    output_fs: int,
     output_stereo: bool = False,
 ) -> np.ndarray:
     """
@@ -193,6 +197,10 @@ def synthesis_morphing(
         morph_param.fs,
         morph_param.frame_period,
     )
+
+    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
+    if output_fs != morph_param.fs:
+        y_h = resample(y_h, output_fs * len(y_h) // morph_param.fs)
 
     if output_stereo:
         y_h = np.array([y_h, y_h]).T

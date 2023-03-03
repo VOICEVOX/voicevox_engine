@@ -12,7 +12,7 @@ import soundfile
 # FIXME: remove FastAPI dependency
 from fastapi import HTTPException, Request
 
-from .model import AudioQuery, Speaker
+from .model import AudioQuery
 from .synthesis_engine import make_synthesis_engines
 
 
@@ -115,7 +115,7 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        speaker_id: Speaker,
+        speaker_id: int,
         request: Request,
         core_version: Optional[str],
     ) -> str:
@@ -127,7 +127,7 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        speaker_id: Speaker
+        speaker_id: int
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/

@@ -290,7 +290,7 @@ VOICEVOXではセキュリティ保護のため`localhost`・`127.0.0.1`・`app:
 
 ```bash
 docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
-docker run --rm -it -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
 ```
 
 ### GPU
@@ -299,6 +299,9 @@ docker run --rm -it -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubun
 docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
 ```
+
+#### トラブルシューティング
+GPU版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
 
 ## 貢献者の方へ
 
@@ -493,6 +496,43 @@ poetry export --without-hashes --with license -o requirements-license.txt
 python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
 ```
 
+## マルチエンジン機能に関して
+
+VOICEVOX エディターでは、複数のエンジンを同時に起動することができます。
+この機能を利用することで、自作の音声合成エンジンや既存の音声合成エンジンを VOICEVOX エディター上で動かすことが可能です。
+
+<details>
+
+### マルチエンジン機能の仕組み
+
+VOICEVOX API に準拠した複数のエンジンを統一的に扱います。それぞれのエンジンは EngineID で管理されます。
+
+<img src="./docs/res/マルチエンジン概念図.svg" width="320">
+
+### マルチエンジン機能への対応方法
+
+VOICEVOX API に準拠することで対応が可能です。
+API のうちどのエンドポイントに対応すればよいかはまだ明確に定めていませんが、基本的にこの VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造することでの開発をおすすめします。
+
+エンジンの情報はエンジンマニフェスト（`engine_manifest.json`）で管理されています。
+マニフェストファイル内の情報を見て適宜変更してください。
+
+音声合成エンジンによっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
+その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
+
+### マルチエンジン機能対応エンジンの配布方法
+
+VVPP ファイルとして配布するのがおすすめです。
+VVPP は「VOICEVOX プラグインパッケージ」の略で、ビルドしたエンジンをディレクトリごと Zip 化して拡張子を`.vvpp`に変更したものです。
+
+VOICEVOX エディターは VVPP をローカルディスク上に展開したあと、ルートの直下にある`engine_manifest.json`に従ってファイルを探査します。
+VOICEVOX エディターにうまく読み込ませられないときは、エディターのエラーログを参照してください。
+
+また、`xxx.vvpp`は分割して連番を付けた`xxx.0.vvppp`ファイルとして配布することも可能です。
+これはファイル容量が大きくて配布が困難な場合に有用です。
+
+</details>
+
 ## GitHub Actions
 
 ### Secrets
@@ -501,6 +541,10 @@ python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.
 | :----------------- | :---------------------------------------------------------------------- |
 | DOCKERHUB_USERNAME | Docker Hub ユーザ名                                                     |
 | DOCKERHUB_TOKEN    | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
+
+## 事例紹介
+
+**[voicevox-client](https://github.com/tuna2134/voicevox-client) [@tuna2134](https://github.com/tuna2134)** ･･･ VOICEVOX ENGINE のためのPythonラッパー
 
 ## ライセンス
 

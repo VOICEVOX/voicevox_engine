@@ -22,7 +22,7 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
-ARG VOICEVOX_CORE_VERSION=0.14.0-preview.3
+ARG VOICEVOX_CORE_VERSION=0.14.2
 RUN <<EOF
     set -eux
 
@@ -202,6 +202,7 @@ ARG VOICEVOX_ENGINE_VERSION=latest
 RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
 
 # Generate licenses.json
+ADD ./requirements-license.txt /tmp/
 RUN <<EOF
     set -eux
 
@@ -211,9 +212,8 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install pip-licenses==3.5.3 # FIXME: 応急処置。詳細→https://github.com/VOICEVOX/voicevox_engine/issues/544
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
     gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
-    # FIXME: VOICEVOX (editor) cannot build without licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
@@ -238,7 +238,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.0-preview.2
+ARG VOICEVOX_RESOURCE_VERSION=0.14.1
 RUN <<EOF
     set -eux
 

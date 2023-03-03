@@ -1,7 +1,9 @@
 from .Preset import Preset
-from .PresetLoader import PresetLoader
+from .PresetError import PresetError
+from .PresetManager import PresetManager
 
 __all__ = [
     "Preset",
-    "PresetLoader",
+    "PresetManager",
+    "PresetError",
 ]
