@@ -8,6 +8,7 @@ import re
 import sys
 import traceback
 import zipfile
+import shutil
 from distutils.version import LooseVersion
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
@@ -17,13 +18,14 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import FastAPI, Form, HTTPException, Query, Request, Response, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
+from huggingsound import SpeechRecognitionModel
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -78,7 +80,11 @@ from voicevox_engine.utility import (
     engine_root,
     get_save_dir,
 )
-
+from voicevox_engine.chat_bot import (
+    speech_to_text,
+    speech_to_text_api,
+    ask_bot_api
+)
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
@@ -113,6 +119,7 @@ def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
     setting_loader: SettingLoader,
+    stt_model:SpeechRecognitionModel,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
@@ -859,6 +866,138 @@ def generate_app(
         )
         return Response(status_code=204)
 
+    @app.post("/voice_voice",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["その他"])
+    def voice_voice(speaker: int,
+                   whisper: bool,
+                   file: UploadFile = File(...),
+                   core_version: Optional[str] = None):
+        """
+        Voice to voice chat
+
+        Parameters
+        ----------
+        file: file
+            File upload
+        """
+        file_name = "Audio.wav"
+        with open(file_name, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        try:
+            if (whisper):
+                text = speech_to_text_api(audio_file=file_name)
+            else:
+                text = speech_to_text(stt_model, audio_paths=[file_name])
+
+            print("==========")
+            print(text)
+
+            response = ask_bot_api(text)
+            print("==========")
+            print(response.content)
+
+            engine = get_engine(core_version)
+            accent_phrases = engine.create_accent_phrases(response.content, speaker)
+            audio_query = AudioQuery(
+                accent_phrases=accent_phrases,
+                speedScale=1,
+                pitchScale=0,
+                intonationScale=1,
+                volumeScale=1,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+                outputSamplingRate=default_sampling_rate,
+                outputStereo=False,
+                kana=create_kana(accent_phrases),
+            )
+            wave = engine.synthesis(
+                query=audio_query,
+                speaker_id=speaker,
+                enable_interrogative_upspeak=True,
+            )
+
+            with NamedTemporaryFile(delete=False) as f:
+                soundfile.write(
+                    file=f, data=wave, samplerate=audio_query.outputSamplingRate, format="WAV"
+                )
+
+            return FileResponse(
+                f.name,
+                media_type="audio/wav",
+                background=BackgroundTask(delete_file, f.name),
+            )
+        except Exception as e:
+            return Response(content = e.args[0])
+        finally:
+            os.remove(file_name)
+
+        return Response(content = response.content)
+
+    @app.post("/text_voice",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["その他"])
+    def text_voice(speaker: int,
+                   text: str,
+                   core_version: Optional[str] = None):
+        """
+        Text to voice chat
+
+        Parameters
+        ----------
+        text: str
+            Input text
+        """
+        response = ask_bot_api(text)
+        print("==========")
+        print(response.content)
+
+        engine = get_engine(core_version)
+        accent_phrases = engine.create_accent_phrases(response.content, speaker)
+        audio_query = AudioQuery(
+            accent_phrases=accent_phrases,
+            speedScale=1,
+            pitchScale=0,
+            intonationScale=1,
+            volumeScale=1,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=default_sampling_rate,
+            outputStereo=False,
+            kana=create_kana(accent_phrases),
+        )
+        wave = engine.synthesis(
+            query=audio_query,
+            speaker_id=speaker,
+            enable_interrogative_upspeak=True,
+        )
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f, data=wave, samplerate=audio_query.outputSamplingRate, format="WAV"
+            )
+
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
+
+
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
         speaker: int,
@@ -1229,11 +1368,15 @@ if __name__ == "__main__":
     elif settings.allow_origin is not None:
         allow_origin = settings.allow_origin.split(" ")
 
+    default_model = "jonatasgrosman/wav2vec2-large-xlsr-53-japanese"
+    model = SpeechRecognitionModel(default_model)
+
     uvicorn.run(
         generate_app(
             synthesis_engines,
             latest_core_version,
             setting_loader,
+            model,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
