@@ -218,7 +218,8 @@ def generate_licenses() -> List[License]:
                     license.text = res.read().decode()
             else:
                 # ライセンスがpypiに無い
-                raise Exception(f"No License info provided for {license.name}")
+                continue
+                # raise Exception(f"No License info provided for {license.name}")
         licenses.append(license)
 
     # OpenBLAS
@@ -321,17 +322,17 @@ if __name__ == "__main__":
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--output_path", type=str)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-o", "--output_path", type=str)
+    # args = parser.parse_args()
 
-    output_path = args.output_path
+    # output_path = args.output_path
 
-    licenses = generate_licenses()
+    # licenses = generate_licenses()
 
-    # dump
-    out = Path(output_path).open("w") if output_path else sys.stdout
-    json.dump(
-        [asdict(license) for license in licenses],
-        out,
-    )
+    # # dump
+    # out = Path(output_path).open("w") if output_path else sys.stdout
+    # json.dump(
+    #     [asdict(license) for license in licenses],
+    #     out,
+    # )

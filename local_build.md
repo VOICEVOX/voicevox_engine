@@ -1,9 +1,10 @@
 
-Requirement
+# Requirement
 
 1. python 3.8, pip
 2. ffmpeg
 3. download and extract voicevox_engine https://github.com/VOICEVOX/voicevox_engine/releases
+4. set environment variable OPENAI_KEY
 
 
 Environment and dependencies
@@ -39,3 +40,10 @@ whisper=true => use whisper API
 whisper=false => use local speech to text model (slower)
 
 API accepts .wav file
+
+# Docker
+
+```
+docker build .
+docker run -p 50021:50021 -e OPENAI_KEY=xxx container_id
+```
