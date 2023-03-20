@@ -20,7 +20,6 @@ from transformers import (
     Wav2Vec2Processor, 
     AutoModelForCTC
 )
-from onnxruntime import InferenceSession
 
 def speech_to_text(model, audio_paths):
     transcriptions = model.transcribe(audio_paths)
