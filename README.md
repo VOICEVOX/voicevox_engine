@@ -544,7 +544,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 ## 事例紹介
 
-**[voicevox-client](https://github.com/voicevox-client/python) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINE のためのPythonラッパー
+**[voicevox-client](https://github.com/voicevox-client) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINEの各言語向けAPIラッパー
 
 ## ライセンス
 
