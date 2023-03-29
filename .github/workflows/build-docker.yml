@@ -116,7 +116,8 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/process_voicevox_resource.bash
+          VERSION: ${{ inputs.version }}
+        run: bash build_util/build_preprocess.bash
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v3
