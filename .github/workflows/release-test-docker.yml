@@ -1,4 +1,4 @@
-name: Test Release Build
+name: Test Docker Release Build
 
 on:
   workflow_call:
@@ -21,43 +21,39 @@ on:
         required: false
 
 env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
   REPO_URL:
     |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
     ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
+  TARGET: linux-cpu
 
 jobs:
   test:
+    runs-on: [ ubuntu-20.04 ]
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-20.04
-            target: linux-cpu
-          - os: ubuntu-20.04
-            target: linux-nvidia
-          - os: macos-11
-            target: macos-x64
-          - os: windows-2019
-            target: windows-cpu
-          - os: windows-2019
-            target: windows-nvidia
-          - os: windows-2019
-            target: windows-directml
-
-    runs-on: ${{ matrix.os }}
+        tag:
+          - ""
+          - cpu
+          - cpu-ubuntu20.04
+          - cpu-ubuntu18.04
 
     steps:
-      - name: declare variables
+      - name: Declare variables
         id: vars
         shell: bash
         run: |
           echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
-          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo "package_name=voicevox_engine-${{ env.TARGET }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v2
 
+      #
+      # Setup Python Environment
+      #
       - uses: actions/setup-python@v2
         with:
           python-version: "3.8.10"
@@ -70,15 +66,13 @@ jobs:
           curl -L -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
           cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
           7z x "download/$(head -n1 download/list.txt)"
-          mv ${{ matrix.target }} dist/
+          mv ${{ env.TARGET }} dist/
 
       - name: chmod +x
-        if: startsWith(matrix.target, 'linux') || startsWith(matrix.target, 'macos')
         shell: bash
         run: chmod +x dist/run
 
       - name: Install libsndfile1
-        if: startsWith(matrix.target, 'linux')
         run: |
           sudo apt-get update
           sudo apt-get install libsndfile1
@@ -87,6 +81,48 @@ jobs:
         run: |
           pip install -r requirements-test.txt
 
+      #
+      # Setup Docker Environment
+      #
+      - name: Declare variables
+        id: docker_vars
+        run: |
+          echo "${{ matrix.tag }}"
+          if [ "${{ matrix.tag }}" != "" ]; then
+            echo "image_tag=${{ env.IMAGE_NAME }}:${{ matrix.tag }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          else
+            echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Docker pull
+        run: docker pull ${{ steps.docker_vars.outputs.image_tag }}
+
+      - name: Docker run
+        run: docker run -d -p 50021:50021 ${{ steps.docker_vars.outputs.image_tag }}
+
+      # Docker コンテナが起動してから、レスポンスが返ってくるまで待機する
+      # リトライは10回まで `/version` にアクセスしてレスポンスのステータスコードをチェック
+      # - ステータスコードが `200` の場合は正常終了します
+      # - ステータスコードが `200` 以外の場合は、5秒間スリープしてリトライします
+      - name: Wait for container to start
+        shell: bash -xv {0}
+        run: |
+          url="http://localhost:50021/version"
+          max_attempts=10
+          sleep_interval=5
+          
+          for i in $(seq 1 $max_attempts); do
+            status=$(curl -o /dev/null -s -w '%{http_code}\n' $url)
+            if [ $status -eq 200 ]; then
+              echo "Container is ready! Response status code: $status"
+              exit 0
+            else
+              echo "Attempt $i/$max_attempts: Response status code $status"
+              sleep $sleep_interval
+            fi
+          done
+          exit 1
+
       - name: Test
         shell: bash
-        run: python build_util/check_release_build.py --dist_dir dist/
+        run: python build_util/check_release_build.py --skip_process --dist_dir dist/
