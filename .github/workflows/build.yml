@@ -389,8 +389,7 @@ jobs:
         shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-          VERSION: ${{ needs.config.outputs.version_or_latest }}
-        run: bash build_util/build_preprocess.bash
+        run: bash build_util/process_voicevox_resource.bash
 
       # Download VOICEVOX Core
       - name: Prepare VOICEVOX Core cache
@@ -446,6 +445,9 @@ jobs:
         shell: bash
         run: |
           set -eux
+
+          jq '.version = "${{ needs.config.outputs.version_or_latest }}"' engine_manifest.json > engine_manifest.json.tmp
+          mv -f engine_manifest.json.tmp engine_manifest.json
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
