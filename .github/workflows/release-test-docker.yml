@@ -87,7 +87,6 @@ jobs:
       - name: Declare variables
         id: docker_vars
         run: |
-          echo "${{ matrix.tag }}"
           if [ "${{ matrix.tag }}" != "" ]; then
             echo "image_tag=${{ env.IMAGE_NAME }}:${{ matrix.tag }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
           else

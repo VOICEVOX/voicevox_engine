@@ -150,3 +150,11 @@ jobs:
           cache-from: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
           cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
           platforms: ${{ matrix.platforms }}
+
+  run-release-test-workflow:
+    if: env.VOICEVOX_ENGINE_VERSION != 'latest'
+    needs: [config, upload-to-release]
+    uses: ./.github/workflows/release-test-docker.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
