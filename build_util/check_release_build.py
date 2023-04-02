@@ -1,8 +1,12 @@
+"""
+ビルド結果をテストする
+"""
 import argparse
 import json
 import time
 from io import BytesIO
 from pathlib import Path
+from subprocess import Popen
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
