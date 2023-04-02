@@ -2,7 +2,7 @@
   {
     "name": "Dummy Library",
     "uuid": "2bb8bccf-1c3f-4bc9-959a-f388e37af3ad",
-    "version": "0.0.5",
+    "version": "0.0.1",
     "download_url": "https://github.com/VOICEVOX/voicevox_engine/archive/d7cf31c058bc83e1abf8e14d4231a06409c4cc2d.zip",
     "bytes": 1000,
     "speakers": [
