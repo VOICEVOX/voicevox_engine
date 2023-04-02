@@ -236,6 +236,7 @@ ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
 RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
+RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
 ADD ./requirements-license.txt /tmp/

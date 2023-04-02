@@ -159,7 +159,7 @@ jobs:
             cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
 
             # remove unneed full version libraries
-            rm -f download/cuda/bin/libcublas.so.*.* 
+            rm -f download/cuda/bin/libcublas.so.*.*
             rm -f download/cuda/bin/libcublasLt.so.*.*
             rm -f download/cuda/bin/libcufft.so.*.*
             rm -f download/cuda/bin/libcurand.so.*.*
@@ -445,6 +445,9 @@ jobs:
         shell: bash
         run: |
           set -eux
+
+          jq '.version = "${{ needs.config.outputs.version_or_latest }}"' engine_manifest.json > engine_manifest.json.tmp
+          mv -f engine_manifest.json.tmp engine_manifest.json
 
           # Replace version & specify dynamic libraries
           if [[ ${{ matrix.os }} == macos-* ]]; then
