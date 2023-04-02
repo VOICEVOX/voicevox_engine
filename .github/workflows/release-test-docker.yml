@@ -124,4 +124,4 @@ jobs:
 
       - name: Test
         shell: bash
-        run: python build_util/check_release_build.py --skip_process --dist_dir dist/
+        run: python build_util/check_release_build.py --skip_run_process --dist_dir dist/
