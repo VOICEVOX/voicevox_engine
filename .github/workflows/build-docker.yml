@@ -17,17 +17,28 @@ env:
   PYTHON_VERSION: "3.8.10"
   VOICEVOX_RESOURCE_VERSION: "0.14.1"
   VOICEVOX_CORE_VERSION: "0.14.2"
-  VOICEVOX_ENGINE_VERSION:
-    |- # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-    ${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}
 
 jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+    steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+
   build-docker:
+    needs: [ config ]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ ubuntu-latest ]
         tag:
           - ""
           - cpu
@@ -128,8 +139,8 @@ jobs:
             |- # If it's a release, add the version, otherwise add the `latest`
             ${{ (
               matrix.tag != '' && (
-                format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, env.VOICEVOX_ENGINE_VERSION)
-              ) || format('{0}:{1}', env.IMAGE_NAME, env.VOICEVOX_ENGINE_VERSION)
+                format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, needs.config.outputs.version_or_latest)
+              ) || format('{0}:{1}', env.IMAGE_NAME, needs.config.outputs.version_or_latest)
             ) }}
         with:
           context: .
@@ -139,7 +150,7 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
-            VOICEVOX_ENGINE_VERSION=${{ env.VOICEVOX_ENGINE_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
@@ -152,8 +163,9 @@ jobs:
           platforms: ${{ matrix.platforms }}
 
   run-release-test-workflow:
-    if: env.VOICEVOX_ENGINE_VERSION != 'latest'
-    needs: [config, upload-to-release]
+    # version が指定されている場合のみ実行する
+    if: needs.config.outputs.version_or_latest != 'latest'
+    needs: [ config, build-docker ]
     uses: ./.github/workflows/release-test-docker.yml
     with:
       version: ${{ needs.config.outputs.version }}
