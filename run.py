@@ -18,14 +18,17 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response, File, UploadFile
+from fastapi import FastAPI, Form, HTTPException, Query, Request, Response, File, UploadFile, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 from huggingsound import SpeechRecognitionModel
+
+from sqlalchemy.orm import Session
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -46,7 +49,7 @@ from voicevox_engine.model import (
     SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
-    WordTypes,
+    WordTypes
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -85,6 +88,34 @@ from voicevox_engine.chat_bot import (
     speech_to_text_api,
     ask_bot_api
 )
+from auth.utils import (
+    create_access_token,
+    create_refresh_token,
+    verify_password
+)
+from auth.schemas import(
+    UserAuth,
+    TokenSchema,
+    UserOut,
+    SystemUser,
+    TokenPayload,
+    ConversationCreate,
+    MessageCreate
+)
+from database.dbconnect import(
+    SessionLocal,
+    engine
+)
+from database.crud import (
+    create_user,
+    create_conversation,
+    get_user_by_token,
+    get_user_by_email,
+    get_users,
+    create_message,
+    get_messages_by_conversation
+)
+from database import models
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
@@ -159,6 +190,8 @@ def generate_app(
         allow_headers=["*"],
     )
 
+    models.Base.metadata.create_all(bind=engine)
+
     # 許可されていないOriginを遮断するミドルウェア
     @app.middleware("http")
     async def block_origin_middleware(request: Request, call_next):
@@ -193,6 +226,8 @@ def generate_app(
 
     setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
 
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
@@ -214,6 +249,13 @@ def generate_app(
         if core_version in synthesis_engines:
             return synthesis_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
+    
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
 
     @app.post(
         "/audio_query",
@@ -879,7 +921,10 @@ def generate_app(
     def voice_voice(speaker: int,
                    whisper: bool,
                    file: UploadFile = File(...),
-                   core_version: Optional[str] = None):
+                   conversation: Optional[int] = None,
+                   core_version: Optional[str] = None, 
+                   token: str = Depends(oauth2_scheme),
+                   db: Session = Depends(get_db)):
         """
         Voice to voice chat
 
@@ -889,23 +934,36 @@ def generate_app(
             File upload
         """
         file_name = "Audio.wav"
+        
+
         with open(file_name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         try:
+            user = get_user_by_token(db, token=token)
             if (whisper):
                 text = speech_to_text_api(audio_file=file_name)
             else:
                 text = speech_to_text(stt_model, audio_paths=[file_name])
 
-            print("==========")
-            print(text)
+            history = None
+            # Load user from token
+            user = get_user_by_token(db, token=token)
 
-            response = ask_bot_api(text)
-            print("==========")
-            print(response.content)
+            # If conversation is not specified, new conversation will be created
+            if (conversation == None):
+                conv = create_conversation(db, ConversationCreate(user_id = user.id))
+                conversation = conv.id
+            else:
+                history = get_messages_by_conversation(db, conversation)
+            
+            response = ask_bot_api(message=text, history=history)
+
+            # Save message to database
+            message = MessageCreate(conversation_id=conversation, request=text, response=response)
+            create_message(db, message)
 
             engine = get_engine(core_version)
-            accent_phrases = engine.create_accent_phrases(response.content, speaker)
+            accent_phrases = engine.create_accent_phrases(response, speaker)
             audio_query = AudioQuery(
                 accent_phrases=accent_phrases,
                 speedScale=1,
@@ -935,11 +993,12 @@ def generate_app(
                 background=BackgroundTask(delete_file, f.name),
             )
         except Exception as e:
-            return Response(content = e.args[0])
+            print(e)
+            return Response(content = str(e.args[0]))
         finally:
             os.remove(file_name)
 
-        return Response(content = response.content)
+        return Response(content = response)
 
     @app.post("/text_voice",
         response_class=FileResponse,
@@ -953,7 +1012,10 @@ def generate_app(
         tags=["その他"])
     def text_voice(speaker: int,
                    text: str,
-                   core_version: Optional[str] = None):
+                   conversation: Optional[int] = None,
+                   core_version: Optional[str] = None,
+                   token: str = Depends(oauth2_scheme),
+                   db: Session = Depends(get_db)):
         """
         Text to voice chat
 
@@ -962,12 +1024,27 @@ def generate_app(
         text: str
             Input text
         """
-        response = ask_bot_api(text)
+        history = None
+        # Load user from token
+        user = get_user_by_token(db, token=token)
+
+        # If conversation is not specified, new conversation will be created
+        if (conversation == None):
+            conv = create_conversation(db, ConversationCreate(user_id = user.id))
+            conversation = conv.id
+        else:
+            history = get_messages_by_conversation(db, conversation)
+
+        response = ask_bot_api(message=text, history=history)
         print("==========")
-        print(response.content)
+        print(response)
+
+        # Add message to history
+        message = MessageCreate(conversation_id=conversation, request=text, response=response)
+        create_message(db, message)
 
         engine = get_engine(core_version)
-        accent_phrases = engine.create_accent_phrases(response.content, speaker)
+        accent_phrases = engine.create_accent_phrases(response, speaker)
         audio_query = AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -1227,7 +1304,47 @@ def generate_app(
                 "allow_origin": allow_origin,
             },
         )
+    
+    @app.post('/signup', summary="Create new user", response_model=UserOut)
+    async def signup(user: UserAuth, db: Session = Depends(get_db)):
+        # querying database to check if user already exist
+        db_user = get_user_by_email(db, email=user.email)
+        if db_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        user = create_user(db=db, user=user)
 
+        return {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        }
+
+    @app.post('/login', summary="Create access and refresh tokens for user", response_model=TokenSchema)
+    async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+        user = get_user_by_email(db, form_data.username)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Incorrect email"
+            )
+
+        hashed_pass = user.password
+        if not verify_password(form_data.password, hashed_pass):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Incorrect password"
+            )
+        
+        return {
+            "access_token": create_access_token(user.email),
+            "refresh_token": create_refresh_token(user.email),
+        }
+
+    @app.get("/users/", response_model=List[SystemUser])
+    def users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+        users = get_users(db, skip=skip, limit=limit)
+        return users
+    
     return app
 
 
