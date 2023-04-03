@@ -48,6 +48,11 @@ docker build .
 docker run -p 50021:50021 -e OPENAI_KEY=xxx container_id
 ```
 
+## Connect to database
+Define connection url in database/setting.py
+```
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+```
 Run with mock engine
 ```
 python run.py --enable_mock
