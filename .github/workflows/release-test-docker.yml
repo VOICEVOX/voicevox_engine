@@ -106,7 +106,7 @@ jobs:
       - name: Wait for container to start
         shell: bash -xv {0}
         run: |
-          url="http://localhost:50021/version"
+          url="http://127.0.0.1:50021/version"
           max_attempts=10
           sleep_interval=5
           
