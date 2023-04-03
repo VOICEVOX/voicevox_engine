@@ -23,7 +23,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.14.2
+ARG VOICEVOX_CORE_VERSION=0.14.3
 
 RUN <<EOF
     set -eux
@@ -236,6 +236,7 @@ ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
 RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
+RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
 ADD ./requirements-license.txt /tmp/
@@ -274,7 +275,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.1
+ARG VOICEVOX_RESOURCE_VERSION=0.14.2
 RUN <<EOF
     set -eux
 
