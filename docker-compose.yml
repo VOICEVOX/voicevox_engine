@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    ports:
+      - "50021:50021"
+    environment:
+      OPENAI_KEY: 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
