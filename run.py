@@ -88,6 +88,7 @@ from voicevox_engine.chat_bot import (
     speech_to_text_api,
     ask_bot_api
 )
+import time
 from auth.utils import (
     create_access_token,
     create_refresh_token,
@@ -167,7 +168,7 @@ def generate_app(
     )
 
     # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+    localhost_regex = "^https?://(meet.google.com|localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
     if cors_policy_mode == "localapps":
@@ -1024,6 +1025,11 @@ def generate_app(
         text: str
             Input text
         """
+        
+        print("gpt ==========")
+        print(text)
+        print(time.time())
+
         history = None
         # Load user from token
         user = get_user_by_token(db, token=token)
@@ -1036,7 +1042,9 @@ def generate_app(
             history = get_messages_by_conversation(db, conversation)
 
         response = ask_bot_api(message=text, history=history)
-        print("==========")
+
+        print("synthesis ==========")
+        print(time.time())
         print(response)
 
         # Add message to history
@@ -1062,11 +1070,15 @@ def generate_app(
             speaker_id=speaker,
             enable_interrogative_upspeak=True,
         )
+        print("write wav ==========")
+        print(time.time())
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f, data=wave, samplerate=audio_query.outputSamplingRate, format="WAV"
             )
+        print("End ==========")
+        print(time.time())
 
         return FileResponse(
             f.name,

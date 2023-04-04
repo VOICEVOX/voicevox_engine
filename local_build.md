@@ -47,3 +47,18 @@ API accepts .wav file
 docker build .
 docker run -p 50021:50021 -e OPENAI_KEY=xxx container_id
 ```
+
+## Connect to database
+Define connection url in database/setting.py
+```
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+```
+Run with mock engine
+```
+python run.py --enable_mock
+```
+Sign up and Login to get Authorization token
+![image](https://user-images.githubusercontent.com/128009347/229417156-60b2008e-c555-42c2-8d5e-4f58967eebd8.png)
+
+Then, copy access_token and parse it to Headers when call 2 endpoints voice_voice and text_voice
+![image](https://user-images.githubusercontent.com/128009347/229417374-72310ec3-cc11-4855-8a0b-2c9bdfb2bde2.png)
