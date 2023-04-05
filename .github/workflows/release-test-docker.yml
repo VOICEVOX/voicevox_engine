@@ -15,19 +15,11 @@ on:
         type: string
         description: "テストしたいタグ名"
         required: true
-      repo_url:
-        type: string
-        description: "リポジトリのURL（省略可能）"
-        required: false
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-  REPO_URL:
-    |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
-    ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
-  TARGET: linux-cpu
 
 jobs:
   test:
@@ -42,13 +34,6 @@ jobs:
           - cpu-ubuntu18.04
 
     steps:
-      - name: Declare variables
-        id: vars
-        shell: bash
-        run: |
-          echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
-          echo "package_name=voicevox_engine-${{ env.TARGET }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
-
       - uses: actions/checkout@v2
 
       #
@@ -58,19 +43,6 @@ jobs:
         with:
           python-version: "3.8.10"
           cache: pip
-
-      - name: Download
-        shell: bash -euxv {0}
-        run: |
-          mkdir -p download
-          curl -L -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
-          cat "download/list.txt" | xargs -I '%' curl -L -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
-          7z x "download/$(head -n1 download/list.txt)"
-          mv ${{ env.TARGET }} dist/
-
-      - name: chmod +x
-        shell: bash
-        run: chmod +x dist/run
 
       - name: Install libsndfile1
         run: |

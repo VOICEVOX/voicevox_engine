@@ -22,7 +22,6 @@ jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.vars.outputs.version }}
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
     steps:
       - name: declare variables
