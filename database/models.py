@@ -7,12 +7,12 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    username = Column(String, unique=True, index=True)
-    password = Column(String)
+    email = Column(String(100), unique=True, index=True, )
+    username = Column(String(100), unique=True, index=True)
+    password = Column(String(200))
     is_active = Column(Boolean, default=True)
-    access_token = Column(String, nullable=True)
-    refresh_token = Column(String, nullable=True)
+    access_token = Column(String(200), nullable=True)
+    refresh_token = Column(String(200), nullable=True)
 
     conversations = relationship('Conversation', backref='user', lazy=True)
 
@@ -29,8 +29,8 @@ class Message(Base):
     __tablename__ = "message"
 
     id = Column(Integer, primary_key=True, index=True)
-    request = Column(String, nullable=True)
-    response = Column(String, nullable=True)
+    request = Column(String(500), nullable=True)
+    response = Column(String(500), nullable=True)
     created_date = Column(DateTime, default=datetime.now())
 
     conversation_id = Column(Integer, ForeignKey('conversation.id'))

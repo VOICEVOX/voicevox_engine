@@ -1,9 +1,25 @@
 version: "3.9"
 
 services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_DATABASE: 'voicevoxdb'
+    volumes:
+      - ./database/data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    
   web:
+    depends_on:
+      - db
     build: .
     ports:
       - "50021:50021"
     environment:
       OPENAI_KEY: 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
+    volumes:
+      - ./file:/opt/voicevox_engine/file
+    restart: always

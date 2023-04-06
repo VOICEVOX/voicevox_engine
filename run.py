@@ -934,11 +934,11 @@ def generate_app(
         file: file
             File upload
         """
-        file_name = "Audio.wav"
-        
+        file_name = "./file/Audio.wav"
 
         with open(file_name, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+
         try:
             user = get_user_by_token(db, token=token)
             if (whisper):
