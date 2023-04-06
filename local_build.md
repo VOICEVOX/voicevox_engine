@@ -41,17 +41,13 @@ whisper=false => use local speech to text model (slower)
 
 API accepts .wav file
 
-# Docker
+# Connect to database
+Create new schema in MySQL:
+![image](https://user-images.githubusercontent.com/128009347/230274799-a4bf30f8-1f1b-41e6-b497-d88f6c919937.png)
 
-```
-docker build .
-docker run -p 50021:50021 -e OPENAI_KEY=xxx container_id
-```
-
-## Connect to database
 Define connection url in database/setting.py
 ```
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://user:password@localhost/voicevoxdb"
 ```
 Run with mock engine
 ```
@@ -62,3 +58,20 @@ Sign up and Login to get Authorization token
 
 Then, copy access_token and parse it to Headers when call 2 endpoints voice_voice and text_voice
 ![image](https://user-images.githubusercontent.com/128009347/229417374-72310ec3-cc11-4855-8a0b-2c9bdfb2bde2.png)
+
+# Docker
+
+```
+docker build .
+docker run -p 50021:50021 -e OPENAI_KEY=xxx container_id
+```
+### Build with MySQL
+```
+docker-compose up
+```
+
+Connect to mysql server:
+![image](https://user-images.githubusercontent.com/128009347/230276085-154b14b6-bd82-4c7b-bcbb-30638e87272a.png)
+
+
+
