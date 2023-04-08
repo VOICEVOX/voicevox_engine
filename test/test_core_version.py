@@ -20,11 +20,11 @@ class TestCoreVersion(TestCase):
             get_latest_core_version(
                 versions=[
                     "0.1.0",
-                    "0.10.preview.1",
+                    "0.10-preview.1",
                     "0.10.0",
                     "0.14.0",
-                    "0.14.0.preview.1",
-                    "0.14.0.preview.10",
+                    "0.14.0-preview.1",
+                    "0.14.0-preview.10",
                 ]
             ),
             "0.14.0",
