@@ -1,6 +1,5 @@
 import argparse
-
-# import asyncio
+import asyncio
 import base64
 import json
 import multiprocessing
@@ -10,12 +9,11 @@ import sys
 import traceback
 import zipfile
 from functools import lru_cache
-from io import TextIOWrapper
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Dict, List, Optional
 
-import requests
 import soundfile
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
@@ -28,6 +26,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.downloadable_library import LibraryManager
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
@@ -76,6 +75,7 @@ from voicevox_engine.utility import (
     connect_base64_waves,
     delete_file,
     engine_root,
+    get_save_dir,
 )
 from voicevox_engine.utility.core_version import get_latest_core_version
 
@@ -180,6 +180,7 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
+    library_manager = LibraryManager(get_save_dir() / "installed_libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
@@ -579,6 +580,7 @@ def generate_app(
         morph_wave = synthesis_morphing(
             morph_param=morph_param,
             morph_rate=morph_rate,
+            output_fs=query.outputSamplingRate,
             output_stereo=query.outputStereo,
         )
 
@@ -586,7 +588,7 @@ def generate_app(
             soundfile.write(
                 file=f,
                 data=morph_wave,
-                samplerate=morph_param.fs,
+                samplerate=query.outputSamplingRate,
                 format="WAV",
             )
 
@@ -799,36 +801,63 @@ def generate_app(
     @app.get(
         "/downloadable_libraries",
         response_model=List[DownloadableLibrary],
-        tags=["その他"],
+        tags=["音声ライブラリ管理"],
     )
     def downloadable_libraries():
         """
-        ダウンロード可能なモデル情報を返します。
+        ダウンロード可能な音声ライブラリの情報を返します。
 
         Returns
         -------
         ret_data: List[DownloadableLibrary]
         """
-        try:
-            manifest = engine_manifest_loader.load_manifest()
-            # APIからダウンロード可能な音声ライブラリを取得する場合
-            if manifest.downloadable_libraries_url:
-                response = requests.get(manifest.downloadable_libraries_url, timeout=60)
-                ret_data: List[DownloadableLibrary] = [
-                    DownloadableLibrary(**d) for d in response.json()
-                ]
-            # ローカルのファイルからダウンロード可能な音声ライブラリを取得する場合
-            elif manifest.downloadable_libraries_path:
-                with open(manifest.downloadable_libraries_path) as f:
-                    ret_data: List[DownloadableLibrary] = [
-                        DownloadableLibrary(**d) for d in json.load(f)
-                    ]
-            else:
-                raise Exception
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ダウンロード可能な音声ライブラリの取得に失敗しました。")
-        return ret_data
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
+        return library_manager.downloadable_libraries()
+
+    @app.get(
+        "/installed_libraries",
+        response_model=List[DownloadableLibrary],
+        tags=["音声ライブラリ管理"],
+    )
+    def installed_libraries():
+        """
+        インストールした音声ライブラリの情報を返します。
+
+        Returns
+        -------
+        ret_data: List[DownloadableLibrary]
+        """
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
+        return library_manager.installed_libraries()
+
+    @app.post(
+        "/install_library/{library_uuid}",
+        status_code=204,
+        tags=["音声ライブラリ管理"],
+    )
+    async def install_library(library_uuid: str, request: Request):
+        """
+        音声ライブラリをインストールします。
+        音声ライブラリのZIPファイルをリクエストボディとして送信してください。
+
+        Parameters
+        ----------
+        library_uuid: str
+            音声ライブラリのID
+        """
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
+        archive = BytesIO(await request.body())
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None, library_manager.install_library, library_uuid, archive
+        )
+        return Response(status_code=204)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
