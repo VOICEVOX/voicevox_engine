@@ -13,7 +13,7 @@ from fastapi import HTTPException, Request
 
 from .model import AudioQuery
 from .synthesis_engine import make_synthesis_engines
-from .utility.core_version import get_latest_core_version
+from .utility.core_version_utility import get_latest_core_version
 
 
 class CancellableEngine:

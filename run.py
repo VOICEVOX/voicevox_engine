@@ -77,7 +77,7 @@ from voicevox_engine.utility import (
     engine_root,
     get_save_dir,
 )
-from voicevox_engine.utility.core_version import get_latest_core_version
+from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
 def b64encode_str(s):

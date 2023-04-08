@@ -1,4 +1,4 @@
-from . import core_version
+from . import core_version_utility
 from .connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -11,7 +11,7 @@ __all__ = [
     "ConnectBase64WavesException",
     "connect_base64_waves",
     "decode_base64_waves",
-    "core_version",
+    "core_version_utility",
     "delete_file",
     "engine_root",
     "get_save_dir",
