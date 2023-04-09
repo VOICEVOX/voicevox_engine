@@ -1,11 +1,10 @@
 from typing import Iterable
 
-from packaging.version import Version
-from packaging.version import parse as parse_version
+from semver.version import Version
 
 
 def parse_core_version(version: str) -> Version:
-    return parse_version(version)
+    return Version.parse(version)
 
 
 def get_latest_core_version(versions: Iterable[str]) -> str:
