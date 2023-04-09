@@ -29,3 +29,13 @@ class TestCoreVersion(TestCase):
             ),
             "0.14.0",
         )
+
+        self.assertEqual(
+            get_latest_core_version(
+                versions=[
+                    "0.14.0",
+                    "0.15.0-preview.1",
+                ]
+            ),
+            "0.15.0-preview.1",
+        )
