@@ -44,8 +44,6 @@ jobs:
           - cpu-ubuntu20.04
           - nvidia
           - nvidia-ubuntu20.04
-          - cpu-ubuntu18.04
-          - nvidia-ubuntu18.04
         include:
           # Ubuntu 20.04
           - tag: ""
@@ -76,19 +74,6 @@ jobs:
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
-            onnxruntime_version: 1.13.1
-            platforms: linux/amd64
-          # Ubuntu 18.04
-          - tag: cpu-ubuntu18.04
-            target: runtime-env
-            base_image: ubuntu:18.04
-            base_runtime_image: ubuntu:18.04
-            onnxruntime_version: 1.13.1
-            platforms: linux/amd64,linux/arm64/v8
-          - tag: nvidia-ubuntu18.04
-            target: runtime-nvidia-env
-            base_image: ubuntu:18.04
-            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu18.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
 

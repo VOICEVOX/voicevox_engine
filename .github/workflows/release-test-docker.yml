@@ -31,7 +31,6 @@ jobs:
           - ""
           - cpu
           - cpu-ubuntu20.04
-          - cpu-ubuntu18.04
 
     steps:
       - uses: actions/checkout@v2
