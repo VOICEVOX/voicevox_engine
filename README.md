@@ -25,7 +25,7 @@
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
 
-VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+VOICEVOX エンジンもしくはエディタを起動した状態で http://127.0.0.1:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
 今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
@@ -37,7 +37,7 @@ echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=1"\
+    "127.0.0.1:50021/audio_query?speaker=1"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -45,7 +45,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -70,7 +70,7 @@ echo -n "ディープラーニングは万能薬ではありません" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=1" \
+    "127.0.0.1:50021/audio_query?speaker=1" \
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -82,7 +82,7 @@ cat query.json | grep -o -E "\"kana\":\".*\""
 echo -n "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン" > kana.txt
 curl -s \
     -X POST \
-    "localhost:50021/accent_phrases?speaker=1&is_kana=true" \
+    "127.0.0.1:50021/accent_phrases?speaker=1&is_kana=true" \
     --get --data-urlencode text@kana.txt \
     > newphrases.json
 
@@ -93,7 +93,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    "localhost:50021/synthesis?speaker=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -106,7 +106,7 @@ APIからユーザー辞書の参照、単語の追加、編集、削除を行�
 `/user_dict`にGETリクエストを投げることでユーザー辞書の一覧を取得することができます。
 
 ```bash
-curl -s -X GET "localhost:50021/user_dict"
+curl -s -X GET "127.0.0.1:50021/user_dict"
 ```
 
 #### 単語追加
@@ -128,7 +128,7 @@ surface="test"
 pronunciation="テスト"
 accent_type="1"
 
-curl -s -X POST "localhost:50021/user_dict_word" \
+curl -s -X POST "127.0.0.1:50021/user_dict_word" \
     --get \
     --data-urlencode "surface=$surface" \
     --data-urlencode "pronunciation=$pronunciation" \
@@ -153,7 +153,7 @@ accent_type="2"
 # 環境によってword_uuidは適宜書き換えてください
 word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
 
-curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
+curl -s -X PUT "127.0.0.1:50021/user_dict_word/$word_uuid" \
     --get \
     --data-urlencode "surface=$surface" \
     --data-urlencode "pronunciation=$pronunciation" \
@@ -171,7 +171,7 @@ word_uuidは単語追加時に確認できるほか、ユーザー辞書を参�
 # 環境によってword_uuidは適宜書き換えてください
 word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
 
-curl -s -X DELETE "localhost:50021/user_dict_word/$word_uuid"
+curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 ```
 
 ### プリセット機能について
@@ -182,7 +182,7 @@ curl -s -X DELETE "localhost:50021/user_dict_word/$word_uuid"
 echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
 
 # プリセット情報を取得
-curl -s -X GET "localhost:50021/presets" > presets.json
+curl -s -X GET "127.0.0.1:50021/presets" > presets.json
 
 preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
 style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
@@ -190,7 +190,7 @@ style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
 # AudioQueryの取得
 curl -s \
     -X POST \
-    "localhost:50021/audio_query_from_preset?preset_id=$preset_id"\
+    "127.0.0.1:50021/audio_query_from_preset?preset_id=$preset_id"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -199,7 +199,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=$style_id" \
+    "127.0.0.1:50021/synthesis?speaker=$style_id" \
     > audio.wav
 ```
 
@@ -216,7 +216,7 @@ echo -n "モーフィングを利用することで、２つの声を混ぜる�
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=0"\
+    "127.0.0.1:50021/audio_query?speaker=0"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -225,7 +225,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=0" \
+    "127.0.0.1:50021/synthesis?speaker=0" \
     > audio.wav
 
 export MORPH_RATE=0.5
@@ -235,7 +235,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 
 export MORPH_RATE=0.9
@@ -245,7 +245,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 ```
 
@@ -255,7 +255,7 @@ curl -s \
 （[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
 
 ```bash
-curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
+curl -s -X GET "127.0.0.1:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
     | jq  -r ".portrait" \
     | base64 -d \
     > portrait.png
