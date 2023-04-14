@@ -6,7 +6,7 @@ on:
       - "master"
 
 env:
-  PYTHON_VERSION: "3.10.10"
+  PYTHON_VERSION: "3.11.2"
   PUBLISH_DIR: "./docs/api"
   PUBLISH_BRANCH: "gh-pages"
   DESTINATION_DIR: "api"

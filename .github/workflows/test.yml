@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-latest] # [ubuntu-20.04, macos-latest, windows-latest]
-        python: ["3.10.10"]
+        python: ["3.11.2"]
         include:
           - os: ubuntu-20.04
             path: ~/.cache/pip

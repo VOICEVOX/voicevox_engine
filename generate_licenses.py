@@ -122,7 +122,7 @@ def generate_licenses() -> List[License]:
         )
 
     # Python
-    python_version = "3.10.10"
+    python_version = "3.11.2"
     with urllib.request.urlopen(
         f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
     ) as res:
