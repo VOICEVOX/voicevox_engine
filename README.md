@@ -2,6 +2,7 @@
 
 [![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
 [![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
+[![discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
 
 [![test](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
@@ -24,7 +25,7 @@
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
 
-VOICEVOX エンジンもしくはエディタを起動した状態で http://localhost:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
+VOICEVOX エンジンもしくはエディタを起動した状態で http://127.0.0.1:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
 今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
@@ -36,7 +37,7 @@ echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=1"\
+    "127.0.0.1:50021/audio_query?speaker=1"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -44,7 +45,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -69,7 +70,7 @@ echo -n "ディープラーニングは万能薬ではありません" >text.txt
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=1" \
+    "127.0.0.1:50021/audio_query?speaker=1" \
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -81,7 +82,7 @@ cat query.json | grep -o -E "\"kana\":\".*\""
 echo -n "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン" > kana.txt
 curl -s \
     -X POST \
-    "localhost:50021/accent_phrases?speaker=1&is_kana=true" \
+    "127.0.0.1:50021/accent_phrases?speaker=1&is_kana=true" \
     --get --data-urlencode text@kana.txt \
     > newphrases.json
 
@@ -92,7 +93,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    "localhost:50021/synthesis?speaker=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -105,7 +106,7 @@ APIからユーザー辞書の参照、単語の追加、編集、削除を行�
 `/user_dict`にGETリクエストを投げることでユーザー辞書の一覧を取得することができます。
 
 ```bash
-curl -s -X GET "localhost:50021/user_dict"
+curl -s -X GET "127.0.0.1:50021/user_dict"
 ```
 
 #### 単語追加
@@ -127,7 +128,7 @@ surface="test"
 pronunciation="テスト"
 accent_type="1"
 
-curl -s -X POST "localhost:50021/user_dict_word" \
+curl -s -X POST "127.0.0.1:50021/user_dict_word" \
     --get \
     --data-urlencode "surface=$surface" \
     --data-urlencode "pronunciation=$pronunciation" \
@@ -152,7 +153,7 @@ accent_type="2"
 # 環境によってword_uuidは適宜書き換えてください
 word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
 
-curl -s -X PUT "localhost:50021/user_dict_word/$word_uuid" \
+curl -s -X PUT "127.0.0.1:50021/user_dict_word/$word_uuid" \
     --get \
     --data-urlencode "surface=$surface" \
     --data-urlencode "pronunciation=$pronunciation" \
@@ -170,7 +171,7 @@ word_uuidは単語追加時に確認できるほか、ユーザー辞書を参�
 # 環境によってword_uuidは適宜書き換えてください
 word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
 
-curl -s -X DELETE "localhost:50021/user_dict_word/$word_uuid"
+curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 ```
 
 ### プリセット機能について
@@ -181,7 +182,7 @@ curl -s -X DELETE "localhost:50021/user_dict_word/$word_uuid"
 echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
 
 # プリセット情報を取得
-curl -s -X GET "localhost:50021/presets" > presets.json
+curl -s -X GET "127.0.0.1:50021/presets" > presets.json
 
 preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
 style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
@@ -189,7 +190,7 @@ style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
 # AudioQueryの取得
 curl -s \
     -X POST \
-    "localhost:50021/audio_query_from_preset?preset_id=$preset_id"\
+    "127.0.0.1:50021/audio_query_from_preset?preset_id=$preset_id"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -198,7 +199,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=$style_id" \
+    "127.0.0.1:50021/synthesis?speaker=$style_id" \
     > audio.wav
 ```
 
@@ -215,7 +216,7 @@ echo -n "モーフィングを利用することで、２つの声を混ぜる�
 
 curl -s \
     -X POST \
-    "localhost:50021/audio_query?speaker=0"\
+    "127.0.0.1:50021/audio_query?speaker=0"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -224,7 +225,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis?speaker=0" \
+    "127.0.0.1:50021/synthesis?speaker=0" \
     > audio.wav
 
 export MORPH_RATE=0.5
@@ -234,7 +235,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 
 export MORPH_RATE=0.9
@@ -244,7 +245,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "localhost:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 ```
 
@@ -254,7 +255,7 @@ curl -s \
 （[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
 
 ```bash
-curl -s -X GET "localhost:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
+curl -s -X GET "127.0.0.1:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff" \
     | jq  -r ".portrait" \
     | base64 -d \
     > portrait.png
@@ -307,6 +308,8 @@ GPU版を利用する場合、環境によってエラーが発生すること�
 
 Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
 Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
 ## 環境構築
 
@@ -501,31 +504,41 @@ python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.
 VOICEVOX エディターでは、複数のエンジンを同時に起動することができます。
 この機能を利用することで、自作の音声合成エンジンや既存の音声合成エンジンを VOICEVOX エディター上で動かすことが可能です。
 
+<img src="./docs/res/マルチエンジン概念図.svg" width="320">
+
 <details>
 
 ### マルチエンジン機能の仕組み
 
-VOICEVOX API に準拠した複数のエンジンを統一的に扱います。それぞれのエンジンは EngineID で管理されます。
-
-<img src="./docs/res/マルチエンジン概念図.svg" width="320">
+VOICEVOX API に準拠した複数のエンジンの Web API をポートを分けて起動し、統一的に扱うことでマルチエンジン機能を実現しています。
+エディターがそれぞれのエンジンを実行バイナリ経由で起動し、EngineID と結びつけて設定や状態を個別管理します。
 
 ### マルチエンジン機能への対応方法
 
-VOICEVOX API に準拠することで対応が可能です。
-API のうちどのエンドポイントに対応すればよいかはまだ明確に定めていませんが、基本的にこの VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造することでの開発をおすすめします。
+VOICEVOX API 準拠エンジンを起動する実行バイナリを作ることで対応が可能です。
+VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です。
+
+改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
 エンジンの情報はエンジンマニフェスト（`engine_manifest.json`）で管理されています。
 マニフェストファイル内の情報を見て適宜変更してください。
-
-音声合成エンジンによっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
+音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
+
+キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
+ダミーのアイコンなどが用意されているので適宜変更してください。
+
+音声合成は`voicevox_engine/synthesis_engine/synthesis_engine.py`で行われています。
+VOICEVOX API での音声合成は、エンジン側で音声合成クエリ`AudioQuery`の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
+クエリ作成は`/audio_query`エンドポイントで、音声合成は`/synthesis`エンドポイントで行っており、最低この２つに対応すれば VOICEVOX API に準拠したことになります。
 
 ### マルチエンジン機能対応エンジンの配布方法
 
 VVPP ファイルとして配布するのがおすすめです。
-VVPP は「VOICEVOX プラグインパッケージ」の略で、ビルドしたエンジンをディレクトリごと Zip 化して拡張子を`.vvpp`に変更したものです。
+VVPP は「VOICEVOX プラグインパッケージ」の略で、中身はビルドしたエンジンなどを含んだディレクトリの Zip ファイルです。
+拡張子を`.vvpp`にすると、ダブルクリックで VOICEVOX エディターにインストールできます。
 
-VOICEVOX エディターは VVPP をローカルディスク上に展開したあと、ルートの直下にある`engine_manifest.json`に従ってファイルを探査します。
+エディター側は受け取った VVPP ファイルをローカルディスク上に Zip 展開したあと、ルートの直下にある`engine_manifest.json`に従ってファイルを探査します。
 VOICEVOX エディターにうまく読み込ませられないときは、エディターのエラーログを参照してください。
 
 また、`xxx.vvpp`は分割して連番を付けた`xxx.0.vvppp`ファイルとして配布することも可能です。
