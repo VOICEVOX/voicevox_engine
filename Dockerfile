@@ -150,7 +150,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG PYTHON_VERSION=3.8.10
+ARG PYTHON_VERSION=3.10.10
 ARG PYENV_VERSION=v2.3.7
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build

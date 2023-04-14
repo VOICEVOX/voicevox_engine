@@ -20,7 +20,7 @@ on:
         type: boolean
 
 env:
-  PYTHON_VERSION: "3.8.10"
+  PYTHON_VERSION: "3.10.10"
   VOICEVOX_RESOURCE_VERSION: "0.14.2"
   VOICEVOX_CORE_VERSION: "0.14.3"
 
