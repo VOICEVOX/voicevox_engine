@@ -1,9 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.utility.core_version_utility import (
-    get_latest_core_version,
-    parse_core_version,
-)
+from voicevox_engine.utility import get_latest_core_version, parse_core_version
 
 
 class TestCoreVersion(TestCase):
