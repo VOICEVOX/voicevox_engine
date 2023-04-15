@@ -8,7 +8,6 @@ import re
 import sys
 import traceback
 import zipfile
-from distutils.version import LooseVersion
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
@@ -76,6 +75,7 @@ from voicevox_engine.utility import (
     connect_base64_waves,
     delete_file,
     engine_root,
+    get_latest_core_version,
     get_save_dir,
 )
 
@@ -1205,7 +1205,7 @@ if __name__ == "__main__":
         load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
+    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
