@@ -1300,21 +1300,21 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "pip-licenses"
-version = "3.5.5"
+version = "4.2.0"
 description = "Dump the software license list of Python packages installed with pip."
 category = "dev"
 optional = false
-python-versions = "~=3.7"
+python-versions = "~=3.8"
 files = [
-    {file = "pip-licenses-3.5.5.tar.gz", hash = "sha256:748cfd7aca6e05032f9fa85691301295f4d943e87955be6914ca49abe3c075a4"},
-    {file = "pip_licenses-3.5.5-py3-none-any.whl", hash = "sha256:6129c116bab2b202d90d6e3a96092df4ad84c0c4d57bb70192fc03f8bf06d181"},
+    {file = "pip-licenses-4.2.0.tar.gz", hash = "sha256:cabf1d83391c42278f1887a76555246bfcd9478c53be26e01e93b66d364f18a9"},
+    {file = "pip_licenses-4.2.0-py3-none-any.whl", hash = "sha256:b6e057e359c0c4c927b7f70b43c27f06d9732a7830bb0aa14ac01f7281d3a972"},
 ]
 
 [package.dependencies]
-PTable = "*"
+prettytable = ">=2.3.0"
 
 [package.extras]
-test = ["docutils", "pytest-cov", "pytest-pycodestyle", "pytest-runner"]
+test = ["docutils", "mypy", "pytest-cov", "pytest-pycodestyle", "pytest-runner"]
 
 [[package]]
 name = "pkginfo"
@@ -1450,15 +1450,22 @@ toml = "*"
 virtualenv = ">=20.0.8"
 
 [[package]]
-name = "ptable"
-version = "0.9.2"
+name = "prettytable"
+version = "3.7.0"
 description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 files = [
-    {file = "PTable-0.9.2.tar.gz", hash = "sha256:aa7fc151cb40f2dabcd2275ba6f7fd0ff8577a86be3365cd3fb297cbe09cc292"},
+    {file = "prettytable-3.7.0-py3-none-any.whl", hash = "sha256:f4aaf2ed6e6062a82fd2e6e5289bbbe705ec2788fe401a3a1f62a1cea55526d2"},
+    {file = "prettytable-3.7.0.tar.gz", hash = "sha256:ef8334ee40b7ec721651fc4d37ecc7bb2ef55fde5098d994438f0dfdaa385c0c"},
 ]
+
+[package.dependencies]
+wcwidth = "*"
+
+[package.extras]
+tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "ptyprocess"
@@ -2294,6 +2301,18 @@ docs = ["proselint (>=0.13)", "sphinx (>=5.3)", "sphinx-argparse (>=0.3.2)", "sp
 testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=21.3)", "pytest (>=7.0.1)", "pytest-env (>=0.6.2)", "pytest-freezegun (>=0.4.2)", "pytest-mock (>=3.6.1)", "pytest-randomly (>=3.10.3)", "pytest-timeout (>=2.1)"]
 
 [[package]]
+name = "wcwidth"
+version = "0.2.6"
+description = "Measures the displayed width of unicode strings in a terminal"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "wcwidth-0.2.6-py2.py3-none-any.whl", hash = "sha256:795b138f6875577cd91bba52baf9e445cd5118fd32723b460e30a0af30ea230e"},
+    {file = "wcwidth-0.2.6.tar.gz", hash = "sha256:a5220780a404dbe3353789870978e472cfe477761f06ee55077256e509b156d0"},
+]
+
+[[package]]
 name = "webencodings"
 version = "0.5.1"
 description = "Character encoding aliases for legacy web content"
@@ -2409,4 +2428,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "c9cec66dca7a31f51720b33dbe91fd372568010db741a126ebd91bd44c3003fb"
+content-hash = "4a554b8fbe0f901ad6ebfc85cd56940834fd6a4d9f498cb7c5de13dbcca99db9"

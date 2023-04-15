@@ -73,7 +73,7 @@ pytest = "^6.2.5"
 coveralls = "^3.2.0"
 
 [tool.poetry.group.license.dependencies]
-pip-licenses = "^3.5.3"
+pip-licenses = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core"]
