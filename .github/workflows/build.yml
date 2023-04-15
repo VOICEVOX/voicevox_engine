@@ -570,7 +570,7 @@ jobs:
           ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
-      - name: Upload artifact
+      - name: Upload splitted archives to artifact
         if: github.event.inputs.upload_artifact
         uses: actions/upload-artifact@v3
         with:
