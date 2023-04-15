@@ -55,7 +55,7 @@ pyopenjtalk = {git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "827a3fc5c
 semver = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
-cython = "^0.29.24,>=0.29.33"
+cython = "^0.29.34,>=0.29.33"
 pyinstaller = "^5.6"
 pre-commit = "^2.16.0"
 atomicwrites = "^1.4.0"
