@@ -221,6 +221,11 @@ def generate_licenses() -> List[License]:
                     "https://raw.githubusercontent.com/cython/cython/56b30f2e2cbf964eb5b1d1ea4448963d58301035/LICENSE.txt"
                 ) as res:
                     license.text = res.read().decode()
+            elif license.name.lower() == "markupsafe":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/pallets/markupsafe/afde0d72bdf3b558d91f42e65f1cb33c8b5a3cf6/LICENSE.rst"
+                ) as res:
+                    license.text = res.read().decode()
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")
