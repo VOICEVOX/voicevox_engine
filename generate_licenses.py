@@ -216,6 +216,11 @@ def generate_licenses() -> List[License]:
                     "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"
                 ) as res:
                     license.text = res.read().decode()
+            elif license.name.lower() == "cython":
+                with urllib.request.urlopen(
+                    "https://raw.githubusercontent.com/cython/cython/56b30f2e2cbf964eb5b1d1ea4448963d58301035/LICENSE.txt"
+                ) as res:
+                    license.text = res.read().decode()
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")
