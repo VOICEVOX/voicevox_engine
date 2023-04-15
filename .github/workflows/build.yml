@@ -559,8 +559,11 @@ jobs:
           7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
           # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
-          7z -r a compressed.zip ${{ matrix.target }}/*
-          split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
+          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.zip" ${{ matrix.target }}/*
+          for f in ${{ steps.vars.outputs.package_name }}.zip.*; do
+            # Rename artifact.zip.001 to artifact.001.vvppp
+            mv $f $(echo "$f" | awk -F. '{ printf("%s.%s.vvppp", $1, $3) }')
+          done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
           if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
