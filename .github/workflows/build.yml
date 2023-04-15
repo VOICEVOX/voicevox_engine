@@ -552,11 +552,13 @@ jobs:
 
       - name: Rearchive and split artifact
         run: |
+          mv dist/run/ "${{ matrix.target }}/"
+
           # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "dist/run/"
+          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
           # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
-          (cd "dist/run/" && zip -r - . > ../compressed.zip)
+          7z -r compressed.zip a ${{ matrix.target }}/*
           split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
