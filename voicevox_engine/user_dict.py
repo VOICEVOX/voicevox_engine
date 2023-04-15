@@ -265,7 +265,7 @@ def apply_word(
     update_dict(user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path)
     if is_shared:
         send_telemetry(
-            "apply_word",
+            "upsert_word",
             {
                 "word_uuid": word_uuid,
                 "surface": surface,
@@ -309,7 +309,7 @@ def rewrite_word(
         )
     elif is_shared:
         send_telemetry(
-            "rewrite_word" if user_dict[word_uuid].is_shared else "apply_word",
+            "upsert_word",
             {
                 "word_uuid": word_uuid,
                 "surface": surface,
