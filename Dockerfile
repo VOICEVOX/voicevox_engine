@@ -135,16 +135,14 @@ RUN <<EOF
         libbz2-dev \
         libreadline-dev \
         libsqlite3-dev \
-        wget \
         curl \
-        llvm \
-        libncurses5-dev \
         libncursesw5-dev \
         xz-utils \
         tk-dev \
+        libxml2-dev \
+        libxmlsec1-dev \
         libffi-dev \
         liblzma-dev \
-        python-openssl \
         git
     apt-get clean
     rm -rf /var/lib/apt/lists/*
