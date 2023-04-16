@@ -2,6 +2,7 @@ name: build
 on:
   push:
     branches:
+      - master
   release:
     types:
       - created
@@ -28,7 +29,24 @@ env:
   VOICEVOX_CORE_VERSION: "0.14.3"
 
 jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+    steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+
   build-and-upload:
+    needs: [config]
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
         include:
@@ -97,7 +115,460 @@ jobs:
           echo "/usr/local/opt/gnu-sed/libexec/gnubin" >> $GITHUB_PATH
           echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
 
-      - name: Show disk space (debug info)
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      - name: Install patchelf
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
+      # Download CUDA
+      - name: Prepare CUDA DLL cache
+        if: matrix.cuda_version != ''
+        uses: actions/cache@v3
+        id: cuda-dll-cache
+        with:
+          # update this key when ONNX Runtime CUDA dependency changed
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        uses: Jimver/cuda-toolkit@v0.2.8
+        id: cuda-toolkit
+        with:
+          method: network
+          cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA Dynamic Libraries
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          df -h $(pwd)
+          set -eux
+
+          CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
+
+          mkdir -p download/cuda/bin
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
+
+            rm -rf "${CUDA_ROOT}"
+          else
+            cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcublasLt.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcudart.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcufft.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cuda/bin/libcublas.so.*.*
+            rm -f download/cuda/bin/libcublasLt.so.*.*
+            rm -f download/cuda/bin/libcufft.so.*.*
+            rm -f download/cuda/bin/libcurand.so.*.*
+            rm -f download/cuda/bin/libcudart.so.*.*.*
+          fi
+
+      # Download cuDNN
+      - name: Export cuDNN url to calc hash
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
+
+      - name: Prepare cuDNN cache
+        if: matrix.cudnn_url != ''
+        uses: actions/cache@v3
+        id: cudnn-dll-cache
+        with:
+          # update this key when ONNX Runtime cuDNN dependency changed
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
+          path: download/cudnn
+
+      - name: Download and extract cuDNN Dynamic Libraries
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+
+            unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
+
+            mkdir -p download/cudnn/bin
+            mv download/cudnn_tmp/cudnn-*/bin/*.dll download/cudnn/bin/
+            rm -rf download/cudnn_tmp
+
+            rm download/cudnn.zip
+          else
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
+
+            tar -Jxf download/cudnn.tar.xz -C download/
+
+            mkdir -p download/cudnn/bin
+            cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn_*_infer.so.* download/cudnn/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cudnn/bin/libcudnn.so.*.*
+            rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
+
+            rm download/cudnn.tar.xz
+          fi
+
+      # Donwload zlib
+      - name: Export zlib url to calc hash
+        if: matrix.zlib_url != ''
+        shell: bash
+        run: echo "${{ matrix.zlib_url }}" >> download/zlib_url.txt
+
+      - name: Cache zlib
+        if: matrix.zlib_url != ''
+        uses: actions/cache@v3
+        id: zlib-cache
+        with:
+          key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
+          path: download/zlib
+
+      - name: Download zlib
+        if: steps.zlib-cache.outputs.cache-hit != 'true' && matrix.zlib_url != ''
+        shell: bash
+        run: |
+          curl -L "${{ matrix.zlib_url }}" -o download/zlib.zip
+          mkdir -p download/zlib
+
+          # extract only dlls
+          unzip download/zlib.zip dll_${{ matrix.architecture }}/zlibwapi.dll -d download/zlib
+          rm download/zlib.zip
+          mv download/zlib/dll_${{ matrix.architecture }}/zlibwapi.dll download/zlib/zlibwapi.dll
+          rm -r download/zlib/dll_${{ matrix.architecture }}
+
+      - name: Setup MSVC
+        if: startsWith(matrix.os, 'windows-')
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # Python install path of windows: C:/hostedtoolcache/windows/Python
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ matrix.architecture }}
+          cache: pip
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python -m pip install -r requirements-dev.txt
+
+          if [ "$RUNNER_OS" = Windows ]; then
+            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
+            ./build_util/modify_pyinstaller.bash
+          fi
+
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
+      - name: Create download directory
+        shell: bash
+        run: mkdir -p download/
+
+      # Donwload DirectML
+      - name: Export DirectML url to calc hash
+        if: endswith(matrix.target, '-directml')
+        shell: bash
+        run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
+
+      - name: Cache DirectML
+        if: endswith(matrix.target, '-directml')
+        uses: actions/cache@v3
+        id: directml-cache
+        with:
+          key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
+          path: download/directml
+
+      - name: Download DirectML
+        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
+        shell: bash
+        run: |
+          curl -L "${{ matrix.directml_url }}" -o download/directml.zip
+          mkdir -p download/directml
+
+          # extract only dlls
+          unzip download/directml.zip bin/${{ matrix.architecture }}-win/DirectML.dll -d download/directml
+          rm download/directml.zip
+          mv download/directml/bin/${{ matrix.architecture }}-win/DirectML.dll download/directml/DirectML.dll
+          rm -r download/directml/bin
+
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
+        shell: bash
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
+
+      - name: Prepare ONNX Runtime cache
+        uses: actions/cache@v3
+        id: onnxruntime-cache
+        with:
+          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
+
+      - name: Download ONNX Runtime (Windows)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
+        shell: bash
+        run: |
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+
+          # extract only dlls
+          if [[ ${{ matrix.target }} != *-directml ]]; then
+            unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
+            mv download/onnxruntime-* download/onnxruntime
+          else
+            mkdir -p download/onnxruntime/lib
+            unzip download/onnxruntime.zip runtimes/win-${{ matrix.architecture }}/native/*.dll -d download/onnxruntime
+            mv download/onnxruntime/runtimes/win-${{ matrix.architecture }}/native/*.dll download/onnxruntime/lib/
+            rm -r download/onnxruntime/runtimes
+          fi
+
+          rm download/onnxruntime.zip
+
+      - name: Download ONNX Runtime (Mac/Linux)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        shell: bash
+        run: |
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+          mkdir -p download/onnxruntime
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
+          rm download/onnxruntime.tgz
+
+      # Download VOICEVOX RESOURCE
+      - name: Prepare VOICEVOX RESOURCE cache
+        uses: actions/cache@v3
+        id: voicevox-resource-cache
+        with:
+          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
+          path: download/resource
+
+      - name: Checkout VOICEVOX RESOURCE
+        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v3
+        with:
+          repository: VOICEVOX/voicevox_resource
+          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
+          path: download/resource
+
+      # Merge VOICEVOX RESOURCE
+      - name: Merge VOICEVOX RESOURCE
+        shell: bash
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash build_util/process_voicevox_resource.bash
+
+      # Download VOICEVOX Core
+      - name: Prepare VOICEVOX Core cache
+        uses: actions/cache@v3
+        id: voicevox-core-cache
+        with:
+          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
+          path: download/core
+
+      - name: Download VOICEVOX Core
+        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
+        run: |
+          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          # NOTE: Windows 版コアのみ PowerShell の Compress-Archive コマンドレットを用いて zip を作成している（デフォルト状態では zip コマンドが存在していないため）。
+          #       このコマンドはバージョンによっては作成した zip 内のパスの区切り文字がバックスラッシュになる。 (cf. https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/48)
+          #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。
+          #       回避策として、unzip コマンドの代わりに 7z コマンドを用いて zip ファイルを解凍する。
+          # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          elif [[ ${{ matrix.os }} == mac-* ]]; then
+            ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+          else
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
+          fi
+          mkdir -p download/core
+          mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
+          rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
+          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+
+      - name: Copy VOICEVOX Core Models
+        shell: bash
+        run: |
+          cp -r download/core/model ./
+
+      - name: Generate licenses.json
+        shell: bash
+        run: |
+          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+          bash build_util/create_venv_and_generate_licenses.bash
+          # FIXME: VOICEVOX (editor) cannot build without licenses.json
+          cp engine_manifest_assets/dependency_licenses.json licenses.json
+
+      - name: Build run.py with PyInstaller
+        shell: bash
+        run: |
+          set -eux
+
+          jq '.version = "${{ needs.config.outputs.version_or_latest }}"' engine_manifest.json > engine_manifest.json.tmp
+          mv -f engine_manifest.json.tmp engine_manifest.json
+
+          # Replace version & specify dynamic libraries
+          sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            LIBCORE_PATH=download/core/voicevox_core.dll
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+          elif [[ ${{ matrix.os }} == macos-* ]]; then
+            LIBCORE_PATH=download/core/libvoicevox_core.dylib
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
+          else
+            LIBCORE_PATH=download/core/libvoicevox_core.so
+            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
+          fi
+
+          LIBCORE_PATH="$LIBCORE_PATH" \
+          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
+          pyinstaller --noconfirm run.spec
+
+      - name: Create artifact directory with symlink
+        if: startsWith(matrix.os, 'windows-')
+        shell: bash
+        env:
+          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
+          # create symlink instead of copy (Git Bash)
+          # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
+          MSYS: winsymlinks:nativestrict
+        run: |
+          set -eux
+
+          # Copy DLL dependencies
+
+          if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
+            # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
+
+            # CUDA
+            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
+
+            # cuDNN
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
+            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
+
+            # zlib
+            ln -sf "$(pwd)/download/zlib"/zlibwapi.dll dist/run/
+          fi
+
+          if [[ ${{ matrix.target }} == *-directml ]]; then
+            # DirectML
+            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
+          fi
+
+      - name: Create symlink of CUDA dependencies
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        shell: bash
+        run: |
+          set -eux
+
+          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
+          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
+
+          # CUDA
+          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
+          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
+
+          # cuDNN
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
+          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
+
+      - name: Set @rpath to @executable_path
+        if: startsWith(matrix.os, 'macos-')
+        run: |
+          install_name_tool -add_rpath @executable_path/. dist/run/run
+
+      - name: Code signing
+        if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
+        shell: bash
+        run: |
+          bash build_util/codesign.bash "dist/run/run.exe"
+        env:
+          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
+      - name: Rearchive and split artifact
+        shell: bash
+        run: |
+          mv dist/run/ "${{ matrix.target }}/"
+
+          # Compress to artifact.7z.001, artifact.7z.002, ...
+          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
+
+          # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
+          7z -r a "compressed.zip" ${{ matrix.target }}/*
+          split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
+
+          # Rename to artifact.vvpp if there are only artifact.001.vvppp
+          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+            mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
+          fi
+
+          # Output splitted archive list
+          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+          ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
+          mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
+
+      - name: Upload splitted archives to artifact
+        if: github.event.inputs.upload_artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.vars.outputs.package_name }}
+          path: |-
+            ${{ steps.vars.outputs.package_name }}.7z.*
+            ${{ steps.vars.outputs.package_name }}.vvpp
+            ${{ steps.vars.outputs.package_name }}*.vvppp
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
+
+      - name: Upload splitted archives to Release assets
+        if: needs.config.outputs.version != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: ${{ github.event.inputs.prerelease }}
+          tag_name: ${{ needs.config.outputs.version }}
+          files: |-
+            ${{ steps.vars.outputs.package_name }}.7z.*
+            ${{ steps.vars.outputs.package_name }}.vvpp
+            ${{ steps.vars.outputs.package_name }}*.vvppp
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
+          target_commitish: ${{ github.sha }}
+
+  run-release-test-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, build-and-upload]
+    uses: ./.github/workflows/release-test.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
