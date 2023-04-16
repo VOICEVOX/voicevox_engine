@@ -542,6 +542,7 @@ jobs:
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
       - name: Upload splitted archives to artifact
+        if: github.event.inputs.upload_artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.package_name }}
