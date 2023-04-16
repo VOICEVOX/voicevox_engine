@@ -68,13 +68,13 @@ jobs:
         run: |
           set -eux
 
-          which sed
-          which gsed
-          which split
-          which gsplit
+          which sed || true
+          which gsed || true
+          which split || true
+          which gsplit || true
 
           export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-          which sed
-          which gsed
-          which split
-          which gsplit
+          which sed || true
+          which gsed || true
+          which split || true
+          which gsplit || true
