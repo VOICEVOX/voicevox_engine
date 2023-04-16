@@ -527,7 +527,7 @@ jobs:
           7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
           # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
-          7z -r a "compressed.zip" ${{ matrix.target }}/*
+          (cd "${{ matrix.target }}" && zip -r - . > ../compressed.zip)
           split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
