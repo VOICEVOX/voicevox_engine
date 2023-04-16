@@ -64,7 +64,7 @@ jobs:
           brew install gnu-sed coreutils
           echo "/usr/local/opt/gnu-sed/libexec/gnubin" >> $GITHUB_PATH
 
-      - shell: run
+      - shell: bash
         run: |
           set -eux
 
