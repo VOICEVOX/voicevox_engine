@@ -100,4 +100,4 @@ jobs:
       - name: Show disk space (debug info)
         shell: bash
         run: |
-          df -h
+          df -h $(pwd)
