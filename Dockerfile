@@ -135,23 +135,21 @@ RUN <<EOF
         libbz2-dev \
         libreadline-dev \
         libsqlite3-dev \
-        wget \
         curl \
-        llvm \
-        libncurses5-dev \
         libncursesw5-dev \
         xz-utils \
         tk-dev \
+        libxml2-dev \
+        libxmlsec1-dev \
         libffi-dev \
         liblzma-dev \
-        python-openssl \
         git
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG PYTHON_VERSION=3.8.10
-ARG PYENV_VERSION=v2.3.7
+ARG PYTHON_VERSION=3.11.3
+ARG PYENV_VERSION=v2.3.17
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF

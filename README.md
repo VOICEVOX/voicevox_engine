@@ -313,7 +313,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 ## 環境構築
 
-`Python 3.8.10` を用いて開発されています。
+`Python 3.11.3` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
@@ -548,11 +548,16 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 ## GitHub Actions
 
-### Secrets
+### Variables
 
 | name               | description                                                             |
 | :----------------- | :---------------------------------------------------------------------- |
 | DOCKERHUB_USERNAME | Docker Hub ユーザ名                                                     |
+
+### Secrets
+
+| name               | description                                                             |
+| :----------------- | :---------------------------------------------------------------------- |
 | DOCKERHUB_TOKEN    | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## 事例紹介

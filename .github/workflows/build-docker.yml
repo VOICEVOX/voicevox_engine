@@ -13,8 +13,8 @@ on:
         required: true
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
-  PYTHON_VERSION: "3.8.10"
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
+  PYTHON_VERSION: "3.11.3"
   VOICEVOX_RESOURCE_VERSION: "0.14.3-preview.1"
   VOICEVOX_CORE_VERSION: "0.14.3"
 
@@ -90,7 +90,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # Download VOICEVOX RESOURCE

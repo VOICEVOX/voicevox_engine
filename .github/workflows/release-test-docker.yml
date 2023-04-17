@@ -17,7 +17,7 @@ on:
         required: true
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/voicevox_engine
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
@@ -40,7 +40,7 @@ jobs:
       #
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8.10"
+          python-version: "3.11.3"
           cache: pip
 
       - name: Install libsndfile1
