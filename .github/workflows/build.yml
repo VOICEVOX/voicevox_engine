@@ -422,6 +422,7 @@ jobs:
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: df
+        if: startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
           df -h
