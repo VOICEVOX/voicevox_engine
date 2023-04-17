@@ -524,6 +524,16 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
+      - name: Check Memory Usage
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            free -m
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            vm_stat | awk 'BEGIN {RS="\n"; FS="[:]"} $1~/Pages free/ {free=$2}; $1~/Pages active/ {active=$2}; $1~/Pages inactive/ {inactive=$2}; $1~/Pages speculative/ {speculative=$2}; $1~/Pages wired down/ {wired=$2}; END {print "Free: " free*4096/1048576 "MB\nActive: " active*4096/1048576 "MB\nInactive: " inactive*4096/1048576 "MB\nSpeculative: " speculative*4096/1048576 "MB\nWired: " wired*4096/1048576 "MB"}'
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            powershell -command "Get-CimInstance -ClassName Win32_OperatingSystem | % {'Free: ' + [math]::round(($_.FreePhysicalMemory/1024), 2) + ' MB'; 'Total: ' + [math]::round(($_.TotalVisibleMemorySize/1024), 2) + ' MB'; 'Used: ' + [math]::round((($_.TotalVisibleMemorySize - $_.FreePhysicalMemory)/1024), 2) + ' MB'}"
+          fi
+
       - name: Rearchive and split artifact
         shell: bash
         run: |
