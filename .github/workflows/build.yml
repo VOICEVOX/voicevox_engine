@@ -525,6 +525,7 @@ jobs:
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
       - name: Check Memory Usage
+        shell: bash
         run: |
           if [ "${{ runner.os }}" == "Linux" ]; then
             free -m
