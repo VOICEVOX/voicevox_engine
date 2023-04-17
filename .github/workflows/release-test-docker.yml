@@ -33,12 +33,12 @@ jobs:
           - cpu-ubuntu20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       #
       # Setup Python Environment
       #
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11.3"
           cache: pip
