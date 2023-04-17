@@ -33,12 +33,12 @@ jobs:
           - cpu-ubuntu20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       #
       # Setup Python Environment
       #
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11.3"
           cache: pip
@@ -65,10 +65,10 @@ jobs:
           fi
 
       - name: Docker pull
-        run: docker pull ${{ steps.docker_vars.outputs.image_tag }}
+        run: docker pull "${{ steps.docker_vars.outputs.image_tag }}"
 
       - name: Docker run
-        run: docker run -d -p 50021:50021 ${{ steps.docker_vars.outputs.image_tag }}
+        run: docker run -d -p 50021:50021 "${{ steps.docker_vars.outputs.image_tag }}"
 
       # Docker コンテナが起動してから、レスポンスが返ってくるまで待機する
       # リトライは10回まで `/version` にアクセスしてレスポンスのステータスコードをチェック

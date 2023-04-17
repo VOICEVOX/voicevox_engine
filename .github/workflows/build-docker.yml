@@ -152,5 +152,5 @@ jobs:
     needs: [ config, build-docker ]
     uses: ./.github/workflows/release-test-docker.yml
     with:
-      version: ${{ needs.config.outputs.version }}
+      version: ${{ needs.config.outputs.version_or_latest }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
