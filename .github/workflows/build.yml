@@ -558,27 +558,20 @@ jobs:
             ${{ steps.vars.outputs.package_name }}*.vvppp
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
 
-      - name: Upload splitted archives to Release assets
+      - name: Upload to Release assets
         if: needs.config.outputs.version != ''
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
+          allowUpdates: true
           prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ needs.config.outputs.version }}
-          files: |-
-            ${{ steps.vars.outputs.package_name }}.7z.*
-          target_commitish: ${{ github.sha }}
-
-      - name: Upload vvpp to Release assets
-        if: needs.config.outputs.version != ''
-        uses: softprops/action-gh-release@v1
-        with:
-          prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ needs.config.outputs.version }}
-          files: |-
-            ${{ steps.vars.outputs.package_name }}.vvpp
-            ${{ steps.vars.outputs.package_name }}*.vvppp
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.config.outputs.version }}
+          artifacts: |-
+            ${{ steps.vars.outputs.package_name }}.7z.*,
+            ${{ steps.vars.outputs.package_name }}.vvpp,
+            ${{ steps.vars.outputs.package_name }}*.vvppp,
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
-          target_commitish: ${{ github.sha }}
+          commit: ${{ github.sha }}
 
   run-release-test-workflow:
     if: needs.config.outputs.version != ''
