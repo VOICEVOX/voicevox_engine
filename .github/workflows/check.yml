@@ -35,3 +35,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: test
           allowUpdates: true
+          prerelease: true
+          draft: true
