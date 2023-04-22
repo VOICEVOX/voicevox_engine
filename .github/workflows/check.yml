@@ -28,12 +28,10 @@ jobs:
           "
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: |
-            large_file_0.bin
-            large_file_1.bin
-            large_file_2.bin
-            large_file_3.bin
-            large_file_4.bin
-          tag_name: test
+          artifacts: |-
+            large_file_0.bin,large_file_1.bin,large_file_2.bin,large_file_3.bin,large_file_4.bin
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: test
+          allowUpdates: true
