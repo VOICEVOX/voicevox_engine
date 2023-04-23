@@ -566,8 +566,12 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.config.outputs.version }}
-          artifacts: |-
-            ${{ steps.vars.outputs.package_name }}.7z.*,${{ steps.vars.outputs.package_name }}.vvpp,${{ steps.vars.outputs.package_name }}*.vvppp,${{ steps.vars.outputs.package_name }}.vvpp.txt
+          artifacts: "
+            ${{ steps.vars.outputs.package_name }}.7z.*,\
+            ${{ steps.vars.outputs.package_name }}.vvpp,\
+            ${{ steps.vars.outputs.package_name }}*.vvppp,\
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
+            "
           commit: ${{ github.sha }}
 
   run-release-test-workflow:

@@ -1,0 +1,40 @@
+name: Test Release
+
+on:
+  push:
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Create large files
+        run: |
+          python -c "
+          import os
+
+          for i in range(3):
+              with open(f'large_file_{i}.bin', 'wb') as f:
+                  f.write(os.urandom(1024 * 1024 * 1024))  # 1 GB
+          "
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "
+            large_file*0.bin,\
+            large_*_1.bin,\
+            large_file_2.bin,\
+            "
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: test
+          allowUpdates: true
