@@ -1141,7 +1141,12 @@ if __name__ == "__main__":
         action="store_true",
         help="指定すると音声合成を途中でキャンセルできるようになります。",
     )
-    parser.add_argument("--init_processes", type=int, default=2)
+    parser.add_argument(
+        "--init_processes",
+        type=int,
+        default=2,
+        help="cancellable_synthesis機能の初期化時に生成するプロセス数です。",
+    )
     parser.add_argument(
         "--load_all_models", action="store_true", help="指定すると起動時に全ての音声合成モデルを読み込みます。"
     )
