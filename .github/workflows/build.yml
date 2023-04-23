@@ -421,12 +421,6 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
-      - name: df
-        if: startsWith(matrix.os, 'windows-')
-        shell: bash
-        run: |
-          df -h
-
       - name: Build run.py with PyInstaller
         shell: bash
         run: |
