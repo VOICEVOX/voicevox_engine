@@ -281,6 +281,45 @@ VOICEVOXではセキュリティ保護のため`localhost`・`127.0.0.1`・`app:
 3. 保存ボタンを押して、変更を確定してください。
 4. 設定の適用にはエンジンの再起動が必要です。必要に応じて再起動をしてください。
 
+### その他の引数
+
+エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
+
+```bash
+$ python run.py -h
+
+usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis] [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8]
+              [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}] [--allow_origin [ALLOW_ORIGIN [ALLOW_ORIGIN ...]]] [--setting_file SETTING_FILE]
+
+VOICEVOX のエンジンです。
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --host HOST           接続を受け付けるホストアドレスです。
+  --port PORT           接続を受け付けるポート番号です。
+  --use_gpu             指定するとGPUを使って音声合成するようになります。
+  --voicevox_dir VOICEVOX_DIR
+                        VOICEVOXのディレクトリパスです。
+  --voicelib_dir VOICELIB_DIR
+                        VOICEVOX COREのディレクトリパスです。
+  --runtime_dir RUNTIME_DIR
+                        VOICEVOX COREで使用するライブラリのディレクトリパスです。
+  --enable_mock         指定するとVOICEVOX COREを使わずモックで音声合成を行います。
+  --enable_cancellable_synthesis
+                        指定すると音声合成を途中でキャンセルできるようになります。
+  --init_processes INIT_PROCESSES
+  --load_all_models     指定すると起動時に全ての音声合成モデルを読み込みます。
+  --cpu_num_threads CPU_NUM_THREADS
+                        音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。
+  --output_log_utf8     指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
+  --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
+                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
+  --allow_origin [ALLOW_ORIGIN [ALLOW_ORIGIN ...]]
+                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+  --setting_file SETTING_FILE
+                        設定ファイルを指定できます。
+```
+
 ## アップデート
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
