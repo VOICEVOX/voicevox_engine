@@ -552,7 +552,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.package_name }}
-          path: |-
+          path: |
             ${{ steps.vars.outputs.package_name }}.7z.*
             ${{ steps.vars.outputs.package_name }}.vvpp
             ${{ steps.vars.outputs.package_name }}*.vvppp
@@ -566,12 +566,11 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.config.outputs.version }}
-          artifacts: "
-            ${{ steps.vars.outputs.package_name }}.7z.*,\
-            ${{ steps.vars.outputs.package_name }}.vvpp,\
-            ${{ steps.vars.outputs.package_name }}*.vvppp,\
+          artifacts: >
+            ${{ steps.vars.outputs.package_name }}.7z.*,
+            ${{ steps.vars.outputs.package_name }}.vvpp,
+            ${{ steps.vars.outputs.package_name }}*.vvppp,
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
-            "
           commit: ${{ github.sha }}
 
   run-release-test-workflow:
