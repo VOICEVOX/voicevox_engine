@@ -30,7 +30,7 @@ jobs:
       - name: Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: |-
+          artifacts: >-
             large_file*0.bin,
             large_*_1.bin,
             large_file_2.bin
