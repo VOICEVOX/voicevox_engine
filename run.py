@@ -16,7 +16,16 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import (
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -66,9 +75,11 @@ from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
     import_user_dict,
+    parse_dict,
     read_dict,
     rewrite_word,
     update_dict,
+    user_dict_path,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
@@ -1028,6 +1039,13 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
 
+    @app.get("/download_dict", tags=["ユーザー辞書"])
+    async def download_dict():
+        dict_path = user_dict_path
+        return FileResponse(
+            dict_path, media_type="application/octet-stream", filename=dict_path.name
+        )
+
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
         core_version: Optional[str] = None,
@@ -1068,6 +1086,8 @@ def generate_app(
         request: Request,
         cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
         allow_origin: Optional[str] = Form(None),  # noqa: B008
+        user_dictionary_file: Optional[UploadFile] = File(None),  # noqa: B008
+        allow_override: Optional[bool] = Form(False),  # noqa: B008
     ):
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
@@ -1079,6 +1099,11 @@ def generate_app(
 
         if allow_origin is None:
             allow_origin = ""
+
+        if user_dictionary_file.filename:
+            import_user_dict(
+                parse_dict(user_dictionary_file.file), override=allow_override
+            )
 
         return setting_ui_template.TemplateResponse(
             "ui.html",

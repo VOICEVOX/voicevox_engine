@@ -2,6 +2,7 @@ import json
 import sys
 import threading
 import traceback
+from io import TextIOWrapper
 from pathlib import Path
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
@@ -117,24 +118,27 @@ def update_dict(
             tmp_compiled_path.unlink()
 
 
+def parse_dict(dict_json: TextIOWrapper) -> Dict[str, UserDictWord]:
+    result = {}
+    for word_uuid, word in json.load(dict_json).items():
+        # cost2priorityで変換を行う際にcontext_idが必要のため、
+        # 0.12以前の要素にcontext_idがハルドタイプされていたため、
+        # ユメタル表裏を補完する
+        if word.get("context_id") is None:
+            word["context_id"] = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
+        word["priority"] = cost2priority(word["context_id"], word["cost"])
+        del word["cost"]
+        result[str(UUID(word_uuid))] = UserDictWord(**word)
+
+    return result
+
+
 @mutex_wrapper(mutex_user_dict)
 def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
     if not user_dict_path.is_file():
         return {}
     with user_dict_path.open(encoding="utf-8") as f:
-        result = {}
-        for word_uuid, word in json.load(f).items():
-            # cost2priorityで変換を行う際にcontext_idが必要となるが、
-            # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
-            # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
-            if word.get("context_id") is None:
-                word["context_id"] = part_of_speech_data[
-                    WordTypes.PROPER_NOUN
-                ].context_id
-            word["priority"] = cost2priority(word["context_id"], word["cost"])
-            del word["cost"]
-            result[str(UUID(word_uuid))] = UserDictWord(**word)
-
+        result = parse_dict(f)
     return result
 
 

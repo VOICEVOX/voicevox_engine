@@ -23,7 +23,7 @@
 
     <body>
         <div class="container p-3">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 <div class="alert alert-warning" role="alert">
                     設定の変更の更新にはエンジンの再起動が必要です。
                 </div>
@@ -65,6 +65,30 @@
                     <div class="form-text">
                         許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。
                     </div>
+                </div>
+
+                <div id="mb-3">
+                    <label class="form-label"
+                        >ユーザー辞書のエクスポート&インポート</label
+                    >
+                    <div class="form-text">辞書のエクスポートをします。</div>
+                    <a
+                        class="btn btn-primary m-3"
+                        href="/download_dict"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        エクスポート
+                    </a>
+                    <div class="form-text">辞書のインポートをします。</div>
+                    <input
+                        class="m-3 form-control"
+                        type="file"
+                        name="user_dictionary_file"
+                        accept="application/json"
+                    />
+                    <input class="form-check-input" type="checkbox" name="allow_override" value="True" id="allowOverride">
+                    <label class="mb-3 form-check-label" for="allowOverride">辞書の上書きを許可する。</label>
                 </div>
 
                 <div
