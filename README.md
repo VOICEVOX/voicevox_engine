@@ -10,7 +10,7 @@
 [![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
-Translation: [EN](./README_EN.md)
+Readme Translation: [EN](./README_EN.md)
 
 [VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。

@@ -10,7 +10,7 @@
 [![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
-Translation: [JP](./README.md)
+Readme Translation: [JP](./README.md)
 
 This is the engine of [VOICEVOX](https://voicevox.hiroshiba.jp/). It is actually an HTTP server, so you can perform text-to-speech synthesis by sending a request.
 
@@ -540,7 +540,7 @@ Translation:
 
 With the VOICEVOX Editor, you can start multiple engines at the same time. By using this feature, it is possible to run your own speech synthesis engine or an existing speech synthesis engine on the VOICEVOX Editor.
 
-<img src="./docs/res/multi-engine-diagram.svg" width="320">
+<img src="./docs/res/マルチエンジン概念図.svg" width="320">
 
 <details>
 
