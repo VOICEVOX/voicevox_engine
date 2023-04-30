@@ -121,9 +121,9 @@ def update_dict(
 def parse_dict(dict_json: TextIOWrapper) -> Dict[str, UserDictWord]:
     result = {}
     for word_uuid, word in json.load(dict_json).items():
-        # cost2priorityで変換を行う際にcontext_idが必要のため、
-        # 0.12以前の要素にcontext_idがハルドタイプされていたため、
-        # ユメタル表裏を補完する
+        # cost2priorityで変換を行う際にcontext_idが必要となるが、
+        # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
+        # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
         if word.get("context_id") is None:
             word["context_id"] = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
         word["priority"] = cost2priority(word["context_id"], word["cost"])
