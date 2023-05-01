@@ -7,6 +7,11 @@ from pathlib import Path
 from typing import List, Optional
 
 
+class LicenseError(Exception):
+    # License違反があった場合、このエラーを出します。
+    pass
+
+
 @dataclass
 class License:
     name: str
@@ -162,6 +167,8 @@ def generate_licenses() -> List[License]:
             license=license_json["License"],
             text=license_json["LicenseText"],
         )
+        if license.license == "GPL":
+            raise LicenseError(f"ライセンス違反: {license.name}")
         # FIXME: assert license type
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
