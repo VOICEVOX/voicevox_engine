@@ -167,8 +167,18 @@ def generate_licenses() -> List[License]:
             license=license_json["License"],
             text=license_json["LicenseText"],
         )
-        if license.license == "GPL":
-            raise LicenseError(f"ライセンス違反: {license.name}")
+        # print(license.license)
+        license_names = license.license.split("; ")
+        for license_name in license_names:
+            print(f"'{license_name}'")
+            if license_name in [
+                "GNU General Public License v2 (GPLv2)",
+                "GNU General Public License (GPL)",
+                "GNU General Public License v3 (GPLv3)",
+                "GNU Affero General Public License v3 (AGPL-3)",
+                "GNU Lesser General Public License v2 (LGPLv2)"
+            ] and license_name != "pyinstaller":
+                raise LicenseError(f"ライセンス違反: {license.name}")
         # FIXME: assert license type
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
