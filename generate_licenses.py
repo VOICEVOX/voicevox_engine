@@ -170,7 +170,6 @@ def generate_licenses() -> List[License]:
         # print(license.license)
         license_names = license.license.split("; ")
         for license_name in license_names:
-            print(f"'{license_name}'")
             if license_name in [
                 "GNU General Public License v2 (GPLv2)",
                 "GNU General Public License (GPL)",
