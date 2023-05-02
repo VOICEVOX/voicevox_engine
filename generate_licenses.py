@@ -167,7 +167,6 @@ def generate_licenses() -> List[License]:
             license=license_json["License"],
             text=license_json["LicenseText"],
         )
-        # print(license.license)
         license_names = license.license.split("; ")
         for license_name in license_names:
             if license_name in [
