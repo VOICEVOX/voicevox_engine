@@ -79,7 +79,6 @@ from voicevox_engine.user_dict import (
     read_dict,
     rewrite_word,
     update_dict,
-    user_dict_path,
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
@@ -1038,13 +1037,6 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
-
-    @app.get("/download_dict", tags=["ユーザー辞書"])
-    async def download_dict():
-        dict_path = user_dict_path
-        return FileResponse(
-            dict_path, media_type="application/octet-stream", filename=dict_path.name
-        )
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
