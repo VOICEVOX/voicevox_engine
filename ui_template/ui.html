@@ -67,6 +67,15 @@
                     </div>
                 </div>
 
+                <button
+                    type="button"
+                    class="btn btn-primary mb-3"
+                    data-bs-toggle="modal"
+                    data-bs-target="#submitModal"
+                >
+                    保存
+                </button>
+
                 <div id="mb-3">
                     <label class="form-label"
                         >ユーザー辞書のエクスポート&インポート</label
@@ -88,9 +97,26 @@
                         name="user_dictionary_file"
                         accept="application/json"
                     />
-                    <input class="form-check-input" type="checkbox" name="allow_override" value="True" id="allowOverride">
-                    <label class="mb-3 form-check-label" for="allowOverride">辞書の上書きを許可する。</label>
+                    <input
+                        class="ms-3 form-check-input"
+                        type="checkbox"
+                        name="allow_override"
+                        value="True"
+                        id="allowOverride"
+                    />
+                    <label class="mb-3 form-check-label" for="allowOverride"
+                        >辞書の上書きを許可する。</label
+                    >
                 </div>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#dictSubmitModal"
+                >
+                    インポート
+                </button>
 
                 <div
                     class="modal fade"
@@ -131,15 +157,63 @@
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#submitModal"
+                <div
+                    class="modal fade"
+                    id="dictSubmitModal"
+                    tabindex="-1"
+                    aria-labelledby="dictSubmitModalLabel"
+                    aria-hidden="true"
                 >
-                    保存
-                </button>
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5
+                                    class="modal-title"
+                                    id="dictSubmitModalLabel"
+                                >
+                                    ユーザー辞書のインポート
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                ></button>
+                            </div>
+                            <div class="modal-body">
+                                ユーザー辞書をインポートします。よろしいですか？
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                >
+                                    キャンセル
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    インポート
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
+        </div>
+
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+            {% if message %}
+            <div
+                class="toast align-items-center show text-white bg-success fade"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+            >
+                <div class="d-flex">
+                    <div class="toast-body">{{ message }}</div>
+                </div>
+            </div>
+            {% endif%}
         </div>
     </body>
 </html>
