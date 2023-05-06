@@ -3,10 +3,11 @@ from unittest import TestCase
 
 
 class TestRegexAquesTalk(TestCase):
-
     def setUp(self) -> None:
         super().setUp()
-        self.regex_aquestalk = re.compile(r'^[\u30A1-\u30FA](?!.*([\'/_、？])\1+)[\u30A1-\u30FA_\'、/？].*$')
+        self.regex_aquestalk = re.compile(
+            r"^[\u30A1-\u30FA](?!.*([\'/_、？])\1+)[\u30A1-\u30FA_\'、/？].*$"
+        )
 
     def test_accept_aquestalk(self):
         self.assertIsNotNone(self.regex_aquestalk.fullmatch("コンニチワ？_コンバンワ"))
