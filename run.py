@@ -75,7 +75,6 @@ from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
     import_user_dict,
-    parse_dict,
     read_dict,
     rewrite_word,
     update_dict,
@@ -1094,7 +1093,11 @@ def generate_app(
 
         if user_dictionary_file.filename:
             import_user_dict(
-                parse_dict(user_dictionary_file.file), override=allow_override
+                {
+                    k: UserDictWord(**v)
+                    for k, v in json.load(user_dictionary_file.file).items()
+                },
+                override=allow_override,
             )
 
         return setting_ui_template.TemplateResponse(
