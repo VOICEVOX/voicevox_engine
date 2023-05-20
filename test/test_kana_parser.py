@@ -1,9 +1,8 @@
-import unittest
 from typing import List
 from unittest import TestCase
 
 from voicevox_engine import kana_parser
-from voicevox_engine.kana_parser import create_kana, validate_kana
+from voicevox_engine.kana_parser import create_kana
 from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 
 
@@ -536,7 +535,6 @@ class TestParseKanaException(TestCase):
             parse_kana(kana)
         self.assertEqual(err.exception.errcode, code)
 
-    @unittest.skip
     def test_exceptions(self):
         self._assert_error_code("アクセント", ParseKanaErrorCode.ACCENT_NOTFOUND)
         self._assert_error_code("'アクセント", ParseKanaErrorCode.ACCENT_TOP)
@@ -688,50 +686,3 @@ class TestCreateKana(TestCase):
         accent_phrases = kya_accent_phrases()
         accent_phrases[-1].is_interrogative = True
         self.assertEqual(create_kana(accent_phrases), "キャ'ッ？")
-
-
-class TestRegexAquesTalk(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_accept_aquestalk(self):
-        self.assertTrue(validate_kana("コンニチワ'？"))
-        self.assertTrue(validate_kana("コ'ンニチワ"))
-        self.assertTrue(validate_kana("コン_ニチワ'"))
-        self.assertTrue(validate_kana("コ_ン_ニチワ'"))
-        self.assertTrue(validate_kana("コンニチワ'？、コンバンワ'？"))
-        self.assertTrue(validate_kana("ワ'、ナ'ンデ_スカ？"))
-        self.assertTrue(validate_kana("コ'レワ/テ_スト'デ_ス"))
-        self.assertTrue(validate_kana("コレワ'/アリマ'_スカ"))
-        self.assertTrue(validate_kana("コレワ'/アリマ'_スカ？"))
-        self.assertTrue(validate_kana("ア'、ア'？、ア'？/ア'？"))
-        self.assertTrue(validate_kana("ア'/ア'/ア'/ア'/ア'"))
-        self.assertTrue(validate_kana("ギェ'、ギェ'/ギェ'？"))
-        self.assertTrue(
-            validate_kana(
-                "キョ'オモ、シンカ'ンセンオ/ゴリヨオクダサ'イ/マ'_シテ、アリ'ガトオ/ゴザイマ'_ス、コノ'/デンシャワ'、ノゾミ'ゴオ、トオキョオ'イキデ_ス、トチュウノ'/テエシャ'エキワ、キョ'オト、ナ'ゴヤ、シンヨ'コハマ、シナガワデ'_ス、ツズイテ'、シャ'ナイノ/ゴアンナ'イオ/イタシマ'_ス、ジユ'ウ/セ'キワ、イチゴ'オシャ、ニゴ'オシャ、サンゴ'オシャデ_ス、コノ'/デンシャワ'、ゼ'ンセキ、キンエント'/ナ'ッテ/オリマ'_ス、オ'タバコオ/スワレル'/オキャ_クサ'マワ、_キツエンル'ウムオ/ゴリヨオクダサ'イ、_フツウシャ'ノ/_キツエンル'ウムワ、サンゴ'オシャ、ナナゴ'オシャ、ジュウ'/ゴゴ'オシャ、グリインシャ'ノ/_キツエンル'ウムワ、ジュウゴ'オシャニ/アリマ'_ス、シャショオ'_シツワ、ハチゴ'オシャデ_ス"
-            )
-        )
-        self.assertTrue(
-            validate_kana(
-                "ア'メニモ/マケズ'、カゼ'/ニ'モ/マケズ'、ユキニモ'ナツノ/ア'_ツ/サ'ニモマケヌ、ジョオブナ'/カ'ラダオ/モチ'、ヨク'ハナ/ク'、ケ'_ツ/シテ'/シ'ンラズ、イ'ツ/モ'/シズカニワラッテイル'、イチニチ'/ニゲ'ンマイ/ヨン'ゴオト、ミ'ソト/ショオシノヤサイオタ'ベ、ア'ラ/ユル'/コト'オ、ジブンオ'/カンジョ'ウニ/ニュウレズニ'、ヨ'ク/ミキ'_キシワ/カ'リ、ソ_シテワス'レズ、ノ'ハラノ/マ'ツ/ノ'/ハヤシノ'、カ'ゲ、ノ'、カ'ゲノ/_ツクリ'、ニ'/カエテ'、_ヒトガ'/シラ'、ノ'/ヘン'、ダイヨンスイジュン'ニ、ハチロ'ク、ナナハ'チ、ノ'、ショ'オサナ、ブキノ'/コヤニイテ'、ヒガシニビョ'オキ/ノ'/コドモアレバ'、クダリッテカ'ンビョオ/_シテ'/ヤリ'、ニシニッカレタ'ハハアレバ、クダリッテ'/ソノ'/イ'ネノ、オ'、オ'、ワ'/マ'マ、マ'ケヒ、ミナミニ'シ/ニサウナ'ジンアレバ、クダリッテコハガラナ_クテ'モイ、ト'イヒ、_キタ'ニ/ケン'クヤソショウガアレバ、ツマラナイカラヤ'メロ/ト'イヒ、ヒ'ドリ/ノ'/ト_キハナ'ミダオ/ナガ'/シ'、サ'ムサノ/ナツ'ハ/オ'ロオロ/ア'ルキ、ミンナニ'デクノ/ボオトヨバレ'、ホメ'/ラレ'/モ'/セ'ズ、クニ'/モ'/サ'レズ、サウイフモノ'ニ、ワタシ'ハナ/リ'タイ"
-            )
-        )
-
-    def test_reject_aquestalk(self):
-        self.assertFalse(validate_kana("ワ'、ナ'ンデ_スカ？？"))
-        self.assertFalse(validate_kana("ワ'、、ナ'ンデ_スカ？"))
-        self.assertFalse(validate_kana("'アクセント"))
-        self.assertFalse(validate_kana("アクセン'ト_"))
-        self.assertFalse(validate_kana("ア''クセント"))
-        self.assertFalse(validate_kana("ア'ク'セント"))
-        self.assertFalse(validate_kana("ひ'らがな"))
-        self.assertFalse(validate_kana("コン__ニチワ'"))
-        self.assertFalse(validate_kana("__ス'"))
-        self.assertFalse(validate_kana("ア'/"))
-        self.assertFalse(validate_kana("ア？ア'"))
-        self.assertFalse(validate_kana("/ア'"))
-        self.assertFalse(validate_kana("'/'"))
-        self.assertFalse(validate_kana(""))
-        self.assertFalse(validate_kana(" "))
-        self.assertFalse(validate_kana("コ_ン_ニチワ'/ "))

@@ -1,4 +1,3 @@
-import re
 from typing import List, Optional
 
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
@@ -10,20 +9,6 @@ ACCENT_SYMBOL = "'"
 NOPAUSE_DELIMITER = "/"
 PAUSE_DELIMITER = "、"
 WIDE_INTERROGATION_MARK = "？"
-
-text_delimiter = re.compile(r"[、/]")
-
-regex_aquestalk = re.compile(
-    r"^([\u30A1-\u30FA]\'?|_[\u30A1-\u30FA]\'?)*([\u30A1-\u30FA]\'?|_[\u30A1-\u30FA]\'?|？)$"
-)
-
-
-def validate_kana(kana_text: str) -> bool:
-    phrase_list = text_delimiter.split(kana_text)
-    if any(s.count("'") != 1 for s in phrase_list):
-        return False
-    return all(regex_aquestalk.fullmatch(s) is not None for s in phrase_list)
-
 
 text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
@@ -102,9 +87,6 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     parsed_results: List[AccentPhrase] = []
     phrase_base = 0
     if len(text) == 0:
-        raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
-
-    if not validate_kana(text):
         raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
 
     for i in range(len(text) + 1):

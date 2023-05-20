@@ -1044,6 +1044,36 @@ def generate_app(
     def engine_manifest():
         return engine_manifest_loader.load_manifest()
 
+    @app.post(
+        "/validate_kana",
+        response_model=bool,
+        tags=["その他"],
+        summary="テキストがAquesTalk記法に従っているか判定する",
+        responses={
+            400: {
+                "description": "テキストが不正です",
+                "model": ParseKanaBadRequest,
+            }
+        },
+    )
+    def validate_kana(text: str):
+        """
+        テキストがAquesTalk記法に従っているかどうかを判定します.
+
+        Parameters
+        ----------
+        text: str
+            validateする対象の文字列
+        """
+        try:
+            parse_kana(text)
+            return True
+        except ParseKanaError as err:
+            raise HTTPException(
+                status_code=400,
+                detail=ParseKanaBadRequest(err).dict(),
+            )
+
     @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
     def setting_get(request: Request):
         settings = setting_loader.load_setting_file()
