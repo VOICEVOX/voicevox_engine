@@ -72,10 +72,12 @@ from voicevox_engine.user_dict import (
 )
 from voicevox_engine.utility import (
     ConnectBase64WavesException,
+    check_port_is_live,
     connect_base64_waves,
     delete_file,
     engine_root,
     get_latest_core_version,
+    get_process_by_port,
     get_save_dir,
 )
 
@@ -1234,6 +1236,24 @@ if __name__ == "__main__":
     elif settings.allow_origin is not None:
         allow_origin = settings.allow_origin.split(" ")
 
+    port = args.port
+    for i in range(port, port + 100):
+        port = i
+        if check_port_is_live(port):
+            print(
+                f"\033[31mWARNING\033[0m: port {port} already in use",
+                file=sys.stderr,
+            )
+            for proc in get_process_by_port(port).processes:
+                print(
+                    f"\033[31mWARNING\033[0m: port {port} is used by {proc.name()}",
+                    file=sys.stderr,
+                )
+
+            continue
+        else:
+            break
+
     uvicorn.run(
         generate_app(
             synthesis_engines,
@@ -1244,5 +1264,5 @@ if __name__ == "__main__":
             allow_origin=allow_origin,
         ),
         host=args.host,
-        port=args.port,
+        port=port,
     )
