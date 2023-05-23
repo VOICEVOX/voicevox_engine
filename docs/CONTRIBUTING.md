@@ -1,11 +1,4 @@
-<p align="center">
-<p>&nbsp;&bull;&nbsp; <a href="#introduction">Introduction</a></p>
-<p>&nbsp;&bull;&nbsp; <a href="#installation">Installation</a></p>
-<p>&nbsp;&bull;&nbsp; <a href="#usage">Usage</a></p>
-<p>&nbsp;&bull;&nbsp; <a href="#documentation">Documentation</a></p>
-<p>&nbsp;&bull;&nbsp; <a href="#issue">Issue?</a></p>
-</p>
-
+## 目次
 
 * [インストール](#インストール)
 * [スクリプトの使い方](#スクリプトの使い方)
