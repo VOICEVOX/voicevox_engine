@@ -1,177 +1,155 @@
-<h1 align="center">
-  <a href="https://github.com/ankitwasankar/mftool-java">
-    <img src="https://raw.githubusercontent.com/ankitwasankar/mftool-java/master/src/main/resources/icons/mf-tool-java-new.jpg" alt="mftool-java">
-  </a>
-</h1>
 <p align="center">
-<a target="_blank" href="https://search.maven.org/artifact/com.webencyclop.core/mftool-java"><img src="https://img.shields.io/maven-central/v/com.webencyclop.core/mftool-java.svg?label=Maven%20Central"/></a> 
-<a target="_blank" href="https://www.codacy.com/gh/ankitwasankar/mftool-java/dashboard?utm_source=github.com&utm_medium=referral&utm_content=ankitwasankar/mftool-java&utm_campaign=Badge_Coverage"><img src="https://app.codacy.com/project/badge/Coverage/0054db87ea0f426599c3a30b39291388" /></a>
-<a href="https://www.codacy.com/gh/ankitwasankar/mftool-java/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ankitwasankar/mftool-java&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/0054db87ea0f426599c3a30b39291388"/></a>
-<a target="_blank" href="https://github.com/ankitwasankar/mftool-java/blob/master/license.md"><img src="https://camo.githubusercontent.com/8298ac0a88a52618cd97ba4cba6f34f63dd224a22031f283b0fec41a892c82cf/68747470733a2f2f696d672e736869656c64732e696f2f707970692f6c2f73656c656e69756d2d776972652e737667" /></a>
-&nbsp <a target="_blank" href="https://www.linkedin.com/in/ankitwasankar/"><img height="20" src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
-</p>
-<p align="center">
-  This repository contains the <strong>MF TOOL - JAVA</strong> source code.
-  MF TOOL - JAVA is a Java library developed to ease the process of working with Indian Mutual Funds. It's powerful, actively maintained and easy to use.
+<p>&nbsp;&bull;&nbsp; <a href="#introduction">Introduction</a></p>
+<p>&nbsp;&bull;&nbsp; <a href="#installation">Installation</a></p>
+<p>&nbsp;&bull;&nbsp; <a href="#usage">Usage</a></p>
+<p>&nbsp;&bull;&nbsp; <a href="#documentation">Documentation</a></p>
+<p>&nbsp;&bull;&nbsp; <a href="#issue">Issue?</a></p>
 </p>
 
-<p align="center">
-<a href="#introduction">Introduction</a> &nbsp;&bull;&nbsp;
-<a href="#installation">Installation</a> &nbsp;&bull;&nbsp;
-<a href="#usage">Usage</a> &nbsp;&bull;&nbsp;
-<a href="#documentation">Documentation</a> &nbsp;&bull;&nbsp;
-<a href="#issue">Issue?</a>
-</p>
 
-# Introduction
-This <b>mf-tool java</b> library provides simple APIs/functions/methods to work with Indian Mutual Funds. You can:
+* [インストール](#インストール)
+* [スクリプトの使い方](#スクリプトの使い方)
+  * [実行](#実行)
+  * [テスト](#テスト)
+  * [コードフォーマット](#コードフォーマット)
+  * [テスト](#テスト)
+  * [テスト](#テスト)
+* [Issue](Issue)
 
-- Fetch a list of all mutual fund schemes.
-- Fetch a list of matching mutual fund schemes based on provided keywords.
-- Fetch historic or current NAV (Net Asset Value) for a fund.
-- Fetch details for a fund and fund house.
-- Integrate this with any Java project.
+## インストール
 
-## Installation
-##### Maven
-```
-<dependency>
-  <groupId>com.webencyclop.core</groupId>
-  <artifactId>mftool-java</artifactId>
-  <version>1.0.4</version>
-</dependency>
-```
-##### Graddle
-```
-implementation 'com.webencyclop.core:mftool-java:1.0.4'
-```
-For other dependency management tool, please visit
-<a href="https://search.maven.org/artifact/com.webencyclop.core/mftool-java">https://search.maven.org/artifact/com.webencyclop.core/mftool-java</a>
+このプロジェクトでは
+* 3.11以上のpython
+* poetry
+* 依存ライブラリ
+  * cmake
+  * libsndfile1
+* (実際に動かす時のみ)voicevox製品版
+を使います。
 
+#### セットアップ
+以下のコマンドで使用できるようになります。
 
-## Usage
-Sample code that shows how to use the library:<br/>
-```
-MFTool tool = new MFTool();
-tool.matchingScheme("Axis");   //-- get a list of all schemes with Axis in its name
-tool.getCurrentNav("120503");  //-- get current nav
-```
-The other available methods are described in the next section.
-
-## Documentation
-Multiple methods provide ways to work with mutual funds and related data. Those are listed below in detail.
-
-### 1. How to initialize an MFTool object
-```
-MFTool tool = new MFTool();
-```
-This will create the object for you, but it's recommended that you create this object as a <b>singleton</b> object.
-The object uses a caching mechanism, which under-the-hood caches the values of historic nav and other static information to improve the performance. 
-<br/>If you are using the Spring project, you can create the bean in ``@Configuration`` configuration class.
-```
-@Configuration
-public class MFToolConfig{
-    @Bean
-    public MFTool initializeMfTool() {
-        MFTool tool = new MFTool();
-        return tool;
-    }
-}
-```
-You can use MFTool in other services using ``@Inject`` or ``@autowired`` annotation.
-```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
-
-    public void getCurrentNav(String scheme) {
-        BigDecimal nav = tool.getCurrentNav(scheme);
-    }
-}
+```console
+git clone https://github.com/VOICEVOX/voicevox_engine.git
+poetry install
 ```
 
-### 2. How to fetch a list of all mutual fund schemes
-```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
+## スクリプトの使い方
 
-    public List<SchemeNameCodePair> fetchListOfAllMutualFundSchemes() {
-        List<SchemeNameCodePair> list = tool.allSchemes();
-    }
-}
+### 実行
+コマンドライン引数の詳細は以下のコマンドで確認してください。
+
+```console
+python run.py --help
 ```
 
-### 3. How to fetch a list of all schemes matching a keyword
-```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
-
-    public List<SchemeNameCodePair> getCurrentNav(String schemeCode) {
-        List<SchemeNameCodePair> list = tool.matchingScheme("Axis"); 
-        // This will fetch MF schemes that have "Axis" in the name.
-    }
-}
+製品版 VOICEVOX でサーバーを起動
+```console
+VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+poetry run python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
-### 4. Current NAV for the mutual fund scheme
-An example schemeCode is 120503 (_Axis Long Term Equity Fund - Direct Plan - Growth Option_).<br/>
-When we fetch a list of mutual funds, we get the scheme-name, and its corresponding schemeCode.<br/>
-<b>A scheme code uniquely identifies the mutual fund scheme.</b>
-```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
-
-    public List<SchemeNameCodePair> fetchListSchemes(String schemeCode) {
-        BigDecimal nav = tool.getCurrentNav(schemeCode);
-    }
-}
+モックでサーバー起動
+```console
+poetry run python run.py --enable_mock
 ```
 
-### 5. NAV on specific date for the scheme
-LocalDate is used to define the date. For example:<br/>
-``LocalDate date = LocalDate.parse("2021-07-13");``
+ログをUTF8に変更
+```console
+poetry run python run.py --output_log_utf8
 ```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
-
-    public List<SchemeNameCodePair> getNavOnDate(String schemeCode, LocalDate date) {
-        BigDecimal nav = tool.getNavFor("120503", date);
-    }
-}
+もしくは
+```console
+VV_OUTPUT_LOG_UTF8=1
+poetry run python run.py
 ```
 
-### 6. List of historic NAV for the scheme
-This method provides a list of all the NAVs for the given scheme.
+### テスト
+```console
+poetry run pytest
 ```
-@Service
-public class MyService {
-    
-    @Autowired
-    private MFTool tool;
 
-    public List<SchemeNameCodePair> getNavOnDate(String schemeCode) {
-        List<Data> list = tool.historicNavForScheme(schemeCode);
-    }
-}
+### ビルド
+
+この方法でビルドしたものは、リリースで公開されているものとは異なります。 また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
+
+```console
+poetry install --with dev
+OUTPUT_LICENSE_JSON_PATH=licenses.json \
+bash build_util/create_venv_and_generate_licenses.bash
+# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+LIBCORE_PATH="/path/to/libcore" \
+    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+    pyinstaller --noconfirm run.spec
 ```
+
+
+### コードフォーマット
+
+このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。 利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。 プルリクエストを作成する際は、利用することを推奨します。
+
+```console
+poetry run pre-commit install -t pre-push
+```
+
+エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
+
+```console
+poetry run pysen run format lint
+```
+
+### タイポチェック
+
+typos を使ってタイポのチェックを行っています。 typos をインストール した後
+
+```console
+typos
+```
+
+でタイポチェックを行えます。 もし誤判定やチェックから除外すべきファイルがあれば 設定ファイルの説明 に従って_typos.tomlを編集してください。
+
+### API ドキュメントの確認
+
+API ドキュメント（実体はdocs/api/index.html）は自動で更新されます。
+次のコマンドで API ドキュメントを手動で作成することができます。
+
+```console
+python make_docs.py
+```
+
+
+### 依存関係
+
+Poetry を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
+
+パッケージを追加する場合
+```console
+poetry add `パッケージ名`
+poetry add --group dev `パッケージ名` # 開発依存の追加
+poetry add --group test `パッケージ名` # テスト依存の追加
+```
+
+パッケージをアップデートする場合
+```console
+poetry update `パッケージ名`
+poetry update # 全部更新
+```
+
+requirements.txtの更新
+```console
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
+poetry export --without-hashes --with dev -o requirements-dev.txt
+poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with license -o requirements-license.txt
+```
+
+### ユーザー辞書の更新について
+
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+
+poetry run python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
 
 
 ## Issue
-This repository is maintained actively, so if you face any issue please <a href="https://github.com/ankitwasankar/mftool-java/issues/new">raise an issue</a>.
-
-<h4>Liked the work ?</h4>
-Give the repository a star :-)
+不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
