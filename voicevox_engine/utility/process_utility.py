@@ -1,7 +1,4 @@
-from typing import Optional
 from psutil import AccessDenied, Process, net_connections, process_iter
-
-
 
 
 def check_port_is_live(port: int) -> bool:
