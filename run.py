@@ -1048,7 +1048,7 @@ def generate_app(
         "/validate_kana",
         response_model=bool,
         tags=["その他"],
-        summary="テキストがAquesTalk記法に従っているか判定する",
+        summary="テキストがAquesTalkライクな記法に従っているか判定する",
         responses={
             400: {
                 "description": "テキストが不正です",
@@ -1058,12 +1058,12 @@ def generate_app(
     )
     def validate_kana(text: str):
         """
-        テキストがAquesTalk記法に従っているかどうかを判定します.
+        テキストがAquesTalkライクな記法に従っているかどうかを判定します。
 
         Parameters
         ----------
         text: str
-            validateする対象の文字列
+            判定する対象の文字列
         """
         try:
             parse_kana(text)
