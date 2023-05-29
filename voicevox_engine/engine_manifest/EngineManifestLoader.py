@@ -38,8 +38,6 @@ class EngineManifestLoader:
                     (self.root_dir / manifest["dependency_licenses"]).read_text("utf-8")
                 )
             ],
-            downloadable_libraries_path=manifest["downloadable_libraries_path"],
-            downloadable_libraries_url=manifest["downloadable_libraries_url"],
             supported_features={
                 key: item["value"]
                 for key, item in manifest["supported_features"].items()
