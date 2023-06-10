@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -86,3 +87,16 @@ class LibraryManager:
 
             zf.extractall(library_dir)
         return library_dir
+
+    def uninstall_library(self, library_id: str):
+        installed_libraries = self.installed_libraries()
+        if library_id not in installed_libraries.keys():
+            raise HTTPException(status_code=404, detail="指定された音声ライブラリはインストールされていません。")
+
+        if not installed_libraries[library_id]["uninstallable"]:
+            raise HTTPException(status_code=403, detail="指定された音声ライブラリはアンインストールできません。")
+
+        try:
+            os.remove(self.library_root_dir / library_id)
+        except Exception:
+            raise HTTPException(status_code=500, detail="ライブラリの削除に失敗しました。")

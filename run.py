@@ -860,6 +860,29 @@ def generate_app(
         )
         return Response(status_code=204)
 
+    @app.post(
+        "/uninstall_library/{library_uuid}",
+        status_code=204,
+        tags=["音声ライブラリ管理"],
+    )
+    async def uninstall_library(library_uuid: str):
+        """
+        音声ライブラリをアンインストールします。
+
+        Parameters
+        ----------
+        library_uuid: str
+            音声ライブラリのID
+        """
+        manifest = engine_manifest_loader.load_manifest()
+        if not manifest.supported_features.manage_library:
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None, library_manager.uninstall_library, library_uuid
+        )
+        return Response(status_code=204)
+
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
         speaker: int,
