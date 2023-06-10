@@ -3,11 +3,11 @@ import json
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import List
+from typing import Dict
 
 from fastapi import HTTPException
 
-from voicevox_engine.model import DownloadableLibrary
+from voicevox_engine.model import DownloadableLibrary, InstalledLibrary
 
 __all__ = ["LibraryManager"]
 
@@ -59,12 +59,14 @@ class LibraryManager:
                 ]
             return list(map(DownloadableLibrary.parse_obj, libraries))
 
-    def installed_libraries(self) -> List[DownloadableLibrary]:
-        library = []
+    def installed_libraries(self) -> Dict[str, InstalledLibrary]:
+        library = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():
                 with open(library_dir / INFO_FILE, encoding="utf-8") as f:
-                    library.append(json.load(f))
+                    library[library_dir] = json.load(f)
+                    # アンインストール出来ないライブラリを作る場合、何かしらの条件でFalseを設定する
+                    library[library_dir]["uninstallable"] = True
         return library
 
     def install_library(self, library_id: str, file: BytesIO):

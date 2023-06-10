@@ -107,7 +107,6 @@ class ParseKanaBadRequest(BaseModel):
 
 
 class MorphableTargetInfo(BaseModel):
-
     is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
     # FIXME: add reason property
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
@@ -139,6 +138,14 @@ class DownloadableLibrary(BaseModel):
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
+
+
+class InstalledLibrary(DownloadableLibrary):
+    """
+    インストール済み音声ライブラリの情報
+    """
+
+    uninstallable: bool = Field(title="アンインストール可能かどうか")
 
 
 USER_DICT_MIN_PRIORITY = 0
