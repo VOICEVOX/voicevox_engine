@@ -818,7 +818,7 @@ def generate_app(
 
     @app.get(
         "/installed_libraries",
-        response_model=List[DownloadableLibrary],
+        response_model=Dict[str, DownloadableLibrary],
         tags=["音声ライブラリ管理"],
     )
     def installed_libraries():
