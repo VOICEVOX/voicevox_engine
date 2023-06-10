@@ -141,6 +141,13 @@ class DownloadableLibrary(BaseModel):
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
 
 
+class InstalledLibrary(DownloadableLibrary):
+    """
+    インストール済み音声ライブラリの情報
+    """
+    uninstallable: bool = Field(title="アンインストール可能かどうか")
+
+
 USER_DICT_MIN_PRIORITY = 0
 USER_DICT_MAX_PRIORITY = 10
 
