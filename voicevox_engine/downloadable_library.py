@@ -1,6 +1,6 @@
 import base64
 import json
-import os
+import shutil
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -97,6 +97,6 @@ class LibraryManager:
             raise HTTPException(status_code=403, detail="指定された音声ライブラリはアンインストールできません。")
 
         try:
-            os.remove(self.library_root_dir / library_id)
+            shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
             raise HTTPException(status_code=500, detail="ライブラリの削除に失敗しました。")
