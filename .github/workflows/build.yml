@@ -152,6 +152,7 @@ jobs:
           if [[ ${{ matrix.os }} == windows-* ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
+            # remove CUDA to reduce disk usage
             rm -rf "${CUDA_ROOT}"
           else
             cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
@@ -166,6 +167,9 @@ jobs:
             rm -f download/cuda/bin/libcufft.so.*.*
             rm -f download/cuda/bin/libcurand.so.*.*
             rm -f download/cuda/bin/libcudart.so.*.*.*
+
+            # remove CUDA to reduce disk usage
+            rm -rf "${CUDA_ROOT}"
           fi
 
       # Download cuDNN
