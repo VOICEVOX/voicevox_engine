@@ -169,7 +169,7 @@ jobs:
             rm -f download/cuda/bin/libcudart.so.*.*.*
 
             # remove CUDA to reduce disk usage
-            rm -rf "${CUDA_ROOT}"
+            sudo rm -rf "${CUDA_ROOT}"
           fi
 
       # Download cuDNN
