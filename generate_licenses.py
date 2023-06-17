@@ -287,14 +287,14 @@ def generate_licenses() -> List[License]:
         )
 
     # cuda
-    # license text from CUDA 11.6.2
-    # https://developer.nvidia.com/cuda-11-6-2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
-    # https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_511.65_windows.exe # noqa: B950
-    # cuda_11.6.2_511.65_windows.exe (cuda_documentation/Doc/EULA.txt)
+    # license text from CUDA 11.8.0
+    # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
+    # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe # noqa: B950
+    # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
     licenses.append(
         License(
             name="CUDA Toolkit",
-            version="11.6.2",
+            version="11.8.0",
             license=None,
             text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
         )
