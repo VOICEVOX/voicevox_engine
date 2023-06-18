@@ -174,17 +174,17 @@ jobs:
         shell: bash
         run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
 
-      - name: Prepare cuDNN cache
+      - name: Restore cached cuDNN
         if: matrix.cudnn_url != ''
-        uses: actions/cache@v3
-        id: cudnn-dll-cache
+        uses: actions/cache/restore@v3
+        id: cudnn-dll-cache-restore
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
           key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
           path: download/cudnn
 
       - name: Download and extract cuDNN Dynamic Libraries
-        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache-restore.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
@@ -214,6 +214,13 @@ jobs:
 
             rm download/cudnn.tar.xz
           fi
+
+      - name: Save cuDNN cache
+        if: matrix.cudnn_url != ''
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ steps.cudnn-dll-cache-restore.outputs.cache-primary-key }}
+          path: download/cudnn
 
       # Donwload zlib
       - name: Export zlib url to calc hash
