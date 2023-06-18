@@ -512,26 +512,28 @@ jobs:
             mv download/directml/DirectML.dll dist/run/
           fi
 
-      - name: Create symlink of CUDA dependencies
+      - name: Gather DLL dependencies to dist/run/ (Linux CUDA)
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
         shell: bash
         run: |
           set -eux
 
+          # Move DLL dependencies (cache already saved)
+
           # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
           patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
-          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
+          mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
 
           # CUDA
-          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
+          mv download/cuda/bin/libcublas.so.* dist/run/
+          mv download/cuda/bin/libcublasLt.so.* dist/run/
+          mv download/cuda/bin/libcudart.so.* dist/run/
+          mv download/cuda/bin/libcufft.so.* dist/run/
+          mv download/cuda/bin/libcurand.so.* dist/run/
 
           # cuDNN
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
+          mv download/cudnn/bin/libcudnn.so.* dist/run/
+          mv download/cudnn/bin/libcudnn_*_infer.so.* dist/run/
 
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
