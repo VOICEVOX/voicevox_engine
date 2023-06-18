@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import shutil
 import zipfile
 from io import BytesIO
@@ -77,10 +78,11 @@ class LibraryManager:
         library = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():
+                library_uuid = os.path.basename(library_dir)
                 with open(library_dir / INFO_FILE, encoding="utf-8") as f:
-                    library[library_dir] = json.load(f)
+                    library[library_uuid] = json.load(f)
                     # アンインストール出来ないライブラリを作る場合、何かしらの条件でFalseを設定する
-                    library[library_dir]["uninstallable"] = True
+                    library[library_uuid]["uninstallable"] = True
         return library
 
     def install_library(self, library_id: str, file: BytesIO):
