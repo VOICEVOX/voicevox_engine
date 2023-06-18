@@ -297,7 +297,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: directml-cache-restore
         with:
-          key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
+          key: directml-cache-v2-${{ hashFiles('download/directml_url.txt') }}
           path: download/directml
 
       - name: Download DirectML
