@@ -10,7 +10,6 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from semver.version import Version
 
-from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.model import DownloadableLibrary, InstalledLibrary, VvlibManifest
 
 __all__ = ["LibraryManager"]
@@ -19,13 +18,20 @@ INFO_FILE = "metas.json"
 
 
 class LibraryManager:
-    def __init__(self, library_root_dir: Path, engine_manifest: EngineManifest):
+    def __init__(
+        self,
+        library_root_dir: Path,
+        supported_vvlib_version: str,
+        brand_name: str,
+        engine_name: str,
+        engine_uuid: str,
+    ):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
-        self.supported_vvlib_version = engine_manifest.supported_vvlib_manifest_version
-        self.engine_brand_name = engine_manifest.brand_name
-        self.engine_name = engine_manifest.name
-        self.engine_uuid = engine_manifest.uuid
+        self.supported_vvlib_version = supported_vvlib_version
+        self.engine_brand_name = brand_name
+        self.engine_name = engine_name
+        self.engine_uuid = engine_uuid
 
     def downloadable_libraries(self):
         # == ダウンロード情報をネットワーク上から取得する場合

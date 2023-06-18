@@ -183,7 +183,10 @@ def generate_app(
     ).load_manifest()
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest_data,
+        engine_manifest_data.supported_vvlib_manifest_version,
+        engine_manifest_data.brand_name,
+        engine_manifest_data.name,
+        engine_manifest_data.uuid,
     )
 
     metas_store = MetasStore(root_dir / "speaker_info")
