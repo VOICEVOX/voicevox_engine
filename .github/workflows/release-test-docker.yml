@@ -80,6 +80,8 @@ jobs:
       # - ステータスコードが `200` 以外の場合は、5秒間スリープしてリトライします
       - name: Wait for container to start
         run: |
+          set +e # curlのエラーを無視する
+          
           url="http://127.0.0.1:50021/version"
           max_attempts=10
           sleep_interval=5
