@@ -480,40 +480,36 @@ jobs:
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
           pyinstaller --noconfirm run.spec
 
-      - name: Create artifact directory with symlink
+      - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
         shell: bash
-        env:
-          # create symlink instead of copy (Git Bash)
-          # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
-          MSYS: winsymlinks:nativestrict
         run: |
           set -eux
 
-          # Copy DLL dependencies
+          # Move DLL dependencies (cache already saved)
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
+            mv download/onnxruntime/lib/onnxruntime_*.dll dist/run/
 
             # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
+            mv download/cuda/bin/cublas64_*.dll dist/run/
+            mv download/cuda/bin/cublasLt64_*.dll dist/run/
+            mv download/cuda/bin/cudart64_*.dll dist/run/
+            mv download/cuda/bin/cufft64_*.dll dist/run/
+            mv download/cuda/bin/curand64_*.dll dist/run/
 
             # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
+            mv download/cudnn/bin/cudnn64_*.dll dist/run/
+            mv download/cudnn/bin/cudnn_*_infer64*.dll dist/run/
 
             # zlib
-            ln -sf "$(pwd)/download/zlib"/zlibwapi.dll dist/run/
+            mv download/zlib/zlibwapi.dll dist/run/
           fi
 
           if [[ ${{ matrix.target }} == *-directml ]]; then
             # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
+            mv download/directml/DirectML.dll dist/run/
           fi
 
       - name: Create symlink of CUDA dependencies
