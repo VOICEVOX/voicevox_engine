@@ -292,16 +292,16 @@ jobs:
         shell: bash
         run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
 
-      - name: Cache DirectML
+      - name: Restore cached DirectML
         if: endswith(matrix.target, '-directml')
-        uses: actions/cache@v3
-        id: directml-cache
+        uses: actions/cache/restore@v3
+        id: directml-cache-restore
         with:
           key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
           path: download/directml
 
       - name: Download DirectML
-        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
+        if: steps.directml-cache-restore.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
         shell: bash
         run: |
           curl -L "${{ matrix.directml_url }}" -o download/directml.zip
@@ -312,6 +312,13 @@ jobs:
           rm download/directml.zip
           mv download/directml/bin/${{ matrix.architecture }}-win/DirectML.dll download/directml/DirectML.dll
           rm -r download/directml/bin
+
+      - name: Save DirectML cache
+        if: endswith(matrix.target, '-directml')
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ steps.directml-cache-restore.outputs.cache-primary-key }}
+          path: download/directml
 
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
