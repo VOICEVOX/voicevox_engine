@@ -505,11 +505,20 @@ jobs:
 
             # zlib
             mv download/zlib/zlibwapi.dll dist/run/
+
+            # Remove source directories (already cached)
+            rm -rf download/onnxruntime
+            rm -rf download/cuda
+            rm -rf download/cudnn
+            rm -rf download/zlib
           fi
 
           if [[ ${{ matrix.target }} == *-directml ]]; then
             # DirectML
             mv download/directml/DirectML.dll dist/run/
+
+            # Remove source directory (already cached)
+            rm -rf download/directml
           fi
 
       - name: Gather DLL dependencies to dist/run/ (Linux CUDA)
