@@ -318,15 +318,15 @@ jobs:
         shell: bash
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: Prepare ONNX Runtime cache
-        uses: actions/cache@v3
-        id: onnxruntime-cache
+      - name: Restore cached ONNX Runtime
+        uses: actions/cache/restore@v3
+        id: onnxruntime-cache-restore
         with:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
       - name: Download ONNX Runtime (Windows)
-        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
@@ -345,13 +345,19 @@ jobs:
           rm download/onnxruntime.zip
 
       - name: Download ONNX Runtime (Mac/Linux)
-        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
         shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
           tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
+
+      - name: Save ONNX Runtime cache
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
+          path: download/onnxruntime
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
