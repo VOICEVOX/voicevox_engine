@@ -123,17 +123,17 @@ jobs:
           sudo apt-get install -y patchelf
 
       # Download CUDA
-      - name: Prepare CUDA DLL cache
+      - name: Restore cached CUDA
         if: matrix.cuda_version != ''
-        uses: actions/cache@v3
-        id: cuda-dll-cache
+        uses: actions/cache/restore@v3
+        id: cuda-dll-cache-restore
         with:
           # update this key when ONNX Runtime CUDA dependency changed
           key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
       - name: Setup CUDA
-        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
         uses: Jimver/cuda-toolkit@v0.2.8
         id: cuda-toolkit
         with:
@@ -141,7 +141,7 @@ jobs:
           cuda: ${{ matrix.cuda_version }}
 
       - name: Extract CUDA Dynamic Libraries
-        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -eux
@@ -167,6 +167,13 @@ jobs:
             rm -f download/cuda/bin/libcurand.so.*.*
             rm -f download/cuda/bin/libcudart.so.*.*.*
           fi
+
+      - name: Save CUDA cache
+        if: matrix.cuda_version != ''
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ steps.cuda-dll-cache-restore.outputs.cache-primary-key }}
+          path: download/cuda
 
       # Download cuDNN
       - name: Export cuDNN url to calc hash
