@@ -7,8 +7,11 @@ from pathlib import Path
 from typing import Dict
 
 from fastapi import HTTPException
+from pydantic import ValidationError
+from semver.version import Version
 
-from voicevox_engine.model import DownloadableLibrary, InstalledLibrary
+from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.model import DownloadableLibrary, InstalledLibrary, VvlibManifest
 
 __all__ = ["LibraryManager"]
 
@@ -16,9 +19,13 @@ INFO_FILE = "metas.json"
 
 
 class LibraryManager:
-    def __init__(self, library_root_dir: Path):
+    def __init__(self, library_root_dir: Path, engine_manifest: EngineManifest):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
+        self.supported_vvlib_version = engine_manifest.supported_vvlib_manifest_version
+        self.engine_brand_name = engine_manifest.brand_name
+        self.engine_name = engine_manifest.name
+        self.engine_uuid = engine_manifest.uuid
 
     def downloadable_libraries(self):
         # == ダウンロード情報をネットワーク上から取得する場合
@@ -84,6 +91,43 @@ class LibraryManager:
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
                 raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
+
+            # validate manifest version
+            vvlib_manifest = None
+            try:
+                vvlib_manifest = json.loads(
+                    zf.read("vvlib_manifest.json").decode("utf-8")
+                )
+            except KeyError:
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリにvvlib_manifest.jsonが存在しません。"
+                )
+            except Exception:
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリのvvlib_manifest.jsonは不正です。"
+                )
+
+            try:
+                VvlibManifest.validate(vvlib_manifest)
+            except ValidationError:
+                raise HTTPException(
+                    status_code=422,
+                    detail="指定された音声ライブラリのvvlib_manifest.jsonに不正なデータが含まれています。",
+                )
+
+            if Version.parse(vvlib_manifest["manifest_version"]) > Version.parse(
+                self.supported_vvlib_version
+            ):
+                raise HTTPException(status_code=422, detail="指定された音声ライブラリは未対応です。")
+
+            if (
+                vvlib_manifest["brand_name"] != self.engine_brand_name
+                or vvlib_manifest["engine_name"] != self.engine_name
+                or vvlib_manifest["engine_uuid"] != self.engine_uuid
+            ):
+                raise HTTPException(
+                    status_code=422, detail=f"指定された音声ライブラリは{self.engine_name}向けではありません。"
+                )
 
             zf.extractall(library_dir)
         return library_dir

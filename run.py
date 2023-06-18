@@ -181,7 +181,9 @@ def generate_app(
     engine_manifest_loader = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
     )
-    library_manager = LibraryManager(get_save_dir() / "installed_libraries")
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries", engine_manifest_loader.load_manifest()
+    )
 
     metas_store = MetasStore(root_dir / "speaker_info")
 

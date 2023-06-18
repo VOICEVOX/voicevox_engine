@@ -287,3 +287,17 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
     support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+
+
+class VvlibManifest(BaseModel):
+    """
+    vvlib(VOICEVOX Library)に関する情報
+    """
+
+    manifest_version: str = Field(title="マニフェストバージョン")
+    name: str = Field(title="音声ライブラリ名")
+    version: str = Field(title="音声ライブラリバージョン")
+    uuid: str = Field(title="音声ライブラリのUUID")
+    brand_name: str = Field(title="エンジンのブランド名")
+    engine_name: str = Field(title="エンジン名")
+    engine_uuid: str = Field(title="エンジンのUUID")
