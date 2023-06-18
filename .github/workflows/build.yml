@@ -129,7 +129,7 @@ jobs:
         id: cuda-dll-cache-restore
         with:
           # update this key when ONNX Runtime CUDA dependency changed
-          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v2
           path: download/cuda
 
       - name: Setup CUDA
