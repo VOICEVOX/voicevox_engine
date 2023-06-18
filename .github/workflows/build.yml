@@ -180,7 +180,7 @@ jobs:
         id: cudnn-dll-cache-restore
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
-          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v2
           path: download/cudnn
 
       - name: Download and extract cuDNN Dynamic Libraries
