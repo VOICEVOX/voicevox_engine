@@ -322,7 +322,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: onnxruntime-cache-restore
         with:
-          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v2
           path: download/onnxruntime
 
       - name: Download ONNX Runtime (Windows)
