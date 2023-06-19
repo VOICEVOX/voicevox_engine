@@ -27,6 +27,10 @@ env:
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     strategy:
@@ -51,7 +55,6 @@ jobs:
     steps:
       - name: declare variables
         id: vars
-        shell: bash
         run: |
           echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
@@ -64,7 +67,6 @@ jobs:
           cache: pip
 
       - name: Download
-        shell: bash -euxv {0}
         run: |
           mkdir -p download
           curl -L -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
@@ -74,7 +76,6 @@ jobs:
 
       - name: chmod +x
         if: startsWith(matrix.target, 'linux') || startsWith(matrix.target, 'macos')
-        shell: bash
         run: chmod +x dist/run
 
       - name: Install libsndfile1
@@ -88,5 +89,4 @@ jobs:
           pip install -r requirements-test.txt
 
       - name: Test
-        shell: bash
         run: python build_util/check_release_build.py --dist_dir dist/

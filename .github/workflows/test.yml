@@ -7,6 +7,10 @@ on:
       - "**"
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -14,13 +18,6 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-latest] # [ubuntu-20.04, macos-latest, windows-latest]
         python: ["3.11.3"]
-        include:
-          - os: ubuntu-20.04
-            path: ~/.cache/pip
-          # - os: macos-latest
-          #   path: ~/Library/Caches/pip
-          - os: windows-latest
-            path: ~\AppData\Local\pip\Cache
 
     steps:
       - uses: actions/checkout@v3
