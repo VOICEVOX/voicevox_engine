@@ -503,7 +503,7 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-      - name: Rename artifact directory to archive
+      - name: Rename artifact directory to archive filename stem
         run: |
           mv dist/run/ "${{ matrix.target }}/"
 
