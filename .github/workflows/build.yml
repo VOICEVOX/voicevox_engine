@@ -28,6 +28,10 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.14.3"
   VOICEVOX_CORE_VERSION: "0.14.4"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
@@ -37,7 +41,6 @@ jobs:
     steps:
       - name: declare variables
         id: vars
-        shell: bash
         run: |
           : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
           echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> $GITHUB_OUTPUT
@@ -98,7 +101,6 @@ jobs:
     steps:
       - name: declare variables
         id: vars
-        shell: bash
         run: |
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
 
@@ -109,7 +111,6 @@ jobs:
       #       so you need to install GNU 'sed' and 'split'.
       - name: Install GNU sed on macOS
         if: startsWith(matrix.os, 'macos-')
-        shell: bash
         run: |
           brew install gnu-sed coreutils
           echo "/usr/local/opt/gnu-sed/libexec/gnubin" >> $GITHUB_PATH
@@ -142,7 +143,6 @@ jobs:
 
       - name: Extract CUDA Dynamic Libraries
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
-        shell: bash
         run: |
           set -eux
 
@@ -178,7 +178,6 @@ jobs:
       # Download cuDNN
       - name: Export cuDNN url to calc hash
         if: matrix.cudnn_url != ''
-        shell: bash
         run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
 
       - name: Restore cached cuDNN
@@ -192,7 +191,6 @@ jobs:
 
       - name: Download and extract cuDNN Dynamic Libraries
         if: matrix.cudnn_url != '' && steps.cudnn-dll-cache-restore.outputs.cache-hit != 'true'
-        shell: bash
         run: |
           set -eux
 
@@ -232,7 +230,6 @@ jobs:
       # Donwload zlib
       - name: Export zlib url to calc hash
         if: matrix.zlib_url != ''
-        shell: bash
         run: echo "${{ matrix.zlib_url }}" >> download/zlib_url.txt
 
       - name: Restore cached zlib
@@ -245,7 +242,6 @@ jobs:
 
       - name: Download zlib
         if: steps.zlib-cache-restore.outputs.cache-hit != 'true' && matrix.zlib_url != ''
-        shell: bash
         run: |
           curl -L "${{ matrix.zlib_url }}" -o download/zlib.zip
           mkdir -p download/zlib
@@ -277,7 +273,6 @@ jobs:
           cache: pip
 
       - name: Install Python dependencies
-        shell: bash
         run: |
           python -m pip install -r requirements-dev.txt
 
@@ -304,13 +299,11 @@ jobs:
           fi
 
       - name: Create download directory
-        shell: bash
         run: mkdir -p download/
 
       # Donwload DirectML
       - name: Export DirectML url to calc hash
         if: endswith(matrix.target, '-directml')
-        shell: bash
         run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
 
       - name: Restore cached DirectML
@@ -323,7 +316,6 @@ jobs:
 
       - name: Download DirectML
         if: steps.directml-cache-restore.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
-        shell: bash
         run: |
           curl -L "${{ matrix.directml_url }}" -o download/directml.zip
           mkdir -p download/directml
@@ -343,7 +335,6 @@ jobs:
 
       # Download ONNX Runtime
       - name: Export ONNX Runtime url to calc hash
-        shell: bash
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
       - name: Restore cached ONNX Runtime
@@ -355,7 +346,6 @@ jobs:
 
       - name: Download ONNX Runtime (Windows)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
-        shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
@@ -374,7 +364,6 @@ jobs:
 
       - name: Download ONNX Runtime (Mac/Linux)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
-        shell: bash
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
@@ -405,7 +394,6 @@ jobs:
 
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
-        shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
@@ -420,7 +408,6 @@ jobs:
 
       - name: Download VOICEVOX Core
         if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
-        shell: bash
         env:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
@@ -443,12 +430,10 @@ jobs:
           rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
       - name: Copy VOICEVOX Core Models
-        shell: bash
         run: |
           cp -r download/core/model ./
 
       - name: Generate licenses.json
-        shell: bash
         run: |
           OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
           bash build_util/create_venv_and_generate_licenses.bash
@@ -456,7 +441,6 @@ jobs:
           cp engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: Build run.py with PyInstaller
-        shell: bash
         run: |
           set -eux
 
@@ -482,7 +466,6 @@ jobs:
 
       - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
-        shell: bash
         run: |
           set -eux
 
@@ -523,7 +506,6 @@ jobs:
 
       - name: Gather DLL dependencies to dist/run/ (Linux CUDA)
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
-        shell: bash
         run: |
           set -eux
 
@@ -556,7 +538,6 @@ jobs:
 
       - name: Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        shell: bash
         run: |
           bash build_util/codesign.bash "dist/run/run.exe"
         env:
@@ -564,7 +545,6 @@ jobs:
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
       - name: Rearchive and split artifact
-        shell: bash
         run: |
           mv dist/run/ "${{ matrix.target }}/"
 
