@@ -113,8 +113,8 @@ jobs:
         if: startsWith(matrix.os, 'macos-')
         run: |
           brew install gnu-sed coreutils
-          echo 'export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH' >> $HOME/.bashrc
-          echo 'export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH' >> $HOME/.bashrc
+          echo 'export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"' >> $HOME/.bashrc
+          echo 'export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"' >> $HOME/.bashrc
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: Install patchelf
