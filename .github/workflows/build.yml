@@ -489,7 +489,7 @@ jobs:
             # zlib
             mv download/zlib/zlibwapi.dll dist/run/
 
-            # Remove source directories (already cached)
+            # Remove source directories to reduce disk usage (already cached)
             rm -rf download/onnxruntime
             rm -rf download/cuda
             rm -rf download/cudnn
@@ -526,7 +526,7 @@ jobs:
           mv download/cudnn/bin/libcudnn.so.* dist/run/
           mv download/cudnn/bin/libcudnn_*_infer.so.* dist/run/
 
-          # Remove source directories (already cached)
+          # Remove source directories to reduce disk usage (already cached)
           rm -rf download/onnxruntime
           rm -rf download/cuda
           rm -rf download/cudnn
