@@ -100,8 +100,8 @@ jobs:
 
     env:
       # GNUコマンド
-      sed: ${{ matrix.os == 'macos-11' && 'gsed' || 'sed' }}
-      split: ${{ matrix.os == 'macos-11' && 'gsplit' || 'split' }}
+      sed: ${{ startsWith(matrix.os, 'macos-') && 'gsed' || 'sed' }}
+      split: ${{ startsWith(matrix.os, 'macos-') && 'gsplit' || 'split' }}
 
     steps:
       - name: declare variables
