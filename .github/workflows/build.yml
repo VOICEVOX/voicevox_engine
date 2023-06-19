@@ -129,7 +129,7 @@ jobs:
         id: cuda-dll-cache-restore
         with:
           # update this key when ONNX Runtime CUDA dependency changed
-          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v2
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
       - name: Setup CUDA
@@ -187,7 +187,7 @@ jobs:
         id: cudnn-dll-cache-restore
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
-          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v2
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
           path: download/cudnn
 
       - name: Download and extract cuDNN Dynamic Libraries
@@ -240,7 +240,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: zlib-cache-restore
         with:
-          key: zlib-cache-v2-${{ hashFiles('download/zlib_url.txt') }}
+          key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
           path: download/zlib
 
       - name: Download zlib
@@ -318,7 +318,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: directml-cache-restore
         with:
-          key: directml-cache-v2-${{ hashFiles('download/directml_url.txt') }}
+          key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
           path: download/directml
 
       - name: Download DirectML
@@ -350,7 +350,7 @@ jobs:
         uses: actions/cache/restore@v3
         id: onnxruntime-cache-restore
         with:
-          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v2
+          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
       - name: Download ONNX Runtime (Windows)
