@@ -30,7 +30,7 @@ env:
 
 defaults:
   run:
-    shell: bash
+    shell: bash -leo pipefail {0}
 
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
@@ -113,8 +113,8 @@ jobs:
         if: startsWith(matrix.os, 'macos-')
         run: |
           brew install gnu-sed coreutils
-          echo "/usr/local/opt/gnu-sed/libexec/gnubin" >> $GITHUB_PATH
-          echo "/usr/local/opt/coreutils/libexec/gnubin" >> $GITHUB_PATH
+          echo "export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH" >> $HOME/.bashrc
+          echo "export PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $HOME/.bashrc
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: Install patchelf
