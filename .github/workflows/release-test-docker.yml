@@ -21,6 +21,10 @@ env:
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: [ ubuntu-20.04 ]
@@ -75,8 +79,9 @@ jobs:
       # - ステータスコードが `200` の場合は正常終了します
       # - ステータスコードが `200` 以外の場合は、5秒間スリープしてリトライします
       - name: Wait for container to start
-        shell: bash -xv {0}
         run: |
+          set +e # curlのエラーを無視する
+          
           url="http://127.0.0.1:50021/version"
           max_attempts=10
           sleep_interval=5
@@ -94,5 +99,4 @@ jobs:
           exit 1
 
       - name: Test
-        shell: bash
         run: python build_util/check_release_build.py --skip_run_process --dist_dir dist/

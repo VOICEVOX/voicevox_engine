@@ -18,6 +18,10 @@ env:
   VOICEVOX_RESOURCE_VERSION: "0.14.3"
   VOICEVOX_CORE_VERSION: "0.14.4"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
@@ -26,7 +30,6 @@ jobs:
     steps:
       - name: declare variables
         id: vars
-        shell: bash
         run: |
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
@@ -111,7 +114,6 @@ jobs:
 
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
-        shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
