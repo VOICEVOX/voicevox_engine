@@ -2,7 +2,7 @@ from enum import Enum
 from re import findall, fullmatch
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, conint, validator
+from pydantic import BaseModel, Field, StrictStr, conint, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
 
@@ -294,10 +294,10 @@ class VvlibManifest(BaseModel):
     vvlib(VOICEVOX Library)に関する情報
     """
 
-    manifest_version: str = Field(title="マニフェストバージョン")
-    name: str = Field(title="音声ライブラリ名")
-    version: str = Field(title="音声ライブラリバージョン")
-    uuid: str = Field(title="音声ライブラリのUUID")
-    brand_name: str = Field(title="エンジンのブランド名")
-    engine_name: str = Field(title="エンジン名")
-    engine_uuid: str = Field(title="エンジンのUUID")
+    manifest_version: StrictStr = Field(title="マニフェストバージョン")
+    name: StrictStr = Field(title="音声ライブラリ名")
+    version: StrictStr = Field(title="音声ライブラリバージョン")
+    uuid: StrictStr = Field(title="音声ライブラリのUUID")
+    brand_name: StrictStr = Field(title="エンジンのブランド名")
+    engine_name: StrictStr = Field(title="エンジン名")
+    engine_uuid: StrictStr = Field(title="エンジンのUUID")
