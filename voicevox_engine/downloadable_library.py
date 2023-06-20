@@ -131,11 +131,7 @@ class LibraryManager:
             ):
                 raise HTTPException(status_code=422, detail="指定された音声ライブラリは未対応です。")
 
-            if (
-                vvlib_manifest["brand_name"] != self.engine_brand_name
-                or vvlib_manifest["engine_name"] != self.engine_name
-                or vvlib_manifest["engine_uuid"] != self.engine_uuid
-            ):
+            if vvlib_manifest["engine_uuid"] != self.engine_uuid:
                 raise HTTPException(
                     status_code=422, detail=f"指定された音声ライブラリは{self.engine_name}向けではありません。"
                 )
