@@ -877,8 +877,7 @@ def generate_app(
         library_uuid: str
             音声ライブラリのID
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         library_manager.uninstall_library(library_uuid)
         return Response(status_code=204)
