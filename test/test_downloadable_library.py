@@ -28,7 +28,7 @@ class TestLibraryManager(TestCase):
             self.engine_name,
             "c7b58856-bd56-4aa1-afb7-b8415f824b06",
         )
-        self.library_filename = "test/test.vvlib"
+        self.library_filename = Path("test/test.vvlib")
         with open("test/vvlib_manifest.json") as f:
             self.vvlib_manifest = json.loads(f.read())
             self.library_uuid = self.vvlib_manifest["uuid"]
@@ -42,7 +42,7 @@ class TestLibraryManager(TestCase):
     def tearDown(self):
         self.tmp_dir.cleanup()
         self.library_file.close()
-        os.remove(self.library_filename)
+        self.library_filename.unlink()
 
     def reload_library_file(self):
         self.library_file.close()
