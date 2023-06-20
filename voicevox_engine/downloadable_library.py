@@ -22,14 +22,18 @@ class LibraryManager:
     def __init__(
         self,
         library_root_dir: Path,
-        supported_vvlib_version: str,
+        supported_vvlib_version: str | None,
         brand_name: str,
         engine_name: str,
         engine_uuid: str,
     ):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
-        self.supported_vvlib_version = Version.parse(supported_vvlib_version)
+        if supported_vvlib_version is not None:
+            self.supported_vvlib_version = Version.parse(supported_vvlib_version)
+        else:
+            # supported_vvlib_versionがNoneの時は0.0.0として扱う
+            self.supported_vvlib_version = Version.parse("0.0.0")
         self.engine_brand_name = brand_name
         self.engine_name = engine_name
         self.engine_uuid = engine_uuid
