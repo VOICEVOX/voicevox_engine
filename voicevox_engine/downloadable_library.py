@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import shutil
 import zipfile
 from io import BytesIO
@@ -7,8 +8,10 @@ from pathlib import Path
 from typing import Dict
 
 from fastapi import HTTPException
+from pydantic import ValidationError
+from semver.version import Version
 
-from voicevox_engine.model import DownloadableLibrary, InstalledLibrary
+from voicevox_engine.model import DownloadableLibrary, InstalledLibrary, VvlibManifest
 
 __all__ = ["LibraryManager"]
 
@@ -16,9 +19,20 @@ INFO_FILE = "metas.json"
 
 
 class LibraryManager:
-    def __init__(self, library_root_dir: Path):
+    def __init__(
+        self,
+        library_root_dir: Path,
+        supported_vvlib_version: str,
+        brand_name: str,
+        engine_name: str,
+        engine_uuid: str,
+    ):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
+        self.supported_vvlib_version = Version.parse(supported_vvlib_version)
+        self.engine_brand_name = brand_name
+        self.engine_name = engine_name
+        self.engine_uuid = engine_uuid
 
     def downloadable_libraries(self):
         # == ダウンロード情報をネットワーク上から取得する場合
@@ -64,10 +78,11 @@ class LibraryManager:
         library = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():
+                library_uuid = os.path.basename(library_dir)
                 with open(library_dir / INFO_FILE, encoding="utf-8") as f:
-                    library[library_dir] = json.load(f)
+                    library[library_uuid] = json.load(f)
                     # アンインストール出来ないライブラリを作る場合、何かしらの条件でFalseを設定する
-                    library[library_dir]["uninstallable"] = True
+                    library[library_uuid]["uninstallable"] = True
         return library
 
     def install_library(self, library_id: str, file: BytesIO):
@@ -81,9 +96,58 @@ class LibraryManager:
         library_dir.mkdir(exist_ok=True)
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
+        if not zipfile.is_zipfile(file):
+            raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
+
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
                 raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
+
+            # validate manifest version
+            vvlib_manifest = None
+            try:
+                vvlib_manifest = json.loads(
+                    zf.read("vvlib_manifest.json").decode("utf-8")
+                )
+            except KeyError:
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリにvvlib_manifest.jsonが存在しません。"
+                )
+            except Exception:
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリのvvlib_manifest.jsonは不正です。"
+                )
+
+            try:
+                VvlibManifest.validate(vvlib_manifest)
+            except ValidationError:
+                raise HTTPException(
+                    status_code=422,
+                    detail="指定された音声ライブラリのvvlib_manifest.jsonに不正なデータが含まれています。",
+                )
+
+            if not Version.is_valid(vvlib_manifest["version"]):
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリのversionが不正です。"
+                )
+
+            try:
+                vvlib_manifest_version = Version.parse(
+                    vvlib_manifest["manifest_version"]
+                )
+            except ValueError:
+                raise HTTPException(
+                    status_code=422,
+                    detail="指定された音声ライブラリのmanifest_versionが不正です。",
+                )
+
+            if vvlib_manifest_version > self.supported_vvlib_version:
+                raise HTTPException(status_code=422, detail="指定された音声ライブラリは未対応です。")
+
+            if vvlib_manifest["engine_uuid"] != self.engine_uuid:
+                raise HTTPException(
+                    status_code=422, detail=f"指定された音声ライブラリは{self.engine_name}向けではありません。"
+                )
 
             zf.extractall(library_dir)
         return library_dir

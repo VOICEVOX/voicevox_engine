@@ -178,10 +178,16 @@ def generate_app(
     preset_manager = PresetManager(
         preset_path=root_dir / "presets.yaml",
     )
-    engine_manifest_loader = EngineManifestLoader(
+    engine_manifest_data = EngineManifestLoader(
         root_dir / "engine_manifest.json", root_dir
+    ).load_manifest()
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest_data.supported_vvlib_manifest_version,
+        engine_manifest_data.brand_name,
+        engine_manifest_data.name,
+        engine_manifest_data.uuid,
     )
-    library_manager = LibraryManager(get_save_dir() / "installed_libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
@@ -812,8 +818,7 @@ def generate_app(
         -------
         ret_data: List[DownloadableLibrary]
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.downloadable_libraries()
 
@@ -830,8 +835,7 @@ def generate_app(
         -------
         ret_data: List[DownloadableLibrary]
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.installed_libraries()
 
@@ -850,8 +854,7 @@ def generate_app(
         library_uuid: str
             音声ライブラリのID
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         archive = BytesIO(await request.body())
         loop = asyncio.get_event_loop()
@@ -874,8 +877,7 @@ def generate_app(
         library_uuid: str
             音声ライブラリのID
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         library_manager.uninstall_library(library_uuid)
         return Response(status_code=204)
@@ -1063,7 +1065,7 @@ def generate_app(
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
     def engine_manifest():
-        return engine_manifest_loader.load_manifest()
+        return engine_manifest_data
 
     @app.post(
         "/validate_kana",

@@ -32,6 +32,9 @@ class EngineManifestLoader:
                     (self.root_dir / manifest["update_infos"]).read_text("utf-8")
                 )
             ],
+            supported_vvlib_manifest_version=manifest[
+                "supported_vvlib_manifest_version"
+            ],
             dependency_licenses=[
                 LicenseInfo(**license_info)
                 for license_info in json.loads(
