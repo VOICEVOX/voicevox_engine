@@ -44,10 +44,6 @@ class TestLibraryManager(TestCase):
         self.library_file.close()
         self.library_filename.unlink()
 
-    def reload_library_file(self):
-        self.library_file.close()
-        self.library_file = open(self.library_filename, "br")
-
     def create_vvlib_without_manifest(self, filename: str):
         with ZipFile(filename, "w") as zf_out, ZipFile(
             self.library_filename, "r"
