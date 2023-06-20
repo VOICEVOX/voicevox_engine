@@ -29,7 +29,7 @@ class LibraryManager:
     ):
         self.library_root_dir = library_root_dir
         self.library_root_dir.mkdir(exist_ok=True)
-        self.supported_vvlib_version = supported_vvlib_version
+        self.supported_vvlib_version = Version.parse(supported_vvlib_version)
         self.engine_brand_name = brand_name
         self.engine_name = engine_name
         self.engine_uuid = engine_uuid
@@ -126,9 +126,20 @@ class LibraryManager:
                     detail="指定された音声ライブラリのvvlib_manifest.jsonに不正なデータが含まれています。",
                 )
 
-            if Version.parse(vvlib_manifest["manifest_version"]) > Version.parse(
-                self.supported_vvlib_version
-            ):
+            if not Version.is_valid(vvlib_manifest["version"]):
+                raise HTTPException(status_code=422, detail="指定された音声ライブラリのversionが不正です。")
+
+            try:
+                vvlib_manifest_version = Version.parse(
+                    vvlib_manifest["manifest_version"]
+                )
+            except ValueError:
+                raise HTTPException(
+                    status_code=422,
+                    detail="指定された音声ライブラリのmanifest_versionが不正です。",
+                )
+
+            if vvlib_manifest_version > self.supported_vvlib_version:
                 raise HTTPException(status_code=422, detail="指定された音声ライブラリは未対応です。")
 
             if vvlib_manifest["engine_uuid"] != self.engine_uuid:
