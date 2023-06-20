@@ -93,52 +93,52 @@ class TestLibraryManager(TestCase):
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(e.exception.detail, "指定された音声ライブラリのvvlib_manifest.jsonは不正です。")
 
-        invalud_vvlib_manifest = copy.deepcopy(self.vvlib_manifest)
-        invalud_vvlib_manifest["version"] = 10
+        invalid_vvlib_manifest = copy.deepcopy(self.vvlib_manifest)
+        invalid_vvlib_manifest["version"] = 10
         # Duplicate name: 'vvlib_manifest.json'とWarningを吐かれるので、作り直す
         self.create_vvlib_without_manifest(invalid_vvlib_name)
         with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalud_vvlib_manifest))
+            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(e.exception.detail, "指定された音声ライブラリのvvlib_manifest.jsonに不正なデータが含まれています。")
 
-        invalud_vvlib_manifest["version"] = "10"
+        invalid_vvlib_manifest["version"] = "10"
         # Duplicate name: 'vvlib_manifest.json'とWarningを吐かれるので、作り直す
         self.create_vvlib_without_manifest(invalid_vvlib_name)
         with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalud_vvlib_manifest))
+            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(e.exception.detail, "指定された音声ライブラリのversionが不正です。")
 
-        invalud_vvlib_manifest["version"] = "0.0.1"
-        invalud_vvlib_manifest["manifest_version"] = "10"
+        invalid_vvlib_manifest["version"] = "0.0.1"
+        invalid_vvlib_manifest["manifest_version"] = "10"
         # Duplicate name: 'vvlib_manifest.json'とWarningを吐かれるので、作り直す
         self.create_vvlib_without_manifest(invalid_vvlib_name)
         with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalud_vvlib_manifest))
+            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(e.exception.detail, "指定された音声ライブラリのmanifest_versionが不正です。")
 
-        invalud_vvlib_manifest["manifest_version"] = "999.999.999"
+        invalid_vvlib_manifest["manifest_version"] = "999.999.999"
         self.create_vvlib_without_manifest(invalid_vvlib_name)
         with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalud_vvlib_manifest))
+            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(e.exception.detail, "指定された音声ライブラリは未対応です。")
 
-        invalud_vvlib_manifest["manifest_version"] = self.vvlib_manifest["manifest_version"]
-        invalud_vvlib_manifest["engine_uuid"] = "26f7823b-20c6-40c5-bf86-6dd5d9d45c18"
+        invalid_vvlib_manifest["manifest_version"] = self.vvlib_manifest["manifest_version"]
+        invalid_vvlib_manifest["engine_uuid"] = "26f7823b-20c6-40c5-bf86-6dd5d9d45c18"
         self.create_vvlib_without_manifest(invalid_vvlib_name)
         with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalud_vvlib_manifest))
+            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
