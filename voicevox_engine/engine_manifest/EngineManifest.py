@@ -1,3 +1,8 @@
+# マルチエンジン環境下においては、エンジンのバージョンがエディタのバージョンより
+# 古くなる可能性が十分に考えられる。その場合、エディタ側がEngineManifestの情報不足によって
+# エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
+# 変更する際は、Optionalにする必要があることに留意しなければならない。
+
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
