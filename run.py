@@ -18,6 +18,7 @@ import soundfile
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
@@ -44,6 +45,7 @@ from voicevox_engine.model import (
     SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
+    VvlibManifest,
     WordTypes,
 )
 from voicevox_engine.morphing import (
@@ -197,6 +199,28 @@ def generate_app(
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
     synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
+
+    # VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
+    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
+    def custom_openapi():
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+            terms_of_service=app.terms_of_service,
+            contact=app.contact,
+            license_info=app.license_info,
+        )
+        openapi_schema["components"]["schemas"][
+            "VvlibManifest"
+        ] = VvlibManifest.schema()
+        app.openapi_schema = openapi_schema
+        return openapi_schema
+
+    app.openapi = custom_openapi
 
     # @app.on_event("startup")
     # async def start_catch_disconnection():
