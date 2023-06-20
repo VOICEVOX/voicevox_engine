@@ -200,28 +200,6 @@ def generate_app(
     # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
     synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
-    # VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
-    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi():
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"][
-            "VvlibManifest"
-        ] = VvlibManifest.schema()
-        app.openapi_schema = openapi_schema
-        return openapi_schema
-
-    app.openapi = custom_openapi
-
     # @app.on_event("startup")
     # async def start_catch_disconnection():
     #     if args.enable_cancellable_synthesis:
@@ -1166,6 +1144,30 @@ def generate_app(
                 "allow_origin": allow_origin,
             },
         )
+
+    # VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
+    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+            terms_of_service=app.terms_of_service,
+            contact=app.contact,
+            license_info=app.license_info,
+        )
+        openapi_schema["components"]["schemas"][
+            "VvlibManifest"
+        ] = VvlibManifest.schema()
+        app.openapi_schema = openapi_schema
+        return openapi_schema
+
+    app.openapi = custom_openapi
 
     return app
 
