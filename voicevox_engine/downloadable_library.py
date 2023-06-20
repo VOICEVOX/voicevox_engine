@@ -127,7 +127,9 @@ class LibraryManager:
                 )
 
             if not Version.is_valid(vvlib_manifest["version"]):
-                raise HTTPException(status_code=422, detail="指定された音声ライブラリのversionが不正です。")
+                raise HTTPException(
+                    status_code=422, detail="指定された音声ライブラリのversionが不正です。"
+                )
 
             try:
                 vvlib_manifest_version = Version.parse(
