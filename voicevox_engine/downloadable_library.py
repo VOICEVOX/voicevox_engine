@@ -96,6 +96,9 @@ class LibraryManager:
         library_dir.mkdir(exist_ok=True)
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
+        if not zipfile.is_zipfile(file):
+            raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
+
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
                 raise HTTPException(status_code=422, detail="不正なZIPファイルです。")
