@@ -509,7 +509,6 @@ jobs:
 
       # 7z archives
       - name: Create 7z archives
-        shell: bash
         run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
@@ -539,13 +538,11 @@ jobs:
           commit: ${{ github.sha }}
 
       - name: Clean 7z archives to reduce disk usage
-        shell: bash
         run: |
           rm -f ${{ steps.vars.outputs.package_name }}.7z.*
 
       # VVPP archives
       - name: Create VVPP archives
-        shell: bash
         run: |
           # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
           (cd "${{ matrix.target }}" && 7z -r a "../compressed.zip")
