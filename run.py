@@ -179,7 +179,7 @@ def generate_app(
         preset_path=root_dir / "presets.yaml",
     )
     engine_manifest_data = EngineManifestLoader(
-        root_dir / "engine_manifest.json", root_dir
+        engine_root() / "engine_manifest.json", engine_root()
     ).load_manifest()
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
