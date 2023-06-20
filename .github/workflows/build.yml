@@ -155,6 +155,7 @@ jobs:
           if [[ ${{ matrix.os }} == windows-* ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
+            # remove CUDA to reduce disk usage
             rm -rf "${CUDA_ROOT}"
           else
             cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
@@ -169,6 +170,9 @@ jobs:
             rm -f download/cuda/bin/libcufft.so.*.*
             rm -f download/cuda/bin/libcurand.so.*.*
             rm -f download/cuda/bin/libcudart.so.*.*.*
+
+            # remove CUDA to reduce disk usage
+            sudo rm -rf "${CUDA_ROOT}"
           fi
 
       - name: Save CUDA cache
@@ -547,13 +551,47 @@ jobs:
           CERT_BASE64: ${{ secrets.CERT_BASE64 }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-      - name: Rearchive and split artifact
+      - name: Rename artifact directory to archive
         run: |
           mv dist/run/ "${{ matrix.target }}/"
 
+      # 7z archives
+      - name: Create 7z archives
+        run: |
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
+          # Output splitted archive list
+          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+
+      - name: Upload 7z archives to artifact
+        if: github.event.inputs.upload_artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.vars.outputs.package_name }}
+          path: |
+            ${{ steps.vars.outputs.package_name }}.7z.*
+
+      - name: Upload 7z archives to Release assets
+        if: needs.config.outputs.version != ''
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          prerelease: ${{ github.event.inputs.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.config.outputs.version }}
+          artifacts: >
+            ${{ steps.vars.outputs.package_name }}.7z.*
+          commit: ${{ github.sha }}
+
+      - name: Clean 7z archives to reduce disk usage
+        run: |
+          rm -f ${{ steps.vars.outputs.package_name }}.7z.*
+
+      # VVPP archives
+      - name: Create VVPP archives
+        run: |
           # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
           (cd "${{ matrix.target }}" && 7z -r a "../compressed.zip")
           $split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
@@ -564,23 +602,20 @@ jobs:
           fi
 
           # Output splitted archive list
-          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
           ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
-      - name: Upload to artifact
+      - name: Upload VVPP archives to artifact
         if: github.event.inputs.upload_artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.package_name }}
           path: |
-            ${{ steps.vars.outputs.package_name }}.7z.*
             ${{ steps.vars.outputs.package_name }}.vvpp
             ${{ steps.vars.outputs.package_name }}*.vvppp
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
 
-      - name: Upload to Release assets
+      - name: Upload VVPP archives to Release assets
         if: needs.config.outputs.version != ''
         uses: ncipollo/release-action@v1
         with:
@@ -589,7 +624,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.config.outputs.version }}
           artifacts: >
-            ${{ steps.vars.outputs.package_name }}.7z.*,
             ${{ steps.vars.outputs.package_name }}.vvpp,
             ${{ steps.vars.outputs.package_name }}*.vvppp,
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
