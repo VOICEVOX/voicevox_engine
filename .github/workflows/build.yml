@@ -138,7 +138,7 @@ jobs:
 
       - name: Setup CUDA
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@6974ecc945579a89135a1e1d9eac96ec361a1171 # v0.2.10
+        uses: Jimver/cuda-toolkit@v0.2.10
         id: cuda-toolkit
         with:
           method: network
