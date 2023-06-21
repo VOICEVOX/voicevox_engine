@@ -287,28 +287,28 @@ def generate_licenses() -> List[License]:
         )
 
     # cuda
-    # license text from CUDA 11.6.2
-    # https://developer.nvidia.com/cuda-11-6-2-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
-    # https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_511.65_windows.exe # noqa: B950
-    # cuda_11.6.2_511.65_windows.exe (cuda_documentation/Doc/EULA.txt)
+    # license text from CUDA 11.8.0
+    # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
+    # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe # noqa: B950
+    # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
     licenses.append(
         License(
             name="CUDA Toolkit",
-            version="11.6.2",
+            version="11.8.0",
             license=None,
             text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
         )
     )
     # cudnn
     # license text from
-    # cuDNN v8.4.1 (May 27th, 2022), for CUDA 11.x, cuDNN Library for Windows
+    # cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows
     # https://developer.nvidia.com/rdp/cudnn-archive # noqa: B950
-    # https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip # noqa: B950
-    # cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip (cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive/LICENSE) # noqa: B950
+    # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip # noqa: B950
+    # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE) # noqa: B950
     licenses.append(
         License(
             name="cuDNN",
-            version="8.4.1",
+            version="8.9.2",
             license=None,
             text=Path("docs/licenses/cudnn/LICENSE").read_text(encoding="utf8"),
         )
