@@ -128,6 +128,13 @@ jobs:
                 format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, needs.config.outputs.version_or_latest)
               ) || format('{0}:{1}', env.IMAGE_NAME, needs.config.outputs.version_or_latest)
             ) }}
+          IMAGE_CACHE_FROM:
+            |- # Always use the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
+            ${{ (
+              matrix.tag != '' && (
+                format('type=registry,ref={0}:{1}-latest-buildcache', env.IMAGE_NAME, matrix.tag)
+              ) || format('type=registry,ref={0}:latest-buildcache', env.IMAGE_NAME)
+            ) }}
           IMAGE_CACHE_TO:
             |- # If it's a release, do not create buildcache, otherwise create the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
             ${{ (
@@ -136,13 +143,6 @@ jobs:
                   format('type=registry,ref={0}:{1}-latest-buildcache,mode=max', env.IMAGE_NAME, matrix.tag)
                 ) || format('type=registry,ref={0}:latest-buildcache,mode=max', env.IMAGE_NAME)
               ) || ''
-            ) }}
-          IMAGE_CACHE_FROM:
-            |- # Always use the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
-            ${{ (
-              matrix.tag != '' && (
-                format('type=registry,ref={0}:{1}-latest-buildcache', env.IMAGE_NAME, matrix.tag)
-              ) || format('type=registry,ref={0}:latest-buildcache', env.IMAGE_NAME)
             ) }}
         with:
           context: .
