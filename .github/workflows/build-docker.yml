@@ -128,6 +128,15 @@ jobs:
                 format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, needs.config.outputs.version_or_latest)
               ) || format('{0}:{1}', env.IMAGE_NAME, needs.config.outputs.version_or_latest)
             ) }}
+          IMAGE_CACHE_TO:
+            |- # If it's a release, do not create buildcache, otherwise create the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
+            ${{ (
+              needs.config.outputs.version_or_latest == 'latest' && (
+                matrix.tag != '' && (
+                  format('type=registry,ref={0}:{1}-latest-buildcache,mode=max', env.IMAGE_NAME, matrix.tag)
+                ) || format('type=registry,ref={0}:latest-buildcache,mode=max', env.IMAGE_NAME)
+              ) || ''
+            ) }}
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -145,7 +154,7 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_TAG }}
           cache-from: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
+          cache-to: ${{ env.IMAGE_CACHE_TO }}
           platforms: ${{ matrix.platforms }}
 
   run-release-test-workflow:
