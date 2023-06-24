@@ -503,7 +503,6 @@ LIBCORE_PATH="/path/to/libcore" \
 ### 更新
 
 [Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
-Poetry 1.5以上を使用してください。
 以下のコマンドで操作できます:
 
 ```bash
