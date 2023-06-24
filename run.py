@@ -1330,7 +1330,7 @@ if __name__ == "__main__":
     # Preset Manager
     # preset_pathの優先順: 引数、環境変数、voicevox_dir、実行ファイルのディレクトリ
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
-    preset_path: Path | None = args.preset_path
+    preset_path: Path | None = args.preset_file
     if preset_path is None:
         # --preset_path 引数の指定がない場合
         env_preset_path = os.environ.get("VV_PRESET_FILE")
