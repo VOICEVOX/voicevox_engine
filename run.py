@@ -1280,6 +1280,7 @@ if __name__ == "__main__":
             "指定がない場合、環境変数 VV_PRESET_FILE から読み込みます。"
             "VV_PRESET_FILEの指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。"
             "voicevox_dirの指定がない場合、実行ファイルのディレクトリのpresets.yamlから読み込みます。"
+            "指定されたパスにファイルが存在しない場合、プリセットAPIはエラーを返します。"
         ),
     )
 
