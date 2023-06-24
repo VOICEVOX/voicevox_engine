@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from voicevox_engine.dev.core import mock as core
 from voicevox_engine.dev.synthesis_engine.mock import MockSynthesisEngine
@@ -15,7 +14,7 @@ if __name__ == "__main__":
         latest_core_version="mock",
         setting_loader=SettingLoader(USER_SETTING_PATH),
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager
-            preset_path=Path(engine_root() / "presets.yaml"),
+            preset_path=engine_root() / "presets.yaml",
         ),
     )
     with open("docs/api/index.html", "w") as f:
