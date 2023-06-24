@@ -1333,7 +1333,7 @@ if __name__ == "__main__":
     preset_path: Path | None = args.preset_file
     if preset_path is None:
         # --preset_path 引数の指定がない場合
-        env_preset_path = os.environ.get("VV_PRESET_FILE")
+        env_preset_path = os.getenv("VV_PRESET_FILE")
         if env_preset_path is not None and len(env_preset_path) != 0:
             # 環境変数 VV_PRESET_FILE の指定がある場合
             preset_path = Path(env_preset_path)
