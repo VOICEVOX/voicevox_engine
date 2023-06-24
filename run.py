@@ -1276,7 +1276,9 @@ if __name__ == "__main__":
         type=Path,
         default=None,
         help=(
-            "プリセットファイルを指定できます。指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。"
+            "プリセットファイルを指定できます。"
+            "指定がない場合、環境変数 VV_PRESET_FILE から読み込みます。"
+            "VV_PRESET_FILEの指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。"
             "voicevox_dirの指定がない場合、実行ファイルのディレクトリのpresets.yamlから読み込みます。"
         ),
     )
@@ -1325,9 +1327,18 @@ if __name__ == "__main__":
         allow_origin = settings.allow_origin.split(" ")
 
     # Preset Manager
+    # preset_pathの優先順: 引数、環境変数、voicevox_dir、実行ファイルのディレクトリ
+    # プリセットファイルの存在に関わらず、優先順で最初に指定されたパスを使用する
     preset_path: Path | None = args.preset_path
     if preset_path is None:
-        preset_path = root_dir / "presets.yaml"
+        # --preset_path 引数の指定がない場合
+        env_preset_path = os.environ.get("VV_PRESET_FILE")
+        if env_preset_path is not None and len(env_preset_path) != 0:
+            # 環境変数 VV_PRESET_FILE の指定がある場合
+            preset_path = Path(env_preset_path)
+        else:
+            # 環境変数 VV_PRESET_FILE の指定がない場合
+            preset_path = root_dir / "presets.yaml"
 
     preset_manager = PresetManager(
         preset_path=preset_path,
