@@ -116,6 +116,7 @@ def generate_app(
     synthesis_engines: Dict[str, SynthesisEngineBase],
     latest_core_version: str,
     setting_loader: SettingLoader,
+    preset_manager: PresetManager,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
@@ -177,9 +178,6 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    preset_manager = PresetManager(
-        preset_path=root_dir / "presets.yaml",
-    )
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
     ).load_manifest()
@@ -1273,6 +1271,16 @@ if __name__ == "__main__":
         "--setting_file", type=Path, default=USER_SETTING_PATH, help="設定ファイルを指定できます。"
     )
 
+    parser.add_argument(
+        "--preset_file",
+        type=Path,
+        default=None,
+        help=(
+            "プリセットファイルを指定できます。指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。"
+            "voicevox_dirの指定がない場合、実行ファイルのディレクトリのpresets.yamlから読み込みます。"
+        ),
+    )
+
     args = parser.parse_args()
 
     if args.output_log_utf8:
@@ -1296,7 +1304,9 @@ if __name__ == "__main__":
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
-    root_dir = args.voicevox_dir if args.voicevox_dir is not None else engine_root()
+    root_dir: Path | None = args.voicevox_dir
+    if root_dir is None:
+        root_dir = engine_root()
 
     setting_loader = SettingLoader(args.setting_file)
 
@@ -1314,11 +1324,21 @@ if __name__ == "__main__":
     elif settings.allow_origin is not None:
         allow_origin = settings.allow_origin.split(" ")
 
+    # Preset Manager
+    preset_path: Path | None = args.preset_path
+    if preset_path is None:
+        preset_path = root_dir / "presets.yaml"
+
+    preset_manager = PresetManager(
+        preset_path=preset_path,
+    )
+
     uvicorn.run(
         generate_app(
             synthesis_engines,
             latest_core_version,
             setting_loader,
+            preset_manager=preset_manager,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
