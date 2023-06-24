@@ -288,8 +288,9 @@ VOICEVOXではセキュリティ保護のため`localhost`・`127.0.0.1`・`app:
 ```bash
 $ python run.py -h
 
-usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis] [--init_processes INIT_PROCESSES] [--load_all_models]
-              [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}] [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE]
+usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
+              [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
+              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE]
 
 VOICEVOX のエンジンです。
 
@@ -319,6 +320,8 @@ options:
                         許可するオリジンを指定します。スペースで区切ることで複数指定できます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
+  --preset_file PRESET_FILE
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE から読み込みます。VV_PRESET_FILEの指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。voicevox_dirの指定がない場合、実行ファイルのディレクトリのpresets.yamlから読み込みます。
 ```
 
 ## アップデート
