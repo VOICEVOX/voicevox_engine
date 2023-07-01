@@ -5,6 +5,7 @@ from .mock import (
     supported_devices,
     yukarin_s_forward,
     yukarin_sa_forward,
+    yukarin_sosf_forward,
 )
 
 __all__ = [
@@ -12,6 +13,7 @@ __all__ = [
     "initialize",
     "yukarin_s_forward",
     "yukarin_sa_forward",
+    "yukarin_sosf_forward",
     "metas",
     "supported_devices",
 ]

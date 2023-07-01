@@ -60,6 +60,20 @@ def yukarin_sa_mock(
     return numpy.array(result)[numpy.newaxis]
 
 
+def yukarin_sosf_mock(
+    length: int,
+    f0_discrete: numpy.ndarray,
+    phoneme: numpy.ndarray,
+    speaker_id: Union[numpy.ndarray, int],
+):
+    # mockとしての適当な処理、特に意味はない
+    result = numpy.convolve(
+        f0_discrete + phoneme + speaker_id, numpy.ones(10) / 10, mode="same"
+    )
+    assert result.shape[0] == length
+    return result
+
+
 def decode_mock(
     length: int,
     phoneme_size: int,
@@ -84,6 +98,7 @@ def decode_mock(
 class MockCore:
     yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
     yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
+    yukarin_sosf_forward = Mock(side_effect=yukarin_sosf_mock)
     decode_forward = Mock(side_effect=decode_mock)
 
     def metas(self):

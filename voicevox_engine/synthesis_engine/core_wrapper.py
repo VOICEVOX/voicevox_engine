@@ -356,13 +356,13 @@ class CoreWrapper:
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
-
         self.core = load_core(core_dir, use_gpu)
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
         self.core.yukarin_s_forward.restype = c_bool
         self.core.yukarin_sa_forward.restype = c_bool
+        self.core.yukarin_sosf_forward.restype = c_bool
         self.core.decode_forward.restype = c_bool
         self.core.last_error_message.restype = c_char_p
 
@@ -407,6 +407,13 @@ class CoreWrapper:
             POINTER(c_long),
             POINTER(c_long),
             POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_float),
+        )
+        self.core.yukarin_sosf_forward.argtypes = (
+            c_int,
+            POINTER(c_float),
             POINTER(c_long),
             POINTER(c_long),
             POINTER(c_float),
@@ -483,6 +490,31 @@ class CoreWrapper:
                 end_accent_list.ctypes.data_as(POINTER(c_long)),
                 start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
                 end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                speaker_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def yukarin_sosf_forward(
+        self,
+        length: int,
+        f0_discrete: np.ndarray,
+        phoneme: np.ndarray,
+        speaker_id: np.ndarray,
+    ) -> np.ndarray:
+        output = np.empty(
+            (
+                len(speaker_id),
+                length,
+            ),
+            dtype=np.float32,
+        )
+        self.assert_core_success(
+            self.core.yukarin_sosf_forward(
+                c_int(length),
+                f0_discrete.ctypes.data_as(POINTER(c_float)),
+                phoneme.ctypes.data_as(POINTER(c_long)),
                 speaker_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )

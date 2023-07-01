@@ -29,6 +29,14 @@ def yukarin_sa_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     return np.ones((1, length)) * 5
 
 
+def yukarin_sosf_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
+    logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
+    logger.info(
+        "Sorry, yukarin_sosf_forward() is a mock. Return values are incorrect.",
+    )
+    return np.ones(length) * 5
+
+
 def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
     """
     合成音声の波形データをNumPy配列で返します。ただし、常に固定の文言を読み上げます（DUMMY_TEXT）

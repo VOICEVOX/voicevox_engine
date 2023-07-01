@@ -150,6 +150,12 @@ class SynthesisEngine(SynthesisEngineBase):
             speaker_id: 話者番号
             return: モーラごとの音高
 
+        core.yukarin_sosf_forward: モーラごとの音高をフレームごとにした音高と音素からフレームごとの音高を求める関数
+            length: モーラ列の長さ
+            f0_discrete: モーラごとの音高をフレームごとにした音高
+            phoneme: フレームごとの音素
+            speaker_id: 話者番号
+
         core.decode_forward: フレームごとの音素と音高から波形を求める関数
             length: フレームの長さ
             phoneme_size: 音素の種類数
