@@ -59,7 +59,7 @@ class AudioQuery(BaseModel):
     音声合成用のクエリ
     """
 
-    メモ：pitch_contourを実装していく
+    # メモ：pitch_contourを実装していく
 
     accent_phrases: List[AccentPhrase] = Field(title="アクセント句のリスト")
     pitch_contour: Optional[PeriodicData] = Field(title="フレームごとの音高")
