@@ -56,9 +56,7 @@ def yukarin_sosf_mock(
     speaker_id: Union[numpy.ndarray, int],
 ):
     # mockとしての適当な処理、特に意味はない
-    result = numpy.convolve(
-        f0_discrete + phoneme + speaker_id, numpy.ones(10) / 10, mode="same"
-    )
+    result = f0_discrete + phoneme + speaker_id
     assert result.shape[0] == length
     return result
 
