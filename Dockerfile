@@ -283,18 +283,18 @@ EOF
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
-    #!/bin/bash
-    set -eux
+#!/bin/bash
+set -eux
 
-    # Display README for engine
-    cat /opt/voicevox_engine/README.md > /dev/stderr
+# Display README for engine
+cat /opt/voicevox_engine/README.md > /dev/stderr
 
-    exec "\$@"
-    EOF
+exec "\$@"
+EOF
 
-    ENTRYPOINT [ "/entrypoint.sh"  ]
-    CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+ENTRYPOINT [ "/entrypoint.sh"  ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
-    # Enable use_gpu
-    FROM runtime-env AS runtime-nvidia-env
-    CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+# Enable use_gpu
+FROM runtime-env AS runtime-nvidia-env
+CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
