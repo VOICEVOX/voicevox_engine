@@ -273,7 +273,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.15.0-preview.1
+ARG VOICEVOX_RESOURCE_VERSION=0.15.0-preview.2
 RUN <<EOF
     set -eux
 
