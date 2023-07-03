@@ -6,7 +6,7 @@ import numpy as np
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
-from ..model import AccentPhrase, AudioQuery, Mora, PeriodicData
+from ..model import AccentPhrase, AudioQuery, Mora
 from ..mora_list import openjtalk_mora2text
 
 
