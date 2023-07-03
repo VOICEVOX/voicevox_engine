@@ -57,20 +57,20 @@ jobs:
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-win-x64-1.14.0.zip
             target: windows-cpu
           # Windows DirectML
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/Microsoft.ML.OnnxRuntime.DirectML.1.14.0.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
             target: windows-directml
           # Windows NVIDIA GPU
           - os: windows-2019
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-win-x64-gpu-1.14.0.zip
             cuda_version: "11.8.0"
             cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip
             zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
@@ -79,19 +79,19 @@ jobs:
           - os: macos-11
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-osx-x86_64-1.14.0.tgz
             target: macos-x64
           # Linux CPU
           - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-linux-x64-1.14.0.tgz
             target: linux-cpu
           # Linux NVIDIA GPU
           - os: ubuntu-20.04
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.14.0/onnxruntime-linux-x64-gpu-1.14.0.tgz
             cuda_version: "11.8.0"
             cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-8.9.2.26_cuda11-archive.tar.xz
             target: linux-nvidia
