@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import numpy
 
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, PeriodicData
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
@@ -67,11 +67,9 @@ def yukarin_sosf_mock(
     speaker_id: Union[numpy.ndarray, int],
 ):
     # mockとしての適当な処理、特に意味はない
-    result = numpy.convolve(
-        f0_discrete + phoneme + speaker_id, numpy.ones(10) / 10, mode="same"
-    )
+    result = f0_discrete + phoneme + speaker_id
     assert result.shape[0] == length
-    return result
+    return result[numpy.newaxis]
 
 
 def decode_mock(
@@ -216,9 +214,23 @@ class TestSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
+        self.audio_query_hello_hiho = AudioQuery(
+            accent_phrases=deepcopy(self.accent_phrases_hello_hiho),
+            speedScale=1.0,
+            pitchScale=1.0,
+            intonationScale=1.0,
+            volumeScale=1.0,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=24000,
+            outputStereo=False,
+            # このテスト内では使わないので生成不要
+            kana="",
+        )
         core = MockCore()
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
+        self.yukarin_sosf_mock = core.yukarin_sosf_forward
         self.decode_mock = core.decode_forward
         self.synthesis_engine = SynthesisEngine(
             core=core,
@@ -492,7 +504,53 @@ class TestSynthesisEngine(TestCase):
 
         self.assertEqual(result, true_result)
 
+    def test_replace_periodic_pitch(self):
+        input_audio_query = deepcopy(self.audio_query_hello_hiho)
+        speaker_id = 1
+
+        # テスト用データの作成
+        for i, accent_phrase in enumerate(input_audio_query.accent_phrases):
+            for mora in accent_phrase.moras:
+                mora.pitch = i + 1
+                mora.consonant_length = 0
+                mora.vowel_length = 0.01
+
+        result = self.synthesis_engine.replace_periodic_pitch(
+            query=input_audio_query, speaker_id=speaker_id
+        )
+
+        # yukarin_sosfに渡される値の検証
+        yukarin_sosf_args = self.yukarin_sosf_mock.call_args[1]
+        list_length = yukarin_sosf_args["length"]
+        f0_discrete = yukarin_sosf_args["f0_discrete"]
+        phoneme = yukarin_sosf_args["phoneme"]
+        self.assertEqual(list_length, 27)
+        self.assertEqual(list_length, len(f0_discrete))
+        self.assertEqual(list_length, len(phoneme))
+        self.assertEqual(yukarin_sosf_args["speaker_id"], speaker_id)
+        numpy.testing.assert_array_equal(
+            f0_discrete,
+            numpy.concatenate(
+                [[0] * 9, [2] * 5, [4] * 4, [0] * 9],
+                dtype=numpy.int64,
+            ),
+        )
+
+        def result_value(i: int):
+            return float(f0_discrete[i] + phoneme[i] + speaker_id)
+
+        true_result = deepcopy(input_audio_query)
+        true_result.periodic_pitch = PeriodicData(
+            data=[result_value(i) for i in range(len(f0_discrete))], rate=24000 / 256
+        )
+        self.assertEqual(result, true_result)
+
     def synthesis_test_base(self, audio_query: AudioQuery):
+        # audio_queryを変えた場合のためにperiodic_pitchの再取得が必要
+        audio_query = self.synthesis_engine.replace_periodic_pitch(
+            query=audio_query, speaker_id=1
+        )
+
         accent_phrases = audio_query.accent_phrases
 
         # decode forwardのために適当にpitchとlengthを設定し、リストで持っておく
@@ -616,19 +674,7 @@ class TestSynthesisEngine(TestCase):
         self.assertTrue(assert_result_count >= int(len(true_result) / 5) * 4)
 
     def test_synthesis(self):
-        audio_query = AudioQuery(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho),
-            speedScale=1.0,
-            pitchScale=1.0,
-            intonationScale=1.0,
-            volumeScale=1.0,
-            prePhonemeLength=0.1,
-            postPhonemeLength=0.1,
-            outputSamplingRate=24000,
-            outputStereo=False,
-            # このテスト内では使わないので生成不要
-            kana="",
-        )
+        audio_query = deepcopy(self.audio_query_hello_hiho)
 
         self.synthesis_test_base(audio_query)
 
