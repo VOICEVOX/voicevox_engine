@@ -6,7 +6,7 @@ import numpy as np
 
 from .. import full_context_label
 from ..full_context_label import extract_full_context_label
-from ..model import AccentPhrase, AudioQuery, Mora
+from ..model import AccentPhrase, AudioQuery, Mora, PeriodicData
 from ..mora_list import openjtalk_mora2text
 
 
@@ -94,7 +94,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def initialize_speaker_synthesis(  # noqa: B027
         self, speaker_id: int, skip_reinit: bool
     ):
-
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
         未実装の場合は何もしない
@@ -171,6 +170,23 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             ),
             speaker_id=speaker_id,
         )
+
+    @abstractmethod
+    def replace_periodic_pitch(self, query: AudioQuery, speaker_id: int) -> AudioQuery:
+        """
+        音高(ピッチ)の時系列を作成する
+        Parameters
+        ----------
+        query : AudioQuery
+            音声合成クエリ
+        speaker_id : int
+            話者ID
+        Returns
+        -------
+        query : AudioQuery
+            音高(ピッチ)の時系列が設定された音声合成クエリ
+        """
+        raise NotImplementedError()
 
     def create_accent_phrases(self, text: str, speaker_id: int) -> List[AccentPhrase]:
         if len(text.strip()) == 0:

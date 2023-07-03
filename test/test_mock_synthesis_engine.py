@@ -1,8 +1,9 @@
+from copy import deepcopy
 from unittest import TestCase
 
 from voicevox_engine.dev.synthesis_engine import MockSynthesisEngine
 from voicevox_engine.kana_parser import create_kana
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, PeriodicData
 
 
 class TestMockSynthesisEngine(TestCase):
@@ -102,6 +103,18 @@ class TestMockSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
+        self.query_hello_hiho = AudioQuery(
+            accent_phrases=self.accent_phrases_hello_hiho,
+            speedScale=1,
+            pitchScale=0,
+            intonationScale=1,
+            volumeScale=1,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=24000,
+            outputStereo=False,
+            kana=create_kana(self.accent_phrases_hello_hiho),
+        )
         self.engine = MockSynthesisEngine(speakers="", supported_devices="")
 
     def test_replace_phoneme_length(self):
@@ -122,19 +135,26 @@ class TestMockSynthesisEngine(TestCase):
             self.accent_phrases_hello_hiho,
         )
 
+    def test_replace_periodic_pitch(self):
+        target_query = deepcopy(self.query_hello_hiho)
+        target_query.periodic_pitch = PeriodicData(
+            data=[
+                mora.pitch
+                for accent_phrase in self.query_hello_hiho.accent_phrases
+                for mora in accent_phrase.moras
+            ],
+            rate=1,
+        )
+        self.assertEqual(
+            self.engine.replace_periodic_pitch(
+                query=self.query_hello_hiho,
+                speaker_id=0,
+            ),
+            target_query,
+        )
+
     def test_synthesis(self):
         self.engine.synthesis(
-            AudioQuery(
-                accent_phrases=self.accent_phrases_hello_hiho,
-                speedScale=1,
-                pitchScale=0,
-                intonationScale=1,
-                volumeScale=1,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-                outputSamplingRate=24000,
-                outputStereo=False,
-                kana=create_kana(self.accent_phrases_hello_hiho),
-            ),
+            query=self.query_hello_hiho,
             speaker_id=0,
         )

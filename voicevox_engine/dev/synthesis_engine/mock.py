@@ -1,3 +1,4 @@
+from copy import deepcopy
 from logging import getLogger
 from typing import Any, Dict, List, Optional
 
@@ -5,7 +6,7 @@ import numpy as np
 from pyopenjtalk import tts
 from scipy.signal import resample
 
-from ...model import AccentPhrase, AudioQuery
+from ...model import AccentPhrase, AudioQuery, PeriodicData
 from ...synthesis_engine import SynthesisEngineBase
 from ...synthesis_engine.synthesis_engine import to_flatten_moras
 
@@ -76,6 +77,33 @@ class MockSynthesisEngine(SynthesisEngineBase):
             フレーズ句のリスト（変更なし）
         """
         return accent_phrases
+
+    def replace_periodic_pitch(self, query: AudioQuery, speaker_id: int) -> AudioQuery:
+        """
+        replace_periodic_pitch accent_phrasesのピッチを1Hzとして返します [Mock]
+
+        Parameters
+        ----------
+        query : AudioQuery
+            音声合成クエリ
+        speaker_id : int
+            話者
+
+        Returns
+        -------
+        query : AudioQuery
+            音高(ピッチ)の時系列が設定された音声合成クエリ
+        """
+        query = deepcopy(query)
+        query.periodic_pitch = PeriodicData(
+            rate=1,
+            data=[
+                mora.pitch
+                for accent_phrase in query.accent_phrases
+                for mora in accent_phrase.moras
+            ],
+        )
+        return query
 
     def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """

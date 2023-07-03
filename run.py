@@ -229,7 +229,7 @@ def generate_app(
         """
         engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
-        return AudioQuery(
+        audio_query = AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
             pitchScale=0,
@@ -241,6 +241,10 @@ def generate_app(
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
+        audio_query = engine.replace_periodic_pitch(
+            query=audio_query, speaker_id=speaker
+        )
+        return audio_query
 
     @app.post(
         "/audio_query_from_preset",
@@ -475,18 +479,14 @@ def generate_app(
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
-
             with zipfile.ZipFile(f, mode="a") as zip_file:
-
                 for i in range(len(queries)):
-
                     if queries[i].outputSamplingRate != sampling_rate:
                         raise HTTPException(
                             status_code=422, detail="サンプリングレートが異なるクエリがあります"
                         )
 
                     with TemporaryFile() as wav_file:
-
                         wave = engine.synthesis(query=queries[i], speaker_id=speaker)
                         soundfile.write(
                             file=wav_file,
