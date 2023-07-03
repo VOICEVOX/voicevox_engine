@@ -546,11 +546,6 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(result, true_result)
 
     def synthesis_test_base(self, audio_query: AudioQuery):
-        # audio_queryを変えた場合のためにperiodic_pitchの再取得が必要
-        audio_query = self.synthesis_engine.replace_periodic_pitch(
-            query=audio_query, speaker_id=1
-        )
-
         accent_phrases = audio_query.accent_phrases
 
         # decode forwardのために適当にpitchとlengthを設定し、リストで持っておく
@@ -585,6 +580,10 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
+        # audio_queryを変えた場合のためにperiodic_pitchの再取得が必要
+        audio_query = self.synthesis_engine.replace_periodic_pitch(
+            query=audio_query, speaker_id=1
+        )
         result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
 
         # decodeに渡される値の検証
@@ -631,6 +630,14 @@ class TestSynthesisEngine(TestCase):
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
 
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
+
+        # yukarin_sosfのmockを使う
+        f0 = yukarin_sosf_mock(
+            list_length,
+            f0[:, 0],
+            phoneme.argmax(axis=1),  # one hotを戻す
+            1,
+        ).reshape(f0.shape)
 
         # 乱数の影響で数値の位置がずれが生じるので、大半(4/5)があっていればよしとする
         # また、上の部分のint(round(phoneme_length * (24000 / 256)))の影響で
