@@ -45,6 +45,7 @@ from voicevox_engine.model import (
     SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
+    MecabUserDictWord,
     VvlibManifest,
     WordTypes,
 )
@@ -69,6 +70,7 @@ from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
     import_user_dict,
+    export_user_dict,
     read_dict,
     rewrite_word,
     update_dict,
@@ -1052,6 +1054,26 @@ def generate_app(
         except Exception:
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
+
+    @app.get(
+        "/export_user_dict",
+        response_model=Dict[str, MecabUserDictWord],
+        tags=["ユーザー辞書"],
+    )
+    def export_user_dict_words():
+        """
+        ユーザー辞書をそのままエクスポートします。
+
+        Returns
+        -------
+        Dict[str, MecabUserDictWord]
+            単語のUUIDとその詳細
+        """
+        try:
+            return export_user_dict()
+        except Exception:
+            traceback.print_exc()
+            raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
