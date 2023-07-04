@@ -11,7 +11,7 @@ import pyopenjtalk
 from fastapi import HTTPException
 from pydantic import conint
 
-from .model import UserDictWord, WordTypes
+from .model import UserDictWord, WordTypes, MecabUserDictWord
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from .utility import engine_root, get_save_dir, mutex_wrapper
 
@@ -274,6 +274,20 @@ def import_user_dict(
         user_dict_path=user_dict_path,
         compiled_dict_path=compiled_dict_path,
     )
+
+
+@mutex_wrapper(mutex_user_dict)
+def export_user_dict(
+    user_dict_path: Path = user_dict_path,
+) -> Dict[str, MecabUserDictWord]:
+    if not user_dict_path.is_file():
+        return {}
+    with user_dict_path.open(encoding="utf-8") as f:
+        result = {}
+        for word_uuid, word in json.load(f).items():
+            result[str(UUID(word_uuid))] = MecabUserDictWord(**word)
+
+    return result
 
 
 def search_cost_candidates(context_id: int) -> List[int]:
