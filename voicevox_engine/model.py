@@ -152,15 +152,12 @@ USER_DICT_MIN_PRIORITY = 0
 USER_DICT_MAX_PRIORITY = 10
 
 
-class UserDictWord(BaseModel):
+class BaseUserDictWord(BaseModel):
     """
-    辞書のコンパイルに使われる情報
+    ユーザー辞書の基本となる情報
     """
 
     surface: str = Field(title="表層形")
-    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
-        title="優先度"
-    )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")
@@ -234,6 +231,24 @@ class UserDictWord(BaseModel):
                 )
             )
         return mora_count
+
+
+class UserDictWord(BaseUserDictWord):
+    """
+    辞書のコンパイルに使われる情報
+    """
+
+    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
+        title="優先度"
+    )
+
+
+class MecabUserDictWord(BaseUserDictWord):
+    """
+    ローカルで保存されているユーザー定義の情報
+    """
+
+    cost: int = Field(title="コスト")
 
 
 class PartOfSpeechDetail(BaseModel):
