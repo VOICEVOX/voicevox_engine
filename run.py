@@ -241,10 +241,7 @@ def generate_app(
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
-        audio_query = engine.replace_periodic_pitch(
-            query=audio_query, speaker_id=speaker
-        )
-        return audio_query
+        return engine.replace_periodic_pitch(query=audio_query, speaker_id=speaker)
 
     @app.post(
         "/audio_query_from_preset",
@@ -273,7 +270,7 @@ def generate_app(
         accent_phrases = engine.create_accent_phrases(
             text, speaker_id=selected_preset.style_id
         )
-        return AudioQuery(
+        audio_query = AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=selected_preset.speedScale,
             pitchScale=selected_preset.pitchScale,
@@ -284,6 +281,9 @@ def generate_app(
             outputSamplingRate=default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
+        )
+        return engine.replace_periodic_pitch(
+            query=audio_query, speaker_id=selected_preset.style_id
         )
 
     @app.post(
@@ -375,6 +375,20 @@ def generate_app(
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, speaker_id=speaker
         )
+
+    @app.post(
+        "/periodic_pitch",
+        response_model=AudioQuery,
+        tags=["クエリ編集"],
+        summary="音声合成用のクエリから音高の時系列を得る",
+    )
+    def periodic_pitch(
+        query: AudioQuery,
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        engine = get_engine(core_version)
+        return engine.replace_periodic_pitch(query=query, speaker_id=speaker)
 
     @app.post(
         "/synthesis",
