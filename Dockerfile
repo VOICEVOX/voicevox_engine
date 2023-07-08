@@ -23,7 +23,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.0-projects.1
+ARG VOICEVOX_CORE_VERSION=0.15.0-projects.2
 
 RUN <<EOF
     set -eux
@@ -283,14 +283,14 @@ EOF
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
-#!/bin/bash
-set -eux
+    #!/bin/bash
+    set -eux
 
-# Display README for engine
-cat /opt/voicevox_engine/README.md > /dev/stderr
+    # Display README for engine
+    cat /opt/voicevox_engine/README.md > /dev/stderr
 
-exec "\$@"
-EOF
+    exec "\$@"
+    EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
 CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]

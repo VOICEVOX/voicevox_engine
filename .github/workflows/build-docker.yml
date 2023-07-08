@@ -16,7 +16,7 @@ env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.11.3"
   VOICEVOX_RESOURCE_VERSION: "0.15.0-preview.2"
-  VOICEVOX_CORE_VERSION: "0.15.0-projects.1"
+  VOICEVOX_CORE_VERSION: "0.15.0-projects.2"
 
 defaults:
   run:
