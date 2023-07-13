@@ -10,3 +10,8 @@ repos:
         types: [file, python]
         stages: [push]
         pass_filenames: false
+      - id: poetry-export
+        name: poetry-export
+        entry: python poetry_export_all.py
+        language: python
+        stages: [commit]
