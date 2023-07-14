@@ -40,58 +40,21 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
-      - name: Add Path for ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run:
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Add Path for Windows
-        if: matrix.os == 'windows-latest'
-        run:
-          echo "C:\Users\runneradmin\AppData\Roaming\Python\Scripts" >> $GITHUB_PATH
-
-      - name: Run poetry
+      - name: Run poetry and check
         run: |
           poetry export --without-hashes -o requirements.txt.check
           poetry export --without-hashes --with dev -o requirements-dev.txt.check
           poetry export --without-hashes --with test -o requirements-test.txt.check
           poetry export --without-hashes --with license -o requirements-license.txt.check
-
-      - name: Check poetry export ubuntu
-        continue-on-error: true
-        id: poetry_export_check_ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run:
+          
           diff -q requirements.txt requirements.txt.check || \
           diff -q requirements-dev.txt requirements-dev.txt.check || \
           diff -q requirements-test.txt requirements-test.txt.check || \
           diff -q requirements-license.txt requirements-license.txt.check > /dev/null
           if [$? = 1]; then
+            echo "poetry export has some diff"
             exit 1
           fi
-
-      - name: Check poetry export windows
-        continue-on-error: true
-        id: poetry_export_check_windows
-        if: matrix.os == 'windows-latest'
-        run:
-          diff /M requirements.txt requirements.txt.check && \
-          diff /M requirements-dev.txt requirements-dev.txt.check && \
-          diff /M requirements-test.txt requirements-test.txt.check && \
-          diff /M requirements-license.txt requirements-license.txt.check
-          if %ERRORLEVEL% == 1 exit 1
-
-      - name: Check poetry export Error handling
-        if: ${{ steps.poetry_export_check.outcome_ubuntu == 'failure' }}
-        run:
-          echo "poetry export has some diff on ubuntu"
-          exit 1
-
-      - name: Check poetry export Error handling
-        if: ${{ steps.poetry_export_check.outcome_windows == 'failure' }}
-        run:
-          echo "poetry export has some diff on windows"
-          exit 1
 
       - run: pysen run lint
 
