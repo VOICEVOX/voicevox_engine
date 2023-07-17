@@ -10,33 +10,27 @@ repos:
         types: [file, python]
         stages: [push]
         pass_filenames: false
-      - id: pip-install
-        name: pip-install
-        entry: pip install -r requirements.txt
-        language: python
-        pass_filenames: false
-        stages: [commit]
       - id: poetry-export
         name: poetry-export
         entry: poetry export --without-hashes -o requirements.txt
         language: python
+        stages: [push]
         pass_filenames: false
-        stages: [commit]
       - id: poetry-export-dev
         name: poetry-export-dev
         entry: poetry export --without-hashes --with dev -o requirements-dev.txt
         language: python
+        stages: [push]
         pass_filenames: false
-        stages: [commit]
       - id: poetry-export-test
         name: poetry-export-test
         entry: poetry export --without-hashes --with test -o requirements-test.txt
         language: python
+        stages: [push]
         pass_filenames: false
-        stages: [commit]
       - id: poetry-export-license
         name: poetry-export-license
         entry: poetry export --without-hashes --with license -o requirements-license.txt
         language: python
+        stages: [push]
         pass_filenames: false
-        stages: [commit]
