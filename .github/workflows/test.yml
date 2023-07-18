@@ -37,6 +37,22 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
+      - name: Run poetry and check
+        run: |
+          poetry export --without-hashes -o requirements.txt.check
+          poetry export --without-hashes --with dev -o requirements-dev.txt.check
+          poetry export --without-hashes --with test -o requirements-test.txt.check
+          poetry export --without-hashes --with license -o requirements-license.txt.check
+          
+          diff -q requirements.txt requirements.txt.check || \
+          diff -q requirements-dev.txt requirements-dev.txt.check || \
+          diff -q requirements-test.txt requirements-test.txt.check || \
+          diff -q requirements-license.txt requirements-license.txt.check > /dev/null
+          if [ $? = 1 ]; then
+            echo "poetry export has some diff"
+            exit 1
+          fi
+
       - run: pysen run lint
 
       - name: Run pytest and get coverage
