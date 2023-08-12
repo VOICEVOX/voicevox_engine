@@ -1078,7 +1078,7 @@ def generate_app(
         cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
         allow_origin: Optional[str] = Form(None),  # noqa: B008
         user_dictionary_file: Optional[UploadFile] = File(None),  # noqa: B008
-        allow_override: Optional[bool] = Form(False),  # noqa: B008
+        user_dictionary_allow_override: Optional[bool] = Form(False),  # noqa: B008
     ):
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
@@ -1099,7 +1099,7 @@ def generate_app(
                     k: UserDictWord(**v)
                     for k, v in json.load(user_dictionary_file.file).items()
                 },
-                override=allow_override,
+                override=user_dictionary_allow_override,
             )
             message = "設定、辞書を保存しました。"
 
