@@ -1082,8 +1082,6 @@ def generate_app(
         if allow_origin is None:
             allow_origin = ""
 
-        message = "設定を保存しました。"
-
         return setting_ui_template.TemplateResponse(
             "ui.html",
             {
