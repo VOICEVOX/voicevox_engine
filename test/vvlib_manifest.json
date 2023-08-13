@@ -1,0 +1,9 @@
+{
+    "manifest_version": "0.15.0",
+    "name": "Test vvlib",
+    "version": "0.0.1",
+    "uuid": "2bb8bccf-1c3f-4bc9-959a-f388e37af3ad",
+    "engine_name": "Test Engine",
+    "brand_name": "Test",
+    "engine_uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06"
+}

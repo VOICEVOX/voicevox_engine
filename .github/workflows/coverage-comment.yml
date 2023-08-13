@@ -8,6 +8,10 @@ on:
       - completed
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+    
 jobs:
   comment:
     runs-on: ubuntu-latest

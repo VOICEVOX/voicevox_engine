@@ -8,6 +8,7 @@ fi
 rm -r speaker_info
 cp -r $DOWNLOAD_RESOURCE_PATH/character_info speaker_info
 
+# キャラクター情報の前処理をする
 python $DOWNLOAD_RESOURCE_PATH/scripts/clean_character_info.py \
     --character_info_dir speaker_info/
 

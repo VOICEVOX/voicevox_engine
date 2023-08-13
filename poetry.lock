@@ -1657,8 +1657,8 @@ test = ["pytest", "scipy"]
 [package.source]
 type = "git"
 url = "https://github.com/VOICEVOX/pyopenjtalk"
-reference = "827a3fc5c7dda7bbe832c0c69da98e39cc8cb2c3"
-resolved_reference = "827a3fc5c7dda7bbe832c0c69da98e39cc8cb2c3"
+reference = "acd4f02d2af3129382c151590238b9370465e360"
+resolved_reference = "acd4f02d2af3129382c151590238b9370465e360"
 
 [[package]]
 name = "pyrsistent"
@@ -2423,4 +2423,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "bee5ebb211d4814a813a618a1325354c79d66b94bf799c8077339738d567e11f"
+content-hash = "04c3ef7fe6818c50549c98a20666cb79f61b895e9eb6ae8910aa8c39b6d74e03"
