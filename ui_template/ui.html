@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
     <head>
         <meta charset="utf-8" />
@@ -96,12 +96,13 @@
                         type="file"
                         name="user_dictionary_file"
                         accept="application/json"
+                        id="userDictFile"
                     />
                     <input
                         class="ms-3 form-check-input"
                         type="checkbox"
                         name="allow_override"
-                        value="True"
+                        value="true"
                         id="allowOverride"
                     />
                     <label class="mb-3 form-check-label" for="allowOverride"
@@ -191,7 +192,11 @@
                                 >
                                     キャンセル
                                 </button>
-                                <button type="submit" class="btn btn-primary">
+                                <button
+                                    type="button"
+                                    onclick="importUserDict()"
+                                    class="btn btn-primary"
+                                >
                                     インポート
                                 </button>
                             </div>
@@ -213,7 +218,34 @@
                     <div class="toast-body">{{ message }}</div>
                 </div>
             </div>
-            {% endif%}
+            {% endif %}
         </div>
+        <script>
+            const reader = new FileReader();
+
+            const allowOverrideElement =
+                document.getElementById("allowOverride");
+
+            reader.addEventListener("load", async () => {
+                const params = {
+                    override: allowOverrideElement.checked ? true : false,
+                };
+                const query_params = new URLSearchParams(params);
+
+                await fetch(`/import_user_dict?${query_params}`, {
+                    method: "POST",
+                    mode: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: reader.result,
+                });
+                location.pathname = "/setting";
+            });
+
+            const importUserDict = () => {
+                const userDictFile =
+                    document.getElementById("userDictFile").files[0];
+                reader.readAsText(userDictFile);
+            };
+        </script>
     </body>
 </html>

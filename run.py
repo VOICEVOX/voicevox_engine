@@ -1077,8 +1077,6 @@ def generate_app(
         request: Request,
         cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
         allow_origin: Optional[str] = Form(None),  # noqa: B008
-        user_dictionary_file: Optional[UploadFile] = File(None),  # noqa: B008
-        user_dictionary_allow_override: Optional[bool] = Form(False),  # noqa: B008
     ):
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
@@ -1093,15 +1091,7 @@ def generate_app(
         if allow_origin is None:
             allow_origin = ""
 
-        if user_dictionary_file.filename:
-            import_user_dict(
-                {
-                    k: UserDictWord(**v)
-                    for k, v in json.load(user_dictionary_file.file).items()
-                },
-                override=user_dictionary_allow_override,
-            )
-            message = "設定、辞書を保存しました。"
+        message = "設定を保存しました。"
 
         return setting_ui_template.TemplateResponse(
             "ui.html",
