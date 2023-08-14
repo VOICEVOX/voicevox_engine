@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import base64
+import io
 import json
 import multiprocessing
 import os
@@ -16,7 +17,16 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import (
+    FastAPI,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    File,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -327,6 +337,46 @@ def generate_app(
             return engine.create_accent_phrases(text, speaker_id=speaker)
 
     @app.post(
+        "/guide",
+        response_model=AudioQuery,
+        tags=["クエリ編集"],
+        summary="Create Accent Phrase from External Audio",
+    )
+    def guide(
+        query: AudioQuery,
+        speaker: int,
+        ref_path: str,
+        normalize: bool,
+        core_version: Optional[str] = None,
+    ):
+        if not args.enable_guided:
+            raise HTTPException(
+                status_code=404,
+                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
+            )
+        try:
+            file = open(ref_path, "rb")
+        except:
+            raise HTTPException(
+                status_code=422,
+                detail="Invalid wav file",
+            )
+        # use dtype=float32 also normalizes the wav into [-1.0,1.0]
+        wav, sr = soundfile.read(file, dtype="float32")
+
+        # don't forget to close the file stream
+        file.close()
+
+        engine = get_engine(core_version)
+        return engine.guide(
+            query=query,
+            speaker=speaker,
+            ref_wav=wav,
+            sr=sr,
+            normalize=normalize,
+        )
+
+    @app.post(
         "/mora_data",
         response_model=List[AccentPhrase],
         tags=["クエリ編集"],
@@ -475,18 +525,14 @@ def generate_app(
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
-
             with zipfile.ZipFile(f, mode="a") as zip_file:
-
                 for i in range(len(queries)):
-
                     if queries[i].outputSamplingRate != sampling_rate:
                         raise HTTPException(
                             status_code=422, detail="サンプリングレートが異なるクエリがあります"
                         )
 
                     with TemporaryFile() as wav_file:
-
                         wave = engine.synthesis(query=queries[i], speaker_id=speaker)
                         soundfile.write(
                             file=wav_file,
@@ -1222,6 +1268,9 @@ if __name__ == "__main__":
         help="指定すると音声合成を途中でキャンセルできるようになります。",
     )
     parser.add_argument(
+        "--enable_guided", action="store_true", help="入力音声を解析してAudio Queryで返す機能を有効化します。"
+    )
+    parser.add_argument(
         "--init_processes",
         type=int,
         default=2,
@@ -1287,6 +1336,7 @@ if __name__ == "__main__":
         runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
+        enable_guided=args.enable_guided,
         load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"

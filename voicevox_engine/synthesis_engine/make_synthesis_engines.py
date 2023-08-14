@@ -15,6 +15,7 @@ def make_synthesis_engines(
     runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
+    enable_guided: bool = False,
     load_all_models: bool = False,
 ) -> Dict[str, SynthesisEngineBase]:
     """
@@ -36,6 +37,8 @@ def make_synthesis_engines(
         Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     enable_mock: bool, optional, default=True
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
+    enable_guided: bool, optional, default=False
+        入力音声を解析してAudio Queryで返す機能が有効かどうか
     load_all_models: bool, optional, default=False
         起動時に全てのモデルを読み込むかどうか
     """

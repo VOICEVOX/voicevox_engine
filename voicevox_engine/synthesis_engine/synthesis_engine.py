@@ -9,6 +9,9 @@ from ..acoustic_feature_extractor import OjtPhoneme
 from ..model import AccentPhrase, AudioQuery, Mora
 from .core_wrapper import CoreWrapper, OldCoreError
 from .synthesis_engine_base import SynthesisEngineBase
+from ..guided import extractor
+from ..kana_parser import parse_kana
+
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -500,3 +503,43 @@ class SynthesisEngine(SynthesisEngineBase):
             wave = numpy.array([wave, wave]).T
 
         return wave
+
+    def guide(
+        self,
+        query: AudioQuery,
+        speaker: int,
+        ref_wav: numpy.ndarray,
+        sr: int,
+        normalize: bool,
+    ) -> AudioQuery:
+        # stereo to mono
+        if len(ref_wav.shape) == 2:
+            ref_wav = numpy.sum(ref_wav, axis=1) / 2
+        # note: pit and dur now have the same length
+        dur, pit = extractor.extract(ref_wav, sr, query)
+
+        if normalize:
+            predicted_phrases = self.replace_mora_pitch(query.accent_phrases, speaker)
+            predicted_pitch = []
+            for accent_phrase in predicted_phrases:
+                for mora in accent_phrase.moras:
+                    predicted_pitch.append(mora.pitch)
+            mean_predicted_pitch = sum(predicted_pitch) / len(predicted_pitch)
+            diff_factor = mean_predicted_pitch - numpy.average(pit[pit > 2])
+            pit += diff_factor
+
+        # replace parameters
+        idx = 0
+        for accent_phrase in query.accent_phrases:
+            for mora in accent_phrase.moras:
+                if mora.consonant is not None:
+                    mora.consonant_length = dur[idx]
+                    mora.vowel_length = dur[idx + 1]
+                    mora.pitch = (pit[idx] + pit[idx + 1]) / 2
+                    idx += 2
+                else:
+                    mora.vowel_length = dur[idx]
+                    mora.pitch = pit[idx]
+                    idx += 1
+        # assert idx == pit.shape[0]
+        return query
