@@ -266,4 +266,27 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         normalize: bool,
         model_path: str,
     ) -> AudioQuery:
+        """
+        参照音声を解析して、解析されたものでqueryのピッチと長さを取り替える
+
+        Parameters
+        ----------
+        query: AudioQuery
+            /audio_query APIで得たjson
+        speaker: int
+            話者
+        ref_wav: np.ndarray
+            参照音声
+        sr: int
+            参照音声のサンプリングレート
+        normalize: bool
+            解析されたピッチを予測されたものに合わせるかどうか
+        model_path: str
+            `forced alignment`のために使うモデルファイル
+        
+        Returns
+        -------
+        AudioQuery
+            ピッチと長さが取り替えされたquery
+        """
         raise NotImplementedError()

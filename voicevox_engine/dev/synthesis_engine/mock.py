@@ -77,6 +77,40 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         return accent_phrases
 
+    def guide(
+        self,
+        query: AudioQuery,
+        speaker: int,
+        ref_wav: np.ndarray,
+        sr: int,
+        normalize: bool,
+        model_path: str,
+    ):
+        """
+        guide 入力queryを変更せずにそのまま返します [Mock]
+
+        Parameters
+        ----------
+        query: AudioQuery
+            /audio_query APIで得たjson
+        speaker: int
+            話者
+        ref_wav: np.ndarray
+            参照音声
+        sr: int
+            参照音声のサンプリングレート
+        normalize: bool
+            解析されたピッチを予測されたものに合わせるかどうか
+        model_path: str
+            `forced alignment`のために使うモデルファイル
+
+        Returns
+        -------
+        AudioQuery
+            query （変更なし）
+        """
+        return query
+
     def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
