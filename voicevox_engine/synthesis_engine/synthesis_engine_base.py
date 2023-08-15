@@ -264,5 +264,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         speaker: int,
         ref_wav: np.ndarray,
         normalize: bool,
+        model_path: str,
     ) -> AudioQuery:
         raise NotImplementedError()

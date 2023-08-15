@@ -364,6 +364,7 @@ def generate_app(
             ref_wav=wav,
             sr=sr,
             normalize=normalize,
+            model_path=args.guide_model,
         )
 
     @app.post(
@@ -1259,6 +1260,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--enable_guided", action="store_true", help="入力音声を解析してAudio Queryで返す機能を有効化します。"
+    )
+    parser.add_argument(
+        "--guide_model",
+        type=Path,
+        default="cv_jp.bin",
+        help="guided機能に入力音声の発音の長さを解析するため必要なモデルファイルです。",
     )
     parser.add_argument(
         "--init_processes",

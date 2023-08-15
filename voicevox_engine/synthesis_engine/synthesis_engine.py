@@ -509,12 +509,13 @@ class SynthesisEngine(SynthesisEngineBase):
         ref_wav: numpy.ndarray,
         sr: int,
         normalize: bool,
+        model_path: str
     ) -> AudioQuery:
         # stereo to mono
         if len(ref_wav.shape) == 2:
             ref_wav = numpy.sum(ref_wav, axis=1) / 2
         # note: pit and dur now have the same length
-        dur, pit = extractor.extract(ref_wav, sr, query)
+        dur, pit = extractor.extract(ref_wav, sr, query, model_path)
 
         if normalize:
             predicted_phrases = self.replace_mora_pitch(query.accent_phrases, speaker)
