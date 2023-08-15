@@ -283,7 +283,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             解析されたピッチを予測されたものに合わせるかどうか
         model_path: str
             `forced alignment`のために使うモデルファイル
-        
+
         Returns
         -------
         AudioQuery
