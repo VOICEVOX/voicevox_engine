@@ -1,14 +1,12 @@
 import os
-import snfa
+from typing import List, Optional
+
 import numpy as np
 import pyworld as pw
-
-from typing import List, Optional
-from snfa.viterbi import Segment
+import snfa
 from scipy.signal import resample
-from .converter import conv2openjtalk
-from ..model import AudioQuery
 
+from ..model import AudioQuery
 
 aligner: Optional[snfa.Aligner] = None
 model_path = "cv_jp.bin"
@@ -41,7 +39,7 @@ def align(wav: np.ndarray, src_sr: int, query: AudioQuery):
         wav = np.sum(wav, axis=1) / 2
     wav = resample(wav, aligner.sr * wav.shape[0] // src_sr)
     ph = query2phoneme(query)
-    segments, _, _, _, _ = aligner(wav, ph, use_sec=False)
+    segments, *_ = aligner(wav, ph, use_sec=False)
 
     # scale to 24000hz
     resample_factor = src_sr / aligner.sr
@@ -72,4 +70,5 @@ def extract(wav: np.ndarray, src_sr: int, query: AudioQuery):
 
     for idx, seg in enumerate(segments):
         normed_pit[idx] = np.average(pitch[seg.start : seg.end])
+
     return frame_to_time(duration, src_sr)[1:-1], normed_pit[1:-1]

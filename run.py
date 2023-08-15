@@ -1,7 +1,6 @@
 import argparse
 import asyncio
 import base64
-import io
 import json
 import multiprocessing
 import os
@@ -17,16 +16,7 @@ from typing import Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import (
-    FastAPI,
-    Form,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-    File,
-    UploadFile,
-)
+from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -356,7 +346,7 @@ def generate_app(
             )
         try:
             file = open(ref_path, "rb")
-        except:
+        except Exception:
             raise HTTPException(
                 status_code=422,
                 detail="Invalid wav file",

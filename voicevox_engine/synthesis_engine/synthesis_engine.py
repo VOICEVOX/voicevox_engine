@@ -6,12 +6,10 @@ import numpy
 from scipy.signal import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme
+from ..guided import extractor
 from ..model import AccentPhrase, AudioQuery, Mora
 from .core_wrapper import CoreWrapper, OldCoreError
 from .synthesis_engine_base import SynthesisEngineBase
-from ..guided import extractor
-from ..kana_parser import parse_kana
-
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -541,5 +539,8 @@ class SynthesisEngine(SynthesisEngineBase):
                     mora.vowel_length = dur[idx]
                     mora.pitch = pit[idx]
                     idx += 1
+            if accent_phrase.pause_mora is not None:
+                accent_phrase.pause_mora.consonant_length = dur[idx]
+                idx += 1
         # assert idx == pit.shape[0]
         return query
