@@ -2106,6 +2106,21 @@ files = [
 ]
 
 [[package]]
+name = "snfa"
+version = "0.0.1"
+description = "a simple neural forced aligner for phoneme to audio alignment"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "snfa-0.0.1-py3-none-any.whl", hash = "sha256:efaae97af477fb6da070be5397469e21d9519d83ed296f36dce1f612cf7ee114"},
+    {file = "snfa-0.0.1.tar.gz", hash = "sha256:0e150246289014bea8e7c9bf9c473eb1e105dd62996810e7ddf65ee536acc47c"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
@@ -2423,4 +2438,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "04c3ef7fe6818c50549c98a20666cb79f61b895e9eb6ae8910aa8c39b6d74e03"
+content-hash = "013f65e869ab1f48650d9ebe9aa7af5f6534196daf3283bacf2ea56a018bee45"
