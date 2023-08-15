@@ -69,11 +69,14 @@ def _guard_long_vowel(segments: List[Segment]):
     """
     seg_idx = 0
     while seg_idx < len(segments) - 1:
-        if segments[seg_idx].label == segments[seg_idx].label and segments[seg_idx].length < 2:
+        if (
+            segments[seg_idx].label == segments[seg_idx].label
+            and segments[seg_idx].length < 2
+        ):
             mid_point = (segments[seg_idx].start + segments[seg_idx + 1].end) // 2
             segments[seg_idx].end = mid_point
             segments[seg_idx + 1].start = mid_point
-            seg_idx += 2 # skip this long vowel
+            seg_idx += 2  # skip this long vowel
         else:
             seg_idx += 1
     return segments

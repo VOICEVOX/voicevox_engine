@@ -509,7 +509,7 @@ class SynthesisEngine(SynthesisEngineBase):
         ref_wav: numpy.ndarray,
         sr: int,
         normalize: bool,
-        model_path: str
+        model_path: str,
     ) -> AudioQuery:
         # stereo to mono
         if len(ref_wav.shape) == 2:
