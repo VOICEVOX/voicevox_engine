@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 # このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
-from PyInstaller.utils.hooks import collect_data_files
 import os
+
+from PyInstaller.utils.hooks import collect_data_files
 
 datas = [
     ('engine_manifest_assets', 'engine_manifest_assets'),
@@ -12,9 +13,15 @@ datas = [
     ('presets.yaml', '.'),
     ('default_setting.yml', '.'),
     ('ui_template', 'ui_template'),
-    ('model', 'model'),
 ]
 datas += collect_data_files('pyopenjtalk')
+
+core_model_dir_path = os.environ.get('CORE_MODEL_DIR_PATH')
+if core_model_dir_path:
+    print('CORE_MODEL_DIR_PATH is found:', core_model_dir_path)
+    if not os.path.isdir(core_model_dir_path):
+        raise Exception("CORE_MODEL_DIR_PATH was found, but it is not directory!")
+    datas += [(core_model_dir_path, "model")]
 
 # コアとONNX Runtimeはバイナリであるが、`binaries`に加えると
 # 依存関係のパスがPyInstallerに書き換えらるので、`datas`に加える
