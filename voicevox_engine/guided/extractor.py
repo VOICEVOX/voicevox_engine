@@ -60,9 +60,30 @@ def _seg2time(segments: List[Segment]):
     return duration * aligner.hop_size / aligner.sr
 
 
+def _guard_long_vowel(segments: List[Segment]):
+    """
+    `snfa` tends to collapse long vowels like `そう` and `どう`
+    by giving more duration to the latter one and too little for the former.
+    This function detects long vowels and gives 1/2 of
+    latter one's duration to its former neighbour.
+    """
+    seg_idx = 0
+    while seg_idx < len(segments) - 1:
+        if segments[seg_idx].label == segments[seg_idx].label and segments[seg_idx].length < 2:
+            mid_point = (segments[seg_idx].start + segments[seg_idx + 1].end) // 2
+            segments[seg_idx].end = mid_point
+            segments[seg_idx + 1].start = mid_point
+            seg_idx += 2 # skip this long vowel
+        else:
+            seg_idx += 1
+    return segments
+
+
 def extract(wav: np.ndarray, src_sr: int, query: AudioQuery, model_path: str):
     _lazy_init(model_path)
     segments = _align(wav, src_sr, query)
+
+    segments = _guard_long_vowel(segments)
 
     world_wav = wav.astype(np.double)
     pitch, _ = pw.harvest(world_wav, src_sr, frame_period=1.0)
