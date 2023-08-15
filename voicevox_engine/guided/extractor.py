@@ -5,6 +5,7 @@ import numpy as np
 import pyworld as pw
 import snfa
 from scipy.signal import resample
+from snfa.viterbi import Segment
 
 from ..model import AudioQuery
 
@@ -41,17 +42,25 @@ def align(wav: np.ndarray, src_sr: int, query: AudioQuery):
     ph = query2phoneme(query)
     segments, *_ = aligner(wav, ph, use_sec=False)
 
-    # scale to 24000hz
-    resample_factor = src_sr / aligner.sr
-    for seg in segments:
-        seg.start = int(seg.start * resample_factor)
-        seg.end = int(seg.end * resample_factor)
-
     return segments
 
 
-def frame_to_time(dur: np.ndarray, src_sr: int):
-    return dur * aligner.hop_size / src_sr
+def norm_pitch(segments: List[Segment], pitch: np.ndarray):
+    dur_length = sum([seg.length for seg in segments])
+    scale_factor = pitch.shape[0] / dur_length
+    normed_pitch = []
+    for seg in segments:
+        normed_pitch.append(
+            np.average(
+                pitch[int(seg.start * scale_factor) : int(seg.end * scale_factor)]
+            )
+        )
+    return np.array(normed_pitch)
+
+
+def seg2time(segments: List[Segment]):
+    duration = np.array([seg.length for seg in segments])
+    return duration * aligner.hop_size / aligner.sr
 
 
 def extract(wav: np.ndarray, src_sr: int, query: AudioQuery):
@@ -60,15 +69,8 @@ def extract(wav: np.ndarray, src_sr: int, query: AudioQuery):
     world_wav = wav.astype(np.double)
     pitch, _ = pw.harvest(world_wav, src_sr, frame_period=1.0)
 
-    duration = np.array([seg.length for seg in segments])
-    length = np.sum(duration)
+    pitch = np.clip(np.log(pitch + 1e-5), 0, 6.5)  # 1e-5 to avoid log on zero
 
-    pitch = np.clip(resample(pitch, length), 0, np.inf)
-    pitch = np.clip(np.log(pitch + 1e-9), 0, 6.5)
+    normed_pit = norm_pitch(segments, pitch)
 
-    normed_pit = np.zeros_like(duration, dtype=np.float32)
-
-    for idx, seg in enumerate(segments):
-        normed_pit[idx] = np.average(pitch[seg.start : seg.end])
-
-    return frame_to_time(duration, src_sr)[1:-1], normed_pit[1:-1]
+    return seg2time(segments)[1:-1], normed_pit[1:-1]
