@@ -1,8 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 # このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
-import os
-
 from PyInstaller.utils.hooks import collect_data_files
+import os
 
 datas = [
     ('engine_manifest_assets', 'engine_manifest_assets'),
