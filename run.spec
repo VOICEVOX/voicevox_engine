@@ -13,6 +13,7 @@ datas = [
     ('default_setting.yml', '.'),
     ('ui_template', 'ui_template'),
     ('model', 'model'),
+    ('cv_jp.bin', '.')
 ]
 datas += collect_data_files('pyopenjtalk')
 
