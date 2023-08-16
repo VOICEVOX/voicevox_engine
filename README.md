@@ -492,10 +492,14 @@ python -m pip install -r requirements-dev.txt
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
-# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
-    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-    pyinstaller --noconfirm run.spec
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec
 ```
 
 ## 依存関係

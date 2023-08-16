@@ -436,10 +436,6 @@ jobs:
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
           rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
-      - name: Copy VOICEVOX Core Models
-        run: |
-          cp -r download/core/model ./
-
       - name: Generate licenses.json
         run: |
           OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
@@ -467,6 +463,7 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
           fi
 
+          CORE_MODEL_DIR_PATH="download/core/model" \
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
           pyinstaller --noconfirm run.spec
