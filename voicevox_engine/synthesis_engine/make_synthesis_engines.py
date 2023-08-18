@@ -81,6 +81,7 @@ def make_synthesis_engines(
                 core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
                 metas = json.loads(core.metas())
                 core_version = metas[0]["version"]
+                print(f"Info: Loading core {core_version}.")
                 if core_version in synthesis_engines:
                     print(
                         "Warning: Core loading is skipped because of version duplication.",
@@ -115,6 +116,7 @@ def make_synthesis_engines(
         from ..dev.synthesis_engine import MockSynthesisEngine
 
         if "0.0.0" not in synthesis_engines:
+            print("Info: Loading mock.")
             synthesis_engines["0.0.0"] = MockSynthesisEngine(
                 speakers=mock_metas(), supported_devices=mock_supported_devices()
             )
