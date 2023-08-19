@@ -196,6 +196,7 @@
                                     type="button"
                                     onclick="importUserDict()"
                                     class="btn btn-primary"
+                                    data-bs-dismiss="modal"
                                 >
                                     インポート
                                 </button>
@@ -207,24 +208,34 @@
         </div>
 
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
-            {% if message %}
             <div
                 class="toast align-items-center show text-white bg-success fade"
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
+                id="toast"
+                style="visibility: hidden"
             >
                 <div class="d-flex">
-                    <div class="toast-body">{{ message }}</div>
+                    <div class="toast-body"></div>
                 </div>
             </div>
-            {% endif %}
         </div>
         <script>
             const reader = new FileReader();
 
             const allowOverrideElement =
                 document.getElementById("allowOverride");
+
+            const toast = document.getElementById("toast");
+            const toastBody = toast.getElementsByClassName("toast-body");
+
+            var msg = "{{message}}";
+
+            if (msg) {
+                toast.style.visibility = "visible";
+                toastBody[0].innerHTML = msg;
+            }
 
             reader.addEventListener("load", async () => {
                 const params = {
@@ -238,7 +249,9 @@
                     headers: { "Content-Type": "application/json" },
                     body: reader.result,
                 });
-                location.pathname = "/setting";
+
+                toast.style.visibility = "visible";
+                toastBody[0].innerHTML = "辞書を保存しました。";
             });
 
             const importUserDict = () => {
