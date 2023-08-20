@@ -38,7 +38,7 @@ def make_synthesis_engines(
     enable_mock: bool, optional, default=True
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     enable_guided: bool, optional, default=False
-        入力音声を解析してAudio Queryで返す機能が有効かどうか
+        入力音声を解析して音声合成クエリで返す機能が有効かどうか
     load_all_models: bool, optional, default=False
         起動時に全てのモデルを読み込むかどうか
     """
