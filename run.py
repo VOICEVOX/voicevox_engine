@@ -1256,7 +1256,7 @@ if __name__ == "__main__":
         help="指定すると音声合成を途中でキャンセルできるようになります。",
     )
     parser.add_argument(
-        "--enable_guided", action="store_true", help="入力音声を解析してAudio Queryで返す機能を有効化します。"
+        "--enable_guided", action="store_true", help="入力音声を解析して音声合成クエリで返す機能を有効化します。"
     )
     parser.add_argument(
         "--guide_model",
