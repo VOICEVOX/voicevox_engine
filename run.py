@@ -345,17 +345,14 @@ def generate_app(
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         try:
-            file = open(ref_path, "rb")
+            with open(ref_path, "rb") as file:
+                # use dtype=float32 also normalizes the wav into [-1.0,1.0]
+                wav, sr = soundfile.read(file, dtype="float32")
         except Exception:
             raise HTTPException(
                 status_code=422,
                 detail="Invalid wav file",
             )
-        # use dtype=float32 also normalizes the wav into [-1.0,1.0]
-        wav, sr = soundfile.read(file, dtype="float32")
-
-        # don't forget to close the file stream
-        file.close()
 
         engine = get_engine(core_version)
         return engine.guide(
