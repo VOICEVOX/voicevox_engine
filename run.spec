@@ -17,6 +17,13 @@ datas = [
 ]
 datas += collect_data_files('pyopenjtalk')
 
+core_model_dir_path = os.environ.get('CORE_MODEL_DIR_PATH')
+if core_model_dir_path:
+    print('CORE_MODEL_DIR_PATH is found:', core_model_dir_path)
+    if not os.path.isdir(core_model_dir_path):
+        raise Exception("CORE_MODEL_DIR_PATH was found, but it is not directory!")
+    datas += [(core_model_dir_path, "model")]
+
 # コアとONNX Runtimeはバイナリであるが、`binaries`に加えると
 # 依存関係のパスがPyInstallerに書き換えらるので、`datas`に加える
 # 参考: https://github.com/VOICEVOX/voicevox_engine/pull/446#issuecomment-1210052318

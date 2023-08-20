@@ -499,9 +499,14 @@ bash build_util/create_venv_and_generate_licenses.bash
 wget -N https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin ./cv_jp.bin
 
 # ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
-    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-    pyinstaller --noconfirm run.spec
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec
 ```
 
 ## 依存関係
