@@ -1,5 +1,5 @@
 [tool.pysen]
-version = "0.10.5"
+version = "0.10.3"
 
 [tool.pysen.lint]
 enable_black = true
