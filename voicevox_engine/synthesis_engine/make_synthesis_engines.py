@@ -15,7 +15,6 @@ def make_synthesis_engines(
     runtime_dirs: Optional[List[Path]] = None,
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
-    enable_guided: bool = False,
     load_all_models: bool = False,
 ) -> Dict[str, SynthesisEngineBase]:
     """

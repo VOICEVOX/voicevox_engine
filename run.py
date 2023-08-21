@@ -1330,7 +1330,6 @@ if __name__ == "__main__":
         runtime_dirs=args.runtime_dir,
         cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
-        enable_guided=args.enable_guided,
         load_all_models=args.load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
