@@ -813,13 +813,13 @@ files = [
 
 [[package]]
 name = "identify"
-version = "2.5.26"
+version = "2.5.27"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.26-py2.py3-none-any.whl", hash = "sha256:c22a8ead0d4ca11f1edd6c9418c3220669b3b7533ada0a0ffa6cc0ef85cf9b54"},
-    {file = "identify-2.5.26.tar.gz", hash = "sha256:7243800bce2f58404ed41b7c002e53d4d22bcf3ae1b7900c2d7aefd95394bf7f"},
+    {file = "identify-2.5.27-py2.py3-none-any.whl", hash = "sha256:fdb527b2dfe24602809b2201e033c2a113d7bdf716db3ca8e3243f735dcecaba"},
+    {file = "identify-2.5.27.tar.gz", hash = "sha256:287b75b04a0e22d727bc9a41f0d4f3c1bcada97490fa6eabb5b28f0e9097e733"},
 ]
 
 [package.extras]
@@ -1371,13 +1371,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "poetry"
-version = "1.6.0"
+version = "1.6.1"
 description = "Python dependency management and packaging made easy."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "poetry-1.6.0-py3-none-any.whl", hash = "sha256:3b0b0a5f1e556115a48950f1ae20bd62431c9390188a3372c8d7da5f1a8a3a38"},
-    {file = "poetry-1.6.0.tar.gz", hash = "sha256:77324092ab3b3f975a87a2893a53152cbac7853c8359204b828f0d96f078e4c7"},
+    {file = "poetry-1.6.1-py3-none-any.whl", hash = "sha256:9b4cb6079c08cc0d91e8cba18a6bd4d4f7d7830263a7fb18ecb3faa77937c988"},
+    {file = "poetry-1.6.1.tar.gz", hash = "sha256:0ab9b1a592731cc8b252b8d6aaeea19c72cc0a109d7468b829ad57e6c48039d2"},
 ]
 
 [package.dependencies]
@@ -1396,7 +1396,7 @@ platformdirs = ">=3.0.0,<4.0.0"
 poetry-core = "1.7.0"
 poetry-plugin-export = ">=1.5.0,<2.0.0"
 pyproject-hooks = ">=1.0.0,<2.0.0"
-requests = ">=2.18,<3.0"
+requests = ">=2.26,<3.0"
 requests-toolbelt = ">=0.9.1,<2"
 shellingham = ">=1.5,<2.0"
 tomlkit = ">=0.11.4,<1.0.0"
@@ -1617,15 +1617,14 @@ files = [
 
 [[package]]
 name = "pyopenjtalk"
-version = "0.3.0+acd4f02"
-description = "A python wrapper for OpenJTalk"
+version = "0.3.0"
+description = ""
 optional = false
 python-versions = "*"
 files = []
 develop = false
 
 [package.dependencies]
-cython = ">=0.21.0"
 numpy = ">=1.20.0"
 six = "*"
 tqdm = "*"
@@ -2381,4 +2380,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "04c3ef7fe6818c50549c98a20666cb79f61b895e9eb6ae8910aa8c39b6d74e03"
+content-hash = "2e48da102cf90ac7623e393ba46b79bcf6b80c90be3b34ff17f36db5747e903d"
