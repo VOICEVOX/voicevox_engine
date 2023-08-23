@@ -76,15 +76,18 @@
                     保存
                 </button>
 
+                <hr />
+
                 <div id="mb-3">
                     <label class="form-label"
                         >ユーザー辞書のエクスポート&インポート</label
                     >
                     <div class="form-text">辞書のエクスポートをします。</div>
                     <a
-                        download
-                        class="btn btn-primary m-3"
+                        download="VOICEVOXユーザー辞書.json"
+                        class="btn btn-primary mb-3"
                         href="/user_dict"
+                        onclick="showToastWithMessage('辞書をエクスポートしました。');"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -110,6 +113,7 @@
                     >
                 </div>
 
+                <!-- TODO: 辞書パスが未入力の場合Disableにする -->
                 <button
                     type="button"
                     class="btn btn-primary"
@@ -209,12 +213,11 @@
 
         <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
             <div
-                class="toast align-items-center show text-white bg-success fade"
+                class="toast align-items-center hide text-white bg-success"
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
                 id="toast"
-                style="visibility: hidden"
             >
                 <div class="d-flex">
                     <div class="toast-body"></div>
@@ -227,14 +230,19 @@
             const allowOverrideElement =
                 document.getElementById("allowOverride");
 
-            const toast = document.getElementById("toast");
-            const toastBody = toast.getElementsByClassName("toast-body");
+            const toastElement = document.getElementById("toast");
+            const toast = new bootstrap.Toast(toastElement);
+            const toastBody = toastElement.getElementsByClassName("toast-body");
 
+            const showToastWithMessage = (message) => {
+                toast.show();
+                toastBody[0].innerHTML = message;
+            };
+
+            // 読み込み時にメッセージがあれば表示する
             var msg = "{{message}}";
-
             if (msg) {
-                toast.style.visibility = "visible";
-                toastBody[0].innerHTML = msg;
+                showToastWithMessage(msg);
             }
 
             reader.addEventListener("load", async () => {
@@ -250,8 +258,7 @@
                     body: reader.result,
                 });
 
-                toast.style.visibility = "visible";
-                toastBody[0].innerHTML = "辞書を保存しました。";
+                showToastWithMessage("辞書をインポートしました。");
             });
 
             const importUserDict = () => {
