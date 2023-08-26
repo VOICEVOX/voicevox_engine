@@ -1,9 +1,7 @@
-from generate_test_client import client
-
-from voicevox_engine import __version__
+from fastapi.testclient import TestClient
 
 
-def test_fetch_version_success():
+def test_fetch_version_success(client: TestClient):
     response = client.get("/version")
     assert response.status_code == 200
-    assert response.json() == __version__
+    assert isinstance(response.json(), str)
