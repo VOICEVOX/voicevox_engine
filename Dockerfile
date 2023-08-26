@@ -272,6 +272,11 @@ RUN <<EOF
     fi
 EOF
 
+# Download snfa's forced aligner model
+RUN <<EOF
+    curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
+EOF
+
 # Download Resource
 ARG VOICEVOX_RESOURCE_VERSION=0.14.3
 RUN <<EOF
