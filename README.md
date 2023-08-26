@@ -364,7 +364,7 @@ python -m pip install -r requirements-dev.txt -r requirements-test.txt
 python -m pip install -r requirements.txt
 
 # `guide`APIもほしい方
-wget https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin ./cv_jp.bin
+curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 ```
 
 ## 実行
@@ -496,7 +496,7 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
 # `guide`を有効化するモデル、重複ダウンロードしないように`-N`をつけます
-wget -N https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin ./cv_jp.bin
+curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 
 # ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
 # モックでビルドする場合
