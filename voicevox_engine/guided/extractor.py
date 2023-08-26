@@ -45,13 +45,15 @@ def _align(wav: np.ndarray, src_sr: int, query: AudioQuery):
 def _norm_pitch(segments: List[Segment], pitch: np.ndarray):
     dur_length = sum([seg.length for seg in segments])
     scale_factor = pitch.shape[0] / dur_length
+    threshold = 1.0
     normed_pitch = []
     for seg in segments:
-        normed_pitch.append(
-            np.average(
-                pitch[int(seg.start * scale_factor) : int(seg.end * scale_factor)]
-            )
-        )
+        pitch_seg = pitch[int(seg.start * scale_factor) : int(seg.end * scale_factor)]
+        pitch_seg = pitch_seg[pitch_seg > threshold]
+        if pitch_seg.shape[0] == 0:
+            normed_pitch.append(0.0)
+        else:
+            normed_pitch.append(np.average(pitch_seg))
     return np.array(normed_pitch)
 
 
@@ -91,7 +93,7 @@ def extract(wav: np.ndarray, src_sr: int, query: AudioQuery, model_path: str):
     world_wav = wav.astype(np.double)
     pitch, _ = pw.harvest(world_wav, src_sr, frame_period=1.0)
 
-    pitch = np.clip(np.log(pitch + 1e-5), 0, 6.5)  # 1e-5 to avoid log on zero
+    pitch = np.log(pitch + 1e-5)  # 1e-5 to avoid log on zero
 
     normed_pit = _norm_pitch(segments, pitch)
 

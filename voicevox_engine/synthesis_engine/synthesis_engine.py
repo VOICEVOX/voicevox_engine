@@ -522,10 +522,13 @@ class SynthesisEngine(SynthesisEngineBase):
             predicted_pitch = []
             for accent_phrase in predicted_phrases:
                 for mora in accent_phrase.moras:
-                    predicted_pitch.append(mora.pitch)
+                    if mora.pitch > 0.0:
+                        predicted_pitch.append(mora.pitch)
             mean_predicted_pitch = sum(predicted_pitch) / len(predicted_pitch)
-            diff_factor = mean_predicted_pitch - numpy.average(pit[pit > 2])
+            diff_factor = mean_predicted_pitch - numpy.average(pit[pit > 0])
             pit += diff_factor
+
+        pit = numpy.clip(pit, 0, 6.5)
 
         # replace parameters
         idx = 0
