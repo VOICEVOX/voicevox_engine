@@ -519,12 +519,9 @@ class SynthesisEngine(SynthesisEngineBase):
 
         if normalize:
             predicted_phrases = self.replace_mora_pitch(query.accent_phrases, speaker)
-            predicted_pitch = []
-            for accent_phrase in predicted_phrases:
-                for mora in accent_phrase.moras:
-                    if mora.pitch > 0.0:
-                        predicted_pitch.append(mora.pitch)
-            mean_predicted_pitch = sum(predicted_pitch) / len(predicted_pitch)
+            mora_list = to_flatten_moras(predicted_phrases)
+            predicted_pit = numpy.array([mora.pitch for mora in mora_list])
+            mean_predicted_pitch = numpy.average(predicted_pit[predicted_pit > 0])
             diff_factor = mean_predicted_pitch - numpy.average(pit[pit > 0])
             pit += diff_factor
 
