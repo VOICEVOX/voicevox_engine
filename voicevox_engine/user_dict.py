@@ -244,7 +244,7 @@ def import_user_dict(
     # 念のため型チェックを行う
     for word_uuid, word in dict_data.items():
         UUID(word_uuid)
-        assert type(word) == UserDictWord
+        assert isinstance(word, UserDictWord)
         for pos_detail in part_of_speech_data.values():
             if word.context_id == pos_detail.context_id:
                 assert word.part_of_speech == pos_detail.part_of_speech
