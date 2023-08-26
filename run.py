@@ -357,7 +357,7 @@ def generate_app(
         engine = get_engine(core_version)
         return engine.guide(
             query=query,
-            speaker=speaker,
+            speaker_id=speaker,
             ref_wav=wav,
             sr=sr,
             normalize=normalize,

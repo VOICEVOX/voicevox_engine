@@ -505,7 +505,7 @@ class SynthesisEngine(SynthesisEngineBase):
     def guide(
         self,
         query: AudioQuery,
-        speaker: int,
+        speaker_id: int,
         ref_wav: numpy.ndarray,
         sr: int,
         normalize: bool,
@@ -518,7 +518,7 @@ class SynthesisEngine(SynthesisEngineBase):
         dur, pit = extractor.extract(ref_wav, sr, query, model_path)
 
         if normalize:
-            predicted_phrases = self.replace_mora_pitch(query.accent_phrases, speaker)
+            predicted_phrases = self.replace_mora_pitch(query.accent_phrases, speaker_id)
             mora_list = to_flatten_moras(predicted_phrases)
             predicted_pit = numpy.array([mora.pitch for mora in mora_list])
             mean_predicted_pitch = numpy.average(predicted_pit[predicted_pit > 0])

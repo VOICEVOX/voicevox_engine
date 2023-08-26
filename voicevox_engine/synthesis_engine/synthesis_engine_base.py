@@ -261,7 +261,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def guide(
         self,
         query: AudioQuery,
-        speaker: int,
+        speaker_id: int,
         ref_wav: np.ndarray,
         normalize: bool,
         model_path: str,
