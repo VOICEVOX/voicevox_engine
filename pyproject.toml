@@ -50,11 +50,11 @@ soundfile = "^0.10.3.post1"
 scipy = "^1.7.1"
 pyyaml = "^6.0"
 pyworld = "^0.3.0"
-appdirs = "^1.4.4"
 requests = "^2.28.1"
 jinja2 = "^3.1.2"
 pyopenjtalk = {git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "acd4f02d2af3129382c151590238b9370465e360"}
 semver = "^3.0.0"
+platformdirs = "^3.10.0"
 
 [tool.poetry.group.dev.dependencies]
 cython = "^0.29.34,>=0.29.33" # NOTE: for Python 3.11
