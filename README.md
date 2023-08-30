@@ -459,6 +459,12 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
+## テスト
+
+```bash
+python -m pytest
+```
+
 ## タイポチェック
 
 [typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
