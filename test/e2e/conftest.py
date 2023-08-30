@@ -13,7 +13,7 @@ from voicevox_engine.utility.core_version_utility import get_latest_core_version
 def client():
     synthesis_engines = make_synthesis_engines(use_gpu=False)
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
-    setting_loader = SettingLoader(Path("./e2e_test_setting.yml"))
+    setting_loader = SettingLoader(Path("./default_setting.yml"))
 
     return TestClient(
         generate_app(
