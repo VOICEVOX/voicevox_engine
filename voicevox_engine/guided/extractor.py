@@ -86,6 +86,10 @@ def _guard_long_vowel(segments: List[Segment]):
 
 def extract(wav: np.ndarray, src_sr: int, query: AudioQuery, model_path: str):
     _lazy_init(model_path)
+    # stereo to mono
+    if len(wav.shape) == 2:
+        wav = np.sum(wav, axis=1) / 2
+
     segments = _align(wav, src_sr, query)
 
     segments = _guard_long_vowel(segments)
