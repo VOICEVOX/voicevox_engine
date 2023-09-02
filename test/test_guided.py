@@ -1,9 +1,10 @@
 import os
 from unittest import TestCase
+
 import soundfile as sf
 
 from voicevox_engine.guided.extractor import extract
-from voicevox_engine.model import AudioQuery, AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 
 
 class TestGuided(TestCase):
@@ -145,4 +146,6 @@ class TestGuided(TestCase):
         ref_path = os.path.join(root, "test", "ref_audio.wav")
         wav, sr = sf.read(ref_path)
         assert os.path.exists("cv_jp.bin"), "forced alignment model doesn't exist"
-        extract(wav, sr, query=self.audio_query, model_path="cv_jp.bin") # as long as it doesn't throw expections it's okay
+        extract(
+            wav, sr, query=self.audio_query, model_path="cv_jp.bin"
+        )  # as long as it doesn't throw exceptions it's okay
