@@ -22,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Download snfa forced aligner model
+      - name: Download model for guided synthesis
+        run: curl -N -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
+
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v4
         with:

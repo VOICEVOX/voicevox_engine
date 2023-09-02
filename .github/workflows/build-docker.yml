@@ -96,6 +96,10 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Download snfa forced aligner model
+      - name: Download model for guided synthesis
+        run: curl -N -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
+
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
         uses: actions/cache@v3

@@ -385,7 +385,7 @@ jobs:
 
       # Download snfa forced aligner model
       - name: Download model for guided synthesis
-        run: curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
+        run: curl -N -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 
       # Download VOICEVOX RESOURCE
       - name: Prepare VOICEVOX RESOURCE cache
