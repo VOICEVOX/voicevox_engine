@@ -35,7 +35,8 @@ def _query2phoneme(query: AudioQuery) -> List[str]:
 def _align(wav: np.ndarray, src_sr: int, query: AudioQuery):
     if len(wav.shape) == 2:
         wav = np.sum(wav, axis=1) / 2
-    wav = resample(wav, aligner.sr * wav.shape[0] // src_sr)
+    # convert to int, to avoid overflow in np.int32 type
+    wav = resample(wav, int(aligner.sr) * int(wav.shape[0]) // src_sr)
     ph = _query2phoneme(query)
     segments, *_ = aligner(wav, ph, use_sec=False)
 
@@ -89,7 +90,6 @@ def extract(wav: np.ndarray, src_sr: int, query: AudioQuery, model_path: str):
     # stereo to mono
     if len(wav.shape) == 2:
         wav = np.sum(wav, axis=1) / 2
-
     segments = _align(wav, src_sr, query)
 
     segments = _guard_long_vowel(segments)
