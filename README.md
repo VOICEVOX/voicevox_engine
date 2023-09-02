@@ -359,12 +359,11 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 ```bash
 # 開発に必要なライブラリのインストール
 python -m pip install -r requirements-dev.txt -r requirements-test.txt
+# `guide`API用のモデルをダウンロードする
+curl -N -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 
 # とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt
-
-# `guide`APIもほしい方
-curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 ```
 
 ## 実行
@@ -496,7 +495,7 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
 # `guide`を有効化するモデル、重複ダウンロードしないように`-N`をつけます
-curl -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
+curl -N -L https://github.com/Patchethium/snfa/releases/download/v0.0.1/cv_jp.bin -o ./cv_jp.bin
 
 # ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
 # モックでビルドする場合
