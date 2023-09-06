@@ -82,6 +82,22 @@ from voicevox_engine.utility import (
     get_save_dir,
 )
 
+import warnings
+
+
+def id_checker(style_id: Optional[int], speaker_id: Optional[int]) -> int:
+    """
+    style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
+    どちらか片方しかNoneが存在しなければstyle_idを返す
+    """
+    if style_id == speaker_id == None or (style_id != None and speaker_id != None):
+        raise ValueError("speaker_idとstyle_idが両方とも存在しないか、両方とも存在しています")
+    if speaker_id is not None:
+        warnings.warn("style_idに変更になりましたのこちらの利用を推奨しています")
+        style_id = speaker_id
+        speaker_id = None
+        return style_id
+
 
 def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
@@ -475,18 +491,14 @@ def generate_app(
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
-
             with zipfile.ZipFile(f, mode="a") as zip_file:
-
                 for i in range(len(queries)):
-
                     if queries[i].outputSamplingRate != sampling_rate:
                         raise HTTPException(
                             status_code=422, detail="サンプリングレートが異なるクエリがあります"
                         )
 
                     with TemporaryFile() as wav_file:
-
                         wave = engine.synthesis(query=queries[i], speaker_id=speaker)
                         soundfile.write(
                             file=wav_file,

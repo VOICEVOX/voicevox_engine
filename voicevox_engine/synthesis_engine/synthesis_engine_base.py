@@ -8,6 +8,7 @@ from .. import full_context_label
 from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
 from ..mora_list import openjtalk_mora2text
+from run import id_checker
 
 
 def mora_to_text(mora: str) -> str:
@@ -92,7 +93,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         raise NotImplementedError
 
     def initialize_speaker_synthesis(  # noqa: B027
-        self, style_id: int, skip_reinit: bool
+        self, style_id: Optional[int], speaker_id: Optional[int], skip_reinit: bool
     ):
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
@@ -106,7 +107,9 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         """
         pass
 
-    def is_initialized_speaker_synthesis(self, style_id: int) -> bool:
+    def is_initialized_speaker_synthesis(
+        self, style_id: Optional[int], speaker_id: Optional[int] = None
+    ) -> bool:
         """
         指定した話者での音声合成が初期化されているかどうかを返す
         Parameters
@@ -118,11 +121,15 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         bool
             初期化されているかどうか
         """
+        id_checker(style_id=style_id, speaker_id=speaker_id)
         return True
 
     @abstractmethod
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], style_id: int
+        self,
+        accent_phrases: List[AccentPhrase],
+        style_id: Optional[int],
+        speaker_id: Optional[int] = None,
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの母音・子音の長さを設定する
@@ -137,11 +144,15 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         accent_phrases : List[AccentPhrase]
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
+        id_checker(style_id=style_id, speaker_id=speaker_id)
         raise NotImplementedError()
 
     @abstractmethod
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], style_id: int
+        self,
+        accent_phrases: List[AccentPhrase],
+        style_id: Optional[int],
+        speaker_id: Optional[int] = None,
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -156,13 +167,16 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
+        id_checker(style_id=style_id, speaker_id=speaker_id)
         raise NotImplementedError()
 
     def replace_mora_data(
         self,
         accent_phrases: List[AccentPhrase],
-        style_id: int,
+        style_id: Optional[int],
+        speaker_id: Optional[int] = None,
     ) -> List[AccentPhrase]:
+        style_id = id_checker(style_id=style_id, speaker_id=speaker_id)
         return self.replace_mora_pitch(
             accent_phrases=self.replace_phoneme_length(
                 accent_phrases=accent_phrases,
@@ -171,7 +185,10 @@ class SynthesisEngineBase(metaclass=ABCMeta):
             style_id=style_id,
         )
 
-    def create_accent_phrases(self, text: str, style_id: int) -> List[AccentPhrase]:
+    def create_accent_phrases(
+        self, text: str, style_id: Optional[int], speaker_id: Optional[int] = None
+    ) -> List[AccentPhrase]:
+        style_id = id_checker(style_id=style_id, speaker_id=speaker_id)
         if len(text.strip()) == 0:
             return []
 
@@ -213,7 +230,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def synthesis(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: Optional[int],
+        speaker_id: Optional[int] = None,
         enable_interrogative_upspeak: bool = True,
     ) -> np.ndarray:
         """
@@ -232,6 +250,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         wave : numpy.ndarray
             音声合成結果
         """
+        style_id = id_checker(style_id=style_id, speaker_id=speaker_id)
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
         if enable_interrogative_upspeak:
@@ -241,7 +260,12 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         return self._synthesis_impl(query, style_id)
 
     @abstractmethod
-    def _synthesis_impl(self, query: AudioQuery, style_id: int) -> np.ndarray:
+    def _synthesis_impl(
+        self,
+        query: AudioQuery,
+        style_id: Optional[int],
+        speaker_id: Optional[int] = None,
+    ) -> np.ndarray:
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
@@ -255,4 +279,5 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         wave : numpy.ndarray
             音声合成結果
         """
+        id_checker(style_id=style_id, speaker_id=speaker_id)
         raise NotImplementedError()
