@@ -115,7 +115,7 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        speaker_id: int,
+        style_id: int,
         request: Request,
         core_version: Optional[str],
     ) -> str:
@@ -127,7 +127,7 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        speaker_id: int
+        style_id: int
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -141,7 +141,7 @@ class CancellableEngine:
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
-            sub_proc_con1.send((query, speaker_id, core_version))
+            sub_proc_con1.send((query, style_id, core_version))
             f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
@@ -200,7 +200,7 @@ def start_synthesis_subprocess(
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
     while True:
         try:
-            query, speaker_id, core_version = sub_proc_con.recv()
+            query, style_id, core_version = sub_proc_con.recv()
             if core_version is None:
                 _engine = synthesis_engines[latest_core_version]
             elif core_version in synthesis_engines:
@@ -209,7 +209,7 @@ def start_synthesis_subprocess(
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, speaker_id)
+            wave = _engine._synthesis_impl(query, style_id)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
