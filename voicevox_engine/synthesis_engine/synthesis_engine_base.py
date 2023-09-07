@@ -96,7 +96,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self,
         style_id: Optional[int],
         skip_reinit: bool,
-        speaker_id: Optional[int] = None,
     ):
         """
         指定した話者での音声合成を初期化する。何度も実行可能。
@@ -267,7 +266,6 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self,
         query: AudioQuery,
         style_id: Optional[int],
-        speaker_id: Optional[int] = None,
     ) -> np.ndarray:
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
@@ -282,5 +280,4 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         wave : numpy.ndarray
             音声合成結果
         """
-        id_checker(style_id=style_id, speaker_id=speaker_id)
         raise NotImplementedError()
