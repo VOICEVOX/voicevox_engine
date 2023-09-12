@@ -325,6 +325,16 @@ options:
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
+## 実行環境
+
+Ubuntuをお使いの場合、実行時に`soundfile.py`起因のライブラリの不足エラーが出る場合があります。
+その場合は`libsndfile1`ライブラリインストールを行ってください。
+
+```bash
+sudo apt update
+sudo apt install libsndfile1
+```
+
 ## Docker イメージ
 
 ### CPU
