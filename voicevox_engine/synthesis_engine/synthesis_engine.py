@@ -3,7 +3,7 @@ from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy
-from scipy.signal import resample
+from soxr import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme
 from ..model import AccentPhrase, AudioQuery, Mora
@@ -491,7 +491,8 @@ class SynthesisEngine(SynthesisEngineBase):
         if query.outputSamplingRate != self.default_sampling_rate:
             wave = resample(
                 wave,
-                query.outputSamplingRate * len(wave) // self.default_sampling_rate,
+                self.default_sampling_rate,
+                query.outputSamplingRate,
             )
 
         # ステレオ変換

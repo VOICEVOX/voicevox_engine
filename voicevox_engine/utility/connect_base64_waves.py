@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 import soundfile
-from scipy.signal import resample
+from soxr import resample
 
 
 class ConnectBase64WavesException(Exception):
@@ -52,7 +52,7 @@ def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, int]:
     waves_nparray_list = []
     for nparray, sr in waves_nparray_sr:
         if sr != max_sampling_rate:
-            nparray = resample(nparray, max_sampling_rate * len(nparray) // sr)
+            nparray = resample(nparray, sr, max_sampling_rate)
         if nparray.ndim < max_channels:
             nparray = np.array([nparray, nparray]).T
         waves_nparray_list.append(nparray)
