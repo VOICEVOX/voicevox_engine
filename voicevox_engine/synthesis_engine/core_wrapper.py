@@ -443,14 +443,14 @@ class CoreWrapper:
         self,
         length: int,
         phoneme_list: np.ndarray,
-        speaker_id: np.ndarray,
+        style_id: np.ndarray,
     ) -> np.ndarray:
         output = np.zeros((length,), dtype=np.float32)
         self.assert_core_success(
             self.core.yukarin_s_forward(
                 c_int(length),
                 phoneme_list.ctypes.data_as(POINTER(c_long)),
-                speaker_id.ctypes.data_as(POINTER(c_long)),
+                style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )
         )
@@ -465,11 +465,11 @@ class CoreWrapper:
         end_accent_list: np.ndarray,
         start_accent_phrase_list: np.ndarray,
         end_accent_phrase_list: np.ndarray,
-        speaker_id: np.ndarray,
+        style_id: np.ndarray,
     ) -> np.ndarray:
         output = np.empty(
             (
-                len(speaker_id),
+                len(style_id),
                 length,
             ),
             dtype=np.float32,
@@ -483,7 +483,7 @@ class CoreWrapper:
                 end_accent_list.ctypes.data_as(POINTER(c_long)),
                 start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
                 end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-                speaker_id.ctypes.data_as(POINTER(c_long)),
+                style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )
         )
@@ -495,7 +495,7 @@ class CoreWrapper:
         phoneme_size: int,
         f0: np.ndarray,
         phoneme: np.ndarray,
-        speaker_id: np.ndarray,
+        style_id: np.ndarray,
     ) -> np.ndarray:
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
@@ -504,7 +504,7 @@ class CoreWrapper:
                 c_int(phoneme_size),
                 f0.ctypes.data_as(POINTER(c_float)),
                 phoneme.ctypes.data_as(POINTER(c_float)),
-                speaker_id.ctypes.data_as(POINTER(c_long)),
+                style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )
         )
@@ -521,14 +521,14 @@ class CoreWrapper:
             return
         raise OldCoreError
 
-    def load_model(self, speaker_id: int) -> None:
+    def load_model(self, style_id: int) -> None:
         if self.exist_load_model:
-            self.assert_core_success(self.core.load_model(c_long(speaker_id)))
+            self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
-    def is_model_loaded(self, speaker_id: int) -> bool:
+    def is_model_loaded(self, style_id: int) -> bool:
         if self.exist_is_model_loaded:
-            return self.core.is_model_loaded(c_long(speaker_id))
+            return self.core.is_model_loaded(c_long(style_id))
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:
