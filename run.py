@@ -244,7 +244,7 @@ def generate_app(
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        accent_phrases = engine.create_accent_phrases(text, speaker_id=speaker)
+        accent_phrases = engine.create_accent_phrases(text, style_id=speaker)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -283,7 +283,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, speaker_id=selected_preset.style_id
+            text, style_id=selected_preset.style_id
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -335,12 +335,12 @@ def generate_app(
                     detail=ParseKanaBadRequest(err).dict(),
                 )
             accent_phrases = engine.replace_mora_data(
-                accent_phrases=accent_phrases, speaker_id=speaker
+                accent_phrases=accent_phrases, style_id=speaker
             )
 
             return accent_phrases
         else:
-            return engine.create_accent_phrases(text, speaker_id=speaker)
+            return engine.create_accent_phrases(text, style_id=speaker)
 
     @app.post(
         "/mora_data",
@@ -354,7 +354,7 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         engine = get_engine(core_version)
-        return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
+        return engine.replace_mora_data(accent_phrases, style_id=speaker)
 
     @app.post(
         "/mora_length",
@@ -369,7 +369,7 @@ def generate_app(
     ):
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
-            accent_phrases=accent_phrases, speaker_id=speaker
+            accent_phrases=accent_phrases, style_id=speaker
         )
 
     @app.post(
@@ -385,7 +385,7 @@ def generate_app(
     ):
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(
-            accent_phrases=accent_phrases, speaker_id=speaker
+            accent_phrases=accent_phrases, style_id=speaker
         )
 
     @app.post(
@@ -413,7 +413,7 @@ def generate_app(
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
-            speaker_id=speaker,
+            style_id=speaker,
             enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
 
@@ -454,7 +454,7 @@ def generate_app(
             )
         f_name = cancellable_engine._synthesis_impl(
             query=query,
-            speaker_id=speaker,
+            style_id=speaker,
             request=request,
             core_version=core_version,
         )
@@ -499,7 +499,7 @@ def generate_app(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesis(query=queries[i], speaker_id=speaker)
+                        wave = engine.synthesis(query=queries[i], style_id=speaker)
                         soundfile.write(
                             file=wav_file,
                             data=wave,
@@ -905,17 +905,17 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         """
-        指定されたspeaker_idの話者を初期化します。
+        指定されたstyle_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        engine.initialize_speaker_synthesis(speaker_id=speaker, skip_reinit=skip_reinit)
+        engine.initialize_speaker_synthesis(style_id=speaker, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
     def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
         """
-        指定されたspeaker_idの話者が初期化されているかどうかを返します。
+        指定されたstyle_idの話者が初期化されているかどうかを返します。
         """
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(speaker)
