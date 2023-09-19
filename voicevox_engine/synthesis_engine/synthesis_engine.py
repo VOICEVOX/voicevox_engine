@@ -136,7 +136,7 @@ class SynthesisEngine(SynthesisEngineBase):
         core.yukarin_s_forward: 音素列から、音素ごとの長さを求める関数
             length: 音素列の長さ
             phoneme_list: 音素列
-            speaker_id: 話者番号
+            style_id: スタイル番号
             return: 音素ごとの長さ
 
         core.yukarin_sa_forward: モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
@@ -147,7 +147,7 @@ class SynthesisEngine(SynthesisEngineBase):
             end_accent_list: アクセントの終了位置
             start_accent_phrase_list: アクセント句の開始位置
             end_accent_phrase_list: アクセント句の終了位置
-            speaker_id: 話者番号
+            style_id: スタイル番号
             return: モーラごとの音高
 
         core.decode_forward: フレームごとの音素と音高から波形を求める関数
@@ -155,7 +155,7 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme_size: 音素の種類数
             f0: フレームごとの音高
             phoneme: フレームごとの音素
-            speaker_id: 話者番号
+            style_id: スタイル番号
             return: 音声波形
 
         speakers: coreから取得したspeakersに関するjsonデータの文字列
@@ -182,25 +182,25 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def initialize_speaker_synthesis(self, speaker_id: int, skip_reinit: bool):
+    def initialize_speaker_synthesis(self, style_id: int, skip_reinit: bool):
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
                 # 1. 引数 skip_reinit が False の場合
                 # 2. 話者が初期化されていない場合
-                if (not skip_reinit) or (not self.core.is_model_loaded(speaker_id)):
-                    self.core.load_model(speaker_id)
+                if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
+                    self.core.load_model(style_id)
         except OldCoreError:
             pass  # コアが古い場合はどうしようもないので何もしない
 
-    def is_initialized_speaker_synthesis(self, speaker_id: int) -> bool:
+    def is_initialized_speaker_synthesis(self, style_id: int) -> bool:
         try:
-            return self.core.is_model_loaded(speaker_id)
+            return self.core.is_model_loaded(style_id)
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの母音・子音の長さを設定する
@@ -208,15 +208,15 @@ class SynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : int
-            話者ID
+        style_id : int
+            スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
+        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
@@ -233,7 +233,7 @@ class SynthesisEngine(SynthesisEngineBase):
             phoneme_length = self.core.yukarin_s_forward(
                 length=len(phoneme_list_s),
                 phoneme_list=phoneme_list_s,
-                speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
 
         # yukarin_s_forwarderの結果をaccent_phrasesに反映する
@@ -249,7 +249,7 @@ class SynthesisEngine(SynthesisEngineBase):
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -257,15 +257,15 @@ class SynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        speaker_id : int
-            話者ID
+        style_id : int
+            スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
+        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -375,7 +375,7 @@ class SynthesisEngine(SynthesisEngineBase):
                 end_accent_list=end_accent_list[numpy.newaxis],
                 start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
                 end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )[0]
 
         # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
@@ -390,22 +390,22 @@ class SynthesisEngine(SynthesisEngineBase):
 
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: int):
+    def _synthesis_impl(self, query: AudioQuery, style_id: int):
         """
         音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
             音声合成クエリ
-        speaker_id : int
-            話者ID
+        style_id : int
+            スタイルID
         Returns
         -------
         wave : numpy.ndarray
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(speaker_id, skip_reinit=True)
+        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
@@ -481,7 +481,7 @@ class SynthesisEngine(SynthesisEngineBase):
                 phoneme_size=phoneme.shape[1],
                 f0=f0[:, numpy.newaxis],
                 phoneme=phoneme,
-                speaker_id=numpy.array(speaker_id, dtype=numpy.int64).reshape(-1),
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
 
         # volume: ゲイン適用
