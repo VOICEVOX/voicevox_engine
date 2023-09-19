@@ -108,7 +108,7 @@ class TestMockSynthesisEngine(TestCase):
         self.assertEqual(
             self.engine.replace_phoneme_length(
                 accent_phrases=self.accent_phrases_hello_hiho,
-                speaker_id=0,
+                style_id=0,
             ),
             self.accent_phrases_hello_hiho,
         )
@@ -117,7 +117,7 @@ class TestMockSynthesisEngine(TestCase):
         self.assertEqual(
             self.engine.replace_mora_pitch(
                 accent_phrases=self.accent_phrases_hello_hiho,
-                speaker_id=0,
+                style_id=0,
             ),
             self.accent_phrases_hello_hiho,
         )
@@ -136,5 +136,5 @@ class TestMockSynthesisEngine(TestCase):
                 outputStereo=False,
                 kana=create_kana(self.accent_phrases_hello_hiho),
             ),
-            speaker_id=0,
+            style_id=0,
         )
