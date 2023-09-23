@@ -22,11 +22,11 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
 )
 
 
-def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.ndarray):
+def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(float(phoneme_list[i] * 0.5 + speaker_id))
+        result.append(float(phoneme_list[i] * 0.5 + style_id))
     return numpy.array(result)
 
 
@@ -38,7 +38,7 @@ def yukarin_sa_mock(
     end_accent_list: numpy.ndarray,
     start_accent_phrase_list: numpy.ndarray,
     end_accent_phrase_list: numpy.ndarray,
-    speaker_id: numpy.ndarray,
+    style_id: numpy.ndarray,
 ):
     result = []
     # mockとしての適当な処理、特に意味はない
@@ -54,7 +54,7 @@ def yukarin_sa_mock(
                     + end_accent_phrase_list[0][i]
                 )
                 * 0.5
-                + speaker_id
+                + style_id
             )
         )
     return numpy.array(result)[numpy.newaxis]
@@ -65,7 +65,7 @@ def decode_mock(
     phoneme_size: int,
     f0: numpy.ndarray,
     phoneme: numpy.ndarray,
-    speaker_id: Union[numpy.ndarray, int],
+    style_id: Union[numpy.ndarray, int],
 ):
     result = []
     # mockとしての適当な処理、特に意味はない
@@ -75,7 +75,7 @@ def decode_mock(
             result.append(
                 float(
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
-                    + speaker_id
+                    + style_id
                 )
             )
     return numpy.array(result)
@@ -92,7 +92,7 @@ class MockCore:
     def supported_devices(self):
         return ""
 
-    def is_model_loaded(self, speaker_id):
+    def is_model_loaded(self, style_id):
         return True
 
 
@@ -303,7 +303,7 @@ class TestSynthesisEngine(TestCase):
 
     def test_replace_phoneme_length(self):
         result = self.synthesis_engine.replace_phoneme_length(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), speaker_id=1
+            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
         )
 
         # yukarin_sに渡される値の検証
@@ -340,7 +340,7 @@ class TestSynthesisEngine(TestCase):
                 dtype=numpy.int64,
             ),
         )
-        self.assertEqual(yukarin_s_args["speaker_id"], 1)
+        self.assertEqual(yukarin_s_args["style_id"], 1)
 
         # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
         true_result = deepcopy(self.accent_phrases_hello_hiho)
@@ -368,13 +368,13 @@ class TestSynthesisEngine(TestCase):
         empty_accent_phrases = []
         self.assertEqual(
             self.synthesis_engine.replace_mora_pitch(
-                accent_phrases=empty_accent_phrases, speaker_id=1
+                accent_phrases=empty_accent_phrases, style_id=1
             ),
             [],
         )
 
         result = self.synthesis_engine.replace_mora_pitch(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), speaker_id=1
+            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
         )
 
         # yukarin_saに渡される値の検証
@@ -393,7 +393,7 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(list_length, len(end_accent_list))
         self.assertEqual(list_length, len(start_accent_phrase_list))
         self.assertEqual(list_length, len(end_accent_phrase_list))
-        self.assertEqual(yukarin_sa_args["speaker_id"], 1)
+        self.assertEqual(yukarin_sa_args["style_id"], 1)
 
         numpy.testing.assert_array_equal(
             vowel_phoneme_list,
@@ -512,7 +512,7 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
-        result = self.synthesis_engine.synthesis(query=audio_query, speaker_id=1)
+        result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
 
         # decodeに渡される値の検証
         decode_args = self.decode_mock.call_args[1]
@@ -577,7 +577,7 @@ class TestSynthesisEngine(TestCase):
                 assert_true_count += bool(phoneme[i][j] == decode_phoneme[i][j])
             assert_phoneme_count += assert_true_count == num_phoneme
         self.assertTrue(assert_phoneme_count >= int(len(decode_phoneme) / 5) * 4)
-        self.assertEqual(decode_args["speaker_id"], 1)
+        self.assertEqual(decode_args["style_id"], 1)
 
         # decode forwarderのmockを使う
         true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
