@@ -24,7 +24,7 @@ def yukarin_sa_mock(
     end_accent_list: numpy.ndarray,
     start_accent_phrase_list: numpy.ndarray,
     end_accent_phrase_list: numpy.ndarray,
-    speaker_id: numpy.ndarray,
+    style_id: numpy.ndarray,
 ):
     result = []
     # mockとしての適当な処理、特に意味はない
@@ -41,7 +41,7 @@ def yukarin_sa_mock(
                         + end_accent_phrase_list[0][i]
                     )
                     * 0.0625
-                    + speaker_id
+                    + style_id
                 ),
                 2,
             )
@@ -54,7 +54,7 @@ def decode_mock(
     phoneme_size: int,
     f0: numpy.ndarray,
     phoneme: numpy.ndarray,
-    speaker_id: Union[numpy.ndarray, int],
+    style_id: Union[numpy.ndarray, int],
 ):
     result = []
     # mockとしての適当な処理、特に意味はない
@@ -64,7 +64,7 @@ def decode_mock(
             result.append(
                 float(
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
-                    + speaker_id
+                    + style_id
                 )
             )
     return numpy.array(result)
@@ -179,7 +179,7 @@ class MockCore:
     def supported_devices(self):
         return ""
 
-    def is_model_loaded(self, speaker_id):
+    def is_model_loaded(self, style_id):
         return True
 
 
