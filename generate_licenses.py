@@ -219,6 +219,14 @@ def generate_licenses() -> List[License]:
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {license.name}")
+
+        # soxr
+        if license.name.lower() == "soxr":
+            with urllib.request.urlopen(
+                "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
+            ) as res:
+                license.text = res.read().decode()
+
         licenses.append(license)
 
     # OpenBLAS

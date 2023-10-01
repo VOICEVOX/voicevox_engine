@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 import numpy.testing
 import soundfile
-from scipy.signal import resample
+from soxr import resample
 
 from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
 
@@ -106,8 +106,8 @@ class TestConnectBase64Waves(TestCase):
         wave_24000_base64 = encode_base64(encode_bytes(wave_24000hz, samplerate=24000))
         wave_1000_base64 = encode_base64(encode_bytes(wave_1000hz, samplerate=1000))
 
-        wave_1000hz_to2400hz = resample(wave_1000hz, 24000 * len(wave_1000hz) // 1000)
-        wave_x2_ref = np.concatenate([wave_24000hz, wave_1000hz_to2400hz])
+        wave_1000hz_to24000hz = resample(wave_1000hz, 1000, 24000)
+        wave_x2_ref = np.concatenate([wave_24000hz, wave_1000hz_to24000hz])
 
         wave_x2, _ = connect_base64_waves(waves=[wave_24000_base64, wave_1000_base64])
 

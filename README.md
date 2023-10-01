@@ -328,6 +328,16 @@ options:
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
+## 実行環境
+
+Ubuntuをお使いの場合、実行時に`soundfile.py`起因のライブラリの不足エラーが出る場合があります。
+その場合は`libsndfile1`ライブラリインストールを行ってください。
+
+```bash
+sudo apt update
+sudo apt install libsndfile1
+```
+
 ## Docker イメージ
 
 ### CPU
@@ -462,6 +472,12 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
+## テスト
+
+```bash
+python -m pytest
+```
+
 ## タイポチェック
 
 [typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
@@ -495,10 +511,14 @@ python -m pip install -r requirements-dev.txt
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
-# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
-    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-    pyinstaller --noconfirm run.spec
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec
 ```
 
 ## 依存関係
