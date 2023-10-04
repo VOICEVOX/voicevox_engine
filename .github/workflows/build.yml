@@ -594,7 +594,7 @@ jobs:
           (cd "${{ matrix.target }}" && 7z -r -v1900M a "../compressed.zip")
 
           # Rename to artifact.001.vvppp, artifact.002.vvppp, ...
-          for FILE in $(ls "compressed.zip.*"); do
+          for FILE in $(ls "compressed.zip."*); do
             NUMBER=${FILE##*.} # 001
             mv "${FILE}" "${{ steps.vars.outputs.package_name }}.${NUMBER}.vvppp"
           done
