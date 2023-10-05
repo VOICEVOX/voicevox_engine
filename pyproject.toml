@@ -51,7 +51,7 @@ pyworld = "^0.3.0"
 appdirs = "^1.4.4"
 requests = "^2.28.1"
 jinja2 = "^3.1.2"
-pyopenjtalk = {git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "f4ade29ef9a4f43d8605103cb5bacc29e0b2ccae"}
+pyopenjtalk = {git = "https://github.com/VOICEVOX/pyopenjtalk.git", rev = "b35fc89fe42948a28e33aed886ea145a51113f88"}
 
 [tool.poetry.group.dev.dependencies]
 cython = "^0.29.24"
