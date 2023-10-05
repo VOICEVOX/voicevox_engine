@@ -40,8 +40,336 @@ jobs:
           : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
 
-  build-all:
+  hotfix-cache-only:
     needs: [config]
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
+    strategy:
+      matrix:
+        include:
+          # Windows CPU
+          - os: windows-2019
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
+            target: windows-cpu
+          # Windows DirectML
+          - os: windows-2019
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
+            directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
+            target: windows-directml
+          # Windows NVIDIA GPU
+          - os: windows-2019
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
+            cuda_version: "11.6.2"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-windows-x86_64-8.4.1.50_cuda11.6-archive.zip
+            zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
+            target: windows-nvidia
+          # Mac CPU (x64 arch only)
+          - os: macos-11
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
+            target: macos-x64
+          # Linux CPU
+          - os: ubuntu-20.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
+            target: linux-cpu
+          # Linux NVIDIA GPU
+          - os: ubuntu-20.04
+            architecture: "x64"
+            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
+            cuda_version: "11.6.2"
+            cudnn_url: https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/local_installers/11.6/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz
+            target: linux-nvidia
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: declare variables
+        id: vars
+        shell: bash
+        run: |
+          echo "artifact_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+      # NOTE: The default sed of macOS is BSD sed.
+      #       There is a difference in specification between BSD sed and GNU sed,
+      #       so you need to install GNU sed.
+      - name: Install GNU sed on macOS
+        if: startsWith(matrix.os, 'macos-')
+        shell: bash
+        run: brew install gnu-sed
+
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      - name: Install patchelf
+        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
+      # Download CUDA
+      - name: Prepare CUDA DLL cache
+        if: matrix.cuda_version != ''
+        uses: actions/cache@v3
+        id: cuda-dll-cache
+        with:
+          # update this key when ONNX Runtime CUDA dependency changed
+          key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
+          path: download/cuda
+
+      - name: Setup CUDA
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        uses: Jimver/cuda-toolkit@v0.2.8
+        id: cuda-toolkit
+        with:
+          method: network
+          cuda: ${{ matrix.cuda_version }}
+
+      - name: Extract CUDA Dynamic Libraries
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
+
+          mkdir -p download/cuda/bin
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
+
+            rm -rf "${CUDA_ROOT}"
+          else
+            cp "${CUDA_ROOT}/lib64/"libcublas.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcublasLt.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcudart.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcufft.so.* download/cuda/bin/
+            cp "${CUDA_ROOT}/lib64/"libcurand.so.* download/cuda/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cuda/bin/libcublas.so.*.* 
+            rm -f download/cuda/bin/libcublasLt.so.*.*
+            rm -f download/cuda/bin/libcufft.so.*.*
+            rm -f download/cuda/bin/libcurand.so.*.*
+            rm -f download/cuda/bin/libcudart.so.*.*.*
+          fi
+
+      - name: Show disk space (debug info)
+        if: matrix.cuda_version != ''
+        shell: bash
+        run: |
+          df -h
+
+      # Download cuDNN
+      - name: Export cuDNN url to calc hash
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: echo "${{ matrix.cudnn_url }}" > download/cudnn_url.txt
+
+      - name: Prepare cuDNN cache
+        if: matrix.cudnn_url != ''
+        uses: actions/cache@v3
+        id: cudnn-dll-cache
+        with:
+          # update this key when ONNX Runtime cuDNN dependency changed
+          key: ${{ matrix.os }}-cudnn-dll-${{ hashFiles('download/cudnn_url.txt') }}-v1
+          path: download/cudnn
+
+      - name: Download and extract cuDNN Dynamic Libraries
+        if: matrix.cudnn_url != '' && steps.cudnn-dll-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -eux
+
+          if [[ ${{ matrix.os }} == windows-* ]]; then
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+
+            unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
+
+            mkdir -p download/cudnn/bin
+            mv download/cudnn_tmp/cudnn-*/bin/*.dll download/cudnn/bin/
+            rm -rf download/cudnn_tmp
+
+            rm download/cudnn.zip
+          else
+            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
+
+            tar -Jxf download/cudnn.tar.xz -C download/
+
+            mkdir -p download/cudnn/bin
+            cp download/cudnn-*/lib/libcudnn.so.* download/cudnn/bin/
+            cp download/cudnn-*/lib/libcudnn_*_infer.so.* download/cudnn/bin/
+
+            # remove unneed full version libraries
+            rm -f download/cudnn/bin/libcudnn.so.*.*
+            rm -f download/cudnn/bin/libcudnn_*_infer.so.*.*
+
+            rm download/cudnn.tar.xz
+          fi
+
+      # Donwload zlib
+      - name: Export zlib url to calc hash
+        if: matrix.zlib_url != ''
+        shell: bash
+        run: echo "${{ matrix.zlib_url }}" >> download/zlib_url.txt
+
+      - name: Cache zlib
+        if: matrix.zlib_url != ''
+        uses: actions/cache@v3
+        id: zlib-cache
+        with:
+          key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
+          path: download/zlib
+
+      - name: Download zlib
+        if: steps.zlib-cache.outputs.cache-hit != 'true' && matrix.zlib_url != ''
+        shell: bash
+        run: |
+          curl -L "${{ matrix.zlib_url }}" -o download/zlib.zip
+          mkdir -p download/zlib
+
+          # extract only dlls
+          unzip download/zlib.zip dll_${{ matrix.architecture }}/zlibwapi.dll -d download/zlib
+          rm download/zlib.zip
+          mv download/zlib/dll_${{ matrix.architecture }}/zlibwapi.dll download/zlib/zlibwapi.dll
+          rm -r download/zlib/dll_${{ matrix.architecture }}
+
+      - name: Show disk space (debug info)
+        if: matrix.cudnn_url != ''
+        shell: bash
+        run: |
+          df -h
+
+      - name: Setup MSVC
+        if: startsWith(matrix.os, 'windows-')
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # Python install path of windows: C:/hostedtoolcache/windows/Python
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ matrix.architecture }}
+          cache: pip
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python -m pip install -r requirements-dev.txt
+
+          if [ "$RUNNER_OS" = Windows ]; then
+            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
+            ./build_util/modify_pyinstaller.bash
+          fi
+
+          # Download pyopenjtalk dictionary
+          # try 5 times, sleep 5 seconds before retry
+          for i in $(seq 5); do
+            EXIT_CODE=0
+            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
+      - name: Create download directory
+        shell: bash
+        run: mkdir -p download/
+
+      # Donwload DirectML
+      - name: Export DirectML url to calc hash
+        if: endswith(matrix.target, '-directml')
+        shell: bash
+        run: echo "${{ matrix.directml_url }}" >> download/directml_url.txt
+
+      - name: Cache DirectML
+        if: endswith(matrix.target, '-directml')
+        uses: actions/cache@v3
+        id: directml-cache
+        with:
+          key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
+          path: download/directml
+
+      - name: Download DirectML
+        if: steps.directml-cache.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
+        shell: bash
+        run: |
+          curl -L "${{ matrix.directml_url }}" -o download/directml.zip
+          mkdir -p download/directml
+
+          # extract only dlls
+          unzip download/directml.zip bin/${{ matrix.architecture }}-win/DirectML.dll -d download/directml
+          rm download/directml.zip
+          mv download/directml/bin/${{ matrix.architecture }}-win/DirectML.dll download/directml/DirectML.dll
+          rm -r download/directml/bin
+
+      # Download ONNX Runtime
+      - name: Export ONNX Runtime url to calc hash
+        shell: bash
+        run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
+
+      - name: Prepare ONNX Runtime cache
+        uses: actions/cache@v3
+        id: onnxruntime-cache
+        with:
+          key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
+          path: download/onnxruntime
+
+      - name: Download ONNX Runtime (Windows)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
+        shell: bash
+        run: |
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+
+          # extract only dlls
+          if [[ ${{ matrix.target }} != *-directml ]]; then
+            unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
+            mv download/onnxruntime-* download/onnxruntime
+          else
+            mkdir -p download/onnxruntime/lib
+            unzip download/onnxruntime.zip runtimes/win-${{ matrix.architecture }}/native/*.dll -d download/onnxruntime
+            mv download/onnxruntime/runtimes/win-${{ matrix.architecture }}/native/*.dll download/onnxruntime/lib/
+            rm -r download/onnxruntime/runtimes
+          fi
+
+          rm download/onnxruntime.zip
+
+      - name: Download ONNX Runtime (Mac/Linux)
+        if: steps.onnxruntime-cache.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        shell: bash
+        run: |
+          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+          mkdir -p download/onnxruntime
+          tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
+          rm download/onnxruntime.tgz
+
+      - name: Show disk space (debug info)
+        shell: bash
+        run: |
+          df -h
+
+  build-all:
+    needs: [config, hotfix-cache-only]
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
     strategy:
       matrix:
