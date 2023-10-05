@@ -744,7 +744,7 @@ jobs:
           elif [[ ${{ matrix.os }} == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
           else
-            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
           fi
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
