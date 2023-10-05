@@ -540,8 +540,9 @@ jobs:
         run: |
           bash build_util/codesign.bash "dist/run/run.exe"
         env:
-          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+          ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
+          ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
+          ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
