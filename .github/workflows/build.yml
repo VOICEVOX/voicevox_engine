@@ -368,261 +368,261 @@ jobs:
         run: |
           df -h
 
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v3
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
+  #     # Download VOICEVOX RESOURCE
+  #     - name: Prepare VOICEVOX RESOURCE cache
+  #       uses: actions/cache@v3
+  #       id: voicevox-resource-cache
+  #       with:
+  #         key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
+  #         path: download/resource
 
-      - name: Checkout VOICEVOX RESOURCE
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
+  #     - name: Checkout VOICEVOX RESOURCE
+  #       if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: VOICEVOX/voicevox_resource
+  #         ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
+  #         path: download/resource
 
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
-        shell: bash
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/process_voicevox_resource.bash
+  #     # Merge VOICEVOX RESOURCE
+  #     - name: Merge VOICEVOX RESOURCE
+  #       shell: bash
+  #       env:
+  #         DOWNLOAD_RESOURCE_PATH: download/resource
+  #       run: bash build_util/process_voicevox_resource.bash
 
-      # Download VOICEVOX Core
-      - name: Prepare VOICEVOX Core cache
-        uses: actions/cache@v3
-        id: voicevox-core-cache
-        with:
-          key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-          path: download/core
+  #     # Download VOICEVOX Core
+  #     - name: Prepare VOICEVOX Core cache
+  #       uses: actions/cache@v3
+  #       id: voicevox-core-cache
+  #       with:
+  #         key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
+  #         path: download/core
 
-      - name: Download VOICEVOX Core
-        if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
-        shell: bash
-        env:
-          VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
-        run: |
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          # NOTE: Windows 版コアのみ PowerShell の Compress-Archive コマンドレットを用いて zip を作成している（デフォルト状態では zip コマンドが存在していないため）。
-          #       このコマンドはバージョンによっては作成した zip 内のパスの区切り文字がバックスラッシュになる。 (cf. https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/48)
-          #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。
-          #       回避策として、unzip コマンドの代わりに 7z コマンドを用いて zip ファイルを解凍する。
-          # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          if [[ ${{ matrix.os }} == windows-* ]]; then
-            7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          elif [[ ${{ matrix.os }} == mac-* ]]; then
-            ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
-          else
-            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
-          fi
-          mkdir -p download/core
-          mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
-          rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
-          rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+  #     - name: Download VOICEVOX Core
+  #       if: steps.voicevox-core-cache.outputs.cache-hit != 'true'
+  #       shell: bash
+  #       env:
+  #         VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
+  #       run: |
+  #         curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+  #         # NOTE: Windows 版コアのみ PowerShell の Compress-Archive コマンドレットを用いて zip を作成している（デフォルト状態では zip コマンドが存在していないため）。
+  #         #       このコマンドはバージョンによっては作成した zip 内のパスの区切り文字がバックスラッシュになる。 (cf. https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/48)
+  #         #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。
+  #         #       回避策として、unzip コマンドの代わりに 7z コマンドを用いて zip ファイルを解凍する。
+  #         # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
+  #         if [[ ${{ matrix.os }} == windows-* ]]; then
+  #           7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+  #         elif [[ ${{ matrix.os }} == mac-* ]]; then
+  #           ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
+  #         else
+  #           unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
+  #         fi
+  #         mkdir -p download/core
+  #         mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
+  #         rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
+  #         rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
-      - name: Copy VOICEVOX Core Models
-        shell: bash
-        run: |
-          cp -r download/core/model ./
+  #     - name: Copy VOICEVOX Core Models
+  #       shell: bash
+  #       run: |
+  #         cp -r download/core/model ./
 
-      - name: Generate licenses.json
-        shell: bash
-        run: |
-          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
-          bash build_util/create_venv_and_generate_licenses.bash
-          # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp engine_manifest_assets/dependency_licenses.json licenses.json
+  #     - name: Generate licenses.json
+  #       shell: bash
+  #       run: |
+  #         OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+  #         bash build_util/create_venv_and_generate_licenses.bash
+  #         # FIXME: VOICEVOX (editor) cannot build without licenses.json
+  #         cp engine_manifest_assets/dependency_licenses.json licenses.json
 
-      - name: Show disk space (debug info)
-        shell: bash
-        run: |
-          df -h
+  #     - name: Show disk space (debug info)
+  #       shell: bash
+  #       run: |
+  #         df -h
 
-      - name: Build run.py with PyInstaller
-        shell: bash
-        run: |
-          set -eux
+  #     - name: Build run.py with PyInstaller
+  #       shell: bash
+  #       run: |
+  #         set -eux
 
-          # Replace version & specify dynamic libraries
-          if [[ ${{ matrix.os }} == macos-* ]]; then
-            gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-            LIBCORE_PATH=download/core/libvoicevox_core.dylib
-            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
-          else
-            sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-            if [[ ${{ matrix.os }} == windows-* ]]; then
-              LIBCORE_PATH=download/core/voicevox_core.dll
-              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
-            else
-              LIBCORE_PATH=download/core/libvoicevox_core.so
-              LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
-            fi
-          fi
+  #         # Replace version & specify dynamic libraries
+  #         if [[ ${{ matrix.os }} == macos-* ]]; then
+  #           gsed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
+  #           LIBCORE_PATH=download/core/libvoicevox_core.dylib
+  #           LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
+  #         else
+  #           sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
+  #           if [[ ${{ matrix.os }} == windows-* ]]; then
+  #             LIBCORE_PATH=download/core/voicevox_core.dll
+  #             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
+  #           else
+  #             LIBCORE_PATH=download/core/libvoicevox_core.so
+  #             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
+  #           fi
+  #         fi
 
-          LIBCORE_PATH="$LIBCORE_PATH" \
-          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec
+  #         LIBCORE_PATH="$LIBCORE_PATH" \
+  #         LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
+  #         pyinstaller --noconfirm run.spec
 
-      - name: Show disk space (debug info)
-        shell: bash
-        run: |
-          df -h
+  #     - name: Show disk space (debug info)
+  #       shell: bash
+  #       run: |
+  #         df -h
 
-      - name: Create artifact directory with symlink
-        if: startsWith(matrix.os, 'windows-')
-        shell: bash
-        env:
-          PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
-          # create symlink instead of copy (Git Bash)
-          # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
-          MSYS: winsymlinks:nativestrict
-        run: |
-          set -eux
+  #     - name: Create artifact directory with symlink
+  #       if: startsWith(matrix.os, 'windows-')
+  #       shell: bash
+  #       env:
+  #         PYTHON_SITE_PACKAGES_DIR: C:/hostedtoolcache/windows/python/${{ steps.setup-python.outputs.python-version }}/x64/lib/site-packages
+  #         # create symlink instead of copy (Git Bash)
+  #         # https://qiita.com/ucho/items/c5ea0beb8acf2f1e4772
+  #         MSYS: winsymlinks:nativestrict
+  #       run: |
+  #         set -eux
 
-          # Copy DLL dependencies
+  #         # Copy DLL dependencies
 
-          if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
-            # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-            ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
+  #         if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
+  #           # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+  #           ln -sf "$(pwd)/download/onnxruntime/lib"/onnxruntime_*.dll dist/run/
 
-            # CUDA
-            ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
+  #           # CUDA
+  #           ln -sf "$(pwd)/download/cuda/bin"/cublas64_*.dll dist/run/
+  #           ln -sf "$(pwd)/download/cuda/bin"/cublasLt64_*.dll dist/run/
+  #           ln -sf "$(pwd)/download/cuda/bin"/cudart64_*.dll dist/run/
+  #           ln -sf "$(pwd)/download/cuda/bin"/cufft64_*.dll dist/run/
+  #           ln -sf "$(pwd)/download/cuda/bin"/curand64_*.dll dist/run/
 
-            # cuDNN
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
-            ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
+  #           # cuDNN
+  #           ln -sf "$(pwd)/download/cudnn/bin"/cudnn64_*.dll dist/run/
+  #           ln -sf "$(pwd)/download/cudnn/bin"/cudnn_*_infer64*.dll dist/run/
 
-            # zlib
-            ln -sf "$(pwd)/download/zlib"/zlibwapi.dll dist/run/
-          fi
+  #           # zlib
+  #           ln -sf "$(pwd)/download/zlib"/zlibwapi.dll dist/run/
+  #         fi
 
-          if [[ ${{ matrix.target }} == *-directml ]]; then
-            # DirectML
-            ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
-          fi
+  #         if [[ ${{ matrix.target }} == *-directml ]]; then
+  #           # DirectML
+  #           ln -sf "$(pwd)/download/directml"/DirectML.dll dist/run/
+  #         fi
 
-      - name: Create symlink of CUDA dependencies
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
-        shell: bash
-        run: |
-          set -eux
+  #     - name: Create symlink of CUDA dependencies
+  #       if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+  #       shell: bash
+  #       run: |
+  #         set -eux
 
-          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
-          ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
+  #         # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+  #         patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
+  #         ln -sf "$(pwd)/download/onnxruntime/lib"/libonnxruntime_*.so dist/run/
 
-          # CUDA
-          ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
-          ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
+  #         # CUDA
+  #         ln -sf "$(pwd)/download/cuda/bin"/libcublas.so.* dist/run/
+  #         ln -sf "$(pwd)/download/cuda/bin"/libcublasLt.so.* dist/run/
+  #         ln -sf "$(pwd)/download/cuda/bin"/libcudart.so.* dist/run/
+  #         ln -sf "$(pwd)/download/cuda/bin"/libcufft.so.* dist/run/
+  #         ln -sf "$(pwd)/download/cuda/bin"/libcurand.so.* dist/run/
 
-          # cuDNN
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
-          ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
+  #         # cuDNN
+  #         ln -sf "$(pwd)/download/cudnn/bin"/libcudnn.so.* dist/run/
+  #         ln -sf "$(pwd)/download/cudnn/bin"/libcudnn_*_infer.so.* dist/run/
 
-      - name: Set @rpath to @executable_path
-        if: startsWith(matrix.os, 'macos-')
-        run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+  #     - name: Set @rpath to @executable_path
+  #       if: startsWith(matrix.os, 'macos-')
+  #       run: |
+  #         install_name_tool -add_rpath @executable_path/. dist/run/run
 
-      - name: Code signing
-        if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        shell: bash
-        run: |
-          bash build_util/codesign.bash "dist/run/run.exe"
-        env:
-          ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
-          ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
-          ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
+  #     - name: Code signing
+  #       if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
+  #       shell: bash
+  #       run: |
+  #         bash build_util/codesign.bash "dist/run/run.exe"
+  #       env:
+  #         ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
+  #         ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
+  #         ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.vars.outputs.artifact_name }}
-          path: dist/run/
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ${{ steps.vars.outputs.artifact_name }}
+  #         path: dist/run/
 
-  upload-to-release:
-    if: needs.config.outputs.version != ''
-    needs: [config, build-all]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - macos-x64
-          - linux-cpu
-          - linux-nvidia
-          - windows-cpu
-          - windows-directml
-          - windows-nvidia
-    steps:
-      - name: declare variables
-        id: vars
-        shell: bash
-        run: |
-          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
-          : # this is exactly same as `steps.vars.outputs.artifact_name` in `build-all` job,
-          : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
-          echo "artifact_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+  # upload-to-release:
+  #   if: needs.config.outputs.version != ''
+  #   needs: [config, build-all]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       target:
+  #         - macos-x64
+  #         - linux-cpu
+  #         - linux-nvidia
+  #         - windows-cpu
+  #         - windows-directml
+  #         - windows-nvidia
+  #   steps:
+  #     - name: declare variables
+  #       id: vars
+  #       shell: bash
+  #       run: |
+  #         echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
+  #         : # this is exactly same as `steps.vars.outputs.artifact_name` in `build-all` job,
+  #         : # but since we cannot get the job outputs of matrix builds correctly, we need to redefine here.
+  #         echo "artifact_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version_or_latest }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-              p7zip-full
+  #     - name: Install dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y \
+  #             p7zip-full
 
-      - name: Download and extract artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ steps.vars.outputs.artifact_name }}
-          path: ${{ matrix.target }}/
+  #     - name: Download and extract artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: ${{ steps.vars.outputs.artifact_name }}
+  #         path: ${{ matrix.target }}/
 
-      - name: Rearchive and split artifact
-        run: |
-          # Compress to artifact.7z.001, artifact.7z.002, ...
-          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
+  #     - name: Rearchive and split artifact
+  #       run: |
+  #         # Compress to artifact.7z.001, artifact.7z.002, ...
+  #         7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
-          # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
-          (cd "${{ matrix.target }}" && zip -r - . > ../compressed.zip)
-          split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
+  #         # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
+  #         (cd "${{ matrix.target }}" && zip -r - . > ../compressed.zip)
+  #         split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
 
-          # Rename to artifact.vvpp if there are only artifact.001.vvppp
-          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
-            mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
-          fi
+  #         # Rename to artifact.vvpp if there are only artifact.001.vvppp
+  #         if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+  #           mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
+  #         fi
 
-          # Output splitted archive list
-          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
-          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
-          ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
-          mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
+  #         # Output splitted archive list
+  #         ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+  #         mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+  #         ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
+  #         mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
-      - name: Upload splitted archives to Release assets
-        uses: softprops/action-gh-release@v1
-        with:
-          prerelease: ${{ github.event.inputs.prerelease }}
-          tag_name: ${{ needs.config.outputs.version }}
-          files: |-
-            ${{ steps.vars.outputs.package_name }}.7z.*
-            ${{ steps.vars.outputs.package_name }}.vvpp
-            ${{ steps.vars.outputs.package_name }}*.vvppp
-            ${{ steps.vars.outputs.package_name }}.vvpp.txt
-          target_commitish: ${{ github.sha }}
+  #     - name: Upload splitted archives to Release assets
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         prerelease: ${{ github.event.inputs.prerelease }}
+  #         tag_name: ${{ needs.config.outputs.version }}
+  #         files: |-
+  #           ${{ steps.vars.outputs.package_name }}.7z.*
+  #           ${{ steps.vars.outputs.package_name }}.vvpp
+  #           ${{ steps.vars.outputs.package_name }}*.vvppp
+  #           ${{ steps.vars.outputs.package_name }}.vvpp.txt
+  #         target_commitish: ${{ github.sha }}
 
-  run-release-test-workflow:
-    if: needs.config.outputs.version != ''
-    needs: [config, upload-to-release]
-    uses: ./.github/workflows/release-test.yml
-    with:
-      version: ${{ needs.config.outputs.version }}
-      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+  # run-release-test-workflow:
+  #   if: needs.config.outputs.version != ''
+  #   needs: [config, upload-to-release]
+  #   uses: ./.github/workflows/release-test.yml
+  #   with:
+  #     version: ${{ needs.config.outputs.version }}
+  #     repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
