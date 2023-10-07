@@ -25,8 +25,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.3"
-  VOICEVOX_CORE_VERSION: "0.14.4"
+  VOICEVOX_RESOURCE_VERSION: "0.14.4"
+  VOICEVOX_CORE_VERSION: "0.14.5"
 
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
@@ -515,8 +515,9 @@ jobs:
         run: |
           bash build_util/codesign.bash "dist/run/run.exe"
         env:
-          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+          ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
+          ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
+          ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: Rearchive and split artifact
         shell: bash
