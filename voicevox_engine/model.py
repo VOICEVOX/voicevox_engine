@@ -2,7 +2,7 @@ from enum import Enum
 from re import findall, fullmatch
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, conint, validator
+from pydantic import BaseModel, Field, StrictStr, conint, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
 
@@ -107,7 +107,6 @@ class ParseKanaBadRequest(BaseModel):
 
 
 class MorphableTargetInfo(BaseModel):
-
     is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
     # FIXME: add reason property
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
@@ -139,6 +138,14 @@ class DownloadableLibrary(BaseModel):
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
+
+
+class InstalledLibrary(DownloadableLibrary):
+    """
+    インストール済み音声ライブラリの情報
+    """
+
+    uninstallable: bool = Field(title="アンインストール可能かどうか")
 
 
 USER_DICT_MIN_PRIORITY = 0
@@ -280,3 +287,17 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
     support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+
+
+class VvlibManifest(BaseModel):
+    """
+    vvlib(VOICEVOX Library)に関する情報
+    """
+
+    manifest_version: StrictStr = Field(title="マニフェストバージョン")
+    name: StrictStr = Field(title="音声ライブラリ名")
+    version: StrictStr = Field(title="音声ライブラリバージョン")
+    uuid: StrictStr = Field(title="音声ライブラリのUUID")
+    brand_name: StrictStr = Field(title="エンジンのブランド名")
+    engine_name: StrictStr = Field(title="エンジン名")
+    engine_uuid: StrictStr = Field(title="エンジンのUUID")

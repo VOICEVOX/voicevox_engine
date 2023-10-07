@@ -11,6 +11,10 @@ env:
   PUBLISH_BRANCH: "gh-pages"
   DESTINATION_DIR: "api"
 
+defaults:
+  run:
+    shell: bash
+  
 jobs:
   upload-doc:
     runs-on: ubuntu-20.04
@@ -25,15 +29,15 @@ jobs:
           cache: pip
 
       - name: Install libraries for ubuntu
-        run: sudo apt-get install libsndfile1
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsndfile1
 
       - name: Install Python dependencies
-        shell: bash
         run: |
           pip install -r requirements.txt
 
       - name: Make documents
-        shell: bash
         run: |
           python make_docs.py
 

@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 from pyopenjtalk import tts
-from scipy.signal import resample
+from soxr import resample
 
 DUMMY_TEXT = "これはダミーのテキストです"
 
@@ -60,10 +60,7 @@ def decode_forward(length: int, **kwargs: Dict[str, Any]) -> np.ndarray:
         "Sorry, decode_forward() is a mock. Return values are incorrect.",
     )
     wave, sr = tts(DUMMY_TEXT)
-    wave = resample(
-        wave.astype("int16"),
-        24000 * len(wave) // 48000,
-    )
+    wave = resample(wave.astype("int16"), 48000, 24000)
     return wave
 
 

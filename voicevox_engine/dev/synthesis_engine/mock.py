@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from pyopenjtalk import tts
-from scipy.signal import resample
+from soxr import resample
 
 from ...model import AccentPhrase, AudioQuery
 from ...synthesis_engine import SynthesisEngineBase
@@ -132,5 +132,5 @@ class MockSynthesisEngine(SynthesisEngineBase):
         logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
         logger.info("[Mock] input text: %s" % text)
         wave, sr = tts(text)
-        wave = resample(wave, 24000 * len(wave) // 48000)
+        wave = resample(wave, 48000, 24000)
         return wave

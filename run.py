@@ -18,6 +18,7 @@ import soundfile
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
@@ -35,6 +36,7 @@ from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
     DownloadableLibrary,
+    InstalledLibrary,
     MorphableTargetInfo,
     ParseKanaBadRequest,
     ParseKanaError,
@@ -43,6 +45,7 @@ from voicevox_engine.model import (
     SpeakerNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
+    VvlibManifest,
     WordTypes,
 )
 from voicevox_engine.morphing import (
@@ -177,10 +180,16 @@ def generate_app(
     preset_manager = PresetManager(
         preset_path=root_dir / "presets.yaml",
     )
-    engine_manifest_loader = EngineManifestLoader(
-        root_dir / "engine_manifest.json", root_dir
+    engine_manifest_data = EngineManifestLoader(
+        engine_root() / "engine_manifest.json", engine_root()
+    ).load_manifest()
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest_data.supported_vvlib_manifest_version,
+        engine_manifest_data.brand_name,
+        engine_manifest_data.name,
+        engine_manifest_data.uuid,
     )
-    library_manager = LibraryManager(get_save_dir() / "installed_libraries")
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
@@ -811,14 +820,13 @@ def generate_app(
         -------
         ret_data: List[DownloadableLibrary]
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.downloadable_libraries()
 
     @app.get(
         "/installed_libraries",
-        response_model=List[DownloadableLibrary],
+        response_model=Dict[str, InstalledLibrary],
         tags=["音声ライブラリ管理"],
     )
     def installed_libraries():
@@ -829,8 +837,7 @@ def generate_app(
         -------
         ret_data: List[DownloadableLibrary]
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         return library_manager.installed_libraries()
 
@@ -849,14 +856,32 @@ def generate_app(
         library_uuid: str
             音声ライブラリのID
         """
-        manifest = engine_manifest_loader.load_manifest()
-        if not manifest.supported_features.manage_library:
+        if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         archive = BytesIO(await request.body())
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(
             None, library_manager.install_library, library_uuid, archive
         )
+        return Response(status_code=204)
+
+    @app.post(
+        "/uninstall_library/{library_uuid}",
+        status_code=204,
+        tags=["音声ライブラリ管理"],
+    )
+    def uninstall_library(library_uuid: str):
+        """
+        音声ライブラリをアンインストールします。
+
+        Parameters
+        ----------
+        library_uuid: str
+            音声ライブラリのID
+        """
+        if not engine_manifest_data.supported_features.manage_library:
+            raise HTTPException(status_code=404, detail="この機能は実装されていません")
+        library_manager.uninstall_library(library_uuid)
         return Response(status_code=204)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
@@ -1042,7 +1067,7 @@ def generate_app(
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
     def engine_manifest():
-        return engine_manifest_loader.load_manifest()
+        return engine_manifest_data
 
     @app.post(
         "/validate_kana",
@@ -1119,6 +1144,30 @@ def generate_app(
                 "allow_origin": allow_origin,
             },
         )
+
+    # VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
+    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+            terms_of_service=app.terms_of_service,
+            contact=app.contact,
+            license_info=app.license_info,
+        )
+        openapi_schema["components"]["schemas"][
+            "VvlibManifest"
+        ] = VvlibManifest.schema()
+        app.openapi_schema = openapi_schema
+        return openapi_schema
+
+    app.openapi = custom_openapi
 
     return app
 
