@@ -321,7 +321,7 @@ options:
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
-                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE から読み込みます。VV_PRESET_FILEの指定がない場合、--voicevox_dirのpresets.yamlから読み込みます。voicevox_dirの指定がない場合、実行ファイルのディレクトリのpresets.yamlから読み込みます。指定されたパスにファイルが存在しないまたは破損している場合、プリセットAPIはエラー（HTTP 422）を返します。
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、実行ファイルのディレクトリのpresets.yamlを順に探します。
 ```
 
 ## アップデート
