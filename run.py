@@ -1330,7 +1330,7 @@ if __name__ == "__main__":
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
     preset_path: Path | None = args.preset_file
     if preset_path is None:
-        # --preset_file 引数の指定がない場合
+        # 引数 --preset_file の指定がない場合
         env_preset_path = os.getenv("VV_PRESET_FILE")
         if env_preset_path is not None and len(env_preset_path) != 0:
             # 環境変数 VV_PRESET_FILE の指定がある場合
