@@ -1277,7 +1277,8 @@ if __name__ == "__main__":
         default=None,
         help=(
             "プリセットファイルを指定できます。"
-            "指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、実行ファイルのディレクトリのpresets.yamlを順に探します。"
+            "指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、"
+            "実行ファイルのディレクトリのpresets.yamlを順に探します。"
         ),
     )
 
