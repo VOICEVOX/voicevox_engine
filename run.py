@@ -1313,11 +1313,9 @@ if __name__ == "__main__":
 
     settings = setting_loader.load_setting_file()
 
-    cors_policy_mode = (
-        args.cors_policy_mode
-        if args.cors_policy_mode is not None
-        else settings.cors_policy_mode
-    )
+    cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
+    if cors_policy_mode is None:
+        cors_policy_mode = settings.cors_policy_mode
 
     allow_origin = None
     if args.allow_origin is not None:
