@@ -877,7 +877,7 @@ def generate_app(
         status_code=204,
         tags=["音声ライブラリ管理"],
     )
-    def uninstall_library(library_uuid: str):
+    def uninstall_library(library_uuid: str) -> Response:
         """
         音声ライブラリをアンインストールします。
 
