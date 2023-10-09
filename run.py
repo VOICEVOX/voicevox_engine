@@ -1068,8 +1068,8 @@ def generate_app(
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> Response:
         supported_devices = get_engine(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
