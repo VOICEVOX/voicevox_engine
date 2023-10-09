@@ -201,7 +201,7 @@ def generate_app(
 
     # @app.on_event("startup")
     # async def start_catch_disconnection():
-    #     if args.enable_cancellable_synthesis:
+    #     if cancellable_engine is not None:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
 
