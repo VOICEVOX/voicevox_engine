@@ -252,8 +252,10 @@ def generate_app(
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
     def audio_query_from_preset(
-        text: str, preset_id: int, core_version: Optional[str] = None
-    ):
+        text: str,
+        preset_id: int,
+        core_version: str | None = None,
+    ) -> AudioQuery:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
