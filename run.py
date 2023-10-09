@@ -510,14 +510,14 @@ def generate_app(
 
     @app.post(
         "/morphable_targets",
-        response_model=List[Dict[str, MorphableTargetInfo]],
+        response_model=list[dict[str, MorphableTargetInfo]],
         tags=["音声合成"],
         summary="指定した話者に対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_speakers: List[int],
-        core_version: Optional[str] = None,
-    ):
+        base_speakers: list[int],
+        core_version: str | None = None,
+    ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
