@@ -239,7 +239,7 @@ def start_synthesis_subprocess(
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
-        Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
+        None のとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     enable_mock: bool, optional
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     sub_proc_con: ConnectionBase
