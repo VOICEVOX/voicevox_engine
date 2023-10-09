@@ -434,8 +434,8 @@ def generate_app(
         query: AudioQuery,
         speaker: int,
         request: Request,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
