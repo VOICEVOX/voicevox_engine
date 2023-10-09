@@ -731,8 +731,8 @@ def generate_app(
     def version() -> str:
         return __version__
 
-    @app.get("/core_versions", response_model=List[str], tags=["その他"])
-    def core_versions() -> List[str]:
+    @app.get("/core_versions", response_model=list[str], tags=["その他"])
+    def core_versions() -> list[str]:
         return Response(
             content=json.dumps(list(synthesis_engines.keys())),
             media_type="application/json",
