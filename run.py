@@ -1079,7 +1079,7 @@ def generate_app(
         )
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    def engine_manifest():
+    def engine_manifest() -> EngineManifest:
         return engine_manifest_data
 
     @app.post(
