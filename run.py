@@ -289,7 +289,7 @@ def generate_app(
 
     @app.post(
         "/accent_phrases",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
         responses={
@@ -303,8 +303,8 @@ def generate_app(
         text: str,
         speaker: int,
         is_kana: bool = False,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
