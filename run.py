@@ -940,9 +940,9 @@ def generate_app(
         surface: str,
         pronunciation: str,
         accent_type: int,
-        word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
-    ):
+        word_type: WordTypes | None = None,
+        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+    ) -> Response:
         """
         ユーザー辞書に言葉を追加します。
 
