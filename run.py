@@ -1094,7 +1094,9 @@ def generate_app(
             }
         },
     )
-    def validate_kana(text: str):
+    def validate_kana(
+        text: str,
+    ) -> bool:
         """
         テキストがAquesTalkライクな記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
