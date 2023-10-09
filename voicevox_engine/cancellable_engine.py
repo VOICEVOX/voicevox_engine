@@ -242,6 +242,7 @@ def start_synthesis_subprocess(
         None のとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     enable_mock: bool, optional
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
+        None のとき、mockを使用する
     sub_proc_con: ConnectionBase
         メインプロセスと通信するためのPipe
     """
