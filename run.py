@@ -1046,14 +1046,15 @@ def generate_app(
 
     @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
     def import_user_dict_words(
-        import_dict_data: Dict[str, UserDictWord], override: bool
-    ):
+        import_dict_data: dict[str, UserDictWord],
+        override: bool,
+    ) -> Response:
         """
         他のユーザー辞書をインポートします。
 
         Parameters
         ----------
-        import_dict_data: Dict[str, UserDictWord]
+        import_dict_data: dict[str, UserDictWord]
             インポートするユーザー辞書のデータ
         override: bool
             重複したエントリがあった場合、上書きするかどうか
