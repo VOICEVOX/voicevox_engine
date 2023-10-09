@@ -1024,7 +1024,9 @@ def generate_app(
             raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
-    def delete_user_dict_word(word_uuid: str):
+    def delete_user_dict_word(
+        word_uuid: str,
+    ) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
 
