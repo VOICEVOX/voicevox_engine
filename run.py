@@ -908,7 +908,10 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
+    def is_initialized_speaker(
+        speaker: int,
+        core_version: str | None = None,
+    ) -> bool:
         """
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """
