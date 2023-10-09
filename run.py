@@ -816,16 +816,16 @@ def generate_app(
 
     @app.get(
         "/downloadable_libraries",
-        response_model=List[DownloadableLibrary],
+        response_model=list[DownloadableLibrary],
         tags=["音声ライブラリ管理"],
     )
-    def downloadable_libraries():
+    def downloadable_libraries() -> list[DownloadableLibrary]:
         """
         ダウンロード可能な音声ライブラリの情報を返します。
 
         Returns
         -------
-        ret_data: List[DownloadableLibrary]
+        ret_data: list[DownloadableLibrary]
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
