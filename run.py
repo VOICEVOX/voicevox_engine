@@ -1183,8 +1183,6 @@ def main() -> None:
             file=sys.stderr,
         )
 
-    default_cors_policy_mode = CorsPolicyMode.localapps
-
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
         "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
