@@ -667,7 +667,7 @@ def generate_app(
         return presets
 
     @app.post("/add_preset", response_model=int, tags=["その他"])
-    def add_preset(preset: Preset):
+    def add_preset(preset: Preset) -> int:
         """
         新しいプリセットを追加します
 
