@@ -1,8 +1,8 @@
-import argparse
 import asyncio
 import queue
 from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, Tuple
 
@@ -33,21 +33,41 @@ class CancellableEngine:
         （音声合成中のプロセスは入っていない）
     """
 
-    def __init__(self, args: argparse.Namespace) -> None:
+    use_gpu: bool
+    voicelib_dirs: List[Path] | None
+    voicevox_dir: Path | None
+    runtime_dirs: List[Path] | None
+    cpu_num_threads: int | None
+    enable_mock: bool
+
+    watch_con_list: List[Tuple[Request, Process]]
+    procs_and_cons: queue.Queue[Tuple[Process, Connection]]
+
+    def __init__(
+        self,
+        init_processes: int,
+        use_gpu: bool,
+        voicelib_dirs: List[Path] | None,
+        voicevox_dir: Path | None,
+        runtime_dirs: List[Path] | None,
+        cpu_num_threads: int | None,
+        enable_mock: bool,
+    ) -> None:
         """
         変数の初期化を行う
-        また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
+        また、init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
-        self.args = args
-        if not self.args.enable_cancellable_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
 
-        self.watch_con_list: List[Tuple[Request, Process]] = []
-        self.procs_and_cons: queue.Queue[Tuple[Process, Connection]] = queue.Queue()
-        for _ in range(self.args.init_processes):
+        self.use_gpu = use_gpu
+        self.voicelib_dirs = voicelib_dirs
+        self.voicevox_dir = voicevox_dir
+        self.runtime_dirs = runtime_dirs
+        self.cpu_num_threads = cpu_num_threads
+        self.enable_mock = enable_mock
+
+        self.watch_con_list = []
+        self.procs_and_cons = queue.Queue()
+        for _ in range(init_processes):
             self.procs_and_cons.put(self.start_new_proc())
 
     def start_new_proc(
@@ -67,7 +87,12 @@ class CancellableEngine:
         ret_proc = Process(
             target=start_synthesis_subprocess,
             kwargs={
-                "args": self.args,
+                "use_gpu": self.use_gpu,
+                "voicelib_dirs": self.voicelib_dirs,
+                "voicevox_dir": self.voicevox_dir,
+                "runtime_dirs": self.runtime_dirs,
+                "cpu_num_threads": self.cpu_num_threads,
+                "enable_mock": self.enable_mock,
                 "sub_proc_con": sub_proc_con2,
             },
             daemon=True,
@@ -173,7 +198,12 @@ class CancellableEngine:
 
 
 def start_synthesis_subprocess(
-    args: argparse.Namespace,
+    use_gpu: bool,
+    voicelib_dirs: List[Path] | None,
+    voicevox_dir: Path | None,
+    runtime_dirs: List[Path] | None,
+    cpu_num_threads: int | None,
+    enable_mock: bool,
     sub_proc_con: Connection,
 ):
     """
@@ -189,12 +219,12 @@ def start_synthesis_subprocess(
     """
 
     synthesis_engines = make_synthesis_engines(
-        use_gpu=args.use_gpu,
-        voicelib_dirs=args.voicelib_dir,
-        voicevox_dir=args.voicevox_dir,
-        runtime_dirs=args.runtime_dir,
-        cpu_num_threads=args.cpu_num_threads,
-        enable_mock=args.enable_mock,
+        use_gpu=use_gpu,
+        voicelib_dirs=voicelib_dirs,
+        voicevox_dir=voicevox_dir,
+        runtime_dirs=runtime_dirs,
+        cpu_num_threads=cpu_num_threads,
+        enable_mock=enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
