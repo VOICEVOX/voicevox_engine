@@ -833,16 +833,16 @@ def generate_app(
 
     @app.get(
         "/installed_libraries",
-        response_model=Dict[str, InstalledLibrary],
+        response_model=dict[str, InstalledLibrary],
         tags=["音声ライブラリ管理"],
     )
-    def installed_libraries():
+    def installed_libraries() -> dict[str, InstalledLibrary]:
         """
         インストールした音声ライブラリの情報を返します。
 
         Returns
         -------
-        ret_data: List[DownloadableLibrary]
+        ret_data: dict[str, InstalledLibrary]
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
