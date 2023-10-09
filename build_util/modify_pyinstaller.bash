@@ -21,5 +21,5 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 EOF
-(cd "$tempdir/bootloader" && python ./waf all)
+(cd "$tempdir/bootloader" && python ./waf all --target-arch="64bit")
 pip install -U "$tempdir"
