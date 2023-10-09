@@ -711,7 +711,7 @@ def generate_app(
         return id
 
     @app.post("/delete_preset", status_code=204, tags=["その他"])
-    def delete_preset(id: int):
+    def delete_preset(id: int) -> Response:
         """
         既存のプリセットを削除します
 
