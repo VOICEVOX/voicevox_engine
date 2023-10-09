@@ -1306,6 +1306,7 @@ def main() -> None:
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
+    # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
     init_processes: int = args.init_processes
 
