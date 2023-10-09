@@ -650,14 +650,14 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get("/presets", response_model=List[Preset], tags=["その他"])
-    def get_presets():
+    @app.get("/presets", response_model=list[Preset], tags=["その他"])
+    def get_presets() -> list[Preset]:
         """
         エンジンが保持しているプリセットの設定を返します
 
         Returns
         -------
-        presets: List[Preset]
+        presets: list[Preset]
             プリセットのリスト
         """
         try:
