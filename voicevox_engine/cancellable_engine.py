@@ -27,23 +27,11 @@ class CancellableEngine:
     初期化後は、synthesis関数で音声合成できる
     （オリジナルと比べ引数が増えているので注意）
 
+    パラメータ use_gpu, voicelib_dirs, voicevox_dir,
+    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+
     Attributes
     ----------
-    use_gpu: bool
-        音声ライブラリに GPU を使わせるか否か
-    voicelib_dirs: list[Path], optional
-        音声ライブラリ自体があるディレクトリのリスト
-    voicevox_dir: Path, optional
-        コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    runtime_dirs: list[Path], optional
-        コアで使用するライブラリのあるディレクトリのリスト
-        None のとき、voicevox_dir、カレントディレクトリになる
-    cpu_num_threads: int, optional
-        音声ライブラリが、推論に用いるCPUスレッド数を設定する
-        None のとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
-    enable_mock: bool, optional
-        コア読み込みに失敗したとき、代わりにmockを使用するかどうか
-        None のとき、mockを使用する
     watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
@@ -232,23 +220,11 @@ def start_synthesis_subprocess(
     音声合成を行うサブプロセスで行うための関数
     pickle化の関係でグローバルに書いている
 
+    引数 use_gpu, voicelib_dirs, voicevox_dir,
+    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+
     Parameters
     ----------
-    use_gpu: bool
-        音声ライブラリに GPU を使わせるか否か
-    voicelib_dirs: list[Path], optional
-        音声ライブラリ自体があるディレクトリのリスト
-    voicevox_dir: Path, optional
-        コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    runtime_dirs: list[Path], optional
-        コアで使用するライブラリのあるディレクトリのリスト
-        None のとき、voicevox_dir、カレントディレクトリになる
-    cpu_num_threads: int, optional
-        音声ライブラリが、推論に用いるCPUスレッド数を設定する
-        None のとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
-    enable_mock: bool, optional
-        コア読み込みに失敗したとき、代わりにmockを使用するかどうか
-        None のとき、mockを使用する
     sub_proc_con: ConnectionType
         メインプロセスと通信するためのPipe
     """
