@@ -625,7 +625,9 @@ def generate_app(
         tags=["その他"],
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
-    def connect_waves(waves: List[str]):
+    def connect_waves(
+        waves: list[str],
+    ) -> FileResponse:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
