@@ -982,9 +982,9 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_uuid: str,
-        word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
-    ):
+        word_type: WordTypes | None = None,
+        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+    ) -> Response:
         """
         ユーザー辞書に登録されている言葉を更新します。
 
