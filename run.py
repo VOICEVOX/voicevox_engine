@@ -222,7 +222,11 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
+    def audio_query(
+        text: str,
+        speaker: int,
+        core_version: str | None = None,
+    ) -> AudioQuery:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
