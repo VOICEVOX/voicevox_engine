@@ -559,7 +559,7 @@ def generate_app(
         base_speaker: int,
         target_speaker: int,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
-        core_version: Optional[str] = None,
+        core_version: str | None = None,
     ) -> FileResponse:
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
