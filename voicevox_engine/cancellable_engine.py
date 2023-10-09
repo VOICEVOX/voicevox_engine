@@ -1,7 +1,7 @@
 import asyncio
 import queue
 from multiprocessing import Pipe, Process
-from multiprocessing.connection import Connection
+from multiprocessing.connection import _ConnectionBase
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -27,7 +27,7 @@ class CancellableEngine:
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: queue.Queue[tuple[Process, Connection]]
+    procs_and_cons: queue.Queue[tuple[Process, _ConnectionBase]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
     """
@@ -40,7 +40,7 @@ class CancellableEngine:
     enable_mock: bool
 
     watch_con_list: list[tuple[Request, Process]]
-    procs_and_cons: queue.Queue[tuple[Process, Connection]]
+    procs_and_cons: queue.Queue[tuple[Process, _ConnectionBase]]
 
     def __init__(
         self,
@@ -71,7 +71,7 @@ class CancellableEngine:
 
     def start_new_proc(
         self,
-    ) -> tuple[Process, Connection]:
+    ) -> tuple[Process, _ConnectionBase]:
         """
         新しく開始したプロセスを返す関数
 
@@ -79,7 +79,7 @@ class CancellableEngine:
         -------
         ret_proc: Process
             新規のプロセス
-        sub_proc_con1: Connection
+        sub_proc_con1: _ConnectionBase
             ret_procのプロセスと通信するためのPipe
         """
         sub_proc_con1, sub_proc_con2 = Pipe(True)
@@ -103,7 +103,7 @@ class CancellableEngine:
         self,
         req: Request,
         proc: Process,
-        sub_proc_con: Connection | None,
+        sub_proc_con: _ConnectionBase | None,
     ) -> None:
         """
         接続が切断された時の処理を行う関数
@@ -118,7 +118,7 @@ class CancellableEngine:
             https://fastapi.tiangolo.com/advanced/using-request-directly/
         proc: Process
             音声合成を行っていたプロセス
-        sub_proc_con: Connection, optional
+        sub_proc_con: _ConnectionBase, optional
             音声合成を行っていたプロセスとのPipe
             指定されていない場合、プロセスは再利用されず終了される
         """
@@ -203,7 +203,7 @@ def start_synthesis_subprocess(
     runtime_dirs: list[Path] | None,
     cpu_num_threads: int | None,
     enable_mock: bool,
-    sub_proc_con: Connection,
+    sub_proc_con: _ConnectionBase,
 ):
     """
     音声合成を行うサブプロセスで行うための関数
@@ -225,7 +225,7 @@ def start_synthesis_subprocess(
         Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
     enable_mock: bool, optional
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
-    sub_proc_con: Connection
+    sub_proc_con: _ConnectionBase
         メインプロセスと通信するためのPipe
     """
 
