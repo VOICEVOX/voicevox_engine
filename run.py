@@ -117,6 +117,7 @@ def generate_app(
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
+    cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
@@ -200,7 +201,7 @@ def generate_app(
 
     # @app.on_event("startup")
     # async def start_catch_disconnection():
-    #     if args.enable_cancellable_synthesis:
+    #     if cancellable_engine is not None:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
 
@@ -429,7 +430,7 @@ def generate_app(
         request: Request,
         core_version: Optional[str] = None,
     ):
-        if not args.enable_cancellable_synthesis:
+        if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
@@ -1170,7 +1171,7 @@ def generate_app(
     return app
 
 
-if __name__ == "__main__":
+def main() -> None:
     multiprocessing.freeze_support()
 
     output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
@@ -1181,8 +1182,6 @@ if __name__ == "__main__":
             "WARNING:  invalid VV_OUTPUT_LOG_UTF8 environment variable value",
             file=sys.stderr,
         )
-
-    default_cors_policy_mode = CorsPolicyMode.localapps
 
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
@@ -1307,9 +1306,11 @@ if __name__ == "__main__":
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
-    cancellable_engine = None
+    enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
     init_processes: int = args.init_processes
-    if args.enable_cancellable_synthesis:
+
+    cancellable_engine: CancellableEngine | None = None
+    if enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(
             init_processes=init_processes,
             use_gpu=use_gpu,
@@ -1364,6 +1365,7 @@ if __name__ == "__main__":
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,
+            cancellable_engine=cancellable_engine,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
@@ -1371,3 +1373,7 @@ if __name__ == "__main__":
         host=args.host,
         port=args.port,
     )
+
+
+if __name__ == "__main__":
+    main()
