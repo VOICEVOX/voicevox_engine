@@ -333,29 +333,29 @@ def generate_app(
 
     @app.post(
         "/mora_data",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
     def mora_data(
-        accent_phrases: List[AccentPhrase],
+        accent_phrases: list[AccentPhrase],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
         "/mora_length",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
     def mora_length(
-        accent_phrases: List[AccentPhrase],
+        accent_phrases: list[AccentPhrase],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, speaker_id=speaker
