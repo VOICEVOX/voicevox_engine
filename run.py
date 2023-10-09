@@ -1115,7 +1115,7 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
+    @app.get("/setting", response_class=Response, tags=["設定"])
     def setting_get(
         request: Request,
     ) -> Response:
