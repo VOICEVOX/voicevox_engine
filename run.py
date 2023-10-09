@@ -897,8 +897,8 @@ def generate_app(
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> Response:
         """
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
