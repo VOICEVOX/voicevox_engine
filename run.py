@@ -738,10 +738,10 @@ def generate_app(
             media_type="application/json",
         )
 
-    @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
+    @app.get("/speakers", response_model=list[Speaker], tags=["その他"])
     def speakers(
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[Speaker]:
         engine = get_engine(core_version)
         return metas_store.load_combined_metas(engine=engine)
 
