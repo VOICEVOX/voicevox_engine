@@ -1116,7 +1116,9 @@ def generate_app(
             )
 
     @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
-    def setting_get(request: Request):
+    def setting_get(
+        request: Request,
+    ) -> Response:
         settings = setting_loader.load_setting_file()
 
         cors_policy_mode = settings.cors_policy_mode
