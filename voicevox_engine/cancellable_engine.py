@@ -204,7 +204,7 @@ def start_synthesis_subprocess(
     cpu_num_threads: int | None,
     enable_mock: bool,
     sub_proc_con: ConnectionBase,
-):
+) -> None:
     """
     音声合成を行うサブプロセスで行うための関数
     pickle化の関係でグローバルに書いている
