@@ -1,6 +1,8 @@
 import asyncio
 import queue
 from multiprocessing import Pipe, Process
+
+# NOTE: OS間でのConnectionとPipeConnectionの型ヒント共通化のため、非publicな型を参照している
 from multiprocessing.connection import _ConnectionBase as ConnectionBase
 from pathlib import Path
 from tempfile import NamedTemporaryFile
