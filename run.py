@@ -1136,7 +1136,7 @@ def generate_app(
             },
         )
 
-    @app.post("/setting", response_class=HTMLResponse, tags=["設定"])
+    @app.post("/setting", response_class=Response, tags=["設定"])
     def setting_post(
         request: Request,
         cors_policy_mode: str | None = Form(None),  # noqa: B008
