@@ -4,7 +4,6 @@ from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 import soundfile
 
@@ -104,7 +103,7 @@ class CancellableEngine:
         self,
         req: Request,
         proc: Process,
-        sub_proc_con: Optional[Connection],
+        sub_proc_con: Connection | None,
     ) -> None:
         """
         接続が切断された時の処理を行う関数
@@ -142,7 +141,7 @@ class CancellableEngine:
         query: AudioQuery,
         speaker_id: int,
         request: Request,
-        core_version: Optional[str],
+        core_version: str | None,
     ) -> str:
         """
         音声合成を行う関数
