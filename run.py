@@ -689,7 +689,7 @@ def generate_app(
         return id
 
     @app.post("/update_preset", response_model=int, tags=["その他"])
-    def update_preset(preset: Preset):
+    def update_preset(preset: Preset) -> int:
         """
         既存のプリセットを更新します
 
