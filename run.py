@@ -397,8 +397,8 @@ def generate_app(
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
