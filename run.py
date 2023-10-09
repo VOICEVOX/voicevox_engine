@@ -1286,6 +1286,7 @@ def main() -> None:
     if args.output_log_utf8:
         set_output_log_utf8()
 
+    # Synthesis Engine
     use_gpu: bool = args.use_gpu
     voicevox_dir: Path | None = args.voicevox_dir
     voicelib_dirs: list[Path] | None = args.voicelib_dir
