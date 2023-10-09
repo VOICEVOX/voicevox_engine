@@ -4,7 +4,7 @@ from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import soundfile
 
@@ -24,32 +24,32 @@ class CancellableEngine:
 
     Attributes
     ----------
-    watch_con_list: List[Tuple[Request, Process]]
+    watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: queue.Queue[Tuple[Process, Connection]]
+    procs_and_cons: queue.Queue[tuple[Process, Connection]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
     """
 
     use_gpu: bool
-    voicelib_dirs: List[Path] | None
+    voicelib_dirs: list[Path] | None
     voicevox_dir: Path | None
-    runtime_dirs: List[Path] | None
+    runtime_dirs: list[Path] | None
     cpu_num_threads: int | None
     enable_mock: bool
 
-    watch_con_list: List[Tuple[Request, Process]]
-    procs_and_cons: queue.Queue[Tuple[Process, Connection]]
+    watch_con_list: list[tuple[Request, Process]]
+    procs_and_cons: queue.Queue[tuple[Process, Connection]]
 
     def __init__(
         self,
         init_processes: int,
         use_gpu: bool,
-        voicelib_dirs: List[Path] | None,
+        voicelib_dirs: list[Path] | None,
         voicevox_dir: Path | None,
-        runtime_dirs: List[Path] | None,
+        runtime_dirs: list[Path] | None,
         cpu_num_threads: int | None,
         enable_mock: bool,
     ) -> None:
@@ -72,7 +72,7 @@ class CancellableEngine:
 
     def start_new_proc(
         self,
-    ) -> Tuple[Process, Connection]:
+    ) -> tuple[Process, Connection]:
         """
         新しく開始したプロセスを返す関数
 
@@ -199,9 +199,9 @@ class CancellableEngine:
 
 def start_synthesis_subprocess(
     use_gpu: bool,
-    voicelib_dirs: List[Path] | None,
+    voicelib_dirs: list[Path] | None,
     voicevox_dir: Path | None,
-    runtime_dirs: List[Path] | None,
+    runtime_dirs: list[Path] | None,
     cpu_num_threads: int | None,
     enable_mock: bool,
     sub_proc_con: Connection,
@@ -214,11 +214,11 @@ def start_synthesis_subprocess(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
-    voicelib_dirs: List[Path], optional
+    voicelib_dirs: list[Path], optional
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir: Path, optional
         コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    runtime_dirs: List[Path], optional
+    runtime_dirs: list[Path], optional
         コアで使用するライブラリのあるディレクトリのリスト
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional
