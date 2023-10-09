@@ -918,15 +918,15 @@ def generate_app(
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(speaker)
 
-    @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
-    def get_user_dict_words():
+    @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
+    def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
 
         Returns
         -------
-        Dict[str, UserDictWord]
+        dict[str, UserDictWord]
             単語のUUIDとその詳細
         """
         try:
