@@ -1287,23 +1287,39 @@ if __name__ == "__main__":
     if args.output_log_utf8:
         set_output_log_utf8()
 
-    cpu_num_threads: Optional[int] = args.cpu_num_threads
+    use_gpu: bool = args.use_gpu
+    voicevox_dir: Path | None = args.voicevox_dir
+    voicelib_dirs: list[Path] | None = args.voicelib_dir
+    runtime_dirs: list[Path] | None = args.runtime_dir
+    enable_mock: bool = args.enable_mock
+    cpu_num_threads: int | None = args.cpu_num_threads
+    load_all_models: bool = args.load_all_models
 
     synthesis_engines = make_synthesis_engines(
-        use_gpu=args.use_gpu,
-        voicelib_dirs=args.voicelib_dir,
-        voicevox_dir=args.voicevox_dir,
-        runtime_dirs=args.runtime_dir,
+        use_gpu=use_gpu,
+        voicelib_dirs=voicelib_dirs,
+        voicevox_dir=voicevox_dir,
+        runtime_dirs=runtime_dirs,
         cpu_num_threads=cpu_num_threads,
-        enable_mock=args.enable_mock,
-        load_all_models=args.load_all_models,
+        enable_mock=enable_mock,
+        load_all_models=load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
     cancellable_engine = None
     if args.enable_cancellable_synthesis:
-        cancellable_engine = CancellableEngine(args)
+        init_processes: int = args.init_processes
+
+        cancellable_engine = CancellableEngine(
+            init_processes=init_processes,
+            use_gpu=use_gpu,
+            voicelib_dirs=voicelib_dirs,
+            voicevox_dir=voicevox_dir,
+            runtime_dirs=runtime_dirs,
+            cpu_num_threads=cpu_num_threads,
+            enable_mock=enable_mock,
+        )
 
     root_dir: Path | None = args.voicevox_dir
     if root_dir is None:
