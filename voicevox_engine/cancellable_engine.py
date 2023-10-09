@@ -1,9 +1,13 @@
 import asyncio
 import queue
+import sys
 from multiprocessing import Pipe, Process
 
-# NOTE: OS間でのConnectionとPipeConnectionの型ヒント共通化のため、非publicな型を参照している
-from multiprocessing.connection import _ConnectionBase as ConnectionBase
+if sys.platform == "win32":
+    from multiprocessing.connection import PipeConnection as ConnectionType
+else:
+    from multiprocessing.connection import Connection as ConnectionType
+
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -44,7 +48,7 @@ class CancellableEngine:
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: queue.Queue[tuple[Process, ConnectionBase]]
+    procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
     """
@@ -57,7 +61,7 @@ class CancellableEngine:
     enable_mock: bool
 
     watch_con_list: list[tuple[Request, Process]]
-    procs_and_cons: queue.Queue[tuple[Process, ConnectionBase]]
+    procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
 
     def __init__(
         self,
@@ -83,14 +87,14 @@ class CancellableEngine:
 
         self.watch_con_list = []
 
-        procs_and_cons: queue.Queue[tuple[Process, ConnectionBase]] = queue.Queue()
+        procs_and_cons: queue.Queue[tuple[Process, ConnectionType]] = queue.Queue()
         for _ in range(init_processes):
             procs_and_cons.put(self.start_new_proc())
         self.procs_and_cons = procs_and_cons
 
     def start_new_proc(
         self,
-    ) -> tuple[Process, ConnectionBase]:
+    ) -> tuple[Process, ConnectionType]:
         """
         新しく開始したプロセスを返す関数
 
@@ -98,7 +102,7 @@ class CancellableEngine:
         -------
         ret_proc: Process
             新規のプロセス
-        sub_proc_con1: ConnectionBase
+        sub_proc_con1: ConnectionType
             ret_procのプロセスと通信するためのPipe
         """
         sub_proc_con1, sub_proc_con2 = Pipe(True)
@@ -122,7 +126,7 @@ class CancellableEngine:
         self,
         req: Request,
         proc: Process,
-        sub_proc_con: ConnectionBase | None,
+        sub_proc_con: ConnectionType | None,
     ) -> None:
         """
         接続が切断された時の処理を行う関数
@@ -137,7 +141,7 @@ class CancellableEngine:
             https://fastapi.tiangolo.com/advanced/using-request-directly/
         proc: Process
             音声合成を行っていたプロセス
-        sub_proc_con: ConnectionBase, optional
+        sub_proc_con: ConnectionType, optional
             音声合成を行っていたプロセスとのPipe
             指定されていない場合、プロセスは再利用されず終了される
         """
@@ -222,7 +226,7 @@ def start_synthesis_subprocess(
     runtime_dirs: list[Path] | None,
     cpu_num_threads: int | None,
     enable_mock: bool,
-    sub_proc_con: ConnectionBase,
+    sub_proc_con: ConnectionType,
 ) -> None:
     """
     音声合成を行うサブプロセスで行うための関数
@@ -245,7 +249,7 @@ def start_synthesis_subprocess(
     enable_mock: bool, optional
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
         None のとき、mockを使用する
-    sub_proc_con: ConnectionBase
+    sub_proc_con: ConnectionType
         メインプロセスと通信するためのPipe
     """
 
