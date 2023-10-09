@@ -117,6 +117,7 @@ def generate_app(
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
+    cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
@@ -429,7 +430,7 @@ def generate_app(
         request: Request,
         core_version: Optional[str] = None,
     ):
-        if not args.enable_cancellable_synthesis:
+        if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
@@ -1301,8 +1302,9 @@ def main() -> None:
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
-    cancellable_engine = None
-    if args.enable_cancellable_synthesis:
+    enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
+    cancellable_engine: CancellableEngine | None = None
+    if enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(args)
 
     root_dir: Path | None = args.voicevox_dir
@@ -1347,6 +1349,7 @@ def main() -> None:
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,
+            cancellable_engine=cancellable_engine,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
