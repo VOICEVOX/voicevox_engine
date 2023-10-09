@@ -1323,7 +1323,7 @@ def main() -> None:
             enable_mock=enable_mock,
         )
 
-    root_dir: Path | None = None
+    root_dir: Path
     if voicevox_dir is not None:
         root_dir = voicevox_dir
     else:
