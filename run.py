@@ -625,9 +625,7 @@ def generate_app(
         tags=["その他"],
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
-    def connect_waves(
-        waves: list[str],
-    ) -> FileResponse:
+    def connect_waves(waves: list[str]) -> FileResponse:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
@@ -1030,9 +1028,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
-    def delete_user_dict_word(
-        word_uuid: str,
-    ) -> Response:
+    def delete_user_dict_word(word_uuid: str) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
 
@@ -1100,9 +1096,7 @@ def generate_app(
             }
         },
     )
-    def validate_kana(
-        text: str,
-    ) -> bool:
+    def validate_kana(text: str) -> bool:
         """
         テキストがAquesTalkライクな記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
@@ -1122,9 +1116,7 @@ def generate_app(
             )
 
     @app.get("/setting", response_class=Response, tags=["設定"])
-    def setting_get(
-        request: Request,
-    ) -> Response:
+    def setting_get(request: Request) -> Response:
         settings = setting_loader.load_setting_file()
 
         cors_policy_mode = settings.cors_policy_mode
