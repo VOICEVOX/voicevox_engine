@@ -1308,9 +1308,8 @@ if __name__ == "__main__":
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
 
     cancellable_engine = None
+    init_processes: int = args.init_processes
     if args.enable_cancellable_synthesis:
-        init_processes: int = args.init_processes
-
         cancellable_engine = CancellableEngine(
             init_processes=init_processes,
             use_gpu=use_gpu,
