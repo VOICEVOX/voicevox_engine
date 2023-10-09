@@ -1170,7 +1170,7 @@ def generate_app(
     return app
 
 
-if __name__ == "__main__":
+def main() -> None:
     multiprocessing.freeze_support()
 
     output_log_utf8 = os.getenv("VV_OUTPUT_LOG_UTF8", default="")
@@ -1354,3 +1354,7 @@ if __name__ == "__main__":
         host=args.host,
         port=args.port,
     )
+
+
+if __name__ == "__main__":
+    main()
