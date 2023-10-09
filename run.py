@@ -12,7 +12,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import soundfile
 import uvicorn
@@ -746,7 +746,10 @@ def generate_app(
         return metas_store.load_combined_metas(engine=engine)
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
+    def speaker_info(
+        speaker_uuid: str,
+        core_version: str | None = None,
+    ) -> dict[str, Any]:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
