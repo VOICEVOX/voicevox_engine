@@ -853,7 +853,7 @@ def generate_app(
         status_code=204,
         tags=["音声ライブラリ管理"],
     )
-    async def install_library(library_uuid: str, request: Request):
+    async def install_library(library_uuid: str, request: Request) -> Response:
         """
         音声ライブラリをインストールします。
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
