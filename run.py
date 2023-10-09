@@ -472,10 +472,10 @@ def generate_app(
         summary="複数まとめて音声合成する",
     )
     def multi_synthesis(
-        queries: List[AudioQuery],
+        queries: list[AudioQuery],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
