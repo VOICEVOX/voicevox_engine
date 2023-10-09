@@ -25,6 +25,21 @@ class CancellableEngine:
 
     Attributes
     ----------
+    use_gpu: bool
+        音声ライブラリに GPU を使わせるか否か
+    voicelib_dirs: list[Path], optional
+        音声ライブラリ自体があるディレクトリのリスト
+    voicevox_dir: Path, optional
+        コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
+    runtime_dirs: list[Path], optional
+        コアで使用するライブラリのあるディレクトリのリスト
+        None のとき、voicevox_dir、カレントディレクトリになる
+    cpu_num_threads: int, optional
+        音声ライブラリが、推論に用いるCPUスレッド数を設定する
+        None のとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
+    enable_mock: bool, optional
+        コア読み込みに失敗したとき、代わりにmockを使用するかどうか
+        None のとき、mockを使用する
     watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
