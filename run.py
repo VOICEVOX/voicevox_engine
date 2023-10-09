@@ -1320,7 +1320,7 @@ if __name__ == "__main__":
             enable_mock=enable_mock,
         )
 
-    root_dir: Path | None = args.voicevox_dir
+    root_dir = voicevox_dir
     if root_dir is None:
         root_dir = engine_root()
 
