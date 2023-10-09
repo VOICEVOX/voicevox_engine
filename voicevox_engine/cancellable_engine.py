@@ -82,9 +82,11 @@ class CancellableEngine:
         self.enable_mock = enable_mock
 
         self.watch_con_list = []
-        self.procs_and_cons = queue.Queue()
+
+        procs_and_cons: queue.Queue[tuple[Process, ConnectionBase]] = queue.Queue()
         for _ in range(init_processes):
-            self.procs_and_cons.put(self.start_new_proc())
+            procs_and_cons.put(self.start_new_proc())
+        self.procs_and_cons = procs_and_cons
 
     def start_new_proc(
         self,
