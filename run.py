@@ -90,10 +90,12 @@ def id_checker(style_id: Optional[int], speaker_id: Optional[int]) -> int:
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
-    if style_id == speaker_id == None or (style_id != None and speaker_id != None):
-        raise ValueError("speaker_idとstyle_idが両方とも存在しないか、両方とも存在しています")
+    if (style_id is None and speaker_id is None) or (
+        style_id is not None and speaker_id is not None
+    ):
+        raise ValueError("speaker_idとstyle_idが両方とも存在しないか、両方とも存在しています。")
     if speaker_id is not None:
-        warnings.warn("style_idに変更になりましたのこちらの利用を推奨しています")
+        warnings.warn("speaker_idは非推奨です。style_idの利用を推奨しています。")
         style_id = speaker_id
         speaker_id = None
         return style_id
