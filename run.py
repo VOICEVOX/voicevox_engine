@@ -94,7 +94,7 @@ def id_checker(style_id: Optional[int], speaker_id: Optional[int]) -> int:
         style_id is not None and speaker_id is not None
     ):
         raise HTTPException(
-            status_code=404, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
+            status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
         )
     if speaker_id is not None:
         warnings.warn("speakerは非推奨です。style_idの利用を推奨しています。")
