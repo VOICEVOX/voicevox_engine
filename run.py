@@ -93,9 +93,11 @@ def id_checker(style_id: Optional[int], speaker_id: Optional[int]) -> int:
     if (style_id is None and speaker_id is None) or (
         style_id is not None and speaker_id is not None
     ):
-        raise ValueError("speaker_idとstyle_idが両方とも存在しないか、両方とも存在しています。")
+        raise HTTPException(
+            status_code=404, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
+        )
     if speaker_id is not None:
-        warnings.warn("speaker_idは非推奨です。style_idの利用を推奨しています。")
+        warnings.warn("speakerは非推奨です。style_idの利用を推奨しています。")
         style_id = speaker_id
         speaker_id = None
         return style_id
@@ -241,10 +243,16 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
+    def audio_query(
+        text: str,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
+        core_version: Optional[str] = None,
+    ):
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
+        style_id = id_checker(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=speaker)
         return AudioQuery(
