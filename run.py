@@ -254,7 +254,7 @@ def generate_app(
         """
         style_id = id_checker(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        accent_phrases = engine.create_accent_phrases(text, style_id=speaker)
+        accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
