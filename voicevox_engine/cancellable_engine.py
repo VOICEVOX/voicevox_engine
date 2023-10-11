@@ -14,7 +14,6 @@ from fastapi import HTTPException, Request
 from .model import AudioQuery
 from .synthesis_engine import make_synthesis_engines
 from .utility import get_latest_core_version
-from run import id_checker
 
 
 class CancellableEngine:
@@ -116,10 +115,9 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        style_id: Optional[int],
+        style_id: int,
         request: Request,
         core_version: Optional[str],
-        speaker_id: Optional[int] = None,
     ) -> str:
         """
         音声合成を行う関数
@@ -140,7 +138,6 @@ class CancellableEngine:
         f_name: str
             生成された音声ファイルの名前
         """
-        style_id = id_checker(style_id=style_id, speaker_id=speaker_id)
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
