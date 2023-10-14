@@ -102,7 +102,7 @@ def get_style_id_from_deprecated(
         warnings.warn("speakerは非推奨です。style_idの利用を推奨しています。")
         style_id = speaker_id
         speaker_id = None
-        return style_id
+    return style_id
 
 
 def b64encode_str(s):
