@@ -85,7 +85,9 @@ from voicevox_engine.utility import (
 import warnings
 
 
-def id_checker(style_id: Optional[int], speaker_id: Optional[int]) -> int:
+def get_style_id_from_deprecated(
+    style_id: Optional[int], speaker_id: Optional[int]
+) -> int:
     """
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
@@ -252,7 +254,7 @@ def generate_app(
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = id_checker(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
