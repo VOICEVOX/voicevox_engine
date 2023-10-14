@@ -423,17 +423,19 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
-            style_id=speaker,
+            style_id=style_id,
             enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
 
@@ -463,10 +465,12 @@ def generate_app(
     )
     def cancellable_synthesis(
         query: AudioQuery,
-        speaker: int,
         request: Request,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         if not args.enable_cancellable_synthesis:
             raise HTTPException(
                 status_code=404,
@@ -474,7 +478,7 @@ def generate_app(
             )
         f_name = cancellable_engine._synthesis_impl(
             query=query,
-            style_id=speaker,
+            style_id=style_id,
             request=request,
             core_version=core_version,
         )
@@ -504,9 +508,11 @@ def generate_app(
     )
     def multi_synthesis(
         queries: List[AudioQuery],
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -519,7 +525,7 @@ def generate_app(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesis(query=queries[i], style_id=speaker)
+                        wave = engine.synthesis(query=queries[i], style_id=style_id)
                         soundfile.write(
                             file=wav_file,
                             data=wave,
