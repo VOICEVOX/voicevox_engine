@@ -626,7 +626,7 @@ def generate_app(
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as err:
-            return HTTPException(status_code=422, detail=str(err))
+            raise HTTPException(status_code=422, detail=str(err))
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
