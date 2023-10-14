@@ -324,7 +324,8 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         is_kana: bool = False,
         core_version: Optional[str] = None,
     ):
@@ -337,6 +338,7 @@ def generate_app(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -347,12 +349,12 @@ def generate_app(
                     detail=ParseKanaBadRequest(err).dict(),
                 )
             accent_phrases = engine.replace_mora_data(
-                accent_phrases=accent_phrases, style_id=speaker
+                accent_phrases=accent_phrases, style_id=style_id
             )
 
             return accent_phrases
         else:
-            return engine.create_accent_phrases(text, style_id=speaker)
+            return engine.create_accent_phrases(text, style_id=style_id)
 
     @app.post(
         "/mora_data",
@@ -362,11 +364,13 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_mora_data(accent_phrases, style_id=speaker)
+        return engine.replace_mora_data(accent_phrases, style_id=style_id)
 
     @app.post(
         "/mora_length",
@@ -376,12 +380,14 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
-            accent_phrases=accent_phrases, style_id=speaker
+            accent_phrases=accent_phrases, style_id=style_id
         )
 
     @app.post(
@@ -392,12 +398,14 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: List[AccentPhrase],
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         core_version: Optional[str] = None,
     ):
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(
-            accent_phrases=accent_phrases, style_id=speaker
+            accent_phrases=accent_phrases, style_id=style_id
         )
 
     @app.post(
