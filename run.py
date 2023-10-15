@@ -571,7 +571,7 @@ def generate_app(
             ]
         except SpeakerNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
+                status_code=404, detail=f"該当する話者(speaker={e.style_id})が見つかりません"
             )
 
     @app.post(
@@ -613,7 +613,7 @@ def generate_app(
                 )
         except SpeakerNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(speaker={e.speaker})が見つかりません"
+                status_code=404, detail=f"該当する話者(speaker={e.style_id})が見つかりません"
             )
 
         # 生成したパラメータはキャッシュされる
@@ -949,7 +949,7 @@ def generate_app(
         """
         指定されたstyle_idの話者が初期化されているかどうかを返します。
         """
-        style_id=get_style_id_from_deprecated(style_id=style_id,speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(style_id)
 
