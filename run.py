@@ -924,7 +924,8 @@ def generate_app(
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
-        speaker: int,
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
@@ -934,17 +935,23 @@ def generate_app(
         指定されたstyle_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        engine.initialize_speaker_synthesis(style_id=speaker, skip_reinit=skip_reinit)
+        engine.initialize_speaker_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
+    def is_initialized_speaker(
+        style_id: Optional[int] = Query(default=None),
+        speaker: Optional[int] = Query(default=None, deprecated=True),
+        core_version: Optional[str] = None,
+    ):
         """
         指定されたstyle_idの話者が初期化されているかどうかを返します。
         """
+        style_id=get_style_id_from_deprecated(style_id=style_id,speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.is_initialized_speaker_synthesis(speaker)
+        return engine.is_initialized_speaker_synthesis(style_id)
 
     @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
