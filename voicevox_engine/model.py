@@ -114,7 +114,7 @@ class MorphableTargetInfo(BaseModel):
 
 class SpeakerNotFoundError(LookupError):
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
-        self.speaker = style_id
+        self.style_id = style_id
         super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
 
 
@@ -123,7 +123,7 @@ class LibrarySpeaker(BaseModel):
     音声ライブラリに含まれる話者の情報
     """
 
-    speaker: Speaker = Field(title="話者情報")
+    style_id: Speaker = Field(title="話者情報")
     speaker_info: SpeakerInfo = Field(title="話者の追加情報")
 
 
