@@ -958,6 +958,7 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         """
+        こちらの利用は、非推奨です。`initialize_speaker` の利用を推奨しています。\n
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
@@ -976,6 +977,7 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         """
+        こちらの利用は、非推奨です。`is_initialize_speaker` の利用を推奨しています。\n
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """
         warnings.warn(
