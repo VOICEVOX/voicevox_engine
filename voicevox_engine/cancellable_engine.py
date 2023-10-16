@@ -41,16 +41,6 @@ class CancellableEngine:
         （音声合成中のプロセスは入っていない）
     """
 
-    use_gpu: bool
-    voicelib_dirs: list[Path] | None
-    voicevox_dir: Path | None
-    runtime_dirs: list[Path] | None
-    cpu_num_threads: int | None
-    enable_mock: bool
-
-    watch_con_list: list[tuple[Request, Process]]
-    procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
-
     def __init__(
         self,
         init_processes: int,
@@ -73,7 +63,7 @@ class CancellableEngine:
         self.cpu_num_threads = cpu_num_threads
         self.enable_mock = enable_mock
 
-        self.watch_con_list = []
+        self.watch_con_list: list[tuple[Request, Process]] = []
 
         procs_and_cons: queue.Queue[tuple[Process, ConnectionType]] = queue.Queue()
         for _ in range(init_processes):
