@@ -12,14 +12,14 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import soundfile
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
@@ -222,7 +222,11 @@ def generate_app(
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
-    def audio_query(text: str, speaker: int, core_version: Optional[str] = None):
+    def audio_query(
+        text: str,
+        speaker: int,
+        core_version: str | None = None,
+    ) -> AudioQuery:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -248,8 +252,10 @@ def generate_app(
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
     def audio_query_from_preset(
-        text: str, preset_id: int, core_version: Optional[str] = None
-    ):
+        text: str,
+        preset_id: int,
+        core_version: str | None = None,
+    ) -> AudioQuery:
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -283,7 +289,7 @@ def generate_app(
 
     @app.post(
         "/accent_phrases",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
         responses={
@@ -297,8 +303,8 @@ def generate_app(
         text: str,
         speaker: int,
         is_kana: bool = False,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のようなAquesTalkライクな記法に従う読み仮名として処理されます。デフォルトは`false`です。
@@ -327,29 +333,29 @@ def generate_app(
 
     @app.post(
         "/mora_data",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
     def mora_data(
-        accent_phrases: List[AccentPhrase],
+        accent_phrases: list[AccentPhrase],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, speaker_id=speaker)
 
     @app.post(
         "/mora_length",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
     def mora_length(
-        accent_phrases: List[AccentPhrase],
+        accent_phrases: list[AccentPhrase],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, speaker_id=speaker
@@ -357,15 +363,15 @@ def generate_app(
 
     @app.post(
         "/mora_pitch",
-        response_model=List[AccentPhrase],
+        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音高を得る",
     )
     def mora_pitch(
-        accent_phrases: List[AccentPhrase],
+        accent_phrases: list[AccentPhrase],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, speaker_id=speaker
@@ -391,8 +397,8 @@ def generate_app(
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
@@ -428,8 +434,8 @@ def generate_app(
         query: AudioQuery,
         speaker: int,
         request: Request,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
@@ -466,10 +472,10 @@ def generate_app(
         summary="複数まとめて音声合成する",
     )
     def multi_synthesis(
-        queries: List[AudioQuery],
+        queries: list[AudioQuery],
         speaker: int,
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -504,14 +510,14 @@ def generate_app(
 
     @app.post(
         "/morphable_targets",
-        response_model=List[Dict[str, MorphableTargetInfo]],
+        response_model=list[dict[str, MorphableTargetInfo]],
         tags=["音声合成"],
         summary="指定した話者に対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_speakers: List[int],
-        core_version: Optional[str] = None,
-    ):
+        base_speakers: list[int],
+        core_version: str | None = None,
+    ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
@@ -553,8 +559,8 @@ def generate_app(
         base_speaker: int,
         target_speaker: int,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> FileResponse:
         """
         指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
@@ -619,7 +625,7 @@ def generate_app(
         tags=["その他"],
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
-    def connect_waves(waves: List[str]):
+    def connect_waves(waves: list[str]) -> FileResponse:
         """
         base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
         """
@@ -642,14 +648,14 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get("/presets", response_model=List[Preset], tags=["その他"])
-    def get_presets():
+    @app.get("/presets", response_model=list[Preset], tags=["その他"])
+    def get_presets() -> list[Preset]:
         """
         エンジンが保持しているプリセットの設定を返します
 
         Returns
         -------
-        presets: List[Preset]
+        presets: list[Preset]
             プリセットのリスト
         """
         try:
@@ -659,7 +665,7 @@ def generate_app(
         return presets
 
     @app.post("/add_preset", response_model=int, tags=["その他"])
-    def add_preset(preset: Preset):
+    def add_preset(preset: Preset) -> int:
         """
         新しいプリセットを追加します
 
@@ -681,7 +687,7 @@ def generate_app(
         return id
 
     @app.post("/update_preset", response_model=int, tags=["その他"])
-    def update_preset(preset: Preset):
+    def update_preset(preset: Preset) -> int:
         """
         既存のプリセットを更新します
 
@@ -703,7 +709,7 @@ def generate_app(
         return id
 
     @app.post("/delete_preset", status_code=204, tags=["その他"])
-    def delete_preset(id: int):
+    def delete_preset(id: int) -> Response:
         """
         既存のプリセットを削除します
 
@@ -723,22 +729,25 @@ def generate_app(
     def version() -> str:
         return __version__
 
-    @app.get("/core_versions", response_model=List[str], tags=["その他"])
-    def core_versions() -> List[str]:
+    @app.get("/core_versions", response_model=list[str], tags=["その他"])
+    def core_versions() -> Response:
         return Response(
             content=json.dumps(list(synthesis_engines.keys())),
             media_type="application/json",
         )
 
-    @app.get("/speakers", response_model=List[Speaker], tags=["その他"])
+    @app.get("/speakers", response_model=list[Speaker], tags=["その他"])
     def speakers(
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> list[Speaker]:
         engine = get_engine(core_version)
         return metas_store.load_combined_metas(engine=engine)
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(speaker_uuid: str, core_version: Optional[str] = None):
+    def speaker_info(
+        speaker_uuid: str,
+        core_version: str | None = None,
+    ) -> dict[str, Any]:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
@@ -808,16 +817,16 @@ def generate_app(
 
     @app.get(
         "/downloadable_libraries",
-        response_model=List[DownloadableLibrary],
+        response_model=list[DownloadableLibrary],
         tags=["音声ライブラリ管理"],
     )
-    def downloadable_libraries():
+    def downloadable_libraries() -> list[DownloadableLibrary]:
         """
         ダウンロード可能な音声ライブラリの情報を返します。
 
         Returns
         -------
-        ret_data: List[DownloadableLibrary]
+        ret_data: list[DownloadableLibrary]
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
@@ -825,16 +834,16 @@ def generate_app(
 
     @app.get(
         "/installed_libraries",
-        response_model=Dict[str, InstalledLibrary],
+        response_model=dict[str, InstalledLibrary],
         tags=["音声ライブラリ管理"],
     )
-    def installed_libraries():
+    def installed_libraries() -> dict[str, InstalledLibrary]:
         """
         インストールした音声ライブラリの情報を返します。
 
         Returns
         -------
-        ret_data: List[DownloadableLibrary]
+        ret_data: dict[str, InstalledLibrary]
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
@@ -845,7 +854,10 @@ def generate_app(
         status_code=204,
         tags=["音声ライブラリ管理"],
     )
-    async def install_library(library_uuid: str, request: Request):
+    async def install_library(
+        library_uuid: str,
+        request: Request,
+    ) -> Response:
         """
         音声ライブラリをインストールします。
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
@@ -869,7 +881,7 @@ def generate_app(
         status_code=204,
         tags=["音声ライブラリ管理"],
     )
-    def uninstall_library(library_uuid: str):
+    def uninstall_library(library_uuid: str) -> Response:
         """
         音声ライブラリをアンインストールします。
 
@@ -889,8 +901,8 @@ def generate_app(
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> Response:
         """
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
@@ -900,22 +912,25 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(speaker: int, core_version: Optional[str] = None):
+    def is_initialized_speaker(
+        speaker: int,
+        core_version: str | None = None,
+    ) -> bool:
         """
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(speaker)
 
-    @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
-    def get_user_dict_words():
+    @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
+    def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
 
         Returns
         -------
-        Dict[str, UserDictWord]
+        dict[str, UserDictWord]
             単語のUUIDとその詳細
         """
         try:
@@ -929,9 +944,9 @@ def generate_app(
         surface: str,
         pronunciation: str,
         accent_type: int,
-        word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
-    ):
+        word_type: WordTypes | None = None,
+        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+    ) -> Response:
         """
         ユーザー辞書に言葉を追加します。
 
@@ -971,9 +986,9 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_uuid: str,
-        word_type: Optional[WordTypes] = None,
-        priority: Optional[conint(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
-    ):
+        word_type: WordTypes | None = None,
+        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+    ) -> Response:
         """
         ユーザー辞書に登録されている言葉を更新します。
 
@@ -1013,7 +1028,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
     @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
-    def delete_user_dict_word(word_uuid: str):
+    def delete_user_dict_word(word_uuid: str) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
 
@@ -1033,14 +1048,15 @@ def generate_app(
 
     @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
     def import_user_dict_words(
-        import_dict_data: Dict[str, UserDictWord], override: bool
-    ):
+        import_dict_data: dict[str, UserDictWord],
+        override: bool,
+    ) -> Response:
         """
         他のユーザー辞書をインポートします。
 
         Parameters
         ----------
-        import_dict_data: Dict[str, UserDictWord]
+        import_dict_data: dict[str, UserDictWord]
             インポートするユーザー辞書のデータ
         override: bool
             重複したエントリがあった場合、上書きするかどうか
@@ -1054,8 +1070,8 @@ def generate_app(
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
-        core_version: Optional[str] = None,
-    ):
+        core_version: str | None = None,
+    ) -> Response:
         supported_devices = get_engine(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
@@ -1065,7 +1081,7 @@ def generate_app(
         )
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    def engine_manifest():
+    def engine_manifest() -> EngineManifest:
         return engine_manifest_data
 
     @app.post(
@@ -1080,7 +1096,7 @@ def generate_app(
             }
         },
     )
-    def validate_kana(text: str):
+    def validate_kana(text: str) -> bool:
         """
         テキストがAquesTalkライクな記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
@@ -1099,8 +1115,8 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    @app.get("/setting", response_class=HTMLResponse, tags=["設定"])
-    def setting_get(request: Request):
+    @app.get("/setting", response_class=Response, tags=["設定"])
+    def setting_get(request: Request) -> Response:
         settings = setting_loader.load_setting_file()
 
         cors_policy_mode = settings.cors_policy_mode
@@ -1118,12 +1134,12 @@ def generate_app(
             },
         )
 
-    @app.post("/setting", response_class=HTMLResponse, tags=["設定"])
+    @app.post("/setting", response_class=Response, tags=["設定"])
     def setting_post(
         request: Request,
-        cors_policy_mode: Optional[str] = Form(None),  # noqa: B008
-        allow_origin: Optional[str] = Form(None),  # noqa: B008
-    ):
+        cors_policy_mode: str | None = Form(None),  # noqa: B008
+        allow_origin: str | None = Form(None),  # noqa: B008
+    ) -> Response:
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
