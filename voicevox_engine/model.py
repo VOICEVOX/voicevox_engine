@@ -115,7 +115,7 @@ class MorphableTargetInfo(BaseModel):
 class SpeakerNotFoundError(LookupError):
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.speaker = style_id
-        super().__init__(f"speaker {style_id} is not found.", *args, **kywrds)
+        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
 
 
 class LibrarySpeaker(BaseModel):

@@ -571,7 +571,7 @@ def generate_app(
             ]
         except SpeakerNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(speaker={e.style_id})が見つかりません"
+                status_code=404, detail=f"該当する話者(style_id={e.style_id})が見つかりません"
             )
 
     @app.post(
@@ -613,7 +613,7 @@ def generate_app(
                 )
         except SpeakerNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(speaker={e.style_id})が見つかりません"
+                status_code=404, detail=f"該当する話者(style_id={e.style_id})が見つかりません"
             )
 
         # 生成したパラメータはキャッシュされる
