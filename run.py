@@ -922,10 +922,9 @@ def generate_app(
         library_manager.uninstall_library(library_uuid)
         return Response(status_code=204)
 
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+    @app.post("/initialize_style_id", status_code=204, tags=["その他"])
+    def initialize_style_id(
+        style_id: int,
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
@@ -935,23 +934,54 @@ def generate_app(
         指定されたstyle_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         engine.initialize_speaker_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
-    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+    @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
+    def is_initialized_style_id(
+        style_id: int,
         core_version: Optional[str] = None,
     ):
         """
         指定されたstyle_idの話者が初期化されているかどうかを返します。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(style_id)
+
+    @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
+    def initialize_speaker(
+        speaker: int,
+        skip_reinit: bool = Query(  # noqa: B008
+            False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
+        ),
+        core_version: Optional[str] = None,
+    ):
+        """
+        指定されたspeaker_idの話者を初期化します。
+        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        """
+        warnings.warn(
+            "使用しているエンドポイント(/initialize_speaker)は非推奨です。/initialized_style_id の利用を推奨しています。"
+        )
+        return initialize_style_id(
+            style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
+        )
+
+    @app.get(
+        "/is_initialized_speaker", response_model=bool, tags=["その他"], deprecated=True
+    )
+    def is_initialized_speaker(
+        speaker: int,
+        core_version: Optional[str] = None,
+    ):
+        """
+        指定されたspeaker_idの話者が初期化されているかどうかを返します。
+        """
+        warnings.warn(
+            "使用しているエンドポイント(/is_initialize_speaker)は非推奨です。/is_initialized_style_id の利用を推奨しています。"
+        )
+        return is_initialized_style_id(style_id=speaker, core_version=core_version)
 
     @app.get("/user_dict", response_model=Dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words():
