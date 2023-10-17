@@ -926,12 +926,12 @@ def generate_app(
     def initialize_style_id(
         style_id: int,
         skip_reinit: bool = Query(  # noqa: B008
-            False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
+            False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
         core_version: Optional[str] = None,
     ):
         """
-        指定されたstyle_idの話者を初期化します。
+        指定されたstyle_idのスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
@@ -944,7 +944,7 @@ def generate_app(
         core_version: Optional[str] = None,
     ):
         """
-        指定されたstyle_idの話者が初期化されているかどうかを返します。
+        指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
         engine = get_engine(core_version)
         return engine.is_initialized_speaker_synthesis(style_id)
