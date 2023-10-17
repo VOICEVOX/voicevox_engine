@@ -9,7 +9,7 @@ from scipy.signal import resample
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, SpeakerNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .synthesis_engine import SynthesisEngine
 
 
@@ -81,14 +81,14 @@ def is_synthesis_morphing_permitted(
 ) -> bool:
     """
     指定されたspeakerがモーフィング可能かどうか返す
-    speakerが見つからない場合はSpeakerNotFoundErrorを送出する
+    speakerが見つからない場合はStyleIdNotFoundErrorを送出する
     """
 
     base_speaker_data = speaker_lookup[base_speaker]
     target_speaker_data = speaker_lookup[target_speaker]
 
     if base_speaker_data is None or target_speaker_data is None:
-        raise SpeakerNotFoundError(
+        raise StyleIdNotFoundError(
             base_speaker if base_speaker_data is None else target_speaker
         )
 
