@@ -42,7 +42,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
-    SpeakerNotFoundError,
+    StyleIdNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
     VvlibManifest,
@@ -569,9 +569,9 @@ def generate_app(
                 {str(k): v for k, v in morphable_target.items()}
                 for morphable_target in morphable_targets
             ]
-        except SpeakerNotFoundError as e:
+        except StyleIdNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(style_id={e.style_id})が見つかりません"
+                status_code=404, detail=f"該当するスタイル(style_id={e.style_id})が見つかりません"
             )
 
     @app.post(
@@ -611,9 +611,9 @@ def generate_app(
                     status_code=400,
                     detail="指定された話者ペアでのモーフィングはできません",
                 )
-        except SpeakerNotFoundError as e:
+        except StyleIdNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当する話者(style_id={e.style_id})が見つかりません"
+                status_code=404, detail=f"該当するスタイル(style_id={e.style_id})が見つかりません"
             )
 
         # 生成したパラメータはキャッシュされる
