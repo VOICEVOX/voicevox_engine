@@ -182,7 +182,7 @@ class SynthesisEngine(SynthesisEngineBase):
     def supported_devices(self) -> Optional[str]:
         return self._supported_devices
 
-    def initialize_speaker_synthesis(self, style_id: int, skip_reinit: bool):
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -193,7 +193,7 @@ class SynthesisEngine(SynthesisEngineBase):
         except OldCoreError:
             pass  # コアが古い場合はどうしようもないので何もしない
 
-    def is_initialized_speaker_synthesis(self, style_id: int) -> bool:
+    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
@@ -216,7 +216,7 @@ class SynthesisEngine(SynthesisEngineBase):
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
@@ -265,7 +265,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -405,7 +405,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_speaker_synthesis(style_id, skip_reinit=True)
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)

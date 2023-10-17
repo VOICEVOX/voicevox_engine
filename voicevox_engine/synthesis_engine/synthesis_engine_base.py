@@ -91,13 +91,13 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def supported_devices(self) -> Optional[str]:
         raise NotImplementedError
 
-    def initialize_speaker_synthesis(  # noqa: B027
+    def initialize_style_id_synthesis(  # noqa: B027
         self,
         style_id: int,
         skip_reinit: bool,
     ):
         """
-        指定した話者での音声合成を初期化する。何度も実行可能。
+        指定したスタイルでの音声合成を初期化する。何度も実行可能。
         未実装の場合は何もしない
         Parameters
         ----------
@@ -108,9 +108,9 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         """
         pass
 
-    def is_initialized_speaker_synthesis(self, style_id: int) -> bool:
+    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
         """
-        指定した話者での音声合成が初期化されているかどうかを返す
+        指定したスタイルでの音声合成が初期化されているかどうかを返す
         Parameters
         ----------
         style_id : int

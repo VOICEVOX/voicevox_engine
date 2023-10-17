@@ -935,7 +935,7 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         engine = get_engine(core_version)
-        engine.initialize_speaker_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        engine.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -947,7 +947,7 @@ def generate_app(
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
         engine = get_engine(core_version)
-        return engine.is_initialized_speaker_synthesis(style_id)
+        return engine.is_initialized_style_id_synthesis(style_id)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
