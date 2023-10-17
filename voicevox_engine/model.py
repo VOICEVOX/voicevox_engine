@@ -112,7 +112,7 @@ class MorphableTargetInfo(BaseModel):
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
 
 
-class SpeakerNotFoundError(LookupError):
+class StyleIdNotFoundError(LookupError):
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.style_id = style_id
         super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
