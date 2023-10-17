@@ -123,7 +123,7 @@ class LibrarySpeaker(BaseModel):
     音声ライブラリに含まれる話者の情報
     """
 
-    style_id: Speaker = Field(title="話者情報")
+    speaker: Speaker = Field(title="話者情報")
     speaker_info: SpeakerInfo = Field(title="話者の追加情報")
 
 
