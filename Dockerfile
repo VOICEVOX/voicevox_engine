@@ -183,7 +183,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
 RUN <<EOF
@@ -194,7 +193,6 @@ RUN <<EOF
         git \
         wget \
         cmake \
-        libsndfile1 \
         ca-certificates \
         build-essential \
         gosu
