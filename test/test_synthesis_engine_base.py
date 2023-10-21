@@ -8,11 +8,11 @@ from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.synthesis_engine import SynthesisEngine
 
 
-def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, speaker_id: numpy.ndarray):
+def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(round(float(phoneme_list[i] * 0.0625 + speaker_id), 2))
+        result.append(round(float(phoneme_list[i] * 0.0625 + style_id), 2))
     return numpy.array(result)
 
 
