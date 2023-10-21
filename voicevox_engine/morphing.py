@@ -80,8 +80,8 @@ def is_synthesis_morphing_permitted(
     target_speaker: int,
 ) -> bool:
     """
-    指定されたspeakerがモーフィング可能かどうか返す
-    speakerが見つからない場合はStyleIdNotFoundErrorを送出する
+    指定されたstyle_idがモーフィング可能かどうか返す
+    style_idが見つからない場合はStyleIdNotFoundErrorを送出する
     """
 
     base_speaker_data = speaker_lookup[base_speaker]
