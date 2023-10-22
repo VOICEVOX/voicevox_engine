@@ -964,7 +964,8 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         warnings.warn(
-            "使用しているAPI(/initialize_speaker)は非推奨です。/initialized_style_idを利用してください。"
+            "使用しているAPI(/initialize_speaker)は非推奨です。/initialized_style_idを利用してください。",
+            stacklevel=1,
         )
         return initialize_style_id(
             style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
@@ -982,7 +983,8 @@ def generate_app(
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """
         warnings.warn(
-            "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。"
+            "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
+            stacklevel=1,
         )
         return is_initialized_style_id(style_id=speaker, core_version=core_version)
 
