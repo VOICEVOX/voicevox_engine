@@ -84,24 +84,19 @@ from voicevox_engine.utility import (
 )
 
 
-def get_style_id_from_deprecated(
-    style_id: Optional[int], speaker_id: Optional[int]
-) -> int:
+def get_style_id_from_deprecated(style_id: int | None, speaker_id: int | None) -> int:
     """
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
-    if (style_id is None and speaker_id is None) or (
-        style_id is not None and speaker_id is not None
-    ):
-        raise HTTPException(
-            status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
-        )
-    if speaker_id is not None:
-        warnings.warn("speakerは非推奨です。style_idの利用を推奨しています。")
-        style_id = speaker_id
-        speaker_id = None
-    return style_id
+    if speaker_id is not None and style_id is None:
+        warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
+        return speaker_id
+    elif style_id is not None and speaker_id is None:
+        return style_id
+    raise HTTPException(
+        status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
+    )
 
 
 def b64encode_str(s):
@@ -245,8 +240,8 @@ def generate_app(
     )
     def audio_query(
         text: str,
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> AudioQuery:
         """
@@ -324,8 +319,8 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         is_kana: bool = False,
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -363,9 +358,9 @@ def generate_app(
         summary="アクセント句から音高・音素長を得る",
     )
     def mora_data(
-        accent_phrases: List[AccentPhrase],
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        accent_phrases: list[AccentPhrase],
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
@@ -379,9 +374,9 @@ def generate_app(
         summary="アクセント句から音素長を得る",
     )
     def mora_length(
-        accent_phrases: List[AccentPhrase],
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        accent_phrases: list[AccentPhrase],
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
@@ -397,9 +392,9 @@ def generate_app(
         summary="アクセント句から音高を得る",
     )
     def mora_pitch(
-        accent_phrases: List[AccentPhrase],
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        accent_phrases: list[AccentPhrase],
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
@@ -423,8 +418,8 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
@@ -466,8 +461,8 @@ def generate_app(
     def cancellable_synthesis(
         query: AudioQuery,
         request: Request,
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
@@ -507,9 +502,9 @@ def generate_app(
         summary="複数まとめて音声合成する",
     )
     def multi_synthesis(
-        queries: List[AudioQuery],
-        style_id: Optional[int] = Query(default=None),
-        speaker: Optional[int] = Query(default=None, deprecated=True),
+        queries: list[AccentPhrase],
+        style_id: int | None = Query(default=None),  # noqa: B008
+        speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
@@ -935,7 +930,7 @@ def generate_app(
             False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
         core_version: str | None = None,
-    ):
+    ) -> Response:
         """
         指定されたstyle_idのスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
@@ -948,7 +943,7 @@ def generate_app(
     def is_initialized_style_id(
         style_id: int,
         core_version: str | None = None,
-    ):
+    ) -> bool:
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
