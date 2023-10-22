@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
-from scipy.signal import resample
+from soxr import resample
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
@@ -198,7 +198,7 @@ def synthesis_morphing(
 
     # TODO: synthesis_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
-        y_h = resample(y_h, output_fs * len(y_h) // morph_param.fs)
+        y_h = resample(y_h, morph_param.fs, output_fs)
 
     if output_stereo:
         y_h = np.array([y_h, y_h]).T

@@ -15,8 +15,8 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.3"
-  VOICEVOX_CORE_VERSION: "0.14.4"
+  VOICEVOX_RESOURCE_VERSION: "0.14.4"
+  VOICEVOX_CORE_VERSION: "0.14.5"
 
 defaults:
   run:
@@ -35,12 +35,12 @@ jobs:
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
 
   build-docker:
-    needs: [ config ]
+    needs: [config]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
         tag:
           - ""
           - cpu
@@ -167,7 +167,7 @@ jobs:
   run-release-test-workflow:
     # version が指定されている場合のみ実行する
     if: needs.config.outputs.version_or_latest != 'latest'
-    needs: [ config, build-docker ]
+    needs: [config, build-docker]
     uses: ./.github/workflows/release-test-docker.yml
     with:
       version: ${{ needs.config.outputs.version_or_latest }}

@@ -23,7 +23,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.14.4
+ARG VOICEVOX_CORE_VERSION=0.14.5
 
 RUN <<EOF
     set -eux
@@ -183,7 +183,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
 RUN <<EOF
@@ -194,7 +193,6 @@ RUN <<EOF
         git \
         wget \
         cmake \
-        libsndfile1 \
         ca-certificates \
         build-essential \
         gosu
@@ -273,7 +271,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.3
+ARG VOICEVOX_RESOURCE_VERSION=0.14.4
 RUN <<EOF
     set -eux
 
