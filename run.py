@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import traceback
+import warnings
 import zipfile
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
@@ -81,8 +82,6 @@ from voicevox_engine.utility import (
     get_latest_core_version,
     get_save_dir,
 )
-
-import warnings
 
 
 def get_style_id_from_deprecated(
@@ -935,7 +934,7 @@ def generate_app(
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
-        core_version: Optional[str] = None,
+        core_version: str | None = None,
     ):
         """
         指定されたstyle_idのスタイルを初期化します。
@@ -948,7 +947,7 @@ def generate_app(
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
     def is_initialized_style_id(
         style_id: int,
-        core_version: Optional[str] = None,
+        core_version: str | None = None,
     ):
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
@@ -965,12 +964,12 @@ def generate_app(
         core_version: str | None = None,
     ) -> Response:
         """
-        こちらの利用は、非推奨です。`initialize_style_id` の利用を推奨しています。\n
+        こちらのAPIは非推奨です。`initialize_style_id`を利用してください。\n
         指定されたspeaker_idの話者を初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         warnings.warn(
-            "使用しているエンドポイント(/initialize_speaker)は非推奨です。/initialized_style_id の利用を推奨しています。"
+            "使用しているAPI(/initialize_speaker)は非推奨です。/initialized_style_idを利用してください。"
         )
         return initialize_style_id(
             style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
@@ -982,13 +981,13 @@ def generate_app(
     def is_initialized_speaker(
         speaker: int,
         core_version: str | None = None,
-    )-> bool:
+    ) -> bool:
         """
-        こちらの利用は、非推奨です。`is_initialize_style_id` の利用を推奨しています。\n
+        こちらのAPIは非推奨です。`is_initialize_style_id`を利用してください。\n
         指定されたspeaker_idの話者が初期化されているかどうかを返します。
         """
         warnings.warn(
-            "使用しているエンドポイント(/is_initialize_speaker)は非推奨です。/is_initialized_style_id の利用を推奨しています。"
+            "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。"
         )
         return is_initialized_style_id(style_id=speaker, core_version=core_version)
 
