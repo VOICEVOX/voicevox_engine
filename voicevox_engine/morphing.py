@@ -9,7 +9,7 @@ from soxr import resample
 
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, SpeakerNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .synthesis_engine import SynthesisEngine
 
 
@@ -80,15 +80,15 @@ def is_synthesis_morphing_permitted(
     target_speaker: int,
 ) -> bool:
     """
-    指定されたspeakerがモーフィング可能かどうか返す
-    speakerが見つからない場合はSpeakerNotFoundErrorを送出する
+    指定されたstyle_idがモーフィング可能かどうか返す
+    style_idが見つからない場合はStyleIdNotFoundErrorを送出する
     """
 
     base_speaker_data = speaker_lookup[base_speaker]
     target_speaker_data = speaker_lookup[target_speaker]
 
     if base_speaker_data is None or target_speaker_data is None:
-        raise SpeakerNotFoundError(
+        raise StyleIdNotFoundError(
             base_speaker if base_speaker_data is None else target_speaker
         )
 
@@ -141,10 +141,8 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesis(query=query, speaker_id=base_speaker).astype("float")
-    target_wave = engine.synthesis(query=query, speaker_id=target_speaker).astype(
-        "float"
-    )
+    base_wave = engine.synthesis(query=query, style_id=base_speaker).astype("float")
+    target_wave = engine.synthesis(query=query, style_id=target_speaker).astype("float")
 
     return create_morphing_parameter(
         base_wave=base_wave,

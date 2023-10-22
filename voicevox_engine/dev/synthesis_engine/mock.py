@@ -38,7 +38,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         return self._supported_devices
 
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
         replace_phoneme_length 入力accent_phrasesを変更せずにそのまま返します [Mock]
@@ -47,8 +47,8 @@ class MockSynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             フレーズ句のリスト
-        speaker_id : int
-            話者
+        style_id : int
+            スタイルID
 
         Returns
         -------
@@ -58,7 +58,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], speaker_id: int
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
         replace_mora_pitch 入力accent_phrasesを変更せずにそのまま返します [Mock]
@@ -67,8 +67,8 @@ class MockSynthesisEngine(SynthesisEngineBase):
         ----------
         accent_phrases : List[AccentPhrase]
             フレーズ句のリスト
-        speaker_id : int
-            話者
+        style_id : int
+            スタイルID
 
         Returns
         -------
@@ -77,7 +77,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         """
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, speaker_id: int) -> np.ndarray:
+    def _synthesis_impl(self, query: AudioQuery, style_id: int) -> np.ndarray:
         """
         synthesis voicevox coreを使わずに、音声合成する [Mock]
 
@@ -85,8 +85,8 @@ class MockSynthesisEngine(SynthesisEngineBase):
         ----------
         query : AudioQuery
             /audio_query APIで得たjson
-        speaker_id : int
-            話者
+        style_id : int
+            スタイルID
 
         Returns
         -------
