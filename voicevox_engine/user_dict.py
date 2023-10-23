@@ -13,9 +13,9 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import engine_root, get_save_dir, mutex_wrapper
+from .utility import get_save_dir, internal_root, mutex_wrapper
 
-root_dir = engine_root()
+root_dir = internal_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():

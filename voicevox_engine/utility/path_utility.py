@@ -2,18 +2,43 @@ import os
 import sys
 import traceback
 from pathlib import Path
+from typing import Literal
 
 from platformdirs import user_data_dir
 
 
-def engine_root() -> Path:
-    if is_development():
-        root_dir = Path(__file__).parents[2]
+def runtime_type() -> Literal["nuitka", "pyinstaller", "python"]:
+    """
+    コンパイルに使用したライブラリ名を返す。
+    コンパイルしていない場合は"python"を返す。
+    """
+    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
+    if "__compiled__" in globals():
+        return "nuitka"
 
-    # Nuitka/Pyinstallerでビルドされている場合
-    else:
+    # pyinstallerでビルドをした際はsys.frozenが設定される
+    elif getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return "pyinstaller"
+
+    return "python"
+
+
+def engine_root() -> Path:
+    runtime = runtime_type()
+    if runtime == "nuitka":
         root_dir = Path(sys.argv[0]).parent
 
+    elif runtime == "pyinstaller":
+        root_dir = Path(sys.executable).parent
+
+    else:
+        root_dir = Path(__file__).parents[2]
+
+    return root_dir.resolve(strict=True)
+
+
+def internal_root() -> Path:
+    root_dir = Path(__file__).parents[2]
     return root_dir.resolve(strict=True)
 
 
@@ -22,15 +47,7 @@ def is_development() -> bool:
     開発版かどうか判定する関数
     Nuitka/Pyinstallerでコンパイルされていない場合は開発環境とする。
     """
-    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
-    if "__compiled__" in globals():
-        return False
-
-    # pyinstallerでビルドをした際はsys.frozenが設定される
-    elif getattr(sys, "frozen", False):
-        return False
-
-    return True
+    return runtime_type() == "python"
 
 
 def get_save_dir():

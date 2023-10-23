@@ -453,21 +453,18 @@ jobs:
 
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-          if [[ ${{ matrix.os }} == windows-* ]]; then
-            LIBCORE_PATH=download/core/voicevox_core.dll
-            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
-          elif [[ ${{ matrix.os }} == macos-* ]]; then
-            LIBCORE_PATH=download/core/libvoicevox_core.dylib
-            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
-          else
-            LIBCORE_PATH=download/core/libvoicevox_core.so
-            LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
-          fi
 
-          CORE_MODEL_DIR_PATH="download/core/model" \
-          LIBCORE_PATH="$LIBCORE_PATH" \
-          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
           pyinstaller --noconfirm run.spec
+
+      - name: Gather files to engine root
+        run: |
+          set -eux
+
+          mv licenses.json dist/run/
+          mv speaker_info dist/run/
+          mv engine_manifest.json dist/run/
+          mv engine_manifest_assets dist/run/
+          mv download/core/model dist/run/
 
       - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
@@ -475,6 +472,10 @@ jobs:
           set -eux
 
           # Move DLL dependencies (cache already saved)
+          mv download/core/voicevox_core.dll dist/run/
+          rm -rf download/core
+
+          mv download/onnxruntime/lib/onnxruntime.dll dist/run/
 
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
             # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
@@ -509,32 +510,50 @@ jobs:
             rm -rf download/directml
           fi
 
-      - name: Gather DLL dependencies to dist/run/ (Linux CUDA)
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+      - name: Gather DLL dependencies to dist/run/ (Linux)
+        if: startsWith(matrix.os, 'ubuntu-')
         run: |
           set -eux
 
           # Move DLL dependencies (cache already saved)
+          cp download/core/libvoicevox_core.so dist/run/
+          rm -rf download/core
 
-          # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
-          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
-          mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
+          cp download/onnxruntime/lib/libonnxruntime.so dist/run/
 
-          # CUDA
-          mv download/cuda/bin/libcublas.so.* dist/run/
-          mv download/cuda/bin/libcublasLt.so.* dist/run/
-          mv download/cuda/bin/libcudart.so.* dist/run/
-          mv download/cuda/bin/libcufft.so.* dist/run/
-          mv download/cuda/bin/libcurand.so.* dist/run/
+          if [[ ${{ matrix.target }} == *-nvidia ]]; then
+            # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+            patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
+            mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
 
-          # cuDNN
-          mv download/cudnn/bin/libcudnn.so.* dist/run/
-          mv download/cudnn/bin/libcudnn_*_infer.so.* dist/run/
+            # CUDA
+            mv download/cuda/bin/libcublas.so.* dist/run/
+            mv download/cuda/bin/libcublasLt.so.* dist/run/
+            mv download/cuda/bin/libcudart.so.* dist/run/
+            mv download/cuda/bin/libcufft.so.* dist/run/
+            mv download/cuda/bin/libcurand.so.* dist/run/
 
-          # Remove source directories to reduce disk usage (already cached)
+            # cuDNN
+            mv download/cudnn/bin/libcudnn.so.* dist/run/
+            mv download/cudnn/bin/libcudnn_*_infer.so.* dist/run/
+
+            # Remove source directories to reduce disk usage (already cached)
+            rm -rf download/onnxruntime
+            rm -rf download/cuda
+            rm -rf download/cudnn
+          fi
+
+      - name: Gather DLL dependencies to dist/run/ (Mac)
+        if: startsWith(matrix.os, 'macos-')
+        run: |
+          set -eux
+
+          # Move DLL dependencies (cache already saved)
+          cp download/core/libvoicevox_core.dylib dist/run/
+          rm -rf download/core
+
+          cp download/onnxruntime/lib/libonnxruntime.dylib dist/run/
           rm -rf download/onnxruntime
-          rm -rf download/cuda
-          rm -rf download/cudnn
 
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
