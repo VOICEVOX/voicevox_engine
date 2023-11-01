@@ -1,3 +1,37 @@
+# VOICEVOX NEMO ENGINE
+
+[VOICEVOX Nemo](https://voicevox.hiroshiba.jp/nemo/) のエンジンです。  
+実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
+
+（エディターは [VOICEVOX](https://github.com/VOICEVOX/voicevox/) のマルチエンジン機能を利用、
+コアは [VOICEVOX NEMO CORE](https://github.com/VOICEVOX/voicevox_nemo_core/) に詳細があります。）
+
+## ダウンロード
+
+[こちら](https://github.com/VOICEVOX/voicevox_nemo_engine/releases/latest)から対応するエンジンをダウンロードしてください。
+
+## API ドキュメント・サンプル
+
+サーバーのデフォルトのポート番号は `50121` です。それ以外は [VOICEVOX ENGINE](https://github.com/VOICEVOX/voicevox_engine/) と同じです。
+
+## Docker イメージ
+
+### CPU
+
+```bash
+docker pull voicevox/voicevox_nemo_engine:cpu-ubuntu20.04-latest
+docker run --rm -it -p '127.0.0.1:50021:50021' voicevox/voicevox_nemo_engine:cpu-ubuntu20.04-latest
+```
+
+### GPU
+
+```bash
+docker pull voicevox/voicevox_nemo_engine:nvidia-ubuntu20.04-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_nemo_engine:nvidia-ubuntu20.04-latest
+```
+
+<details><summary>Fork元のVOICEVOX ENGINEのREADME</summary>
+
 # VOICEVOX ENGINE
 
 [![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
@@ -501,6 +535,8 @@ python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.
 | :----------------- | :---------------------------------------------------------------------- |
 | DOCKERHUB_USERNAME | Docker Hub ユーザ名                                                     |
 | DOCKERHUB_TOKEN    | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
+
+</details> <!-- Fork元のVOICEVOX ENGINEのREADME -->
 
 ## ライセンス
 
