@@ -23,7 +23,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.14.5
+ARG VOICEVOX_CORE_VERSION=0.14.0
 
 RUN <<EOF
     set -eux
@@ -46,7 +46,7 @@ RUN <<EOF
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
-    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
+    wget -nv --show-progress -c -O "./${VOICEVOX_CORE_ASSET_NAME}.zip" "https://github.com/VOICEVOX/voicevox_nemo_core/releases/download/${VOICEVOX_CORE_VERSION}/${VOICEVOX_CORE_ASSET_NAME}.zip"
     unzip "./${VOICEVOX_CORE_ASSET_NAME}.zip"
     mkdir -p core
     mv "${VOICEVOX_CORE_ASSET_NAME}"/* core
@@ -271,12 +271,12 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.4
+ARG VOICEVOX_RESOURCE_VERSION=0.14.0
 RUN <<EOF
     set -eux
 
     # README
-    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_nemo_resource/${VOICEVOX_RESOURCE_VERSION}/voicevox_nemo/engine/README.md"
 EOF
 
 # Create container start shell
