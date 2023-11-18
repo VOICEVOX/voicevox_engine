@@ -25,8 +25,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.4"
-  VOICEVOX_CORE_VERSION: "0.14.5"
+  VOICEVOX_RESOURCE_VERSION: "0.14.0"
+  VOICEVOX_CORE_VERSION: "0.14.0"
 
 defaults:
   run:
@@ -395,7 +395,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
-          repository: VOICEVOX/voicevox_resource
+          repository: VOICEVOX/voicevox_nemo_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
@@ -418,7 +418,7 @@ jobs:
         env:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_nemo_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
           # NOTE: Windows 版コアのみ PowerShell の Compress-Archive コマンドレットを用いて zip を作成している（デフォルト状態では zip コマンドが存在していないため）。
           #       このコマンドはバージョンによっては作成した zip 内のパスの区切り文字がバックスラッシュになる。 (cf. https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/48)
           #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。

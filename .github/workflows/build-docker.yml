@@ -13,10 +13,10 @@ on:
         required: true
 
 env:
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_nemo_engine
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.4"
-  VOICEVOX_CORE_VERSION: "0.14.5"
+  VOICEVOX_RESOURCE_VERSION: "0.14.0"
+  VOICEVOX_CORE_VERSION: "0.14.0"
 
 defaults:
   run:
@@ -108,7 +108,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
         with:
-          repository: VOICEVOX/voicevox_resource
+          repository: VOICEVOX/voicevox_nemo_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 

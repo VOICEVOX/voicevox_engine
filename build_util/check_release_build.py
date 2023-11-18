@@ -12,7 +12,7 @@ from urllib.request import Request, urlopen
 
 import soundfile
 
-base_url = "http://127.0.0.1:50021/"
+base_url = "http://localhost:50121/"
 
 
 def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
@@ -34,14 +34,14 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
     # テキスト -> クエリ
     text = "こんにちは、音声合成の世界へようこそ"
     req = Request(
-        base_url + "audio_query?" + urlencode({"style_id": "1", "text": text}),
+        base_url + "audio_query?" + urlencode({"style_id": "10001", "text": text}),
         method="POST",
     )
     with urlopen(req) as res:
         query = json.loads(res.read().decode("utf-8"))
 
     # クエリ -> 音声
-    req = Request(base_url + "synthesis?style_id=1", method="POST")
+    req = Request(base_url + "synthesis?speaker=10001", method="POST")
     req.add_header("Content-Type", "application/json")
     req.data = json.dumps(query).encode("utf-8")
     with urlopen(req) as res:
