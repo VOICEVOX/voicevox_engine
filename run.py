@@ -28,16 +28,17 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.downloadable_library import LibraryManager
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
-    DownloadableLibrary,
-    InstalledLibrary,
+    BaseLibraryInfo,
+    DownloadableLibraryInfo,
+    InstalledLibraryInfo,
     MorphableTargetInfo,
     ParseKanaBadRequest,
     ParseKanaError,
@@ -845,10 +846,10 @@ def generate_app(
 
     @app.get(
         "/downloadable_libraries",
-        response_model=list[DownloadableLibrary],
+        response_model=list[DownloadableLibraryInfo],
         tags=["音声ライブラリ管理"],
     )
-    def downloadable_libraries() -> list[DownloadableLibrary]:
+    def downloadable_libraries() -> list[DownloadableLibraryInfo]:
         """
         ダウンロード可能な音声ライブラリの情報を返します。
 
@@ -862,10 +863,10 @@ def generate_app(
 
     @app.get(
         "/installed_libraries",
-        response_model=dict[str, InstalledLibrary],
+        response_model=dict[str, InstalledLibraryInfo],
         tags=["音声ライブラリ管理"],
     )
-    def installed_libraries() -> dict[str, InstalledLibrary]:
+    def installed_libraries() -> dict[str, InstalledLibraryInfo]:
         """
         インストールした音声ライブラリの情報を返します。
 
@@ -1226,7 +1227,7 @@ def generate_app(
             },
         )
 
-    # VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
+    # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
     def custom_openapi():
         if app.openapi_schema:
@@ -1245,6 +1246,13 @@ def generate_app(
         openapi_schema["components"]["schemas"][
             "VvlibManifest"
         ] = VvlibManifest.schema()
+        # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
+        base_library_info = BaseLibraryInfo.schema(
+            ref_template="#/components/schemas/{model}"
+        )
+        # definitionsは既存のモデルを重複して定義するため、不要なので削除
+        del base_library_info["definitions"]
+        openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
         app.openapi_schema = openapi_schema
         return openapi_schema
 

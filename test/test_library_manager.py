@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 from fastapi import HTTPException
 
-from voicevox_engine.downloadable_library import LibraryManager
+from voicevox_engine.library_manager import LibraryManager
 
 vvlib_manifest_name = "vvlib_manifest.json"
 
