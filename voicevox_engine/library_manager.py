@@ -11,7 +11,11 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from semver.version import Version
 
-from voicevox_engine.model import DownloadableLibrary, InstalledLibrary, VvlibManifest
+from voicevox_engine.model import (
+    DownloadableLibraryInfo,
+    InstalledLibraryInfo,
+    VvlibManifest,
+)
 
 __all__ = ["LibraryManager"]
 
@@ -76,9 +80,9 @@ class LibraryManager:
                     )
                     for i in range(1, 4)
                 ]
-            return list(map(DownloadableLibrary.parse_obj, libraries))
+            return list(map(DownloadableLibraryInfo.parse_obj, libraries))
 
-    def installed_libraries(self) -> Dict[str, InstalledLibrary]:
+    def installed_libraries(self) -> Dict[str, InstalledLibraryInfo]:
         library = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():

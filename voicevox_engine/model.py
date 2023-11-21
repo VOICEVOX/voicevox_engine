@@ -127,9 +127,9 @@ class LibrarySpeaker(BaseModel):
     speaker_info: SpeakerInfo = Field(title="話者の追加情報")
 
 
-class DownloadableLibrary(BaseModel):
+class BaseLibraryInfo(BaseModel):
     """
-    ダウンロード可能な音声ライブラリの情報
+    音声ライブラリの情報
     """
 
     name: str = Field(title="音声ライブラリの名前")
@@ -140,7 +140,16 @@ class DownloadableLibrary(BaseModel):
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
 
 
-class InstalledLibrary(DownloadableLibrary):
+# 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている
+class DownloadableLibraryInfo(BaseLibraryInfo):
+    """
+    ダウンロード可能な音声ライブラリの情報
+    """
+
+    pass
+
+
+class InstalledLibraryInfo(BaseLibraryInfo):
     """
     インストール済み音声ライブラリの情報
     """
