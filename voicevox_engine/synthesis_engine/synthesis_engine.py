@@ -193,7 +193,7 @@ def generate_frame_scale_features(
 
     # forward decode
     # 音素の長さにrateを掛け、intにキャストする
-    rate = 24000 / 256
+    rate = 24000 / 256  # framerate 93.75 [frame/sec]
     phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
     # Phoneme IDを音素の長さ分繰り返す
