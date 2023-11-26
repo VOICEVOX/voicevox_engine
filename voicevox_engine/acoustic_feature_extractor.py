@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from enum import Enum
 from pathlib import Path
 from typing import List, Sequence
 
@@ -240,13 +239,3 @@ class OjtPhoneme(BasePhoneme):
         if "sil" in phonemes[-1].phoneme:
             phonemes[-1].phoneme = cls.space_phoneme
         return phonemes
-
-
-class PhonemeType(str, Enum):
-    jvs = "jvs"
-    openjtalk = "openjtalk"
-
-
-phoneme_type_to_class = {
-    PhonemeType.openjtalk: OjtPhoneme,
-}
