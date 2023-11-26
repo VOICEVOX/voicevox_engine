@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from enum import Enum
 from pathlib import Path
 from typing import List, Sequence
 
@@ -157,85 +156,6 @@ class BasePhoneme(object):
         path.write_text(text)
 
 
-class JvsPhoneme(BasePhoneme):
-    """
-    JVS(Japanese versatile speech)コーパスに含まれる音素群クラス
-
-    Attributes
-    ----------
-    phoneme_list : Sequence[str]
-        音素のリスト
-    num_phoneme : int
-        音素リストの要素数
-    space_phoneme : str
-        読点に値する音素
-    """
-
-    phoneme_list = (
-        "pau",
-        "I",
-        "N",
-        "U",
-        "a",
-        "b",
-        "by",
-        "ch",
-        "cl",
-        "d",
-        "dy",
-        "e",
-        "f",
-        "g",
-        "gy",
-        "h",
-        "hy",
-        "i",
-        "j",
-        "k",
-        "ky",
-        "m",
-        "my",
-        "n",
-        "ny",
-        "o",
-        "p",
-        "py",
-        "r",
-        "ry",
-        "s",
-        "sh",
-        "t",
-        "ts",
-        "u",
-        "v",
-        "w",
-        "y",
-        "z",
-    )
-    num_phoneme = len(phoneme_list)
-    space_phoneme = "pau"
-
-    @classmethod
-    def convert(cls, phonemes: List["JvsPhoneme"]) -> List["JvsPhoneme"]:
-        """
-        最初と最後のsil(silent)をspace_phoneme(pau)に置き換え(変換)する
-        Parameters
-        ----------
-        phonemes : List[JvsPhoneme]
-            変換したいphonemeのリスト
-
-        Returns
-        -------
-        phonemes : List[JvsPhoneme]
-            変換されたphonemeのリスト
-        """
-        if "sil" in phonemes[0].phoneme:
-            phonemes[0].phoneme = cls.space_phoneme
-        if "sil" in phonemes[-1].phoneme:
-            phonemes[-1].phoneme = cls.space_phoneme
-        return phonemes
-
-
 class OjtPhoneme(BasePhoneme):
     """
     OpenJTalkに含まれる音素群クラス
@@ -319,14 +239,3 @@ class OjtPhoneme(BasePhoneme):
         if "sil" in phonemes[-1].phoneme:
             phonemes[-1].phoneme = cls.space_phoneme
         return phonemes
-
-
-class PhonemeType(str, Enum):
-    jvs = "jvs"
-    openjtalk = "openjtalk"
-
-
-phoneme_type_to_class = {
-    PhonemeType.jvs: JvsPhoneme,
-    PhonemeType.openjtalk: OjtPhoneme,
-}
