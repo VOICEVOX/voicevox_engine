@@ -3,11 +3,7 @@ from pathlib import Path
 from typing import List, Type
 from unittest import TestCase
 
-from voicevox_engine.acoustic_feature_extractor import (
-    BasePhoneme,
-    JvsPhoneme,
-    OjtPhoneme,
-)
+from voicevox_engine.acoustic_feature_extractor import BasePhoneme, OjtPhoneme
 
 
 class TestBasePhoneme(TestCase):
@@ -86,95 +82,6 @@ class TestBasePhoneme(TestCase):
         os.remove(file_path)
 
 
-class TestJvsPhoneme(TestBasePhoneme):
-    def setUp(self):
-        super().setUp()
-        base_hello_hiho = [
-            JvsPhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
-        ]
-        self.jvs_hello_hiho = JvsPhoneme.convert(base_hello_hiho)
-
-    def test_phoneme_list(self):
-        self.assertEqual(JvsPhoneme.phoneme_list[1], "I")
-        self.assertEqual(JvsPhoneme.phoneme_list[14], "gy")
-        self.assertEqual(JvsPhoneme.phoneme_list[26], "p")
-        self.assertEqual(JvsPhoneme.phoneme_list[38], "z")
-
-    def test_const(self):
-        self.assertEqual(JvsPhoneme.num_phoneme, 39)
-        self.assertEqual(JvsPhoneme.space_phoneme, "pau")
-
-    def test_convert(self):
-        converted_str_hello_hiho = " ".join([p.phoneme for p in self.jvs_hello_hiho])
-        self.assertEqual(
-            converted_str_hello_hiho, "pau k o N n i ch i w a pau h i h o d e s U pau"
-        )
-
-    def test_equal(self):
-        # jvs_hello_hihoの2番目の"k"と比較
-        true_jvs_phoneme = JvsPhoneme("k", 1, 2)
-        # OjtPhonemeと比べる、比較はBasePhoneme内で実装されているので、比較結果はTrue
-        true_ojt_phoneme = OjtPhoneme("k", 1, 2)
-
-        false_jvs_phoneme_1 = JvsPhoneme("a", 1, 2)
-        false_jvs_phoneme_2 = JvsPhoneme("k", 2, 3)
-        self.assertTrue(self.jvs_hello_hiho[1] == true_jvs_phoneme)
-        self.assertTrue(self.jvs_hello_hiho[1] == true_ojt_phoneme)
-        self.assertFalse(self.jvs_hello_hiho[1] == false_jvs_phoneme_1)
-        self.assertFalse(self.jvs_hello_hiho[1] == false_jvs_phoneme_2)
-
-    def test_verify(self):
-        for phoneme in self.jvs_hello_hiho:
-            phoneme.verify()
-
-    def test_phoneme_id(self):
-        jvs_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.jvs_hello_hiho])
-        self.assertEqual(
-            jvs_str_hello_hiho, "0 19 25 2 23 17 7 17 36 4 0 15 17 15 25 9 11 30 3 0"
-        )
-
-    def test_onehot(self):
-        phoneme_id_list = [
-            0,
-            19,
-            25,
-            2,
-            23,
-            17,
-            7,
-            17,
-            36,
-            4,
-            0,
-            15,
-            17,
-            15,
-            25,
-            9,
-            11,
-            30,
-            3,
-            0,
-        ]
-        for i, phoneme in enumerate(self.jvs_hello_hiho):
-            for j in range(JvsPhoneme.num_phoneme):
-                if phoneme_id_list[i] == j:
-                    self.assertEqual(phoneme.onehot[j], True)
-                else:
-                    self.assertEqual(phoneme.onehot[j], False)
-
-    def test_parse(self):
-        parse_str_1 = "0 1 pau"
-        parse_str_2 = "15.32654 16.39454 a"
-        parsed_jvs_1 = JvsPhoneme.parse(parse_str_1)
-        parsed_jvs_2 = JvsPhoneme.parse(parse_str_2)
-        self.assertEqual(parsed_jvs_1.phoneme_id, 0)
-        self.assertEqual(parsed_jvs_2.phoneme_id, 4)
-
-    def test_lab_list(self):
-        self.lab_test_base("./jvs_lab_test", self.jvs_hello_hiho, JvsPhoneme)
-
-
 class TestOjtPhoneme(TestBasePhoneme):
     def setUp(self):
         super().setUp()
@@ -204,13 +111,10 @@ class TestOjtPhoneme(TestBasePhoneme):
     def test_equal(self):
         # ojt_hello_hihoの10番目の"a"と比較
         true_ojt_phoneme = OjtPhoneme("a", 9, 10)
-        # JvsPhonemeと比べる、比較はBasePhoneme内で実装されているので、比較結果はTrue
-        true_jvs_phoneme = JvsPhoneme("a", 9, 10)
 
         false_ojt_phoneme_1 = OjtPhoneme("k", 9, 10)
         false_ojt_phoneme_2 = OjtPhoneme("a", 10, 11)
         self.assertTrue(self.ojt_hello_hiho[9] == true_ojt_phoneme)
-        self.assertTrue(self.ojt_hello_hiho[9] == true_jvs_phoneme)
         self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_1)
         self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_2)
 
