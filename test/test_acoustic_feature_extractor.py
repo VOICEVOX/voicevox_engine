@@ -28,11 +28,19 @@ class TestBasePhoneme(TestCase):
 class TestOjtPhoneme(TestBasePhoneme):
     def setUp(self):
         super().setUp()
-        self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        base_hello_hiho = [
-            OjtPhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
-        ]
-        self.ojt_hello_hiho = OjtPhoneme.convert(base_hello_hiho)
+        str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+        self.ojt_hello_hiho = OjtPhoneme.convert([
+            OjtPhoneme(s, i, i + 1) for i, s in enumerate(str_hello_hiho.split())
+        ])
+
+    def test_repr_(self):
+        self.assertEqual(
+            self.ojt_hello_hiho[1].__repr__(), "Phoneme(phoneme='k', start=1, end=2)"
+        )
+        self.assertEqual(
+            self.ojt_hello_hiho[10].__repr__(),
+            "Phoneme(phoneme='pau', start=10, end=11)",
+        )
 
     def test_phoneme_list(self):
         self.assertEqual(OjtPhoneme.phoneme_list[1], "A")
