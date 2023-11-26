@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-from typing import List, Type
 from unittest import TestCase
 
 from voicevox_engine.acoustic_feature_extractor import BasePhoneme, OjtPhoneme
@@ -53,34 +50,6 @@ class TestBasePhoneme(TestCase):
         with self.assertRaises(NotImplementedError):
             BasePhoneme.convert(self.base_hello_hiho)
 
-    def test_duration(self):
-        self.assertEqual(self.base_hello_hiho[1].duration, 1)
-
-    def test_parse(self):
-        parse_str_1 = "0 1 pau"
-        parse_str_2 = "32.67543 33.48933 e"
-        parsed_base_1 = BasePhoneme.parse(parse_str_1)
-        parsed_base_2 = BasePhoneme.parse(parse_str_2)
-        self.assertEqual(parsed_base_1.phoneme, "pau")
-        self.assertEqual(parsed_base_1.start, 0.0)
-        self.assertEqual(parsed_base_1.end, 1.0)
-        self.assertEqual(parsed_base_2.phoneme, "e")
-        self.assertEqual(parsed_base_2.start, 32.68)
-        self.assertEqual(parsed_base_2.end, 33.49)
-
-    def lab_test_base(
-        self,
-        file_path: str,
-        phonemes: List["BasePhoneme"],
-        phoneme_class: Type["BasePhoneme"],
-    ):
-        phoneme_class.save_lab_list(phonemes, Path(file_path))
-        with open(file_path, mode="r") as f:
-            self.assertEqual(f.read(), self.lab_str)
-        result_phoneme = phoneme_class.load_lab_list(Path(file_path))
-        self.assertEqual(result_phoneme, phonemes)
-        os.remove(file_path)
-
 
 class TestOjtPhoneme(TestBasePhoneme):
     def setUp(self):
@@ -118,10 +87,6 @@ class TestOjtPhoneme(TestBasePhoneme):
         self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_1)
         self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_2)
 
-    def test_verify(self):
-        for phoneme in self.ojt_hello_hiho:
-            phoneme.verify()
-
     def test_phoneme_id(self):
         ojt_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.ojt_hello_hiho])
         self.assertEqual(
@@ -157,14 +122,3 @@ class TestOjtPhoneme(TestBasePhoneme):
                     self.assertEqual(phoneme.onehot[j], True)
                 else:
                     self.assertEqual(phoneme.onehot[j], False)
-
-    def test_parse(self):
-        parse_str_1 = "0 1 pau"
-        parse_str_2 = "32.67543 33.48933 e"
-        parsed_ojt_1 = OjtPhoneme.parse(parse_str_1)
-        parsed_ojt_2 = OjtPhoneme.parse(parse_str_2)
-        self.assertEqual(parsed_ojt_1.phoneme_id, 0)
-        self.assertEqual(parsed_ojt_2.phoneme_id, 14)
-
-    def tes_lab_list(self):
-        self.lab_test_base("./ojt_lab_test", self.ojt_hello_hiho, OjtPhoneme)
