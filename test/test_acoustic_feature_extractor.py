@@ -10,32 +10,6 @@ class TestBasePhoneme(TestCase):
         self.base_hello_hiho = [
             BasePhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
         ]
-        self.lab_str = """
-            0.00	1.00	pau
-            1.00	2.00	k
-            2.00	3.00	o
-            3.00	4.00	N
-            4.00	5.00	n
-            5.00	6.00	i
-            6.00	7.00	ch
-            7.00	8.00	i
-            8.00	9.00	w
-            9.00	10.00	a
-            10.00	11.00	pau
-            11.00	12.00	h
-            12.00	13.00	i
-            13.00	14.00	h
-            14.00	15.00	o
-            15.00	16.00	d
-            16.00	17.00	e
-            17.00	18.00	s
-            18.00	19.00	U
-            19.00	20.00	pau
-        """.replace(
-            " ", ""
-        )[
-            1:-1
-        ]  # ダブルクオーテーションx3で囲われている部分で、空白をすべて置き換え、先頭と最後の"\n"を除外する
 
     def test_repr_(self):
         self.assertEqual(
