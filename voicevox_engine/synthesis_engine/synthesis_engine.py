@@ -237,33 +237,6 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm):
     return phoneme_frm
 
 
-def generate_frame_scale_features(
-    query: AudioQuery, flatten_moras: List[Mora], phoneme_data_list: List[OjtPhoneme]
-):
-    """
-    フレームごとの特徴量の生成
-    Parameters
-    ----------
-    query : List[AccentPhrase]
-        音声合成クエリ
-    flatten_moras : List[Mora]
-        モーラ列
-    phoneme_data_list : List[OjtPhoneme]
-        音素列
-    Returns
-    -------
-    phoneme : NDArray[]
-        フレームごとの音素onehotベクトル列
-    f0 : NDArray[]
-        フレームごとの基本周波数系列
-    """
-    frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
-    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
-    phoneme = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
-
-    return phoneme, f0
-
-
 class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
@@ -547,9 +520,9 @@ class SynthesisEngine(SynthesisEngineBase):
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
-        phoneme, f0 = generate_frame_scale_features(
-            query, flatten_moras, phoneme_data_list
-        )
+        frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
+        f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
+        phoneme = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
         with self.mutex:

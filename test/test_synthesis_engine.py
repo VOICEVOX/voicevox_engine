@@ -16,7 +16,6 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
-    generate_frame_scale_features,
     mora_phoneme_list,
     pre_process,
     split_mora,
@@ -225,19 +224,15 @@ def test_calc_frame_phoneme():
     assert numpy.array_equal(phoneme_frm_pred, phoneme_frm_gt)
 
 
-def test_generate_frame_scale_features():
-    """Test `generate_frame_scale_features`."""
+def test_feat_to_framescale():
+    """Test Mora/Phonemefeature-to-framescaleFeature pipeline."""
     # Inputs
-    query = AudioQuery(
-        accent_phrases=[],
+    query = _gen_query(
         speedScale=2.0,
         pitchScale=2.0,
         intonationScale=0.5,
-        prePhonemeLength=2 * 0.01067,  # 0.01067 [sec/frame]
+        prePhonemeLength=2 * 0.01067,
         postPhonemeLength=6 * 0.01067,
-        volumeScale=0.0,
-        outputSamplingRate=0,
-        outputStereo=False,
     )
     flatten_moras = [
         _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
@@ -275,11 +270,12 @@ def test_generate_frame_scale_features():
     f0_gt_3 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     f0_gt = numpy.array(f0_gt_1 + f0_gt_2 + f0_gt_3, dtype=numpy.float32)
 
-    phoneme_pred, f0_pred = generate_frame_scale_features(
-        query, flatten_moras, phoneme_data_list
-    )
-
     assert frm_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
+
+    # Inference
+    frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
+    f0_pred = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
+    phoneme_pred = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
 
     assert numpy.array_equal(phoneme_pred, phoneme_gt), "Wrong phoneme onehot frames"
     assert numpy.array_equal(f0_pred, f0_gt), "Wrong frame-wise phoneme onehot"
