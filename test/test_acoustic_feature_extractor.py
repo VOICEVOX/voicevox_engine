@@ -29,9 +29,9 @@ class TestOjtPhoneme(TestBasePhoneme):
     def setUp(self):
         super().setUp()
         str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        self.ojt_hello_hiho = OjtPhoneme.convert([
-            OjtPhoneme(s, i, i + 1) for i, s in enumerate(str_hello_hiho.split())
-        ])
+        self.ojt_hello_hiho = OjtPhoneme.convert(
+            [OjtPhoneme(s, i, i + 1) for i, s in enumerate(str_hello_hiho.split())]
+        )
 
     def test_repr_(self):
         self.assertEqual(
