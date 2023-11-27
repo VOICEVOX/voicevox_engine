@@ -147,13 +147,10 @@ def generate_frame_scale_features(
     f0 : NDArray[]
         フレームごとの基本周波数系列
     """
-    # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
-    phoneme_list_s = numpy.array(
-        [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
-    )
+
     # length
     # 音素の長さをリストに展開・結合する。ここには前後の無音時間も含まれる
-    phoneme_length_list = (
+    phoneme_length = (
         [query.prePhonemeLength]
         + [
             length
@@ -165,19 +162,19 @@ def generate_frame_scale_features(
         ]
         + [query.postPhonemeLength]
     )
-    # floatにキャスト
-    phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
-
+    phoneme_length = numpy.array(phoneme_length, dtype=numpy.float32)
     # lengthにSpeed Scale(話速)を適用する
     phoneme_length /= query.speedScale
+    # 音素の長さにrateを掛け、intにキャストする
+    rate = 24000 / 256  # framerate 93.75 [frame/sec]
+    phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
 
-    # pitch
+    # Pitch
     # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
     f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
     f0 = numpy.array(f0_list, dtype=numpy.float32)
     # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
     f0 *= 2**query.pitchScale
-
     # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
     voiced = f0 > 0
     # 有声音素の音高(ピッチ)の平均値を求める
@@ -186,24 +183,21 @@ def generate_frame_scale_features(
     # 抑揚は音高と音高の平均値の差に抑揚を掛けたもの((f0 - mean_f0) * Intonation Scale)に抑揚の平均値(mean_f0)を足したもの
     if not numpy.isnan(mean_f0):
         f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
-
     # OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
-    _, _, vowel_indexes_data = split_mora(phoneme_data_list)
-    vowel_indexes = numpy.array(vowel_indexes_data)
-
-    # forward decode
-    # 音素の長さにrateを掛け、intにキャストする
-    rate = 24000 / 256  # framerate 93.75 [frame/sec]
-    phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
-
-    # Phoneme IDを音素の長さ分繰り返す
-    phoneme = numpy.repeat(phoneme_list_s, phoneme_bin_num)
+    vowel_indexes = numpy.array(split_mora(phoneme_data_list)[2])
     # f0を母音と子音の長さの合計分繰り返す
     f0 = numpy.repeat(
         f0,
         [a.sum() for a in numpy.split(phoneme_bin_num, vowel_indexes[:-1] + 1)],
     )
 
+    # Phoneme
+    # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
+    phoneme_list_s = numpy.array(
+        [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
+    )
+    # Phoneme IDを音素の長さ分繰り返す
+    phoneme = numpy.repeat(phoneme_list_s, phoneme_bin_num)
     # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
     array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
     # 初期化された2次元配列の各行をone hotにする
