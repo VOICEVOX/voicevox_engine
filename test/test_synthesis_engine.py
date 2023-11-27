@@ -1,7 +1,7 @@
 import math
 from copy import deepcopy
 from random import random
-from typing import Optional, Union
+from typing import List, Optional, Union
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -13,6 +13,7 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
+    calc_frame_per_phoneme,
     generate_frame_scale_features,
     mora_phoneme_list,
     pre_process,
@@ -97,6 +98,32 @@ class MockCore:
         return True
 
 
+def _gen_query(
+    accent_phrases: Optional[List[AccentPhrase]] = None,
+    speedScale: float = 1.0,
+    pitchScale: float = 1.0,
+    intonationScale: float = 1.0,
+    prePhonemeLength: float = 0.0,
+    postPhonemeLength: float = 0.0,
+    volumeScale: float = 1.0,
+    outputSamplingRate: int = 24000,
+    outputStereo: bool = False,
+):
+    """Generate AudioQuery with default meaningless arguments for test simplicity."""
+    accent_phrases = [] if accent_phrases is None else accent_phrases
+    return AudioQuery(
+        accent_phrases=accent_phrases,
+        speedScale=speedScale,
+        pitchScale=pitchScale,
+        intonationScale=intonationScale,
+        prePhonemeLength=prePhonemeLength,
+        postPhonemeLength=postPhonemeLength,
+        volumeScale=volumeScale,
+        outputSamplingRate=outputSamplingRate,
+        outputStereo=outputStereo,
+    )
+
+
 def _gen_mora(
     text: str,
     consonant: Optional[str],
@@ -113,6 +140,34 @@ def _gen_mora(
         vowel_length=vowel_length,
         pitch=pitch,
     )
+
+
+def test_calc_frame_per_phoneme():
+    """Test `calc_frame_per_phoneme`."""
+    # Inputs
+    query = _gen_query(
+        speedScale=2.0,
+        prePhonemeLength=2 * 0.01067,  # 0.01067 [sec/frame]
+        postPhonemeLength=6 * 0.01067,
+    )
+    moras = [
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
+        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
+        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+    ]
+
+    # Ground Truths
+    #                 Pre k  o  N pau h  i  h  O Pst
+    frm_per_phoneme_gt = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    frm_per_phoneme_gt = numpy.array(frm_per_phoneme_gt, dtype=numpy.int32)
+
+    frm_per_phnm_pred = calc_frame_per_phoneme(query, moras)
+
+    assert numpy.array_equal(
+        frm_per_phnm_pred, frm_per_phoneme_gt
+    ), "Unmatched frame_per_phoneme"
 
 
 def test_generate_frame_scale_features():
