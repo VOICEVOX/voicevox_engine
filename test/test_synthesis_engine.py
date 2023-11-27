@@ -169,7 +169,7 @@ def test_generate_frame_scale_features():
         query, flatten_moras, phoneme_data_list
     )
 
-    assert frm_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequsites"
+    assert frm_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
 
     assert numpy.array_equal(phoneme_pred, phoneme_gt), "Wrong phoneme onehot frames"
     assert numpy.array_equal(f0_pred, f0_gt), "Wrong frame-wise phoneme onehot"
