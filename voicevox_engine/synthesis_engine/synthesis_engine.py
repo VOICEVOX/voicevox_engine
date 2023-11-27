@@ -166,6 +166,77 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     return frm_per_phnm
 
 
+def calc_frame_pitch(
+    query: AudioQuery, moras: List[Mora], phonemes: List[OjtPhoneme], frm_per_phnm
+):
+    """
+    フレームスケールピッチの生成
+    Parameters
+    ----------
+    query : AudioQuery
+        音声合成クエリ
+    moras : List[Mora]
+        モーラ列
+    phonemes : List[OjtPhoneme]
+        音素列
+    frm_per_phnm: NDArray
+        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+    Returns
+    -------
+    f0 : NDArray[]
+        フレームスケール基本周波数系列
+    """
+    # モーラ（前後の無音含む）スケール基本周波数
+    f0_mora = numpy.array(
+        [0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32
+    )
+
+    # 音高スケールによる補正
+    f0_mora *= 2**query.pitchScale
+
+    # 抑揚スケールによる補正。有声音素 (f0>0) の平均値に対する乖離度をスケール
+    voiced = f0_mora > 0
+    mean_f0 = f0_mora[voiced].mean()
+    if not numpy.isnan(mean_f0):
+        f0_mora[voiced] = (f0_mora[voiced] - mean_f0) * query.intonationScale + mean_f0
+
+    # フレームスケール化
+    # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
+    vowel_indexes = numpy.array(split_mora(phonemes)[2])
+    frm_per_mora = [a.sum() for a in numpy.split(frm_per_phnm, vowel_indexes[:-1] + 1)]
+    # モーラ内vowelの基本周波数を子音にも割当てフレーム化
+    f0_frm = numpy.repeat(f0_mora, frm_per_mora)
+    return f0_frm
+
+
+def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm):
+    """
+    フレームスケール音素列の生成
+    Parameters
+    ----------
+    phonemes : List[OjtPhoneme]
+        音素列
+    frm_per_phnm: NDArray
+        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+    Returns
+    -------
+    phoneme : NDArray[]
+        フレームスケール基本周波数系列
+    """
+    # Index化
+    phoneme_ids_phnm = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
+
+    # フレームスケール化
+    phoneme_frm = numpy.repeat(phoneme_ids_phnm, frm_per_phnm)
+
+    # Onehot化
+    array = numpy.zeros((len(phoneme_frm), OjtPhoneme.num_phoneme), dtype=numpy.float32)
+    array[numpy.arange(len(phoneme_frm)), phoneme_frm] = 1
+    phoneme_frm = array
+
+    return phoneme_frm
+
+
 def generate_frame_scale_features(
     query: AudioQuery, flatten_moras: List[Mora], phoneme_data_list: List[OjtPhoneme]
 ):
@@ -187,41 +258,8 @@ def generate_frame_scale_features(
         フレームごとの基本周波数系列
     """
     frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
-
-    # Pitch
-    # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
-    f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
-    f0 = numpy.array(f0_list, dtype=numpy.float32)
-    # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
-    f0 *= 2**query.pitchScale
-    # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
-    voiced = f0 > 0
-    # 有声音素の音高(ピッチ)の平均値を求める
-    mean_f0 = f0[voiced].mean()
-    # 平均値がNaNではないとき、抑揚を適用する
-    # 抑揚は音高と音高の平均値の差に抑揚を掛けたもの((f0 - mean_f0) * Intonation Scale)に抑揚の平均値(mean_f0)を足したもの
-    if not numpy.isnan(mean_f0):
-        f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
-    # OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
-    vowel_indexes = numpy.array(split_mora(phoneme_data_list)[2])
-    # f0を母音と子音の長さの合計分繰り返す
-    f0 = numpy.repeat(
-        f0,
-        [a.sum() for a in numpy.split(frm_per_phnm, vowel_indexes[:-1] + 1)],
-    )
-
-    # Phoneme
-    # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
-    phoneme_list_s = numpy.array(
-        [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
-    )
-    # Phoneme IDを音素の長さ分繰り返す
-    phoneme = numpy.repeat(phoneme_list_s, frm_per_phnm)
-    # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
-    array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
-    # 初期化された2次元配列の各行をone hotにする
-    array[numpy.arange(len(phoneme)), phoneme] = 1
-    phoneme = array
+    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
+    phoneme = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
 
     return phoneme, f0
 

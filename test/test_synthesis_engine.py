@@ -14,6 +14,8 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
     calc_frame_per_phoneme,
+    calc_frame_phoneme,
+    calc_frame_pitch,
     generate_frame_scale_features,
     mora_phoneme_list,
     pre_process,
@@ -168,6 +170,59 @@ def test_calc_frame_per_phoneme():
     assert numpy.array_equal(
         frm_per_phnm_pred, frm_per_phoneme_gt
     ), "Unmatched frame_per_phoneme"
+
+
+def test_calc_frame_pitch():
+    """Test `test_calc_frame_pitch`."""
+    # Inputs
+    query = _gen_query(pitchScale=2.0, intonationScale=0.5)
+    moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
+        _gen_mora("ン", None, None, "N", 0.0, 50.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+    phoneme_str = "pau k o N pau h i h O pau"
+    phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
+    #              Pre k  o  N pau h  i  h  O Pst
+    frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
+
+    # Ground Truths - x4 value scaled -> mean=300 var x0.5 intonation scaling
+    #          pau   ko     ko     ko      N      N
+    f0_gt_1 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
+    #          pau   hi     hi     hi
+    f0_gt_2 = [0.0, 400.0, 400.0, 400.0]
+    #          hO   hO   hO   paw  paw  paw
+    f0_gt_3 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    f0_gt = numpy.array(f0_gt_1 + f0_gt_2 + f0_gt_3, dtype=numpy.float32)
+
+    f0_pred = calc_frame_pitch(query, moras, phonemes, frm_per_phnm)
+
+    assert numpy.array_equal(f0_pred, f0_gt)
+
+
+def test_calc_frame_phoneme():
+    """Test `calc_frame_phoneme`."""
+    # Inputs
+    phoneme_str = "pau k o N pau h i h O pau"
+    phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
+    #              Pre k  o  N pau h  i  h  O Pst
+    frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    n_frm = sum(frm_per_phnm)
+    frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
+
+    # Ground Truths
+    #                  Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
+    phoneme_ids_frm = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
+    phoneme_frm_gt = numpy.zeros([n_frm, 45], dtype=numpy.float32)
+    for frm_idx, phoneme_idx in enumerate(phoneme_ids_frm):
+        phoneme_frm_gt[frm_idx, phoneme_idx] = 1.0
+
+    phoneme_frm_pred = calc_frame_phoneme(phonemes, frm_per_phnm)
+
+    assert numpy.array_equal(phoneme_frm_pred, phoneme_frm_gt)
 
 
 def test_generate_frame_scale_features():
