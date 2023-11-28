@@ -131,7 +131,7 @@ def generate_frame_scale_features(
     query: AudioQuery, flatten_moras: List[Mora], phoneme_data_list: List[OjtPhoneme]
 ):
     """
-    フレームスケール特徴量の生成
+    フレームごとの特徴量の生成
     Parameters
     ----------
     query : List[AccentPhrase]
@@ -143,9 +143,9 @@ def generate_frame_scale_features(
     Returns
     -------
     phoneme : NDArray[]
-        フレームスケール音素onehotベクトル列
+        フレームごとの音素onehotベクトル列
     f0 : NDArray[]
-        フレームスケール基本周波数系列
+        フレームごとの基本周波数系列
     """
     # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
     phoneme_list_s = numpy.array(
