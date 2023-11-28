@@ -127,6 +127,92 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
+def generate_frame_scale_features(
+    query: AudioQuery, flatten_moras: List[Mora], phoneme_data_list: List[OjtPhoneme]
+):
+    """
+    フレームごとの特徴量の生成
+    Parameters
+    ----------
+    query : List[AccentPhrase]
+        音声合成クエリ
+    flatten_moras : List[Mora]
+        モーラ列
+    phoneme_data_list : List[OjtPhoneme]
+        音素列
+    Returns
+    -------
+    phoneme : NDArray[]
+        フレームごとの音素onehotベクトル列
+    f0 : NDArray[]
+        フレームごとの基本周波数系列
+    """
+    # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
+    phoneme_list_s = numpy.array(
+        [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
+    )
+    # length
+    # 音素の長さをリストに展開・結合する。ここには前後の無音時間も含まれる
+    phoneme_length_list = (
+        [query.prePhonemeLength]
+        + [
+            length
+            for mora in flatten_moras
+            for length in (
+                [mora.consonant_length] if mora.consonant is not None else []
+            )
+            + [mora.vowel_length]
+        ]
+        + [query.postPhonemeLength]
+    )
+    # floatにキャスト
+    phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
+
+    # lengthにSpeed Scale(話速)を適用する
+    phoneme_length /= query.speedScale
+
+    # pitch
+    # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
+    f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
+    f0 = numpy.array(f0_list, dtype=numpy.float32)
+    # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
+    f0 *= 2**query.pitchScale
+
+    # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
+    voiced = f0 > 0
+    # 有声音素の音高(ピッチ)の平均値を求める
+    mean_f0 = f0[voiced].mean()
+    # 平均値がNaNではないとき、抑揚を適用する
+    # 抑揚は音高と音高の平均値の差に抑揚を掛けたもの((f0 - mean_f0) * Intonation Scale)に抑揚の平均値(mean_f0)を足したもの
+    if not numpy.isnan(mean_f0):
+        f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
+
+    # OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
+    _, _, vowel_indexes_data = split_mora(phoneme_data_list)
+    vowel_indexes = numpy.array(vowel_indexes_data)
+
+    # forward decode
+    # 音素の長さにrateを掛け、intにキャストする
+    rate = 24000 / 256  # framerate 93.75 [frame/sec]
+    phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
+
+    # Phoneme IDを音素の長さ分繰り返す
+    phoneme = numpy.repeat(phoneme_list_s, phoneme_bin_num)
+    # f0を母音と子音の長さの合計分繰り返す
+    f0 = numpy.repeat(
+        f0,
+        [a.sum() for a in numpy.split(phoneme_bin_num, vowel_indexes[:-1] + 1)],
+    )
+
+    # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
+    array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
+    # 初期化された2次元配列の各行をone hotにする
+    array[numpy.arange(len(phoneme)), phoneme] = 1
+    phoneme = array
+
+    return phoneme, f0
+
+
 class SynthesisEngine(SynthesisEngineBase):
     def __init__(
         self,
@@ -410,69 +496,9 @@ class SynthesisEngine(SynthesisEngineBase):
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
-        # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
-        phoneme_list_s = numpy.array(
-            [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
+        phoneme, f0 = generate_frame_scale_features(
+            query, flatten_moras, phoneme_data_list
         )
-
-        # length
-        # 音素の長さをリストに展開・結合する。ここには前後の無音時間も含まれる
-        phoneme_length_list = (
-            [query.prePhonemeLength]
-            + [
-                length
-                for mora in flatten_moras
-                for length in (
-                    [mora.consonant_length] if mora.consonant is not None else []
-                )
-                + [mora.vowel_length]
-            ]
-            + [query.postPhonemeLength]
-        )
-        # floatにキャスト
-        phoneme_length = numpy.array(phoneme_length_list, dtype=numpy.float32)
-
-        # lengthにSpeed Scale(話速)を適用する
-        phoneme_length /= query.speedScale
-
-        # pitch
-        # モーラの音高(ピッチ)を展開・結合し、floatにキャストする
-        f0_list = [0] + [mora.pitch for mora in flatten_moras] + [0]
-        f0 = numpy.array(f0_list, dtype=numpy.float32)
-        # 音高(ピッチ)の調節を適用する(2のPitch Scale乗を掛ける)
-        f0 *= 2**query.pitchScale
-
-        # 有声音素(音高(ピッチ)が0より大きいもの)か否かを抽出する
-        voiced = f0 > 0
-        # 有声音素の音高(ピッチ)の平均値を求める
-        mean_f0 = f0[voiced].mean()
-        # 平均値がNaNではないとき、抑揚を適用する
-        # 抑揚は音高と音高の平均値の差に抑揚を掛けたもの((f0 - mean_f0) * Intonation Scale)に抑揚の平均値(mean_f0)を足したもの
-        if not numpy.isnan(mean_f0):
-            f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
-
-        # OjtPhonemeの形に分解された音素リストから、vowel(母音)の位置を抜き出し、numpyのarrayにする
-        _, _, vowel_indexes_data = split_mora(phoneme_data_list)
-        vowel_indexes = numpy.array(vowel_indexes_data)
-
-        # forward decode
-        # 音素の長さにrateを掛け、intにキャストする
-        rate = 24000 / 256
-        phoneme_bin_num = numpy.round(phoneme_length * rate).astype(numpy.int32)
-
-        # Phoneme IDを音素の長さ分繰り返す
-        phoneme = numpy.repeat(phoneme_list_s, phoneme_bin_num)
-        # f0を母音と子音の長さの合計分繰り返す
-        f0 = numpy.repeat(
-            f0,
-            [a.sum() for a in numpy.split(phoneme_bin_num, vowel_indexes[:-1] + 1)],
-        )
-
-        # phonemeの長さとOjtPhonemeのnum_phoneme(45)分の0で初期化された2次元配列を用意する
-        array = numpy.zeros((len(phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32)
-        # 初期化された2次元配列の各行をone hotにする
-        array[numpy.arange(len(phoneme)), phoneme] = 1
-        phoneme = array
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
         with self.mutex:
