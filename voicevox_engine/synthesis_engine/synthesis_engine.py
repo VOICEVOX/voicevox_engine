@@ -57,7 +57,6 @@ def to_phoneme_data_list(phoneme_str_list: List[str]):
         OjtPhoneme(phoneme=p, start=i, end=i + 1)
         for i, p in enumerate(phoneme_str_list)
     ]
-    phoneme_data_list = OjtPhoneme.convert(phoneme_data_list)
     return phoneme_data_list
 
 
