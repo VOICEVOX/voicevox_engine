@@ -1,38 +1,24 @@
 from unittest import TestCase
 
-from voicevox_engine.acoustic_feature_extractor import BasePhoneme, OjtPhoneme
+from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 
 
-class TestBasePhoneme(TestCase):
+class TestOjtPhoneme(TestCase):
     def setUp(self):
         super().setUp()
-        self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        self.base_hello_hiho = [
-            BasePhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
-        ]
+        str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+        self.ojt_hello_hiho = OjtPhoneme.convert(
+            [OjtPhoneme(s, i, i + 1) for i, s in enumerate(str_hello_hiho.split())]
+        )
 
     def test_repr_(self):
         self.assertEqual(
-            self.base_hello_hiho[1].__repr__(), "Phoneme(phoneme='k', start=1, end=2)"
+            self.ojt_hello_hiho[1].__repr__(), "Phoneme(phoneme='k', start=1, end=2)"
         )
         self.assertEqual(
-            self.base_hello_hiho[10].__repr__(),
+            self.ojt_hello_hiho[10].__repr__(),
             "Phoneme(phoneme='pau', start=10, end=11)",
         )
-
-    def test_convert(self):
-        with self.assertRaises(NotImplementedError):
-            BasePhoneme.convert(self.base_hello_hiho)
-
-
-class TestOjtPhoneme(TestBasePhoneme):
-    def setUp(self):
-        super().setUp()
-        self.str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        base_hello_hiho = [
-            OjtPhoneme(s, i, i + 1) for i, s in enumerate(self.str_hello_hiho.split())
-        ]
-        self.ojt_hello_hiho = OjtPhoneme.convert(base_hello_hiho)
 
     def test_phoneme_list(self):
         self.assertEqual(OjtPhoneme.phoneme_list[1], "A")
