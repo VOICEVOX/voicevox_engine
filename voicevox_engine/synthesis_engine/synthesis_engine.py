@@ -209,7 +209,7 @@ def calc_frame_pitch(
     return f0_frm
 
 
-def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm):
+def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm: numpy.ndarray):
     """
     フレームごとの音素列の生成
     Parameters
