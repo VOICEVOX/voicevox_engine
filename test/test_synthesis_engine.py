@@ -133,6 +133,7 @@ def _gen_mora(
     vowel_length: float,
     pitch: float,
 ) -> Mora:
+    """Generate Mora with positional arguments for test simplicity."""
     return Mora(
         text=text,
         consonant=consonant,
@@ -159,16 +160,15 @@ def test_calc_frame_per_phoneme():
         _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
     ]
 
-    # Ground Truths
-    #                 Pre k  o  N pau h  i  h  O Pst
-    frm_per_phoneme_gt = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    frm_per_phoneme_gt = numpy.array(frm_per_phoneme_gt, dtype=numpy.int32)
+    # Expects
+    #                      Pre k  o  N pau h  i  h  O Pst
+    true_frm_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    true_frm_per_phoneme = numpy.array(true_frm_per_phoneme, dtype=numpy.int32)
 
-    frm_per_phnm_pred = calc_frame_per_phoneme(query, moras)
+    # Outputs
+    frm_per_phnm = calc_frame_per_phoneme(query, moras)
 
-    assert numpy.array_equal(
-        frm_per_phnm_pred, frm_per_phoneme_gt
-    ), "Unmatched frame_per_phoneme"
+    assert numpy.array_equal(frm_per_phnm, true_frm_per_phoneme)
 
 
 def test_calc_frame_pitch():
@@ -188,18 +188,19 @@ def test_calc_frame_pitch():
     frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
     frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
 
-    # Ground Truths - x4 value scaled -> mean=300 var x0.5 intonation scaling
-    #          pau   ko     ko     ko      N      N
-    f0_gt_1 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
-    #          pau   hi     hi     hi
-    f0_gt_2 = [0.0, 400.0, 400.0, 400.0]
-    #          hO   hO   hO   paw  paw  paw
-    f0_gt_3 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    f0_gt = numpy.array(f0_gt_1 + f0_gt_2 + f0_gt_3, dtype=numpy.float32)
+    # Expects - x4 value scaled -> mean=300 var x0.5 intonation scaling
+    #           pau   ko     ko     ko      N      N
+    true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
+    #           pau   hi     hi     hi
+    true2_f0 = [0.0, 400.0, 400.0, 400.0]
+    #           hO   hO   hO   paw  paw  paw
+    true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
-    f0_pred = calc_frame_pitch(query, moras, phonemes, frm_per_phnm)
+    # Outputs
+    f0 = calc_frame_pitch(query, moras, phonemes, frm_per_phnm)
 
-    assert numpy.array_equal(f0_pred, f0_gt)
+    assert numpy.array_equal(f0, true_f0)
 
 
 def test_calc_frame_phoneme():
@@ -212,16 +213,17 @@ def test_calc_frame_phoneme():
     n_frm = sum(frm_per_phnm)
     frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
 
-    # Ground Truths
+    # Expects
     #                  Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     phoneme_ids_frm = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    phoneme_frm_gt = numpy.zeros([n_frm, 45], dtype=numpy.float32)
+    true_phoneme_frm = numpy.zeros([n_frm, 45], dtype=numpy.float32)
     for frm_idx, phoneme_idx in enumerate(phoneme_ids_frm):
-        phoneme_frm_gt[frm_idx, phoneme_idx] = 1.0
+        true_phoneme_frm[frm_idx, phoneme_idx] = 1.0
 
-    phoneme_frm_pred = calc_frame_phoneme(phonemes, frm_per_phnm)
+    # Outputs
+    phoneme_frm = calc_frame_phoneme(phonemes, frm_per_phnm)
 
-    assert numpy.array_equal(phoneme_frm_pred, phoneme_frm_gt)
+    assert numpy.array_equal(phoneme_frm, true_phoneme_frm)
 
 
 def test_feat_to_framescale():
@@ -244,41 +246,41 @@ def test_feat_to_framescale():
     phoneme_str = "pau k o N pau h i h O pau"
     phoneme_data_list = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
 
-    # Ground Truths
-    #                 Pre k  o  N pau h  i  h  O Pst
-    frm_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    n_frm = sum(frm_per_phoneme)
-    frm_per_phoneme = numpy.array(frm_per_phoneme, dtype=numpy.int32)
-
+    # Expects
+    # frm_per_phnm
+    #                   Pre k  o  N pau h  i  h  O Pst
+    true_frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    n_frm = sum(true_frm_per_phnm)
+    true_frm_per_phnm = numpy.array(true_frm_per_phnm, dtype=numpy.int32)
+    # phoneme
     #               Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     phoneme_frms = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    phoneme_gt = numpy.zeros([n_frm, 45], dtype=numpy.float32)
+    true_phoneme = numpy.zeros([n_frm, 45], dtype=numpy.float32)
     for frm_idx, phoneme_idx in enumerate(phoneme_frms):
-        phoneme_gt[frm_idx, phoneme_idx] = 1.0
-
-    # Pitch - x4 value & x0.5 variance
+        true_phoneme[frm_idx, phoneme_idx] = 1.0
+    # Pitch
     #        Pre   ko      N    pau   hi    hO   Pst
-    f0_gt = [0.0, 200.0, 200.0, 0.0, 500.0, 0.0, 0.0]  # mean 300
-    f0_gt = [0.0, 250.0, 250.0, 0.0, 400.0, 0.0, 0.0]  # intonationScale 0.5
+    true_f0 = [0.0, 200.0, 200.0, 0.0, 500.0, 0.0, 0.0]  # mean 300
+    true_f0 = [0.0, 250.0, 250.0, 0.0, 400.0, 0.0, 0.0]  # intonationScale 0.5
     #                paw ko  N pau hi hO paw
     # frm_per_vowel = [1, 3,  2, 1, 3, 3, 3]
-    #          pau   ko     ko     ko      N      N
-    f0_gt_1 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
-    #          pau   hi     hi     hi
-    f0_gt_2 = [0.0, 400.0, 400.0, 400.0]
-    #          hO   hO   hO   paw  paw  paw
-    f0_gt_3 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    f0_gt = numpy.array(f0_gt_1 + f0_gt_2 + f0_gt_3, dtype=numpy.float32)
+    #           pau   ko     ko     ko      N      N
+    true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
+    #           pau   hi     hi     hi
+    true2_f0 = [0.0, 400.0, 400.0, 400.0]
+    #           hO   hO   hO   paw  paw  paw
+    true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
-    assert frm_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
+    assert true_frm_per_phnm.shape[0] == len(phoneme_data_list), "Prerequisites"
 
-    # Inference
+    # Outputs
     frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
-    f0_pred = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
-    phoneme_pred = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
+    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
+    phoneme = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
 
-    assert numpy.array_equal(phoneme_pred, phoneme_gt), "Wrong phoneme onehot frames"
-    assert numpy.array_equal(f0_pred, f0_gt), "Wrong frame-wise phoneme onehot"
+    assert numpy.array_equal(phoneme, true_phoneme)
+    assert numpy.array_equal(f0, true_f0)
 
 
 class TestSynthesisEngine(TestCase):

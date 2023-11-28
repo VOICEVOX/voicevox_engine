@@ -170,7 +170,7 @@ def calc_frame_pitch(
     query: AudioQuery, moras: List[Mora], phonemes: List[OjtPhoneme], frm_per_phnm
 ):
     """
-    フレームスケールピッチの生成
+    フレームごとのピッチの生成
     Parameters
     ----------
     query : AudioQuery
@@ -184,7 +184,7 @@ def calc_frame_pitch(
     Returns
     -------
     f0 : NDArray[]
-        フレームスケール基本周波数系列
+        フレームごとの基本周波数系列
     """
     # モーラ（前後の無音含む）スケール基本周波数
     f0_mora = numpy.array(
@@ -200,7 +200,7 @@ def calc_frame_pitch(
     if not numpy.isnan(mean_f0):
         f0_mora[voiced] = (f0_mora[voiced] - mean_f0) * query.intonationScale + mean_f0
 
-    # フレームスケール化
+    # フレームごとのピッチ化
     # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
     vowel_indexes = numpy.array(split_mora(phonemes)[2])
     frm_per_mora = [a.sum() for a in numpy.split(frm_per_phnm, vowel_indexes[:-1] + 1)]
@@ -211,22 +211,22 @@ def calc_frame_pitch(
 
 def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm):
     """
-    フレームスケール音素列の生成
+    フレームごとの音素列の生成
     Parameters
     ----------
     phonemes : List[OjtPhoneme]
         音素列
     frm_per_phnm: NDArray
-        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+        音素あたりのフレーム長。端数丸め。
     Returns
     -------
     phoneme : NDArray[]
-        フレームスケール基本周波数系列
+        フレームごとの基本周波数系列
     """
     # Index化
     phoneme_ids_phnm = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
-    # フレームスケール化
+    # フレームごとの音素列化
     phoneme_frm = numpy.repeat(phoneme_ids_phnm, frm_per_phnm)
 
     # Onehot化
