@@ -167,7 +167,7 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
 
 
 def calc_frame_pitch(
-    query: AudioQuery, moras: List[Mora], phonemes: List[OjtPhoneme], frm_per_phnm
+    query: AudioQuery, moras: List[Mora], phonemes: List[OjtPhoneme], frm_per_phnm: numpy.ndarray
 ):
     """
     フレームごとのピッチの生成
