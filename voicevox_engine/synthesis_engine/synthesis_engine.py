@@ -189,6 +189,7 @@ def calc_frame_pitch(
     f0 : NDArray[]
         フレームごとの基本周波数系列
     """
+    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # モーラ（前後の無音含む）スケール基本周波数
     f0_mora = numpy.array(
         [0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32
@@ -228,6 +229,7 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
     phoneme : NDArray[]
         フレームごとの音素系列
     """
+    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # Index化
     phoneme_ids_phoneme = numpy.array(
         [p.phoneme_id for p in phonemes], dtype=numpy.int64
