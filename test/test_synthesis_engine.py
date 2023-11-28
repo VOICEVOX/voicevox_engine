@@ -1,7 +1,7 @@
 import math
 from copy import deepcopy
 from random import random
-from typing import List, Optional, Union
+from typing import Union
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -100,7 +100,7 @@ class MockCore:
 
 
 def _gen_query(
-    accent_phrases: Optional[List[AccentPhrase]] = None,
+    accent_phrases: list[AccentPhrase] | None = None,
     speedScale: float = 1.0,
     pitchScale: float = 1.0,
     intonationScale: float = 1.0,
@@ -127,8 +127,8 @@ def _gen_query(
 
 def _gen_mora(
     text: str,
-    consonant: Optional[str],
-    consonant_length: Optional[float],
+    consonant: str | None,
+    consonant_length: float | None,
     vowel: str,
     vowel_length: float,
     pitch: float,
