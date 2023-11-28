@@ -221,7 +221,7 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frm_per_phnm):
     Returns
     -------
     phoneme : NDArray[]
-        フレームごとの基本周波数系列
+        フレームごとの音素系列
     """
     # Index化
     phoneme_ids_phnm = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
