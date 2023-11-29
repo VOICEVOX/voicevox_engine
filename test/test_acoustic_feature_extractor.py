@@ -6,10 +6,10 @@ from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 class TestOjtPhoneme(TestCase):
     def setUp(self):
         super().setUp()
-        str_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        self.ojt_hello_hiho = OjtPhoneme.convert(
-            [OjtPhoneme(s, i, i + 1) for i, s in enumerate(str_hello_hiho.split())]
-        )
+        hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil".split()
+        self.ojt_hello_hiho = [
+            OjtPhoneme(s, i, i + 1) for i, s in enumerate(hello_hiho)
+        ]
 
     def test_repr_(self):
         self.assertEqual(
@@ -32,10 +32,8 @@ class TestOjtPhoneme(TestCase):
         self.assertEqual(OjtPhoneme.space_phoneme, "pau")
 
     def test_convert(self):
-        ojt_str_hello_hiho = " ".join([p.phoneme for p in self.ojt_hello_hiho])
-        self.assertEqual(
-            ojt_str_hello_hiho, "pau k o N n i ch i w a pau h i h o d e s U pau"
-        )
+        sil_phoneme = OjtPhoneme("sil", 0, 0)
+        self.assertEqual(sil_phoneme.phoneme, "pau")
 
     def test_equal(self):
         # ojt_hello_hihoの10番目の"a"と比較

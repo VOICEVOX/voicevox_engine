@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy
 
 
@@ -73,6 +71,10 @@ class OjtPhoneme:
         start: float,
         end: float,
     ):
+        # `sil`-to-`pau` (silent to space_phoneme) conversion
+        if "sil" in phoneme:
+            phoneme = self.space_phoneme
+
         self.phoneme = phoneme
         self.start = numpy.round(start, decimals=2)
         self.end = numpy.round(end, decimals=2)
@@ -108,23 +110,3 @@ class OjtPhoneme:
         array = numpy.zeros(self.num_phoneme, dtype=bool)
         array[self.phoneme_id] = True
         return array
-
-    @classmethod
-    def convert(cls, phonemes: List["OjtPhoneme"]) -> List["OjtPhoneme"]:
-        """
-        最初と最後のsil(silent)をspace_phoneme(pau)に置き換え(変換)する
-        Parameters
-        ----------
-        phonemes : List[OjtPhoneme]
-            変換したいphonemeのリスト
-
-        Returns
-        -------
-        phonemes : List[OjtPhoneme]
-            変換されたphonemeのリスト
-        """
-        if "sil" in phonemes[0].phoneme:
-            phonemes[0].phoneme = cls.space_phoneme
-        if "sil" in phonemes[-1].phoneme:
-            phonemes[-1].phoneme = cls.space_phoneme
-        return phonemes
