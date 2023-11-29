@@ -218,36 +218,7 @@ class SynthesisEngine(SynthesisEngineBase):
         core: CoreWrapper,
     ):
         """
-        core.yukarin_s_forward: 音素列から、音素ごとの長さを求める関数
-            length: 音素列の長さ
-            phoneme_list: 音素列
-            style_id: スタイル番号
-            return: 音素ごとの長さ
-
-        core.yukarin_sa_forward: モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
-            length: モーラ列の長さ
-            vowel_phoneme_list: 母音の音素列
-            consonant_phoneme_list: 子音の音素列
-            start_accent_list: アクセントの開始位置
-            end_accent_list: アクセントの終了位置
-            start_accent_phrase_list: アクセント句の開始位置
-            end_accent_phrase_list: アクセント句の終了位置
-            style_id: スタイル番号
-            return: モーラごとの音高
-
-        core.decode_forward: フレームごとの音素と音高から波形を求める関数
-            length: フレームの長さ
-            phoneme_size: 音素の種類数
-            f0: フレームごとの音高
-            phoneme: フレームごとの音素
-            style_id: スタイル番号
-            return: 音声波形
-
         speakers: coreから取得したspeakersに関するjsonデータの文字列
-
-        supported_devices:
-            coreから取得した対応デバイスに関するjsonデータの文字列
-            Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         super().__init__()
         self.core = core
