@@ -633,4 +633,4 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
 別ライセンスを取得したい場合は、ヒホに求めてください。  
-X（旧 Twitter）アカウント: [@hiho_karuta](https://x.com/hiho_karuta)
+X アカウント: [@hiho_karuta](https://x.com/hiho_karuta)
