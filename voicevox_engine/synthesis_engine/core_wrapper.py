@@ -573,7 +573,6 @@ class CoreWrapper:
     def supported_devices(self) -> str:
         """
         coreから取得した対応デバイスに関するjsonデータの文字列
-        Noneの場合はコアが情報の取得に対応していないため、対応デバイスは不明
         """
         if self.exist_supported_devices:
             return self.core.supported_devices().decode("utf-8")
