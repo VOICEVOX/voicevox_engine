@@ -445,6 +445,21 @@ class CoreWrapper:
         phoneme_list: np.ndarray,
         style_id: np.ndarray,
     ) -> np.ndarray:
+        """
+        音素列から、音素ごとの長さを求める関数
+        Parameters
+        ----------
+        length : int
+            音素列の長さ
+        phoneme_list : np.ndarray
+            音素列
+        style_id : np.ndarray
+            スタイル番号
+        Returns
+        -------
+        output : np.ndarray
+            音素ごとの長さ
+        """
         output = np.zeros((length,), dtype=np.float32)
         self.assert_core_success(
             self.core.yukarin_s_forward(
@@ -467,6 +482,31 @@ class CoreWrapper:
         end_accent_phrase_list: np.ndarray,
         style_id: np.ndarray,
     ) -> np.ndarray:
+        """
+        モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+        Parameters
+        ----------
+        length : int
+            モーラ列の長さ
+        vowel_phoneme_list : np.ndarray
+            母音の音素列
+        consonant_phoneme_list : np.ndarray
+            子音の音素列
+        start_accent_list : np.ndarray
+        アクセントの開始位置
+        end_accent_list : np.ndarray
+            アクセントの終了位置
+        start_accent_phrase_list : np.ndarray
+            アクセント句の開始位置
+        end_accent_phrase_list : np.ndarray
+            アクセント句の終了位置
+        style_id : np.ndarray
+            スタイル番号
+        Returns
+        -------
+        output : np.ndarray
+            モーラごとの音高
+        """
         output = np.empty(
             (
                 len(style_id),
@@ -497,6 +537,26 @@ class CoreWrapper:
         phoneme: np.ndarray,
         style_id: np.ndarray,
     ) -> np.ndarray:
+        """
+        フレームごとの音素と音高から波形を求める関数
+        Parameters
+        ----------
+        length : int
+            フレームの長さ
+        phoneme_size : int
+            音素の種類数
+        f0 : np.ndarray
+            フレームごとの音高
+        phoneme : np.ndarray
+            フレームごとの音素
+        style_id : np.ndarray
+            スタイル番号
+        Returns
+        -------
+        output : np.ndarray
+            音声波形
+        """
+
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
             self.core.decode_forward(
@@ -511,6 +571,9 @@ class CoreWrapper:
         return output
 
     def supported_devices(self) -> str:
+        """
+        coreから取得した対応デバイスに関するjsonデータの文字列
+        """
         if self.exist_supported_devices:
             return self.core.supported_devices().decode("utf-8")
         raise OldCoreError
