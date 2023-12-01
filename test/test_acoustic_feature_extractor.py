@@ -38,8 +38,12 @@ class TestOjtPhoneme(TestCase):
         self.assertEqual(sil_phoneme.phoneme, "pau")
 
     def test_equal(self):
-        self.assertTrue(self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("a", 9, 10).phoneme_id)
-        self.assertFalse(self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("k", 9, 10).phoneme_id)
+        self.assertTrue(
+            self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("a", 9, 10).phoneme_id
+        )
+        self.assertFalse(
+            self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("k", 9, 10).phoneme_id
+        )
 
     def test_phoneme_id(self):
         ojt_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.ojt_hello_hiho])

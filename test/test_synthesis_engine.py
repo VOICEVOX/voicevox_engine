@@ -430,7 +430,12 @@ class TestSynthesisEngine(TestCase):
             ],
         )
         self.assertEqual(
-            list(map(lambda p: p.phoneme_id if p is not None else p, consonant_phoneme_list)),
+            list(
+                map(
+                    lambda p: p.phoneme_id if p is not None else p,
+                    consonant_phoneme_list,
+                )
+            ),
             [
                 None,
                 OjtPhoneme(phoneme="k", start=1, end=2).phoneme_id,
@@ -455,7 +460,9 @@ class TestSynthesisEngine(TestCase):
         mora_index = 0
         phoneme_index = 1
 
-        self.assertEqual(phoneme_data_list[0].phoneme_id, OjtPhoneme("pau", 0, 1).phoneme_id)
+        self.assertEqual(
+            phoneme_data_list[0].phoneme_id, OjtPhoneme("pau", 0, 1).phoneme_id
+        )
         for accent_phrase in self.accent_phrases_hello_hiho:
             moras = accent_phrase.moras
             for mora in moras:
@@ -464,7 +471,9 @@ class TestSynthesisEngine(TestCase):
                 if mora.consonant is not None:
                     self.assertEqual(
                         phoneme_data_list[phoneme_index].phoneme_id,
-                        OjtPhoneme(mora.consonant, phoneme_index, phoneme_index + 1).phoneme_id,
+                        OjtPhoneme(
+                            mora.consonant, phoneme_index, phoneme_index + 1
+                        ).phoneme_id,
                     )
                     phoneme_index += 1
                 self.assertEqual(
