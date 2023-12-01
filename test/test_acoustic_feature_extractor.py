@@ -6,6 +6,7 @@ from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 class TestOjtPhoneme(TestCase):
     def setUp(self):
         super().setUp()
+        # list_idx      0 1 2 3 4 5  6 7 8 9  10 1 2 3 4 5 6 7 8   9
         hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil".split()
         self.ojt_hello_hiho = [
             OjtPhoneme(s, i, i + 1) for i, s in enumerate(hello_hiho)
@@ -37,14 +38,8 @@ class TestOjtPhoneme(TestCase):
         self.assertEqual(sil_phoneme.phoneme, "pau")
 
     def test_equal(self):
-        # ojt_hello_hihoの10番目の"a"と比較
-        true_ojt_phoneme = OjtPhoneme("a", 9, 10)
-
-        false_ojt_phoneme_1 = OjtPhoneme("k", 9, 10)
-        false_ojt_phoneme_2 = OjtPhoneme("a", 10, 11)
-        self.assertTrue(self.ojt_hello_hiho[9] == true_ojt_phoneme)
-        self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_1)
-        self.assertFalse(self.ojt_hello_hiho[9] == false_ojt_phoneme_2)
+        self.assertTrue(self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("a", 9, 10).phoneme_id)
+        self.assertFalse(self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("k", 9, 10).phoneme_id)
 
     def test_phoneme_id(self):
         ojt_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.ojt_hello_hiho])

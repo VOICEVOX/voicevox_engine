@@ -82,11 +82,6 @@ class OjtPhoneme:
     def __repr__(self):
         return f"Phoneme(phoneme='{self.phoneme}', start={self.start}, end={self.end})"
 
-    def __eq__(self, o: object):
-        return isinstance(o, OjtPhoneme) and (
-            self.phoneme == o.phoneme and self.start == o.start and self.end == o.end
-        )
-
     @property
     def phoneme_id(self):
         """
