@@ -41,25 +41,6 @@ def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
     )
 
 
-def to_phoneme_data_list(phoneme_str_list: List[str]):
-    """
-    phoneme文字列のリストを、OjtPhonemeクラスのリストに変換する
-    Parameters
-    ----------
-    phoneme_str_list : List[str]
-        phoneme文字列のリスト
-    Returns
-    -------
-    phoneme_list : List[OjtPhoneme]
-        変換されたOjtPhonemeクラスのリスト
-    """
-    phoneme_data_list = [
-        OjtPhoneme(phoneme=p, start=i, end=i + 1)
-        for i, p in enumerate(phoneme_str_list)
-    ]
-    return phoneme_data_list
-
-
 def split_mora(phoneme_list: List[OjtPhoneme]):
     """
     OjtPhonemeのリストから、
@@ -121,7 +102,10 @@ def pre_process(
     phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
     phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
 
-    phoneme_data_list = to_phoneme_data_list(phoneme_str_list)
+    phoneme_data_list = [
+        OjtPhoneme(phoneme=p, start=i, end=i + 1)
+        for i, p in enumerate(phoneme_str_list)
+    ]
 
     return flatten_moras, phoneme_data_list
 
