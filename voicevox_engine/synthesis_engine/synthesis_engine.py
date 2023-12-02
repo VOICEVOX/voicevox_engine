@@ -197,6 +197,8 @@ def generate_frame_scale_features(
 
 
 class SynthesisEngine(SynthesisEngineBase):
+    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+
     def __init__(self, core: CoreWrapper):
         super().__init__()
         self.core = core
@@ -220,6 +222,7 @@ class SynthesisEngine(SynthesisEngineBase):
         return supported_devices
 
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+        # Core管理
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -231,6 +234,7 @@ class SynthesisEngine(SynthesisEngineBase):
             pass  # コアが古い場合はどうしようもないので何もしない
 
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+        # Coreプロキシ
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
