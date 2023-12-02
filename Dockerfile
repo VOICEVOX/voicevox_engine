@@ -185,6 +185,8 @@ WORKDIR /opt/voicevox_engine
 
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# libsndfile1: soundfile shared object for arm64
+# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
@@ -195,7 +197,8 @@ RUN <<EOF
         cmake \
         ca-certificates \
         build-essential \
-        gosu
+        gosu \
+        libsndfile1
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
