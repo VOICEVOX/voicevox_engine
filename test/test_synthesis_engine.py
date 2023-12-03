@@ -31,7 +31,7 @@ TRUE_NUM_PHONEME = 45
 def is_same_OjtPhoneme_list(
     p1s: list[OjtPhoneme | None], p2s: list[OjtPhoneme | None]
 ) -> bool:
-    """2つのOjtPhonemeが同じ`.phoneme`/`.start`/`.end`を持つ"""
+    """2つのOjtPhonemeリストで全要素ペアが同じ`.phoneme`/`.start`/`.end`を持つ"""
     for p1, p2 in zip(p1s, p2s):
         if p1 is None and p2 is None:  # None vs None -> equal
             pass
@@ -39,7 +39,7 @@ def is_same_OjtPhoneme_list(
             return False
         elif p2 is None:  # OjtOhoneme vs None -> not equal
             return False
-        elif p1.phoneme == p2.phoneme and p1.start == p2.start and p1.end == p2.end:
+        elif is_same_OjtPhoneme(p1, p2):
             pass
         else:
             return False
