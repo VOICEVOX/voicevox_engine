@@ -24,7 +24,6 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     unvoiced_mora_phoneme_list,
 )
 
-
 TRUE_NUM_PHONEME = 45
 
 
