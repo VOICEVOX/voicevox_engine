@@ -162,13 +162,13 @@ def test_calc_frame_per_phoneme():
 
     # Expects
     #                      Pre k  o  N pau h  i  h  O Pst
-    true_frm_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    true_frm_per_phoneme = numpy.array(true_frm_per_phoneme, dtype=numpy.int32)
+    true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
 
     # Outputs
-    frm_per_phnm = calc_frame_per_phoneme(query, moras)
+    frame_per_phoneme = calc_frame_per_phoneme(query, moras)
 
-    assert numpy.array_equal(frm_per_phnm, true_frm_per_phoneme)
+    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
 
 
 def test_calc_frame_pitch():
@@ -185,8 +185,8 @@ def test_calc_frame_pitch():
     phoneme_str = "pau k o N pau h i h O pau"
     phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
     #              Pre k  o  N pau h  i  h  O Pst
-    frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
+    frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
 
     # Expects - x4 value scaled -> mean=300 var x0.5 intonation scaling
     #           pau   ko     ko     ko      N      N
@@ -198,7 +198,7 @@ def test_calc_frame_pitch():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(query, moras, phonemes, frm_per_phnm)
+    f0 = calc_frame_pitch(query, moras, phonemes, frame_per_phoneme)
 
     assert numpy.array_equal(f0, true_f0)
 
@@ -208,22 +208,22 @@ def test_calc_frame_phoneme():
     # Inputs
     phoneme_str = "pau k o N pau h i h O pau"
     phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
-    #              Pre k  o  N pau h  i  h  O Pst
-    frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    n_frm = sum(frm_per_phnm)
-    frm_per_phnm = numpy.array(frm_per_phnm, dtype=numpy.int32)
+    #                   Pre k  o  N pau h  i  h  O Pst
+    frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    n_frame = sum(frame_per_phoneme)
+    frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
 
     # Expects
-    #                  Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
-    phoneme_ids_frm = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_phoneme_frm = numpy.zeros([n_frm, 45], dtype=numpy.float32)
-    for frm_idx, phoneme_idx in enumerate(phoneme_ids_frm):
-        true_phoneme_frm[frm_idx, phoneme_idx] = 1.0
+    #              Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
+    phoneme_ids = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
+    true_frame_phoneme = numpy.zeros([n_frame, 45], dtype=numpy.float32)
+    for frame_idx, phoneme_idx in enumerate(phoneme_ids):
+        true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
 
     # Outputs
-    phoneme_frm = calc_frame_phoneme(phonemes, frm_per_phnm)
+    frame_phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
 
-    assert numpy.array_equal(phoneme_frm, true_phoneme_frm)
+    assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
 
 
 def test_feat_to_framescale():
@@ -247,23 +247,23 @@ def test_feat_to_framescale():
     phoneme_data_list = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
 
     # Expects
-    # frm_per_phnm
-    #                   Pre k  o  N pau h  i  h  O Pst
-    true_frm_per_phnm = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    n_frm = sum(true_frm_per_phnm)
-    true_frm_per_phnm = numpy.array(true_frm_per_phnm, dtype=numpy.int32)
+    # frame_per_phoneme
+    #                        Pre k  o  N pau h  i  h  O Pst
+    true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    n_frame = sum(true_frame_per_phoneme)
+    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
     # phoneme
-    #               Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
-    phoneme_frms = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_phoneme = numpy.zeros([n_frm, 45], dtype=numpy.float32)
-    for frm_idx, phoneme_idx in enumerate(phoneme_frms):
-        true_phoneme[frm_idx, phoneme_idx] = 1.0
+    #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
+    frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
+    true_frame_phoneme = numpy.zeros([n_frame, 45], dtype=numpy.float32)
+    for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
+        true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
     # Pitch
-    #        Pre   ko      N    pau   hi    hO   Pst
+    #          Pre   ko      N    pau   hi    hO   Pst
     true_f0 = [0.0, 200.0, 200.0, 0.0, 500.0, 0.0, 0.0]  # mean 300
     true_f0 = [0.0, 250.0, 250.0, 0.0, 400.0, 0.0, 0.0]  # intonationScale 0.5
-    #                paw ko  N pau hi hO paw
-    # frm_per_vowel = [1, 3,  2, 1, 3, 3, 3]
+    #                   paw ko  N pau hi hO paw
+    # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
     #           pau   ko     ko     ko      N      N
     true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
     #           pau   hi     hi     hi
@@ -272,14 +272,14 @@ def test_feat_to_framescale():
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
-    assert true_frm_per_phnm.shape[0] == len(phoneme_data_list), "Prerequisites"
+    assert true_frame_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
 
     # Outputs
-    frm_per_phnm = calc_frame_per_phoneme(query, flatten_moras)
-    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frm_per_phnm)
-    phoneme = calc_frame_phoneme(phoneme_data_list, frm_per_phnm)
+    frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
+    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frame_per_phoneme)
+    frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
-    assert numpy.array_equal(phoneme, true_phoneme)
+    assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
     assert numpy.array_equal(f0, true_f0)
 
 
