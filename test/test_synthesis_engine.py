@@ -23,7 +23,27 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     unvoiced_mora_phoneme_list,
 )
 
+from .test_acoustic_feature_extractor import is_same_OjtPhoneme
+
 TRUE_NUM_PHONEME = 45
+
+
+def is_same_OjtPhoneme_list(
+    p1s: list[OjtPhoneme | None], p2s: list[OjtPhoneme | None]
+) -> bool:
+    """2つのOjtPhonemeが同じ`.phoneme`/`.start`/`.end`を持つ"""
+    for p1, p2 in zip(p1s, p2s):
+        if p1 is None and p2 is None:  # None vs None -> equal
+            pass
+        elif p1 is None:  # None vs OjtOhoneme -> not equal
+            return False
+        elif p2 is None:  # OjtOhoneme vs None -> not equal
+            return False
+        elif p1.phoneme == p2.phoneme and p1.start == p2.start and p1.end == p2.end:
+            pass
+        else:
+            return False
+    return True
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
@@ -412,42 +432,38 @@ class TestSynthesisEngine(TestCase):
         )
 
         self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])
-        self.assertEqual(
-            list(map(lambda p: p.phoneme_id, vowel_phoneme_list)),
+
+        assert is_same_OjtPhoneme_list(
+            vowel_phoneme_list,
             [
-                OjtPhoneme(phoneme="pau", start=0, end=1).phoneme_id,
-                OjtPhoneme(phoneme="o", start=2, end=3).phoneme_id,
-                OjtPhoneme(phoneme="N", start=3, end=4).phoneme_id,
-                OjtPhoneme(phoneme="i", start=5, end=6).phoneme_id,
-                OjtPhoneme(phoneme="i", start=7, end=8).phoneme_id,
-                OjtPhoneme(phoneme="a", start=9, end=10).phoneme_id,
-                OjtPhoneme(phoneme="pau", start=10, end=11).phoneme_id,
-                OjtPhoneme(phoneme="i", start=12, end=13).phoneme_id,
-                OjtPhoneme(phoneme="o", start=14, end=15).phoneme_id,
-                OjtPhoneme(phoneme="e", start=16, end=17).phoneme_id,
-                OjtPhoneme(phoneme="U", start=18, end=19).phoneme_id,
-                OjtPhoneme(phoneme="pau", start=19, end=20).phoneme_id,
+                OjtPhoneme(phoneme="pau", start=0, end=1),
+                OjtPhoneme(phoneme="o", start=2, end=3),
+                OjtPhoneme(phoneme="N", start=3, end=4),
+                OjtPhoneme(phoneme="i", start=5, end=6),
+                OjtPhoneme(phoneme="i", start=7, end=8),
+                OjtPhoneme(phoneme="a", start=9, end=10),
+                OjtPhoneme(phoneme="pau", start=10, end=11),
+                OjtPhoneme(phoneme="i", start=12, end=13),
+                OjtPhoneme(phoneme="o", start=14, end=15),
+                OjtPhoneme(phoneme="e", start=16, end=17),
+                OjtPhoneme(phoneme="U", start=18, end=19),
+                OjtPhoneme(phoneme="pau", start=19, end=20),
             ],
         )
-        self.assertEqual(
-            list(
-                map(
-                    lambda p: p.phoneme_id if p is not None else p,
-                    consonant_phoneme_list,
-                )
-            ),
+        assert is_same_OjtPhoneme_list(
+            consonant_phoneme_list,
             [
                 None,
-                OjtPhoneme(phoneme="k", start=1, end=2).phoneme_id,
+                OjtPhoneme(phoneme="k", start=1, end=2),
                 None,
-                OjtPhoneme(phoneme="n", start=4, end=5).phoneme_id,
-                OjtPhoneme(phoneme="ch", start=6, end=7).phoneme_id,
-                OjtPhoneme(phoneme="w", start=8, end=9).phoneme_id,
+                OjtPhoneme(phoneme="n", start=4, end=5),
+                OjtPhoneme(phoneme="ch", start=6, end=7),
+                OjtPhoneme(phoneme="w", start=8, end=9),
                 None,
-                OjtPhoneme(phoneme="h", start=11, end=12).phoneme_id,
-                OjtPhoneme(phoneme="h", start=13, end=14).phoneme_id,
-                OjtPhoneme(phoneme="d", start=15, end=16).phoneme_id,
-                OjtPhoneme(phoneme="s", start=17, end=18).phoneme_id,
+                OjtPhoneme(phoneme="h", start=11, end=12),
+                OjtPhoneme(phoneme="h", start=13, end=14),
+                OjtPhoneme(phoneme="d", start=15, end=16),
+                OjtPhoneme(phoneme="s", start=17, end=18),
                 None,
             ],
         )
@@ -460,38 +476,34 @@ class TestSynthesisEngine(TestCase):
         mora_index = 0
         phoneme_index = 1
 
-        self.assertEqual(
-            phoneme_data_list[0].phoneme_id, OjtPhoneme("pau", 0, 1).phoneme_id
-        )
+        assert is_same_OjtPhoneme(phoneme_data_list[0], OjtPhoneme("pau", 0, 1))
         for accent_phrase in self.accent_phrases_hello_hiho:
             moras = accent_phrase.moras
             for mora in moras:
                 self.assertEqual(flatten_moras[mora_index], mora)
                 mora_index += 1
                 if mora.consonant is not None:
-                    self.assertEqual(
-                        phoneme_data_list[phoneme_index].phoneme_id,
-                        OjtPhoneme(
-                            mora.consonant, phoneme_index, phoneme_index + 1
-                        ).phoneme_id,
+                    assert is_same_OjtPhoneme(
+                        phoneme_data_list[phoneme_index],
+                        OjtPhoneme(mora.consonant, phoneme_index, phoneme_index + 1),
                     )
                     phoneme_index += 1
-                self.assertEqual(
-                    phoneme_data_list[phoneme_index].phoneme_id,
-                    OjtPhoneme(mora.vowel, phoneme_index, phoneme_index + 1).phoneme_id,
+                assert is_same_OjtPhoneme(
+                    phoneme_data_list[phoneme_index],
+                    OjtPhoneme(mora.vowel, phoneme_index, phoneme_index + 1),
                 )
                 phoneme_index += 1
             if accent_phrase.pause_mora:
                 self.assertEqual(flatten_moras[mora_index], accent_phrase.pause_mora)
                 mora_index += 1
-                self.assertEqual(
-                    phoneme_data_list[phoneme_index].phoneme_id,
-                    OjtPhoneme("pau", phoneme_index, phoneme_index + 1).phoneme_id,
+                assert is_same_OjtPhoneme(
+                    phoneme_data_list[phoneme_index],
+                    OjtPhoneme("pau", phoneme_index, phoneme_index + 1),
                 )
                 phoneme_index += 1
-        self.assertEqual(
-            phoneme_data_list[phoneme_index].phoneme_id,
-            OjtPhoneme("pau", phoneme_index, phoneme_index + 1).phoneme_id,
+        assert is_same_OjtPhoneme(
+            phoneme_data_list[phoneme_index],
+            OjtPhoneme("pau", phoneme_index, phoneme_index + 1),
         )
 
     def test_replace_phoneme_length(self):

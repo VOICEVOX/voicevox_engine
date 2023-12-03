@@ -3,6 +3,11 @@ from unittest import TestCase
 from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 
 
+def is_same_OjtPhoneme(p1: OjtPhoneme, p2: OjtPhoneme) -> bool:
+    """2つのOjtPhonemeが同じ`.phoneme`/`.start`/`.end`を持つ"""
+    return p1.phoneme == p2.phoneme and p1.start == p2.start and p1.end == p2.end
+
+
 class TestOjtPhoneme(TestCase):
     def setUp(self):
         super().setUp()
@@ -38,12 +43,14 @@ class TestOjtPhoneme(TestCase):
         self.assertEqual(sil_phoneme.phoneme, "pau")
 
     def test_equal(self):
-        self.assertTrue(
-            self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("a", 9, 10).phoneme_id
-        )
-        self.assertFalse(
-            self.ojt_hello_hiho[9].phoneme_id == OjtPhoneme("k", 9, 10).phoneme_id
-        )
+        # ojt_hello_hihoの10番目の"a"と比較
+        true_ojt_phoneme = OjtPhoneme("a", 9, 10)
+
+        false_ojt_phoneme_1 = OjtPhoneme("k", 9, 10)
+        false_ojt_phoneme_2 = OjtPhoneme("a", 10, 11)
+        assert is_same_OjtPhoneme(self.ojt_hello_hiho[9], true_ojt_phoneme)
+        assert not is_same_OjtPhoneme(self.ojt_hello_hiho[9], false_ojt_phoneme_1)
+        assert not is_same_OjtPhoneme(self.ojt_hello_hiho[9], false_ojt_phoneme_2)
 
     def test_phoneme_id(self):
         ojt_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.ojt_hello_hiho])
