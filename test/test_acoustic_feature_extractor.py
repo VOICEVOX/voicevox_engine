@@ -28,7 +28,8 @@ class TestOjtPhoneme(TestCase):
         self.assertEqual(OjtPhoneme.phoneme_list[41], "v")
 
     def test_const(self):
-        self.assertEqual(OjtPhoneme.num_phoneme, 45)
+        TRUE_NUM_PHONEME = 45
+        self.assertEqual(OjtPhoneme.num_phoneme, TRUE_NUM_PHONEME)
         self.assertEqual(OjtPhoneme.space_phoneme, "pau")
 
     def test_convert(self):

@@ -25,6 +25,9 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
 )
 
 
+TRUE_NUM_PHONEME = 45
+
+
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
     result = []
     # mockとしての適当な処理、特に意味はない
@@ -216,7 +219,7 @@ def test_calc_frame_phoneme():
     # Expects
     #              Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     phoneme_ids = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_frame_phoneme = numpy.zeros([n_frame, 45], dtype=numpy.float32)
+    true_frame_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
     for frame_idx, phoneme_idx in enumerate(phoneme_ids):
         true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
 
@@ -255,7 +258,7 @@ def test_feat_to_framescale():
     # phoneme
     #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_frame_phoneme = numpy.zeros([n_frame, 45], dtype=numpy.float32)
+    true_frame_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
         true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
     # Pitch
