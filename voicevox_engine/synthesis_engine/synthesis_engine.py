@@ -191,9 +191,7 @@ def calc_frame_pitch(
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # モーラ（前後の無音含む）ごとの基本周波数
-    f0 = numpy.array(
-        [0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32
-    )
+    f0 = numpy.array([0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32)
 
     # 音高スケールによる補正
     f0 *= 2**query.pitchScale
@@ -231,9 +229,7 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # Index化
-    phoneme_ids = numpy.array(
-        [p.phoneme_id for p in phonemes], dtype=numpy.int64
-    )
+    phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
     # フレームごとの音素化
     frame_phoneme = numpy.repeat(phoneme_ids, frame_per_phoneme)
