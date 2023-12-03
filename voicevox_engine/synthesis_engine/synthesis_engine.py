@@ -138,7 +138,7 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
         モーラ列
     Returns
     -------
-    frm_per_phnm : NDArray[]
+    frame_per_phoneme : NDArray[]
         音素（前後の無音含む）あたりのフレーム長。端数丸め。
     """
     # 音素（前後の無音含む）あたりの継続長
