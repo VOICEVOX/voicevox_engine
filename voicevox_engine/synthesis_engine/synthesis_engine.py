@@ -186,23 +186,23 @@ def calc_frame_pitch(
         音素（前後の無音含む）あたりのフレーム長。端数丸め。
     Returns
     -------
-    f0 : NDArray[]
+    frame_f0 : NDArray[]
         フレームごとの基本周波数系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # モーラ（前後の無音含む）スケール基本周波数
-    f0_mora = numpy.array(
+    # モーラ（前後の無音含む）ごとの基本周波数
+    f0 = numpy.array(
         [0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32
     )
 
     # 音高スケールによる補正
-    f0_mora *= 2**query.pitchScale
+    f0 *= 2**query.pitchScale
 
     # 抑揚スケールによる補正。有声音素 (f0>0) の平均値に対する乖離度をスケール
-    voiced = f0_mora > 0
-    mean_f0 = f0_mora[voiced].mean()
+    voiced = f0 > 0
+    mean_f0 = f0[voiced].mean()
     if not numpy.isnan(mean_f0):
-        f0_mora[voiced] = (f0_mora[voiced] - mean_f0) * query.intonationScale + mean_f0
+        f0[voiced] = (f0[voiced] - mean_f0) * query.intonationScale + mean_f0
 
     # フレームごとのピッチ化
     # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
@@ -211,8 +211,8 @@ def calc_frame_pitch(
         a.sum() for a in numpy.split(frame_per_phoneme, vowel_indexes[:-1] + 1)
     ]
     # モーラ内vowelの基本周波数を子音にも割当てフレーム化
-    f0_frame = numpy.repeat(f0_mora, frame_per_mora)
-    return f0_frame
+    frame_f0 = numpy.repeat(f0, frame_per_mora)
+    return frame_f0
 
 
 def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndarray):
@@ -226,26 +226,26 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
         音素あたりのフレーム長。端数丸め。
     Returns
     -------
-    phoneme : NDArray[]
+    frame_phoneme : NDArray[]
         フレームごとの音素系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # Index化
-    phoneme_ids_phoneme = numpy.array(
+    phoneme_ids = numpy.array(
         [p.phoneme_id for p in phonemes], dtype=numpy.int64
     )
 
-    # フレームごとの音素列化
-    phoneme_frame = numpy.repeat(phoneme_ids_phoneme, frame_per_phoneme)
+    # フレームごとの音素化
+    frame_phoneme = numpy.repeat(phoneme_ids, frame_per_phoneme)
 
     # Onehot化
     array = numpy.zeros(
-        (len(phoneme_frame), OjtPhoneme.num_phoneme), dtype=numpy.float32
+        (len(frame_phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32
     )
-    array[numpy.arange(len(phoneme_frame)), phoneme_frame] = 1
-    phoneme_frame = array
+    array[numpy.arange(len(frame_phoneme)), frame_phoneme] = 1
+    frame_phoneme = array
 
-    return phoneme_frame
+    return frame_phoneme
 
 
 class SynthesisEngine(SynthesisEngineBase):
