@@ -228,32 +228,32 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
 
 
 class SynthesisEngine(SynthesisEngineBase):
-    def __init__(
-        self,
-        core: CoreWrapper,
-    ):
-        """
-        speakers: coreから取得したspeakersに関するjsonデータの文字列
-        """
+    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+
+    def __init__(self, core: CoreWrapper):
         super().__init__()
         self.core = core
-        self._speakers = self.core.metas()
         self.mutex = threading.Lock()
-        try:
-            self._supported_devices = self.core.supported_devices()
-        except OldCoreError:
-            self._supported_devices = None
         self.default_sampling_rate = 24000
 
     @property
     def speakers(self) -> str:
-        return self._speakers
+        """話者情報（json文字列）"""
+        # Coreプロキシ
+        return self.core.metas()
 
     @property
-    def supported_devices(self) -> Optional[str]:
-        return self._supported_devices
+    def supported_devices(self) -> str | None:
+        """デバイスサポート情報"""
+        # Coreプロキシ
+        try:
+            supported_devices = self.core.supported_devices()
+        except OldCoreError:
+            supported_devices = None
+        return supported_devices
 
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+        # Core管理
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -265,6 +265,7 @@ class SynthesisEngine(SynthesisEngineBase):
             pass  # コアが古い場合はどうしようもないので何もしない
 
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+        # Coreプロキシ
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
