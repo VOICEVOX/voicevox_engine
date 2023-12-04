@@ -208,7 +208,7 @@ def calc_frame_pitch(
     frame_per_mora = [
         a.sum() for a in numpy.split(frame_per_phoneme, vowel_indexes[:-1] + 1)
     ]
-    # モーラ内vowelの基本周波数を子音にも割当てフレーム化
+    # モーラの基本周波数を子音・母音に割当てフレーム化
     frame_f0 = numpy.repeat(f0, frame_per_mora)
     return frame_f0
 
