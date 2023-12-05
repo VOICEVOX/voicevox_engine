@@ -134,11 +134,11 @@ def parse_kana(text: str) -> List[AccentPhrase]:
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     """
-    アクセント句時系列からAquesTalk風記法テキストを生成
+    アクセント句系列からAquesTalk風記法テキストを生成
     Parameters
     ----------
     accent_phrases : List[AccentPhrase]
-        アクセント句時系列
+        アクセント句系列
     Returns
     -------
     text : str

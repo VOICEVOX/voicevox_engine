@@ -34,15 +34,15 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    アクセント句時系列の必要に応じた疑問系補正（各AccentPhrase末尾への高ピッチ有声短母音モーラ付与）
+    アクセント句系列の必要に応じた疑問系補正（各AccentPhrase末尾への高ピッチ有声短母音モーラ付与）
     Parameters
     ----------
     accent_phrases : List[AccentPhrase]
-        アクセント句時系列
+        アクセント句系列
     Returns
     -------
     accent_phrases : List[AccentPhrase]
-        必要に応じて疑問形補正されたアクセント句時系列
+        必要に応じて疑問形補正されたアクセント句系列
     """
     # NOTE: リファクタリング時に適切な場所へ移動させること
     return [
@@ -58,7 +58,7 @@ def adjust_interrogative_accent_phrases(
 
 def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
     """
-    アクセント句に含まれるモーラ時系列の必要に応じた疑問形補正
+    アクセント句に含まれるモーラ系列の必要に応じた疑問形補正
     Parameters
     ----------
     accent_phrase : AccentPhrase
@@ -66,7 +66,7 @@ def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
     Returns
     -------
     moras : List[Mora]
-        補正済みモーラ時系列
+        補正済みモーラ系列
     """
     moras = copy.deepcopy(accent_phrase.moras)
     # 疑問形補正条件: 疑問形フラグON & 終端有声母音
@@ -111,11 +111,11 @@ def full_context_label_moras_to_moras(
     Parameters
     ----------
     full_context_moras : List[full_context_label.Mora]
-        モーラ時系列
+        モーラ系列
     Returns
     -------
     moras : List[Mora]
-        モーラ時系列。音素長・モーラ音高は 0 初期化
+        モーラ系列。音素長・モーラ音高は 0 初期化
     """
     return [
         Mora(
@@ -192,13 +192,13 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
-            アクセント句時系列
+            アクセント句系列
         style_id : int
             スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            音素長が更新されたアクセント句時系列
+            音素長が更新されたアクセント句系列
         """
         raise NotImplementedError()
 
@@ -211,13 +211,13 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
-            アクセント句時系列
+            アクセント句系列
         style_id : int
             スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            モーラ音高が更新されたアクセント句時系列
+            モーラ音高が更新されたアクセント句系列
         """
         raise NotImplementedError()
 
@@ -229,13 +229,13 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
-            アクセント句時系列
+            アクセント句系列
         style_id : int
             スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            アクセント句時系列
+            アクセント句系列
         """
         return self.replace_mora_pitch(
             accent_phrases=self.replace_phoneme_length(
@@ -246,7 +246,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     def create_accent_phrases(self, text: str, style_id: int) -> List[AccentPhrase]:
         """
-        テキストからアクセント句時系列を生成（音素種・アクセント・音素長・モーラ音高の推定）
+        テキストからアクセント句系列を生成（音素種・アクセント・音素長・モーラ音高の推定）
         Parameters
         ----------
         text : str
@@ -256,7 +256,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            アクセント句時系列
+            アクセント句系列
         """
         if len(text.strip()) == 0:
             return []
