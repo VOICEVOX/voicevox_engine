@@ -55,7 +55,7 @@ curl -s \
 
 ### 読み方を AquesTalk風記法で取得・修正するサンプルコード
 
-`/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk ライクな記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
+`/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
 
 - 全てのカナはカタカナで記述される
