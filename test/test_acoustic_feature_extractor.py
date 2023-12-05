@@ -84,6 +84,6 @@ class TestOjtPhoneme(TestCase):
         for i, phoneme in enumerate(self.ojt_hello_hiho):
             for j in range(OjtPhoneme.num_phoneme):
                 if phoneme_id_list[i] == j:
-                    self.assertEqual(phoneme.onehot[j], True)
+                    self.assertEqual(phoneme.onehot[j], 1.0)
                 else:
-                    self.assertEqual(phoneme.onehot[j], False)
+                    self.assertEqual(phoneme.onehot[j], 0.0)
