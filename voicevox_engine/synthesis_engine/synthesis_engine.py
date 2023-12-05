@@ -128,9 +128,9 @@ def change_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : List[Mora]
         前後無音が付加されたモーラ時系列
     """
-    silence_moras_head = [generate_silence_mora(query.prePhonemeLength)]
-    silence_moras_tail = [generate_silence_mora(query.postPhonemeLength)]
-    moras = silence_moras_head + moras + silence_moras_tail
+    pre_silence_moras = [generate_silence_mora(query.prePhonemeLength)]
+    post_silence_moras = [generate_silence_mora(query.postPhonemeLength)]
+    moras = pre_silence_moras + moras + post_silence_moras
     return moras
 
 
