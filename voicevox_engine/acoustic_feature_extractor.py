@@ -100,12 +100,12 @@ class OjtPhoneme:
     @property
     def onehot(self):
         """
-        phoneme listの長さ分の0埋め配列のうち、phoneme id番目がTrue(1)の配列を返す
+        音素onehotベクトル
         Returns
         -------
-        onehot : numpu.ndarray
-            関数内で変更された配列を返す
+        onehot : numpy.ndarray
+            音素onehotベクトル（listの長さ分の0埋め配列のうち、phoneme id番目が1.0の配列）
         """
-        array = numpy.zeros(self.num_phoneme, dtype=bool)
-        array[self.phoneme_id] = True
+        array = numpy.zeros(self.num_phoneme, dtype=numpy.float32)
+        array[self.phoneme_id] = 1.0
         return array

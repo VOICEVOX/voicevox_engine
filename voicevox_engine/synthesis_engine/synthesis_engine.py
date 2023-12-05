@@ -198,7 +198,7 @@ def calc_frame_pitch(
 
 def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndarray):
     """
-    フレームごとの音素列の生成
+    フレームごとの音素列の生成（onehot化 + フレーム化）
     Parameters
     ----------
     phonemes : List[OjtPhoneme]
@@ -211,19 +211,8 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
         フレームごとの音素系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # Index化
-    phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
-
-    # フレームごとの音素化
-    frame_phoneme = numpy.repeat(phoneme_ids, frame_per_phoneme)
-
-    # Onehot化
-    array = numpy.zeros(
-        (len(frame_phoneme), OjtPhoneme.num_phoneme), dtype=numpy.float32
-    )
-    array[numpy.arange(len(frame_phoneme)), frame_phoneme] = 1
-    frame_phoneme = array
-
+    onehot_phoneme = numpy.stack([p.onehot for p in phonemes])
+    frame_phoneme = numpy.repeat(onehot_phoneme, frame_per_phoneme, axis=0)
     return frame_phoneme
 
 
