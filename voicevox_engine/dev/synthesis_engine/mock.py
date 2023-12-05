@@ -27,7 +27,10 @@ class MockSynthesisEngine(SynthesisEngineBase):
 
         self._speakers = speakers
         self._supported_devices = supported_devices
-        self.default_sampling_rate = 24000
+
+    @property
+    def default_sampling_rate(self) -> int:
+        return 24000
 
     @property
     def speakers(self) -> str:
