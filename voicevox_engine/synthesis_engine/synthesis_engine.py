@@ -187,15 +187,15 @@ def calc_frame_pitch(
     phonemes : List[OjtPhoneme]
         音素列
     frame_per_phoneme: NDArray
-        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+        音素あたりのフレーム長。端数丸め。
     Returns
     -------
     frame_f0 : NDArray[]
         フレームごとの基本周波数系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # モーラ（前後の無音含む）ごとの基本周波数
-    f0 = numpy.array([0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32)
+    # モーラごとの基本周波数
+    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
     # 音高スケールによる補正
     f0 *= 2**query.pitchScale
@@ -499,14 +499,14 @@ class SynthesisEngine(SynthesisEngineBase):
         """
         # モデルがロードされていない場合はロードする
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        # phoneme
-        # 無音無しモーラ時系列 / 無音有り音素時系列
+
+        # モーラ時系列 / 音素時系列
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
+        flatten_moras = change_silence(flatten_moras, query)
+
         # 無音有り音素ごとのフレーム長
-        frame_per_phoneme = calc_frame_per_phoneme(
-            query, change_silence(flatten_moras, query)
-        )
+        frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
         f0 = calc_frame_pitch(
             query, flatten_moras, phoneme_data_list, frame_per_phoneme
         )
