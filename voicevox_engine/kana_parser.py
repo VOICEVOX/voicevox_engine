@@ -81,7 +81,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
 def parse_kana(text: str) -> List[AccentPhrase]:
     """
-    AquesTalk風記法テキストからアクセント句時系列を生成
+    AquesTalk風記法テキストからアクセント句系列を生成
     Parameters
     ----------
     text : str
@@ -89,7 +89,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     Returns
     -------
     parsed_results : List[AccentPhrase]
-        アクセント句（音素・モーラ音高 0初期化）時系列を生成
+        アクセント句（音素・モーラ音高 0初期化）系列を生成
     """
 
     parsed_results: List[AccentPhrase] = []
