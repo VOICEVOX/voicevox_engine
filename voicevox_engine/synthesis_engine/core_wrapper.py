@@ -1,5 +1,6 @@
 import os
 import platform
+import threading
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
 from dataclasses import dataclass
@@ -390,6 +391,7 @@ class CoreWrapper:
         self.default_sampling_rate = 24000
 
         self.core = load_core(core_dir, use_gpu)
+        self.mutex = threading.Lock()
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
@@ -493,14 +495,15 @@ class CoreWrapper:
             音素ごとの長さ
         """
         output = np.zeros((length,), dtype=np.float32)
-        self.assert_core_success(
-            self.core.yukarin_s_forward(
-                c_int(length),
-                phoneme_list.ctypes.data_as(POINTER(c_long)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        with self.mutex:
+            self.assert_core_success(
+                self.core.yukarin_s_forward(
+                    c_int(length),
+                    phoneme_list.ctypes.data_as(POINTER(c_long)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
         return output
 
     def yukarin_sa_forward(
@@ -546,19 +549,20 @@ class CoreWrapper:
             ),
             dtype=np.float32,
         )
-        self.assert_core_success(
-            self.core.yukarin_sa_forward(
-                c_int(length),
-                vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
-                consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
-                start_accent_list.ctypes.data_as(POINTER(c_long)),
-                end_accent_list.ctypes.data_as(POINTER(c_long)),
-                start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-                end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        with self.mutex:
+            self.assert_core_success(
+                self.core.yukarin_sa_forward(
+                    c_int(length),
+                    vowel_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                    consonant_phoneme_list.ctypes.data_as(POINTER(c_long)),
+                    start_accent_list.ctypes.data_as(POINTER(c_long)),
+                    end_accent_list.ctypes.data_as(POINTER(c_long)),
+                    start_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                    end_accent_phrase_list.ctypes.data_as(POINTER(c_long)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
         return output
 
     def decode_forward(
@@ -590,16 +594,17 @@ class CoreWrapper:
         """
 
         output = np.empty((length * 256,), dtype=np.float32)
-        self.assert_core_success(
-            self.core.decode_forward(
-                c_int(length),
-                c_int(phoneme_size),
-                f0.ctypes.data_as(POINTER(c_float)),
-                phoneme.ctypes.data_as(POINTER(c_float)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        with self.mutex:
+            self.assert_core_success(
+                self.core.decode_forward(
+                    c_int(length),
+                    c_int(phoneme_size),
+                    f0.ctypes.data_as(POINTER(c_float)),
+                    phoneme.ctypes.data_as(POINTER(c_float)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
         return output
 
     def supported_devices(self) -> str:
@@ -618,7 +623,8 @@ class CoreWrapper:
 
     def load_model(self, style_id: int) -> None:
         if self.exist_load_model:
-            self.assert_core_success(self.core.load_model(c_long(style_id)))
+            with self.mutex:
+                self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:

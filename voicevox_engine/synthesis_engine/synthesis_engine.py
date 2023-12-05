@@ -1,5 +1,4 @@
 import math
-import threading
 from itertools import chain
 from typing import List, Optional, Tuple
 
@@ -376,7 +375,6 @@ class SynthesisEngine(SynthesisEngineBase):
     def __init__(self, core: CoreWrapper):
         super().__init__()
         self.core = core
-        self.mutex = threading.Lock()
 
     @property
     def default_sampling_rate(self) -> int:
@@ -401,12 +399,11 @@ class SynthesisEngine(SynthesisEngineBase):
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
         # Core管理
         try:
-            with self.mutex:
-                # 以下の条件のいずれかを満たす場合, 初期化を実行する
-                # 1. 引数 skip_reinit が False の場合
-                # 2. 話者が初期化されていない場合
-                if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
-                    self.core.load_model(style_id)
+            # 以下の条件のいずれかを満たす場合, 初期化を実行する
+            # 1. 引数 skip_reinit が False の場合
+            # 2. 話者が初期化されていない場合
+            if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
+                self.core.load_model(style_id)
         except OldCoreError:
             pass  # コアが古い場合はどうしようもないので何もしない
 
@@ -447,12 +444,11 @@ class SynthesisEngine(SynthesisEngineBase):
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
         # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwardにかけ、推論器によって適切な音素の長さを割り当てる
-        with self.mutex:
-            phoneme_length = self.core.yukarin_s_forward(
-                length=len(phoneme_list_s),
-                phoneme_list=phoneme_list_s,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
+        phoneme_length = self.core.yukarin_s_forward(
+            length=len(phoneme_list_s),
+            phoneme_list=phoneme_list_s,
+            style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+        )
 
         # yukarin_s_forwarderの結果をaccent_phrasesに反映する
         # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
@@ -584,17 +580,16 @@ class SynthesisEngine(SynthesisEngineBase):
         )
 
         # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        with self.mutex:
-            f0_list = self.core.yukarin_sa_forward(
-                length=vowel_phoneme_list.shape[0],
-                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
-                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-                start_accent_list=start_accent_list[numpy.newaxis],
-                end_accent_list=end_accent_list[numpy.newaxis],
-                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
-                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )[0]
+        f0_list = self.core.yukarin_sa_forward(
+            length=vowel_phoneme_list.shape[0],
+            vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
+            consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
+            start_accent_list=start_accent_list[numpy.newaxis],
+            end_accent_list=end_accent_list[numpy.newaxis],
+            start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
+            end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
+            style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+        )[0]
 
         # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
         for i, p in enumerate(vowel_phoneme_data_list):
@@ -634,15 +629,14 @@ class SynthesisEngine(SynthesisEngineBase):
         phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
-        with self.mutex:
-            wave = self.core.decode_forward(
-                length=phoneme.shape[0],
-                phoneme_size=phoneme.shape[1],
-                f0=f0[:, numpy.newaxis],
-                phoneme=phoneme,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
-            sr_wave = self.default_sampling_rate
+        wave = self.core.decode_forward(
+            length=phoneme.shape[0],
+            phoneme_size=phoneme.shape[1],
+            f0=f0[:, numpy.newaxis],
+            phoneme=phoneme,
+            style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+        )
+        sr_wave = self.default_sampling_rate
 
         wave = apply_volume_scale(wave, query)
         wave = apply_output_sampling_rate(wave, sr_wave, query)
