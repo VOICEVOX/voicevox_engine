@@ -53,7 +53,7 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk 記法で取得・修正するサンプルコード
+### 読み方を AquesTalk風記法で取得・修正するサンプルコード
 
 `/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk ライクな記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
