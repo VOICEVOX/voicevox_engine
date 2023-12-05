@@ -89,9 +89,9 @@ def pre_process(
     Returns
     -------
     flatten_moras : List[Mora]
-        AccentPhraseモデルのリスト内に含まれるすべてのMoraをリスト化したものを返す
+        モーラ時系列（前後の無音含まない）
     phoneme_data_list : List[OjtPhoneme]
-        flatten_morasから取り出したすべてのPhonemeをOjtPhonemeに変換したものを返す
+        音素時系列（前後の無音含む）
     """
     flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -479,7 +479,7 @@ class SynthesisEngine(SynthesisEngineBase):
         # モデルがロードされていない場合はロードする
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # phoneme
-        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
+        # 無音無しモーラ時系列 / 無音有り音素時系列
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
         frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
