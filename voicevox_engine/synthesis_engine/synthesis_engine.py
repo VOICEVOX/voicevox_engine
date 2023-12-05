@@ -111,6 +111,7 @@ def pre_process(
 
 
 def silence_mora(length: float) -> Mora:
+    """無音モーラの生成"""
     return Mora(text=" ", vowel="sil", vowel_length=length, pitch=0.0)
 
 
@@ -119,13 +120,13 @@ def change_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     Parameters
     ----------
     moras : List[Mora]
-        モーラ列
+        モーラ時系列
     query : AudioQuery
         音声合成クエリ
     Returns
     -------
     moras : List[Mora]
-        前後無音が付加されたモーラ列
+        前後無音が付加されたモーラ時系列
     """
     silence_moras_head = [silence_mora(query.prePhonemeLength)]
     silence_moras_tail = [silence_mora(query.postPhonemeLength)]
@@ -499,13 +500,11 @@ class SynthesisEngine(SynthesisEngineBase):
         """
         # モデルがロードされていない場合はロードする
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-
-        # モーラ時系列 / 音素時系列
+        # phoneme
+        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
         flatten_moras = change_silence(flatten_moras, query)
-
-        # 無音有り音素ごとのフレーム長
         frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
         f0 = calc_frame_pitch(
             query, flatten_moras, phoneme_data_list, frame_per_phoneme
