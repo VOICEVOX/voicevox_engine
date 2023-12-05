@@ -519,6 +519,17 @@ class Utterance:
 
 
 def extract_full_context_label(text: str):
+    """
+    日本語テキストから発話を推定
+    Parameters
+    ----------
+    text : str
+        日本語テキスト
+    Returns
+    -------
+    utterance : Utterance
+        発話
+    """
     labels = pyopenjtalk.extract_fullcontext(text)
     phonemes = [Phoneme.from_label(label=label) for label in labels]
     utterance = Utterance.from_phonemes(phonemes)

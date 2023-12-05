@@ -11,6 +11,16 @@ from ..mora_list import openjtalk_mora2text
 
 
 def mora_to_text(mora: str) -> str:
+    """
+    Parameters
+    ----------
+    mora : str
+        モーラ音素文字列
+    Returns
+    -------
+    mora : str
+        モーラ音素文字列
+    """
     if mora[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
         mora = mora[:-1] + mora[-1].lower()
@@ -24,10 +34,17 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    enable_interrogative_upspeakが有効になっていて与えられたaccent_phrasesに疑問系のものがあった場合、
-    各accent_phraseの末尾にある疑問系発音用のMoraに対して直前のMoraより少し音を高くすることで疑問文ぽくする
-    NOTE: リファクタリング時に適切な場所へ移動させること
+    アクセント句時系列の必要に応じた疑問系補正（各AccentPhrase末尾への高ピッチ有声短母音モーラ付与）
+    Parameters
+    ----------
+    accent_phrases : List[AccentPhrase]
+        アクセント句時系列
+    Returns
+    -------
+    accent_phrases : List[AccentPhrase]
+        必要に応じて疑問形補正されたアクセント句時系列
     """
+    # NOTE: リファクタリング時に適切な場所へ移動させること
     return [
         AccentPhrase(
             moras=adjust_interrogative_moras(accent_phrase),
@@ -40,7 +57,19 @@ def adjust_interrogative_accent_phrases(
 
 
 def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
+    """
+    アクセント句に含まれるモーラ時系列の必要に応じた疑問形補正
+    Parameters
+    ----------
+    accent_phrase : AccentPhrase
+        アクセント句
+    Returns
+    -------
+    moras : List[Mora]
+        補正済みモーラ時系列
+    """
     moras = copy.deepcopy(accent_phrase.moras)
+    # 疑問形補正条件: 疑問形フラグON & 終端有声母音
     if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
         interrogative_mora = make_interrogative_mora(moras[-1])
         moras.append(interrogative_mora)
@@ -50,6 +79,17 @@ def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
 
 
 def make_interrogative_mora(last_mora: Mora) -> Mora:
+    """
+    疑問形モーラ（同一母音・継続長 0.15秒・音高↑）の生成
+    Parameters
+    ----------
+    last_mora : Mora
+        非疑問形モーラ
+    Returns
+    -------
+    mora : Mora
+        疑問形モーラ
+    """
     fix_vowel_length = 0.15
     adjust_pitch = 0.3
     max_pitch = 6.5
@@ -66,6 +106,17 @@ def make_interrogative_mora(last_mora: Mora) -> Mora:
 def full_context_label_moras_to_moras(
     full_context_moras: List[full_context_label.Mora],
 ) -> List[Mora]:
+    """
+    Moraクラス間キャスト (`full_context_label.Mora` -> `Mora`)
+    Parameters
+    ----------
+    full_context_moras : List[full_context_label.Mora]
+        モーラ時系列
+    Returns
+    -------
+    moras : List[Mora]
+        モーラ時系列。音素長・モーラ音高は 0 初期化
+    """
     return [
         Mora(
             text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
@@ -85,25 +136,28 @@ class SynthesisEngineBase(metaclass=ABCMeta):
     def default_sampling_rate(self) -> int:
         raise NotImplementedError
 
-    # FIXME: jsonではなくModelを返すようにする
     @property
     @abstractmethod
     def speakers(self) -> str:
+        """話者情報（json文字列）"""
+        # FIXME: jsonではなくModelを返すようにする
         raise NotImplementedError
 
     @property
     @abstractmethod
     def supported_devices(self) -> Optional[str]:
+        """
+        デバイス対応情報
+        Returns
+        -------
+            対応デバイス一覧（None: 情報取得不可）
+        """
         raise NotImplementedError
 
-    def initialize_style_id_synthesis(  # noqa: B027
-        self,
-        style_id: int,
-        skip_reinit: bool,
-    ):
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
         """
-        指定したスタイルでの音声合成を初期化する。何度も実行可能。
-        未実装の場合は何もしない
+        音声合成器のスタイル指定初期化
+        何度も実行可能。未実装の場合は何もしない。
         Parameters
         ----------
         style_id : int
@@ -132,62 +186,85 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
-        accent_phrasesの母音・子音の長さを設定する
+        音素長の推定と更新
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
-            アクセント句モデルのリスト
+            アクセント句時系列
         style_id : int
             スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            母音・子音の長さが設定されたアクセント句モデルのリスト
+            音素長が更新されたアクセント句時系列
         """
         raise NotImplementedError()
 
     @abstractmethod
     def replace_mora_pitch(
-        self,
-        accent_phrases: List[AccentPhrase],
-        style_id: int,
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
-        accent_phrasesの音高(ピッチ)を設定する
+        モーラ音高の推定と更新
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
-            アクセント句モデルのリスト
+            アクセント句時系列
         style_id : int
             スタイルID
         Returns
         -------
         accent_phrases : List[AccentPhrase]
-            音高(ピッチ)が設定されたアクセント句モデルのリスト
+            モーラ音高が更新されたアクセント句時系列
         """
         raise NotImplementedError()
 
     def replace_mora_data(
-        self,
-        accent_phrases: List[AccentPhrase],
-        style_id: int,
+        self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
+        """
+        音素長・モーラ音高の推定と更新
+        Parameters
+        ----------
+        accent_phrases : List[AccentPhrase]
+            アクセント句時系列
+        style_id : int
+            スタイルID
+        Returns
+        -------
+        accent_phrases : List[AccentPhrase]
+            アクセント句時系列
+        """
         return self.replace_mora_pitch(
             accent_phrases=self.replace_phoneme_length(
-                accent_phrases=accent_phrases,
-                style_id=style_id,
+                accent_phrases=accent_phrases, style_id=style_id
             ),
             style_id=style_id,
         )
 
     def create_accent_phrases(self, text: str, style_id: int) -> List[AccentPhrase]:
+        """
+        テキストからアクセント句時系列を生成（音素種・アクセント・音素長・モーラ音高の推定）
+        Parameters
+        ----------
+        text : str
+            日本語テキスト
+        style_id : int
+            スタイルID
+        Returns
+        -------
+        accent_phrases : List[AccentPhrase]
+            アクセント句時系列
+        """
         if len(text.strip()) == 0:
             return []
 
+        # 音素種とアクセントの推定
         utterance = extract_full_context_label(text)
         if len(utterance.breath_groups) == 0:
             return []
 
+        # Utterance -> List[AccentPharase] のキャスト & 音素長・モーラ音高の推定と更新
         accent_phrases = self.replace_mora_data(
             accent_phrases=[
                 AccentPhrase(

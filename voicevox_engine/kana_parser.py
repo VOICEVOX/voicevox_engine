@@ -81,7 +81,15 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
 def parse_kana(text: str) -> List[AccentPhrase]:
     """
-    AquesTalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
+    AquesTalk風記法テキストからアクセント句時系列を生成
+    Parameters
+    ----------
+    text : str
+        AquesTalk風記法テキスト
+    Returns
+    -------
+    parsed_results : List[AccentPhrase]
+        アクセント句（音素・モーラ音高 0初期化）時系列を生成
     """
 
     parsed_results: List[AccentPhrase] = []
@@ -125,6 +133,17 @@ def parse_kana(text: str) -> List[AccentPhrase]:
 
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
+    """
+    アクセント句時系列からAquesTalk風記法テキストを生成
+    Parameters
+    ----------
+    accent_phrases : List[AccentPhrase]
+        アクセント句時系列
+    Returns
+    -------
+    text : str
+        AquesTalk風記法テキスト
+    """
     text = ""
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
