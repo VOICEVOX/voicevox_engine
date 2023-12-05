@@ -110,6 +110,29 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
+def silence_mora(length: float) -> Mora:
+    return Mora(text=" ", vowel="sil", vowel_length=length, pitch=0.0)
+
+
+def change_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ列の先頭/最後尾へqueryに基づいた無音モーラを追加
+    Parameters
+    ----------
+    moras : List[Mora]
+        モーラ列
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    moras : List[Mora]
+        前後無音が付加されたモーラ列
+    """
+    silence_moras_head = [silence_mora(query.prePhonemeLength)]
+    silence_moras_tail = [silence_mora(query.postPhonemeLength)]
+    moras = silence_moras_head + moras + silence_moras_tail
+    return moras
+
+
 def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     """
     音素あたりのフレーム長を算出
@@ -122,27 +145,25 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     Returns
     -------
     frame_per_phoneme : NDArray[]
-        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+        音素あたりのフレーム長。端数丸め。
     """
-    # 音素（前後の無音含む）あたりの継続長
+    # 音素あたりの継続長
     sec_per_phoneme = numpy.array(
-        [query.prePhonemeLength]
-        + [
+        [
             length
             for mora in moras
             for length in (
                 [mora.consonant_length] if mora.consonant is not None else []
             )
             + [mora.vowel_length]
-        ]
-        + [query.postPhonemeLength],
+        ],
         dtype=numpy.float32,
     )
 
     # 話速による継続長の補正
     sec_per_phoneme /= query.speedScale
 
-    # 音素（前後の無音含む）あたりのフレーム長。端数丸め。
+    # 音素あたりのフレーム長。端数丸め。
     framerate = 24000 / 256  # framerate 93.75 [frame/sec]
     frame_per_phoneme = numpy.round(sec_per_phoneme * framerate).astype(numpy.int32)
 
@@ -482,7 +503,10 @@ class SynthesisEngine(SynthesisEngineBase):
         # 無音無しモーラ時系列 / 無音有り音素時系列
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
-        frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
+        # 無音有り音素ごとのフレーム長
+        frame_per_phoneme = calc_frame_per_phoneme(
+            query, change_silence(flatten_moras, query)
+        )
         f0 = calc_frame_pitch(
             query, flatten_moras, phoneme_data_list, frame_per_phoneme
         )

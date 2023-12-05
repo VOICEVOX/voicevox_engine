@@ -171,21 +171,19 @@ def _gen_mora(
 def test_calc_frame_per_phoneme():
     """Test `calc_frame_per_phoneme`."""
     # Inputs
-    query = _gen_query(
-        speedScale=2.0,
-        prePhonemeLength=2 * 0.01067,  # 0.01067 [sec/frame]
-        postPhonemeLength=6 * 0.01067,
-    )
+    query = _gen_query(speedScale=2.0)
     moras = [
+        _gen_mora(" ", None, None, " ", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
         _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
         _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
         _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
         _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
         _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+        _gen_mora(" ", None, None, " ", 6 * 0.01067, 0.0),
     ]
 
     # Expects
-    #                      Pre k  o  N pau h  i  h  O Pst
+    #                        Pre k  o  N pau h  i  h  O Pst
     true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
     true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
 
