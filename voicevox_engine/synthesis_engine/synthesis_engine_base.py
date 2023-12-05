@@ -154,7 +154,9 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+    def initialize_style_id_synthesis(  # noqa: B027
+        self, style_id: int, skip_reinit: bool
+    ):
         """
         音声合成器のスタイル指定初期化
         何度も実行可能。未実装の場合は何もしない。
