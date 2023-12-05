@@ -28,12 +28,12 @@ from .test_acoustic_feature_extractor import is_same_phoneme
 TRUE_NUM_PHONEME = 45
 
 
-def is_same_OjtPhoneme_list(
+def is_same_ojt_phoneme_list(
     p1s: list[OjtPhoneme | None], p2s: list[OjtPhoneme | None]
 ) -> bool:
     """2つのOjtPhonemeリストで全要素ペアが同じ`.phoneme`/`.start`/`.end`を持つ"""
     if len(p1s) != len(p2s):
-      return False
+        return False
 
     for p1, p2 in zip(p1s, p2s):
         if p1 is None and p2 is None:  # None vs None -> equal
@@ -437,7 +437,7 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])
 
         self.assertTrue(
-            is_same_OjtPhoneme_list(
+            is_same_ojt_phoneme_list(
                 vowel_phoneme_list,
                 [
                     OjtPhoneme(phoneme="pau", start=0, end=1),
@@ -456,7 +456,7 @@ class TestSynthesisEngine(TestCase):
             )
         )
         self.assertTrue(
-            is_same_OjtPhoneme_list(
+            is_same_ojt_phoneme_list(
                 consonant_phoneme_list,
                 [
                     None,
