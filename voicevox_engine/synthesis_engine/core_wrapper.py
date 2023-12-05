@@ -357,6 +357,8 @@ class CoreWrapper:
         load_all_models: bool = False,
     ) -> None:
 
+        self.default_sampling_rate = 24000
+
         self.core = load_core(core_dir, use_gpu)
 
         self.core.initialize.restype = c_bool
