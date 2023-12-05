@@ -169,6 +169,7 @@ def create_mock_query(accent_phrases):
 
 
 class MockCore:
+    default_sampling_rate = 24000
     yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
     yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
     decode_forward = Mock(side_effect=decode_mock)

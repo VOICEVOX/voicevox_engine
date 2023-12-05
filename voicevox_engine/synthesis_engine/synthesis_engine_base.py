@@ -80,6 +80,11 @@ def full_context_label_moras_to_moras(
 
 
 class SynthesisEngineBase(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def default_sampling_rate(self) -> int:
+        raise NotImplementedError
+
     # FIXME: jsonではなくModelを返すようにする
     @property
     @abstractmethod

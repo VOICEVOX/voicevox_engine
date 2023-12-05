@@ -223,7 +223,10 @@ class SynthesisEngine(SynthesisEngineBase):
         super().__init__()
         self.core = core
         self.mutex = threading.Lock()
-        self.default_sampling_rate = 24000
+
+    @property
+    def default_sampling_rate(self) -> int:
+        return self.core.default_sampling_rate
 
     @property
     def speakers(self) -> str:
