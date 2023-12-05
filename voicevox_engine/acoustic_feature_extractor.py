@@ -65,22 +65,11 @@ class OjtPhoneme:
     num_phoneme = len(phoneme_list)
     space_phoneme = "pau"
 
-    def __init__(
-        self,
-        phoneme: str,
-        start: float,
-        end: float,
-    ):
+    def __init__(self, phoneme: str):
         # `sil`-to-`pau` (silent to space_phoneme) conversion
         if "sil" in phoneme:
             phoneme = self.space_phoneme
-
         self.phoneme = phoneme
-        self.start = numpy.round(start, decimals=2)
-        self.end = numpy.round(end, decimals=2)
-
-    def __repr__(self):
-        return f"Phoneme(phoneme='{self.phoneme}', start={self.start}, end={self.end})"
 
     def __eq__(self, o: object):
         """Deprecated."""

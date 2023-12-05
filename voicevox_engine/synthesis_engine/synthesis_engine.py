@@ -102,10 +102,7 @@ def pre_process(
     phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
     phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
 
-    phoneme_data_list = [
-        OjtPhoneme(phoneme=p, start=i, end=i + 1)
-        for i, p in enumerate(phoneme_str_list)
-    ]
+    phoneme_data_list = list(map(OjtPhoneme, phoneme_str_list))
 
     return flatten_moras, phoneme_data_list
 
