@@ -110,7 +110,7 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
-def silence_mora(length: float) -> Mora:
+def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text=" ", vowel="sil", vowel_length=length, pitch=0.0)
 
@@ -128,8 +128,8 @@ def change_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : List[Mora]
         前後無音が付加されたモーラ時系列
     """
-    silence_moras_head = [silence_mora(query.prePhonemeLength)]
-    silence_moras_tail = [silence_mora(query.postPhonemeLength)]
+    silence_moras_head = [generate_silence_mora(query.prePhonemeLength)]
+    silence_moras_tail = [generate_silence_mora(query.postPhonemeLength)]
     moras = silence_moras_head + moras + silence_moras_tail
     return moras
 
