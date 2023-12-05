@@ -81,7 +81,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
 def parse_kana(text: str) -> List[AccentPhrase]:
     """
-    AquesTalkライクな読み仮名をパースして音長・音高未指定のaccent phraseに変換
+    AquesTalk風記法テキストをパースして音長・音高未指定のaccent phraseに変換
     """
 
     parsed_results: List[AccentPhrase] = []
