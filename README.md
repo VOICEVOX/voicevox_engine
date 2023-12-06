@@ -53,7 +53,7 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk風記法で取得・修正するサンプルコード
+### 読み方を AquesTalk 風記法で取得・修正するサンプルコード
 
 `/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
@@ -209,12 +209,12 @@ curl -s \
 - `id`は重複してはいけません
 - エンジン起動後にファイルを書き換えるとエンジンに反映されます
 
-### 2 人の話者でモーフィングするサンプルコード
+### 2 種類のスタイルでモーフィングするサンプルコード
 
-`/synthesis_morphing`では、2 人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
+`/synthesis_morphing`では、2 種類のスタイルでそれぞれ合成された音声を元に、モーフィングした音声を生成します。
 
 ```bash
-echo -n "モーフィングを利用することで、２つの声を混ぜることができます。" > text.txt
+echo -n "モーフィングを利用することで、２種類の声を混ぜることができます。" > text.txt
 
 curl -s \
     -X POST \
@@ -222,7 +222,7 @@ curl -s \
     --get --data-urlencode text@text.txt \
     > query.json
 
-# 元の話者での合成結果
+# 元のスタイルでの合成結果
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
@@ -232,22 +232,22 @@ curl -s \
 
 export MORPH_RATE=0.5
 
-# 話者2人分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
+# スタイル2種類分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 
 export MORPH_RATE=0.9
 
-# query、base_speaker、target_speakerが同じ場合はキャッシュが使用されるため比較的高速に生成される
+# query、base_style_id、target_style_idが同じ場合はキャッシュが使用されるため比較的高速に生成される
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 ```
 

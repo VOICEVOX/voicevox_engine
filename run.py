@@ -13,7 +13,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypeVar
 
 import soundfile
 import uvicorn
@@ -84,16 +84,19 @@ from voicevox_engine.utility import (
     get_save_dir,
 )
 
+# StyleIdの型。FIXME: Python 3.12以降で[S: int | list[int]]に置き換える
+S = TypeVar("S", int, list[int])
 
-def get_style_id_from_deprecated(style_id: int | None, speaker_id: int | None) -> int:
+
+def get_style_id_from_deprecated(style_id: S | None, speaker: S | None) -> S:
     """
-    style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
+    style_idとspeaker両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
-    if speaker_id is not None and style_id is None:
+    if speaker is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return speaker_id
-    elif style_id is not None and speaker_id is None:
+        return speaker
+    elif style_id is not None and speaker is None:
         return style_id
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
@@ -248,7 +251,7 @@ def generate_app(
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
@@ -334,7 +337,7 @@ def generate_app(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -364,7 +367,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, style_id=style_id)
 
@@ -380,7 +383,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, style_id=style_id
@@ -398,7 +401,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, style_id=style_id
@@ -427,7 +430,7 @@ def generate_app(
         ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
@@ -466,7 +469,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
@@ -508,7 +511,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
+        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -541,24 +544,30 @@ def generate_app(
         "/morphable_targets",
         response_model=list[dict[str, MorphableTargetInfo]],
         tags=["音声合成"],
-        summary="指定した話者に対してエンジン内の話者がモーフィングが可能か判定する",
+        summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_speakers: list[int],
+        base_style_ids: list[int] | None = Query(default=None),  # noqa: B008
+        base_speakers: (list[int] | None) = Query(  # noqa: B008
+            default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
-        指定されたベース話者に対してエンジン内の各話者がモーフィング機能を利用可能か返します。
+        指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値の話者はstring型なので注意。
         """
+        base_style_ids = get_style_id_from_deprecated(
+            style_id=base_style_ids, speaker=base_speakers
+        )
         engine = get_engine(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
             morphable_targets = get_morphable_targets(
-                speakers=speakers, base_speakers=base_speakers
+                speakers=speakers, base_style_ids=base_style_ids
             )
             # jsonはint型のキーを持てないので、string型に変換する
             return [
@@ -581,26 +590,34 @@ def generate_app(
             }
         },
         tags=["音声合成"],
-        summary="2人の話者でモーフィングした音声を合成する",
+        summary="2種類のスタイルでモーフィングした音声を合成する",
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_speaker: int,
-        target_speaker: int,
+        base_style_id: int | None = Query(default=None),  # noqa: B008
+        base_speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
+        target_style_id: int | None = Query(default=None),  # noqa: B008
+        target_speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
         """
-        指定された2人の話者で音声を合成、指定した割合でモーフィングした音声を得ます。
-        モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
+        指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
+        モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
+        base_style_id = get_style_id_from_deprecated(
+            style_id=base_style_id, speaker=base_speaker
+        )
+        target_style_id = get_style_id_from_deprecated(
+            style_id=target_style_id, speaker=target_speaker
+        )
         engine = get_engine(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
-                speaker_lookup, base_speaker, target_speaker
+                speaker_lookup, base_style_id, target_style_id
             )
             if not is_permitted:
                 raise HTTPException(
@@ -616,8 +633,8 @@ def generate_app(
         morph_param = synthesis_morphing_parameter(
             engine=engine,
             query=query,
-            base_speaker=base_speaker,
-            target_speaker=target_speaker,
+            base_style_id=base_style_id,
+            target_style_id=target_style_id,
         )
 
         morph_wave = synthesis_morphing(
@@ -960,9 +977,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> Response:
         """
-        こちらのAPIは非推奨です。`initialize_style_id`を利用してください。\n
-        指定されたspeaker_idの話者を初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        こちらのAPIは非推奨です。`initialize_style_id`を利用してください。
         """
         warnings.warn(
             "使用しているAPI(/initialize_speaker)は非推奨です。/initialized_style_idを利用してください。",
@@ -980,8 +995,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> bool:
         """
-        こちらのAPIは非推奨です。`is_initialize_style_id`を利用してください。\n
-        指定されたspeaker_idの話者が初期化されているかどうかを返します。
+        こちらのAPIは非推奨です。`is_initialize_style_id`を利用してください。
         """
         warnings.warn(
             "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
