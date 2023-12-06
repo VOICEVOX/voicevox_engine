@@ -89,9 +89,9 @@ def pre_process(
     Returns
     -------
     flatten_moras : List[Mora]
-        AccentPhraseモデルのリスト内に含まれるすべてのMoraをリスト化したものを返す
+        モーラ列（前後の無音含まない）
     phoneme_data_list : List[OjtPhoneme]
-        flatten_morasから取り出したすべてのPhonemeをOjtPhonemeに変換したものを返す
+        音素列（前後の無音含む）
     """
     flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -110,6 +110,30 @@ def pre_process(
     return flatten_moras, phoneme_data_list
 
 
+def generate_silence_mora(length: float) -> Mora:
+    """無音モーラの生成"""
+    return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
+
+
+def pad_with_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ列の先頭/最後尾へqueryに基づいた無音モーラを追加
+    Parameters
+    ----------
+    moras : List[Mora]
+        モーラ時系列
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    moras : List[Mora]
+        前後無音が付加されたモーラ時系列
+    """
+    pre_silence_moras = [generate_silence_mora(query.prePhonemeLength)]
+    post_silence_moras = [generate_silence_mora(query.postPhonemeLength)]
+    moras = pre_silence_moras + moras + post_silence_moras
+    return moras
+
+
 def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     """
     音素あたりのフレーム長を算出
@@ -122,27 +146,25 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     Returns
     -------
     frame_per_phoneme : NDArray[]
-        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+        音素あたりのフレーム長。端数丸め。
     """
-    # 音素（前後の無音含む）あたりの継続長
+    # 音素あたりの継続長
     sec_per_phoneme = numpy.array(
-        [query.prePhonemeLength]
-        + [
+        [
             length
             for mora in moras
             for length in (
                 [mora.consonant_length] if mora.consonant is not None else []
             )
             + [mora.vowel_length]
-        ]
-        + [query.postPhonemeLength],
+        ],
         dtype=numpy.float32,
     )
 
     # 話速による継続長の補正
     sec_per_phoneme /= query.speedScale
 
-    # 音素（前後の無音含む）あたりのフレーム長。端数丸め。
+    # 音素あたりのフレーム長。端数丸め。
     framerate = 24000 / 256  # framerate 93.75 [frame/sec]
     frame_per_phoneme = numpy.round(sec_per_phoneme * framerate).astype(numpy.int32)
 
@@ -166,15 +188,15 @@ def calc_frame_pitch(
     phonemes : List[OjtPhoneme]
         音素列
     frame_per_phoneme: NDArray
-        音素（前後の無音含む）あたりのフレーム長。端数丸め。
+        音素あたりのフレーム長。端数丸め。
     Returns
     -------
     frame_f0 : NDArray[]
         フレームごとの基本周波数系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # モーラ（前後の無音含む）ごとの基本周波数
-    f0 = numpy.array([0] + [mora.pitch for mora in moras] + [0], dtype=numpy.float32)
+    # モーラごとの基本周波数
+    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
     # 音高スケールによる補正
     f0 *= 2**query.pitchScale
@@ -474,6 +496,7 @@ class SynthesisEngine(SynthesisEngineBase):
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
+        flatten_moras = pad_with_silence(flatten_moras, query)
         frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
         f0 = calc_frame_pitch(
             query, flatten_moras, phoneme_data_list, frame_per_phoneme
