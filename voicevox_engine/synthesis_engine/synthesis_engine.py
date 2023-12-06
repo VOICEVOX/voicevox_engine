@@ -89,9 +89,9 @@ def pre_process(
     Returns
     -------
     flatten_moras : List[Mora]
-        モーラ時系列（前後の無音含まない）
+        モーラ列（前後の無音含まない）
     phoneme_data_list : List[OjtPhoneme]
-        音素時系列（前後の無音含む）
+        音素列（前後の無音含む）
     """
     flatten_moras = to_flatten_moras(accent_phrases)
 
@@ -112,7 +112,7 @@ def pre_process(
 
 def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
-    return Mora(text=" ", vowel="sil", vowel_length=length, pitch=0.0)
+    return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
 def pad_with_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:

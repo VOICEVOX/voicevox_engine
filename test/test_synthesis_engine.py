@@ -179,9 +179,9 @@ def test_pad_with_silence():
 
     # Expects
     true_moras_with_silence = [
-        _gen_mora(" ", None, None, "sil", 2 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
         _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
-        _gen_mora(" ", None, None, "sil", 6 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
     ]
 
     # Outputs
@@ -195,13 +195,13 @@ def test_calc_frame_per_phoneme():
     # Inputs
     query = _gen_query(speedScale=2.0)
     moras = [
-        _gen_mora(" ", None, None, " ", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
+        _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
         _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
         _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
         _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
         _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
         _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
-        _gen_mora(" ", None, None, " ", 6 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
     ]
 
     # Expects
@@ -220,13 +220,13 @@ def test_calc_frame_pitch():
     # Inputs
     query = _gen_query(pitchScale=2.0, intonationScale=0.5)
     moras = [
-        _gen_mora(" ", None, None, " ", 0.0, 0.0),
+        _gen_mora("　", None, None, "　", 0.0, 0.0),
         _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
         _gen_mora("ン", None, None, "N", 0.0, 50.0),
         _gen_mora("、", None, None, "pau", 0.0, 0.0),
         _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
         _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
-        _gen_mora(" ", None, None, " ", 0.0, 0.0),
+        _gen_mora("　", None, None, "　", 0.0, 0.0),
     ]
     phoneme_str = "pau k o N pau h i h O pau"
     phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
