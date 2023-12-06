@@ -81,7 +81,7 @@ jobs:
             platforms: linux/amd64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -106,7 +106,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
