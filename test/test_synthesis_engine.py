@@ -13,8 +13,8 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
-    apply_pitch,
     apply_intonation,
+    apply_pitch,
     apply_volume,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
@@ -252,10 +252,10 @@ def test_apply_volume():
     """Test `apply_volume`."""
     # Inputs
     query = _gen_query(volumeScale=3.0)
-    input_wave = numpy.array([0.0, 1.0, 2.0, 0.0,])
+    input_wave = numpy.array([0.0, 1.0, 2.0])
 
     # Expects - x3 scale
-    true_wave = numpy.array([0.0, 3.0, 6.0, 0.0,])
+    true_wave = numpy.array([0.0, 3.0, 6.0])
 
     # Outputs
     wave = apply_volume(input_wave, query)

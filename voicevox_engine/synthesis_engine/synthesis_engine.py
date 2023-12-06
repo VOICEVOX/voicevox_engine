@@ -241,17 +241,17 @@ def calc_frame_pitch(
     moras = apply_pitch(moras, query)
     moras = apply_intonation(moras, query)
 
+    # Convert: Core入力形式への変換（スカラ系列）
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # モーラごとの基本周波数
     f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
-    # フレームごとのピッチ化
+    # Rescale: 時間スケールの変更（モーラ -> フレーム）
     # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
     vowel_indexes = numpy.array(split_mora(phonemes)[2])
     frame_per_mora = [
         a.sum() for a in numpy.split(frame_per_phoneme, vowel_indexes[:-1] + 1)
     ]
-    # モーラの基本周波数を子音・母音に割当てフレーム化
     frame_f0 = numpy.repeat(f0, frame_per_mora)
     return frame_f0
 
@@ -289,7 +289,10 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
         フレームごとの音素系列
     """
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
+    # Convert: Core入力形式への変換（onehotベクトル系列）
     onehot_phoneme = numpy.stack([p.onehot for p in phonemes])
+
+    # Rescale: 時間スケールの変更（音素 -> フレーム）
     frame_phoneme = numpy.repeat(onehot_phoneme, frame_per_phoneme, axis=0)
     return frame_phoneme
 
@@ -568,7 +571,7 @@ class SynthesisEngine(SynthesisEngineBase):
                 phoneme=phoneme,
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
- 
+
         # Apply: グローバル特徴量による補正（音量）
         wave = apply_volume(wave, query)
 
