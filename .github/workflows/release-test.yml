@@ -59,7 +59,7 @@ jobs:
           echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v4
         with:

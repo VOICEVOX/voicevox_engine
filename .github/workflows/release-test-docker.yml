@@ -37,7 +37,7 @@ jobs:
           - cpu-ubuntu20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #
       # Setup Python Environment

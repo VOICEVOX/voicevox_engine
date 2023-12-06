@@ -109,7 +109,7 @@ jobs:
         run: |
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # NOTE: The default 'sed' and 'split' of macOS is BSD 'sed' and 'split'.
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
@@ -393,7 +393,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
