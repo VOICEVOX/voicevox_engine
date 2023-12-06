@@ -40,7 +40,7 @@ class CoreSpeaker(BaseModel):
 
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="話者のUUID")
-    styles: List[SpeakerStyle] = Field(title="話者スタイルの一覧")
+    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
     version: str = Field("話者のバージョン")
 
 
