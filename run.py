@@ -84,7 +84,8 @@ from voicevox_engine.utility import (
     get_save_dir,
 )
 
-# StyleIdの型。FIXME: Python 3.12以降で[S: int | list[int]]に置き換える
+# StyleIdの型
+# NOTE: Python 3.12以降で[S: int | list[int]]に置き換えられる
 S = TypeVar("S", int, list[int])
 
 
