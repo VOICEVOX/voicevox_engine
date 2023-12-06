@@ -13,6 +13,9 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
+    apply_pitch,
+    apply_intonation,
+    apply_volume,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
@@ -189,6 +192,75 @@ def test_pad_with_silence():
     moras_with_silence = pad_with_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
+
+
+def test_apply_pitch():
+    """Test `apply_pitch`."""
+    # Inputs
+    query = _gen_query(pitchScale=2.0)
+    input_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
+        _gen_mora("ン", None, None, "N", 0.0, 50.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Expects - x4 value scaled
+    true_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
+        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_pitch(input_moras, query)
+
+    assert moras == true_moras
+
+
+def test_apply_intonation():
+    """Test `apply_intonation`."""
+    # Inputs
+    query = _gen_query(intonationScale=0.5)
+    input_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
+        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Expects - mean=300 var x0.5 intonation scaling
+    true_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 250.0),
+        _gen_mora("ン", None, None, "N", 0.0, 250.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 400.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_intonation(input_moras, query)
+
+    assert moras == true_moras
+
+
+def test_apply_volume():
+    """Test `apply_volume`."""
+    # Inputs
+    query = _gen_query(volumeScale=3.0)
+    input_wave = numpy.array([0.0, 1.0, 2.0, 0.0,])
+
+    # Expects - x3 scale
+    true_wave = numpy.array([0.0, 3.0, 6.0, 0.0,])
+
+    # Outputs
+    wave = apply_volume(input_wave, query)
+
+    assert numpy.allclose(wave, true_wave)
 
 
 def test_calc_frame_per_phoneme():
