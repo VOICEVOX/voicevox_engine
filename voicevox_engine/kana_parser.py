@@ -47,7 +47,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     単一アクセント句に相当するAquesTalk風記法テキストからアクセント句オブジェクトを生成
-    longest matchにより読み仮名からAccentPhraseを生成。入力長Nに対し計算量O(N^2)。
+    longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
     Parameters
     ----------
     phrase : str
@@ -81,13 +81,15 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
             base_index += 1
             continue
 
-        # Rule1: "全てのカナはカタカナで記述される"
+        # モーラ探索
         for watch_index in range(base_index, len(phrase)):
-            # アクセント位置特殊文字の無視（無声化特殊文字は保持）
+            # アクセント位置特殊文字 = モーラ境界 -> 探索 break
             if phrase[watch_index] == ACCENT_SYMBOL:
                 break
             stack += phrase[watch_index]
             if stack in text2mora_with_unvoice:
+                # より長い要素からなるモーラが見つかれば上書き（longest match）
+                # 例: phrase "キャ" -> "キ" 検出 -> "キャ" 検出/上書き -> Mora("キャ")
                 matched_text = stack
         if matched_text is None:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
