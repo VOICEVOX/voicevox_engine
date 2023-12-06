@@ -15,13 +15,13 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 from voicevox_engine.synthesis_engine.synthesis_engine import (
     apply_intonation,
     apply_pitch,
+    apply_silence,
     apply_speed,
     apply_volume,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
     mora_phoneme_list,
-    pad_with_silence,
     pre_process,
     split_mora,
     to_flatten_moras,
@@ -174,8 +174,8 @@ def _gen_mora(
     )
 
 
-def test_pad_with_silence():
-    """Test `pad_with_silence`."""
+def test_apply_silence():
+    """Test `apply_silence`."""
     # Inputs
     query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
     moras = [
@@ -190,7 +190,7 @@ def test_pad_with_silence():
     ]
 
     # Outputs
-    moras_with_silence = pad_with_silence(moras, query)
+    moras_with_silence = apply_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
 
@@ -422,7 +422,7 @@ def test_feat_to_framescale():
     assert true_frame_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
 
     # Outputs
-    flatten_moras = pad_with_silence(flatten_moras, query)
+    flatten_moras = apply_silence(flatten_moras, query)
     frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
     f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frame_per_phoneme)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)

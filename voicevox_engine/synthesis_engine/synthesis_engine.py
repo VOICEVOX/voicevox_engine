@@ -116,8 +116,9 @@ def generate_silence_mora(length: float) -> Mora:
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
-def pad_with_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """モーラ列の先頭/最後尾へqueryに基づいた無音モーラを追加
+def apply_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """
+    前後無音（`prePhonemeLength` & `postPhonemeLength`）の適用
     Parameters
     ----------
     moras : List[Mora]
@@ -575,7 +576,7 @@ class SynthesisEngine(SynthesisEngineBase):
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
-        flatten_moras = pad_with_silence(flatten_moras, query)
+        flatten_moras = apply_silence(flatten_moras, query)
         frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
         f0 = calc_frame_pitch(
             query, flatten_moras, phoneme_data_list, frame_per_phoneme
