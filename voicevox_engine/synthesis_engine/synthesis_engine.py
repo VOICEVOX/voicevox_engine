@@ -4,6 +4,7 @@ from itertools import chain
 from typing import List, Optional, Tuple
 
 import numpy
+from numpy import ndarray
 from soxr import resample
 
 from ..acoustic_feature_extractor import OjtPhoneme
@@ -318,6 +319,49 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
     return frame_phoneme
 
 
+def apply_sampling_rate(wave: ndarray, sr_wave: int, query: AudioQuery) -> ndarray:
+    """
+    出力サンプリングレート（`outputSamplingRate`）の適用
+    Parameters
+    ----------
+    wave : ndarray
+        音声波形
+    sr_wave : int
+        `wave`のサンプリングレート
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    wave : ndarray
+        出力サンプリングレートが適用された音声波形
+    """
+    # サンプリングレート一致: スルー
+    if sr_wave == query.outputSamplingRate:
+        return wave
+
+    wave = resample(wave, sr_wave, query.outputSamplingRate)
+    return wave
+
+
+def apply_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
+    """
+    ステレオ出力（`outputStereo`）の適用
+    Parameters
+    ----------
+    wave : ndarray
+        音声波形
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    wave : ndarray
+        ステレオ出力設定が適用された音声波形
+    """
+    if query.outputStereo:
+        wave = numpy.array([wave, wave]).T
+    return wave
+
+
 class SynthesisEngine(SynthesisEngineBase):
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
@@ -592,21 +636,11 @@ class SynthesisEngine(SynthesisEngineBase):
                 phoneme=phoneme,
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
+            sr_wave = self.default_sampling_rate
 
-        # Apply: グローバル特徴量による補正（音量）
+        # Apply: グローバル特徴量による補正（音量・サンプリングレート・ステレオ）
         wave = apply_volume(wave, query)
-
-        # 出力サンプリングレートがデフォルト(decode forwarderによるもの、24kHz)でなければ、それを適用する
-        if query.outputSamplingRate != self.default_sampling_rate:
-            wave = resample(
-                wave,
-                self.default_sampling_rate,
-                query.outputSamplingRate,
-            )
-
-        # ステレオ変換
-        # 出力設定がステレオなのであれば、ステレオ化する
-        if query.outputStereo:
-            wave = numpy.array([wave, wave]).T
+        wave = apply_sampling_rate(wave, sr_wave, query)
+        wave = apply_stereo(wave, query)
 
         return wave

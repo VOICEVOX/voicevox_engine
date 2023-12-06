@@ -15,8 +15,10 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 from voicevox_engine.synthesis_engine.synthesis_engine import (
     apply_intonation,
     apply_pitch,
+    apply_sampling_rate,
     apply_silence,
     apply_speed,
+    apply_stereo,
     apply_volume,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
@@ -289,6 +291,38 @@ def test_apply_volume():
     wave = apply_volume(input_wave, query)
 
     assert numpy.allclose(wave, true_wave)
+
+
+def test_apply_sampling_rate():
+    """Test `apply_sampling_rate`."""
+    # Inputs
+    query = _gen_query(outputSamplingRate=12000)
+    input_wave = numpy.array([1.0 for _ in range(120)])
+    input_sr_wave = 24000
+
+    # Expects - half sampling rate
+    true_wave = numpy.array([1.0 for _ in range(60)])
+    assert true_wave.shape == (60,), "Prerequisites"
+
+    # Outputs
+    wave = apply_sampling_rate(input_wave, input_sr_wave, query)
+
+    assert wave.shape[0] == true_wave.shape[0]
+
+
+def test_apply_stereo():
+    """Test `apply_stereo`."""
+    # Inputs
+    query = _gen_query(outputStereo=True)
+    input_wave = numpy.array([1.0, 0.0, 2.0])
+
+    # Expects - Stereo :: (Time, Channel)
+    true_wave = numpy.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
+
+    # Outputs
+    wave = apply_stereo(input_wave, query)
+
+    assert numpy.array_equal(wave, true_wave)
 
 
 def test_calc_frame_per_phoneme():
