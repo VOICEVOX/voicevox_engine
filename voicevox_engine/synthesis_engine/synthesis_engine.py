@@ -135,6 +135,27 @@ def pad_with_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
+def apply_speed(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """
+    話速スケール（`speedScale`）の適用
+    Parameters
+    ----------
+    moras : list[Mora]
+        モーラ系列
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    moras : list[Mora]
+        話速スケールが適用されたモーラ系列
+    """
+    for mora in moras:
+        mora.vowel_length /= query.speedScale
+        if mora.consonant_length:
+            mora.consonant_length /= query.speedScale
+    return moras
+
+
 def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     """
     音素あたりのフレーム長を算出
@@ -149,6 +170,9 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     frame_per_phoneme : NDArray[]
         音素あたりのフレーム長。端数丸め。
     """
+    # Apply: グローバル特徴量による補正（話速）
+    moras = apply_speed(moras, query)
+
     # 音素あたりの継続長
     sec_per_phoneme = numpy.array(
         [
@@ -161,10 +185,6 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
         ],
         dtype=numpy.float32,
     )
-
-    # 話速による継続長の補正
-    sec_per_phoneme /= query.speedScale
-
     # 音素あたりのフレーム長。端数丸め。
     framerate = 24000 / 256  # framerate 93.75 [frame/sec]
     frame_per_phoneme = numpy.round(sec_per_phoneme * framerate).astype(numpy.int32)

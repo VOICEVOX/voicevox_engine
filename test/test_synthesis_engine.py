@@ -15,6 +15,7 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 from voicevox_engine.synthesis_engine.synthesis_engine import (
     apply_intonation,
     apply_pitch,
+    apply_speed,
     apply_volume,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
@@ -192,6 +193,33 @@ def test_pad_with_silence():
     moras_with_silence = pad_with_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
+
+
+def test_apply_speed():
+    """Test `apply_speed`."""
+    # Inputs
+    query = _gen_query(speedScale=2.0)
+    input_moras = [
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+    ]
+
+    # Expects - x2 fast
+    true_moras = [
+        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_speed(input_moras, query)
+
+    assert moras == true_moras
 
 
 def test_apply_pitch():
