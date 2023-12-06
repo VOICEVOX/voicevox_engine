@@ -1,6 +1,7 @@
 """
-「AquesTalk風記法」を実装した AquesTalk風記法テキスト <-> アクセント句系列 変換。  
-記法定義: https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#読み方を-aquestalk風記法で取得修正するサンプルコード
+「AquesTalk風記法」を実装した AquesTalk風記法テキスト <-> アクセント句系列 変換。
+記法定義: `https://github.com/VOICEVOX/voicevox_engine/blob/master/
+    README.md#読み方を-aquestalk風記法で取得修正するサンプルコード`
 """
 
 from typing import List, Optional
@@ -197,7 +198,7 @@ def create_kana(accent_phrases: List[AccentPhrase]) -> str:
         if i < len(accent_phrases) - 1:
             if phrase.pause_mora is None:
                 text += NOPAUSE_DELIMITER
-            # Rule2b: "`、`で区切った場合に限り無音区間が挿入される。            
+            # Rule2b: "`、`で区切った場合に限り無音区間が挿入される。
             else:
                 text += PAUSE_DELIMITER
 
