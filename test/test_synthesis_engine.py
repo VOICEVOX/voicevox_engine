@@ -24,15 +24,18 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     unvoiced_mora_phoneme_list,
 )
 
-from .test_acoustic_feature_extractor import is_same_phoneme
-
 TRUE_NUM_PHONEME = 45
+
+
+def is_same_phoneme(p1: OjtPhoneme, p2: OjtPhoneme) -> bool:
+    """2つのOjtPhonemeが同じ `.phoneme` を持つ"""
+    return p1.phoneme == p2.phoneme
 
 
 def is_same_ojt_phoneme_list(
     p1s: list[OjtPhoneme | None], p2s: list[OjtPhoneme | None]
 ) -> bool:
-    """2つのOjtPhonemeリストで全要素ペアが同じ`.phoneme`/`.start`/`.end`を持つ"""
+    """2つのOjtPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
     if len(p1s) != len(p2s):
         return False
 
@@ -230,7 +233,7 @@ def test_calc_frame_pitch():
         _gen_mora("　", None, None, "　", 0.0, 0.0),
     ]
     phoneme_str = "pau k o N pau h i h O pau"
-    phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
+    phonemes = [OjtPhoneme(p) for p in phoneme_str.split()]
     #                   Pre k  o  N pau h  i  h  O Pst
     frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
     frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
@@ -254,7 +257,7 @@ def test_calc_frame_phoneme():
     """Test `calc_frame_phoneme`."""
     # Inputs
     phoneme_str = "pau k o N pau h i h O pau"
-    phonemes = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
+    phonemes = [OjtPhoneme(p) for p in phoneme_str.split()]
     #                   Pre k  o  N pau h  i  h  O Pst
     frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
     n_frame = sum(frame_per_phoneme)
@@ -291,7 +294,7 @@ def test_feat_to_framescale():
         _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
     ]
     phoneme_str = "pau k o N pau h i h O pau"
-    phoneme_data_list = [OjtPhoneme(p, 0, 0) for p in phoneme_str.split()]
+    phoneme_data_list = [OjtPhoneme(p) for p in phoneme_str.split()]
 
     # Expects
     # frame_per_phoneme
@@ -338,10 +341,8 @@ class TestSynthesisEngine(TestCase):
             "sil k o N n i ch i w a pau h i h o d e s U sil".split()
         )
         self.phoneme_data_list_hello_hiho = [
-            OjtPhoneme(phoneme=p, start=i, end=i + 1)
-            for i, p in enumerate(
-                "pau k o N n i ch i w a pau h i h o d e s U pau".split()
-            )
+            OjtPhoneme(p)
+            for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
         ]
         self.accent_phrases_hello_hiho = [
             AccentPhrase(
@@ -464,18 +465,18 @@ class TestSynthesisEngine(TestCase):
             is_same_ojt_phoneme_list(
                 vowel_phoneme_list,
                 [
-                    OjtPhoneme(phoneme="pau", start=0, end=1),
-                    OjtPhoneme(phoneme="o", start=2, end=3),
-                    OjtPhoneme(phoneme="N", start=3, end=4),
-                    OjtPhoneme(phoneme="i", start=5, end=6),
-                    OjtPhoneme(phoneme="i", start=7, end=8),
-                    OjtPhoneme(phoneme="a", start=9, end=10),
-                    OjtPhoneme(phoneme="pau", start=10, end=11),
-                    OjtPhoneme(phoneme="i", start=12, end=13),
-                    OjtPhoneme(phoneme="o", start=14, end=15),
-                    OjtPhoneme(phoneme="e", start=16, end=17),
-                    OjtPhoneme(phoneme="U", start=18, end=19),
-                    OjtPhoneme(phoneme="pau", start=19, end=20),
+                    OjtPhoneme("pau"),
+                    OjtPhoneme("o"),
+                    OjtPhoneme("N"),
+                    OjtPhoneme("i"),
+                    OjtPhoneme("i"),
+                    OjtPhoneme("a"),
+                    OjtPhoneme("pau"),
+                    OjtPhoneme("i"),
+                    OjtPhoneme("o"),
+                    OjtPhoneme("e"),
+                    OjtPhoneme("U"),
+                    OjtPhoneme("pau"),
                 ],
             )
         )
@@ -484,16 +485,16 @@ class TestSynthesisEngine(TestCase):
                 consonant_phoneme_list,
                 [
                     None,
-                    OjtPhoneme(phoneme="k", start=1, end=2),
+                    OjtPhoneme("k"),
                     None,
-                    OjtPhoneme(phoneme="n", start=4, end=5),
-                    OjtPhoneme(phoneme="ch", start=6, end=7),
-                    OjtPhoneme(phoneme="w", start=8, end=9),
+                    OjtPhoneme("n"),
+                    OjtPhoneme("ch"),
+                    OjtPhoneme("w"),
                     None,
-                    OjtPhoneme(phoneme="h", start=11, end=12),
-                    OjtPhoneme(phoneme="h", start=13, end=14),
-                    OjtPhoneme(phoneme="d", start=15, end=16),
-                    OjtPhoneme(phoneme="s", start=17, end=18),
+                    OjtPhoneme("h"),
+                    OjtPhoneme("h"),
+                    OjtPhoneme("d"),
+                    OjtPhoneme("s"),
                     None,
                 ],
             )
@@ -507,7 +508,7 @@ class TestSynthesisEngine(TestCase):
         mora_index = 0
         phoneme_index = 1
 
-        self.assertTrue(is_same_phoneme(phoneme_data_list[0], OjtPhoneme("pau", 0, 1)))
+        self.assertTrue(is_same_phoneme(phoneme_data_list[0], OjtPhoneme("pau")))
         for accent_phrase in self.accent_phrases_hello_hiho:
             moras = accent_phrase.moras
             for mora in moras:
@@ -517,16 +518,14 @@ class TestSynthesisEngine(TestCase):
                     self.assertTrue(
                         is_same_phoneme(
                             phoneme_data_list[phoneme_index],
-                            OjtPhoneme(
-                                mora.consonant, phoneme_index, phoneme_index + 1
-                            ),
+                            OjtPhoneme(mora.consonant),
                         )
                     )
                     phoneme_index += 1
                 self.assertTrue(
                     is_same_phoneme(
                         phoneme_data_list[phoneme_index],
-                        OjtPhoneme(mora.vowel, phoneme_index, phoneme_index + 1),
+                        OjtPhoneme(mora.vowel),
                     )
                 )
                 phoneme_index += 1
@@ -536,14 +535,14 @@ class TestSynthesisEngine(TestCase):
                 self.assertTrue(
                     is_same_phoneme(
                         phoneme_data_list[phoneme_index],
-                        OjtPhoneme("pau", phoneme_index, phoneme_index + 1),
+                        OjtPhoneme("pau"),
                     )
                 )
                 phoneme_index += 1
         self.assertTrue(
             is_same_phoneme(
                 phoneme_data_list[phoneme_index],
-                OjtPhoneme("pau", phoneme_index, phoneme_index + 1),
+                OjtPhoneme("pau"),
             )
         )
 
@@ -699,7 +698,7 @@ class TestSynthesisEngine(TestCase):
         def result_value(i: int):
             # unvoiced_mora_phoneme_listのPhoneme ID版
             unvoiced_mora_phoneme_id_list = [
-                OjtPhoneme(p, 0, 0).phoneme_id for p in unvoiced_mora_phoneme_list
+                OjtPhoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list
             ]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0
@@ -736,17 +735,17 @@ class TestSynthesisEngine(TestCase):
                 if mora.consonant is not None:
                     mora.consonant_length = 0.1
                     phoneme_length_list.append(0.1)
-                    phoneme_id_list.append(OjtPhoneme(mora.consonant, 0, 0).phoneme_id)
+                    phoneme_id_list.append(OjtPhoneme(mora.consonant).phoneme_id)
                 mora.vowel_length = 0.2
                 phoneme_length_list.append(0.2)
-                phoneme_id_list.append(OjtPhoneme(mora.vowel, 0, 0).phoneme_id)
+                phoneme_id_list.append(OjtPhoneme(mora.vowel).phoneme_id)
                 if mora.vowel not in unvoiced_mora_phoneme_list:
                     mora.pitch = 5.0 + random()
                 f0_list.append(mora.pitch)
             if accent_phrase.pause_mora is not None:
                 accent_phrase.pause_mora.vowel_length = 0.2
                 phoneme_length_list.append(0.2)
-                phoneme_id_list.append(OjtPhoneme("pau", 0, 0).phoneme_id)
+                phoneme_id_list.append(OjtPhoneme("pau").phoneme_id)
                 f0_list.append(0.0)
         phoneme_length_list.append(0.0)
         phoneme_id_list.append(0)
@@ -770,9 +769,7 @@ class TestSynthesisEngine(TestCase):
 
         num_phoneme = OjtPhoneme.num_phoneme
         # mora_phoneme_listのPhoneme ID版
-        mora_phoneme_id_list = [
-            OjtPhoneme(p, 0, 0).phoneme_id for p in mora_phoneme_list
-        ]
+        mora_phoneme_id_list = [OjtPhoneme(p).phoneme_id for p in mora_phoneme_list]
 
         # numpy.repeatをfor文でやる
         f0 = []
