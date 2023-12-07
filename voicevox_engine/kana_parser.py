@@ -9,19 +9,19 @@ from typing import List, Optional
 from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_list import openjtalk_text2mora
 
-LOOP_LIMIT = 300
+_LOOP_LIMIT = 300
 
 # AquesTalk風記法特殊文字（無声化、アクセント位置、ポーズ無しアクセント句境界、ポーズ有りアクセント句境界、疑問形）
-UNVOICE_SYMBOL = "_"
-ACCENT_SYMBOL = "'"
-NOPAUSE_DELIMITER = "/"
-PAUSE_DELIMITER = "、"
-WIDE_INTERROGATION_MARK = "？"
+_UNVOICE_SYMBOL = "_"
+_ACCENT_SYMBOL = "'"
+_NOPAUSE_DELIMITER = "/"
+_PAUSE_DELIMITER = "、"
+_WIDE_INTERROGATION_MARK = "？"
 
 # AquesTalk風記法とモーラの対応（音素長・音高 0 初期化、疑問形 off 初期化）
-text2mora_with_unvoice = {}
+_text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
-    text2mora_with_unvoice[text] = Mora(
+    _text2mora_with_unvoice[text] = Mora(
         text=text,
         consonant=consonant if len(consonant) > 0 else None,
         consonant_length=0 if len(consonant) > 0 else None,
@@ -33,7 +33,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
     if vowel in ["a", "i", "u", "e", "o"]:
         # Rule3: "カナの手前に`_`を入れるとそのカナは無声化される"
         # 例: "_ホ" -> "hO"
-        text2mora_with_unvoice[UNVOICE_SYMBOL + text] = Mora(
+        _text2mora_with_unvoice[_UNVOICE_SYMBOL + text] = Mora(
             text=text,
             consonant=consonant if len(consonant) > 0 else None,
             consonant_length=0 if len(consonant) > 0 else None,
@@ -71,7 +71,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
         outer_loop += 1
 
         # Rule4: "アクセント位置を'で指定する"
-        if phrase[base_index] == ACCENT_SYMBOL:
+        if phrase[base_index] == _ACCENT_SYMBOL:
             if len(moras) == 0:
                 raise ParseKanaError(ParseKanaErrorCode.ACCENT_TOP, text=phrase)
             # Rule4b: "全てのアクセント句にはアクセント位置を 1 つ指定する必要がある"
@@ -84,10 +84,10 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
         # モーラ探索
         for watch_index in range(base_index, len(phrase)):
             # アクセント位置特殊文字 = モーラ境界 -> 探索 break
-            if phrase[watch_index] == ACCENT_SYMBOL:
+            if phrase[watch_index] == _ACCENT_SYMBOL:
                 break
             stack += phrase[watch_index]
-            if stack in text2mora_with_unvoice:
+            if stack in _text2mora_with_unvoice:
                 # より長い要素からなるモーラが見つかれば上書き（longest match）
                 # 例: phrase "キャ" -> "キ" 検出 -> "キャ" 検出/上書き -> Mora("キャ")
                 matched_text = stack
@@ -95,11 +95,11 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
         # push mora
         else:
-            moras.append(text2mora_with_unvoice[matched_text].copy(deep=True))
+            moras.append(_text2mora_with_unvoice[matched_text].copy(deep=True))
             base_index += len(matched_text)
             stack = ""
             matched_text = None
-        if outer_loop > LOOP_LIMIT:
+        if outer_loop > _LOOP_LIMIT:
             raise ParseKanaError(ParseKanaErrorCode.INFINITE_LOOP)
     # Rule4b: "全てのアクセント句にはアクセント位置を 1 つ指定する必要がある"
     if accent_index is None:
@@ -129,7 +129,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     for i in range(len(text) + 1):
         # アクセント句境界の出現までインデックス進展
         # Rule2: "アクセント句は`/`または`、`で区切る。"
-        if i == len(text) or text[i] in [PAUSE_DELIMITER, NOPAUSE_DELIMITER]:
+        if i == len(text) or text[i] in [_PAUSE_DELIMITER, _NOPAUSE_DELIMITER]:
             phrase = text[phrase_base:i]
             if len(phrase) == 0:
                 raise ParseKanaError(
@@ -139,19 +139,19 @@ def parse_kana(text: str) -> List[AccentPhrase]:
             phrase_base = i + 1
 
             # Rule5: "アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる"
-            is_interrogative = WIDE_INTERROGATION_MARK in phrase
+            is_interrogative = _WIDE_INTERROGATION_MARK in phrase
             if is_interrogative:
-                if WIDE_INTERROGATION_MARK in phrase[:-1]:
+                if _WIDE_INTERROGATION_MARK in phrase[:-1]:
                     raise ParseKanaError(
                         ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END, text=phrase
                     )
                 # 疑問形はモーラでなくアクセント句属性で表現
-                phrase = phrase.replace(WIDE_INTERROGATION_MARK, "")
+                phrase = phrase.replace(_WIDE_INTERROGATION_MARK, "")
 
             accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
 
             # Rule2b: "`、`で区切った場合に限り無音区間が挿入される。"
-            if i < len(text) and text[i] == PAUSE_DELIMITER:
+            if i < len(text) and text[i] == _PAUSE_DELIMITER:
                 accent_phrase.pause_mora = Mora(
                     text="、",
                     consonant=None,
@@ -185,23 +185,22 @@ def create_kana(accent_phrases: List[AccentPhrase]) -> str:
         for j, mora in enumerate(phrase.moras):
             # Rule3: "カナの手前に`_`を入れるとそのカナは無声化される"
             if mora.vowel in ["A", "I", "U", "E", "O"]:
-                text += UNVOICE_SYMBOL
+                text += _UNVOICE_SYMBOL
             # Rule1: "全てのカナはカタカナで記述される"
             text += mora.text
             # Rule4: "アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。"
             if j + 1 == phrase.accent:
-                text += ACCENT_SYMBOL
+                text += _ACCENT_SYMBOL
 
         # Rule5: "アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる"
         if phrase.is_interrogative:
-            text += WIDE_INTERROGATION_MARK
+            text += _WIDE_INTERROGATION_MARK
 
         # Rule2. "アクセント句は`/`または`、`で区切る"
         if i < len(accent_phrases) - 1:
             if phrase.pause_mora is None:
-                text += NOPAUSE_DELIMITER
+                text += _NOPAUSE_DELIMITER
             # Rule2b: "`、`で区切った場合に限り無音区間が挿入される。
             else:
-                text += PAUSE_DELIMITER
-
+                text += _PAUSE_DELIMITER
     return text
