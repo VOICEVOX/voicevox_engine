@@ -1215,6 +1215,8 @@ def generate_app(
         # 更新した設定へ上書き
         setting_loader.dump_setting_file(settings)
 
+        message = "設定を保存しました。"
+
         if allow_origin is None:
             allow_origin = ""
 
@@ -1224,6 +1226,7 @@ def generate_app(
                 "request": request,
                 "cors_policy_mode": cors_policy_mode,
                 "allow_origin": allow_origin,
+                "message": message,
             },
         )
 
