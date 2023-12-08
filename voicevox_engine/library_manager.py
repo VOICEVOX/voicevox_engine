@@ -24,6 +24,7 @@ INFO_FILE = "metas.json"
 
 class LibraryManager:
     """音声ライブラリ (`.vvlib`) の管理"""
+
     def __init__(
         self,
         library_root_dir: Path,
