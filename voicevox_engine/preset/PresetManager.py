@@ -11,7 +11,7 @@ from .PresetError import PresetError
 class PresetManager:
     """
     プリセットの管理
-    
+
     プリセットはAudioQuery全体特徴量（話速・音高・抑揚・音量・無音長）のデフォルト値セットである。
     YAMLファイルをSSoTとする簡易データベース方式により、プリセットの管理をおこなう。
     """
