@@ -14,6 +14,7 @@ from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Any, Dict, List, Optional
+from ko2kana import toKana
 
 import soundfile
 import uvicorn
@@ -134,6 +135,7 @@ def generate_app(
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
+    experimental_katakana_transcription: bool,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -245,6 +247,8 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> AudioQuery:
+        if experimental_katakana_transcription:
+            text = toKana(text)
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
@@ -1374,6 +1378,13 @@ def main() -> None:
         ),
     )
 
+    parser.add_argument(
+        "--experimental_katakana_transcription", 
+        type=bool,
+        default=False,
+        help="韓国語と英語の発音をカタカナに置き換えます。数字は変換しません。"
+    )
+
     args = parser.parse_args()
 
     if args.output_log_utf8:
@@ -1458,6 +1469,7 @@ def main() -> None:
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,
+            experimental_katakana_transcription=args.experimental_katakana_transcription,
             cancellable_engine=cancellable_engine,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
