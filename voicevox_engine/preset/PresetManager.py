@@ -12,6 +12,7 @@ class PresetManager:
     """
     プリセットの管理（YAMLファイルをSSoTとする簡易データベース方式）
     """
+
     def __init__(self, preset_path: Path):
         """
         Parameters
