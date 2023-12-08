@@ -23,6 +23,7 @@ INFO_FILE = "metas.json"
 
 
 class LibraryManager:
+    """音声ライブラリ (`.vvlib`) の管理"""
     def __init__(
         self,
         library_root_dir: Path,
@@ -42,7 +43,13 @@ class LibraryManager:
         self.engine_name = engine_name
         self.engine_uuid = engine_uuid
 
-    def downloadable_libraries(self):
+    def downloadable_libraries(self) -> list[DownloadableLibraryInfo]:
+        """
+        ダウンロード可能ライブラリ群の一覧を取得
+        Returns
+        -------
+        - : list[DownloadableLibraryInfo]
+        """
         # == ダウンロード情報をネットワーク上から取得する場合
         # url = "https://example.com/downloadable_libraries.json"
         # response = requests.get(url)
@@ -83,9 +90,17 @@ class LibraryManager:
             return list(map(DownloadableLibraryInfo.parse_obj, libraries))
 
     def installed_libraries(self) -> Dict[str, InstalledLibraryInfo]:
-        library = {}
+        """
+        インストール済み音声ライブラリ群の情報を取得
+        Returns
+        -------
+        library : Dict[str, InstalledLibraryInfo]
+            インストール済みライブラリ群の情報
+        """
+        library: Dict[str, InstalledLibraryInfo] = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():
+                # ライブラリ情報の取得 from `library_root_dir / f"{library_uuid}" / "metas.json"`
                 library_uuid = os.path.basename(library_dir)
                 with open(library_dir / INFO_FILE, encoding="utf-8") as f:
                     library[library_uuid] = json.load(f)
@@ -93,7 +108,20 @@ class LibraryManager:
                     library[library_uuid]["uninstallable"] = True
         return library
 
-    def install_library(self, library_id: str, file: BytesIO):
+    def install_library(self, library_id: str, file: BytesIO) -> Path:
+        """
+        音声ライブラリファイル (`.vvlib`) のインストール
+        Parameters
+        ----------
+        library_id : str
+            インストール対象ライブラリID
+        file : BytesIO
+            ライブラリファイルBlob
+        Returns
+        -------
+        library_dir : Path
+            インストール済みライブラリ群の情報
+        """
         for downloadable_library in self.downloadable_libraries():
             if downloadable_library.uuid == library_id:
                 library_info = downloadable_library.dict()
@@ -102,10 +130,16 @@ class LibraryManager:
             raise HTTPException(
                 status_code=404, detail=f"指定された音声ライブラリ {library_id} が見つかりません。"
             )
+
+        # ライブラリディレクトリの生成
         library_dir = self.library_root_dir / library_id
         library_dir.mkdir(exist_ok=True)
+
+        # metas.jsonの生成
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
+
+        # Validation: ファイルフォーマット (zip)
         if not zipfile.is_zipfile(file):
             raise HTTPException(
                 status_code=422, detail=f"音声ライブラリ {library_id} は不正なファイルです。"
@@ -117,7 +151,7 @@ class LibraryManager:
                     status_code=422, detail=f"音声ライブラリ {library_id} は不正なファイルです。"
                 )
 
-            # validate manifest version
+            # Validation: マニフェストファイル
             vvlib_manifest = None
             try:
                 vvlib_manifest = json.loads(
@@ -134,6 +168,7 @@ class LibraryManager:
                     detail=f"指定された音声ライブラリ {library_id} のvvlib_manifest.jsonは不正です。",
                 )
 
+            # Validation: マニフェスト形式
             try:
                 VvlibManifest.validate(vvlib_manifest)
             except ValidationError:
@@ -142,11 +177,13 @@ class LibraryManager:
                     detail=f"指定された音声ライブラリ {library_id} のvvlib_manifest.jsonに不正なデータが含まれています。",
                 )
 
+            # Validation: ライブラリバージョン
             if not Version.is_valid(vvlib_manifest["version"]):
                 raise HTTPException(
                     status_code=422, detail=f"指定された音声ライブラリ {library_id} のversionが不正です。"
                 )
 
+            # Validation: マニフェストバージョン
             try:
                 vvlib_manifest_version = Version.parse(
                     vvlib_manifest["manifest_version"]
@@ -156,33 +193,45 @@ class LibraryManager:
                     status_code=422,
                     detail=f"指定された音声ライブラリ {library_id} のmanifest_versionが不正です。",
                 )
-
             if vvlib_manifest_version > self.supported_vvlib_version:
                 raise HTTPException(
                     status_code=422, detail=f"指定された音声ライブラリ {library_id} は未対応です。"
                 )
 
+            # Validation: ライブラリ-エンジン対応
             if vvlib_manifest["engine_uuid"] != self.engine_uuid:
                 raise HTTPException(
                     status_code=422,
                     detail=f"指定された音声ライブラリ {library_id} は{self.engine_name}向けではありません。",
                 )
 
+            # インストール（展開）
             zf.extractall(library_dir)
+
         return library_dir
 
     def uninstall_library(self, library_id: str):
+        """
+        インストール済み音声ライブラリのアンインストール
+        Parameters
+        ----------
+        library_id : str
+            インストール対象ライブラリID
+        """
+        # Validation: インストール済み
         installed_libraries = self.installed_libraries()
         if library_id not in installed_libraries.keys():
             raise HTTPException(
                 status_code=404, detail=f"指定された音声ライブラリ {library_id} はインストールされていません。"
             )
 
+        # Validation: アンインストール許可フラグ
         if not installed_libraries[library_id]["uninstallable"]:
             raise HTTPException(
                 status_code=403, detail=f"指定された音声ライブラリ {library_id} はアンインストールできません。"
             )
 
+        # アンインストール（ディレクトリ削除）
         try:
             shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
