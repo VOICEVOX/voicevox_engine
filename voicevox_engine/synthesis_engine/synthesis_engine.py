@@ -155,13 +155,11 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
+def calc_frame_per_phoneme(moras: List[Mora]):
     """
     音素あたりのフレーム長を算出
     Parameters
     ----------
-    query : AudioQuery
-        音声合成クエリ
     moras : List[Mora]
         モーラ列
     Returns
@@ -169,9 +167,6 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     frame_per_phoneme : NDArray[]
         音素あたりのフレーム長。端数丸め。
     """
-    # Apply: グローバル特徴量による補正（話速）
-    moras = apply_speed_scale(moras, query)
-
     frame_per_phoneme: list[ndarray] = []
     for mora in moras:
         if mora.consonant:
@@ -246,13 +241,11 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_pitch(query: AudioQuery, moras: list[Mora]) -> ndarray:
+def calc_frame_pitch(moras: list[Mora]) -> ndarray:
     """
     フレームごとのピッチの生成
     Parameters
     ----------
-    query : AudioQuery
-        音声合成クエリ
     moras : List[Mora]
         モーラ列
     Returns
@@ -260,9 +253,6 @@ def calc_frame_pitch(query: AudioQuery, moras: list[Mora]) -> ndarray:
     frame_f0 : NDArray[]
         フレームごとの基本周波数系列
     """
-    moras = apply_pitch_scale(moras, query)
-    moras = apply_intonation_scale(moras, query)
-
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # モーラごとの基本周波数
     f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
@@ -619,8 +609,12 @@ class SynthesisEngine(SynthesisEngineBase):
         flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
         flatten_moras = apply_prepost_silence(flatten_moras, query)
-        frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
-        f0 = calc_frame_pitch(query, flatten_moras)
+        flatten_moras = apply_speed_scale(flatten_moras, query)
+        flatten_moras = apply_pitch_scale(flatten_moras, query)
+        flatten_moras = apply_intonation_scale(flatten_moras, query)
+
+        frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
+        f0 = calc_frame_pitch(flatten_moras)
         phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する

@@ -332,7 +332,6 @@ def test_apply_output_stereo():
 def test_calc_frame_per_phoneme():
     """Test `calc_frame_per_phoneme`."""
     # Inputs
-    query = _gen_query(speedScale=2.0)
     moras = [
         _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
         _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
@@ -345,11 +344,11 @@ def test_calc_frame_per_phoneme():
 
     # Expects
     #                        Pre k  o  N pau h  i  h  O Pst
-    true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    true_frame_per_phoneme = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
     true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
 
     # Outputs
-    frame_per_phoneme = calc_frame_per_phoneme(query, moras)
+    frame_per_phoneme = calc_frame_per_phoneme(moras)
 
     assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
 
@@ -381,7 +380,6 @@ def test_calc_frame_per_mora():
 def test_calc_frame_pitch():
     """Test `test_calc_frame_pitch`."""
     # Inputs
-    query = _gen_query(pitchScale=2.0, intonationScale=0.5)
     moras = [
         _gen_mora("　", None, None, "　", 1 * 0.01067, 0.0),
         _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
@@ -392,17 +390,16 @@ def test_calc_frame_pitch():
         _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
     ]
 
-    # Expects - x4 value scaled -> mean=300 var x0.5 intonation scaling
     #           pau   ko     ko     ko      N      N
-    true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
+    true1_f0 = [0.0, 50.0, 50.0, 50.0, 50.0, 50.0]
     #           pau   hi     hi     hi
-    true2_f0 = [0.0, 400.0, 400.0, 400.0]
+    true2_f0 = [0.0, 125.0, 125.0, 125.0]
     #           hO   hO   hO   paw  paw  paw
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(query, moras)
+    f0 = calc_frame_pitch(moras)
 
     assert numpy.array_equal(f0, true_f0)
 
@@ -480,8 +477,11 @@ def test_feat_to_framescale():
 
     # Outputs
     flatten_moras = apply_prepost_silence(flatten_moras, query)
-    frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
-    f0 = calc_frame_pitch(query, flatten_moras)
+    flatten_moras = apply_speed_scale(flatten_moras, query)
+    flatten_moras = apply_pitch_scale(flatten_moras, query)
+    flatten_moras = apply_intonation_scale(flatten_moras, query)
+    frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
+    f0 = calc_frame_pitch(flatten_moras)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
     assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
