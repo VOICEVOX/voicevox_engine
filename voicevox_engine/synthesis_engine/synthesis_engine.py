@@ -335,7 +335,7 @@ def apply_sampling_rate(wave: ndarray, sr_wave: int, query: AudioQuery) -> ndarr
     wave : ndarray
         出力サンプリングレートが適用された音声波形
     """
-    # サンプリングレート一致: スルー
+    # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
         return wave
 
