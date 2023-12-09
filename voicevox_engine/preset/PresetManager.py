@@ -12,7 +12,7 @@ class PresetManager:
     """
     プリセットの管理
 
-    プリセットはAudioQuery全体特徴量（話速・音高・抑揚・音量・無音長）のデフォルト値セットである。
+    プリセットはAudioQuery全体パラメータ（話速・音高・抑揚・音量・無音長）のデフォルト値セットである。
     YAMLファイルをSSoTとする簡易データベース方式により、プリセットの管理をおこなう。
     """
 
@@ -55,7 +55,7 @@ class PresetManager:
         except ValidationError:
             raise PresetError("プリセットの設定ファイルにミスがあります")
 
-        # Validation: 全idは一意
+        # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(
             {preset.id for preset in _presets}
         ):
