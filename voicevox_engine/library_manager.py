@@ -140,7 +140,7 @@ class LibraryManager:
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
 
-        # Validation: ファイルフォーマット (zip)
+        # zipファイル形式のバリデーション
         if not zipfile.is_zipfile(file):
             raise HTTPException(
                 status_code=422, detail=f"音声ライブラリ {library_id} は不正なファイルです。"
@@ -152,7 +152,7 @@ class LibraryManager:
                     status_code=422, detail=f"音声ライブラリ {library_id} は不正なファイルです。"
                 )
 
-            # Validation: マニフェストファイル
+            # マニフェストファイルの存在とファイル形式をバリデーション
             vvlib_manifest = None
             try:
                 vvlib_manifest = json.loads(
@@ -169,7 +169,7 @@ class LibraryManager:
                     detail=f"指定された音声ライブラリ {library_id} のvvlib_manifest.jsonは不正です。",
                 )
 
-            # Validation: マニフェスト形式
+            # マニフェスト形式のバリデーション
             try:
                 VvlibManifest.validate(vvlib_manifest)
             except ValidationError:
@@ -178,13 +178,13 @@ class LibraryManager:
                     detail=f"指定された音声ライブラリ {library_id} のvvlib_manifest.jsonに不正なデータが含まれています。",
                 )
 
-            # Validation: ライブラリバージョン
+            # ライブラリバージョンのバリデーション
             if not Version.is_valid(vvlib_manifest["version"]):
                 raise HTTPException(
                     status_code=422, detail=f"指定された音声ライブラリ {library_id} のversionが不正です。"
                 )
 
-            # Validation: マニフェストバージョン
+            # マニフェストバージョンのバリデーション
             try:
                 vvlib_manifest_version = Version.parse(
                     vvlib_manifest["manifest_version"]
@@ -199,14 +199,14 @@ class LibraryManager:
                     status_code=422, detail=f"指定された音声ライブラリ {library_id} は未対応です。"
                 )
 
-            # Validation: ライブラリ-エンジン対応
+            # ライブラリ-エンジン対応のバリデーション
             if vvlib_manifest["engine_uuid"] != self.engine_uuid:
                 raise HTTPException(
                     status_code=422,
                     detail=f"指定された音声ライブラリ {library_id} は{self.engine_name}向けではありません。",
                 )
 
-            # インストール（展開）
+            # 展開によるインストール
             zf.extractall(library_dir)
 
         return library_dir
@@ -219,20 +219,20 @@ class LibraryManager:
         library_id : str
             インストール対象ライブラリID
         """
-        # Validation: インストール済み
+        # 対象ライブラリがインストール済みであることの確認
         installed_libraries = self.installed_libraries()
         if library_id not in installed_libraries.keys():
             raise HTTPException(
                 status_code=404, detail=f"指定された音声ライブラリ {library_id} はインストールされていません。"
             )
 
-        # Validation: アンインストール許可フラグ
+        # アンインストール許可フラグのバリデーション
         if not installed_libraries[library_id]["uninstallable"]:
             raise HTTPException(
                 status_code=403, detail=f"指定された音声ライブラリ {library_id} はアンインストールできません。"
             )
 
-        # アンインストール（ディレクトリ削除）
+        # ディレクトリ削除によるアンインストール
         try:
             shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
