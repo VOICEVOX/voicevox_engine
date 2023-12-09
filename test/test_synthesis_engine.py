@@ -723,9 +723,14 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(result, true_result)
 
     def synthesis_test_base(self, audio_query: AudioQuery):
+        # Inputs 音素長・モーラ音高の設定 & Expects 音素長・音素ID・モーラ音高の記録
+        #     Inputs
+        #         `audio_query`: 子音長0.1秒/母音長0.1秒/モーラ音高ランダム
+        #     Expects
+        #         `phoneme_length_list`: 音素長系列
+        #         `phoneme_id_list`: 音素ID系列
+        #         `f0_list`: モーラ音高系列
         accent_phrases = audio_query.accent_phrases
-
-        # decode forwardのために適当にpitchとlengthを設定し、リストで持っておく
         phoneme_length_list = [0.0]
         phoneme_id_list = [0]
         f0_list = [0.0]
@@ -750,42 +755,46 @@ class TestSynthesisEngine(TestCase):
         phoneme_length_list.append(0.0)
         phoneme_id_list.append(0)
         f0_list.append(0.0)
-
         phoneme_length_list[0] = audio_query.prePhonemeLength
         phoneme_length_list[-1] = audio_query.postPhonemeLength
 
+        # Expects: speedScale適用
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
+        # Outputs: MockCore入りSynthesisEngine の `.synthesis` 出力および core.decode_forward 引数
         result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
-
-        # decodeに渡される値の検証
         decode_args = self.decode_mock.call_args[1]
         list_length = decode_args["length"]
+
+        # Test: フレーム長
         self.assertEqual(
             list_length,
             int(sum([round(p * 24000 / 256) for p in phoneme_length_list])),
         )
 
+        # Expects: Apply/Convert/Rescale
         num_phoneme = OjtPhoneme.num_phoneme
         # mora_phoneme_listのPhoneme ID版
         mora_phoneme_id_list = [OjtPhoneme(p).phoneme_id for p in mora_phoneme_list]
 
-        # numpy.repeatをfor文でやる
-        f0 = []
-        phoneme = []
+        f0 = []  # フレームごとの音高系列
+        phoneme = []  # フレームごとの音素onehotベクトル系列
         f0_index = 0
         mean_f0 = []
         for i, phoneme_length in enumerate(phoneme_length_list):
+            # Expects: pitchScale適用
             f0_single = numpy.array(f0_list[f0_index], dtype=numpy.float32) * (
                 2**audio_query.pitchScale
             )
+            # Expects: フレームスケール化
             for _ in range(int(round(phoneme_length * (24000 / 256)))):
                 f0.append([f0_single])
+                # Expects: 音素onehot化
                 phoneme_s = []
                 for _ in range(num_phoneme):
                     phoneme_s.append(0)
-                # one hot
+                # Expects: 音素フレームスケール化
                 phoneme_s[phoneme_id_list[i]] = 1
                 phoneme.append(phoneme_s)
             # consonantとvowelを判別し、vowelであればf0_indexを一つ進める
@@ -793,44 +802,56 @@ class TestSynthesisEngine(TestCase):
                 if f0_single > 0:
                     mean_f0.append(f0_single)
                 f0_index += 1
-
+        # Expects: 抑揚スケール適用
         mean_f0 = numpy.array(mean_f0, dtype=numpy.float32).mean()
         f0 = numpy.array(f0, dtype=numpy.float32)
         for i in range(len(f0)):
             if f0[i][0] != 0.0:
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
-
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
+        assert_f0_count = 0
+
+        # Outputs: decode_forward `f0` 引数
+        decode_f0 = decode_args["f0"]
+
+        # Test: フレームごとの音高系列
         # 乱数の影響で数値の位置がずれが生じるので、大半(4/5)があっていればよしとする
         # また、上の部分のint(round(phoneme_length * (24000 / 256)))の影響で
         # 本来のf0/phonemeとテスト生成したf0/phonemeの長さが変わることがあり、
         # テスト生成したものが若干長くなることがあるので、本来のものの長さを基準にassertする
-        assert_f0_count = 0
-        decode_f0 = decode_args["f0"]
         for i in range(len(decode_f0)):
             # 乱数の影響等で数値にずれが生じるので、10の-5乗までの近似値であれば許容する
             assert_f0_count += math.isclose(f0[i][0], decode_f0[i][0], rel_tol=10e-5)
         self.assertTrue(assert_f0_count >= int(len(decode_f0) / 5) * 4)
+
         assert_phoneme_count = 0
+
+        # Outputs: decode_forward `phoneme` 引数
         decode_phoneme = decode_args["phoneme"]
+
+        # Test: フレームごとの音素系列
         for i in range(len(decode_phoneme)):
             assert_true_count = 0
             for j in range(len(decode_phoneme[i])):
                 assert_true_count += bool(phoneme[i][j] == decode_phoneme[i][j])
             assert_phoneme_count += assert_true_count == num_phoneme
+
         self.assertTrue(assert_phoneme_count >= int(len(decode_phoneme) / 5) * 4)
+
+        # Test: スタイルID
         self.assertEqual(decode_args["style_id"], 1)
 
-        # decode forwarderのmockを使う
+        # Expects: waveform (by mock)
         true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
-
+        # Expects: 音量スケール適用
         true_result *= audio_query.volumeScale
 
         # TODO: resampyの部分は値の検証しようがないので、パスする
         if audio_query.outputSamplingRate != 24000:
             return
 
+        # Test:
         assert_result_count = 0
         for i in range(len(true_result)):
             if audio_query.outputStereo:
