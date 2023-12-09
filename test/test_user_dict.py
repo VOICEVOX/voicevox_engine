@@ -11,8 +11,8 @@ from pyopenjtalk import g2p, unset_user_dict
 from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
 from voicevox_engine.user_dict import (
-    apply_word,
     _create_word,
+    apply_word,
     delete_word,
     import_user_dict,
     read_dict,

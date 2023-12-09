@@ -21,9 +21,9 @@ save_dir = get_save_dir()
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
-default_dict_path = root_dir / "default.csv" # VOICEVOXデフォルト辞書ファイルのパス
-user_dict_path = save_dir / "user_dict.json" # ユーザー辞書ファイルのパス
-compiled_dict_path = save_dir / "user.dic" # コンパイル済み辞書ファイルのパス
+default_dict_path = root_dir / "default.csv"  # VOICEVOXデフォルト辞書ファイルのパス
+user_dict_path = save_dir / "user_dict.json"  # ユーザー辞書ファイルのパス
+compiled_dict_path = save_dir / "user.dic"  # コンパイル済み辞書ファイルのパス
 
 
 # 同時書き込みの制御
@@ -40,7 +40,7 @@ def _write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path) -> 
     user_dict : Dict[str, UserDictWord]
         ユーザー辞書データ
     user_dict_path : Path
-        ユーザー辞書ファイルのパス  
+        ユーザー辞書ファイルのパス
     """
     converted_user_dict = {}
     for word_uuid, word in user_dict.items():
@@ -75,8 +75,10 @@ def update_dict(
         コンパイル済み辞書ファイルのパス
     """
     random_string = uuid4()
-    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}" # csv形式辞書データの一時保存ファイル
-    tmp_compiled_path = save_dir / f".tmp.dict_compiled-{random_string}" # コンパイル済み辞書データの一時保存ファイル
+    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}"  # csv形式辞書データの一時保存ファイル
+    tmp_compiled_path = (
+        save_dir / f".tmp.dict_compiled-{random_string}"
+    )  # コンパイル済み辞書データの一時保存ファイル
 
     try:
         # 辞書.csvを作成
