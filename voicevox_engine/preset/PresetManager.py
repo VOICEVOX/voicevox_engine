@@ -141,7 +141,7 @@ class PresetManager:
 
     def delete_preset(self, id: int):
         """
-        特定プリセットの削除
+        指定したIDのプリセットの削除
         Parameters
         ----------
         id: int
