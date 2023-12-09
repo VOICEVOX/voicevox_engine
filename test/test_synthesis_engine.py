@@ -20,6 +20,7 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     apply_prepost_silence,
     apply_speed_scale,
     apply_volume_scale,
+    calc_frame_per_mora,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
@@ -353,24 +354,43 @@ def test_calc_frame_per_phoneme():
     assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
 
 
+def test_calc_frame_per_mora():
+    """Test `calc_frame_per_mora`."""
+    # Inputs
+    moras = [
+        _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
+        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
+        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
+    ]
+
+    # Expects
+    #                    Pre ko  N pau hi hO Pst
+    true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
+    true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
+
+    # Outputs
+    frame_per_phoneme = numpy.array(list(map(calc_frame_per_mora, moras)))
+
+    assert numpy.array_equal(frame_per_phoneme, true_frame_per_mora)
+
+
 def test_calc_frame_pitch():
     """Test `test_calc_frame_pitch`."""
     # Inputs
     query = _gen_query(pitchScale=2.0, intonationScale=0.5)
     moras = [
-        _gen_mora("　", None, None, "　", 0.0, 0.0),
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
-        _gen_mora("ン", None, None, "N", 0.0, 50.0),
-        _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
-        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
-        _gen_mora("　", None, None, "　", 0.0, 0.0),
+        _gen_mora("　", None, None, "　", 1 * 0.01067, 0.0),
+        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
     ]
-    phoneme_str = "pau k o N pau h i h O pau"
-    phonemes = [OjtPhoneme(p) for p in phoneme_str.split()]
-    #                   Pre k  o  N pau h  i  h  O Pst
-    frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
 
     # Expects - x4 value scaled -> mean=300 var x0.5 intonation scaling
     #           pau   ko     ko     ko      N      N
@@ -382,7 +402,7 @@ def test_calc_frame_pitch():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(query, moras, phonemes, frame_per_phoneme)
+    f0 = calc_frame_pitch(query, moras)
 
     assert numpy.array_equal(f0, true_f0)
 
@@ -461,7 +481,7 @@ def test_feat_to_framescale():
     # Outputs
     flatten_moras = apply_prepost_silence(flatten_moras, query)
     frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
-    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frame_per_phoneme)
+    f0 = calc_frame_pitch(query, flatten_moras)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
     assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
