@@ -1,6 +1,6 @@
 """
 「AquesTalk風記法」を実装した AquesTalk風記法テキスト <-> アクセント句系列 変換。
-記法定義: `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#読み方を-aquestalk風記法で取得修正するサンプルコード`
+記法定義: `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#読み方を-aquestalk風記法で取得修正するサンプルコード` # noqa
 """
 
 from typing import List, Optional
