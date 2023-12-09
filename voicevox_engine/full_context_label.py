@@ -520,7 +520,7 @@ class Utterance:
 
 def extract_full_context_label(text: str):
     """
-    日本語テキストから発話を推定
+    日本語テキストから発話クラスを抽出
     Parameters
     ----------
     text : str

@@ -34,7 +34,8 @@ def adjust_interrogative_accent_phrases(
     accent_phrases: List[AccentPhrase],
 ) -> List[AccentPhrase]:
     """
-    アクセント句系列の必要に応じた疑問系補正（各AccentPhrase末尾への高ピッチ有声短母音モーラ付与）
+    アクセント句系列の必要に応じて疑問系に補正
+    各accent_phraseの末尾のモーラより少し音の高い有声母音モーラを付与するすることで疑問文ぽくする
     Parameters
     ----------
     accent_phrases : List[AccentPhrase]
@@ -80,15 +81,15 @@ def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
 
 def make_interrogative_mora(last_mora: Mora) -> Mora:
     """
-    疑問形モーラ（同一母音・継続長 0.15秒・音高↑）の生成
+    疑問形用のモーラ（同一母音・継続長 0.15秒・音高↑）の生成
     Parameters
     ----------
     last_mora : Mora
-        非疑問形モーラ
+        疑問形にするモーラ
     Returns
     -------
     mora : Mora
-        疑問形モーラ
+        疑問形用のモーラ
     """
     fix_vowel_length = 0.15
     adjust_pitch = 0.3
@@ -107,7 +108,7 @@ def full_context_label_moras_to_moras(
     full_context_moras: List[full_context_label.Mora],
 ) -> List[Mora]:
     """
-    Moraクラス間キャスト (`full_context_label.Mora` -> `Mora`)
+    Moraクラスのキャスト (`full_context_label.Mora` -> `Mora`)
     Parameters
     ----------
     full_context_moras : List[full_context_label.Mora]
@@ -158,7 +159,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self, style_id: int, skip_reinit: bool
     ):
         """
-        音声合成器のスタイル指定初期化
+        指定したスタイルでの音声合成を初期化する。
         何度も実行可能。未実装の場合は何もしない。
         Parameters
         ----------
@@ -188,7 +189,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
-        音素長の推定と更新
+        音素長の更新
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
@@ -207,7 +208,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
-        モーラ音高の推定と更新
+        モーラ音高の更新
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
@@ -225,7 +226,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
         """
-        音素長・モーラ音高の推定と更新
+        音素長・モーラ音高の更新
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
@@ -246,7 +247,8 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
     def create_accent_phrases(self, text: str, style_id: int) -> List[AccentPhrase]:
         """
-        テキストからアクセント句系列を生成（音素種・アクセント・音素長・モーラ音高の推定）
+        テキストからアクセント句系列を生成。
+        音素長やモーラ音高も更新。
         Parameters
         ----------
         text : str
@@ -261,7 +263,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         if len(text.strip()) == 0:
             return []
 
-        # 音素種とアクセントの推定
+        # 音素とアクセントの推定
         utterance = extract_full_context_label(text)
         if len(utterance.breath_groups) == 0:
             return []
