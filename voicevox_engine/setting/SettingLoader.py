@@ -5,7 +5,7 @@ import yaml
 from ..utility import engine_root, get_save_dir
 from .Setting import Setting
 
-DEFAULT_SETTING_PATH: Path = engine_root() / "default_setting.yml"
+DEFAULT_SETTING_PATH: Path = engine_root() / "default_setting.yaml"
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
