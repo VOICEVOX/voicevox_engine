@@ -13,13 +13,13 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
-    apply_intonation,
-    apply_pitch,
-    apply_sampling_rate,
-    apply_silence,
-    apply_speed,
-    apply_stereo,
-    apply_volume,
+    apply_intonation_scale,
+    apply_output_sampling_rate,
+    apply_output_stereo,
+    apply_pitch_scale,
+    apply_prepost_silence,
+    apply_speed_scale,
+    apply_volume_scale,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
@@ -176,8 +176,8 @@ def _gen_mora(
     )
 
 
-def test_apply_silence():
-    """Test `apply_silence`."""
+def test_apply_prepost_silence():
+    """Test `apply_prepost_silence`."""
     # Inputs
     query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
     moras = [
@@ -192,13 +192,13 @@ def test_apply_silence():
     ]
 
     # Outputs
-    moras_with_silence = apply_silence(moras, query)
+    moras_with_silence = apply_prepost_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
 
 
-def test_apply_speed():
-    """Test `apply_speed`."""
+def test_apply_speed_scale():
+    """Test `apply_speed_scale`."""
     # Inputs
     query = _gen_query(speedScale=2.0)
     input_moras = [
@@ -219,13 +219,13 @@ def test_apply_speed():
     ]
 
     # Outputs
-    moras = apply_speed(input_moras, query)
+    moras = apply_speed_scale(input_moras, query)
 
     assert moras == true_moras
 
 
-def test_apply_pitch():
-    """Test `apply_pitch`."""
+def test_apply_pitch_scale():
+    """Test `apply_pitch_scale`."""
     # Inputs
     query = _gen_query(pitchScale=2.0)
     input_moras = [
@@ -246,13 +246,13 @@ def test_apply_pitch():
     ]
 
     # Outputs
-    moras = apply_pitch(input_moras, query)
+    moras = apply_pitch_scale(input_moras, query)
 
     assert moras == true_moras
 
 
-def test_apply_intonation():
-    """Test `apply_intonation`."""
+def test_apply_intonation_scale():
+    """Test `apply_intonation_scale`."""
     # Inputs
     query = _gen_query(intonationScale=0.5)
     input_moras = [
@@ -273,13 +273,13 @@ def test_apply_intonation():
     ]
 
     # Outputs
-    moras = apply_intonation(input_moras, query)
+    moras = apply_intonation_scale(input_moras, query)
 
     assert moras == true_moras
 
 
-def test_apply_volume():
-    """Test `apply_volume`."""
+def test_apply_volume_scale():
+    """Test `apply_volume_scale`."""
     # Inputs
     query = _gen_query(volumeScale=3.0)
     input_wave = numpy.array([0.0, 1.0, 2.0])
@@ -288,13 +288,13 @@ def test_apply_volume():
     true_wave = numpy.array([0.0, 3.0, 6.0])
 
     # Outputs
-    wave = apply_volume(input_wave, query)
+    wave = apply_volume_scale(input_wave, query)
 
     assert numpy.allclose(wave, true_wave)
 
 
-def test_apply_sampling_rate():
-    """Test `apply_sampling_rate`."""
+def test_apply_output_sampling_rate():
+    """Test `apply_output_sampling_rate`."""
     # Inputs
     query = _gen_query(outputSamplingRate=12000)
     input_wave = numpy.array([1.0 for _ in range(120)])
@@ -305,13 +305,13 @@ def test_apply_sampling_rate():
     assert true_wave.shape == (60,), "Prerequisites"
 
     # Outputs
-    wave = apply_sampling_rate(input_wave, input_sr_wave, query)
+    wave = apply_output_sampling_rate(input_wave, input_sr_wave, query)
 
     assert wave.shape[0] == true_wave.shape[0]
 
 
-def test_apply_stereo():
-    """Test `apply_stereo`."""
+def test_apply_output_stereo():
+    """Test `apply_output_stereo`."""
     # Inputs
     query = _gen_query(outputStereo=True)
     input_wave = numpy.array([1.0, 0.0, 2.0])
@@ -320,7 +320,7 @@ def test_apply_stereo():
     true_wave = numpy.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
 
     # Outputs
-    wave = apply_stereo(input_wave, query)
+    wave = apply_output_stereo(input_wave, query)
 
     assert numpy.array_equal(wave, true_wave)
 
@@ -456,7 +456,7 @@ def test_feat_to_framescale():
     assert true_frame_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
 
     # Outputs
-    flatten_moras = apply_silence(flatten_moras, query)
+    flatten_moras = apply_prepost_silence(flatten_moras, query)
     frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
     f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frame_per_phoneme)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
