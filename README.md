@@ -350,13 +350,6 @@ docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:n
 
 GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
 
-## 貢献者の方へ
-
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
-
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
-
 ## 環境構築
 
 `Python 3.11.3` を用いて開発されています。
@@ -458,41 +451,6 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
-## コードフォーマット
-
-このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
-利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
-プルリクエストを作成する際は、利用することを推奨します。
-
-```bash
-pre-commit install -t pre-push
-```
-
-エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
-
-```bash
-pysen run format lint
-```
-
-## テスト
-
-```bash
-python -m pytest
-```
-
-## タイポチェック
-
-[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
-[typos をインストール](https://github.com/crate-ci/typos#install) した後
-
-```bash
-typos
-```
-
-でタイポチェックを行えます。
-もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
-
 ## API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
@@ -523,9 +481,61 @@ LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
 
-## 依存関係
+## ユーザー辞書の更新について
 
-### 更新
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
+```
+
+## 貢献者ガイド
+
+### 貢献者の方へ
+
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+
+### コードフォーマット
+
+このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
+利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
+プルリクエストを作成する際は、利用することを推奨します。
+
+```bash
+pre-commit install -t pre-push
+```
+
+エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
+
+```bash
+pysen run format lint
+```
+
+### テスト
+
+```bash
+python -m pytest
+```
+
+### タイポチェック
+
+[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
+[typos をインストール](https://github.com/crate-ci/typos#install) した後
+
+```bash
+typos
+```
+
+でタイポチェックを行えます。
+もし誤判定やチェックから除外すべきファイルがあれば
+[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+
+### 依存関係
+
+#### 更新
 
 [Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
 以下のコマンドで操作できます:
@@ -546,8 +556,7 @@ poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
-
-### ライセンス
+#### ライセンス
 
 依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
@@ -556,13 +565,19 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
-## ユーザー辞書の更新について
+### GitHub Actions
 
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+#### Variables
 
-```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-```
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## マルチエンジン機能に関して
 
@@ -610,20 +625,6 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 これはファイル容量が大きくて配布が困難な場合に有用です。
 
 </details>
-
-## GitHub Actions
-
-### Variables
-
-| name               | description         |
-| :----------------- | :------------------ |
-| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
-
-### Secrets
-
-| name            | description                                                             |
-| :-------------- | :---------------------------------------------------------------------- |
-| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## 事例紹介
 
