@@ -259,11 +259,9 @@ def calc_frame_pitch(
     frame_f0 : NDArray[]
         フレームごとの基本周波数系列
     """
-    # Apply: グローバル特徴量による補正（音高、抑揚）
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
 
-    # Convert: Core入力形式への変換（スカラ系列）
     # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
     # モーラごとの基本周波数
     f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
@@ -640,7 +638,6 @@ class SynthesisEngine(SynthesisEngineBase):
             )
             sr_wave = self.default_sampling_rate
 
-        # Apply: グローバル特徴量による補正（音量・サンプリングレート・ステレオ）
         wave = apply_volume_scale(wave, query)
         wave = apply_output_sampling_rate(wave, sr_wave, query)
         wave = apply_output_stereo(wave, query)
