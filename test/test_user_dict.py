@@ -12,7 +12,7 @@ from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
 from voicevox_engine.user_dict import (
     apply_word,
-    create_word,
+    _create_word,
     delete_word,
     import_user_dict,
     read_dict,
@@ -90,7 +90,7 @@ class TestUserDict(TestCase):
     def test_create_word(self):
         # 将来的に品詞などが追加された時にテストを増やす
         self.assertEqual(
-            create_word(surface="test", pronunciation="テスト", accent_type=1),
+            _create_word(surface="test", pronunciation="テスト", accent_type=1),
             UserDictWord(
                 surface="ｔｅｓｔ",
                 priority=5,
@@ -219,7 +219,7 @@ class TestUserDict(TestCase):
         for pos in part_of_speech_data:
             for i in range(MAX_PRIORITY + 1):
                 self.assertEqual(
-                    create_word(
+                    _create_word(
                         surface="test",
                         pronunciation="テスト",
                         accent_type=1,
