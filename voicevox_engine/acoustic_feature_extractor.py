@@ -1,53 +1,13 @@
 import numpy
 
 # 音素のリスト
-_PHONEME_LIST = (
-    "pau",
-    "A",
-    "E",
-    "I",
-    "N",
-    "O",
-    "U",
-    "a",
-    "b",
-    "by",
-    "ch",
-    "cl",
-    "d",
-    "dy",
-    "e",
-    "f",
-    "g",
-    "gw",
-    "gy",
-    "h",
-    "hy",
-    "i",
-    "j",
-    "k",
-    "kw",
-    "ky",
-    "m",
-    "my",
-    "n",
-    "ny",
-    "o",
-    "p",
-    "py",
-    "r",
-    "ry",
-    "s",
-    "sh",
-    "t",
-    "ts",
-    "ty",
-    "u",
-    "v",
-    "w",
-    "y",
-    "z",
-)
+_P_LIST1 = ("pau", "A", "E", "I", "N", "O", "U", "a", "b", "by")
+_P_LIST2 = ("ch", "cl", "d", "dy", "e", "f", "g", "gw", "gy", "h")
+_P_LIST3 = ("hy", "i", "j", "k", "kw", "ky", "m", "my", "n", "ny")
+_P_LIST4 = ("o", "p", "py", "r", "ry", "s", "sh", "t", "ts", "ty")
+_P_LIST5 = ("u", "v", "w", "y", "z")
+_PHONEME_LIST = _P_LIST1 + _P_LIST2 + _P_LIST3 + _P_LIST4 + _P_LIST5
+
 # 音素リストの要素数
 _NUM_PHONEME = len(_PHONEME_LIST)
 
