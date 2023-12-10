@@ -28,6 +28,7 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     pre_process,
     split_mora,
     to_flatten_moras,
+    to_flatten_phonemes,
     unvoiced_mora_phoneme_list,
 )
 
@@ -178,6 +179,24 @@ def _gen_mora(
         vowel_length=vowel_length,
         pitch=pitch,
     )
+
+
+def test_to_flatten_phonemes():
+    """Test `to_flatten_phonemes`."""
+    # Inputs
+    moras = [
+        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+    ]
+
+    # Expects
+    true_phonemes = ["pau", "h", "i", "pau"]
+
+    # Outputs
+    phonemes = list(map(lambda p: p.phoneme, to_flatten_phonemes(moras)))
+
+    assert true_phonemes == phonemes
 
 
 def test_apply_prepost_silence():
