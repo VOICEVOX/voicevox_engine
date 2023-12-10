@@ -785,6 +785,31 @@ def generate_app(
         -------
         ret_data: SpeakerInfo
         """
+
+        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
+        # {root_dir}/
+        #   speaker_info/
+        #       {speaker_uuid_0}/
+        #           policy.md
+        #           portrait.png
+        #           icons/
+        #               {id_0}.png
+        #               {id_1}.png
+        #               ...
+        #           portraits/
+        #               {id_0}.png
+        #               {id_1}.png
+        #               ...
+        #           voice_samples/
+        #               {id_0}_001.wav
+        #               {id_0}_002.wav
+        #               {id_0}_003.wav
+        #               {id_1}_001.wav
+        #               ...
+        #       {speaker_uuid_1}/
+        #           ...
+
+        # 該当話者の検索
         speakers = json.loads(get_engine(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
@@ -794,35 +819,32 @@ def generate_app(
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
-            policy = (root_dir / f"speaker_info/{speaker_uuid}/policy.md").read_text(
-                "utf-8"
-            )
-            portrait = b64encode_str(
-                (root_dir / f"speaker_info/{speaker_uuid}/portrait.png").read_bytes()
-            )
+            speaker_path = root_dir / "speaker_info" / speaker_uuid
+            # 話者情報の取得
+            # speaker policy
+            policy_path = speaker_path / "policy.md"
+            policy = policy_path.read_text("utf-8")
+            # speaker portrait
+            portrait_path = speaker_path / "portrait.png"
+            portrait = b64encode_str(portrait_path.read_bytes())
+            # スタイル情報の取得
             style_infos = []
             for style in speaker["styles"]:
                 id = style["id"]
-                icon = b64encode_str(
-                    (
-                        root_dir / f"speaker_info/{speaker_uuid}/icons/{id}.png"
-                    ).read_bytes()
-                )
-                style_portrait_path = (
-                    root_dir / f"speaker_info/{speaker_uuid}/portraits/{id}.png"
-                )
-                style_portrait = (
-                    b64encode_str(style_portrait_path.read_bytes())
-                    if style_portrait_path.exists()
-                    else None
-                )
+                # style icon
+                style_icon_path = speaker_path / "icons" / f"{id}.png"
+                icon = b64encode_str(style_icon_path.read_bytes())
+                # style portrait
+                style_portrait_path = speaker_path / "portraits" / f"{id}.png"
+                style_portrait = None
+                if style_portrait_path.exists():
+                    style_portrait = b64encode_str(style_portrait_path.read_bytes())
+                # voice samples
                 voice_samples = [
                     b64encode_str(
                         (
-                            root_dir
-                            / "speaker_info/{}/voice_samples/{}_{}.wav".format(
-                                speaker_uuid, id, str(j + 1).zfill(3)
-                            )
+                            speaker_path
+                            / "voice_samples/{}_{}.wav".format(id, str(j + 1).zfill(3))
                         ).read_bytes()
                     )
                     for j in range(3)
@@ -842,6 +864,7 @@ def generate_app(
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
         ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
+
         return ret_data
 
     @app.get(
