@@ -503,11 +503,14 @@ def test_feat_to_framescale():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
+    flatten_moras = to_flatten_moras(query.accent_phrases)
     flatten_moras = apply_prepost_silence(flatten_moras, query)
     flatten_moras = apply_speed_scale(flatten_moras, query)
     flatten_moras = apply_pitch_scale(flatten_moras, query)
     flatten_moras = apply_intonation_scale(flatten_moras, query)
+
+    phoneme_data_list = to_flatten_phonemes(flatten_moras)
+
     frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
     f0 = calc_frame_pitch(flatten_moras)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
