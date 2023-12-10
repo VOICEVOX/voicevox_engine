@@ -1,74 +1,69 @@
 import numpy
 
+# 音素のリスト
+_PHONEME_LIST = (
+    "pau",
+    "A",
+    "E",
+    "I",
+    "N",
+    "O",
+    "U",
+    "a",
+    "b",
+    "by",
+    "ch",
+    "cl",
+    "d",
+    "dy",
+    "e",
+    "f",
+    "g",
+    "gw",
+    "gy",
+    "h",
+    "hy",
+    "i",
+    "j",
+    "k",
+    "kw",
+    "ky",
+    "m",
+    "my",
+    "n",
+    "ny",
+    "o",
+    "p",
+    "py",
+    "r",
+    "ry",
+    "s",
+    "sh",
+    "t",
+    "ts",
+    "ty",
+    "u",
+    "v",
+    "w",
+    "y",
+    "z",
+)
+# 音素リストの要素数
+_NUM_PHONEME = len(_PHONEME_LIST)
+
 
 class OjtPhoneme:
     """
-    OpenJTalkに含まれる音素群クラス
-
-    Attributes
-    ----------
-    phoneme_list : Sequence[str]
-        音素のリスト
-    num_phoneme : int
-        音素リストの要素数
-    space_phoneme : str
-        読点に値する音素
+    OpenJTalkに含まれる音素
     """
 
-    phoneme_list = (
-        "pau",
-        "A",
-        "E",
-        "I",
-        "N",
-        "O",
-        "U",
-        "a",
-        "b",
-        "by",
-        "ch",
-        "cl",
-        "d",
-        "dy",
-        "e",
-        "f",
-        "g",
-        "gw",
-        "gy",
-        "h",
-        "hy",
-        "i",
-        "j",
-        "k",
-        "kw",
-        "ky",
-        "m",
-        "my",
-        "n",
-        "ny",
-        "o",
-        "p",
-        "py",
-        "r",
-        "ry",
-        "s",
-        "sh",
-        "t",
-        "ts",
-        "ty",
-        "u",
-        "v",
-        "w",
-        "y",
-        "z",
-    )
-    num_phoneme = len(phoneme_list)
-    space_phoneme = "pau"
-
     def __init__(self, phoneme: str):
-        # `sil`-to-`pau` (silent to space_phoneme) conversion
+        # 無音をポーズに変換
         if "sil" in phoneme:
-            phoneme = self.space_phoneme
+            phoneme = "pau"
+
+        self._phoneme_list = _PHONEME_LIST
+        self._num_phoneme = _NUM_PHONEME
         self.phoneme = phoneme
 
     def __eq__(self, o: object):
@@ -84,7 +79,7 @@ class OjtPhoneme:
         id : int
             phoneme_idを返す
         """
-        return self.phoneme_list.index(self.phoneme)
+        return self._phoneme_list.index(self.phoneme)
 
     @property
     def onehot(self):
@@ -95,6 +90,6 @@ class OjtPhoneme:
         onehot : numpy.ndarray
             音素onehotベクトル（listの長さ分の0埋め配列のうち、phoneme id番目が1.0の配列）
         """
-        array = numpy.zeros(self.num_phoneme, dtype=numpy.float32)
+        array = numpy.zeros(self._num_phoneme, dtype=numpy.float32)
         array[self.phoneme_id] = 1.0
         return array
