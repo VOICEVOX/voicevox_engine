@@ -17,13 +17,14 @@ class OjtPhoneme:
     OpenJTalkに含まれる音素
     """
 
+    _PHONEME_LIST = _PHONEME_LIST
+    _NUM_PHONEME = _NUM_PHONEME
+
     def __init__(self, phoneme: str):
         # 無音をポーズに変換
         if "sil" in phoneme:
             phoneme = "pau"
 
-        self._phoneme_list = _PHONEME_LIST
-        self._num_phoneme = _NUM_PHONEME
         self.phoneme = phoneme
 
     def __eq__(self, o: object):
@@ -39,7 +40,7 @@ class OjtPhoneme:
         id : int
             phoneme_idを返す
         """
-        return self._phoneme_list.index(self.phoneme)
+        return self._PHONEME_LIST.index(self.phoneme)
 
     @property
     def onehot(self):
@@ -50,6 +51,6 @@ class OjtPhoneme:
         onehot : numpy.ndarray
             音素onehotベクトル（listの長さ分の0埋め配列のうち、phoneme id番目が1.0の配列）
         """
-        array = numpy.zeros(self._num_phoneme, dtype=numpy.float32)
+        array = numpy.zeros(self._NUM_PHONEME, dtype=numpy.float32)
         array[self.phoneme_id] = 1.0
         return array

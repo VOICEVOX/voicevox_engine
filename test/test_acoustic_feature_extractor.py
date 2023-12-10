@@ -13,13 +13,12 @@ class TestOjtPhoneme(TestCase):
         self.ojt_hello_hiho = [OjtPhoneme(s) for s in hello_hiho]
 
     def test_const(self):
-        ojtphoneme = OjtPhoneme("pau")
-        self.assertEqual(ojtphoneme._num_phoneme, TRUE_NUM_PHONEME)
-        self.assertEqual(ojtphoneme._phoneme_list[1], "A")
-        self.assertEqual(ojtphoneme._phoneme_list[14], "e")
-        self.assertEqual(ojtphoneme._phoneme_list[26], "m")
-        self.assertEqual(ojtphoneme._phoneme_list[38], "ts")
-        self.assertEqual(ojtphoneme._phoneme_list[41], "v")
+        self.assertEqual(OjtPhoneme._NUM_PHONEME, TRUE_NUM_PHONEME)
+        self.assertEqual(OjtPhoneme._PHONEME_LIST[1], "A")
+        self.assertEqual(OjtPhoneme._PHONEME_LIST[14], "e")
+        self.assertEqual(OjtPhoneme._PHONEME_LIST[26], "m")
+        self.assertEqual(OjtPhoneme._PHONEME_LIST[38], "ts")
+        self.assertEqual(OjtPhoneme._PHONEME_LIST[41], "v")
 
     def test_convert(self):
         sil_phoneme = OjtPhoneme("sil")
