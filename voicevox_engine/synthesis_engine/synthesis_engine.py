@@ -172,22 +172,12 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
     # Apply: グローバル特徴量による補正（話速）
     moras = apply_speed_scale(moras, query)
 
-    # 音素あたりの継続長
-    sec_per_phoneme = numpy.array(
-        [
-            length
-            for mora in moras
-            for length in (
-                [mora.consonant_length] if mora.consonant is not None else []
-            )
-            + [mora.vowel_length]
-        ],
-        dtype=numpy.float32,
-    )
-    # 音素あたりのフレーム長。端数丸め。
-    framerate = 24000 / 256  # framerate 93.75 [frame/sec]
-    frame_per_phoneme = numpy.round(sec_per_phoneme * framerate).astype(numpy.int32)
-
+    frame_per_phoneme: list[ndarray] = []
+    for mora in moras:
+        if mora.consonant:
+            frame_per_phoneme.append(_to_frame(mora.consonant_length))
+        frame_per_phoneme.append(_to_frame(mora.vowel_length))
+    frame_per_phoneme = numpy.array(frame_per_phoneme)
     return frame_per_phoneme
 
 
