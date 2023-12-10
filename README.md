@@ -350,18 +350,15 @@ docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:n
 
 GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
 
-## 環境構築
+## 実行環境構築
 
-`Python 3.11.3` を用いて開発されています。
-インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+`Python 3.11.3` が動作確認済みの環境です。  
+この環境へ必要なライブラリをインストールしてください。  
 
 ```bash
-# 開発に必要なライブラリのインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
-
-# とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt
 ```
+
 
 ## 実行
 
@@ -460,7 +457,34 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 python make_docs.py
 ```
 
-## ビルド
+## ユーザー辞書の更新について
+
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
+```
+
+## 貢献者ガイド
+
+### 貢献者の方へ
+
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+
+### 開発環境構築
+
+`Python 3.11.3` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+
+```bash
+# ライブラリのインストール
+python -m pip install -r requirements-dev.txt -r requirements-test.txt
+```
+
+### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
@@ -480,23 +504,6 @@ LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
-
-## ユーザー辞書の更新について
-
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
-
-```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-```
-
-## 貢献者ガイド
-
-### 貢献者の方へ
-
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
-
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
 ### コードフォーマット
 
@@ -596,7 +603,7 @@ VOICEVOX API に準拠した複数のエンジンの Web API をポートを分�
 ### マルチエンジン機能への対応方法
 
 VOICEVOX API 準拠エンジンを起動する実行バイナリを作ることで対応が可能です。
-VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です。
+VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です（#貢献者ガイド を参照ください）。
 
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
