@@ -183,6 +183,7 @@ def calc_frame_per_phoneme(query: AudioQuery, moras: List[Mora]):
 
 def _to_frame(sec: float) -> ndarray:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
+    # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
     return numpy.round(sec * FRAMERATE).astype(numpy.int32)
 
 
