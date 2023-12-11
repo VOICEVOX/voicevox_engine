@@ -634,6 +634,12 @@ jobs:
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
           commit: ${{ github.sha }}
 
+      - name: Change latest dev tag to this commit for refreshing the release # c.f. voicevox_engine#854
+        run: |
+          git tag -f ${{ needs.config.outputs.version }}
+          git push -f --tag
+        shell: bash
+
   run-release-test-workflow:
     if: needs.config.outputs.version != ''
     needs: [config, build-and-upload]
