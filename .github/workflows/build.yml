@@ -635,6 +635,7 @@ jobs:
           commit: ${{ github.sha }}
 
       - name: Change latest dev tag to this commit for refreshing the release # c.f. voicevox_engine#854
+        if: needs.config.outputs.version != ''
         run: |
           git tag -f ${{ needs.config.outputs.version }}
           git push -f --tag
