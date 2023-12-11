@@ -378,15 +378,11 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
 
 
-def _type_yukarin_s_forward(core_cdll: CDLL) -> CDLL:
+def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
     """
     コアDLL `yukarin_s_forward` 関数の型付け
     Parameters
     ----------
-    core_cdll : CDLL
-        コアDLL
-    Returns
-    -------
     core_cdll : CDLL
         コアDLL
     """
@@ -397,18 +393,13 @@ def _type_yukarin_s_forward(core_cdll: CDLL) -> CDLL:
         POINTER(c_float),
     )
     core_cdll.yukarin_s_forward.restype = c_bool
-    return core_cdll
 
 
-def _type_yukarin_sa_forward(core_cdll: CDLL) -> CDLL:
+def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
     """
     コアDLL `yukarin_sa_forward` 関数の型付け
     Parameters
     ----------
-    core_cdll : CDLL
-        コアDLL
-    Returns
-    -------
     core_cdll : CDLL
         コアDLL
     """
@@ -424,18 +415,13 @@ def _type_yukarin_sa_forward(core_cdll: CDLL) -> CDLL:
         POINTER(c_float),
     )
     core_cdll.yukarin_sa_forward.restype = c_bool
-    return core_cdll
 
 
-def _type_decode_forward(core_cdll: CDLL) -> CDLL:
+def _type_decode_forward(core_cdll: CDLL) -> None:
     """
     コアDLL `decode_forward` 関数の型付け
     Parameters
     ----------
-    core_cdll : CDLL
-        コアDLL
-    Returns
-    -------
     core_cdll : CDLL
         コアDLL
     """
@@ -448,7 +434,6 @@ def _type_decode_forward(core_cdll: CDLL) -> CDLL:
         POINTER(c_float),
     )
     core_cdll.decode_forward.restype = c_bool
-    return core_cdll
 
 
 class CoreWrapper:
@@ -466,9 +451,9 @@ class CoreWrapper:
 
         self.core.initialize.restype = c_bool
         self.core.metas.restype = c_char_p
-        self.core = _type_yukarin_s_forward(self.core)
-        self.core = _type_yukarin_sa_forward(self.core)
-        self.core = _type_decode_forward(self.core)
+        _type_yukarin_s_forward(self.core)
+        _type_yukarin_sa_forward(self.core)
+        _type_decode_forward(self.core)
         self.core.last_error_message.restype = c_char_p
 
         self.exist_supported_devices = False
