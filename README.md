@@ -53,7 +53,7 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk風記法で取得・修正するサンプルコード
+### 読み方を AquesTalk 風記法で取得・修正するサンプルコード
 
 `/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
@@ -353,12 +353,11 @@ GPU 版を利用する場合、環境によってエラーが発生すること�
 ## 実行環境構築
 
 `Python 3.11.3` が動作確認済みの環境です。  
-この環境へ必要なライブラリをインストールしてください。  
+この環境へ必要なライブラリをインストールしてください。
 
 ```bash
 python -m pip install -r requirements.txt
 ```
-
 
 ## 実行
 
@@ -563,6 +562,7 @@ poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
+
 #### ライセンス
 
 依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
