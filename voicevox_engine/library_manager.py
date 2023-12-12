@@ -46,7 +46,7 @@ class LibraryManager:
 
     def downloadable_libraries(self) -> list[DownloadableLibraryInfo]:
         """
-        ダウンロード可能ライブラリ群の一覧を取得
+        ダウンロード可能ライブラリの一覧を取得
         Returns
         -------
         - : list[DownloadableLibraryInfo]
@@ -92,11 +92,11 @@ class LibraryManager:
 
     def installed_libraries(self) -> Dict[str, InstalledLibraryInfo]:
         """
-        インストール済み音声ライブラリ群の情報を取得
+        インストール済み音声ライブラリの情報を取得
         Returns
         -------
         library : Dict[str, InstalledLibraryInfo]
-            インストール済みライブラリ群の情報
+            インストール済みライブラリの情報
         """
         library: Dict[str, InstalledLibraryInfo] = {}
         for library_dir in self.library_root_dir.iterdir():
@@ -121,7 +121,7 @@ class LibraryManager:
         Returns
         -------
         library_dir : Path
-            インストール済みライブラリ群の情報
+            インストール済みライブラリの情報
         """
         for downloadable_library in self.downloadable_libraries():
             if downloadable_library.uuid == library_id:
