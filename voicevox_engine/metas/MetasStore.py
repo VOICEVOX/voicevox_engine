@@ -47,7 +47,7 @@ class MetasStore:
 
     def combine_metas(self, core_metas: List[CoreSpeaker]) -> List[Speaker]:
         """
-        コアに含まれる話者メタ情報と指定エンジンに含まれる話者メタ情報を統合
+        コアに含まれる話者メタ情報に、エンジンに含まれる話者メタ情報を統合して返す
         Parameters
         ----------
         core_metas : List[CoreSpeaker]
