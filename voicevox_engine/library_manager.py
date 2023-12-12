@@ -111,7 +111,7 @@ class LibraryManager:
 
     def install_library(self, library_id: str, file: BytesIO) -> Path:
         """
-        音声ライブラリファイル (`.vvlib`) のインストール
+        音声ライブラリ (`.vvlib`) のインストール
         Parameters
         ----------
         library_id : str
