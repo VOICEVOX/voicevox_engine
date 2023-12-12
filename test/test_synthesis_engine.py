@@ -928,7 +928,7 @@ class TestSynthesisEngine(TestCase):
         )
 
         # Expects: Apply/Convert/Rescale
-        num_phoneme = OjtPhoneme.num_phoneme
+        num_phoneme = 45
         # mora_phoneme_listのPhoneme ID版
         mora_phoneme_id_list = [OjtPhoneme(p).phoneme_id for p in mora_phoneme_list]
 
