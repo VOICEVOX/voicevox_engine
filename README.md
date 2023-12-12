@@ -350,25 +350,15 @@ docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:n
 
 GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
 
-## 貢献者の方へ
+## 実行環境構築
 
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
-
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
-
-## 環境構築
-
-`Python 3.11.3` を用いて開発されています。
-インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+`Python 3.11.3` が動作確認済みの環境です。  
+この環境へ必要なライブラリをインストールしてください。  
 
 ```bash
-# 開発に必要なライブラリのインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
-
-# とりあえず実行したいだけなら代わりにこちら
 python -m pip install -r requirements.txt
 ```
+
 
 ## 実行
 
@@ -458,41 +448,6 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
-## コードフォーマット
-
-このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
-利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
-プルリクエストを作成する際は、利用することを推奨します。
-
-```bash
-pre-commit install -t pre-push
-```
-
-エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
-
-```bash
-pysen run format lint
-```
-
-## テスト
-
-```bash
-python -m pytest
-```
-
-## タイポチェック
-
-[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
-[typos をインストール](https://github.com/crate-ci/typos#install) した後
-
-```bash
-typos
-```
-
-でタイポチェックを行えます。
-もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
-
 ## API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
@@ -502,7 +457,34 @@ typos
 python make_docs.py
 ```
 
-## ビルド
+## ユーザー辞書の更新について
+
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
+```
+
+## 貢献者ガイド
+
+### 貢献者の方へ
+
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+
+### 開発環境構築
+
+`Python 3.11.3` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+
+```bash
+# ライブラリのインストール
+python -m pip install -r requirements-dev.txt -r requirements-test.txt
+```
+
+### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
@@ -523,9 +505,44 @@ LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
 
-## 依存関係
+### コードフォーマット
 
-### 更新
+このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
+利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
+プルリクエストを作成する際は、利用することを推奨します。
+
+```bash
+pre-commit install -t pre-push
+```
+
+エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
+
+```bash
+pysen run format lint
+```
+
+### テスト
+
+```bash
+python -m pytest
+```
+
+### タイポチェック
+
+[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
+[typos をインストール](https://github.com/crate-ci/typos#install) した後
+
+```bash
+typos
+```
+
+でタイポチェックを行えます。
+もし誤判定やチェックから除外すべきファイルがあれば
+[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+
+### 依存関係
+
+#### 更新
 
 [Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
 以下のコマンドで操作できます:
@@ -546,8 +563,7 @@ poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
-
-### ライセンス
+#### ライセンス
 
 依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
@@ -556,13 +572,19 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
-## ユーザー辞書の更新について
+### GitHub Actions
 
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+#### Variables
 
-```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-```
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## マルチエンジン機能に関して
 
@@ -581,7 +603,7 @@ VOICEVOX API に準拠した複数のエンジンの Web API をポートを分�
 ### マルチエンジン機能への対応方法
 
 VOICEVOX API 準拠エンジンを起動する実行バイナリを作ることで対応が可能です。
-VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です。
+VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です（#貢献者ガイド を参照ください）。
 
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
@@ -610,20 +632,6 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 これはファイル容量が大きくて配布が困難な場合に有用です。
 
 </details>
-
-## GitHub Actions
-
-### Variables
-
-| name               | description         |
-| :----------------- | :------------------ |
-| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
-
-### Secrets
-
-| name            | description                                                             |
-| :-------------- | :---------------------------------------------------------------------- |
-| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## 事例紹介
 
