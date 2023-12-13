@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Dict, List, Tuple
 from voicevox_engine.metas.Metas import CoreSpeaker, EngineSpeaker, Speaker, StyleInfo
 
 if TYPE_CHECKING:
-    from voicevox_engine.synthesis_engine.synthesis_engine_base import (
+    from voicevox_engine.tts_pipeline.synthesis_engine_base import (
         SynthesisEngineBase,
     )
 

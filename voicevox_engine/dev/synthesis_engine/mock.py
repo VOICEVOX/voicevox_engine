@@ -6,8 +6,8 @@ from pyopenjtalk import tts
 from soxr import resample
 
 from ...model import AccentPhrase, AudioQuery
-from ...synthesis_engine import SynthesisEngineBase
-from ...synthesis_engine.synthesis_engine import to_flatten_moras
+from ...tts_pipeline import SynthesisEngineBase
+from ...tts_pipeline.synthesis_engine import to_flatten_moras
 
 
 class MockSynthesisEngine(SynthesisEngineBase):

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.tts_pipeline import SynthesisEngine
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):

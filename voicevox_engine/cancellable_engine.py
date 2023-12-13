@@ -17,7 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .model import AudioQuery
-from .synthesis_engine import make_synthesis_engines
+from .tts_pipeline import make_synthesis_engines
 from .utility import get_latest_core_version
 
 
