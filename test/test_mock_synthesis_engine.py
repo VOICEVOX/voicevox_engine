@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.synthesis_engine import MockSynthesisEngine
-from voicevox_engine.kana_parser import create_kana
+from voicevox_engine.tts_pipeline.kana_parser import create_kana
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 
 

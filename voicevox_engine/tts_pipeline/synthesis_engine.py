@@ -6,7 +6,7 @@ import numpy
 from numpy import ndarray
 from soxr import resample
 
-from ..acoustic_feature_extractor import OjtPhoneme
+from .acoustic_feature_extractor import OjtPhoneme
 from ..model import AccentPhrase, AudioQuery, Mora
 from .core_wrapper import CoreWrapper, OldCoreError
 from .synthesis_engine_base import SynthesisEngineBase

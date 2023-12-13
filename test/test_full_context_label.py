@@ -2,7 +2,7 @@ from copy import deepcopy
 from itertools import chain
 from unittest import TestCase
 
-from voicevox_engine.full_context_label import (
+from voicevox_engine.tts_pipeline.full_context_label import (
     AccentPhrase,
     BreathGroup,
     Mora,

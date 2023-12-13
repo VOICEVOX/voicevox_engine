@@ -5,7 +5,7 @@
 
 from typing import List, Optional
 
-from .model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_list import openjtalk_text2mora
 
 _LOOP_LIMIT = 300

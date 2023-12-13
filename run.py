@@ -30,7 +30,7 @@ from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
-from voicevox_engine.kana_parser import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (

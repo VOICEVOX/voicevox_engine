@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
+from voicevox_engine.tts_pipeline.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import SynthesisEngine
 

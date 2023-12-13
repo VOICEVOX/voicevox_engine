@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.mora_list import openjtalk_mora2text
+from voicevox_engine.tts_pipeline.mora_list import openjtalk_mora2text
 
 
 class TestOpenJTalkMoraList(TestCase):
