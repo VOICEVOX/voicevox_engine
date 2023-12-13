@@ -6,9 +6,9 @@ import numpy
 from numpy import ndarray
 from soxr import resample
 
-from .acoustic_feature_extractor import OjtPhoneme
-from ..model import AccentPhrase, AudioQuery, Mora
 from ..core_wrapper import CoreWrapper, OldCoreError
+from ..model import AccentPhrase, AudioQuery, Mora
+from .acoustic_feature_extractor import OjtPhoneme
 from .tts_engine_base import SynthesisEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]

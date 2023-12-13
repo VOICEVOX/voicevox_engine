@@ -3,8 +3,8 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from ..utility import engine_root, get_save_dir
 from ..core_wrapper import CoreWrapper, load_runtime_lib
+from ..utility import engine_root, get_save_dir
 from .tts_engine import SynthesisEngine, SynthesisEngineBase
 
 

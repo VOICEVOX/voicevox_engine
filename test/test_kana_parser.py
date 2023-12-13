@@ -1,9 +1,9 @@
 from typing import List
 from unittest import TestCase
 
+from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from voicevox_engine.tts_pipeline import kana_parser
 from voicevox_engine.tts_pipeline.kana_parser import create_kana
-from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 
 
 def parse_kana(text: str) -> List[AccentPhrase]:

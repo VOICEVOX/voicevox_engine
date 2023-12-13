@@ -3,8 +3,8 @@ from unittest import TestCase
 
 from pydantic import ValidationError
 
-from voicevox_engine.tts_pipeline.kana_parser import parse_kana
 from voicevox_engine.model import UserDictWord
+from voicevox_engine.tts_pipeline.kana_parser import parse_kana
 
 
 class TestUserDictWords(TestCase):
