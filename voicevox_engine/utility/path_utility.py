@@ -24,6 +24,10 @@ def _runtime_type() -> Literal["nuitka", "pyinstaller", "python"]:
 
 
 def engine_root() -> Path:
+    """
+    開発環境ではリポジトリのルートディレクトリを返す。
+    コンパイル後は実行ファイルがあるディレクトリを返す。
+    """
     runtime = _runtime_type()
     if runtime == "nuitka":
         root_dir = Path(sys.argv[0]).parent
@@ -38,6 +42,10 @@ def engine_root() -> Path:
 
 
 def internal_root() -> Path:
+    """
+    コンパイル時に収集された実行ファイル内部用のルートディレクトリを返す。
+    開発環境ではリポジトリのルートディレクトリを返す。
+    """
     root_dir = Path(__file__).parents[2]
     return root_dir.resolve(strict=True)
 
