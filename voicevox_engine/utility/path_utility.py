@@ -7,7 +7,7 @@ from typing import Literal
 from platformdirs import user_data_dir
 
 
-def runtime_type() -> Literal["nuitka", "pyinstaller", "python"]:
+def _runtime_type() -> Literal["nuitka", "pyinstaller", "python"]:
     """
     コンパイルに使用したライブラリ名を返す。
     コンパイルしていない場合は"python"を返す。
@@ -24,7 +24,7 @@ def runtime_type() -> Literal["nuitka", "pyinstaller", "python"]:
 
 
 def engine_root() -> Path:
-    runtime = runtime_type()
+    runtime = _runtime_type()
     if runtime == "nuitka":
         root_dir = Path(sys.argv[0]).parent
 
@@ -47,7 +47,7 @@ def is_development() -> bool:
     開発版かどうか判定する関数
     Nuitka/Pyinstallerでコンパイルされていない場合は開発環境とする。
     """
-    return runtime_type() == "python"
+    return _runtime_type() == "python"
 
 
 def get_save_dir():
