@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     import run
 
-    # FastAPI機能を用いた OpenAPI schema の生成
+    # FastAPI の機能を用いて OpenAPI schema を生成する
     app = run.generate_app(
         synthesis_engines={"mock": MockTTSEngine(speakers=core.metas())},
         latest_core_version="mock",
@@ -46,10 +46,10 @@ if __name__ == "__main__":
     )
     api_schema = json.dumps(app.openapi())
 
-    # APIドキュメントHTMLを生成する
+    # API ドキュメント HTML を生成する
     api_docs_html = generate_api_docs_html(api_schema)
 
-    # HTMLファイルとして保存する
+    # HTML ファイルとして保存する
     api_docs_root = Path("docs/api")  # 'upload-docs' workflow の対象
     output_path = api_docs_root / "index.html"
     output_path.parent.mkdir(parents=True, exist_ok=True)
