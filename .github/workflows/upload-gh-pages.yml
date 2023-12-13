@@ -34,7 +34,7 @@ jobs:
 
       - name: Make documents
         run: |
-          python make_docs.py
+          python -m build_util.make_docs
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

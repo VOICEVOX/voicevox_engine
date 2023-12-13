@@ -612,7 +612,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-python make_docs.py
+python -m build_util.make_docs
 ```
 
 ### GitHub Actions
