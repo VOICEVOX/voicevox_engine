@@ -634,6 +634,11 @@ jobs:
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
           commit: ${{ github.sha }}
 
+  update-release:
+    needs: [config, build-and-upload]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Change latest dev tag to this commit for refreshing the release # c.f. voicevox_engine#854
         if: needs.config.outputs.version != ''
         run: |
