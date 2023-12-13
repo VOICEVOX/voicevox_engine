@@ -7,7 +7,7 @@ from soxr import resample
 
 from ...model import AccentPhrase, AudioQuery
 from ...tts_pipeline import SynthesisEngineBase
-from ...tts_pipeline.synthesis_engine import to_flatten_moras
+from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
 class MockSynthesisEngine(SynthesisEngineBase):

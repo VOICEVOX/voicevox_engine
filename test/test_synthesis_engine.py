@@ -12,7 +12,7 @@ from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
-from voicevox_engine.tts_pipeline.synthesis_engine import (
+from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,

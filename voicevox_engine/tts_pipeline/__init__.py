@@ -1,7 +1,7 @@
 from .core_wrapper import CoreWrapper, load_runtime_lib
 from .make_synthesis_engines import make_synthesis_engines
-from .synthesis_engine import SynthesisEngine
-from .synthesis_engine_base import SynthesisEngineBase
+from .tts_engine import SynthesisEngine
+from .tts_engine_base import SynthesisEngineBase
 
 __all__ = [
     "CoreWrapper",

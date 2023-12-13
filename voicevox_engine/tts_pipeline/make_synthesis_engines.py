@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from ..utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
-from .synthesis_engine import SynthesisEngine, SynthesisEngineBase
+from .tts_engine import SynthesisEngine, SynthesisEngineBase
 
 
 def make_synthesis_engines(
