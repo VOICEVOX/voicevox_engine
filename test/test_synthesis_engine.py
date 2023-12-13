@@ -13,11 +13,18 @@ from voicevox_engine.synthesis_engine import SynthesisEngine
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.synthesis_engine.synthesis_engine import (
+    apply_intonation_scale,
+    apply_output_sampling_rate,
+    apply_output_stereo,
+    apply_pitch_scale,
+    apply_prepost_silence,
+    apply_speed_scale,
+    apply_volume_scale,
+    calc_frame_per_mora,
     calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
     mora_phoneme_list,
-    pad_with_silence,
     pre_process,
     split_mora,
     to_flatten_moras,
@@ -173,8 +180,8 @@ def _gen_mora(
     )
 
 
-def test_pad_with_silence():
-    """Test `pad_with_silence`."""
+def test_apply_prepost_silence():
+    """Test `apply_prepost_silence`."""
     # Inputs
     query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
     moras = [
@@ -189,9 +196,137 @@ def test_pad_with_silence():
     ]
 
     # Outputs
-    moras_with_silence = pad_with_silence(moras, query)
+    moras_with_silence = apply_prepost_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
+
+
+def test_apply_speed_scale():
+    """Test `apply_speed_scale`."""
+    # Inputs
+    query = _gen_query(speedScale=2.0)
+    input_moras = [
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+    ]
+
+    # Expects - x2 fast
+    true_moras = [
+        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_speed_scale(input_moras, query)
+
+    assert moras == true_moras
+
+
+def test_apply_pitch_scale():
+    """Test `apply_pitch_scale`."""
+    # Inputs
+    query = _gen_query(pitchScale=2.0)
+    input_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
+        _gen_mora("ン", None, None, "N", 0.0, 50.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Expects - x4 value scaled
+    true_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
+        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_pitch_scale(input_moras, query)
+
+    assert moras == true_moras
+
+
+def test_apply_intonation_scale():
+    """Test `apply_intonation_scale`."""
+    # Inputs
+    query = _gen_query(intonationScale=0.5)
+    input_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
+        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Expects - mean=300 var x0.5 intonation scaling
+    true_moras = [
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 250.0),
+        _gen_mora("ン", None, None, "N", 0.0, 250.0),
+        _gen_mora("、", None, None, "pau", 0.0, 0.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 400.0),
+        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
+    ]
+
+    # Outputs
+    moras = apply_intonation_scale(input_moras, query)
+
+    assert moras == true_moras
+
+
+def test_apply_volume_scale():
+    """Test `apply_volume_scale`."""
+    # Inputs
+    query = _gen_query(volumeScale=3.0)
+    input_wave = numpy.array([0.0, 1.0, 2.0])
+
+    # Expects - x3 scale
+    true_wave = numpy.array([0.0, 3.0, 6.0])
+
+    # Outputs
+    wave = apply_volume_scale(input_wave, query)
+
+    assert numpy.allclose(wave, true_wave)
+
+
+def test_apply_output_sampling_rate():
+    """Test `apply_output_sampling_rate`."""
+    # Inputs
+    query = _gen_query(outputSamplingRate=12000)
+    input_wave = numpy.array([1.0 for _ in range(120)])
+    input_sr_wave = 24000
+
+    # Expects - half sampling rate
+    true_wave = numpy.array([1.0 for _ in range(60)])
+    assert true_wave.shape == (60,), "Prerequisites"
+
+    # Outputs
+    wave = apply_output_sampling_rate(input_wave, input_sr_wave, query)
+
+    assert wave.shape[0] == true_wave.shape[0]
+
+
+def test_apply_output_stereo():
+    """Test `apply_output_stereo`."""
+    # Inputs
+    query = _gen_query(outputStereo=True)
+    input_wave = numpy.array([1.0, 0.0, 2.0])
+
+    # Expects - Stereo :: (Time, Channel)
+    true_wave = numpy.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
+
+    # Outputs
+    wave = apply_output_stereo(input_wave, query)
+
+    assert numpy.array_equal(wave, true_wave)
 
 
 def test_calc_frame_per_phoneme():
@@ -219,24 +354,43 @@ def test_calc_frame_per_phoneme():
     assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
 
 
+def test_calc_frame_per_mora():
+    """Test `calc_frame_per_mora`."""
+    # Inputs
+    moras = [
+        _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
+        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
+        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
+    ]
+
+    # Expects
+    #                    Pre ko  N pau hi hO Pst
+    true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
+    true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
+
+    # Outputs
+    frame_per_phoneme = numpy.array(list(map(calc_frame_per_mora, moras)))
+
+    assert numpy.array_equal(frame_per_phoneme, true_frame_per_mora)
+
+
 def test_calc_frame_pitch():
     """Test `test_calc_frame_pitch`."""
     # Inputs
     query = _gen_query(pitchScale=2.0, intonationScale=0.5)
     moras = [
-        _gen_mora("　", None, None, "　", 0.0, 0.0),
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
-        _gen_mora("ン", None, None, "N", 0.0, 50.0),
-        _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
-        _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
-        _gen_mora("　", None, None, "　", 0.0, 0.0),
+        _gen_mora("　", None, None, "　", 1 * 0.01067, 0.0),
+        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
+        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
+        _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
+        _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
+        _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
     ]
-    phoneme_str = "pau k o N pau h i h O pau"
-    phonemes = [OjtPhoneme(p) for p in phoneme_str.split()]
-    #                   Pre k  o  N pau h  i  h  O Pst
-    frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
 
     # Expects - x4 value scaled -> mean=300 var x0.5 intonation scaling
     #           pau   ko     ko     ko      N      N
@@ -248,7 +402,7 @@ def test_calc_frame_pitch():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(query, moras, phonemes, frame_per_phoneme)
+    f0 = calc_frame_pitch(query, moras)
 
     assert numpy.array_equal(f0, true_f0)
 
@@ -325,9 +479,9 @@ def test_feat_to_framescale():
     assert true_frame_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
 
     # Outputs
-    flatten_moras = pad_with_silence(flatten_moras, query)
+    flatten_moras = apply_prepost_silence(flatten_moras, query)
     frame_per_phoneme = calc_frame_per_phoneme(query, flatten_moras)
-    f0 = calc_frame_pitch(query, flatten_moras, phoneme_data_list, frame_per_phoneme)
+    f0 = calc_frame_pitch(query, flatten_moras)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
     assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
@@ -723,9 +877,14 @@ class TestSynthesisEngine(TestCase):
         self.assertEqual(result, true_result)
 
     def synthesis_test_base(self, audio_query: AudioQuery):
+        # Inputs 音素長・モーラ音高の設定 & Expects 音素長・音素ID・モーラ音高の記録
+        #     Inputs
+        #         `audio_query`: 子音長0.1秒/母音長0.1秒/モーラ音高ランダム
+        #     Expects
+        #         `phoneme_length_list`: 音素長系列
+        #         `phoneme_id_list`: 音素ID系列
+        #         `f0_list`: モーラ音高系列
         accent_phrases = audio_query.accent_phrases
-
-        # decode forwardのために適当にpitchとlengthを設定し、リストで持っておく
         phoneme_length_list = [0.0]
         phoneme_id_list = [0]
         f0_list = [0.0]
@@ -750,42 +909,46 @@ class TestSynthesisEngine(TestCase):
         phoneme_length_list.append(0.0)
         phoneme_id_list.append(0)
         f0_list.append(0.0)
-
         phoneme_length_list[0] = audio_query.prePhonemeLength
         phoneme_length_list[-1] = audio_query.postPhonemeLength
 
+        # Expects: speedScale適用
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
+        # Outputs: MockCore入りSynthesisEngine の `.synthesis` 出力および core.decode_forward 引数
         result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
-
-        # decodeに渡される値の検証
         decode_args = self.decode_mock.call_args[1]
         list_length = decode_args["length"]
+
+        # Test: フレーム長
         self.assertEqual(
             list_length,
             int(sum([round(p * 24000 / 256) for p in phoneme_length_list])),
         )
 
-        num_phoneme = OjtPhoneme.num_phoneme
+        # Expects: Apply/Convert/Rescale
+        num_phoneme = 45
         # mora_phoneme_listのPhoneme ID版
         mora_phoneme_id_list = [OjtPhoneme(p).phoneme_id for p in mora_phoneme_list]
 
-        # numpy.repeatをfor文でやる
-        f0 = []
-        phoneme = []
+        f0 = []  # フレームごとの音高系列
+        phoneme = []  # フレームごとの音素onehotベクトル系列
         f0_index = 0
         mean_f0 = []
         for i, phoneme_length in enumerate(phoneme_length_list):
+            # Expects: pitchScale適用
             f0_single = numpy.array(f0_list[f0_index], dtype=numpy.float32) * (
                 2**audio_query.pitchScale
             )
+            # Expects: フレームスケール化
             for _ in range(int(round(phoneme_length * (24000 / 256)))):
                 f0.append([f0_single])
+                # Expects: 音素onehot化
                 phoneme_s = []
                 for _ in range(num_phoneme):
                     phoneme_s.append(0)
-                # one hot
+                # Expects: 音素フレームスケール化
                 phoneme_s[phoneme_id_list[i]] = 1
                 phoneme.append(phoneme_s)
             # consonantとvowelを判別し、vowelであればf0_indexを一つ進める
@@ -793,44 +956,56 @@ class TestSynthesisEngine(TestCase):
                 if f0_single > 0:
                     mean_f0.append(f0_single)
                 f0_index += 1
-
+        # Expects: 抑揚スケール適用
         mean_f0 = numpy.array(mean_f0, dtype=numpy.float32).mean()
         f0 = numpy.array(f0, dtype=numpy.float32)
         for i in range(len(f0)):
             if f0[i][0] != 0.0:
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
-
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
+        assert_f0_count = 0
+
+        # Outputs: decode_forward `f0` 引数
+        decode_f0 = decode_args["f0"]
+
+        # Test: フレームごとの音高系列
         # 乱数の影響で数値の位置がずれが生じるので、大半(4/5)があっていればよしとする
         # また、上の部分のint(round(phoneme_length * (24000 / 256)))の影響で
         # 本来のf0/phonemeとテスト生成したf0/phonemeの長さが変わることがあり、
         # テスト生成したものが若干長くなることがあるので、本来のものの長さを基準にassertする
-        assert_f0_count = 0
-        decode_f0 = decode_args["f0"]
         for i in range(len(decode_f0)):
             # 乱数の影響等で数値にずれが生じるので、10の-5乗までの近似値であれば許容する
             assert_f0_count += math.isclose(f0[i][0], decode_f0[i][0], rel_tol=10e-5)
         self.assertTrue(assert_f0_count >= int(len(decode_f0) / 5) * 4)
+
         assert_phoneme_count = 0
+
+        # Outputs: decode_forward `phoneme` 引数
         decode_phoneme = decode_args["phoneme"]
+
+        # Test: フレームごとの音素系列
         for i in range(len(decode_phoneme)):
             assert_true_count = 0
             for j in range(len(decode_phoneme[i])):
                 assert_true_count += bool(phoneme[i][j] == decode_phoneme[i][j])
             assert_phoneme_count += assert_true_count == num_phoneme
+
         self.assertTrue(assert_phoneme_count >= int(len(decode_phoneme) / 5) * 4)
+
+        # Test: スタイルID
         self.assertEqual(decode_args["style_id"], 1)
 
-        # decode forwarderのmockを使う
+        # Expects: waveform (by mock)
         true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
-
+        # Expects: 音量スケール適用
         true_result *= audio_query.volumeScale
 
         # TODO: resampyの部分は値の検証しようがないので、パスする
         if audio_query.outputSamplingRate != 24000:
             return
 
+        # Test:
         assert_result_count = 0
         for i in range(len(true_result)):
             if audio_query.outputStereo:
