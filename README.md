@@ -196,6 +196,17 @@ word_uuid="cce59b5f-86ab-42b9-bb75-9fd3407f1e2d"
 curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 ```
 
+#### インポート/エクスポート
+
+GUI を介して辞書データのインポート/エクスポートが可能です。  
+
+まずWebブラウザから `http://127.0.0.1:50021/setting` にアクセスします。  
+表示されたページ内の「ユーザー辞書のエクスポート&インポート」節で、ボタン操作によりインポート/エクスポートが可能です。  
+
+また、API を介しても辞書データのインポート/エクスポートが可能です。  
+インポートには `POST /import_user_dict`、エクスポートには `GET /user_dict` を利用します。  
+引数等の詳細は API ドキュメントをご覧ください。  
+
 ### プリセット機能について
 
 `presets.yaml`を編集することで話者や話速などのプリセットを使うことができます。
@@ -550,14 +561,6 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - MIT/Apache/BSD-3: OK
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
-
-### ユーザー辞書の更新について
-
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
-
-```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-```
 
 ### マルチエンジン機能に関して
 
