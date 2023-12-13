@@ -17,18 +17,38 @@
 コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
 全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
-## ダウンロード
+## ユーザーガイド
+
+### ダウンロード
 
 [こちら](https://github.com/VOICEVOX/voicevox_engine/releases/latest)から対応するエンジンをダウンロードしてください。
 
-## API ドキュメント
+### API ドキュメント
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
 
 VOICEVOX エンジンもしくはエディタを起動した状態で http://127.0.0.1:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
 今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
-リクエスト・レスポンスの文字コードはすべて UTF-8 です。
+### Docker イメージ
+
+#### CPU
+
+```bash
+docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+```
+
+#### GPU
+
+```bash
+docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
+```
+
+##### トラブルシューティング
+
+GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
 
 ### HTTP リクエストで音声合成するサンプルコード
 
@@ -53,7 +73,7 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk風記法で取得・修正するサンプルコード
+### 読み方を AquesTalk 風記法で取得・修正するサンプルコード
 
 `/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
 記法は次のルールに従います。
@@ -283,6 +303,10 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 3. 保存ボタンを押して、変更を確定してください。
 4. 設定の適用にはエンジンの再起動が必要です。必要に応じて再起動をしてください。
 
+### 文字コード
+
+リクエスト・レスポンスの文字コードはすべて UTF-8 です。
+
 ### その他の引数
 
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
@@ -326,41 +350,33 @@ options:
                         プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、実行ファイルのディレクトリのpresets.yamlを順に探します。
 ```
 
-## アップデート
+### アップデート
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
-## Docker イメージ
+## 開発者・貢献者向けガイド
 
-### CPU
+### 貢献者の方へ
 
-```bash
-docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
-docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
-```
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
 
-### GPU
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
-```bash
-docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
-docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
-```
+### 環境構築
 
-#### トラブルシューティング
-
-GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
-
-## 実行環境構築
-
-`Python 3.11.3` が動作確認済みの環境です。  
-この環境へ必要なライブラリをインストールしてください。  
+`Python 3.11.3` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
+# 実行環境のインストール
 python -m pip install -r requirements.txt
+
+# 開発環境・テスト環境のインストール
+python -m pip install -r requirements-dev.txt -r requirements-test.txt
 ```
 
-
-## 実行
+### 実行
 
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
@@ -393,30 +409,28 @@ python run.py --output_log_utf8
 # もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
-### CPU スレッド数を指定する
+#### CPU スレッド数を指定する
 
 CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
 もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
 エンジンが使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
 - 実行時引数で指定する
-
   ```bash
   python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
   ```
-
 - 環境変数で指定する
   ```bash
   export VV_CPU_NUM_THREADS=4
   python run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
-### 過去のバージョンのコアを使う
+#### 過去のバージョンのコアを使う
 
 VOICEVOX Core 0.5.4 以降のコアを使用する事が可能です。  
 Mac での libtorch 版コアのサポートはしていません。
 
-#### 過去のバイナリを指定する
+##### 過去のバイナリを指定する
 
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
@@ -430,7 +444,7 @@ Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
 ```
 
-#### 音声ライブラリを直接指定する
+##### 音声ライブラリを直接指定する
 
 [VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
 また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
@@ -446,42 +460,6 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 
 ```bash
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
-```
-
-## API ドキュメントの確認
-
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
-次のコマンドで API ドキュメントを手動で作成することができます。
-
-```bash
-python make_docs.py
-```
-
-## ユーザー辞書の更新について
-
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
-
-```bash
-python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-```
-
-## 貢献者ガイド
-
-### 貢献者の方へ
-
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
-
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
-
-### 開発環境構築
-
-`Python 3.11.3` を用いて開発されています。
-インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
-
-```bash
-# ライブラリのインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
 ```
 
 ### ビルド
@@ -563,6 +541,7 @@ poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
+
 #### ライセンス
 
 依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
@@ -572,21 +551,15 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
-### GitHub Actions
+### ユーザー辞書の更新について
 
-#### Variables
+以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
 
-| name               | description         |
-| :----------------- | :------------------ |
-| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+```bash
+python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
+```
 
-#### Secrets
-
-| name            | description                                                             |
-| :-------------- | :---------------------------------------------------------------------- |
-| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
-
-## マルチエンジン機能に関して
+### マルチエンジン機能に関して
 
 VOICEVOX エディターでは、複数のエンジンを同時に起動することができます。
 この機能を利用することで、自作の音声合成エンジンや既存の音声合成エンジンを VOICEVOX エディター上で動かすことが可能です。
@@ -595,15 +568,15 @@ VOICEVOX エディターでは、複数のエンジンを同時に起動する�
 
 <details>
 
-### マルチエンジン機能の仕組み
+#### マルチエンジン機能の仕組み
 
 VOICEVOX API に準拠した複数のエンジンの Web API をポートを分けて起動し、統一的に扱うことでマルチエンジン機能を実現しています。
 エディターがそれぞれのエンジンを実行バイナリ経由で起動し、EngineID と結びつけて設定や状態を個別管理します。
 
-### マルチエンジン機能への対応方法
+#### マルチエンジン機能への対応方法
 
 VOICEVOX API 準拠エンジンを起動する実行バイナリを作ることで対応が可能です。
-VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です（#貢献者ガイド を参照ください）。
+VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するのが簡単です。
 
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
@@ -619,7 +592,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 VOICEVOX API での音声合成は、エンジン側で音声合成クエリ`AudioQuery`の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
 クエリ作成は`/audio_query`エンドポイントで、音声合成は`/synthesis`エンドポイントで行っており、最低この２つに対応すれば VOICEVOX API に準拠したことになります。
 
-### マルチエンジン機能対応エンジンの配布方法
+#### マルチエンジン機能対応エンジンの配布方法
 
 VVPP ファイルとして配布するのがおすすめです。
 VVPP は「VOICEVOX プラグインパッケージ」の略で、中身はビルドしたエンジンなどを含んだディレクトリの Zip ファイルです。
@@ -632,6 +605,29 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 これはファイル容量が大きくて配布が困難な場合に有用です。
 
 </details>
+
+### API ドキュメントの確認
+
+[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
+次のコマンドで API ドキュメントを手動で作成することができます。
+
+```bash
+python make_docs.py
+```
+
+### GitHub Actions
+
+#### Variables
+
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## 事例紹介
 
