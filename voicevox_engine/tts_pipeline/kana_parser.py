@@ -1,6 +1,16 @@
 """
 「AquesTalk風記法」を実装した AquesTalk風記法テキスト <-> アクセント句系列 変換。
+
 記法定義: `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#読み方を-aquestalk風記法で取得修正するサンプルコード` # noqa
+
+記法を構成する各規則を以下のように番号付け、コード内で実装との対応を明記した。
+
+- Rule1: 読みはカタカナのみ
+- Rule2: `/` で区切って `、` で無音付き区切り
+- Rule3: `_` で無声化
+- Rule4: `'` でアクセント位置
+  - Rule4b: アクセント位置はちょうど１つ
+- Rule5: `？` で疑問文
 """
 
 from typing import List, Optional
@@ -30,7 +40,7 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         is_interrogative=False,
     )
     if vowel in ["a", "i", "u", "e", "o"]:
-        # 手前に`_`を入れると無声化
+        # Rule3「`_` で無声化」の実装
         # 例: "_ホ" -> "hO"
         _text2mora_with_unvoice[_UNVOICE_SYMBOL + text] = Mora(
             text=text,
@@ -69,13 +79,14 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     while base_index < len(phrase):
         outer_loop += 1
 
-        # `'`の手前がアクセント位置
+        # Rule4「`'` でアクセント位置」の実装
         if phrase[base_index] == _ACCENT_SYMBOL:
+            # Rule4b「アクセント位置はちょうど１つ」の実装
             if len(moras) == 0:
                 raise ParseKanaError(ParseKanaErrorCode.ACCENT_TOP, text=phrase)
-            # すでにアクセント位置がある場合はエラー
             if accent_index is not None:
                 raise ParseKanaError(ParseKanaErrorCode.ACCENT_TWICE, text=phrase)
+
             accent_index = len(moras)
             base_index += 1
             continue
@@ -89,8 +100,6 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
                 break
             stack += phrase[watch_index]
             if stack in _text2mora_with_unvoice:
-                # より長い要素からなるモーラが見つかれば上書き（longest match）
-                # 例: phrase "キャ" -> "キ" 検出 -> "キャ" 検出/上書き -> Mora("キャ")
                 matched_text = stack
         if matched_text is None:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
@@ -137,7 +146,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                 )
             phrase_base = i + 1
 
-            # アクセント句末に`？`で疑問文
+            # Rule5「`？` で疑問文」の実装
             is_interrogative = _WIDE_INTERROGATION_MARK in phrase
             if is_interrogative:
                 if _WIDE_INTERROGATION_MARK in phrase[:-1]:
@@ -149,7 +158,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
 
             accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
 
-            # `、`で無音区間を挿入
+            # Rule2「`/` で区切って `、` で無音付き区切り」の実装
             if i < len(text) and text[i] == _PAUSE_DELIMITER:
                 accent_phrase.pause_mora = Mora(
                     text="、",
@@ -182,23 +191,22 @@ def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     # アクセント句を先頭から逐次パースし、`text`末尾にAquesTalk風記法の文字を都度追加（ループ）
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
-            # Rule3: "カナの手前に`_`を入れるとそのカナは無声化される"
+            # Rule3「`_` で無声化」の実装
             if mora.vowel in ["A", "I", "U", "E", "O"]:
                 text += _UNVOICE_SYMBOL
             text += mora.text
-            # `'`でアクセント位置
+            # Rule4「`'` でアクセント位置」の実装
             if j + 1 == phrase.accent:
                 text += _ACCENT_SYMBOL
 
-        # Rule5: "アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる"
+        # Rule5「`？` で疑問文」の実装
         if phrase.is_interrogative:
             text += _WIDE_INTERROGATION_MARK
 
+        # Rule2「`/` で区切って `、` で無音付き区切り」の実装
         if i < len(accent_phrases) - 1:
             if phrase.pause_mora is None:
-                # アクセント句区切り
                 text += _NOPAUSE_DELIMITER
             else:
-                # 無音でアクセント句区切り
                 text += _PAUSE_DELIMITER
     return text
