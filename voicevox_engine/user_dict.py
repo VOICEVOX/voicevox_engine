@@ -59,7 +59,6 @@ def _write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path) -> 
 
 @mutex_wrapper(mutex_openjtalk_dict)
 def update_dict(
-    default_dict_path: Path = default_dict_path,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> None:
@@ -67,8 +66,6 @@ def update_dict(
     辞書の更新
     Parameters
     ----------
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
     user_dict_path : Path
         ユーザー辞書ファイルのパス
     compiled_dict_path : Path
@@ -366,7 +363,6 @@ def import_user_dict(
     dict_data: Dict[str, UserDictWord],
     override: bool = False,
     user_dict_path: Path = user_dict_path,
-    default_dict_path: Path = default_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> None:
     """
@@ -379,8 +375,6 @@ def import_user_dict(
         重複したエントリがあった場合、上書きするかどうか
     user_dict_path : Path
         ユーザー辞書ファイルのパス
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
     compiled_dict_path : Path
         コンパイル済み辞書ファイルのパス
     """
@@ -421,7 +415,6 @@ def import_user_dict(
     # 更新された辞書データの保存と適用
     _write_to_json(user_dict=new_dict, user_dict_path=user_dict_path)
     update_dict(
-        default_dict_path=default_dict_path,
         user_dict_path=user_dict_path,
         compiled_dict_path=compiled_dict_path,
     )
