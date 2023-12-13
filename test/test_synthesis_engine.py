@@ -28,6 +28,7 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     pre_process,
     split_mora,
     to_flatten_moras,
+    to_flatten_phonemes,
     unvoiced_mora_phoneme_list,
 )
 
@@ -178,6 +179,24 @@ def _gen_mora(
         vowel_length=vowel_length,
         pitch=pitch,
     )
+
+
+def test_to_flatten_phonemes():
+    """Test `to_flatten_phonemes`."""
+    # Inputs
+    moras = [
+        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+    ]
+
+    # Expects
+    true_phonemes = ["pau", "h", "i", "pau"]
+
+    # Outputs
+    phonemes = list(map(lambda p: p.phoneme, to_flatten_phonemes(moras)))
+
+    assert true_phonemes == phonemes
 
 
 def test_apply_prepost_silence():
@@ -430,22 +449,32 @@ def test_calc_frame_phoneme():
 def test_feat_to_framescale():
     """Test Mora/Phonemefeature-to-framescaleFeature pipeline."""
     # Inputs
+    accent_phrases = [
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
+                _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
+            ],
+            accent=1,
+            pause_mora=_gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+        ),
+        AccentPhrase(
+            moras=[
+                _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
+                _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+            ],
+            accent=1,
+            pause_mora=None,
+        ),
+    ]
     query = _gen_query(
+        accent_phrases=accent_phrases,
         speedScale=2.0,
         pitchScale=2.0,
         intonationScale=0.5,
         prePhonemeLength=2 * 0.01067,
         postPhonemeLength=6 * 0.01067,
     )
-    flatten_moras = [
-        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
-        _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
-        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
-        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
-    ]
-    phoneme_str = "pau k o N pau h i h O pau"
-    phoneme_data_list = [OjtPhoneme(p) for p in phoneme_str.split()]
 
     # Expects
     # frame_per_phoneme
@@ -473,13 +502,15 @@ def test_feat_to_framescale():
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
-    assert true_frame_per_phoneme.shape[0] == len(phoneme_data_list), "Prerequisites"
-
     # Outputs
+    flatten_moras = to_flatten_moras(query.accent_phrases)
     flatten_moras = apply_prepost_silence(flatten_moras, query)
     flatten_moras = apply_speed_scale(flatten_moras, query)
     flatten_moras = apply_pitch_scale(flatten_moras, query)
     flatten_moras = apply_intonation_scale(flatten_moras, query)
+
+    phoneme_data_list = to_flatten_phonemes(flatten_moras)
+
     frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
     f0 = calc_frame_pitch(flatten_moras)
     frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)

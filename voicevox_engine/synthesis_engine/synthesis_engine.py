@@ -1,7 +1,6 @@
 import math
 import threading
-from itertools import chain
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import numpy
 from numpy import ndarray
@@ -17,30 +16,44 @@ mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
 
 
 # TODO: move mora utility to mora module
-def to_flatten_moras(accent_phrases: List[AccentPhrase]) -> List[Mora]:
+def to_flatten_moras(accent_phrases: list[AccentPhrase]) -> list[Mora]:
     """
-    accent_phrasesに含まれるMora(とpause_moraがあればそれも)を
-    すべて一つのリストに結合する
+    アクセント句系列に含まれるモーラの抽出
     Parameters
     ----------
-    accent_phrases : List[AccentPhrase]
-        AccentPhraseのリスト
+    accent_phrases : list[AccentPhrase]
+        アクセント句系列
     Returns
     -------
-    moras : List[Mora]
-        結合されたMoraのリストを返す
+    moras : list[Mora]
+        モーラ系列。ポーズモーラを含む。
     """
-    return list(
-        chain.from_iterable(
-            accent_phrase.moras
-            + (
-                [accent_phrase.pause_mora]
-                if accent_phrase.pause_mora is not None
-                else []
-            )
-            for accent_phrase in accent_phrases
-        )
-    )
+    moras: list[Mora] = []
+    for accent_phrase in accent_phrases:
+        moras += accent_phrase.moras
+        if accent_phrase.pause_mora:
+            moras += [accent_phrase.pause_mora]
+    return moras
+
+
+def to_flatten_phonemes(moras: list[Mora]) -> list[OjtPhoneme]:
+    """
+    モーラ系列に含まれる音素の抽出
+    Parameters
+    ----------
+    moras : list[Mora]
+        モーラ系列
+    Returns
+    -------
+    phonemes : list[OjtPhoneme]
+        音素系列
+    """
+    phonemes: list[OjtPhoneme] = []
+    for mora in moras:
+        if mora.consonant:
+            phonemes += [OjtPhoneme(mora.consonant)]
+        phonemes += [(OjtPhoneme(mora.vowel))]
+    return phonemes
 
 
 def split_mora(phoneme_list: List[OjtPhoneme]):
@@ -80,8 +93,8 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
 
 
 def pre_process(
-    accent_phrases: List[AccentPhrase],
-) -> Tuple[List[Mora], List[OjtPhoneme]]:
+    accent_phrases: list[AccentPhrase],
+) -> tuple[list[Mora], list[OjtPhoneme]]:
     """
     AccentPhraseモデルのリストを整形し、処理に必要なデータの原型を作り出す
     Parameters
@@ -92,21 +105,16 @@ def pre_process(
     -------
     flatten_moras : List[Mora]
         モーラ列（前後の無音含まない）
-    phoneme_data_list : List[OjtPhoneme]
+    phonemes : List[OjtPhoneme]
         音素列（前後の無音含む）
     """
     flatten_moras = to_flatten_moras(accent_phrases)
+    phonemes = to_flatten_phonemes(flatten_moras)
 
-    phoneme_each_mora = [
-        ([mora.consonant] if mora.consonant is not None else []) + [mora.vowel]
-        for mora in flatten_moras
-    ]
-    phoneme_str_list = list(chain.from_iterable(phoneme_each_mora))
-    phoneme_str_list = ["pau"] + phoneme_str_list + ["pau"]
+    # 前後無音の追加
+    phonemes = [OjtPhoneme("pau")] + phonemes + [OjtPhoneme("pau")]
 
-    phoneme_data_list = list(map(OjtPhoneme, phoneme_str_list))
-
-    return flatten_moras, phoneme_data_list
+    return flatten_moras, phonemes
 
 
 def generate_silence_mora(length: float) -> Mora:
@@ -605,14 +613,14 @@ class SynthesisEngine(SynthesisEngineBase):
         """
         # モデルがロードされていない場合はロードする
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        # phoneme
-        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = pre_process(query.accent_phrases)
 
+        flatten_moras = to_flatten_moras(query.accent_phrases)
         flatten_moras = apply_prepost_silence(flatten_moras, query)
         flatten_moras = apply_speed_scale(flatten_moras, query)
         flatten_moras = apply_pitch_scale(flatten_moras, query)
         flatten_moras = apply_intonation_scale(flatten_moras, query)
+
+        phoneme_data_list = to_flatten_phonemes(flatten_moras)
 
         frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
         f0 = calc_frame_pitch(flatten_moras)
