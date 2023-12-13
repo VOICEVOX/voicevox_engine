@@ -52,5 +52,5 @@ if __name__ == "__main__":
     # HTMLファイルとして保存する
     api_docs_root = Path("docs/api")  # 'upload-docs' workflow の対象
     output_path = api_docs_root / "index.html"
-    with open(output_path, "w") as f:
-        f.write(api_docs_html)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(api_docs_html)
