@@ -11,7 +11,8 @@ from voicevox_engine.utility import engine_root
 def generate_api_docs_html(schema: str) -> str:
     """OpenAPI schema から API ドキュメント HTML を生成する"""
 
-    return """<!DOCTYPE html>
+    return (
+        """<!DOCTYPE html>
 <html lang="ja">
 <head>
     <title>voicevox_engine API Document</title>
@@ -25,7 +26,9 @@ def generate_api_docs_html(schema: str) -> str:
         Redoc.init(%s, {"hideHostname": true}, document.getElementById("redoc-container"));
     </script>
 </body>
-</html>""" % schema
+</html>"""
+        % schema
+    )
 
 
 if __name__ == "__main__":
@@ -47,7 +50,7 @@ if __name__ == "__main__":
     api_docs_html = generate_api_docs_html(api_schema)
 
     # HTMLファイルとして保存する
-    api_docs_root = Path("docs/api") # 'upload-docs' workflow の対象
+    api_docs_root = Path("docs/api")  # 'upload-docs' workflow の対象
     output_path = api_docs_root / "index.html"
     with open(output_path, "w") as f:
         f.write(api_docs_html)
