@@ -5,7 +5,6 @@ from PyInstaller.utils.hooks import collect_data_files
 datas = [
     ("default.csv", "."),
     ("presets.yaml", "."),
-    ("default_setting.yaml", "."),
     ("ui_template", "ui_template"),
 ]
 datas += collect_data_files("pyopenjtalk")

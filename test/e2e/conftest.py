@@ -14,7 +14,7 @@ from voicevox_engine.utility.core_version_utility import get_latest_core_version
 def client():
     synthesis_engines = make_synthesis_engines(use_gpu=False)
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
-    setting_loader = SettingLoader(Path("./default_setting.yaml"))
+    setting_loader = SettingLoader(Path("./not_exist.yaml"))
     preset_manager = PresetManager(  # FIXME: impl MockPresetManager
         preset_path=Path("./presets.yaml"),
     )
