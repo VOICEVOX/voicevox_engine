@@ -14,7 +14,6 @@ from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Any, Dict, List, Optional
-from ko2kana import toKana
 
 import soundfile
 import uvicorn
@@ -23,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from ko2kana import toKana
 from pydantic import ValidationError, conint
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
@@ -247,13 +247,13 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> AudioQuery:
-        if experimental_katakana_transcription:
-            text = toKana(text)
         """
         クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
+        if experimental_katakana_transcription:
+            text = toKana(text).replace(" ", "")
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -294,6 +294,8 @@ def generate_app(
         else:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
+        if experimental_katakana_transcription:
+            text = toKana(text).replace(" ", "")
         accent_phrases = engine.create_accent_phrases(
             text, style_id=selected_preset.style_id
         )
@@ -354,6 +356,8 @@ def generate_app(
 
             return accent_phrases
         else:
+            if experimental_katakana_transcription:
+                text = toKana(text).replace(" ", "")
             return engine.create_accent_phrases(text, style_id=style_id)
 
     @app.post(
@@ -1379,10 +1383,9 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--experimental_katakana_transcription", 
-        type=bool,
-        default=False,
-        help="韓国語と英語の発音をカタカナに置き換えます。数字は変換しません。"
+        "--experimental_katakana_transcription",
+        action="store_true",
+        help="韓国語と英語の発音をカタカナに置き換えます。数字は変換しません。",
     )
 
     args = parser.parse_args()
