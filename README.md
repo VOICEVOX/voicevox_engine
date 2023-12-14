@@ -470,6 +470,18 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
+##### 音声ライブラリを自動読み込みする
+
+音声ライブラリを特定のフォルダ下へ配置すると自動読み込みできます（製品版VOICEVOX・コンパイル済みエンジン・`run.py` 共通）。  
+次のフォルダの下に音声ライブラリフォルダを配置してください：  
+
+- 製品版
+  - Windows: `<user_data_dir>/voicevox-engine/core_libraries/`
+  - Linux/MacOS: `<user_data_dir>/VOICEVOX/core_libraries/`
+- 開発版:
+  - Windows: `<user_data_dir>/voicevox-engine-dev/core_libraries/`
+  - Linux/MacOS: `<user_data_dir>/VOICEVOX/core_libraries/`
+
 ### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
