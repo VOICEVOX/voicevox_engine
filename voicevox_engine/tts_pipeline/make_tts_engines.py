@@ -47,6 +47,8 @@ def make_synthesis_engines(
         )
         cpu_num_threads = 0
 
+    # ディレクトリを設定する
+    # 引数による指定を反映する
     if voicevox_dir is not None:
         if voicelib_dirs is not None:
             voicelib_dirs.append(voicevox_dir)
@@ -62,23 +64,33 @@ def make_synthesis_engines(
             voicelib_dirs = [root_dir]
         if runtime_dirs is None:
             runtime_dirs = [root_dir]
-
+    # パスをフルパスへ解決する
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
+    # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
+    # コアをロードし `synthesis_engines` へ登録する
     synthesis_engines = {}
 
     if not enable_mock:
 
         def load_core_library(core_dir: Path, suppress_error: bool = False):
             """
-            指定されたディレクトリにあるコアを読み込む。
-            ユーザーディレクトリの場合は存在しないこともあるので、エラーを抑制すると良い。
+            指定されたコアをロードし `synthesis_engines` へ登録する。
+            Parameters
+            ----------
+            core_dir : Path
+                直下にコア（共有ライブラリ）が存在するディレクトリ、あるいはその候補
+            is_candidate: bool
+                `core_dir` がコア候補であることを示し、エラーを抑制する
             """
+            # 指定されたコアをロードし登録する
             try:
+                # コアをロードする
                 core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
+                # コアを登録する
                 metas = json.loads(core.metas())
                 core_version = metas[0]["version"]
                 print(f"Info: Loading core {core_version}.")
@@ -89,14 +101,17 @@ def make_synthesis_engines(
                     )
                 else:
                     synthesis_engines[core_version] = SynthesisEngine(core=core)
+            # コア候補の場合エラーを抑制する
             except Exception:
                 if not suppress_error:
                     raise
 
+        # `voicelib_dirs` 下のコアをロードし登録する
         for core_dir in voicelib_dirs:
             load_core_library(core_dir)
 
-        # ユーザーディレクトリにあるコアを読み込む
+        # ユーザーディレクトリ下のコアをロードし登録する
+        # コア候補パスを列挙する
         user_voicelib_dirs = []
         core_libraries_dir = get_save_dir() / "core_libraries"
         core_libraries_dir.mkdir(exist_ok=True)
@@ -105,7 +120,7 @@ def make_synthesis_engines(
             if not path.is_dir():
                 continue
             user_voicelib_dirs.append(path)
-
+        # コア候補パスからコアをロードし登録する。候補がコアで無い場合でもエラーは抑制される。
         for core_dir in user_voicelib_dirs:
             load_core_library(core_dir, suppress_error=True)
 
