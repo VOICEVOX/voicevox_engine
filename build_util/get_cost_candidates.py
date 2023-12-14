@@ -3,7 +3,7 @@ voicevox_engine/part_of_speech_data.pyのcost_candidatesを計算するプログ
 引数のnaist_jdic_pathには、open_jtalkのsrc/mecab-naist-jdic/naist-jdic.csvを指定してください。
 
 実行例:
-python get_cost_candidates.py --naist_jdic_path=/path/to/naist-jdic.csv \
+python build_util/get_cost_candidates.py --naist_jdic_path=/path/to/naist-jdic.csv \
     --pos=名詞 \
     --pos_detail_1=固有名詞 \
     --pos_detail_2=一般 \
