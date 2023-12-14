@@ -83,8 +83,8 @@ def make_synthesis_engines(
             ----------
             core_dir : Path
                 直下にコア（共有ライブラリ）が存在するディレクトリ、あるいはその候補
-            is_candidate: bool
-                `core_dir` がコア候補であることを示し、エラーを抑制する
+            suppress_error: bool
+                エラーを抑制する。`core_dir` がコア候補であることを想定。
             """
             # 指定されたコアをロードし登録する
             try:
