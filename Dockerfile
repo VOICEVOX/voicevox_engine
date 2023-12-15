@@ -228,7 +228,7 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
-ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util
+ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
