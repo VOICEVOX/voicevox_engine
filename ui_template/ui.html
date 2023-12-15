@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+
+<!-- 
+  VOICEVOXエンジンの設定ページです。
+  ライブラリをロードしたあと、Vueコンポーネントの初期化が完了してからUIを表示します。
+-->
+
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
@@ -23,10 +29,8 @@
   </head>
 
   <body>
-    <!-- FIXME: レンダリングが完了するまで非表示にする -->
-
-    <!-- 辞書のインポートはモーダルにしたい -->
-    <div id="app" class="container p-3">
+    <!-- Vueの準備が完了した後にvisibility: visibleにする -->
+    <div id="app" class="container p-3" style="visibility: hidden">
       <div class="alert alert-warning" role="alert">
         設定の変更の更新にはエンジンの再起動が必要です。
       </div>
@@ -68,7 +72,7 @@
 
       <hr />
 
-      <div id="mb-3">
+      <div class="mb-3">
         <label class="form-label">ユーザー辞書のエクスポート&インポート</label>
         <div class="form-text">辞書のエクスポートをします。</div>
         <a
@@ -81,71 +85,19 @@
         >
           エクスポート
         </a>
+
         <div class="form-text">辞書のインポートをします。</div>
-        <input
-          class="m-3 form-control"
-          type="file"
-          name="user_dictionary_file"
-          accept="application/json"
-          @change="(e) => { dictFileForImport = e.target.files[0]; }"
-        />
-        <input
-          class="ms-3 form-check-input"
-          type="checkbox"
-          name="allow_override"
-          value="true"
-          id="allowOverrideDict"
-          v-model="allowOverrideDict"
-          :disabled="dictFileForImport == undefined"
-        />
-        <label class="mb-3 form-check-label" for="allowOverrideDict"
-          >辞書の上書きを許可する。</label
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#dictSubmitModal"
         >
+          インポート
+        </button>
       </div>
 
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#dictSubmitModal"
-        :disabled="dictFileForImport == undefined"
-      >
-        インポート
-      </button>
-
-      <div
-        class="modal fade"
-        id="submitModal"
-        tabindex="-1"
-        aria-labelledby="submitModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="submitModalLabel">設定の保存</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div class="modal-body">設定を保存します。よろしいですか？</div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                キャンセル
-              </button>
-              <button type="submit" class="btn btn-primary">保存</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- ユーザー辞書インポート用モーダル -->
       <div
         class="modal fade"
         id="dictSubmitModal"
@@ -167,7 +119,25 @@
               ></button>
             </div>
             <div class="modal-body">
-              ユーザー辞書をインポートします。よろしいですか？
+              <input
+                class="m-3 form-control"
+                type="file"
+                name="user_dictionary_file"
+                accept="application/json"
+                @change="(e) => { dictFileForImport = e.target.files[0]; }"
+              />
+              <input
+                class="ms-3 form-check-input"
+                type="checkbox"
+                name="allow_override"
+                value="true"
+                id="allowOverrideDict"
+                v-model="allowOverrideDict"
+                :disabled="dictFileForImport == undefined"
+              />
+              <label class="mb-3 form-check-label" for="allowOverrideDict"
+                >辞書の上書きを許可する。</label
+              >
             </div>
             <div class="modal-footer">
               <button
@@ -179,9 +149,10 @@
               </button>
               <button
                 type="button"
-                onclick="importUserDict()"
+                @click="importUserDict"
                 class="btn btn-primary"
                 data-bs-dismiss="modal"
+                :disabled="dictFileForImport == undefined"
               >
                 インポート
               </button>
@@ -239,6 +210,29 @@
             const dictFileForImport = ref();
             const allowOverrideDict = ref(false);
 
+            const importUserDict = () => {
+              if (dictFileForImport.value == null) {
+                throw new Error("dictFileForImportが見つかりません。");
+              }
+
+              const reader = new FileReader();
+              reader.addEventListener("load", async () => {
+                const params = new URLSearchParams({
+                  override: allowOverrideDict.value,
+                });
+                await fetch(`/import_user_dict?${params}`, {
+                  method: "POST",
+                  mode: "same-origin",
+                  headers: { "Content-Type": "application/json" },
+                  body: reader.result,
+                });
+
+                showToastWithMessage("辞書をインポートしました。");
+              });
+
+              reader.readAsText(dictFileForImport.value);
+            };
+
             // トースト
             const toastElem = ref(null);
             const toast = ref(null);
@@ -250,15 +244,22 @@
               toast.value = new bootstrap.Toast(toastElem.value);
             });
             const showToastWithMessage = (message) => {
+              console.log(`showToastWithMessage: ${message}`);
               toast.value.show();
               toastMessage.value = message;
             };
+
+            // Vueの準備が完了したら表示
+            onMounted(() => {
+              document.getElementById("app").style.visibility = "visible";
+            });
 
             return {
               corsPolicyMode,
               allowOrigin,
               dictFileForImport,
               allowOverrideDict,
+              importUserDict,
               toastElem,
               toastMessage,
               showToastWithMessage,
@@ -303,47 +304,4 @@
       loadVue();
     </script>
   </body>
-  <!-- 
-    <script>
-      const reader = new FileReader();
-
-      const allowOverrideElement = document.getElementById("allowOverride");
-
-      const toastElement = document.getElementById("toast");
-      const toast = new bootstrap.Toast(toastElement);
-      const toastBody = toastElement.getElementsByClassName("toast-body");
-
-      const showToastWithMessage = (message) => {
-        toast.show();
-        toastBody[0].innerHTML = message;
-      };
-
-      // 読み込み時にメッセージがあれば表示する
-      var msg = "{{message}}";
-      if (msg) {
-        showToastWithMessage(msg);
-      }
-
-      reader.addEventListener("load", async () => {
-        const params = {
-          override: allowOverrideElement.checked ? true : false,
-        };
-        const query_params = new URLSearchParams(params);
-
-        await fetch(`/import_user_dict?${query_params}`, {
-          method: "POST",
-          mode: "same-origin",
-          headers: { "Content-Type": "application/json" },
-          body: reader.result,
-        });
-
-        showToastWithMessage("辞書をインポートしました。");
-      });
-
-      const importUserDict = () => {
-        const userDictFile = document.getElementById("userDictFile").files[0];
-        reader.readAsText(userDictFile);
-      };
-    </script>
-  </body> -->
 </html>
