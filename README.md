@@ -472,7 +472,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 
 ##### 音声ライブラリを自動読み込みする
 
-音声ライブラリを特定のフォルダ下へ配置すると自動読み込みできます（製品版VOICEVOX・コンパイル済みエンジン・`run.py` 共通）。  
+音声ライブラリを特定のフォルダ下へ配置すると自動読み込みできます。  
 次のフォルダの下に音声ライブラリフォルダを配置してください：  
 
 - 製品版: `<user_data_dir>/voicevox-engine/core_libraries/`
