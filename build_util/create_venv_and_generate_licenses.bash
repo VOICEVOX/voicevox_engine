@@ -17,7 +17,7 @@ else
 fi
 
 pip install -r requirements-license.txt
-python generate_licenses.py >$OUTPUT_LICENSE_JSON_PATH
+python build_util/generate_licenses.py >$OUTPUT_LICENSE_JSON_PATH
 
 deactivate
 
