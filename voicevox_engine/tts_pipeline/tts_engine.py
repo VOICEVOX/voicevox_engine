@@ -374,6 +374,7 @@ def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
         フレームごとの基本周波数、shape=(Frame,)
     """
     flatten_moras = to_flatten_moras(query.accent_phrases)
+
     flatten_moras = apply_prepost_silence(flatten_moras, query)
     flatten_moras = apply_speed_scale(flatten_moras, query)
     flatten_moras = apply_pitch_scale(flatten_moras, query)
