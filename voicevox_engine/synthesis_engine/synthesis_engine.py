@@ -409,7 +409,8 @@ class CoreAdapter:
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
-    def yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
+    def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
         with self.mutex:
             phoneme_length = self.core.yukarin_s_forward(
                 length=len(phoneme_list_s),
@@ -418,7 +419,7 @@ class CoreAdapter:
             )
         return phoneme_length
 
-    def yukarin_sa_forward(
+    def safe_yukarin_sa_forward(
         self,
         vowel_phoneme_list: ndarray,
         consonant_phoneme_list: ndarray,
@@ -428,6 +429,7 @@ class CoreAdapter:
         end_accent_phrase_list: ndarray,
         style_id: int,
     ) -> ndarray:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
         with self.mutex:
             f0_list = self.core.yukarin_sa_forward(
                 length=vowel_phoneme_list.shape[0],
@@ -441,9 +443,10 @@ class CoreAdapter:
             )[0]
         return f0_list
 
-    def decode_forward(
+    def safe_decode_forward(
         self, phoneme: ndarray, f0: ndarray, style_id: int
     ) -> tuple[ndarray, int]:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
         with self.mutex:
             wave = self.core.decode_forward(
                 length=phoneme.shape[0],
@@ -512,7 +515,7 @@ class SynthesisEngine(SynthesisEngineBase):
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
         # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwardにかけ、推論器によって適切な音素の長さを割り当てる
-        phoneme_length = self.core.yukarin_s_forward(phoneme_list_s, style_id)
+        phoneme_length = self.core.safe_yukarin_s_forward(phoneme_list_s, style_id)
 
         # yukarin_s_forwarderの結果をaccent_phrasesに反映する
         # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
@@ -644,7 +647,7 @@ class SynthesisEngine(SynthesisEngineBase):
         )
 
         # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        f0_list = self.core.yukarin_sa_forward(
+        f0_list = self.core.safe_yukarin_sa_forward(
             vowel_phoneme_list,
             consonant_phoneme_list,
             start_accent_list,
@@ -696,7 +699,7 @@ class SynthesisEngine(SynthesisEngineBase):
         phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
-        wave, sr_wave = self.core.decode_forward(phoneme, f0, style_id)
+        wave, sr_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
 
         wave = apply_volume_scale(wave, query)
         wave = apply_output_sampling_rate(wave, sr_wave, query)
