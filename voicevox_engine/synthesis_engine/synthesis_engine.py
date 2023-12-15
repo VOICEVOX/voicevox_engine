@@ -462,6 +462,7 @@ class SynthesisEngine(SynthesisEngineBase):
     def __init__(self, core: CoreWrapper):
         super().__init__()
         self.core = CoreAdapter(core)
+        # NOTE: self.coreは将来的に消す予定
 
     @property
     def default_sampling_rate(self) -> int:
