@@ -42,7 +42,7 @@ class MetasStore:
         ret : EngineSpeaker
             エンジンに含まれる指定話者のメタ情報
         """
-        return self.loaded_metas[speaker_uuid]
+        return self._loaded_metas[speaker_uuid]
 
     def combine_metas(self, core_metas: List[CoreSpeaker]) -> List[Speaker]:
         """
@@ -83,10 +83,6 @@ class MetasStore:
         core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(engine.speakers)]
         # エンジンに含まれる話者メタ情報との統合
         return self.combine_metas(core_metas)
-
-    @property
-    def loaded_metas(self) -> Dict[str, EngineSpeaker]:
-        return self._loaded_metas
 
 
 def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleInfo]]:
