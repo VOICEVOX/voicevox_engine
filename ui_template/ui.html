@@ -13,19 +13,6 @@
       rel="shortcut icon"
       href="https://voicevox.hiroshiba.jp/favicon-32x32.png"
     />
-
-    <!-- bootstrap -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
-    />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-      crossorigin="anonymous"
-    ></script>
   </head>
 
   <body>
@@ -269,39 +256,83 @@
       }
 
       /**
-       * CDNからVueを読み込む。
+       * CDNからscriptやCSSを読み込む。
        * CDNが使えないときのために複数の候補を試す。
        */
-      function loadVue() {
-        var srcList = [
-          "https://unpkg.com/vue@3.3.10/dist/vue.global.js",
-          "https://cdn.jsdelivr.net/npm/vue@3.3.10/dist/vue.global.js",
-          "https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.10/vue.global.js",
-        ];
-        var current = 0;
+      function loadCDN(
+        scriptOrCss,
+        urlCandidateList,
+        integrity,
+        onloadCallback
+      ) {
+        if (scriptOrCss !== "script" && scriptOrCss !== "css") {
+          throw new Error("scriptOrCssはscriptかcssを指定してください。");
+        }
+
+        let current = 0;
 
         function loadNext() {
-          if (current >= srcList.length) {
-            console.error("全てのCDNでloadVueのロードに失敗しました。");
+          if (current >= urlCandidateList.length) {
+            console.error(`全てのCDNでロードに失敗しました。`);
             return;
           }
 
-          var script = document.createElement("script");
-          script.src = srcList[current];
-          script.integrity =
-            "sha384-ttfhgYK68lNlS8ak6Z//mvUbpRbRCh43MYGuqEtK8mj/yzlKqY8GA8o3BPMi23cE";
-          script.crossOrigin = "anonymous";
-          script.onload = initVue;
-          script.onerror = function () {
+          let elem;
+          if (scriptOrCss === "script") {
+            elem = document.createElement("script");
+            elem.src = urlCandidateList[current];
+          } else {
+            elem = document.createElement("link");
+            elem.href = urlCandidateList[current];
+            elem.rel = "stylesheet";
+          }
+          elem.integrity = integrity;
+          elem.crossOrigin = "anonymous";
+          elem.onload = onloadCallback;
+          elem.onerror = function () {
+            console.error(
+              `CDNのロードに失敗しました。 ${urlCandidateList[current]}`
+            );
+            document.head.removeChild(elem);
             current++;
             loadNext();
           };
-          document.head.appendChild(script);
+          document.head.appendChild(elem);
         }
-
         loadNext();
       }
-      loadVue();
+
+      // Bootstrapを読み込む
+      loadCDN(
+        "css",
+        [
+          "https://unpkg.com/bootstrap@5.0.2/dist/css/bootstrap.min.css",
+          "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css",
+          "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css",
+        ],
+        "sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      );
+      loadCDN(
+        "script",
+        [
+          "https://unpkg.com/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js",
+          "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js",
+        ],
+        "sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      );
+
+      // Vueを読み込む
+      loadCDN(
+        "script",
+        [
+          "https://unpkg.com/vue@3.3.10/dist/vue.global.js",
+          "https://cdn.jsdelivr.net/npm/vue@3.3.10/dist/vue.global.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.10/vue.global.js",
+        ],
+        "sha384-ttfhgYK68lNlS8ak6Z//mvUbpRbRCh43MYGuqEtK8mj/yzlKqY8GA8o3BPMi23cE",
+        initVue
+      );
     </script>
   </body>
 </html>
