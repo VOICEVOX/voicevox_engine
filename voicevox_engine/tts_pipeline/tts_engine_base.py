@@ -4,10 +4,10 @@ from typing import List, Optional
 
 import numpy as np
 
-from .. import full_context_label
-from ..full_context_label import extract_full_context_label
 from ..model import AccentPhrase, AudioQuery, Mora
-from ..mora_list import openjtalk_mora2text
+from . import full_context_label
+from .full_context_label import extract_full_context_label
+from .mora_list import openjtalk_mora2text
 
 
 def mora_to_text(mora: str) -> str:
