@@ -681,7 +681,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         flatten_moras = to_flatten_moras(query.accent_phrases)
         flatten_moras = apply_prepost_silence(flatten_moras, query)
