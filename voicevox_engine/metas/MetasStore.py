@@ -30,20 +30,6 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def speaker_engine_metas(self, speaker_uuid: str) -> EngineSpeaker:
-        """
-        エンジンに含まれる指定話者のメタ情報を取得
-        Parameters
-        ----------
-        speaker_uuid : str
-            話者UUID
-        Returns
-        -------
-        ret : EngineSpeaker
-            エンジンに含まれる指定話者のメタ情報
-        """
-        return self._loaded_metas[speaker_uuid]
-
     def combine_metas(self, core_metas: List[CoreSpeaker]) -> List[Speaker]:
         """
         コアに含まれる話者メタ情報に、エンジンに含まれる話者メタ情報を統合して返す
@@ -59,7 +45,7 @@ class MetasStore:
         # 話者単位でエンジン・コアに含まれるメタ情報を統合
         return [
             Speaker(
-                **self.speaker_engine_metas(speaker_meta.speaker_uuid).dict(),
+                **self.self._loaded_metas[speaker_meta.speaker_uuid].dict(),
                 **speaker_meta.dict(),
             )
             for speaker_meta in core_metas
