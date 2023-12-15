@@ -30,27 +30,6 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def combine_metas(self, core_metas: List[CoreSpeaker]) -> List[Speaker]:
-        """
-        コアに含まれる話者メタ情報に、エンジンに含まれる話者メタ情報を統合して返す
-        Parameters
-        ----------
-        core_metas : List[CoreSpeaker]
-            コアに含まれる話者メタ情報
-        Returns
-        -------
-        ret : List[Speaker]
-            エンジンとコアに含まれる話者メタ情報
-        """
-        # 話者単位でエンジン・コアに含まれるメタ情報を統合
-        return [
-            Speaker(
-                **self.self._loaded_metas[speaker_meta.speaker_uuid].dict(),
-                **speaker_meta.dict(),
-            )
-            for speaker_meta in core_metas
-        ]
-
     # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
     # SynthesisEngineBaseによる循環importを修正する
     def load_combined_metas(self, engine: "SynthesisEngineBase") -> List[Speaker]:
@@ -68,7 +47,13 @@ class MetasStore:
         # コアに含まれる話者メタ情報の収集
         core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(engine.speakers)]
         # エンジンに含まれる話者メタ情報との統合
-        return self.combine_metas(core_metas)
+        return [
+            Speaker(
+                **self.self._loaded_metas[speaker_meta.speaker_uuid].dict(),
+                **speaker_meta.dict(),
+            )
+            for speaker_meta in core_metas
+        ]
 
 
 def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleInfo]]:
