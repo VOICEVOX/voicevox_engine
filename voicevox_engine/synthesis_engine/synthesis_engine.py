@@ -438,7 +438,9 @@ class CoreEngine:
             )[0]
         return f0_list
 
-    def decode_forward(self, phoneme: ndarray, f0: ndarray, style_id: int) -> tuple[ndarray, int]:
+    def decode_forward(
+        self, phoneme: ndarray, f0: ndarray, style_id: int
+    ) -> tuple[ndarray, int]:
         with self.mutex:
             wave = self.core.decode_forward(
                 length=phoneme.shape[0],
