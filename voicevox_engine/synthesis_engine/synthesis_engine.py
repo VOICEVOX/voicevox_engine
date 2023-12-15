@@ -359,8 +359,11 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
     return wave
 
 
-class CoreEngine:
-    """コアの管理/実行/プロキシ"""
+class CoreAdapter:
+    """
+    コアのアダプター。
+    ついでにコア内部で推論している処理をプロセスセーフにする。
+    """
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
@@ -458,7 +461,7 @@ class SynthesisEngine(SynthesisEngineBase):
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
-        self.core = CoreEngine(core)
+        self.core = CoreAdapter(core)
 
     @property
     def default_sampling_rate(self) -> int:
