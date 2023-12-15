@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from ..core_wrapper import CoreWrapper, load_runtime_lib
 from ..utility import engine_root, get_save_dir
-from .tts_engine import SynthesisEngine, SynthesisEngineBase
+from .tts_engine import TTSEngine, TTSEngineBase
 
 
 def make_synthesis_engines(
@@ -16,7 +16,7 @@ def make_synthesis_engines(
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> Dict[str, SynthesisEngineBase]:
+) -> Dict[str, TTSEngineBase]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 
@@ -88,7 +88,7 @@ def make_synthesis_engines(
                         file=sys.stderr,
                     )
                 else:
-                    synthesis_engines[core_version] = SynthesisEngine(core=core)
+                    synthesis_engines[core_version] = TTSEngine(core=core)
             except Exception:
                 if not suppress_error:
                     raise
@@ -113,11 +113,11 @@ def make_synthesis_engines(
         # モック追加
         from ..dev.core import metas as mock_metas
         from ..dev.core import supported_devices as mock_supported_devices
-        from ..dev.synthesis_engine import MockSynthesisEngine
+        from ..dev.synthesis_engine import MockTTSEngine
 
         if "0.0.0" not in synthesis_engines:
             print("Info: Loading mock.")
-            synthesis_engines["0.0.0"] = MockSynthesisEngine(
+            synthesis_engines["0.0.0"] = MockTTSEngine(
                 speakers=mock_metas(), supported_devices=mock_supported_devices()
             )
 

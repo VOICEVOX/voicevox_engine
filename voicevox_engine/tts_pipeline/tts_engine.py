@@ -9,7 +9,7 @@ from soxr import resample
 from ..core_wrapper import CoreWrapper, OldCoreError
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import OjtPhoneme
-from .tts_engine_base import SynthesisEngineBase
+from .tts_engine_base import TTSEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -397,7 +397,7 @@ def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> n
     return wave
 
 
-class SynthesisEngine(SynthesisEngineBase):
+class TTSEngine(TTSEngineBase):
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
     def __init__(self, core: CoreWrapper):

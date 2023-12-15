@@ -6,13 +6,13 @@ from pyopenjtalk import tts
 from soxr import resample
 
 from ...model import AccentPhrase, AudioQuery
-from ...tts_pipeline import SynthesisEngineBase
+from ...tts_pipeline import TTSEngineBase
 from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
-class MockSynthesisEngine(SynthesisEngineBase):
+class MockTTSEngine(TTSEngineBase):
     """
-    SynthesisEngine [Mock]
+    TTSEngine [Mock]
     """
 
     def __init__(
@@ -110,7 +110,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
     def forward(self, text: str, **kwargs: Dict[str, Any]) -> np.ndarray:
         """
         forward tts via pyopenjtalk.tts()
-        参照→SynthesisEngine のdocstring [Mock]
+        参照→TTSEngine のdocstring [Mock]
 
         Parameters
         ----------
