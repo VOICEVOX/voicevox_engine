@@ -86,10 +86,6 @@ class MetasStore:
         return self.combine_metas(core_metas)
 
     @property
-    def engine_speakers_path(self) -> Path:
-        return self._engine_speakers_path
-
-    @property
     def loaded_metas(self) -> Dict[str, EngineSpeaker]:
         return self._loaded_metas
 
