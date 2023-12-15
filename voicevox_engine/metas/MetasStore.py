@@ -22,7 +22,6 @@ class MetasStore:
         engine_speakers_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
-        self._engine_speakers_path = engine_speakers_path
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: Dict[str, EngineSpeaker] = {
             folder.name: EngineSpeaker(
