@@ -359,8 +359,8 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
     return wave
 
 
-class SynthesisEngine(SynthesisEngineBase):
-    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+class CoreEngine:
+    """コアの管理/実行/プロキシ"""
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
@@ -406,6 +406,76 @@ class SynthesisEngine(SynthesisEngineBase):
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
+    def yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
+        with self.mutex:
+            phoneme_length = self.core.yukarin_s_forward(
+                length=len(phoneme_list_s),
+                phoneme_list=phoneme_list_s,
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )
+        return phoneme_length
+
+    def yukarin_sa_forward(
+        self,
+        vowel_phoneme_list: ndarray,
+        consonant_phoneme_list: ndarray,
+        start_accent_list: ndarray,
+        end_accent_list: ndarray,
+        start_accent_phrase_list: ndarray,
+        end_accent_phrase_list: ndarray,
+        style_id: int,
+    ) -> ndarray:
+        with self.mutex:
+            f0_list = self.core.yukarin_sa_forward(
+                length=vowel_phoneme_list.shape[0],
+                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
+                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
+                start_accent_list=start_accent_list[numpy.newaxis],
+                end_accent_list=end_accent_list[numpy.newaxis],
+                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
+                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )[0]
+        return f0_list
+
+    def decode_forward(self, phoneme: ndarray, f0: ndarray, style_id: int) -> tuple[ndarray, int]:
+        with self.mutex:
+            wave = self.core.decode_forward(
+                length=phoneme.shape[0],
+                phoneme_size=phoneme.shape[1],
+                f0=f0[:, numpy.newaxis],
+                phoneme=phoneme,
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )
+        sr_wave = self.default_sampling_rate
+        return wave, sr_wave
+
+
+class SynthesisEngine(SynthesisEngineBase):
+    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+
+    def __init__(self, core: CoreWrapper):
+        super().__init__()
+        self.core = CoreEngine(core)
+
+    @property
+    def default_sampling_rate(self) -> int:
+        return self.core.default_sampling_rate
+
+    @property
+    def speakers(self) -> str:
+        return self.core.speakers
+
+    @property
+    def supported_devices(self) -> str | None:
+        return self.core.supported_devices
+
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
+
+    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+        return self.core.is_initialized_style_id_synthesis(style_id)
+
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], style_id: int
     ) -> List[AccentPhrase]:
@@ -423,7 +493,7 @@ class SynthesisEngine(SynthesisEngineBase):
             母音・子音の長さが設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # phoneme
         # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
@@ -436,12 +506,7 @@ class SynthesisEngine(SynthesisEngineBase):
             [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
         )
         # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwardにかけ、推論器によって適切な音素の長さを割り当てる
-        with self.mutex:
-            phoneme_length = self.core.yukarin_s_forward(
-                length=len(phoneme_list_s),
-                phoneme_list=phoneme_list_s,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
+        phoneme_length = self.core.yukarin_s_forward(phoneme_list_s, style_id)
 
         # yukarin_s_forwarderの結果をaccent_phrasesに反映する
         # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
@@ -472,7 +537,7 @@ class SynthesisEngine(SynthesisEngineBase):
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -573,17 +638,15 @@ class SynthesisEngine(SynthesisEngineBase):
         )
 
         # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        with self.mutex:
-            f0_list = self.core.yukarin_sa_forward(
-                length=vowel_phoneme_list.shape[0],
-                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
-                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-                start_accent_list=start_accent_list[numpy.newaxis],
-                end_accent_list=end_accent_list[numpy.newaxis],
-                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
-                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )[0]
+        f0_list = self.core.yukarin_sa_forward(
+            vowel_phoneme_list,
+            consonant_phoneme_list,
+            start_accent_list,
+            end_accent_list,
+            start_accent_phrase_list,
+            end_accent_phrase_list,
+            style_id,
+        )
 
         # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
         for i, p in enumerate(vowel_phoneme_data_list):
@@ -627,15 +690,7 @@ class SynthesisEngine(SynthesisEngineBase):
         phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
-        with self.mutex:
-            wave = self.core.decode_forward(
-                length=phoneme.shape[0],
-                phoneme_size=phoneme.shape[1],
-                f0=f0[:, numpy.newaxis],
-                phoneme=phoneme,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
-            sr_wave = self.default_sampling_rate
+        wave, sr_wave = self.core.decode_forward(phoneme, f0, style_id)
 
         wave = apply_volume_scale(wave, query)
         wave = apply_output_sampling_rate(wave, sr_wave, query)
