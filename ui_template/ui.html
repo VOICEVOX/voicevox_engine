@@ -24,226 +24,244 @@
 
   <body>
     <!-- FIXME: レンダリングが完了するまで非表示にする -->
-    <!-- プレースホルダーでも良いかも -->
 
-    <!-- Jinjaのテンプレート構文変えて、初期値でパラメータがJS上に代入されてる形にしても良いかも -->
-    <!-- ↑そうするとAPIを変えなくて済むので -->
-
-    <!-- 自動保存にしたい -->
     <!-- 辞書のインポートはモーダルにしたい -->
     <div id="app" class="container p-3">
-      <form method="post" enctype="multipart/form-data">
-        <div class="alert alert-warning" role="alert">
-          設定の変更の更新にはエンジンの再起動が必要です。
-        </div>
+      <div class="alert alert-warning" role="alert">
+        設定の変更の更新にはエンジンの再起動が必要です。
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label">CORS Policy Mode</label>
-          <select
-            class="form-select"
-            aria-label="corsPolicyMode"
-            name="corsPolicyMode"
-          >
-            <option selected :value="corsPolicyMode">
-              現在値: {{ corsPolicyMode }}
-            </option>
-            <option value="localapps">localapps</option>
-            <option value="all">all</option>
-          </select>
-          <div class="form-text">
-            <p class="mb-1">
-              allまたはlocalappsを指定。allはすべてを許可します。
-            </p>
-            <p class="mb-1">
-              localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。
-            </p>
-            <p>
-              その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
-            </p>
-          </div>
+      <div class="mb-3">
+        <label class="form-label">CORS Policy Mode</label>
+        <select
+          class="form-select"
+          aria-label="corsPolicyMode"
+          v-model="corsPolicyMode"
+        >
+          <option value="localapps">localapps</option>
+          <option value="all">all</option>
+        </select>
+        <div class="form-text">
+          <p class="mb-1">
+            allまたはlocalappsを指定。allはすべてを許可します。
+          </p>
+          <p class="mb-1">
+            localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。
+          </p>
+          <p>
+            その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
+          </p>
         </div>
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label">Allow Origin</label>
-          <input
-            class="form-control"
-            type="text"
-            name="allowOrigin"
-            :value="allowOrigin"
-          />
-          <div class="form-text">
-            許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。
-          </div>
+      <div class="mb-3">
+        <label class="form-label">Allow Origin</label>
+        <input
+          class="form-control"
+          type="text"
+          v-model.trim.lazy="allowOrigin"
+        />
+        <div class="form-text">
+          許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。
         </div>
+      </div>
 
-        <button
-          type="button"
+      <hr />
+
+      <div id="mb-3">
+        <label class="form-label">ユーザー辞書のエクスポート&インポート</label>
+        <div class="form-text">辞書のエクスポートをします。</div>
+        <a
+          download="VOICEVOXユーザー辞書.json"
           class="btn btn-primary mb-3"
-          data-bs-toggle="modal"
-          data-bs-target="#submitModal"
+          href="/user_dict"
+          @click="showToastWithMessage('辞書をエクスポートしました。');"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          保存
-        </button>
-
-        <hr />
-
-        <div id="mb-3">
-          <label class="form-label"
-            >ユーザー辞書のエクスポート&インポート</label
-          >
-          <div class="form-text">辞書のエクスポートをします。</div>
-          <a
-            download="VOICEVOXユーザー辞書.json"
-            class="btn btn-primary mb-3"
-            href="/user_dict"
-            onclick="showToastWithMessage('辞書をエクスポートしました。');"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            エクスポート
-          </a>
-          <div class="form-text">辞書のインポートをします。</div>
-          <input
-            class="m-3 form-control"
-            type="file"
-            name="user_dictionary_file"
-            accept="application/json"
-            @change="(e) => { dictFileForImport = e.target.files[0]; }"
-          />
-          <input
-            class="ms-3 form-check-input"
-            type="checkbox"
-            name="allow_override"
-            value="true"
-            id="allowOverrideDict"
-            v-model="allowOverrideDict"
-            :disabled="dictFileForImport == undefined"
-          />
-          <label class="mb-3 form-check-label" for="allowOverrideDict"
-            >辞書の上書きを許可する。</label
-          >
-        </div>
-
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#dictSubmitModal"
+          エクスポート
+        </a>
+        <div class="form-text">辞書のインポートをします。</div>
+        <input
+          class="m-3 form-control"
+          type="file"
+          name="user_dictionary_file"
+          accept="application/json"
+          @change="(e) => { dictFileForImport = e.target.files[0]; }"
+        />
+        <input
+          class="ms-3 form-check-input"
+          type="checkbox"
+          name="allow_override"
+          value="true"
+          id="allowOverrideDict"
+          v-model="allowOverrideDict"
           :disabled="dictFileForImport == undefined"
+        />
+        <label class="mb-3 form-check-label" for="allowOverrideDict"
+          >辞書の上書きを許可する。</label
         >
-          インポート
-        </button>
+      </div>
 
-        <div
-          class="modal fade"
-          id="submitModal"
-          tabindex="-1"
-          aria-labelledby="submitModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="submitModalLabel">設定の保存</h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">設定を保存します。よろしいですか？</div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  キャンセル
-                </button>
-                <button type="submit" class="btn btn-primary">保存</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="modal fade"
-          id="dictSubmitModal"
-          tabindex="-1"
-          aria-labelledby="dictSubmitModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="dictSubmitModalLabel">
-                  ユーザー辞書のインポート
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                ユーザー辞書をインポートします。よろしいですか？
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  キャンセル
-                </button>
-                <button
-                  type="button"
-                  onclick="importUserDict()"
-                  class="btn btn-primary"
-                  data-bs-dismiss="modal"
-                >
-                  インポート
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
-      <div
-        class="toast align-items-center hide text-white bg-success"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        id="toast"
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#dictSubmitModal"
+        :disabled="dictFileForImport == undefined"
       >
-        <div class="d-flex">
-          <div class="toast-body"></div>
+        インポート
+      </button>
+
+      <div
+        class="modal fade"
+        id="submitModal"
+        tabindex="-1"
+        aria-labelledby="submitModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="submitModalLabel">設定の保存</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">設定を保存します。よろしいですか？</div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                キャンセル
+              </button>
+              <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="modal fade"
+        id="dictSubmitModal"
+        tabindex="-1"
+        aria-labelledby="dictSubmitModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="dictSubmitModalLabel">
+                ユーザー辞書のインポート
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              ユーザー辞書をインポートします。よろしいですか？
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onclick="importUserDict()"
+                class="btn btn-primary"
+                data-bs-dismiss="modal"
+              >
+                インポート
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+        <div
+          class="toast align-items-center autohide text-white bg-success"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          ref="toastElem"
+        >
+          <div class="d-flex">
+            <div class="toast-body">{{toastMessage}}</div>
+          </div>
         </div>
       </div>
     </div>
 
     <script>
       function initVue() {
-        const { createApp, ref } = Vue;
+        const { createApp, ref, watch, onMounted } = Vue;
         createApp({
           setup() {
+            // 設定値周り
             const corsPolicyMode = ref(
               "<JINJA_PRE>cors_policy_mode<JINJA_POST>"
             );
             const allowOrigin = ref("<JINJA_PRE>allow_origin<JINJA_POST>");
+
+            // 設定が変更されたら自動保存
+            watch([corsPolicyMode, allowOrigin], () => {
+              const formData = new FormData();
+              formData.append("cors_policy_mode", corsPolicyMode.value);
+              formData.append("allow_origin", allowOrigin.value);
+
+              fetch("/setting", {
+                method: "POST",
+                mode: "same-origin",
+                body: formData,
+              }).then((res) => {
+                if (res.ok) {
+                  showToastWithMessage("設定を保存しました。");
+                } else {
+                  showToastWithMessage("設定の保存に失敗しました。");
+                }
+              });
+            });
+
+            // 辞書周り
             const dictFileForImport = ref();
             const allowOverrideDict = ref(false);
+
+            // トースト
+            const toastElem = ref(null);
+            const toast = ref(null);
+            const toastMessage = ref("");
+            onMounted(() => {
+              if (toastElem.value == null) {
+                throw new Error("toastElemが見つかりません。");
+              }
+              toast.value = new bootstrap.Toast(toastElem.value);
+            });
+            const showToastWithMessage = (message) => {
+              toast.value.show();
+              toastMessage.value = message;
+            };
 
             return {
               corsPolicyMode,
               allowOrigin,
               dictFileForImport,
               allowOverrideDict,
+              toastElem,
+              toastMessage,
+              showToastWithMessage,
             };
           },
         }).mount("#app");

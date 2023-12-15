@@ -1186,10 +1186,11 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    # TODO: postも作る
-
     @app.get("/setting", response_class=Response, tags=["設定"])
     def setting_get(request: Request) -> Response:
+        """
+        設定ページを返します。
+        """
         settings = setting_loader.load_setting_file()
 
         cors_policy_mode = settings.cors_policy_mode
@@ -1207,10 +1208,23 @@ def generate_app(
             },
         )
 
-    @app.get("/setting", response_model=Setting, tags=["設定"])
-    def setting_post() -> Setting:
-        raise NotImplementedError()
-        return setting_loader.load_setting_file()
+    @app.post("/setting", status_code=204, tags=["設定"])
+    def setting_post(
+        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
+        allow_origin: str | None = Form(default=None),  # noqa
+    ) -> None:
+        """
+        設定を保存します。
+        """
+        settings = Setting(
+            cors_policy_mode=cors_policy_mode,
+            allow_origin=allow_origin,
+        )
+
+        # 更新した設定へ上書き
+        setting_loader.dump_setting_file(settings)
+
+        return Response(status_code=204)
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
