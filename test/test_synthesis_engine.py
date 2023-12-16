@@ -65,7 +65,7 @@ def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.nda
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(float(phoneme_list[i] * 0.5 + style_id))
+        result.append((phoneme_list[i] * 0.5 + style_id).item())
     return numpy.array(result)
 
 
@@ -83,7 +83,7 @@ def yukarin_sa_mock(
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result.append(
-            float(
+            (
                 (
                     vowel_phoneme_list[0][i]
                     + consonant_phoneme_list[0][i]
@@ -94,7 +94,7 @@ def yukarin_sa_mock(
                 )
                 * 0.5
                 + style_id
-            )
+            ).item()
         )
     return numpy.array(result)[numpy.newaxis]
 
@@ -112,10 +112,10 @@ def decode_mock(
         # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
         for _ in range(256):
             result.append(
-                float(
+                (
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
                     + style_id
-                )
+                ).item()
             )
     return numpy.array(result)
 
