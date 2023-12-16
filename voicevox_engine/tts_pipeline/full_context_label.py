@@ -182,10 +182,10 @@ class AccentPhrase:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をcontextで区切り AccentPhrase インスタンスを生成する"""
 
-        # NOTE:「音素サブ系列」は単一モーラを構成する音素系列である。音素系列をcontextで区切り生成される。
+        # NOTE:「モーラごとの音素系列」は単一モーラを構成する音素系列である。音素系列をcontextで区切り生成される。
 
         moras: list[Mora] = []  # 音素サブ行列から生成されたモーラ系列
-        mora_phonemes: list[Phoneme] = []  # 音素サブ系列を一時保存するコンテナ
+        mora_phonemes: list[Phoneme] = []  # モーラごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
@@ -193,16 +193,16 @@ class AccentPhrase:
             if int(phoneme.contexts["a2"]) == 49:
                 break
 
-            # 区切りとなるcontextが出現するまで音素サブ系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまでモーラごとの音素系列の一員として一時保存する
             mora_phonemes.append(phoneme)
 
-            # 確定した音素サブ系列を処理する
+            # 確定したモーラごとの音素系列を処理する
             # context a2 の定義: "position of the current mora identity in the current accent phrase (forward)    1 ~ 49"  # noqa: B950
             if (
                 next_phoneme is None
                 or phoneme.contexts["a2"] != next_phoneme.contexts["a2"]
             ):
-                # 音素サブ系列長に基づいて子音と母音を得る
+                # モーラごとの音素系列長に基づいて子音と母音を得る
                 if len(mora_phonemes) == 1:
                     consonant, vowel = None, mora_phonemes[0]
                 elif len(mora_phonemes) == 2:
@@ -305,16 +305,16 @@ class BreathGroup:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をcontextで区切り BreathGroup インスタンスを生成する"""
 
-        # NOTE:「音素サブ系列」は単一アクセント句を構成する音素系列である。音素系列をcontextで区切り生成される。
+        # NOTE:「アクセント句ごとの音素系列」は単一アクセント句を構成する音素系列である。音素系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhrase] = []  # 音素サブ行列から生成されたアクセント句系列
-        accent_phonemes: list[Phoneme] = []  # 音素サブ系列を一時保存するコンテナ
+        accent_phonemes: list[Phoneme] = []  # アクセント句ごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
-            # 区切りとなるcontextが出現するまで音素サブ系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまでアクセント句ごとの音素系列の一員として一時保存する
             accent_phonemes.append(phoneme)
 
-            # 確定した音素サブ系列を処理する
+            # 確定したアクセント句ごとの音素系列を処理する
             # context i3 の定義: "position of the current breath group identity by breath group (forward)"  # noqa: B950
             # context f5 の定義: "position of the current accent phrase identity in the current breath group by the accent phrase (forward)"  # noqa: B950
             if (
@@ -322,7 +322,7 @@ class BreathGroup:
                 or phoneme.contexts["i3"] != next_phoneme.contexts["i3"]
                 or phoneme.contexts["f5"] != next_phoneme.contexts["f5"]
             ):
-                # 音素サブ系列からアクセント句を生成して保存する
+                # アクセント句ごとの音素系列からアクセント句を生成して保存する
                 accent_phrase = AccentPhrase.from_phonemes(accent_phonemes)
                 accent_phrases.append(accent_phrase)
                 # 音素サブ行列コンテナを初期化する
@@ -393,23 +393,23 @@ class Utterance:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をポーズで区切り Utterance インスタンスを生成する"""
 
-        # NOTE:「音素サブ系列」は単一 BreathGroup を構成する音素系列である。音素系列をポーズで区切り生成される。
+        # NOTE:「BreathGroupごとの音素系列」は単一 BreathGroup を構成する音素系列である。音素系列をポーズで区切り生成される。
 
         pauses: list[Phoneme] = []  # ポーズ音素のリスト
         breath_groups: list[BreathGroup] = []  # 音素サブ行列から生成された BreathGroup のリスト
-        group_phonemes: list[Phoneme] = []  # 音素サブ系列を一時保存するコンテナ
+        group_phonemes: list[Phoneme] = []  # BreathGroupごとの音素系列を一時保存するコンテナ
 
         for phoneme in phonemes:
-            # ポーズが出現するまで音素サブ系列の一員として一時保存する
+            # ポーズが出現するまでBreathGroupごとの音素系列の一員として一時保存する
             if not phoneme.is_pause():
                 group_phonemes.append(phoneme)
 
-            # 確定した音素サブ系列を処理する
+            # 確定したBreathGroupごとの音素系列を処理する
             else:
                 # ポーズ音素を保存する
                 pauses.append(phoneme)
                 if len(group_phonemes) > 0:
-                    # 音素サブ系列から BreathGroup を生成して保存する
+                    # BreathGroupごとの音素系列から BreathGroup を生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
                     # 音素サブ行列コンテナを初期化する
