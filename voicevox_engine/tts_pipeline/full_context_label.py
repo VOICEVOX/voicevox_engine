@@ -184,7 +184,7 @@ class AccentPhrase:
 
         # NOTE:「モーラごとの音素系列」は単一モーラを構成する音素系列である。音素系列をcontextで区切り生成される。
 
-        moras: list[Mora] = []  # 音素サブ行列から生成されたモーラ系列
+        moras: list[Mora] = []  # モーラごとの音素系列から生成されたモーラ系列
         mora_phonemes: list[Phoneme] = []  # モーラごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
@@ -212,7 +212,7 @@ class AccentPhrase:
                 # 子音と母音からモーラを生成して保存する
                 mora = Mora(consonant=consonant, vowel=vowel)
                 moras.append(mora)
-                # 音素サブ行列コンテナを初期化する
+                # モーラごとの音素系列コンテナを初期化する
                 mora_phonemes = []
 
         # アクセント位置を決定する
@@ -307,7 +307,7 @@ class BreathGroup:
 
         # NOTE:「アクセント句ごとの音素系列」は単一アクセント句を構成する音素系列である。音素系列をcontextで区切り生成される。
 
-        accent_phrases: list[AccentPhrase] = []  # 音素サブ行列から生成されたアクセント句系列
+        accent_phrases: list[AccentPhrase] = []  # アクセント句ごとの音素系列から生成されたアクセント句系列
         accent_phonemes: list[Phoneme] = []  # アクセント句ごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
@@ -325,7 +325,7 @@ class BreathGroup:
                 # アクセント句ごとの音素系列からアクセント句を生成して保存する
                 accent_phrase = AccentPhrase.from_phonemes(accent_phonemes)
                 accent_phrases.append(accent_phrase)
-                # 音素サブ行列コンテナを初期化する
+                # アクセント句ごとの音素系列コンテナを初期化する
                 accent_phonemes = []
 
         # BreathGroup インスタンスを生成する
@@ -396,7 +396,7 @@ class Utterance:
         # NOTE:「BreathGroupごとの音素系列」は単一 BreathGroup を構成する音素系列である。音素系列をポーズで区切り生成される。
 
         pauses: list[Phoneme] = []  # ポーズ音素のリスト
-        breath_groups: list[BreathGroup] = []  # 音素サブ行列から生成された BreathGroup のリスト
+        breath_groups: list[BreathGroup] = []  # BreathGroupごとの音素系列から生成された BreathGroup のリスト
         group_phonemes: list[Phoneme] = []  # BreathGroupごとの音素系列を一時保存するコンテナ
 
         for phoneme in phonemes:
@@ -412,7 +412,7 @@ class Utterance:
                     # BreathGroupごとの音素系列から BreathGroup を生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
-                    # 音素サブ行列コンテナを初期化する
+                    # BreathGroupごとの音素系列コンテナを初期化する
                     group_phonemes = []
 
         # Utterance インスタンスを生成する
