@@ -867,85 +867,87 @@ def generate_app(
 
         return ret_data
 
-    @app.get(
-        "/downloadable_libraries",
-        response_model=list[DownloadableLibraryInfo],
-        tags=["音声ライブラリ管理"],
-    )
-    def downloadable_libraries() -> list[DownloadableLibraryInfo]:
-        """
-        ダウンロード可能な音声ライブラリの情報を返します。
+    if engine_manifest_data.supported_features.manage_library:
 
-        Returns
-        -------
-        ret_data: list[DownloadableLibrary]
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        return library_manager.downloadable_libraries()
-
-    @app.get(
-        "/installed_libraries",
-        response_model=dict[str, InstalledLibraryInfo],
-        tags=["音声ライブラリ管理"],
-    )
-    def installed_libraries() -> dict[str, InstalledLibraryInfo]:
-        """
-        インストールした音声ライブラリの情報を返します。
-
-        Returns
-        -------
-        ret_data: dict[str, InstalledLibrary]
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        return library_manager.installed_libraries()
-
-    @app.post(
-        "/install_library/{library_uuid}",
-        status_code=204,
-        tags=["音声ライブラリ管理"],
-    )
-    async def install_library(
-        library_uuid: str,
-        request: Request,
-    ) -> Response:
-        """
-        音声ライブラリをインストールします。
-        音声ライブラリのZIPファイルをリクエストボディとして送信してください。
-
-        Parameters
-        ----------
-        library_uuid: str
-            音声ライブラリのID
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        archive = BytesIO(await request.body())
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None, library_manager.install_library, library_uuid, archive
+        @app.get(
+            "/downloadable_libraries",
+            response_model=list[DownloadableLibraryInfo],
+            tags=["音声ライブラリ管理"],
         )
-        return Response(status_code=204)
+        def downloadable_libraries() -> list[DownloadableLibraryInfo]:
+            """
+            ダウンロード可能な音声ライブラリの情報を返します。
 
-    @app.post(
-        "/uninstall_library/{library_uuid}",
-        status_code=204,
-        tags=["音声ライブラリ管理"],
-    )
-    def uninstall_library(library_uuid: str) -> Response:
-        """
-        音声ライブラリをアンインストールします。
+            Returns
+            -------
+            ret_data: list[DownloadableLibrary]
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            return library_manager.downloadable_libraries()
 
-        Parameters
-        ----------
-        library_uuid: str
-            音声ライブラリのID
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        library_manager.uninstall_library(library_uuid)
-        return Response(status_code=204)
+        @app.get(
+            "/installed_libraries",
+            response_model=dict[str, InstalledLibraryInfo],
+            tags=["音声ライブラリ管理"],
+        )
+        def installed_libraries() -> dict[str, InstalledLibraryInfo]:
+            """
+            インストールした音声ライブラリの情報を返します。
+
+            Returns
+            -------
+            ret_data: dict[str, InstalledLibrary]
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            return library_manager.installed_libraries()
+
+        @app.post(
+            "/install_library/{library_uuid}",
+            status_code=204,
+            tags=["音声ライブラリ管理"],
+        )
+        async def install_library(
+            library_uuid: str,
+            request: Request,
+        ) -> Response:
+            """
+            音声ライブラリをインストールします。
+            音声ライブラリのZIPファイルをリクエストボディとして送信してください。
+
+            Parameters
+            ----------
+            library_uuid: str
+                音声ライブラリのID
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            archive = BytesIO(await request.body())
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(
+                None, library_manager.install_library, library_uuid, archive
+            )
+            return Response(status_code=204)
+
+        @app.post(
+            "/uninstall_library/{library_uuid}",
+            status_code=204,
+            tags=["音声ライブラリ管理"],
+        )
+        def uninstall_library(library_uuid: str) -> Response:
+            """
+            音声ライブラリをアンインストールします。
+
+            Parameters
+            ----------
+            library_uuid: str
+                音声ライブラリのID
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            library_manager.uninstall_library(library_uuid)
+            return Response(status_code=204)
 
     @app.post("/initialize_style_id", status_code=204, tags=["その他"])
     def initialize_style_id(
