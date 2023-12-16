@@ -1,11 +1,11 @@
 import json
+import shutil
 import sys
 import threading
 import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
-import shutil
 
 import numpy as np
 import pyopenjtalk
