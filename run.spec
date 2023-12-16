@@ -7,21 +7,21 @@ from shutil import copy2, copytree
 from PyInstaller.utils.hooks import collect_data_files
 
 parser = ArgumentParser()
-parser.add_argument("--libcore_path", type=Path, required=True)
-parser.add_argument("--libonnxruntime_path", type=Path, required=True)
-parser.add_argument("--core_model_dir_path", type=Path, required=True)
+parser.add_argument("--libcore_path", type=Path)
+parser.add_argument("--libonnxruntime_path", type=Path)
+parser.add_argument("--core_model_dir_path", type=Path)
 options = parser.parse_args()
 
-libonnxruntime_path: Path = options.libonnxruntime_path
-if not libonnxruntime_path.is_file():
+libonnxruntime_path: Path | None = options.libonnxruntime_path
+if libonnxruntime_path is not None and not libonnxruntime_path.is_file():
     raise Exception(f"libonnxruntime_path: {libonnxruntime_path} is not file")
 
-libcore_path: Path = options.libcore_path
-if not libcore_path.is_file():
+libcore_path: Path | None = options.libcore_path
+if libcore_path is not None and not libcore_path.is_file():
     raise Exception(f"libcore_path: {libcore_path} is not file")
 
-core_model_dir_path: Path = options.core_model_dir_path
-if not core_model_dir_path.is_dir():
+core_model_dir_path: Path | None = options.core_model_dir_path
+if core_model_dir_path is not None and not core_model_dir_path.is_dir():
     raise Exception(f"core_model_dir_path: {core_model_dir_path} is not dir")
 
 datas = [
@@ -86,11 +86,19 @@ coll = COLLECT(
 # 実行ファイル作成後の処理
 target_dir = Path(DISTPATH) / "run"
 
-copy2(libonnxruntime_path, target_dir)
-copy2(libcore_path, target_dir)
-copytree(core_model_dir_path, target_dir / "model")
+if libonnxruntime_path is not None:
+    copy2(libonnxruntime_path, target_dir)
+
+if libcore_path is not None:
+    copy2(libcore_path, target_dir)
+
+if core_model_dir_path is not None:
+    copytree(core_model_dir_path, target_dir / "model")
+
+license_file_path = Path("licenses.json")
+if license_file_path.is_file():
+    copy2("licenses.json", target_dir)
 
 copytree("speaker_info", target_dir / "speaker_info")
 copy2("engine_manifest.json", target_dir)
 copytree("engine_manifest_assets", target_dir / "engine_manifest_assets")
-copy2("licenses.json", target_dir)
