@@ -1,5 +1,4 @@
 import json
-import shutil
 import sys
 import threading
 import traceback
@@ -77,8 +76,8 @@ def update_dict(
     """
     random_string = uuid4()
     tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}"  # csv形式辞書データの一時保存ファイル
-    tmp_compiled_path = (
-        save_dir / f".tmp.dict_compiled-{random_string}"
+    tmp_compiled_path = compiled_dict_path.with_suffix(
+        f".{random_string}.tmp"
     )  # コンパイル済み辞書データの一時保存ファイル
 
     try:
@@ -131,7 +130,7 @@ def update_dict(
 
         # コンパイル済み辞書の置き換え・読み込み
         pyopenjtalk.unset_user_dict()
-        shutil.copy(tmp_compiled_path, compiled_dict_path)
+        tmp_compiled_path.replace(compiled_dict_path)
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
