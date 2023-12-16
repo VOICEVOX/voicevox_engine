@@ -196,7 +196,7 @@ class AccentPhrase:
             # 区切りとなるcontextが出現するまでモーラごとの音素系列に一時保存する
             mora_phonemes.append(phoneme)
 
-            # 確定したモーラごとの音素系列を処理する
+            # 一時的な音素系列を確定させて処理する
             # context a2 の定義: "position of the current mora identity in the current accent phrase (forward)    1 ~ 49"  # noqa: B950
             if (
                 next_phoneme is None
@@ -314,7 +314,7 @@ class BreathGroup:
             # 区切りとなるcontextが出現するまでアクセント句ごとの音素系列に一時保存する
             accent_phonemes.append(phoneme)
 
-            # 確定したアクセント句ごとの音素系列を処理する
+            # 一時的な音素系列を確定させて処理する
             # context i3 の定義: "position of the current breath group identity by breath group (forward)"  # noqa: B950
             # context f5 の定義: "position of the current accent phrase identity in the current breath group by the accent phrase (forward)"  # noqa: B950
             if (
@@ -404,7 +404,7 @@ class Utterance:
             if not phoneme.is_pause():
                 group_phonemes.append(phoneme)
 
-            # 確定したBreathGroupごとの音素系列を処理する
+            # 一時的な音素系列を確定させて処理する
             else:
                 # ポーズ音素を保存する
                 pauses.append(phoneme)
