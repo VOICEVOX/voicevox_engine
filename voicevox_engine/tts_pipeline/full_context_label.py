@@ -182,9 +182,9 @@ class AccentPhrase:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をcontextで区切り AccentPhrase インスタンスを生成する"""
 
-        # NOTE:「モーラごとの音素系列」は単一モーラを構成する音素系列である。音素系列をcontextで区切り生成される。
+        # NOTE:「モーラごとの音素系列」は音素系列をcontextで区切り生成される。
 
-        moras: list[Mora] = []  # モーラごとの音素系列から生成されたモーラ系列
+        moras: list[Mora] = []  # モーラ系列
         mora_phonemes: list[Phoneme] = []  # モーラごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
@@ -305,9 +305,9 @@ class BreathGroup:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をcontextで区切り BreathGroup インスタンスを生成する"""
 
-        # NOTE:「アクセント句ごとの音素系列」は単一アクセント句を構成する音素系列である。音素系列をcontextで区切り生成される。
+        # NOTE:「アクセント句ごとの音素系列」は音素系列をcontextで区切り生成される。
 
-        accent_phrases: list[AccentPhrase] = []  # アクセント句ごとの音素系列から生成されたアクセント句系列
+        accent_phrases: list[AccentPhrase] = []  # アクセント句系列
         accent_phonemes: list[Phoneme] = []  # アクセント句ごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
@@ -393,10 +393,10 @@ class Utterance:
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
         """音素系列をポーズで区切り Utterance インスタンスを生成する"""
 
-        # NOTE:「BreathGroupごとの音素系列」は単一 BreathGroup を構成する音素系列である。音素系列をポーズで区切り生成される。
+        # NOTE:「BreathGroupごとの音素系列」は音素系列をポーズで区切り生成される。
 
         pauses: list[Phoneme] = []  # ポーズ音素のリスト
-        breath_groups: list[BreathGroup] = []  # BreathGroupごとの音素系列から生成された BreathGroup のリスト
+        breath_groups: list[BreathGroup] = []  # BreathGroup のリスト
         group_phonemes: list[Phoneme] = []  # BreathGroupごとの音素系列を一時保存するコンテナ
 
         for phoneme in phonemes:
