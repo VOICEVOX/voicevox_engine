@@ -81,11 +81,11 @@ class Phoneme:
     @property
     def phoneme(self):
         """
-        音素クラスの中で、発声に必要な要素を返す
+        音素クラスの中で、発声に必要なcontextを返す
         Returns
         -------
         phoneme : str
-            発声に必要な要素を返す
+            発声に必要なcontextを返す
         """
         return self.contexts["p3"]
 
@@ -180,24 +180,24 @@ class AccentPhrase:
 
     @classmethod
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
-        """音素系列をコンテキスト値で区切り AccentPhrase インスタンスを生成する"""
+        """音素系列をcontextで区切り AccentPhrase インスタンスを生成する"""
 
-        # NOTE:「音素サブ系列」は単一モーラを構成する音素系列である。音素系列をコンテキスト値で区切り生成される。
+        # NOTE:「音素サブ系列」は単一モーラを構成する音素系列である。音素系列をcontextで区切り生成される。
 
         moras: list[Mora] = []  # 音素サブ行列から生成されたモーラ系列
         mora_phonemes: list[Phoneme] = []  # 音素サブ系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
-            # (py)openjtalk コンテキスト a2 属性（モーラ番号）の最大値が 49 であるため、49番目以降のモーラでは音素のモーラ番号を区切りに使えない
+            # context a2（モーラ番号）の最大値が 49 であるため、49番目以降のモーラでは音素のモーラ番号を区切りに使えない
             if int(phoneme.contexts["a2"]) == 49:
                 break
 
-            # 区切りとなるコンテキスト値が出現するまで音素サブ系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまで音素サブ系列の一員として一時保存する
             mora_phonemes.append(phoneme)
 
             # 確定した音素サブ系列を処理する
-            # コンテキスト a2 属性の定義: "position of the current mora identity in the current accent phrase (forward)    1 ~ 49"  # noqa: B950
+            # context a2 の定義: "position of the current mora identity in the current accent phrase (forward)    1 ~ 49"  # noqa: B950
             if (
                 next_phoneme is None
                 or phoneme.contexts["a2"] != next_phoneme.contexts["a2"]
@@ -216,13 +216,13 @@ class AccentPhrase:
                 mora_phonemes = []
 
         # アクセント位置を決定する
-        # コンテキスト f2 属性の定義: "accent type in the current accent phrase    1 ~ 49"
+        # context f2 の定義: "accent type in the current accent phrase    1 ~ 49"
         accent = int(moras[0].vowel.contexts["f2"])
         # f2 の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
 
-        # 疑問文か否か判定する（末尾モーラ母音のコンテキスト値に基づく）
-        # コンテキスト f3 属性の定義: "whether the current accent phrase interrogative or not (0: not interrogative, 1: interrogative)"  # noqa: B950
+        # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
+        # context f3 の定義: "whether the current accent phrase interrogative or not (0: not interrogative, 1: interrogative)"  # noqa: B950
         is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
 
         # AccentPhrase インスタンスを生成する
@@ -303,20 +303,20 @@ class BreathGroup:
 
     @classmethod
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
-        """音素系列をコンテキスト値で区切り BreathGroup インスタンスを生成する"""
+        """音素系列をcontextで区切り BreathGroup インスタンスを生成する"""
 
-        # NOTE:「音素サブ系列」は単一アクセント句を構成する音素系列である。音素系列をコンテキスト値で区切り生成される。
+        # NOTE:「音素サブ系列」は単一アクセント句を構成する音素系列である。音素系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhrase] = []  # 音素サブ行列から生成されたアクセント句系列
         accent_phonemes: list[Phoneme] = []  # 音素サブ系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
-            # 区切りとなるコンテキスト値が出現するまで音素サブ系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまで音素サブ系列の一員として一時保存する
             accent_phonemes.append(phoneme)
 
             # 確定した音素サブ系列を処理する
-            # コンテキスト i3 属性の定義: "position of the current breath group identity by breath group (forward)"  # noqa: B950
-            # コンテキスト f5 属性の定義: "position of the current accent phrase identity in the current breath group by the accent phrase (forward)"  # noqa: B950
+            # context i3 の定義: "position of the current breath group identity by breath group (forward)"  # noqa: B950
+            # context f5 の定義: "position of the current accent phrase identity in the current breath group by the accent phrase (forward)"  # noqa: B950
             if (
                 next_phoneme is None
                 or phoneme.contexts["i3"] != next_phoneme.contexts["i3"]
