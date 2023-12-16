@@ -64,7 +64,8 @@ def make_synthesis_engines(
             voicelib_dirs = [root_dir]
         if runtime_dirs is None:
             runtime_dirs = [root_dir]
-    # パスをフルパスへ解決する
+
+    # `~`をホームディレクトリのパスに置き換える
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
@@ -101,8 +102,8 @@ def make_synthesis_engines(
                     )
                 else:
                     synthesis_engines[core_version] = SynthesisEngine(core=core)
-            # コア候補の場合エラーを抑制する
             except Exception:
+                # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
                     raise
 
@@ -111,7 +112,7 @@ def make_synthesis_engines(
             load_core_library(core_dir)
 
         # ユーザーディレクトリ下のコアをロードし登録する
-        # コア候補パスを列挙する
+        # コア候補を列挙する
         user_voicelib_dirs = []
         core_libraries_dir = get_save_dir() / "core_libraries"
         core_libraries_dir.mkdir(exist_ok=True)
@@ -120,7 +121,7 @@ def make_synthesis_engines(
             if not path.is_dir():
                 continue
             user_voicelib_dirs.append(path)
-        # コア候補パスからコアをロードし登録する。候補がコアで無い場合でもエラーは抑制される。
+        # コア候補をロードし登録する。候補がコアで無かった場合のエラーを抑制する。
         for core_dir in user_voicelib_dirs:
             load_core_library(core_dir, suppress_error=True)
 
