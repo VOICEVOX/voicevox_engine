@@ -322,7 +322,7 @@ class BreathGroup:
                 or phoneme.contexts["i3"] != next_phoneme.contexts["i3"]
                 or phoneme.contexts["f5"] != next_phoneme.contexts["f5"]
             ):
-                # アクセント句ごとの音素系列からアクセント句を生成して保存する
+                # アクセント句を生成して保存する
                 accent_phrase = AccentPhrase.from_phonemes(accent_phonemes)
                 accent_phrases.append(accent_phrase)
                 # アクセント句ごとの音素系列コンテナを初期化する
@@ -409,7 +409,7 @@ class Utterance:
                 # ポーズ音素を保存する
                 pauses.append(phoneme)
                 if len(group_phonemes) > 0:
-                    # BreathGroupごとの音素系列から BreathGroup を生成して保存する
+                    # 音素系列から BreathGroup を生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
                     # BreathGroupごとの音素系列コンテナを初期化する
