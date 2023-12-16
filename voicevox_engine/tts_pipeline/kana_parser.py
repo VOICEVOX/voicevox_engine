@@ -82,7 +82,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
         # 「`'` でアクセント位置」の実装
         if phrase[base_index] == _ACCENT_SYMBOL:
-            # 装
+            # 「アクセント位置はちょうど１つ」の実装
             if len(moras) == 0:
                 raise ParseKanaError(ParseKanaErrorCode.ACCENT_TOP, text=phrase)
             if accent_index is not None:
