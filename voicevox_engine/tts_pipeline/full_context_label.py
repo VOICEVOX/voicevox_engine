@@ -193,7 +193,7 @@ class AccentPhrase:
             if int(phoneme.contexts["a2"]) == 49:
                 break
 
-            # 区切りとなるcontextが出現するまでモーラごとの音素系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまでモーラごとの音素系列に一時保存する
             mora_phonemes.append(phoneme)
 
             # 確定したモーラごとの音素系列を処理する
@@ -311,7 +311,7 @@ class BreathGroup:
         accent_phonemes: list[Phoneme] = []  # アクセント句ごとの音素系列を一時保存するコンテナ
 
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
-            # 区切りとなるcontextが出現するまでアクセント句ごとの音素系列の一員として一時保存する
+            # 区切りとなるcontextが出現するまでアクセント句ごとの音素系列に一時保存する
             accent_phonemes.append(phoneme)
 
             # 確定したアクセント句ごとの音素系列を処理する
@@ -400,7 +400,7 @@ class Utterance:
         group_phonemes: list[Phoneme] = []  # BreathGroupごとの音素系列を一時保存するコンテナ
 
         for phoneme in phonemes:
-            # ポーズが出現するまでBreathGroupごとの音素系列の一員として一時保存する
+            # ポーズが出現するまでBreathGroupごとの音素系列に一時保存する
             if not phoneme.is_pause():
                 group_phonemes.append(phoneme)
 
