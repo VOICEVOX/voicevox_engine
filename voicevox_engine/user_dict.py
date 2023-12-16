@@ -75,9 +75,11 @@ def update_dict(
         コンパイル済み辞書ファイルのパス
     """
     random_string = uuid4()
-    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}"  # csv形式辞書データの一時保存ファイル
+    tmp_csv_path = compiled_dict_path.with_suffix(
+        f".dict_csv-{random_string}.tmp"
+    )  # csv形式辞書データの一時保存ファイル
     tmp_compiled_path = compiled_dict_path.with_suffix(
-        f".{random_string}.tmp"
+        f".dict_compiled-{random_string}.tmp"
     )  # コンパイル済み辞書データの一時保存ファイル
 
     try:
