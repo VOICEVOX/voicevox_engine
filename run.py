@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 
 import soundfile
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
@@ -138,6 +138,8 @@ def generate_app(
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: Optional[List[str]] = None,
+    disable_user_dict_api: bool = False,
+    disable_setting_api: bool = False,
 ) -> FastAPI:
     if root_dir is None:
         root_dir = engine_root()
@@ -195,6 +197,15 @@ def generate_app(
             return JSONResponse(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
+
+    # 許可されていないAPIを遮断する
+    def check_enabled_user_dict_api():
+        if disable_user_dict_api:
+            raise HTTPException(status_code=403, detail="ユーザー辞書APIは無効化されています")
+
+    def check_enabled_setting_api():
+        if disable_setting_api:
+            raise HTTPException(status_code=403, detail="設定APIは無効化されています")
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
@@ -1012,7 +1023,12 @@ def generate_app(
         )
         return is_initialized_style_id(style_id=speaker, core_version=core_version)
 
-    @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
+    @app.get(
+        "/user_dict",
+        response_model=dict[str, UserDictWord],
+        tags=["ユーザー辞書"],
+        dependencies=[Depends(check_enabled_user_dict_api)],
+    )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
@@ -1029,7 +1045,12 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
 
-    @app.post("/user_dict_word", response_model=str, tags=["ユーザー辞書"])
+    @app.post(
+        "/user_dict_word",
+        response_model=str,
+        tags=["ユーザー辞書"],
+        dependencies=[Depends(check_enabled_user_dict_api)],
+    )
     def add_user_dict_word(
         surface: str,
         pronunciation: str,
@@ -1070,7 +1091,12 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書への追加に失敗しました。")
 
-    @app.put("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
+    @app.put(
+        "/user_dict_word/{word_uuid}",
+        status_code=204,
+        tags=["ユーザー辞書"],
+        dependencies=[Depends(check_enabled_user_dict_api)],
+    )
     def rewrite_user_dict_word(
         surface: str,
         pronunciation: str,
@@ -1117,7 +1143,12 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
-    @app.delete("/user_dict_word/{word_uuid}", status_code=204, tags=["ユーザー辞書"])
+    @app.delete(
+        "/user_dict_word/{word_uuid}",
+        status_code=204,
+        tags=["ユーザー辞書"],
+        dependencies=[Depends(check_enabled_user_dict_api)],
+    )
     def delete_user_dict_word(word_uuid: str) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
@@ -1136,7 +1167,12 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
 
-    @app.post("/import_user_dict", status_code=204, tags=["ユーザー辞書"])
+    @app.post(
+        "/import_user_dict",
+        status_code=204,
+        tags=["ユーザー辞書"],
+        dependencies=[Depends(check_enabled_user_dict_api)],
+    )
     def import_user_dict_words(
         import_dict_data: dict[str, UserDictWord],
         override: bool,
@@ -1205,7 +1241,12 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    @app.get("/setting", response_class=Response, tags=["設定"])
+    @app.get(
+        "/setting",
+        response_class=Response,
+        tags=["設定"],
+        dependencies=[Depends(check_enabled_setting_api)],
+    )
     def setting_get(request: Request) -> Response:
         settings = setting_loader.load_setting_file()
 
@@ -1224,7 +1265,12 @@ def generate_app(
             },
         )
 
-    @app.post("/setting", response_class=Response, tags=["設定"])
+    @app.post(
+        "/setting",
+        response_class=Response,
+        tags=["設定"],
+        dependencies=[Depends(check_enabled_setting_api)],
+    )
     def setting_post(
         request: Request,
         cors_policy_mode: str | None = Form(None),  # noqa: B008
@@ -1397,6 +1443,18 @@ def main() -> None:
         ),
     )
 
+    parser.add_argument(
+        "--disable_user_dict_api",
+        action="store_true",
+        help="指定するとユーザー辞書APIを無効化します。",
+    )
+
+    parser.add_argument(
+        "--disable_setting_api",
+        action="store_true",
+        help="指定すると設定APIを無効化します。",
+    )
+
     args = parser.parse_args()
 
     if args.output_log_utf8:
@@ -1475,6 +1533,9 @@ def main() -> None:
         preset_path=preset_path,
     )
 
+    disable_user_dict_api: bool = args.disable_user_dict_api
+    disable_setting_api: bool = args.disable_setting_api
+
     uvicorn.run(
         generate_app(
             synthesis_engines,
@@ -1485,6 +1546,8 @@ def main() -> None:
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
+            disable_user_dict_api=disable_user_dict_api,
+            disable_setting_api=disable_setting_api,
         ),
         host=args.host,
         port=args.port,
