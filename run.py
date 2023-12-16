@@ -1216,7 +1216,7 @@ def generate_app(
         allow_origin: str | None = Form(default=None),  # noqa
     ) -> None:
         """
-        設定を保存します。
+        設定を更新します。
         """
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
