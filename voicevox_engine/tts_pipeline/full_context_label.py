@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Dict, List, Optional
+from typing import Self
 
 import pyopenjtalk
 
@@ -14,11 +14,11 @@ class Phoneme:
 
     Attributes
     ----------
-    contexts: Dict[str, str]
+    contexts: dict[str, str]
         音素の元
     """
 
-    contexts: Dict[str, str]
+    contexts: dict[str, str]
 
     @classmethod
     def from_label(cls, label: str):
@@ -81,11 +81,11 @@ class Phoneme:
     @property
     def phoneme(self):
         """
-        音素クラスの中で、発声に必要な要素を返す
+        音素クラスの中で、発声に必要なcontextを返す
         Returns
         -------
         phoneme : str
-            発声に必要な要素を返す
+            発声に必要なcontextを返す
         """
         return self.contexts["p3"]
 
@@ -111,13 +111,13 @@ class Mora:
 
     Attributes
     ----------
-    consonant : Optional[Phoneme]
+    consonant : Phoneme | None
         子音
     vowel : Phoneme
         母音
     """
 
-    consonant: Optional[Phoneme]
+    consonant: Phoneme | None
     vowel: Phoneme
 
     def set_context(self, key: str, value: str):
@@ -141,7 +141,7 @@ class Mora:
         音素群を返す
         Returns
         -------
-        phonemes : List[Phoneme]
+        phonemes : list[Phoneme]
             母音しかない場合は母音のみ、子音もある場合は子音、母音の順番でPhonemeのリストを返す
         """
         if self.consonant is not None:
@@ -155,7 +155,7 @@ class Mora:
         ラベル群を返す
         Returns
         -------
-        labels : List[str]
+        labels : list[str]
             Moraに含まれるすべてのラベルを返す
         """
         return [p.label for p in self.phonemes]
@@ -168,62 +168,69 @@ class AccentPhrase:
     同じアクセントのMoraを複数保持する
     Attributes
     ----------
-    moras : List[Mora]
+    moras : list[Mora]
         音韻のリスト
     accent : int
         アクセント
     """
 
-    moras: List[Mora]
+    moras: list[Mora]
     accent: int
     is_interrogative: bool
 
     @classmethod
-    def from_phonemes(cls, phonemes: List[Phoneme]):
-        """
-        PhonemeのリストからAccentPhraseクラスを作成する
-        Parameters
-        ----------
-        phonemes : List[Phoneme]
-            phonemeのリストを渡す
+    def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
+        """音素系列をcontextで区切りAccentPhraseインスタンスを生成する"""
 
-        Returns
-        -------
-        accent_phrase : AccentPhrase
-            AccentPhraseクラスを返す
-        """
-        moras: List[Mora] = []
+        # NOTE:「モーラごとの音素系列」は音素系列をcontextで区切り生成される。
 
-        mora_phonemes: List[Phoneme] = []
+        moras: list[Mora] = []  # モーラ系列
+        mora_phonemes: list[Phoneme] = []  # モーラごとの音素系列を一時保存するコンテナ
+
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
-            # workaround for Hihosiba/voicevox_engine#57
-            # (py)openjtalk によるアクセント句内のモーラへの附番は 49 番目まで
-            # 49 番目のモーラについて、続く音素のモーラ番号を単一モーラの特定に使えない
+            # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
+            # context a2（モーラ番号）の最大値が 49 であるため、49番目以降のモーラでは音素のモーラ番号を区切りに使えない
             if int(phoneme.contexts["a2"]) == 49:
                 break
 
+            # 区切りまで音素系列を一時保存する
             mora_phonemes.append(phoneme)
 
+            # 一時的な音素系列を確定させて処理する
+            # a2はアクセント句内でのモーラ番号(1~49)
             if (
                 next_phoneme is None
                 or phoneme.contexts["a2"] != next_phoneme.contexts["a2"]
             ):
+                # モーラごとの音素系列長に基づいて子音と母音を得る
                 if len(mora_phonemes) == 1:
                     consonant, vowel = None, mora_phonemes[0]
                 elif len(mora_phonemes) == 2:
                     consonant, vowel = mora_phonemes[0], mora_phonemes[1]
                 else:
                     raise ValueError(mora_phonemes)
+                # 子音と母音からモーラを生成して保存する
                 mora = Mora(consonant=consonant, vowel=vowel)
                 moras.append(mora)
+                # 次に向けてリセット
                 mora_phonemes = []
 
+        # アクセント位置を決定する
+        # f2はアクセント句のアクセント位置(1~49)
         accent = int(moras[0].vowel.contexts["f2"])
-        # workaround for Hihosiba/voicevox_engine#55
-        # アクセント位置とするキー f2 の値がアクセント句内のモーラ数を超える場合がある
+        # f2 の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
+
+        # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
+        # f3はアクセント句が疑問文かどうか（1で疑問文）
         is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
-        return cls(moras=moras, accent=accent, is_interrogative=is_interrogative)
+
+        # AccentPhrase インスタンスを生成する
+        accent_phrase = cls(
+            moras=moras, accent=accent, is_interrogative=is_interrogative
+        )
+
+        return accent_phrase
 
     def set_context(self, key: str, value: str):
         """
@@ -244,7 +251,7 @@ class AccentPhrase:
         音素群を返す
         Returns
         -------
-        phonemes : List[Phoneme]
+        phonemes : list[Phoneme]
             AccentPhraseに間接的に含まれる全てのPhonemeを返す
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
@@ -255,7 +262,7 @@ class AccentPhrase:
         ラベル群を返す
         Returns
         -------
-        labels : List[str]
+        labels : list[str]
             AccentPhraseに間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
@@ -288,41 +295,43 @@ class BreathGroup:
     アクセントの異なるアクセント句を複数保持する
     Attributes
     ----------
-    accent_phrases : List[AccentPhrase]
+    accent_phrases : list[AccentPhrase]
         アクセント句のリスト
     """
 
-    accent_phrases: List[AccentPhrase]
+    accent_phrases: list[AccentPhrase]
 
     @classmethod
-    def from_phonemes(cls, phonemes: List[Phoneme]):
-        """
-        PhonemeのリストからBreathGroupクラスを作成する
-        Parameters
-        ----------
-        phonemes : List[Phoneme]
-            phonemeのリストを渡す
+    def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
+        """音素系列をcontextで区切りBreathGroupインスタンスを生成する"""
 
-        Returns
-        -------
-        breath_group : BreathGroup
-            BreathGroupクラスを返す
-        """
-        accent_phrases: List[AccentPhrase] = []
-        accent_phonemes: List[Phoneme] = []
+        # NOTE:「アクセント句ごとの音素系列」は音素系列をcontextで区切り生成される。
+
+        accent_phrases: list[AccentPhrase] = []  # アクセント句系列
+        accent_phonemes: list[Phoneme] = []  # アクセント句ごとの音素系列を一時保存するコンテナ
+
         for phoneme, next_phoneme in zip(phonemes, phonemes[1:] + [None]):
+            # 区切りまで音素系列を一時保存する
             accent_phonemes.append(phoneme)
 
+            # 一時的な音素系列を確定させて処理する
+            # i3はBreathGroupの番号
+            # f5はBreathGroup内でのアクセント句の番号
             if (
                 next_phoneme is None
                 or phoneme.contexts["i3"] != next_phoneme.contexts["i3"]
                 or phoneme.contexts["f5"] != next_phoneme.contexts["f5"]
             ):
+                # アクセント句を生成して保存する
                 accent_phrase = AccentPhrase.from_phonemes(accent_phonemes)
                 accent_phrases.append(accent_phrase)
+                # 次に向けてリセット
                 accent_phonemes = []
 
-        return cls(accent_phrases=accent_phrases)
+        # BreathGroup インスタンスを生成する
+        breath_group = cls(accent_phrases=accent_phrases)
+
+        return breath_group
 
     def set_context(self, key: str, value: str):
         """
@@ -343,7 +352,7 @@ class BreathGroup:
         音素群を返す
         Returns
         -------
-        phonemes : List[Phoneme]
+        phonemes : list[Phoneme]
             BreathGroupに間接的に含まれる全てのPhonemeを返す
         """
         return list(
@@ -358,7 +367,7 @@ class BreathGroup:
         ラベル群を返す
         Returns
         -------
-        labels : List[str]
+        labels : list[str]
             BreathGroupに間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
@@ -371,46 +380,45 @@ class Utterance:
     発声の区切りと無音を複数保持する
     Attributes
     ----------
-    breath_groups : List[BreathGroup]
+    breath_groups : list[BreathGroup]
         発声の区切りのリスト
-    pauses : List[Phoneme]
+    pauses : list[Phoneme]
         無音のリスト
     """
 
-    breath_groups: List[BreathGroup]
-    pauses: List[Phoneme]
+    breath_groups: list[BreathGroup]
+    pauses: list[Phoneme]
 
     @classmethod
-    def from_phonemes(cls, phonemes: List[Phoneme]):
-        """
-        Phonemeの完全なリストからUtteranceクラスを作成する
-        Parameters
-        ----------
-        phonemes : List[Phoneme]
-            phonemeのリストを渡す
+    def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
+        """音素系列をポーズで区切りUtteranceインスタンスを生成する"""
 
-        Returns
-        -------
-        utterance : Utterance
-            Utteranceクラスを返す
-        """
-        pauses: List[Phoneme] = []
+        # NOTE:「BreathGroupごとの音素系列」は音素系列をポーズで区切り生成される。
 
-        breath_groups: List[BreathGroup] = []
-        group_phonemes: List[Phoneme] = []
+        pauses: list[Phoneme] = []  # ポーズ音素のリスト
+        breath_groups: list[BreathGroup] = []  # BreathGroup のリスト
+        group_phonemes: list[Phoneme] = []  # BreathGroupごとの音素系列を一時保存するコンテナ
+
         for phoneme in phonemes:
+            # ポーズが出現するまで音素系列を一時保存する
             if not phoneme.is_pause():
                 group_phonemes.append(phoneme)
 
+            # 一時的な音素系列を確定させて処理する
             else:
+                # ポーズ音素を保存する
                 pauses.append(phoneme)
-
                 if len(group_phonemes) > 0:
+                    # 音素系列からBreathGroupを生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
+                    # 次に向けてリセット
                     group_phonemes = []
 
-        return cls(breath_groups=breath_groups, pauses=pauses)
+        # Utteranceインスタンスを生成する
+        utterance = cls(breath_groups=breath_groups, pauses=pauses)
+
+        return utterance
 
     def set_context(self, key: str, value: str):
         """
@@ -431,7 +439,7 @@ class Utterance:
         音素群を返す
         Returns
         -------
-        phonemes : List[Phoneme]
+        phonemes : list[Phoneme]
             Utteranceクラスに直接的・間接的に含まれる、全てのPhonemeを返す
         """
         accent_phrases = list(
@@ -496,7 +504,7 @@ class Utterance:
             ),
         )
 
-        phonemes: List[Phoneme] = []
+        phonemes: list[Phoneme] = []
         for i in range(len(self.pauses)):
             if self.pauses[i] is not None:
                 phonemes += [self.pauses[i]]
@@ -512,7 +520,7 @@ class Utterance:
         ラベル群を返す
         Returns
         -------
-        labels : List[str]
+        labels : list[str]
             Utteranceクラスに直接的・間接的に含まれる全てのラベルを返す
         """
         return [p.label for p in self.phonemes]
