@@ -212,7 +212,7 @@ class AccentPhrase:
                 # 子音と母音からモーラを生成して保存する
                 mora = Mora(consonant=consonant, vowel=vowel)
                 moras.append(mora)
-                # モーラごとの音素系列コンテナを初期化する
+                # 次に向けてリセット
                 mora_phonemes = []
 
         # アクセント位置を決定する
@@ -325,7 +325,7 @@ class BreathGroup:
                 # アクセント句を生成して保存する
                 accent_phrase = AccentPhrase.from_phonemes(accent_phonemes)
                 accent_phrases.append(accent_phrase)
-                # アクセント句ごとの音素系列コンテナを初期化する
+                # 次に向けてリセット
                 accent_phonemes = []
 
         # BreathGroup インスタンスを生成する
@@ -412,7 +412,7 @@ class Utterance:
                     # 音素系列から BreathGroup を生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
-                    # BreathGroupごとの音素系列コンテナを初期化する
+                    # 次に向けてリセット
                     group_phonemes = []
 
         # Utterance インスタンスを生成する
