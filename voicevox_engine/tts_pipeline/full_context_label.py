@@ -197,7 +197,7 @@ class AccentPhrase:
             mora_phonemes.append(phoneme)
 
             # 一時的な音素系列を確定させて処理する
-            # context a2 の定義: "position of the current mora identity in the current accent phrase (forward)    1 ~ 49"  # noqa: B950
+            # a2はアクセント句内でのモーラ番号(1~49)
             if (
                 next_phoneme is None
                 or phoneme.contexts["a2"] != next_phoneme.contexts["a2"]
@@ -216,13 +216,13 @@ class AccentPhrase:
                 mora_phonemes = []
 
         # アクセント位置を決定する
-        # context f2 の定義: "accent type in the current accent phrase    1 ~ 49"
+        # f2はアクセント句のアクセント位置(1~49)
         accent = int(moras[0].vowel.contexts["f2"])
         # f2 の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
 
         # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
-        # context f3 の定義: "whether the current accent phrase interrogative or not (0: not interrogative, 1: interrogative)"  # noqa: B950
+        # f3はアクセント句が疑問文かどうか（1で疑問文）
         is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
 
         # AccentPhrase インスタンスを生成する
@@ -315,8 +315,8 @@ class BreathGroup:
             accent_phonemes.append(phoneme)
 
             # 一時的な音素系列を確定させて処理する
-            # context i3 の定義: "position of the current breath group identity by breath group (forward)"  # noqa: B950
-            # context f5 の定義: "position of the current accent phrase identity in the current breath group by the accent phrase (forward)"  # noqa: B950
+            # i3はBreathGroupの番号
+            # f5はBreathGroup内でのアクセント句の番号
             if (
                 next_phoneme is None
                 or phoneme.contexts["i3"] != next_phoneme.contexts["i3"]
