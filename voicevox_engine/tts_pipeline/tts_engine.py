@@ -130,7 +130,7 @@ def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : List[Mora]
         モーラ時系列
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     moras : List[Mora]
@@ -150,7 +150,7 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : list[Mora]
         モーラ系列
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     moras : list[Mora]
@@ -216,7 +216,7 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : list[Mora]
         モーラ系列
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     moras : list[Mora]
@@ -235,7 +235,7 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     moras : list[Mora]
         モーラ系列
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     moras : list[Mora]
@@ -281,7 +281,7 @@ def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
     wave : numpy.ndarray
         音声波形
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     wave : numpy.ndarray
@@ -326,7 +326,7 @@ def apply_output_sampling_rate(
     sr_wave : int
         `wave`のサンプリングレート
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     wave : ndarray
@@ -348,7 +348,7 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
     wave : ndarray
         音声波形
     query : AudioQuery
-        音声合成クエリ
+        音声合成用のクエリ
     Returns
     -------
     wave : ndarray
@@ -599,11 +599,11 @@ class SynthesisEngine(SynthesisEngineBase):
 
     def _synthesis_impl(self, query: AudioQuery, style_id: int):
         """
-        音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
+        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
-            音声合成クエリ
+            音声合成用のクエリ
         style_id : int
             スタイルID
         Returns

@@ -87,7 +87,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         Parameters
         ----------
         query : AudioQuery
-            /audio_query APIで得たjson
+            音声合成用のクエリ
         style_id : int
             スタイルID
 

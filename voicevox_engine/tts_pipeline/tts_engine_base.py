@@ -307,12 +307,12 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         enable_interrogative_upspeak: bool = True,
     ) -> np.ndarray:
         """
-        音声合成クエリ内の疑問文指定されたMoraを変形した後、
+        音声合成用のクエリ内の疑問文指定されたMoraを変形した後、
         継承先における実装`_synthesis_impl`を使い音声合成を行う
         Parameters
         ----------
         query : AudioQuery
-            音声合成クエリ
+            音声合成用のクエリ
         style_id : int
             スタイルID
         enable_interrogative_upspeak : bool
@@ -337,11 +337,11 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         style_id: int,
     ) -> np.ndarray:
         """
-        音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
+        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
-            音声合成クエリ
+            音声合成用のクエリ
         style_id : int
             スタイルID
         Returns
