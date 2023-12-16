@@ -180,7 +180,7 @@ class AccentPhrase:
 
     @classmethod
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
-        """音素系列をcontextで区切り AccentPhrase インスタンスを生成する"""
+        """音素系列をcontextで区切りAccentPhraseインスタンスを生成する"""
 
         # NOTE:「モーラごとの音素系列」は音素系列をcontextで区切り生成される。
 
@@ -303,7 +303,7 @@ class BreathGroup:
 
     @classmethod
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
-        """音素系列をcontextで区切り BreathGroup インスタンスを生成する"""
+        """音素系列をcontextで区切りBreathGroupインスタンスを生成する"""
 
         # NOTE:「アクセント句ごとの音素系列」は音素系列をcontextで区切り生成される。
 
@@ -391,7 +391,7 @@ class Utterance:
 
     @classmethod
     def from_phonemes(cls, phonemes: list[Phoneme]) -> Self:
-        """音素系列をポーズで区切り Utterance インスタンスを生成する"""
+        """音素系列をポーズで区切りUtteranceインスタンスを生成する"""
 
         # NOTE:「BreathGroupごとの音素系列」は音素系列をポーズで区切り生成される。
 
@@ -409,13 +409,13 @@ class Utterance:
                 # ポーズ音素を保存する
                 pauses.append(phoneme)
                 if len(group_phonemes) > 0:
-                    # 音素系列から BreathGroup を生成して保存する
+                    # 音素系列からBreathGroupを生成して保存する
                     breath_group = BreathGroup.from_phonemes(group_phonemes)
                     breath_groups.append(breath_group)
                     # 次に向けてリセット
                     group_phonemes = []
 
-        # Utterance インスタンスを生成する
+        # Utteranceインスタンスを生成する
         utterance = cls(breath_groups=breath_groups, pauses=pauses)
 
         return utterance
