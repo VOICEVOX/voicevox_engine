@@ -1193,6 +1193,7 @@ def generate_app(
         """
         settings = setting_loader.load_setting_file()
 
+        brand_name = engine_manifest_data.brand_name
         cors_policy_mode = settings.cors_policy_mode
         allow_origin = settings.allow_origin
 
@@ -1203,6 +1204,7 @@ def generate_app(
             "ui.html",
             {
                 "request": request,
+                "brand_name": brand_name,
                 "cors_policy_mode": cors_policy_mode,
                 "allow_origin": allow_origin,
             },

@@ -16,13 +16,13 @@
     />
   </head>
 
-  <!-- あとはスタイルだけ！！！！ -->
-
   <body>
     <!-- Vueの準備が完了した後にvisibility: visibleにする -->
     <div id="app" class="container p-3" style="visibility: hidden">
+      <h1 class="mb-3">{{brandName}} エンジン 設定</h1>
+
       <div class="alert alert-warning" role="alert">
-        設定の変更の更新にはエンジンの再起動が必要です。
+        変更を反映するにはエンジンの再起動が必要です。
       </div>
 
       <div class="mb-3">
@@ -37,14 +37,12 @@
         </select>
         <div class="form-text">
           <p class="mb-1">
-            allまたはlocalappsを指定。allはすべてを許可します。
-          </p>
-          <p class="mb-1">
             localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。
           </p>
-          <p>
-            その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
+          <p class="mb-1">
+            その他のオリジンはAllow Originオプションで追加できます。
           </p>
+          <p>allはすべてを許可します。危険性を理解した上でご利用ください。</p>
         </div>
       </div>
 
@@ -56,49 +54,52 @@
           v-model.trim.lazy="allowOrigin"
         />
         <div class="form-text">
-          許可するオリジンを指定します。複数指定する場合は、直後にスペースで区切って追加できます。
+          許可するオリジンを指定します。スペースで区切ることで複数指定できます。
         </div>
       </div>
 
-      <hr />
+      <div class="mb-3">
+        <label class="form-label">ユーザー辞書のインポート</label>
+        <div class="col-12">
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#importUserDictModal"
+          >
+            インポート
+          </button>
+        </div>
+      </div>
 
       <div class="mb-3">
-        <label class="form-label">ユーザー辞書のエクスポート&インポート</label>
-        <div class="form-text">辞書のエクスポートをします。</div>
-        <a
-          download="VOICEVOXユーザー辞書.json"
-          class="btn btn-primary mb-3"
-          href="/user_dict"
-          @click="showToastWithMessage('辞書をエクスポートしました。');"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          エクスポート
-        </a>
-
-        <div class="form-text">辞書のインポートをします。</div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#dictSubmitModal"
-        >
-          インポート
-        </button>
+        <label class="form-label">ユーザー辞書のエクスポート</label>
+        <div class="col-12">
+          <a
+            download="VOICEVOXユーザー辞書.json"
+            class="btn btn-primary mb-3"
+            href="/user_dict"
+            @click="showToastWithMessage('辞書をエクスポートしました。');"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            エクスポート
+          </a>
+        </div>
       </div>
 
       <!-- ユーザー辞書インポート用モーダル -->
       <div
         class="modal fade"
-        id="dictSubmitModal"
+        id="importUserDictModal"
         tabindex="-1"
-        aria-labelledby="dictSubmitModalLabel"
+        aria-labelledby="importUserDictModalLabel"
         aria-hidden="true"
       >
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="dictSubmitModalLabel">
+              <h5 class="modal-title" id="importUserDictModalLabel">
                 ユーザー辞書のインポート
               </h5>
               <button
@@ -110,24 +111,11 @@
             </div>
             <div class="modal-body">
               <input
-                class="m-3 form-control"
+                class="form-control"
                 type="file"
-                name="user_dictionary_file"
                 accept="application/json"
-                @change="(e) => { dictFileForImport = e.target.files[0]; }"
+                @change="(e) => { userDictFileForImport = e.target.files[0]; }"
               />
-              <input
-                class="ms-3 form-check-input"
-                type="checkbox"
-                name="allow_override"
-                value="true"
-                id="allowOverrideDict"
-                v-model="allowOverrideDict"
-                :disabled="dictFileForImport == undefined"
-              />
-              <label class="mb-3 form-check-label" for="allowOverrideDict"
-                >辞書の上書きを許可する。</label
-              >
             </div>
             <div class="modal-footer">
               <button
@@ -142,7 +130,7 @@
                 @click="importUserDict"
                 class="btn btn-primary"
                 data-bs-dismiss="modal"
-                :disabled="dictFileForImport == undefined"
+                :disabled="userDictFileForImport == undefined"
               >
                 インポート
               </button>
@@ -198,19 +186,18 @@
               });
             });
 
-            // 辞書周り
-            const dictFileForImport = ref();
-            const allowOverrideDict = ref(false);
+            // ユーザー辞書周り
+            const userDictFileForImport = ref();
 
             const importUserDict = () => {
-              if (dictFileForImport.value == null) {
-                throw new Error("dictFileForImportが見つかりません。");
+              if (userDictFileForImport.value == null) {
+                throw new Error("userDictFileForImportが見つかりません。");
               }
 
               const reader = new FileReader();
               reader.addEventListener("load", async () => {
                 const params = new URLSearchParams({
-                  override: allowOverrideDict.value,
+                  override: true, // 重複するエントリを上書きする
                 });
                 await fetch(`/import_user_dict?${params}`, {
                   method: "POST",
@@ -222,7 +209,7 @@
                 showToastWithMessage("辞書をインポートしました。");
               });
 
-              reader.readAsText(dictFileForImport.value);
+              reader.readAsText(userDictFileForImport.value);
             };
 
             // トースト
@@ -241,6 +228,9 @@
               toastMessage.value = message;
             };
 
+            // 表示用の情報
+            const brandName = ref("<JINJA_PRE>brand_name<JINJA_POST>");
+
             // Vueの準備が完了したら表示
             onMounted(() => {
               document.getElementById("app").style.visibility = "visible";
@@ -249,12 +239,12 @@
             return {
               corsPolicyMode,
               allowOrigin,
-              dictFileForImport,
-              allowOverrideDict,
+              userDictFileForImport,
               importUserDict,
               toastElem,
               toastMessage,
               showToastWithMessage,
+              brandName,
             };
           },
         }).mount("#app");
@@ -264,7 +254,7 @@
        * CDNからscriptやCSSを読み込む。
        * CDNが使えないときのために複数の候補を試す。
        */
-      const loadCDN = async (scriptOrCss, urlCandidateList, integrity) => {
+      const loadCDN = async (scriptOrCss, candidateUrlList, integrity) => {
         if (scriptOrCss !== "script" && scriptOrCss !== "css") {
           throw new Error("scriptOrCssはscriptかcssを指定してください。");
         }
@@ -272,25 +262,25 @@
         let current = 0;
         await new Promise((resolve, reject) => {
           const loadNext = async () => {
-            if (current >= urlCandidateList.length) {
+            if (current >= candidateUrlList.length) {
               reject(new Error("全てのCDNで読み込みに失敗しました。"));
             }
 
             let elem;
             if (scriptOrCss === "script") {
               elem = document.createElement("script");
-              elem.src = urlCandidateList[current];
+              elem.src = candidateUrlList[current];
             } else {
               elem = document.createElement("link");
-              elem.href = urlCandidateList[current];
+              elem.href = candidateUrlList[current];
               elem.rel = "stylesheet";
             }
             elem.integrity = integrity;
             elem.crossOrigin = "anonymous";
             elem.onload = resolve;
             elem.onerror = () => {
-              console.error(
-                `CDNの読み込みに失敗しました。 ${urlCandidateList[current]}`
+              console.warn(
+                `CDNの読み込みに失敗しました。 ${candidateUrlList[current]}`
               );
               document.head.removeChild(elem);
               current++;
@@ -302,11 +292,13 @@
         });
       };
 
+      // 初期化用の関数
       const init = async () => {
-        const loadingPromises = [];
+        // ライブラリ読み込み用のPromiseリスト
+        const libraryLoadingPromises = [];
 
         // Bootstrapを読み込む
-        const bootstrapPromise = loadCDN(
+        const bootstrapCssPromise = loadCDN(
           "css",
           [
             "https://unpkg.com/bootstrap@5.0.2/dist/css/bootstrap.min.css",
@@ -315,7 +307,7 @@
           ],
           "sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
         );
-        loadingPromises.push(bootstrapPromise);
+        libraryLoadingPromises.push(bootstrapCssPromise);
 
         const bootstrapScriptPromise = loadCDN(
           "script",
@@ -326,7 +318,7 @@
           ],
           "sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         );
-        loadingPromises.push(bootstrapScriptPromise);
+        libraryLoadingPromises.push(bootstrapScriptPromise);
 
         // Vueを読み込む
         const vuePromise = loadCDN(
@@ -338,10 +330,10 @@
           ],
           "sha384-ttfhgYK68lNlS8ak6Z//mvUbpRbRCh43MYGuqEtK8mj/yzlKqY8GA8o3BPMi23cE"
         );
-        loadingPromises.push(vuePromise);
+        libraryLoadingPromises.push(vuePromise);
 
-        await Promise.all(loadingPromises);
-
+        // ライブラリの読み込みが完了したらVueを初期化
+        await Promise.all(libraryLoadingPromises);
         initVue();
       };
       init();
