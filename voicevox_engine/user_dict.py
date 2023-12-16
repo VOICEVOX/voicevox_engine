@@ -5,6 +5,7 @@ import traceback
 from pathlib import Path
 from typing import Dict, List, Optional
 from uuid import UUID, uuid4
+import shutil
 
 import numpy as np
 import pyopenjtalk
@@ -130,7 +131,7 @@ def update_dict(
 
         # コンパイル済み辞書の置き換え・読み込み
         pyopenjtalk.unset_user_dict()
-        tmp_compiled_path.replace(compiled_dict_path)
+        shutil.copy(tmp_compiled_path, compiled_dict_path)
         if compiled_dict_path.is_file():
             pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
 
