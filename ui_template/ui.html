@@ -2,6 +2,7 @@
 
 <!-- 
   VOICEVOXエンジンの設定ページです。
+  VueとBootstrapを使っています。
   ライブラリを読み込んだあと、Vueコンポーネントの初期化が完了してからUIを表示します。
 -->
 
@@ -14,6 +15,8 @@
       href="https://voicevox.hiroshiba.jp/favicon-32x32.png"
     />
   </head>
+
+  <!-- あとはスタイルだけ！！！！ -->
 
   <body>
     <!-- Vueの準備が完了した後にvisibility: visibleにする -->
@@ -148,6 +151,7 @@
         </div>
       </div>
 
+      <!-- トースト -->
       <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
         <div
           class="toast align-items-center autohide text-white bg-success"
@@ -164,6 +168,7 @@
     </div>
 
     <script>
+      // Vueの初期化
       function initVue() {
         const { createApp, ref, watch, onMounted } = Vue;
         createApp({
@@ -222,17 +227,17 @@
 
             // トースト
             const toastElem = ref(null);
-            const toast = ref(null);
+            const bootstrapToast = ref(null);
             const toastMessage = ref("");
             onMounted(() => {
               if (toastElem.value == null) {
                 throw new Error("toastElemが見つかりません。");
               }
-              toast.value = new bootstrap.Toast(toastElem.value);
+              bootstrapToast.value = new bootstrap.Toast(toastElem.value);
             });
             const showToastWithMessage = (message) => {
               console.log(`showToastWithMessage: ${message}`);
-              toast.value.show();
+              bootstrapToast.value.show();
               toastMessage.value = message;
             };
 
