@@ -131,10 +131,7 @@ class AccentPhrase:
 
             # 一時的なラベル系列を確定させて処理する
             # a2はアクセント句内でのモーラ番号(1~49)
-            if (
-                next_label is None
-                or label.contexts["a2"] != next_label.contexts["a2"]
-            ):
+            if next_label is None or label.contexts["a2"] != next_label.contexts["a2"]:
                 # モーラごとのラベル系列長に基づいて子音と母音を得る
                 if len(mora_labels) == 1:
                     consonant, vowel = None, mora_labels[0]

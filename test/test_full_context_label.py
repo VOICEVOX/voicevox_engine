@@ -5,8 +5,8 @@ from unittest import TestCase
 from voicevox_engine.tts_pipeline.full_context_label import (
     AccentPhrase,
     BreathGroup,
-    Mora,
     Label,
+    Mora,
     Utterance,
 )
 
