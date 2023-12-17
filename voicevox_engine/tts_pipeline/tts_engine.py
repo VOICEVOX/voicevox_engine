@@ -389,8 +389,8 @@ def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
     return phoneme, f0
 
 
-def wave_to_output(query: AudioQuery, wave: ndarray, sr_wave: int) -> ndarray:
-    """音声波形に音声合成用のクエリを適用して出力を生成する"""
+def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> ndarray:
+    """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
     wave = apply_volume_scale(wave, query)
     wave = apply_output_sampling_rate(wave, sr_wave, query)
     wave = apply_output_stereo(wave, query)
@@ -646,7 +646,7 @@ class SynthesisEngine(SynthesisEngineBase):
             スタイルID
         Returns
         -------
-        output : numpy.ndarray
+        wave : numpy.ndarray
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
@@ -656,15 +656,15 @@ class SynthesisEngine(SynthesisEngineBase):
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
         with self.mutex:
-            wave = self.core.decode_forward(
+            raw_wave = self.core.decode_forward(
                 length=phoneme.shape[0],
                 phoneme_size=phoneme.shape[1],
                 f0=f0[:, numpy.newaxis],
                 phoneme=phoneme,
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
-            sr_wave = self.default_sampling_rate
+            sr_raw_wave = self.default_sampling_rate
 
-        output = wave_to_output(query, wave, sr_wave)
+        wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
-        return output
+        return wave
