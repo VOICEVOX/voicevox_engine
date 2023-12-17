@@ -6,7 +6,7 @@ import numpy as np
 
 from ..model import AccentPhrase, AudioQuery, Mora
 from . import full_context_label
-from .full_context_label import extract_full_context_label
+from .full_context_label import Utterance, extract_full_context_label
 from .mora_list import openjtalk_mora2text
 
 
@@ -128,6 +128,34 @@ def full_context_label_moras_to_moras(
             pitch=0,
         )
         for mora in full_context_moras
+    ]
+
+
+def utterance_to_accent_phrases(utterance: Utterance) -> list[AccentPhrase]:
+    """Utteranceインスタンスをアクセント句系列へドメイン変換する"""
+    return [
+        AccentPhrase(
+            moras=full_context_label_moras_to_moras(accent_phrase.moras),
+            accent=accent_phrase.accent,
+            pause_mora=(
+                Mora(
+                    text="、",
+                    consonant=None,
+                    consonant_length=None,
+                    vowel="pau",
+                    vowel_length=0,
+                    pitch=0,
+                )
+                if (
+                    i_accent_phrase == len(breath_group.accent_phrases) - 1
+                    and i_breath_group != len(utterance.breath_groups) - 1
+                )
+                else None
+            ),
+            is_interrogative=accent_phrase.is_interrogative,
+        )
+        for i_breath_group, breath_group in enumerate(utterance.breath_groups)
+        for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
     ]
 
 
@@ -270,32 +298,7 @@ class SynthesisEngineBase(metaclass=ABCMeta):
 
         # Utterance -> List[AccentPharase] のキャスト & 音素長・モーラ音高の推定と更新
         accent_phrases = self.replace_mora_data(
-            accent_phrases=[
-                AccentPhrase(
-                    moras=full_context_label_moras_to_moras(accent_phrase.moras),
-                    accent=accent_phrase.accent,
-                    pause_mora=(
-                        Mora(
-                            text="、",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="pau",
-                            vowel_length=0,
-                            pitch=0,
-                        )
-                        if (
-                            i_accent_phrase == len(breath_group.accent_phrases) - 1
-                            and i_breath_group != len(utterance.breath_groups) - 1
-                        )
-                        else None
-                    ),
-                    is_interrogative=accent_phrase.is_interrogative,
-                )
-                for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-                for i_accent_phrase, accent_phrase in enumerate(
-                    breath_group.accent_phrases
-                )
-            ],
+            accent_phrases=utterance_to_accent_phrases(utterance),
             style_id=style_id,
         )
         return accent_phrases
