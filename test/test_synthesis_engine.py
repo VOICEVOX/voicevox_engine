@@ -26,6 +26,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     calc_frame_pitch,
     mora_phoneme_list,
     pre_process,
+    query_to_decoder_feature,
     split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
@@ -65,7 +66,7 @@ def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.nda
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(float(phoneme_list[i] * 0.5 + style_id))
+        result.append((phoneme_list[i] * 0.5 + style_id).item())
     return numpy.array(result)
 
 
@@ -83,7 +84,7 @@ def yukarin_sa_mock(
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result.append(
-            float(
+            (
                 (
                     vowel_phoneme_list[0][i]
                     + consonant_phoneme_list[0][i]
@@ -94,7 +95,7 @@ def yukarin_sa_mock(
                 )
                 * 0.5
                 + style_id
-            )
+            ).item()
         )
     return numpy.array(result)[numpy.newaxis]
 
@@ -112,10 +113,10 @@ def decode_mock(
         # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
         for _ in range(256):
             result.append(
-                float(
+                (
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
                     + style_id
-                )
+                ).item()
             )
     return numpy.array(result)
 
@@ -446,8 +447,8 @@ def test_calc_frame_phoneme():
     assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
 
 
-def test_feat_to_framescale():
-    """Test Mora/Phonemefeature-to-framescaleFeature pipeline."""
+def test_query_to_decoder_feature():
+    """Test `query_to_decoder_feature`."""
     # Inputs
     accent_phrases = [
         AccentPhrase(
@@ -484,9 +485,9 @@ def test_feat_to_framescale():
     # phoneme
     #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_frame_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
+    true_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
-        true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
+        true_phoneme[frame_idx, phoneme_idx] = 1.0
     # Pitch
     #                   paw ko  N pau hi hO paw
     # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
@@ -499,19 +500,9 @@ def test_feat_to_framescale():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    flatten_moras = to_flatten_moras(query.accent_phrases)
-    flatten_moras = apply_prepost_silence(flatten_moras, query)
-    flatten_moras = apply_speed_scale(flatten_moras, query)
-    flatten_moras = apply_pitch_scale(flatten_moras, query)
-    flatten_moras = apply_intonation_scale(flatten_moras, query)
+    phoneme, f0 = query_to_decoder_feature(query)
 
-    phoneme_data_list = to_flatten_phonemes(flatten_moras)
-
-    frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
-    f0 = calc_frame_pitch(flatten_moras)
-    frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
-
-    assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
+    assert numpy.array_equal(phoneme, true_phoneme)
     assert numpy.array_equal(f0, true_f0)
 
 

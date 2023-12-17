@@ -82,6 +82,7 @@ from voicevox_engine.utility import (
     engine_root,
     get_latest_core_version,
     get_save_dir,
+    internal_root,
 )
 
 
@@ -209,7 +210,7 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
+    setting_ui_template = Jinja2Templates(directory=internal_root() / "ui_template")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する

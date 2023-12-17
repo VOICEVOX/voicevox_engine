@@ -221,26 +221,6 @@ class AccentPhrase:
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
-    def merge(self, accent_phrase: "AccentPhrase"):
-        """
-        AccentPhraseを合成する
-        (このクラスが保持するmorasの後ろに、引数として渡されたAccentPhraseのmorasを合成する)
-        Parameters
-        ----------
-        accent_phrase : AccentPhrase
-            合成したいAccentPhraseを渡す
-
-        Returns
-        -------
-        accent_phrase : AccentPhrase
-            合成されたAccentPhraseを返す
-        """
-        return AccentPhrase(
-            moras=self.moras + accent_phrase.moras,
-            accent=self.accent,
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-
 
 @dataclass
 class BreathGroup:
