@@ -159,6 +159,19 @@ def utterance_to_accent_phrases(utterance: Utterance) -> list[AccentPhrase]:
     ]
 
 
+def test_to_accent_phrases(text: str) -> list[AccentPhrase]:
+    """日本語テキストからアクセント句系列を生成"""
+    if len(text.strip()) == 0:
+        return []
+
+    # 音素とアクセントの推定
+    utterance = extract_full_context_label(text)
+    if len(utterance.breath_groups) == 0:
+        return []
+
+    return utterance_to_accent_phrases(utterance)
+
+
 class SynthesisEngineBase(metaclass=ABCMeta):
     @property
     @abstractmethod
@@ -288,17 +301,12 @@ class SynthesisEngineBase(metaclass=ABCMeta):
         accent_phrases : List[AccentPhrase]
             アクセント句系列
         """
-        if len(text.strip()) == 0:
-            return []
-
         # 音素とアクセントの推定
-        utterance = extract_full_context_label(text)
-        if len(utterance.breath_groups) == 0:
-            return []
+        accent_phrases = test_to_accent_phrases(text)
 
-        # Utterance -> List[AccentPharase] のキャスト & 音素長・モーラ音高の推定と更新
+        # 音素長・モーラ音高の推定と更新
         accent_phrases = self.replace_mora_data(
-            accent_phrases=utterance_to_accent_phrases(utterance),
+            accent_phrases=accent_phrases,
             style_id=style_id,
         )
         return accent_phrases
