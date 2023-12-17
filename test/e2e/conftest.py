@@ -29,9 +29,3 @@ def app_params() -> dict:
 @pytest.fixture(scope="session")
 def client(app_params: dict) -> TestClient:
     return TestClient(generate_app(**app_params))
-
-
-@pytest.fixture(scope="session")
-def opanapi(client: TestClient) -> dict:
-    # NOTE: openapiをカスタマイズしている場合、２回openapi()を呼び出すと冪等で無い場合にエラーが発生することがあるのでfixture化している
-    return client.app.openapi()
