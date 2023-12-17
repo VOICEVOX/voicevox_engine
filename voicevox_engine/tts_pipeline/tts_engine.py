@@ -359,6 +359,44 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
     return wave
 
 
+def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
+    """
+    音声合成用のクエリをデコーダー用特徴量へ変換する。
+    Parameters
+    ----------
+    query : AudioQuery
+        音声合成クエリ
+    Returns
+    -------
+    phoneme : ndarray
+        フレームごとの音素、shape=(Frame,)
+    f0 : ndarray
+        フレームごとの基本周波数、shape=(Frame,)
+    """
+    flatten_moras = to_flatten_moras(query.accent_phrases)
+
+    flatten_moras = apply_prepost_silence(flatten_moras, query)
+    flatten_moras = apply_speed_scale(flatten_moras, query)
+    flatten_moras = apply_pitch_scale(flatten_moras, query)
+    flatten_moras = apply_intonation_scale(flatten_moras, query)
+
+    phoneme_data_list = to_flatten_phonemes(flatten_moras)
+
+    frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
+    f0 = calc_frame_pitch(flatten_moras)
+    phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
+
+    return phoneme, f0
+
+
+def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> ndarray:
+    """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
+    wave = apply_volume_scale(wave, query)
+    wave = apply_output_sampling_rate(wave, sr_wave, query)
+    wave = apply_output_stereo(wave, query)
+    return wave
+
+
 class SynthesisEngine(SynthesisEngineBase):
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
@@ -614,31 +652,19 @@ class SynthesisEngine(SynthesisEngineBase):
         # モデルがロードされていない場合はロードする
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
-        flatten_moras = to_flatten_moras(query.accent_phrases)
-        flatten_moras = apply_prepost_silence(flatten_moras, query)
-        flatten_moras = apply_speed_scale(flatten_moras, query)
-        flatten_moras = apply_pitch_scale(flatten_moras, query)
-        flatten_moras = apply_intonation_scale(flatten_moras, query)
-
-        phoneme_data_list = to_flatten_phonemes(flatten_moras)
-
-        frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
-        f0 = calc_frame_pitch(flatten_moras)
-        phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
+        phoneme, f0 = query_to_decoder_feature(query)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
         with self.mutex:
-            wave = self.core.decode_forward(
+            raw_wave = self.core.decode_forward(
                 length=phoneme.shape[0],
                 phoneme_size=phoneme.shape[1],
                 f0=f0[:, numpy.newaxis],
                 phoneme=phoneme,
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
-            sr_wave = self.default_sampling_rate
+            sr_raw_wave = self.default_sampling_rate
 
-        wave = apply_volume_scale(wave, query)
-        wave = apply_output_sampling_rate(wave, sr_wave, query)
-        wave = apply_output_stereo(wave, query)
+        wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
         return wave
