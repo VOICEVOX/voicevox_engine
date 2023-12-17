@@ -285,23 +285,23 @@ class Utterance:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroup] = []  # BreathGroup のリスト
-        group_lavels: list[Label] = []  # BreathGroupごとのラベル系列を一時保存するコンテナ
+        group_labels: list[Label] = []  # BreathGroupごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する
             if not label.is_pause():
-                group_lavels.append(label)
+                group_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
             else:
                 # ポーズラベルを保存する
                 pauses.append(label)
-                if len(group_lavels) > 0:
+                if len(group_labels) > 0:
                     # ラベル系列からBreathGroupを生成して保存する
-                    breath_group = BreathGroup.from_labels(group_lavels)
+                    breath_group = BreathGroup.from_labels(group_labels)
                     breath_groups.append(breath_group)
                     # 次に向けてリセット
-                    group_lavels = []
+                    group_labels = []
 
         # Utteranceインスタンスを生成する
         utterance = cls(breath_groups=breath_groups, pauses=pauses)
