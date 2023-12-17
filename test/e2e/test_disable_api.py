@@ -5,7 +5,6 @@ APIを無効化するテスト
 from typing import Literal
 
 from fastapi.testclient import TestClient
-
 from run import generate_app
 
 
