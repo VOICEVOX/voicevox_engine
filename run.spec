@@ -84,17 +84,19 @@ coll = COLLECT(
 )
 
 # 実行ファイル作成後の処理
+
+# 実行ファイルと同じrootディレクトリ
 target_dir = Path(DISTPATH) / "run"
 
+# 動的ライブラリをコピー
 if libonnxruntime_path is not None:
     copy2(libonnxruntime_path, target_dir)
-
 if libcore_path is not None:
     copy2(libcore_path, target_dir)
-
 if core_model_dir_path is not None:
     copytree(core_model_dir_path, target_dir / "model")
 
+# 互換性維持のために必要なファイルをコピー
 license_file_path = Path("licenses.json")
 if license_file_path.is_file():
     copy2("licenses.json", target_dir)
