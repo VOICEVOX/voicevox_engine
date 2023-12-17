@@ -6,7 +6,7 @@ from voicevox_engine.tts_pipeline.full_context_label import (
     AccentPhrase,
     BreathGroup,
     Mora,
-    Phoneme,
+    Label,
     Utterance,
 )
 
@@ -123,7 +123,7 @@ class TestBasePhonemes(TestCase):
             + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:2+2-9",
         ]
         self.phonemes_hello_hiho = [
-            Phoneme.from_label(label) for label in self.test_case_hello_hiho
+            Label.from_feature(feature) for feature in self.test_case_hello_hiho
         ]
 
 
@@ -254,10 +254,10 @@ class TestAccentPhrase(TestBasePhonemes):
         super().setUp()
         # TODO: ValueErrorを吐く作為的ではない自然な例の模索
         # 存在しないなら放置でよい
-        self.accent_phrase_hello = AccentPhrase.from_phonemes(
+        self.accent_phrase_hello = AccentPhrase.from_labels(
             self.phonemes_hello_hiho[1:10]
         )
-        self.accent_phrase_hiho = AccentPhrase.from_phonemes(
+        self.accent_phrase_hiho = AccentPhrase.from_labels(
             self.phonemes_hello_hiho[11:19]
         )
 
@@ -298,10 +298,10 @@ class TestAccentPhrase(TestBasePhonemes):
 class TestBreathGroup(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.breath_group_hello = BreathGroup.from_phonemes(
+        self.breath_group_hello = BreathGroup.from_labels(
             self.phonemes_hello_hiho[1:10]
         )
-        self.breath_group_hiho = BreathGroup.from_phonemes(
+        self.breath_group_hiho = BreathGroup.from_labels(
             self.phonemes_hello_hiho[11:19]
         )
 
@@ -337,7 +337,7 @@ class TestBreathGroup(TestBasePhonemes):
 class TestUtterance(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.utterance_hello_hiho = Utterance.from_phonemes(self.phonemes_hello_hiho)
+        self.utterance_hello_hiho = Utterance.from_labels(self.phonemes_hello_hiho)
 
     def test_phonemes(self):
         self.assertEqual(
@@ -346,7 +346,7 @@ class TestUtterance(TestBasePhonemes):
             ),
             "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
-        changed_utterance = Utterance.from_phonemes(self.utterance_hello_hiho.phonemes)
+        changed_utterance = Utterance.from_labels(self.utterance_hello_hiho.phonemes)
         self.assertEqual(len(changed_utterance.breath_groups), 2)
         accent_phrases = list(
             chain.from_iterable(
