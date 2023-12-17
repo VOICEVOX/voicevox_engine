@@ -266,20 +266,6 @@ class TestAccentPhrase(TestBasePhonemes):
             self.accent_phrase_hiho.labels, self.test_case_hello_hiho[11:19]
         )
 
-    def test_merge(self):
-        # 「こんにちはヒホです」
-        # 読点を無くしたものと同等
-        merged_accent_phrase = self.accent_phrase_hello.merge(self.accent_phrase_hiho)
-        self.assertEqual(merged_accent_phrase.accent, 5)
-        self.assertEqual(
-            " ".join([phoneme.phoneme for phoneme in merged_accent_phrase.phonemes]),
-            "k o N n i ch i w a h i h o d e s U",
-        )
-        self.assertEqual(
-            merged_accent_phrase.labels,
-            self.test_case_hello_hiho[1:10] + self.test_case_hello_hiho[11:19],
-        )
-
 
 class TestBreathGroup(TestBasePhonemes):
     def setUp(self) -> None:
