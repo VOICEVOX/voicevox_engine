@@ -55,30 +55,6 @@ class Phoneme:
         return cls(contexts=contexts)
 
     @property
-    def label(self):
-        """
-        pyopenjtalk.extract_fullcontextで得られるラベルと等しい
-        Returns
-        -------
-        lebel: str
-            ラベルを返す
-        """
-        return (
-            "{p1}^{p2}-{p3}+{p4}={p5}"
-            "/A:{a1}+{a2}+{a3}"
-            "/B:{b1}-{b2}_{b3}"
-            "/C:{c1}_{c2}+{c3}"
-            "/D:{d1}+{d2}_{d3}"
-            "/E:{e1}_{e2}!{e3}_{e4}-{e5}"
-            "/F:{f1}_{f2}#{f3}_{f4}@{f5}_{f6}|{f7}_{f8}"
-            "/G:{g1}_{g2}%{g3}_{g4}_{g5}"
-            "/H:{h1}_{h2}"
-            "/I:{i1}-{i2}@{i3}+{i4}&{i5}-{i6}|{i7}+{i8}"
-            "/J:{j1}_{j2}"
-            "/K:{k1}+{k2}-{k3}"
-        ).format(**self.contexts)
-
-    @property
     def phoneme(self):
         """
         音素クラスの中で、発声に必要なcontextを返す
@@ -148,17 +124,6 @@ class Mora:
             return [self.consonant, self.vowel]
         else:
             return [self.vowel]
-
-    @property
-    def labels(self):
-        """
-        ラベル群を返す
-        Returns
-        -------
-        labels : list[str]
-            Moraに含まれるすべてのラベルを返す
-        """
-        return [p.label for p in self.phonemes]
 
 
 @dataclass
@@ -256,17 +221,6 @@ class AccentPhrase:
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
-    @property
-    def labels(self):
-        """
-        ラベル群を返す
-        Returns
-        -------
-        labels : list[str]
-            AccentPhraseに間接的に含まれる全てのラベルを返す
-        """
-        return [p.label for p in self.phonemes]
-
 
 @dataclass
 class BreathGroup:
@@ -340,17 +294,6 @@ class BreathGroup:
                 accent_phrase.phonemes for accent_phrase in self.accent_phrases
             )
         )
-
-    @property
-    def labels(self):
-        """
-        ラベル群を返す
-        Returns
-        -------
-        labels : list[str]
-            BreathGroupに間接的に含まれる全てのラベルを返す
-        """
-        return [p.label for p in self.phonemes]
 
 
 @dataclass
@@ -493,17 +436,6 @@ class Utterance:
                 phonemes += self.breath_groups[i].phonemes
 
         return phonemes
-
-    @property
-    def labels(self):
-        """
-        ラベル群を返す
-        Returns
-        -------
-        labels : list[str]
-            Utteranceクラスに直接的・間接的に含まれる全てのラベルを返す
-        """
-        return [p.label for p in self.phonemes]
 
 
 def extract_full_context_label(text: str):
