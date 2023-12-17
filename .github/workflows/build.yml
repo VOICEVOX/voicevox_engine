@@ -464,10 +464,10 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
           fi
 
-          CORE_MODEL_DIR_PATH="download/core/model" \
-          LIBCORE_PATH="$LIBCORE_PATH" \
-          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec
+          pyinstaller --noconfirm run.spec -- \
+            --libcore_path="$LIBCORE_PATH" \
+            --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
+            --core_model_dir_path="download/core/model"
 
       - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
