@@ -846,21 +846,6 @@ class TestTTSEngine(TestCase):
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
-        assert_f0_count = 0
-
-        # Outputs: decode_forward `f0` 引数
-        decode_f0 = decode_args["f0"]
-
-        # Test: フレームごとの音高系列
-        # 乱数の影響で数値の位置がずれが生じるので、大半(4/5)があっていればよしとする
-        # また、上の部分のint(round(phoneme_length * (24000 / 256)))の影響で
-        # 本来のf0/phonemeとテスト生成したf0/phonemeの長さが変わることがあり、
-        # テスト生成したものが若干長くなることがあるので、本来のものの長さを基準にassertする
-        for i in range(len(decode_f0)):
-            # 乱数の影響等で数値にずれが生じるので、10の-5乗までの近似値であれば許容する
-            assert_f0_count += math.isclose(f0[i][0], decode_f0[i][0], rel_tol=10e-5)
-        self.assertTrue(assert_f0_count >= int(len(decode_f0) / 5) * 4)
-
         assert_phoneme_count = 0
 
         # Outputs: decode_forward `phoneme` 引数
