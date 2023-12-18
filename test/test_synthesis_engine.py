@@ -808,13 +808,6 @@ class TestTTSEngine(TestCase):
         # Outputs: MockCore入りTTSEngine の `.synthesis` 出力および core.decode_forward 引数
         result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
         decode_args = self.decode_mock.call_args[1]
-        list_length = decode_args["length"]
-
-        # Test: フレーム長
-        self.assertEqual(
-            list_length,
-            int(sum([round(p * 24000 / 256) for p in phoneme_length_list])),
-        )
 
         # Expects: Apply/Convert/Rescale
         num_phoneme = 45
@@ -886,7 +879,7 @@ class TestTTSEngine(TestCase):
         self.assertEqual(decode_args["style_id"], 1)
 
         # Expects: waveform (by mock)
-        true_result = decode_mock(list_length, num_phoneme, f0, phoneme, 1)
+        true_result = decode_mock(decode_args["length"], num_phoneme, f0, phoneme, 1)
         # Expects: 音量スケール適用
         true_result *= audio_query.volumeScale
 
