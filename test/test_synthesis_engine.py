@@ -531,7 +531,7 @@ def test_raw_wave_to_output_wave_without_resample():
     sr_raw_wave = 24000
 
     # Expects
-    true_wave = numpy.array([2*raw_wave, 2*raw_wave]).T
+    true_wave = numpy.array([2 * raw_wave, 2 * raw_wave]).T
 
     # Outputs
     wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
