@@ -87,7 +87,9 @@ class Mora:
 
     @property
     def phonemes(self):
-        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]"""
+        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。
+        NOTE: `.labels` に名称変更予定
+        """
         if self.consonant is not None:
             return [self.consonant, self.vowel]
         else:
@@ -178,7 +180,8 @@ class AccentPhrase:
     @property
     def phonemes(self):
         """
-        音素群を返す
+        内包する全てのラベルを返す
+        NOTE: `.labels` に名称変更予定
         Returns
         -------
         labels : list[Label]
@@ -248,7 +251,8 @@ class BreathGroup:
     @property
     def phonemes(self):
         """
-        音素群を返す
+        内包する全てのラベルを返す
+        NOTE: `.labels` に名称変更予定
         Returns
         -------
         labels : list[Label]
@@ -324,7 +328,8 @@ class Utterance:
     @property
     def phonemes(self):
         """
-        音素群を返す
+        内包する全てのラベルを返す
+        NOTE: `.labels` に名称変更予定
         Returns
         -------
         labels : list[Label]
