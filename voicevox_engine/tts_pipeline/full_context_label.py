@@ -50,7 +50,7 @@ class Label:
         return self.contexts["f1"] == "xx"
 
     def __repr__(self):
-        return f"<Phoneme phoneme='{self.phoneme}'>"
+        return f"<Label phoneme='{self.phoneme}'>"
 
 
 @dataclass
@@ -61,9 +61,9 @@ class Mora:
 
     Attributes
     ----------
-    consonant : Phoneme | None
+    consonant : Label | None
         子音
-    vowel : Phoneme
+    vowel : Label
         母音
     """
 
@@ -72,7 +72,7 @@ class Mora:
 
     def set_context(self, key: str, value: str):
         """
-        Moraクラス内に含まれるPhonemeのcontextのうち、指定されたキーの値を変更する
+        Moraクラス内に含まれるLabelのcontextのうち、指定されたキーの値を変更する
         consonantが存在する場合は、vowelと同じようにcontextを変更する
         Parameters
         ----------
@@ -164,7 +164,7 @@ class AccentPhrase:
 
     def set_context(self, key: str, value: str):
         """
-        AccentPhraseに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
+        AccentPhraseに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -181,8 +181,8 @@ class AccentPhrase:
         音素群を返す
         Returns
         -------
-        phonemes : list[Phoneme]
-            AccentPhraseに間接的に含まれる全てのPhonemeを返す
+        labels : list[Label]
+            AccentPhraseに間接的に含まれる全てのLabelを返す
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
@@ -234,7 +234,7 @@ class BreathGroup:
 
     def set_context(self, key: str, value: str):
         """
-        BreathGroupに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
+        BreathGroupに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -251,8 +251,8 @@ class BreathGroup:
         音素群を返す
         Returns
         -------
-        phonemes : list[Phoneme]
-            BreathGroupに間接的に含まれる全てのPhonemeを返す
+        labels : list[Label]
+            BreathGroupに間接的に含まれる全てのLabelを返す
         """
         return list(
             chain.from_iterable(
@@ -270,7 +270,7 @@ class Utterance:
     ----------
     breath_groups : list[BreathGroup]
         発声の区切りのリスト
-    pauses : list[Phoneme]
+    pauses : list[Label]
         無音のリスト
     """
 
@@ -310,7 +310,7 @@ class Utterance:
 
     def set_context(self, key: str, value: str):
         """
-        Utteranceに間接的に含まれる全てのPhonemeのcontextの、指定されたキーの値を変更する
+        Utteranceに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -327,8 +327,8 @@ class Utterance:
         音素群を返す
         Returns
         -------
-        phonemes : list[Phoneme]
-            Utteranceクラスに直接的・間接的に含まれる、全てのPhonemeを返す
+        labels : list[Label]
+            Utteranceクラスに直接的・間接的に含まれる、全てのLabelを返す
         """
         accent_phrases = list(
             chain.from_iterable(
@@ -392,15 +392,15 @@ class Utterance:
             ),
         )
 
-        phonemes: list[Label] = []
+        labels: list[Label] = []
         for i in range(len(self.pauses)):
             if self.pauses[i] is not None:
-                phonemes += [self.pauses[i]]
+                labels += [self.pauses[i]]
 
             if i < len(self.pauses) - 1:
-                phonemes += self.breath_groups[i].phonemes
+                labels += self.breath_groups[i].phonemes
 
-        return phonemes
+        return labels
 
 
 def extract_full_context_label(text: str):
