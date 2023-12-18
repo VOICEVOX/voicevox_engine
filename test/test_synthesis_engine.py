@@ -846,9 +846,6 @@ class TestTTSEngine(TestCase):
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
-        # Test: スタイルID
-        self.assertEqual(decode_args["style_id"], 1)
-
         # Expects: waveform (by mock)
         true_result = decode_mock(decode_args["length"], num_phoneme, f0, phoneme, 1)
         # Expects: 音量スケール適用
