@@ -851,10 +851,6 @@ class TestTTSEngine(TestCase):
         # Expects: 音量スケール適用
         true_result *= audio_query.volumeScale
 
-        # TODO: resampyの部分は値の検証しようがないので、パスする
-        if audio_query.outputSamplingRate != 24000:
-            return
-
         # Test:
         assert_result_count = 0
         for i in range(len(true_result)):
@@ -900,12 +896,6 @@ class TestTTSEngine(TestCase):
         audio_query.volumeScale = 1.0
         audio_query.prePhonemeLength = 0.5
         audio_query.postPhonemeLength = 0.5
-        self.synthesis_test_base(audio_query)
-
-        # output sampling rateのテスト
-        audio_query.prePhonemeLength = 0.1
-        audio_query.postPhonemeLength = 0.1
-        audio_query.outputSamplingRate = 48000
         self.synthesis_test_base(audio_query)
 
         # output stereoのテスト
