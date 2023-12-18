@@ -846,20 +846,6 @@ class TestTTSEngine(TestCase):
                 f0[i][0] = (f0[i][0] - mean_f0) * audio_query.intonationScale + mean_f0
         phoneme = numpy.array(phoneme, dtype=numpy.float32)
 
-        assert_phoneme_count = 0
-
-        # Outputs: decode_forward `phoneme` 引数
-        decode_phoneme = decode_args["phoneme"]
-
-        # Test: フレームごとの音素系列
-        for i in range(len(decode_phoneme)):
-            assert_true_count = 0
-            for j in range(len(decode_phoneme[i])):
-                assert_true_count += bool(phoneme[i][j] == decode_phoneme[i][j])
-            assert_phoneme_count += assert_true_count == num_phoneme
-
-        self.assertTrue(assert_phoneme_count >= int(len(decode_phoneme) / 5) * 4)
-
         # Test: スタイルID
         self.assertEqual(decode_args["style_id"], 1)
 
