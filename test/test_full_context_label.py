@@ -227,24 +227,21 @@ class TestMora(TestBasePhonemes):
             consonant=self.phonemes_hello_hiho[17], vowel=self.phonemes_hello_hiho[18]
         )
 
-    def assert_phonemes(self, mora: Mora, mora_str: str) -> None:
-        self.assertEqual(jointed_phonemes(mora), mora_str)
-
     def assert_labels(self, mora: Mora, label_start: int, label_end: int) -> None:
         self.assertEqual(
             features(mora), self.test_case_hello_hiho[label_start:label_end]
         )
 
     def test_phonemes(self) -> None:
-        self.assert_phonemes(self.mora_hello_1, "ko")
-        self.assert_phonemes(self.mora_hello_2, "N")
-        self.assert_phonemes(self.mora_hello_3, "ni")
-        self.assert_phonemes(self.mora_hello_4, "chi")
-        self.assert_phonemes(self.mora_hello_5, "wa")
-        self.assert_phonemes(self.mora_hiho_1, "hi")
-        self.assert_phonemes(self.mora_hiho_2, "ho")
-        self.assert_phonemes(self.mora_hiho_3, "de")
-        self.assert_phonemes(self.mora_hiho_4, "sU")
+        self.assertEqual(jointed_phonemes(self.mora_hello_1), "ko")
+        self.assertEqual(jointed_phonemes(self.mora_hello_2), "N")
+        self.assertEqual(jointed_phonemes(self.mora_hello_3), "ni")
+        self.assertEqual(jointed_phonemes(self.mora_hello_4), "chi")
+        self.assertEqual(jointed_phonemes(self.mora_hello_5), "wa")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_1), "hi")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_2), "ho")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_3), "de")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_4), "sU")
 
     def test_labels(self) -> None:
         self.assert_labels(self.mora_hello_1, 1, 3)
@@ -262,7 +259,7 @@ class TestMora(TestBasePhonemes):
         mora_hello_1 = deepcopy(self.mora_hello_1)
         # phonemeにあたる"p3"を書き換える
         mora_hello_1.set_context("p3", "a")
-        self.assert_phonemes(mora_hello_1, "aa")
+        self.assertEqual(jointed_phonemes(mora_hello_1), "aa")
 
 
 class TestAccentPhrase(TestBasePhonemes):
