@@ -172,7 +172,7 @@ def test_to_accent_phrases(text: str) -> list[AccentPhrase]:
     return utterance_to_accent_phrases(utterance)
 
 
-class SynthesisEngineBase(metaclass=ABCMeta):
+class TTSEngineBase(metaclass=ABCMeta):
     @property
     @abstractmethod
     def default_sampling_rate(self) -> int:

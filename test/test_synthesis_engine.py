@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.tts_pipeline import SynthesisEngine
+from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import OjtPhoneme
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
@@ -488,7 +488,7 @@ def test_query_to_decoder_feature():
     assert numpy.array_equal(f0, true_f0)
 
 
-class TestSynthesisEngine(TestCase):
+class TestTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
         self.str_list_hello_hiho = (
@@ -525,7 +525,7 @@ class TestSynthesisEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.synthesis_engine = SynthesisEngine(core=core)
+        self.synthesis_engine = TTSEngine(core=core)
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -772,7 +772,7 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
-        # Outputs: MockCore入りSynthesisEngine の `.synthesis` 出力および core.decode_forward 引数
+        # Outputs: MockCore入りTTSEngine の `.synthesis` 出力および core.decode_forward 引数
         result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
         decode_args = self.decode_mock.call_args[1]
         list_length = decode_args["length"]
