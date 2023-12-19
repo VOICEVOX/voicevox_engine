@@ -9,6 +9,11 @@ from . import full_context_label
 from .full_context_label import Utterance, extract_full_context_label
 from .mora_list import openjtalk_mora2text
 
+# 疑問文語尾定数
+UPSPEAK_LENGTH = 0.15
+UPSPEAK_PITCH_ADD = 0.3
+UPSPEAK_PITCH_MAX = 6.5
+
 
 def mora_to_text(mora: str) -> str:
     """
@@ -31,53 +36,25 @@ def mora_to_text(mora: str) -> str:
 
 
 def adjust_interrogative_accent_phrases(
-    accent_phrases: List[AccentPhrase],
-) -> List[AccentPhrase]:
-    """
-    アクセント句系列の必要に応じて疑問系に補正
-    各accent_phraseの末尾のモーラより少し音の高い有声母音モーラを付与するすることで疑問文ぽくする
-    Parameters
-    ----------
-    accent_phrases : List[AccentPhrase]
-        アクセント句系列
-    Returns
-    -------
-    accent_phrases : List[AccentPhrase]
-        必要に応じて疑問形補正されたアクセント句系列
-    """
+    accent_phrases: list[AccentPhrase]
+) -> list[AccentPhrase]:
+    """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
     for accent_phrase in accent_phrases:
         moras = copy.deepcopy(accent_phrase.moras)
         # 疑問形補正条件: 疑問形フラグON & 終端有声母音
         if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
-            interrogative_mora = make_interrogative_mora(moras[-1])
+            last_mora = moras[-1]
+            interrogative_mora = Mora(
+                text=openjtalk_mora2text[last_mora.vowel],
+                consonant=None,
+                consonant_length=None,
+                vowel=last_mora.vowel,
+                vowel_length=UPSPEAK_LENGTH,
+                pitch=min(last_mora.pitch + UPSPEAK_PITCH_ADD, UPSPEAK_PITCH_MAX),
+            )
             moras.append(interrogative_mora)
         accent_phrase.moras = moras
     return accent_phrases
-
-
-def make_interrogative_mora(last_mora: Mora) -> Mora:
-    """
-    疑問形用のモーラ（同一母音・継続長 0.15秒・音高↑）の生成
-    Parameters
-    ----------
-    last_mora : Mora
-        疑問形にするモーラ
-    Returns
-    -------
-    mora : Mora
-        疑問形用のモーラ
-    """
-    fix_vowel_length = 0.15
-    adjust_pitch = 0.3
-    max_pitch = 6.5
-    return Mora(
-        text=openjtalk_mora2text[last_mora.vowel],
-        consonant=None,
-        consonant_length=None,
-        vowel=last_mora.vowel,
-        vowel_length=fix_vowel_length,
-        pitch=min(last_mora.pitch + adjust_pitch, max_pitch),
-    )
 
 
 def full_context_label_moras_to_moras(
