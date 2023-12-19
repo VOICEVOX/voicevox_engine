@@ -365,68 +365,6 @@ class Utterance:
         phonemes : list[Phoneme]
             Utteranceクラスに直接的・間接的に含まれる、全てのPhonemeを返す
         """
-        accent_phrases = list(
-            chain.from_iterable(
-                breath_group.accent_phrases for breath_group in self.breath_groups
-            )
-        )
-        for prev, cent, post in zip(
-            [None] + accent_phrases[:-1],
-            accent_phrases,
-            accent_phrases[1:] + [None],
-        ):
-            mora_num = len(cent.moras)
-            accent = cent.accent
-
-            if prev is not None:
-                prev.set_context("g1", str(mora_num))
-                prev.set_context("g2", str(accent))
-
-            if post is not None:
-                post.set_context("e1", str(mora_num))
-                post.set_context("e2", str(accent))
-
-            cent.set_context("f1", str(mora_num))
-            cent.set_context("f2", str(accent))
-            for i_mora, mora in enumerate(cent.moras):
-                mora.set_context("a1", str(i_mora - accent + 1))
-                mora.set_context("a2", str(i_mora + 1))
-                mora.set_context("a3", str(mora_num - i_mora))
-
-        for prev, cent, post in zip(
-            [None] + self.breath_groups[:-1],
-            self.breath_groups,
-            self.breath_groups[1:] + [None],
-        ):
-            accent_phrase_num = len(cent.accent_phrases)
-
-            if prev is not None:
-                prev.set_context("j1", str(accent_phrase_num))
-
-            if post is not None:
-                post.set_context("h1", str(accent_phrase_num))
-
-            cent.set_context("i1", str(accent_phrase_num))
-            cent.set_context(
-                "i5", str(accent_phrases.index(cent.accent_phrases[0]) + 1)
-            )
-            cent.set_context(
-                "i6",
-                str(len(accent_phrases) - accent_phrases.index(cent.accent_phrases[0])),
-            )
-
-        self.set_context(
-            "k2",
-            str(
-                sum(
-                    [
-                        len(breath_group.accent_phrases)
-                        for breath_group in self.breath_groups
-                    ]
-                )
-            ),
-        )
-
         phonemes: list[Phoneme] = []
         for i in range(len(self.pauses)):
             if self.pauses[i] is not None:
