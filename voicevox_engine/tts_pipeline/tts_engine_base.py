@@ -45,16 +45,9 @@ def adjust_interrogative_accent_phrases(
     accent_phrases : List[AccentPhrase]
         必要に応じて疑問形補正されたアクセント句系列
     """
-    # NOTE: リファクタリング時に適切な場所へ移動させること
-    return [
-        AccentPhrase(
-            moras=adjust_interrogative_moras(accent_phrase),
-            accent=accent_phrase.accent,
-            pause_mora=accent_phrase.pause_mora,
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-        for accent_phrase in accent_phrases
-    ]
+    for accent_phrase in accent_phrases:
+        accent_phrase.moras = adjust_interrogative_moras(accent_phrase)
+    return accent_phrases
 
 
 def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
