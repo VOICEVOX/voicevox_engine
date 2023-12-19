@@ -45,7 +45,9 @@ def apply_interrogative_upspeak(
     for accent_phrase in accent_phrases:
         moras = copy.deepcopy(accent_phrase.moras)
         # 疑問形補正条件: 疑問形フラグON & 終端有声母音
-        if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
+        if accent_phrase.is_interrogative and not (
+            len(moras) == 0 or moras[-1].pitch == 0
+        ):
             last_mora = moras[-1]
             interrogative_mora = Mora(
                 text=openjtalk_mora2text[last_mora.vowel],
@@ -291,7 +293,9 @@ class TTSEngineBase(metaclass=ABCMeta):
         """
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        query.accent_phrases = apply_interrogative_upspeak(query.accent_phrases, enable_interrogative_upspeak)
+        query.accent_phrases = apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
         return self._synthesis_impl(query, style_id)
 
     @abstractmethod
