@@ -47,9 +47,7 @@ def apply_interrogative_upspeak(
         if len(moras) == 0:
             continue
         # 疑問形補正条件: 疑問形フラグON & 終端有声母音
-        if accent_phrase.is_interrogative and not (
-            moras[-1].pitch == 0
-        ):
+        if accent_phrase.is_interrogative and not (moras[-1].pitch == 0):
             last_mora = copy.deepcopy(moras[-1])
             interrogative_mora = Mora(
                 text=openjtalk_mora2text[last_mora.vowel],
