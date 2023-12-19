@@ -35,10 +35,13 @@ def mora_to_text(mora: str) -> str:
         return mora
 
 
-def adjust_interrogative_accent_phrases(
-    accent_phrases: list[AccentPhrase]
+def apply_interrogative_upspeak(
+    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
 ) -> list[AccentPhrase]:
     """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
+    if not enable_interrogative_upspeak:
+        return accent_phrases
+
     for accent_phrase in accent_phrases:
         moras = copy.deepcopy(accent_phrase.moras)
         # 疑問形補正条件: 疑問形フラグON & 終端有声母音
@@ -288,10 +291,7 @@ class TTSEngineBase(metaclass=ABCMeta):
         """
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        if enable_interrogative_upspeak:
-            query.accent_phrases = adjust_interrogative_accent_phrases(
-                query.accent_phrases
-            )
+        query.accent_phrases = apply_interrogative_upspeak(query.accent_phrases, enable_interrogative_upspeak)
         return self._synthesis_impl(query, style_id)
 
     @abstractmethod
