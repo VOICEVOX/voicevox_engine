@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.tts_pipeline import SynthesisEngine
+from voicevox_engine.tts_pipeline import TTSEngine
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
@@ -184,10 +184,10 @@ class MockCore:
         return True
 
 
-class TestSynthesisEngineBase(TestCase):
+class TestTTSEngineBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.synthesis_engine = SynthesisEngine(
+        self.synthesis_engine = TTSEngine(
             core=MockCore(),
         )
         self.synthesis_engine._synthesis_impl = Mock()
