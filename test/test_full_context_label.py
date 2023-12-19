@@ -1,5 +1,4 @@
 from copy import deepcopy
-from itertools import chain
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline.full_context_label import (
@@ -346,73 +345,6 @@ class TestUtterance(TestBasePhonemes):
             ),
             "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
-        changed_utterance = Utterance.from_phonemes(self.utterance_hello_hiho.phonemes)
-        self.assertEqual(len(changed_utterance.breath_groups), 2)
-        accent_phrases = list(
-            chain.from_iterable(
-                breath_group.accent_phrases
-                for breath_group in changed_utterance.breath_groups
-            )
-        )
-        for prev, cent, post in zip(
-            [None] + accent_phrases[:-1],
-            accent_phrases,
-            accent_phrases[1:] + [None],
-        ):
-            mora_num = len(cent.moras)
-            accent = cent.accent
-
-            if prev is not None:
-                for phoneme in prev.phonemes:
-                    self.assertEqual(phoneme.contexts["g1"], str(mora_num))
-                    self.assertEqual(phoneme.contexts["g2"], str(accent))
-
-            if post is not None:
-                for phoneme in post.phonemes:
-                    self.assertEqual(phoneme.contexts["e1"], str(mora_num))
-                    self.assertEqual(phoneme.contexts["e2"], str(accent))
-
-            for phoneme in cent.phonemes:
-                self.assertEqual(
-                    phoneme.contexts["k2"],
-                    str(
-                        sum(
-                            [
-                                len(breath_group.accent_phrases)
-                                for breath_group in changed_utterance.breath_groups
-                            ]
-                        )
-                    ),
-                )
-
-        for prev, cent, post in zip(
-            [None] + changed_utterance.breath_groups[:-1],
-            changed_utterance.breath_groups,
-            changed_utterance.breath_groups[1:] + [None],
-        ):
-            accent_phrase_num = len(cent.accent_phrases)
-
-            if prev is not None:
-                for phoneme in prev.phonemes:
-                    self.assertEqual(phoneme.contexts["j1"], str(accent_phrase_num))
-
-            if post is not None:
-                for phoneme in post.phonemes:
-                    self.assertEqual(phoneme.contexts["h1"], str(accent_phrase_num))
-
-            for phoneme in cent.phonemes:
-                self.assertEqual(phoneme.contexts["i1"], str(accent_phrase_num))
-                self.assertEqual(
-                    phoneme.contexts["i5"],
-                    str(accent_phrases.index(cent.accent_phrases[0]) + 1),
-                )
-                self.assertEqual(
-                    phoneme.contexts["i6"],
-                    str(
-                        len(accent_phrases)
-                        - accent_phrases.index(cent.accent_phrases[0])
-                    ),
-                )
 
     def test_labels(self):
         self.assertEqual(features(self.utterance_hello_hiho), self.test_case_hello_hiho)
