@@ -20,10 +20,9 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     apply_prepost_silence,
     apply_speed_scale,
     apply_volume_scale,
-    calc_frame_per_mora,
-    calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
+    count_frame_per_unit,
     mora_phoneme_list,
     pre_process,
     query_to_decoder_feature,
@@ -349,8 +348,8 @@ def test_apply_output_stereo():
     assert numpy.array_equal(wave, true_wave)
 
 
-def test_calc_frame_per_phoneme():
-    """Test `calc_frame_per_phoneme`."""
+def test_count_frame_per_unit():
+    """Test `count_frame_per_unit`."""
     # Inputs
     moras = [
         _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
@@ -366,35 +365,15 @@ def test_calc_frame_per_phoneme():
     #                        Pre k  o  N pau h  i  h  O Pst
     true_frame_per_phoneme = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
     true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
-
-    # Outputs
-    frame_per_phoneme = calc_frame_per_phoneme(moras)
-
-    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
-
-
-def test_calc_frame_per_mora():
-    """Test `calc_frame_per_mora`."""
-    # Inputs
-    moras = [
-        _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
-        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
-        _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
-        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
-        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
-        _gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
-    ]
-
-    # Expects
     #                    Pre ko  N pau hi hO Pst
     true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
     true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
 
     # Outputs
-    frame_per_phoneme = numpy.array(list(map(calc_frame_per_mora, moras)))
+    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
 
-    assert numpy.array_equal(frame_per_phoneme, true_frame_per_mora)
+    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
+    assert numpy.array_equal(frame_per_mora, true_frame_per_mora)
 
 
 def test_calc_frame_pitch():
@@ -409,8 +388,11 @@ def test_calc_frame_pitch():
         _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
         _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
     ]
+    #               Pre ko  N pau hi hO Pst
+    frame_per_mora = [1, 3, 2, 1, 3, 3, 3]
+    frame_per_mora = numpy.array(frame_per_mora, dtype=numpy.int32)
 
-    #           pau   ko     ko     ko      N      N
+    #           pau   ko   ko    ko     N     N
     true1_f0 = [0.0, 50.0, 50.0, 50.0, 50.0, 50.0]
     #           pau   hi     hi     hi
     true2_f0 = [0.0, 125.0, 125.0, 125.0]
@@ -419,7 +401,7 @@ def test_calc_frame_pitch():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(moras)
+    f0 = calc_frame_pitch(moras, frame_per_mora)
 
     assert numpy.array_equal(f0, true_f0)
 

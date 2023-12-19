@@ -163,49 +163,42 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_per_phoneme(moras: List[Mora]):
+def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     """
-    音素あたりのフレーム長を算出
+    音素あたり・モーラあたりのフレーム長を算出する
     Parameters
     ----------
-    moras : List[Mora]
-        モーラ列
+    moras : list[Mora]
+        モーラ系列
     Returns
     -------
-    frame_per_phoneme : NDArray[]
-        音素あたりのフレーム長。端数丸め。
+    frame_per_phoneme : ndarray
+        音素あたりのフレーム長。端数丸め。shape = (Phoneme,)
+    frame_per_mora : ndarray
+        モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
     frame_per_phoneme: list[ndarray] = []
+    frame_per_mora: list[ndarray] = []
     for mora in moras:
+        vowel_frames = _to_frame(mora.vowel_length)
+        consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
+        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+
         if mora.consonant:
-            frame_per_phoneme.append(_to_frame(mora.consonant_length))
-        frame_per_phoneme.append(_to_frame(mora.vowel_length))
+            frame_per_phoneme += [consonant_frames]
+        frame_per_phoneme += [vowel_frames]
+        frame_per_mora += [mora_frames]
+
     frame_per_phoneme = numpy.array(frame_per_phoneme)
-    return frame_per_phoneme
+    frame_per_mora = numpy.array(frame_per_mora)
+
+    return frame_per_phoneme, frame_per_mora
 
 
 def _to_frame(sec: float) -> ndarray:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
     return numpy.round(sec * FRAMERATE).astype(numpy.int32)
-
-
-def calc_frame_per_mora(mora: Mora) -> ndarray:
-    """
-    モーラあたりのフレーム長を算出
-    Parameters
-    ----------
-    mora : Mora
-        モーラ
-    Returns
-    -------
-    frame_per_mora : NDArray[]
-        モーラあたりのフレーム長。端数丸め。
-    """
-    # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
-    vowel_frames = _to_frame(mora.vowel_length)
-    consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
-    return vowel_frames + consonant_frames
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -250,13 +243,15 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_pitch(moras: list[Mora]) -> ndarray:
+def calc_frame_pitch(moras: list[Mora], frame_per_mora: ndarray) -> ndarray:
     """
     フレームごとのピッチの生成
     Parameters
     ----------
     moras : List[Mora]
         モーラ列
+    frame_per_mora : ndarray
+        モーラあたりのフレーム長
     Returns
     -------
     frame_f0 : NDArray[]
@@ -267,8 +262,6 @@ def calc_frame_pitch(moras: list[Mora]) -> ndarray:
     f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
     # Rescale: 時間スケールの変更（モーラ -> フレーム）
-    # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
-    frame_per_mora = numpy.array(list(map(calc_frame_per_mora, moras)))
     frame_f0 = numpy.repeat(f0, frame_per_mora)
     return frame_f0
 
@@ -382,8 +375,8 @@ def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
 
     phoneme_data_list = to_flatten_phonemes(flatten_moras)
 
-    frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
-    f0 = calc_frame_pitch(flatten_moras)
+    frame_per_phoneme, frame_per_mora = count_frame_per_unit(flatten_moras)
+    f0 = calc_frame_pitch(flatten_moras, frame_per_mora)
     phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
 
     return phoneme, f0
