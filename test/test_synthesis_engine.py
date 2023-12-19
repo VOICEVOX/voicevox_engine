@@ -26,6 +26,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     mora_phoneme_list,
     pre_process,
     query_to_decoder_feature,
+    raw_wave_to_output_wave,
     split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
@@ -486,6 +487,38 @@ def test_query_to_decoder_feature():
 
     assert numpy.array_equal(phoneme, true_phoneme)
     assert numpy.array_equal(f0, true_f0)
+
+
+def test_raw_wave_to_output_wave_with_resample():
+    """Test `raw_wave_to_output_wave` with resampling option."""
+    # Inputs
+    query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
+    raw_wave = numpy.random.rand(240)
+    sr_raw_wave = 24000
+
+    # Expects
+    true_wave_shape = (480, 2)
+
+    # Outputs
+    wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+
+    assert wave.shape == true_wave_shape
+
+
+def test_raw_wave_to_output_wave_without_resample():
+    """Test `raw_wave_to_output_wave`  without resampling option."""
+    # Inputs
+    query = _gen_query(volumeScale=2, outputStereo=True)
+    raw_wave = numpy.random.rand(240)
+    sr_raw_wave = 24000
+
+    # Expects
+    true_wave = numpy.array([2 * raw_wave, 2 * raw_wave]).T
+
+    # Outputs
+    wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+
+    assert numpy.allclose(wave, true_wave)
 
 
 class TestTTSEngine(TestCase):
