@@ -46,30 +46,13 @@ def adjust_interrogative_accent_phrases(
         必要に応じて疑問形補正されたアクセント句系列
     """
     for accent_phrase in accent_phrases:
-        accent_phrase.moras = adjust_interrogative_moras(accent_phrase)
+        moras = copy.deepcopy(accent_phrase.moras)
+        # 疑問形補正条件: 疑問形フラグON & 終端有声母音
+        if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
+            interrogative_mora = make_interrogative_mora(moras[-1])
+            moras.append(interrogative_mora)
+        accent_phrase.moras = moras
     return accent_phrases
-
-
-def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
-    """
-    アクセント句に含まれるモーラ系列の必要に応じた疑問形補正
-    Parameters
-    ----------
-    accent_phrase : AccentPhrase
-        アクセント句
-    Returns
-    -------
-    moras : List[Mora]
-        補正済みモーラ系列
-    """
-    moras = copy.deepcopy(accent_phrase.moras)
-    # 疑問形補正条件: 疑問形フラグON & 終端有声母音
-    if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
-        interrogative_mora = make_interrogative_mora(moras[-1])
-        moras.append(interrogative_mora)
-        return moras
-    else:
-        return moras
 
 
 def make_interrogative_mora(last_mora: Mora) -> Mora:
