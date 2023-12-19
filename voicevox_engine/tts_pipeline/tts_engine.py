@@ -123,19 +123,7 @@ def generate_silence_mora(length: float) -> Mora:
 
 
 def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    前後無音（`prePhonemeLength` & `postPhonemeLength`）の適用
-    Parameters
-    ----------
-    moras : List[Mora]
-        モーラ時系列
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    moras : List[Mora]
-        前後無音が付加されたモーラ時系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ前後無音（`prePhonemeLength` & `postPhonemeLength`）を付加する"""
     pre_silence_moras = [generate_silence_mora(query.prePhonemeLength)]
     post_silence_moras = [generate_silence_mora(query.postPhonemeLength)]
     moras = pre_silence_moras + moras + post_silence_moras
@@ -143,19 +131,7 @@ def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 
 def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    話速スケール（`speedScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    moras : list[Mora]
-        話速スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ話速スケール（`speedScale`）を適用する"""
     for mora in moras:
         mora.vowel_length /= query.speedScale
         if mora.consonant_length:
@@ -202,38 +178,14 @@ def _to_frame(sec: float) -> ndarray:
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    音高スケール（`pitchScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    moras : list[Mora]
-        音高スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ音高スケール（`pitchScale`）を適用する"""
     for mora in moras:
         mora.pitch *= 2**query.pitchScale
     return moras
 
 
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    抑揚スケール（`intonationScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    moras : list[Mora]
-        抑揚スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
     voiced = list(filter(lambda mora: mora.pitch > 0, moras))
     mean_f0 = numpy.mean(list(map(lambda mora: mora.pitch, voiced))).item()
@@ -267,19 +219,7 @@ def calc_frame_pitch(moras: list[Mora], frame_per_mora: ndarray) -> ndarray:
 
 
 def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
-    """
-    音量スケール（`volumeScale`）の適用
-    Parameters
-    ----------
-    wave : numpy.ndarray
-        音声波形
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    wave : numpy.ndarray
-        音量スケールが適用された音声波形
-    """
+    """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     wave *= query.volumeScale
     return wave
 
@@ -310,43 +250,16 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
 def apply_output_sampling_rate(
     wave: ndarray, sr_wave: int, query: AudioQuery
 ) -> ndarray:
-    """
-    出力サンプリングレート（`outputSamplingRate`）の適用
-    Parameters
-    ----------
-    wave : ndarray
-        音声波形
-    sr_wave : int
-        `wave`のサンプリングレート
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    wave : ndarray
-        出力サンプリングレートが適用された音声波形
-    """
+    """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
         return wave
-
     wave = resample(wave, sr_wave, query.outputSamplingRate)
     return wave
 
 
 def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
-    """
-    ステレオ出力（`outputStereo`）の適用
-    Parameters
-    ----------
-    wave : ndarray
-        音声波形
-    query : AudioQuery
-        音声合成用のクエリ
-    Returns
-    -------
-    wave : ndarray
-        ステレオ出力設定が適用された音声波形
-    """
+    """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
     if query.outputStereo:
         wave = numpy.array([wave, wave]).T
     return wave
@@ -366,18 +279,18 @@ def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
     f0 : ndarray
         フレームごとの基本周波数、shape=(Frame,)
     """
-    flatten_moras = to_flatten_moras(query.accent_phrases)
+    moras = to_flatten_moras(query.accent_phrases)
 
-    flatten_moras = apply_prepost_silence(flatten_moras, query)
-    flatten_moras = apply_speed_scale(flatten_moras, query)
-    flatten_moras = apply_pitch_scale(flatten_moras, query)
-    flatten_moras = apply_intonation_scale(flatten_moras, query)
+    moras = apply_prepost_silence(moras, query)
+    moras = apply_speed_scale(moras, query)
+    moras = apply_pitch_scale(moras, query)
+    moras = apply_intonation_scale(moras, query)
 
-    phoneme_data_list = to_flatten_phonemes(flatten_moras)
+    phonemes = to_flatten_phonemes(moras)
 
-    frame_per_phoneme, frame_per_mora = count_frame_per_unit(flatten_moras)
-    f0 = calc_frame_pitch(flatten_moras, frame_per_mora)
-    phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
+    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
+    f0 = calc_frame_pitch(moras, frame_per_mora)
+    phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
 
     return phoneme, f0
 
