@@ -7,12 +7,12 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.acoustic_feature_extractor import OjtPhoneme
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.tts_pipeline import TTSEngine
+from voicevox_engine.tts_pipeline.acoustic_feature_extractor import OjtPhoneme
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
-from voicevox_engine.synthesis_engine.synthesis_engine import (
+from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
@@ -20,12 +20,13 @@ from voicevox_engine.synthesis_engine.synthesis_engine import (
     apply_prepost_silence,
     apply_speed_scale,
     apply_volume_scale,
-    calc_frame_per_mora,
-    calc_frame_per_phoneme,
     calc_frame_phoneme,
     calc_frame_pitch,
+    count_frame_per_unit,
     mora_phoneme_list,
     pre_process,
+    query_to_decoder_feature,
+    raw_wave_to_output_wave,
     split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
@@ -65,7 +66,7 @@ def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.nda
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(float(phoneme_list[i] * 0.5 + style_id))
+        result.append((phoneme_list[i] * 0.5 + style_id).item())
     return numpy.array(result)
 
 
@@ -83,7 +84,7 @@ def yukarin_sa_mock(
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result.append(
-            float(
+            (
                 (
                     vowel_phoneme_list[0][i]
                     + consonant_phoneme_list[0][i]
@@ -94,7 +95,7 @@ def yukarin_sa_mock(
                 )
                 * 0.5
                 + style_id
-            )
+            ).item()
         )
     return numpy.array(result)[numpy.newaxis]
 
@@ -112,10 +113,10 @@ def decode_mock(
         # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
         for _ in range(256):
             result.append(
-                float(
+                (
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
                     + style_id
-                )
+                ).item()
             )
     return numpy.array(result)
 
@@ -348,8 +349,8 @@ def test_apply_output_stereo():
     assert numpy.array_equal(wave, true_wave)
 
 
-def test_calc_frame_per_phoneme():
-    """Test `calc_frame_per_phoneme`."""
+def test_count_frame_per_unit():
+    """Test `count_frame_per_unit`."""
     # Inputs
     moras = [
         _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
@@ -365,35 +366,15 @@ def test_calc_frame_per_phoneme():
     #                        Pre k  o  N pau h  i  h  O Pst
     true_frame_per_phoneme = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
     true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
-
-    # Outputs
-    frame_per_phoneme = calc_frame_per_phoneme(moras)
-
-    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
-
-
-def test_calc_frame_per_mora():
-    """Test `calc_frame_per_mora`."""
-    # Inputs
-    moras = [
-        _gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
-        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
-        _gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
-        _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
-        _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
-        _gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
-    ]
-
-    # Expects
     #                    Pre ko  N pau hi hO Pst
     true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
     true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
 
     # Outputs
-    frame_per_phoneme = numpy.array(list(map(calc_frame_per_mora, moras)))
+    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
 
-    assert numpy.array_equal(frame_per_phoneme, true_frame_per_mora)
+    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
+    assert numpy.array_equal(frame_per_mora, true_frame_per_mora)
 
 
 def test_calc_frame_pitch():
@@ -408,8 +389,11 @@ def test_calc_frame_pitch():
         _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
         _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
     ]
+    #               Pre ko  N pau hi hO Pst
+    frame_per_mora = [1, 3, 2, 1, 3, 3, 3]
+    frame_per_mora = numpy.array(frame_per_mora, dtype=numpy.int32)
 
-    #           pau   ko     ko     ko      N      N
+    #           pau   ko   ko    ko     N     N
     true1_f0 = [0.0, 50.0, 50.0, 50.0, 50.0, 50.0]
     #           pau   hi     hi     hi
     true2_f0 = [0.0, 125.0, 125.0, 125.0]
@@ -418,7 +402,7 @@ def test_calc_frame_pitch():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    f0 = calc_frame_pitch(moras)
+    f0 = calc_frame_pitch(moras, frame_per_mora)
 
     assert numpy.array_equal(f0, true_f0)
 
@@ -446,8 +430,8 @@ def test_calc_frame_phoneme():
     assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
 
 
-def test_feat_to_framescale():
-    """Test Mora/Phonemefeature-to-framescaleFeature pipeline."""
+def test_query_to_decoder_feature():
+    """Test `query_to_decoder_feature`."""
     # Inputs
     accent_phrases = [
         AccentPhrase(
@@ -481,17 +465,13 @@ def test_feat_to_framescale():
     #                        Pre k  o  N pau h  i  h  O Pst
     true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
     n_frame = sum(true_frame_per_phoneme)
-    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
     # phoneme
     #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_frame_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
+    true_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
-        true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
+        true_phoneme[frame_idx, phoneme_idx] = 1.0
     # Pitch
-    #          Pre   ko      N    pau   hi    hO   Pst
-    true_f0 = [0.0, 200.0, 200.0, 0.0, 500.0, 0.0, 0.0]  # mean 300
-    true_f0 = [0.0, 250.0, 250.0, 0.0, 400.0, 0.0, 0.0]  # intonationScale 0.5
     #                   paw ko  N pau hi hO paw
     # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
     #           pau   ko     ko     ko      N      N
@@ -503,23 +483,45 @@ def test_feat_to_framescale():
     true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
 
     # Outputs
-    flatten_moras = to_flatten_moras(query.accent_phrases)
-    flatten_moras = apply_prepost_silence(flatten_moras, query)
-    flatten_moras = apply_speed_scale(flatten_moras, query)
-    flatten_moras = apply_pitch_scale(flatten_moras, query)
-    flatten_moras = apply_intonation_scale(flatten_moras, query)
+    phoneme, f0 = query_to_decoder_feature(query)
 
-    phoneme_data_list = to_flatten_phonemes(flatten_moras)
-
-    frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
-    f0 = calc_frame_pitch(flatten_moras)
-    frame_phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
-
-    assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
+    assert numpy.array_equal(phoneme, true_phoneme)
     assert numpy.array_equal(f0, true_f0)
 
 
-class TestSynthesisEngine(TestCase):
+def test_raw_wave_to_output_wave_with_resample():
+    """Test `raw_wave_to_output_wave` with resampling option."""
+    # Inputs
+    query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
+    raw_wave = numpy.random.rand(240)
+    sr_raw_wave = 24000
+
+    # Expects
+    true_wave_shape = (480, 2)
+
+    # Outputs
+    wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+
+    assert wave.shape == true_wave_shape
+
+
+def test_raw_wave_to_output_wave_without_resample():
+    """Test `raw_wave_to_output_wave`  without resampling option."""
+    # Inputs
+    query = _gen_query(volumeScale=2, outputStereo=True)
+    raw_wave = numpy.random.rand(240)
+    sr_raw_wave = 24000
+
+    # Expects
+    true_wave = numpy.array([2 * raw_wave, 2 * raw_wave]).T
+
+    # Outputs
+    wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+
+    assert numpy.allclose(wave, true_wave)
+
+
+class TestTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
         self.str_list_hello_hiho = (
@@ -532,91 +534,21 @@ class TestSynthesisEngine(TestCase):
         self.accent_phrases_hello_hiho = [
             AccentPhrase(
                 moras=[
-                    Mora(
-                        text="コ",
-                        consonant="k",
-                        consonant_length=0.0,
-                        vowel="o",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ン",
-                        consonant=None,
-                        consonant_length=None,
-                        vowel="N",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ニ",
-                        consonant="n",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="チ",
-                        consonant="ch",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ワ",
-                        consonant="w",
-                        consonant_length=0.0,
-                        vowel="a",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
+                    _gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
+                    _gen_mora("ン", None, None, "N", 0.0, 0.0),
+                    _gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
+                    _gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
+                    _gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
                 ],
                 accent=5,
-                pause_mora=Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=0.0,
-                    pitch=0.0,
-                ),
+                pause_mora=_gen_mora("、", None, None, "pau", 0.0, 0.0),
             ),
             AccentPhrase(
                 moras=[
-                    Mora(
-                        text="ヒ",
-                        consonant="h",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ホ",
-                        consonant="h",
-                        consonant_length=0.0,
-                        vowel="o",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="デ",
-                        consonant="d",
-                        consonant_length=0.0,
-                        vowel="e",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ス",
-                        consonant="s",
-                        consonant_length=0.0,
-                        vowel="U",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
+                    _gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
+                    _gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
+                    _gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
+                    _gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
                 ],
                 accent=1,
                 pause_mora=None,
@@ -626,9 +558,7 @@ class TestSynthesisEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.synthesis_engine = SynthesisEngine(
-            core=core,
-        )
+        self.synthesis_engine = TTSEngine(core=core)
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -640,30 +570,17 @@ class TestSynthesisEngine(TestCase):
         )
 
     def test_split_mora(self):
+        # Outputs
         consonant_phoneme_list, vowel_phoneme_list, vowel_indexes = split_mora(
             self.phoneme_data_list_hello_hiho
         )
 
         self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])
 
+        ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
+        true_vowel_phoneme_list = [OjtPhoneme(p) for p in ps]
         self.assertTrue(
-            is_same_ojt_phoneme_list(
-                vowel_phoneme_list,
-                [
-                    OjtPhoneme("pau"),
-                    OjtPhoneme("o"),
-                    OjtPhoneme("N"),
-                    OjtPhoneme("i"),
-                    OjtPhoneme("i"),
-                    OjtPhoneme("a"),
-                    OjtPhoneme("pau"),
-                    OjtPhoneme("i"),
-                    OjtPhoneme("o"),
-                    OjtPhoneme("e"),
-                    OjtPhoneme("U"),
-                    OjtPhoneme("pau"),
-                ],
-            )
+            is_same_ojt_phoneme_list(vowel_phoneme_list, true_vowel_phoneme_list)
         )
         self.assertTrue(
             is_same_ojt_phoneme_list(
@@ -702,15 +619,13 @@ class TestSynthesisEngine(TestCase):
                 if mora.consonant is not None:
                     self.assertTrue(
                         is_same_phoneme(
-                            phoneme_data_list[phoneme_index],
-                            OjtPhoneme(mora.consonant),
+                            phoneme_data_list[phoneme_index], OjtPhoneme(mora.consonant)
                         )
                     )
                     phoneme_index += 1
                 self.assertTrue(
                     is_same_phoneme(
-                        phoneme_data_list[phoneme_index],
-                        OjtPhoneme(mora.vowel),
+                        phoneme_data_list[phoneme_index], OjtPhoneme(mora.vowel)
                     )
                 )
                 phoneme_index += 1
@@ -718,17 +633,11 @@ class TestSynthesisEngine(TestCase):
                 self.assertEqual(flatten_moras[mora_index], accent_phrase.pause_mora)
                 mora_index += 1
                 self.assertTrue(
-                    is_same_phoneme(
-                        phoneme_data_list[phoneme_index],
-                        OjtPhoneme("pau"),
-                    )
+                    is_same_phoneme(phoneme_data_list[phoneme_index], OjtPhoneme("pau"))
                 )
                 phoneme_index += 1
         self.assertTrue(
-            is_same_phoneme(
-                phoneme_data_list[phoneme_index],
-                OjtPhoneme("pau"),
-            )
+            is_same_phoneme(phoneme_data_list[phoneme_index], OjtPhoneme("pau"))
         )
 
     def test_replace_phoneme_length(self):
@@ -742,33 +651,12 @@ class TestSynthesisEngine(TestCase):
         phoneme_list = yukarin_s_args["phoneme_list"]
         self.assertEqual(list_length, 20)
         self.assertEqual(list_length, len(phoneme_list))
+        true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
+        true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
+        true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
         numpy.testing.assert_array_equal(
             phoneme_list,
-            numpy.array(
-                [
-                    0,
-                    23,
-                    30,
-                    4,
-                    28,
-                    21,
-                    10,
-                    21,
-                    42,
-                    7,
-                    0,
-                    19,
-                    21,
-                    19,
-                    30,
-                    12,
-                    14,
-                    35,
-                    6,
-                    0,
-                ],
-                dtype=numpy.int64,
-            ),
+            numpy.array(true_phoneme_list, dtype=numpy.int64),
         )
         self.assertEqual(yukarin_s_args["style_id"], 1)
 
@@ -827,41 +715,11 @@ class TestSynthesisEngine(TestCase):
 
         numpy.testing.assert_array_equal(
             vowel_phoneme_list,
-            numpy.array(
-                [
-                    0,
-                    30,
-                    4,
-                    21,
-                    21,
-                    7,
-                    0,
-                    21,
-                    30,
-                    14,
-                    6,
-                    0,
-                ]
-            ),
+            numpy.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0]),
         )
         numpy.testing.assert_array_equal(
             consonant_phoneme_list,
-            numpy.array(
-                [
-                    -1,
-                    23,
-                    -1,
-                    28,
-                    10,
-                    42,
-                    -1,
-                    19,
-                    19,
-                    12,
-                    35,
-                    -1,
-                ]
-            ),
+            numpy.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1]),
         )
         numpy.testing.assert_array_equal(
             start_accent_list, numpy.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
@@ -947,7 +805,7 @@ class TestSynthesisEngine(TestCase):
         for i in range(len(phoneme_length_list)):
             phoneme_length_list[i] /= audio_query.speedScale
 
-        # Outputs: MockCore入りSynthesisEngine の `.synthesis` 出力および core.decode_forward 引数
+        # Outputs: MockCore入りTTSEngine の `.synthesis` 出力および core.decode_forward 引数
         result = self.synthesis_engine.synthesis(query=audio_query, style_id=1)
         decode_args = self.decode_mock.call_args[1]
         list_length = decode_args["length"]
@@ -1050,18 +908,10 @@ class TestSynthesisEngine(TestCase):
         self.assertTrue(assert_result_count >= int(len(true_result) / 5) * 4)
 
     def test_synthesis(self):
-        audio_query = AudioQuery(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho),
-            speedScale=1.0,
-            pitchScale=1.0,
-            intonationScale=1.0,
-            volumeScale=1.0,
+        audio_query = _gen_query(
+            deepcopy(self.accent_phrases_hello_hiho),
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            outputSamplingRate=24000,
-            outputStereo=False,
-            # このテスト内では使わないので生成不要
-            kana="",
         )
 
         self.synthesis_test_base(audio_query)

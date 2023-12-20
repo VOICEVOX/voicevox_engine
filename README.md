@@ -217,7 +217,7 @@ curl -s -X GET "127.0.0.1:50021/presets" > presets.json
 preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
 style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
 
-# AudioQueryの取得
+# 音声合成用のクエリを取得
 curl -s \
     -X POST \
     "127.0.0.1:50021/audio_query_from_preset?preset_id=$preset_id"\
@@ -470,6 +470,19 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
+##### ユーザーディレクトリに配置する
+
+以下のディレクトリにある音声ライブラリは自動で読み込まれます。
+
+- ビルド版: `<user_data_dir>/voicevox-engine/core_libraries/`
+- Python 版: `<user_data_dir>/voicevox-engine-dev/core_libraries/`
+
+`<user_data_dir>`は OS によって異なります。
+
+- Windows: `C:\Users\<username>\AppData\Local\`
+- macOS: `/Users/<username>/Library/Application\ Support/`
+- Linux: `/home/<username>/.local/share/`
+
 ### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
@@ -589,7 +602,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
 音声合成は`voicevox_engine/synthesis_engine/synthesis_engine.py`で行われています。
-VOICEVOX API での音声合成は、エンジン側で音声合成クエリ`AudioQuery`の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
+VOICEVOX API での音声合成は、エンジン側で音声合成用のクエリ `AudioQuery` の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
 クエリ作成は`/audio_query`エンドポイントで、音声合成は`/synthesis`エンドポイントで行っており、最低この２つに対応すれば VOICEVOX API に準拠したことになります。
 
 #### マルチエンジン機能対応エンジンの配布方法

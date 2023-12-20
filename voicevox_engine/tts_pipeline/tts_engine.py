@@ -6,10 +6,10 @@ import numpy
 from numpy import ndarray
 from soxr import resample
 
-from ..acoustic_feature_extractor import OjtPhoneme
+from ..core_wrapper import CoreWrapper, OldCoreError
 from ..model import AccentPhrase, AudioQuery, Mora
-from .core_wrapper import CoreWrapper, OldCoreError
-from .synthesis_engine_base import SynthesisEngineBase
+from .acoustic_feature_extractor import OjtPhoneme
+from .tts_engine_base import TTSEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -123,19 +123,7 @@ def generate_silence_mora(length: float) -> Mora:
 
 
 def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    前後無音（`prePhonemeLength` & `postPhonemeLength`）の適用
-    Parameters
-    ----------
-    moras : List[Mora]
-        モーラ時系列
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    moras : List[Mora]
-        前後無音が付加されたモーラ時系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ前後無音（`prePhonemeLength` & `postPhonemeLength`）を付加する"""
     pre_silence_moras = [generate_silence_mora(query.prePhonemeLength)]
     post_silence_moras = [generate_silence_mora(query.postPhonemeLength)]
     moras = pre_silence_moras + moras + post_silence_moras
@@ -143,19 +131,7 @@ def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 
 def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    話速スケール（`speedScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    moras : list[Mora]
-        話速スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ話速スケール（`speedScale`）を適用する"""
     for mora in moras:
         mora.vowel_length /= query.speedScale
         if mora.consonant_length:
@@ -163,25 +139,36 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_per_phoneme(moras: List[Mora]):
+def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     """
-    音素あたりのフレーム長を算出
+    音素あたり・モーラあたりのフレーム長を算出する
     Parameters
     ----------
-    moras : List[Mora]
-        モーラ列
+    moras : list[Mora]
+        モーラ系列
     Returns
     -------
-    frame_per_phoneme : NDArray[]
-        音素あたりのフレーム長。端数丸め。
+    frame_per_phoneme : ndarray
+        音素あたりのフレーム長。端数丸め。shape = (Phoneme,)
+    frame_per_mora : ndarray
+        モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
     frame_per_phoneme: list[ndarray] = []
+    frame_per_mora: list[ndarray] = []
     for mora in moras:
+        vowel_frames = _to_frame(mora.vowel_length)
+        consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
+        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+
         if mora.consonant:
-            frame_per_phoneme.append(_to_frame(mora.consonant_length))
-        frame_per_phoneme.append(_to_frame(mora.vowel_length))
+            frame_per_phoneme += [consonant_frames]
+        frame_per_phoneme += [vowel_frames]
+        frame_per_mora += [mora_frames]
+
     frame_per_phoneme = numpy.array(frame_per_phoneme)
-    return frame_per_phoneme
+    frame_per_mora = numpy.array(frame_per_mora)
+
+    return frame_per_phoneme, frame_per_mora
 
 
 def _to_frame(sec: float) -> ndarray:
@@ -190,57 +177,15 @@ def _to_frame(sec: float) -> ndarray:
     return numpy.round(sec * FRAMERATE).astype(numpy.int32)
 
 
-def calc_frame_per_mora(mora: Mora) -> ndarray:
-    """
-    モーラあたりのフレーム長を算出
-    Parameters
-    ----------
-    mora : Mora
-        モーラ
-    Returns
-    -------
-    frame_per_mora : NDArray[]
-        モーラあたりのフレーム長。端数丸め。
-    """
-    # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
-    vowel_frames = _to_frame(mora.vowel_length)
-    consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
-    return vowel_frames + consonant_frames
-
-
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    音高スケール（`pitchScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    moras : list[Mora]
-        音高スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ音高スケール（`pitchScale`）を適用する"""
     for mora in moras:
         mora.pitch *= 2**query.pitchScale
     return moras
 
 
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
-    """
-    抑揚スケール（`intonationScale`）の適用
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    moras : list[Mora]
-        抑揚スケールが適用されたモーラ系列
-    """
+    """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
     voiced = list(filter(lambda mora: mora.pitch > 0, moras))
     mean_f0 = numpy.mean(list(map(lambda mora: mora.pitch, voiced))).item()
@@ -250,13 +195,15 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_pitch(moras: list[Mora]) -> ndarray:
+def calc_frame_pitch(moras: list[Mora], frame_per_mora: ndarray) -> ndarray:
     """
     フレームごとのピッチの生成
     Parameters
     ----------
     moras : List[Mora]
         モーラ列
+    frame_per_mora : ndarray
+        モーラあたりのフレーム長
     Returns
     -------
     frame_f0 : NDArray[]
@@ -267,26 +214,12 @@ def calc_frame_pitch(moras: list[Mora]) -> ndarray:
     f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
     # Rescale: 時間スケールの変更（モーラ -> フレーム）
-    # 母音インデックスに基づき "音素あたりのフレーム長" を "モーラあたりのフレーム長" に集約
-    frame_per_mora = numpy.array(list(map(calc_frame_per_mora, moras)))
     frame_f0 = numpy.repeat(f0, frame_per_mora)
     return frame_f0
 
 
 def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
-    """
-    音量スケール（`volumeScale`）の適用
-    Parameters
-    ----------
-    wave : numpy.ndarray
-        音声波形
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    wave : numpy.ndarray
-        音量スケールが適用された音声波形
-    """
+    """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     wave *= query.volumeScale
     return wave
 
@@ -317,45 +250,56 @@ def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndar
 def apply_output_sampling_rate(
     wave: ndarray, sr_wave: int, query: AudioQuery
 ) -> ndarray:
-    """
-    出力サンプリングレート（`outputSamplingRate`）の適用
-    Parameters
-    ----------
-    wave : ndarray
-        音声波形
-    sr_wave : int
-        `wave`のサンプリングレート
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    wave : ndarray
-        出力サンプリングレートが適用された音声波形
-    """
+    """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
         return wave
-
     wave = resample(wave, sr_wave, query.outputSamplingRate)
     return wave
 
 
 def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
+    """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
+    if query.outputStereo:
+        wave = numpy.array([wave, wave]).T
+    return wave
+
+
+def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
     """
-    ステレオ出力（`outputStereo`）の適用
+    音声合成用のクエリをデコーダー用特徴量へ変換する。
     Parameters
     ----------
-    wave : ndarray
-        音声波形
     query : AudioQuery
         音声合成クエリ
     Returns
     -------
-    wave : ndarray
-        ステレオ出力設定が適用された音声波形
+    phoneme : ndarray
+        フレームごとの音素、shape=(Frame,)
+    f0 : ndarray
+        フレームごとの基本周波数、shape=(Frame,)
     """
-    if query.outputStereo:
-        wave = numpy.array([wave, wave]).T
+    moras = to_flatten_moras(query.accent_phrases)
+
+    moras = apply_prepost_silence(moras, query)
+    moras = apply_speed_scale(moras, query)
+    moras = apply_pitch_scale(moras, query)
+    moras = apply_intonation_scale(moras, query)
+
+    phonemes = to_flatten_phonemes(moras)
+
+    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
+    f0 = calc_frame_pitch(moras, frame_per_mora)
+    phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
+
+    return phoneme, f0
+
+
+def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> ndarray:
+    """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
+    wave = apply_volume_scale(wave, query)
+    wave = apply_output_sampling_rate(wave, sr_wave, query)
+    wave = apply_output_stereo(wave, query)
     return wave
 
 
@@ -459,7 +403,7 @@ class CoreAdapter:
         return wave, sr_wave
 
 
-class SynthesisEngine(SynthesisEngineBase):
+class TTSEngine(TTSEngineBase):
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
     def __init__(self, core: CoreWrapper):
@@ -671,11 +615,11 @@ class SynthesisEngine(SynthesisEngineBase):
 
     def _synthesis_impl(self, query: AudioQuery, style_id: int):
         """
-        音声合成クエリから音声合成に必要な情報を構成し、実際に音声合成を行う
+        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
         Parameters
         ----------
         query : AudioQuery
-            音声合成クエリ
+            音声合成用のクエリ
         style_id : int
             スタイルID
         Returns
@@ -686,23 +630,11 @@ class SynthesisEngine(SynthesisEngineBase):
         # モデルがロードされていない場合はロードする
         self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
-        flatten_moras = to_flatten_moras(query.accent_phrases)
-        flatten_moras = apply_prepost_silence(flatten_moras, query)
-        flatten_moras = apply_speed_scale(flatten_moras, query)
-        flatten_moras = apply_pitch_scale(flatten_moras, query)
-        flatten_moras = apply_intonation_scale(flatten_moras, query)
-
-        phoneme_data_list = to_flatten_phonemes(flatten_moras)
-
-        frame_per_phoneme = calc_frame_per_phoneme(flatten_moras)
-        f0 = calc_frame_pitch(flatten_moras)
-        phoneme = calc_frame_phoneme(phoneme_data_list, frame_per_phoneme)
+        phoneme, f0 = query_to_decoder_feature(query)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
-        wave, sr_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
+        raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
 
-        wave = apply_volume_scale(wave, query)
-        wave = apply_output_sampling_rate(wave, sr_wave, query)
-        wave = apply_output_stereo(wave, query)
+        wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
         return wave

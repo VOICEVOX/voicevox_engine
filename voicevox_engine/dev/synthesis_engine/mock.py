@@ -6,13 +6,13 @@ from pyopenjtalk import tts
 from soxr import resample
 
 from ...model import AccentPhrase, AudioQuery
-from ...synthesis_engine import SynthesisEngineBase
-from ...synthesis_engine.synthesis_engine import to_flatten_moras
+from ...tts_pipeline import TTSEngineBase
+from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
-class MockSynthesisEngine(SynthesisEngineBase):
+class MockTTSEngine(TTSEngineBase):
     """
-    SynthesisEngine [Mock]
+    TTSEngine [Mock]
     """
 
     def __init__(
@@ -87,7 +87,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
         Parameters
         ----------
         query : AudioQuery
-            /audio_query APIで得たjson
+            音声合成用のクエリ
         style_id : int
             スタイルID
 
@@ -110,7 +110,7 @@ class MockSynthesisEngine(SynthesisEngineBase):
     def forward(self, text: str, **kwargs: Dict[str, Any]) -> np.ndarray:
         """
         forward tts via pyopenjtalk.tts()
-        参照→SynthesisEngine のdocstring [Mock]
+        参照→TTSEngine のdocstring [Mock]
 
         Parameters
         ----------

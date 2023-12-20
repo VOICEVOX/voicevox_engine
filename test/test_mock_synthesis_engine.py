@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from voicevox_engine.dev.synthesis_engine import MockSynthesisEngine
-from voicevox_engine.kana_parser import create_kana
+from voicevox_engine.dev.synthesis_engine import MockTTSEngine
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.tts_pipeline.kana_parser import create_kana
 
 
-class TestMockSynthesisEngine(TestCase):
+class TestMockTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
 
@@ -102,7 +102,7 @@ class TestMockSynthesisEngine(TestCase):
                 pause_mora=None,
             ),
         ]
-        self.engine = MockSynthesisEngine(speakers="", supported_devices="")
+        self.engine = MockTTSEngine(speakers="", supported_devices="")
 
     def test_replace_phoneme_length(self):
         self.assertEqual(

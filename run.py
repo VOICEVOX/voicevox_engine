@@ -30,7 +30,6 @@ from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
-from voicevox_engine.kana_parser import create_kana, parse_kana
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
@@ -66,7 +65,8 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.synthesis_engine import SynthesisEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
@@ -82,6 +82,7 @@ from voicevox_engine.utility import (
     engine_root,
     get_latest_core_version,
     get_save_dir,
+    internal_root,
 )
 
 
@@ -130,7 +131,7 @@ def set_output_log_utf8() -> None:
 
 
 def generate_app(
-    synthesis_engines: Dict[str, SynthesisEngineBase],
+    synthesis_engines: Dict[str, TTSEngineBase],
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
@@ -209,7 +210,7 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
+    setting_ui_template = Jinja2Templates(directory=internal_root() / "ui_template")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -226,7 +227,7 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
+    def get_engine(core_version: Optional[str]) -> TTSEngineBase:
         if core_version is None:
             return synthesis_engines[latest_core_version]
         if core_version in synthesis_engines:
@@ -246,7 +247,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> AudioQuery:
         """
-        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
@@ -276,7 +277,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> AudioQuery:
         """
-        クエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
         try:

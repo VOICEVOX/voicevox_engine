@@ -5,14 +5,14 @@ from unittest.mock import Mock
 import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.synthesis_engine import SynthesisEngine
+from voicevox_engine.tts_pipeline import TTSEngine
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append(round(float(phoneme_list[i] * 0.0625 + style_id), 2))
+        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
     return numpy.array(result)
 
 
@@ -31,7 +31,7 @@ def yukarin_sa_mock(
     for i in range(length):
         result.append(
             round(
-                float(
+                (
                     (
                         vowel_phoneme_list[0][i]
                         + consonant_phoneme_list[0][i]
@@ -42,7 +42,7 @@ def yukarin_sa_mock(
                     )
                     * 0.0625
                     + style_id
-                ),
+                ).item(),
                 2,
             )
         )
@@ -62,10 +62,10 @@ def decode_mock(
         # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
         for _ in range(256):
             result.append(
-                float(
+                (
                     f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
                     + style_id
-                )
+                ).item()
             )
     return numpy.array(result)
 
@@ -184,10 +184,10 @@ class MockCore:
         return True
 
 
-class TestSynthesisEngineBase(TestCase):
+class TestTTSEngineBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.synthesis_engine = SynthesisEngine(
+        self.synthesis_engine = TTSEngine(
             core=MockCore(),
         )
         self.synthesis_engine._synthesis_impl = Mock()
