@@ -220,7 +220,7 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
 
 
 def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
-    """音声合成用のクエリからフレームごとの音素 (shape=(Frame, Onehot)) と音高 (shape=(Frame,)) を得る"""
+    """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
