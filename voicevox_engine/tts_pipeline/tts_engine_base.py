@@ -83,7 +83,7 @@ def make_interrogative_mora(last_mora: Mora) -> Mora:
     )
 
 
-class SynthesisEngineBase(metaclass=ABCMeta):
+class TTSEngineBase(metaclass=ABCMeta):
     @property
     @abstractmethod
     def default_sampling_rate(self) -> int:

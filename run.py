@@ -65,7 +65,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import SynthesisEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
 from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -131,7 +131,7 @@ def set_output_log_utf8() -> None:
 
 
 def generate_app(
-    synthesis_engines: Dict[str, SynthesisEngineBase],
+    synthesis_engines: Dict[str, TTSEngineBase],
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
@@ -227,7 +227,7 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
+    def get_engine(core_version: Optional[str]) -> TTSEngineBase:
         if core_version is None:
             return synthesis_engines[latest_core_version]
         if core_version in synthesis_engines:
