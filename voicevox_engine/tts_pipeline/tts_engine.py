@@ -365,13 +365,13 @@ class TTSEngine(TTSEngineBase):
         phonemes = [OjtPhoneme("pau")] + phonemes + [OjtPhoneme("pau")]
 
         # 音素クラスから音素IDスカラへ表現を変換する
-        phonemes = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
+        phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
         # コアを用いて音素長を推定する
         with self.mutex:
             phoneme_lengths = self.core.yukarin_s_forward(
-                length=len(phonemes),
-                phoneme_list=phonemes,
+                length=len(phoneme_ids),
+                phoneme_list=phoneme_ids,
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
 
