@@ -20,8 +20,6 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     apply_prepost_silence,
     apply_speed_scale,
     apply_volume_scale,
-    calc_frame_phoneme,
-    calc_frame_pitch,
     count_frame_per_unit,
     mora_phoneme_list,
     pre_process,
@@ -375,59 +373,6 @@ def test_count_frame_per_unit():
 
     assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
     assert numpy.array_equal(frame_per_mora, true_frame_per_mora)
-
-
-def test_calc_frame_pitch():
-    """Test `test_calc_frame_pitch`."""
-    # Inputs
-    moras = [
-        _gen_mora("　", None, None, "　", 1 * 0.01067, 0.0),
-        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
-        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
-        _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
-        _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
-        _gen_mora("　", None, None, "　", 3 * 0.01067, 0.0),
-    ]
-    #               Pre ko  N pau hi hO Pst
-    frame_per_mora = [1, 3, 2, 1, 3, 3, 3]
-    frame_per_mora = numpy.array(frame_per_mora, dtype=numpy.int32)
-
-    #           pau   ko   ko    ko     N     N
-    true1_f0 = [0.0, 50.0, 50.0, 50.0, 50.0, 50.0]
-    #           pau   hi     hi     hi
-    true2_f0 = [0.0, 125.0, 125.0, 125.0]
-    #           hO   hO   hO   paw  paw  paw
-    true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
-
-    # Outputs
-    f0 = calc_frame_pitch(moras, frame_per_mora)
-
-    assert numpy.array_equal(f0, true_f0)
-
-
-def test_calc_frame_phoneme():
-    """Test `calc_frame_phoneme`."""
-    # Inputs
-    phoneme_str = "pau k o N pau h i h O pau"
-    phonemes = [OjtPhoneme(p) for p in phoneme_str.split()]
-    #                   Pre k  o  N pau h  i  h  O Pst
-    frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
-    n_frame = sum(frame_per_phoneme)
-    frame_per_phoneme = numpy.array(frame_per_phoneme, dtype=numpy.int32)
-
-    # Expects
-    #              Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
-    phoneme_ids = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_frame_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
-    for frame_idx, phoneme_idx in enumerate(phoneme_ids):
-        true_frame_phoneme[frame_idx, phoneme_idx] = 1.0
-
-    # Outputs
-    frame_phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
-
-    assert numpy.array_equal(frame_phoneme, true_frame_phoneme)
 
 
 def test_query_to_decoder_feature():
