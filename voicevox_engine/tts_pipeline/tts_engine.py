@@ -195,56 +195,10 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_pitch(moras: list[Mora], frame_per_mora: ndarray) -> ndarray:
-    """
-    フレームごとのピッチの生成
-    Parameters
-    ----------
-    moras : List[Mora]
-        モーラ列
-    frame_per_mora : ndarray
-        モーラあたりのフレーム長
-    Returns
-    -------
-    frame_f0 : NDArray[]
-        フレームごとの基本周波数系列
-    """
-    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # モーラごとの基本周波数
-    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
-
-    # Rescale: 時間スケールの変更（モーラ -> フレーム）
-    frame_f0 = numpy.repeat(f0, frame_per_mora)
-    return frame_f0
-
-
 def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     wave *= query.volumeScale
     return wave
-
-
-def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndarray):
-    """
-    フレームごとの音素列の生成（onehot化 + フレーム化）
-    Parameters
-    ----------
-    phonemes : List[OjtPhoneme]
-        音素列
-    frame_per_phoneme: NDArray
-        音素あたりのフレーム長。端数丸め。
-    Returns
-    -------
-    frame_phoneme : NDArray[]
-        フレームごとの音素系列
-    """
-    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # Convert: Core入力形式への変換（onehotベクトル系列）
-    onehot_phoneme = numpy.stack([p.onehot for p in phonemes])
-
-    # Rescale: 時間スケールの変更（音素 -> フレーム）
-    frame_phoneme = numpy.repeat(onehot_phoneme, frame_per_phoneme, axis=0)
-    return frame_phoneme
 
 
 def apply_output_sampling_rate(
@@ -266,31 +220,23 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
 
 
 def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
-    """
-    音声合成用のクエリをデコーダー用特徴量へ変換する。
-    Parameters
-    ----------
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    phoneme : ndarray
-        フレームごとの音素、shape=(Frame,)
-    f0 : ndarray
-        フレームごとの基本周波数、shape=(Frame,)
-    """
+    """音声合成用のクエリからフレームごとの音素 (shape=(Frame, Onehot)) と音高 (shape=(Frame,)) を得る"""
     moras = to_flatten_moras(query.accent_phrases)
 
+    # 設定を適用する
     moras = apply_prepost_silence(moras, query)
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
 
-    phonemes = to_flatten_phonemes(moras)
+    # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
+    phoneme = numpy.stack([p.onehot for p in to_flatten_phonemes(moras)])
+    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
+    # 時間スケールを変更する（音素・モーラ → フレーム）
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
-    f0 = calc_frame_pitch(moras, frame_per_mora)
-    phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
+    phoneme = numpy.repeat(phoneme, frame_per_phoneme, axis=0)
+    f0 = numpy.repeat(f0, frame_per_mora)
 
     return phoneme, f0
 
