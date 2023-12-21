@@ -39,6 +39,7 @@ def apply_interrogative_upspeak(
     accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
 ) -> list[AccentPhrase]:
     """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
+    # NOTE: 将来的にAudioQueryインスタンスを引数にする予定
     if not enable_interrogative_upspeak:
         return accent_phrases
 
