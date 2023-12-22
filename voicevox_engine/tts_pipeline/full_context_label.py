@@ -5,7 +5,7 @@ from typing import Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase as VvAccentPhrase
+from ..model import AccentPhrase as VvAccentPhrase  # NOTE: 後にOjtコンテナクラスをリネーム予定
 from ..model import Mora as VvMora
 from .mora_list import openjtalk_mora2text
 
