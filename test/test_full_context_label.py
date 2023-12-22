@@ -1,4 +1,3 @@
-from copy import deepcopy
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline.full_context_label import (
@@ -34,7 +33,7 @@ OjtContainer = MoraLabel | AccentPhraseLabel | BreathGroupLabel | UtteranceLabel
 
 def features(ojt_container: OjtContainer):
     """コンテナインスタンスに直接的・間接的に含まれる全ての feature を返す"""
-    return [contexts_to_feature(p.contexts) for p in ojt_container.phonemes]
+    return [contexts_to_feature(p.contexts) for p in ojt_container.labels]
 
 
 class TestBasePhonemes(TestCase):
@@ -132,16 +131,12 @@ class TestBasePhonemes(TestCase):
 
 def jointed_phonemes(ojt_container: OjtContainer) -> str:
     """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を結合してを返す"""
-    return "".join([label.phoneme for label in ojt_container.phonemes])
-    # NOTE: `.phonemes` は `.labels` にリネーム予定
-    # return "".join([label.phoneme for label in ojt_container.labels])
+    return "".join([label.phoneme for label in ojt_container.labels])
 
 
 def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
     """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を ` ` 挟みながら結合してを返す"""
-    return " ".join([label.phoneme for label in ojt_container.phonemes])
-    # NOTE: `.phonemes` は `.labels` にリネーム予定
-    # return " ".join([label.phoneme for label in ojt_container.labels])
+    return " ".join([label.phoneme for label in ojt_container.labels])
 
 
 class TestPhoneme(TestBasePhonemes):
@@ -253,13 +248,6 @@ class TestMora(TestBasePhonemes):
         self.assert_labels(self.mora_hiho_3, 15, 17)
         self.assert_labels(self.mora_hiho_4, 17, 19)
 
-    def test_set_context(self):
-        # 値を書き換えるので、他のテストに影響を出さないためにdeepcopyする
-        mora_hello_1 = deepcopy(self.mora_hello_1)
-        # phonemeにあたる"p3"を書き換える
-        mora_hello_1.set_context("p3", "a")
-        self.assertEqual(jointed_phonemes(mora_hello_1), "aa")
-
 
 class TestAccentPhrase(TestBasePhonemes):
     def setUp(self) -> None:
@@ -276,12 +264,6 @@ class TestAccentPhrase(TestBasePhonemes):
     def test_accent(self):
         self.assertEqual(self.accent_phrase_hello.accent, 5)
         self.assertEqual(self.accent_phrase_hiho.accent, 1)
-
-    def test_set_context(self):
-        accent_phrase_hello = deepcopy(self.accent_phrase_hello)
-        # phonemeにあたる"p3"を書き換える
-        accent_phrase_hello.set_context("p3", "a")
-        self.assertEqual(jointed_phonemes(accent_phrase_hello), "aaaaaaaaa")
 
     def test_phonemes(self):
         outputs_hello = space_jointed_phonemes(self.accent_phrase_hello)
@@ -307,13 +289,6 @@ class TestBreathGroup(TestBasePhonemes):
         self.breath_group_hiho = BreathGroupLabel.from_labels(
             self.phonemes_hello_hiho[11:19]
         )
-
-    def test_set_context(self):
-        # 値を書き換えるので、他のテストに影響を出さないためにdeepcopyする
-        breath_group_hello = deepcopy(self.breath_group_hello)
-        # phonemeにあたる"p3"を書き換える
-        breath_group_hello.set_context("p3", "a")
-        self.assertEqual(jointed_phonemes(breath_group_hello), "aaaaaaaaa")
 
     def test_phonemes(self):
         outputs_hello = space_jointed_phonemes(self.breath_group_hello)

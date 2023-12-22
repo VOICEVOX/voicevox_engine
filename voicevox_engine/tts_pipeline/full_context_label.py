@@ -56,26 +56,9 @@ class MoraLabel:
     consonant: Label | None  # 子音
     vowel: Label  # 母音
 
-    def set_context(self, key: str, value: str):
-        """
-        MoraLabelクラス内に含まれるLabelのcontextのうち、指定されたキーの値を変更する
-        consonantが存在する場合は、vowelと同じようにcontextを変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        self.vowel.contexts[key] = value
-        if self.consonant is not None:
-            self.consonant.contexts[key] = value
-
     @property
-    def phonemes(self):
-        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。
-        NOTE: `.labels` に名称変更予定
-        """
+    def labels(self) -> list[Label]:
+        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。"""
         if self.consonant is not None:
             return [self.consonant, self.vowel]
         else:
@@ -141,30 +124,10 @@ class AccentPhraseLabel:
 
         return accent_phrase
 
-    def set_context(self, key: str, value: str):
-        """
-        アクセント句ラベルに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for mora in self.moras:
-            mora.set_context(key, value)
-
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            アクセント句ラベルに間接的に含まれる全てのLabelを返す
-        """
-        return list(chain.from_iterable(m.phonemes for m in self.moras))
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
+        return list(chain.from_iterable(m.labels for m in self.moras))
 
 
 @dataclass
@@ -205,32 +168,12 @@ class BreathGroupLabel:
 
         return breath_group
 
-    def set_context(self, key: str, value: str):
-        """
-        BreathGroupLabelに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for accent_phrase in self.accent_phrases:
-            accent_phrase.set_context(key, value)
-
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            BreathGroupLabelに間接的に含まれる全てのLabelを返す
-        """
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
         return list(
             chain.from_iterable(
-                accent_phrase.phonemes for accent_phrase in self.accent_phrases
+                accent_phrase.labels for accent_phrase in self.accent_phrases
             )
         )
 
@@ -273,36 +216,16 @@ class UtteranceLabel:
 
         return utterance
 
-    def set_context(self, key: str, value: str):
-        """
-        UtteranceLabelに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for breath_group in self.breath_groups:
-            breath_group.set_context(key, value)
-
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            UtteranceLabelクラスに直接的・間接的に含まれる、全てのLabelを返す
-        """
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
         labels: list[Label] = []
         for i in range(len(self.pauses)):
             if self.pauses[i] is not None:
                 labels += [self.pauses[i]]
 
             if i < len(self.pauses) - 1:
-                labels += self.breath_groups[i].phonemes
+                labels += self.breath_groups[i].labels
 
         return labels
 
@@ -338,8 +261,8 @@ def mora_to_text(mora: str) -> str:
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
-        Mora(
-            text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
+        VvMora(
+            text=mora_to_text("".join([p.phoneme for p in mora.labels])),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
             vowel=mora.vowel.phoneme,
