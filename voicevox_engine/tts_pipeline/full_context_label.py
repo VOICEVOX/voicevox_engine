@@ -350,19 +350,9 @@ class UtteranceLabel:
         return labels
 
 
-def extract_full_context_label(text: str):
-    """
-    日本語テキストから発話クラスを抽出
-    Parameters
-    ----------
-    text : str
-        日本語テキスト
-    Returns
-    -------
-    utterance : Utterance
-        発話
-    """
-    features: list[str] = pyopenjtalk.extract_fullcontext(text)
+def _extract_utterance_label(text: str) -> UtteranceLabel:
+    """日本語文からUtteranceLabelを抽出する"""
+    features: list[str] = pyopenjtalk.extract_fullcontext(text) #type: ignore
     labels = [Label.from_feature(feature) for feature in features]
     utterance = UtteranceLabel.from_labels(labels)
     return utterance
@@ -388,18 +378,8 @@ def mora_to_text(mora: str) -> str:
         return mora
 
 
-def full_context_label_moras_to_moras(full_context_moras: list[MoraLabel]) -> list[VvMora]:
-    """
-    Moraクラスのキャスト (`Mora` -> `model.Mora`)
-    Parameters
-    ----------
-    full_context_moras : List[Mora]
-        モーラ系列
-    Returns
-    -------
-    moras : List[Mora]
-        モーラ系列。音素長・モーラ音高は 0 初期化
-    """
+def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[VvMora]:
+    """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
         VvMora(
             text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
@@ -409,15 +389,15 @@ def full_context_label_moras_to_moras(full_context_moras: list[MoraLabel]) -> li
             vowel_length=0,
             pitch=0,
         )
-        for mora in full_context_moras
+        for mora in mora_labels
     ]
 
 
-def utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[VvAccentPhrase]:
-    """Utteranceインスタンスをアクセント句系列へドメイン変換する"""
+def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[VvAccentPhrase]:
+    """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
     return [
         VvAccentPhrase(
-            moras=full_context_label_moras_to_moras(accent_phrase.moras),
+            moras=_mora_labels_to_moras(accent_phrase.moras),
             accent=accent_phrase.accent,
             pause_mora=(
                 VvMora(
@@ -442,13 +422,14 @@ def utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[VvAccentPhras
 
 
 def text_to_accent_phrases(text: str) -> list[VvAccentPhrase]:
-    """日本語テキストからアクセント句系列を生成"""
+    """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
         return []
 
-    # 音素とアクセントの推定
-    utterance = extract_full_context_label(text)
+    # 日本語文からUtteranceLabelを抽出する
+    utterance = _extract_utterance_label(text)
     if len(utterance.breath_groups) == 0:
         return []
 
-    return utterance_to_accent_phrases(utterance)
+    # ドメインを変換する
+    return _utterance_to_accent_phrases(utterance)
