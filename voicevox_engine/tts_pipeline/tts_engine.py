@@ -300,7 +300,7 @@ class CoreAdapter:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
-        # 「指定スタイルを初期化」「スレッドセーフ」「系列長・データ型の変「指定スタイルの初期化」換」を提供する「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             phoneme_length = self.core.yukarin_s_forward(
@@ -320,7 +320,7 @@ class CoreAdapter:
         end_accent_phrase_list: ndarray,
         style_id: int,
     ) -> ndarray:
-        # 「指定スタイルを初期化」「スレッドセーフ」「系列長・データ型の変「指定スタイルの初期化」換」を提供する「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             f0_list = self.core.yukarin_sa_forward(
@@ -338,7 +338,7 @@ class CoreAdapter:
     def safe_decode_forward(
         self, phoneme: ndarray, f0: ndarray, style_id: int
     ) -> tuple[ndarray, int]:
-        # 「指定スタイルを初期化」「スレッドセーフ」「系列長・データ型の変「指定スタイルの初期化」換」を提供する「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.decode_forward(
