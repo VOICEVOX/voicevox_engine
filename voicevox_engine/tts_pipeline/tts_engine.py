@@ -195,56 +195,10 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def calc_frame_pitch(moras: list[Mora], frame_per_mora: ndarray) -> ndarray:
-    """
-    フレームごとのピッチの生成
-    Parameters
-    ----------
-    moras : List[Mora]
-        モーラ列
-    frame_per_mora : ndarray
-        モーラあたりのフレーム長
-    Returns
-    -------
-    frame_f0 : NDArray[]
-        フレームごとの基本周波数系列
-    """
-    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # モーラごとの基本周波数
-    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
-
-    # Rescale: 時間スケールの変更（モーラ -> フレーム）
-    frame_f0 = numpy.repeat(f0, frame_per_mora)
-    return frame_f0
-
-
 def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     wave *= query.volumeScale
     return wave
-
-
-def calc_frame_phoneme(phonemes: List[OjtPhoneme], frame_per_phoneme: numpy.ndarray):
-    """
-    フレームごとの音素列の生成（onehot化 + フレーム化）
-    Parameters
-    ----------
-    phonemes : List[OjtPhoneme]
-        音素列
-    frame_per_phoneme: NDArray
-        音素あたりのフレーム長。端数丸め。
-    Returns
-    -------
-    frame_phoneme : NDArray[]
-        フレームごとの音素系列
-    """
-    # TODO: Better function name (c.f. VOICEVOX/voicevox_engine#790)
-    # Convert: Core入力形式への変換（onehotベクトル系列）
-    onehot_phoneme = numpy.stack([p.onehot for p in phonemes])
-
-    # Rescale: 時間スケールの変更（音素 -> フレーム）
-    frame_phoneme = numpy.repeat(onehot_phoneme, frame_per_phoneme, axis=0)
-    return frame_phoneme
 
 
 def apply_output_sampling_rate(
@@ -266,31 +220,23 @@ def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
 
 
 def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
-    """
-    音声合成用のクエリをデコーダー用特徴量へ変換する。
-    Parameters
-    ----------
-    query : AudioQuery
-        音声合成クエリ
-    Returns
-    -------
-    phoneme : ndarray
-        フレームごとの音素、shape=(Frame,)
-    f0 : ndarray
-        フレームごとの基本周波数、shape=(Frame,)
-    """
+    """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
     moras = to_flatten_moras(query.accent_phrases)
 
+    # 設定を適用する
     moras = apply_prepost_silence(moras, query)
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
 
-    phonemes = to_flatten_phonemes(moras)
+    # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
+    phoneme = numpy.stack([p.onehot for p in to_flatten_phonemes(moras)])
+    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
 
+    # 時間スケールを変更する（音素・モーラ → フレーム）
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
-    f0 = calc_frame_pitch(moras, frame_per_mora)
-    phoneme = calc_frame_phoneme(phonemes, frame_per_phoneme)
+    phoneme = numpy.repeat(phoneme, frame_per_phoneme, axis=0)
+    f0 = numpy.repeat(f0, frame_per_mora)
 
     return phoneme, f0
 
@@ -303,8 +249,11 @@ def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> n
     return wave
 
 
-class TTSEngine(TTSEngineBase):
-    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+class CoreAdapter:
+    """
+    コアのアダプター。
+    ついでにコア内部で推論している処理をプロセスセーフにする。
+    """
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
@@ -350,12 +299,88 @@ class TTSEngine(TTSEngineBase):
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
+    def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        with self.mutex:
+            phoneme_length = self.core.yukarin_s_forward(
+                length=len(phoneme_list_s),
+                phoneme_list=phoneme_list_s,
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )
+        return phoneme_length
+
+    def safe_yukarin_sa_forward(
+        self,
+        vowel_phoneme_list: ndarray,
+        consonant_phoneme_list: ndarray,
+        start_accent_list: ndarray,
+        end_accent_list: ndarray,
+        start_accent_phrase_list: ndarray,
+        end_accent_phrase_list: ndarray,
+        style_id: int,
+    ) -> ndarray:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        with self.mutex:
+            f0_list = self.core.yukarin_sa_forward(
+                length=vowel_phoneme_list.shape[0],
+                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
+                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
+                start_accent_list=start_accent_list[numpy.newaxis],
+                end_accent_list=end_accent_list[numpy.newaxis],
+                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
+                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )[0]
+        return f0_list
+
+    def safe_decode_forward(
+        self, phoneme: ndarray, f0: ndarray, style_id: int
+    ) -> tuple[ndarray, int]:
+        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        with self.mutex:
+            wave = self.core.decode_forward(
+                length=phoneme.shape[0],
+                phoneme_size=phoneme.shape[1],
+                f0=f0[:, numpy.newaxis],
+                phoneme=phoneme,
+                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+            )
+        sr_wave = self.default_sampling_rate
+        return wave, sr_wave
+
+
+class TTSEngine(TTSEngineBase):
+    """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
+
+    def __init__(self, core: CoreWrapper):
+        super().__init__()
+        self.core = CoreAdapter(core)
+        # NOTE: self.coreは将来的に消す予定
+
+    @property
+    def default_sampling_rate(self) -> int:
+        return self.core.default_sampling_rate
+
+    @property
+    def speakers(self) -> str:
+        return self.core.speakers
+
+    @property
+    def supported_devices(self) -> str | None:
+        return self.core.supported_devices
+
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
+
+    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+        return self.core.is_initialized_style_id_synthesis(style_id)
+
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
@@ -405,7 +430,7 @@ class TTSEngine(TTSEngineBase):
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -506,17 +531,15 @@ class TTSEngine(TTSEngineBase):
         )
 
         # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        with self.mutex:
-            f0_list = self.core.yukarin_sa_forward(
-                length=vowel_phoneme_list.shape[0],
-                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
-                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-                start_accent_list=start_accent_list[numpy.newaxis],
-                end_accent_list=end_accent_list[numpy.newaxis],
-                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
-                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )[0]
+        f0_list = self.core.safe_yukarin_sa_forward(
+            vowel_phoneme_list,
+            consonant_phoneme_list,
+            start_accent_list,
+            end_accent_list,
+            start_accent_phrase_list,
+            end_accent_phrase_list,
+            style_id,
+        )
 
         # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
         for i, p in enumerate(vowel_phoneme_data_list):
@@ -545,20 +568,12 @@ class TTSEngine(TTSEngineBase):
             音声合成結果
         """
         # モデルがロードされていない場合はロードする
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         phoneme, f0 = query_to_decoder_feature(query)
 
         # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
-        with self.mutex:
-            raw_wave = self.core.decode_forward(
-                length=phoneme.shape[0],
-                phoneme_size=phoneme.shape[1],
-                f0=f0[:, numpy.newaxis],
-                phoneme=phoneme,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
-            sr_raw_wave = self.default_sampling_rate
+        raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
 
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
