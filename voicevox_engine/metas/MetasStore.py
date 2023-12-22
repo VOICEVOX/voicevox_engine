@@ -47,7 +47,7 @@ class MetasStore:
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
-                **self.self._loaded_metas[speaker_meta.speaker_uuid].dict(),
+                **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
                 **speaker_meta.dict(),
             )
             for speaker_meta in core_metas
