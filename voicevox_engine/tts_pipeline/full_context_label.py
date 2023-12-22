@@ -5,7 +5,7 @@ from typing import Self
 
 import pyopenjtalk
 
-from ..model import Mora, AccentPhrase
+from ..model import AccentPhrase, Mora
 from .mora_list import openjtalk_mora2text
 
 
@@ -13,7 +13,7 @@ from .mora_list import openjtalk_mora2text
 class Label:
     """OpenJTalkラベル"""
 
-    contexts: dict[str, str] # ラベルの属性
+    contexts: dict[str, str]  # ラベルの属性
 
     @classmethod
     def from_feature(cls, feature: str):
@@ -53,8 +53,8 @@ class Label:
 class MoraLabel:
     """モーララベル。モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ。"""
 
-    consonant: Label | None # 子音
-    vowel: Label # 母音
+    consonant: Label | None  # 子音
+    vowel: Label  # 母音
 
     def set_context(self, key: str, value: str):
         """
@@ -86,9 +86,9 @@ class MoraLabel:
 class AccentPhraseLabel:
     """アクセント句ラベル"""
 
-    moras: list[MoraLabel] # モーラ系列
-    accent: int # アクセント位置
-    is_interrogative: bool # 疑問文か否か
+    moras: list[MoraLabel]  # モーラ系列
+    accent: int  # アクセント位置
+    is_interrogative: bool  # 疑問文か否か
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
@@ -171,7 +171,7 @@ class AccentPhraseLabel:
 class BreathGroupLabel:
     """発声区切りラベル"""
 
-    accent_phrases: list[AccentPhraseLabel] # アクセント句のリスト
+    accent_phrases: list[AccentPhraseLabel]  # アクセント句のリスト
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
@@ -239,8 +239,8 @@ class BreathGroupLabel:
 class UtteranceLabel:
     """発声ラベル"""
 
-    breath_groups: list[BreathGroupLabel] # 発声の区切りのリスト
-    pauses: list[Label] # 無音のリスト
+    breath_groups: list[BreathGroupLabel]  # 発声の区切りのリスト
+    pauses: list[Label]  # 無音のリスト
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
@@ -309,7 +309,7 @@ class UtteranceLabel:
 
 def _extract_utterance_label(text: str) -> UtteranceLabel:
     """日本語文からUtteranceLabelを抽出する"""
-    features: list[str] = pyopenjtalk.extract_fullcontext(text) #type: ignore
+    features: list[str] = pyopenjtalk.extract_fullcontext(text)  # type: ignore
     labels = [Label.from_feature(feature) for feature in features]
     utterance = UtteranceLabel.from_labels(labels)
     return utterance
