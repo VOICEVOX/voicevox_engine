@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from ...core_wrapper import CoreWrapper
 
 
-class MockCore(CoreWrapper):
+class MockCoreWrapper(CoreWrapper):
     """`CoreWrapper` Mock"""
 
     def __init__(

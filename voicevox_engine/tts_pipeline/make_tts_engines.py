@@ -127,11 +127,11 @@ def make_synthesis_engines(
 
     else:
         # モック追加
-        from ..dev.core import MockCore
+        from ..dev.core import MockCoreWrapper
         from ..dev.synthesis_engine import MockTTSEngine
 
         if "0.0.0" not in synthesis_engines:
             print("Info: Loading mock.")
-            synthesis_engines["0.0.0"] = MockTTSEngine(MockCore())
+            synthesis_engines["0.0.0"] = MockTTSEngine(MockCoreWrapper())
 
     return synthesis_engines

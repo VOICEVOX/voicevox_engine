@@ -1,3 +1,3 @@
-from .mock import MockCore
+from .mock import MockCoreWrapper
 
-__all__ = ["MockCore"]
+__all__ = ["MockCoreWrapper"]
