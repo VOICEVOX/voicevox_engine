@@ -240,7 +240,7 @@ def start_synthesis_subprocess(
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, style_id)
+            wave = _engine.synthesis(query, style_id, False)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
