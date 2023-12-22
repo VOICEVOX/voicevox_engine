@@ -1,27 +1,27 @@
 from unittest import TestCase
 
-from voicevox_engine.tts_pipeline.acoustic_feature_extractor import OjtPhoneme
+from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 
 TRUE_NUM_PHONEME = 45
 
 
-class TestOjtPhoneme(TestCase):
+class TestPhoneme(TestCase):
     def setUp(self):
         super().setUp()
         # list_idx      0 1 2 3 4 5  6 7 8 9  10 1 2 3 4 5 6 7 8   9
         hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil".split()
-        self.ojt_hello_hiho = [OjtPhoneme(s) for s in hello_hiho]
+        self.ojt_hello_hiho = [Phoneme(s) for s in hello_hiho]
 
     def test_const(self):
-        self.assertEqual(OjtPhoneme._NUM_PHONEME, TRUE_NUM_PHONEME)
-        self.assertEqual(OjtPhoneme._PHONEME_LIST[1], "A")
-        self.assertEqual(OjtPhoneme._PHONEME_LIST[14], "e")
-        self.assertEqual(OjtPhoneme._PHONEME_LIST[26], "m")
-        self.assertEqual(OjtPhoneme._PHONEME_LIST[38], "ts")
-        self.assertEqual(OjtPhoneme._PHONEME_LIST[41], "v")
+        self.assertEqual(Phoneme._NUM_PHONEME, TRUE_NUM_PHONEME)
+        self.assertEqual(Phoneme._PHONEME_LIST[1], "A")
+        self.assertEqual(Phoneme._PHONEME_LIST[14], "e")
+        self.assertEqual(Phoneme._PHONEME_LIST[26], "m")
+        self.assertEqual(Phoneme._PHONEME_LIST[38], "ts")
+        self.assertEqual(Phoneme._PHONEME_LIST[41], "v")
 
     def test_convert(self):
-        sil_phoneme = OjtPhoneme("sil")
+        sil_phoneme = Phoneme("sil")
         self.assertEqual(sil_phoneme.phoneme, "pau")
 
     def test_phoneme_id(self):

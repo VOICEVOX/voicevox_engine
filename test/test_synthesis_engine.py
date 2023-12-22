@@ -7,7 +7,7 @@ import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
-from voicevox_engine.tts_pipeline.acoustic_feature_extractor import OjtPhoneme
+from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.tts_pipeline.tts_engine import (
@@ -31,15 +31,15 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 TRUE_NUM_PHONEME = 45
 
 
-def is_same_phoneme(p1: OjtPhoneme, p2: OjtPhoneme) -> bool:
-    """2つのOjtPhonemeが同じ `.phoneme` を持つ"""
+def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
+    """2つのPhonemeが同じ `.phoneme` を持つ"""
     return p1.phoneme == p2.phoneme
 
 
 def is_same_ojt_phoneme_list(
-    p1s: list[OjtPhoneme | None], p2s: list[OjtPhoneme | None]
+    p1s: list[Phoneme | None], p2s: list[Phoneme | None]
 ) -> bool:
-    """2つのOjtPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
+    """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
     if len(p1s) != len(p2s):
         return False
 
@@ -470,8 +470,7 @@ class TestTTSEngine(TestCase):
             "sil k o N n i ch i w a pau h i h o d e s U sil".split()
         )
         self.phoneme_data_list_hello_hiho = [
-            OjtPhoneme(p)
-            for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
+            Phoneme(p) for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
         ]
         self.accent_phrases_hello_hiho = [
             AccentPhrase(
@@ -520,7 +519,7 @@ class TestTTSEngine(TestCase):
         self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])
 
         ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
-        true_vowel_phoneme_list = [OjtPhoneme(p) for p in ps]
+        true_vowel_phoneme_list = [Phoneme(p) for p in ps]
         self.assertTrue(
             is_same_ojt_phoneme_list(vowel_phoneme_list, true_vowel_phoneme_list)
         )
@@ -529,16 +528,16 @@ class TestTTSEngine(TestCase):
                 consonant_phoneme_list,
                 [
                     None,
-                    OjtPhoneme("k"),
+                    Phoneme("k"),
                     None,
-                    OjtPhoneme("n"),
-                    OjtPhoneme("ch"),
-                    OjtPhoneme("w"),
+                    Phoneme("n"),
+                    Phoneme("ch"),
+                    Phoneme("w"),
                     None,
-                    OjtPhoneme("h"),
-                    OjtPhoneme("h"),
-                    OjtPhoneme("d"),
-                    OjtPhoneme("s"),
+                    Phoneme("h"),
+                    Phoneme("h"),
+                    Phoneme("d"),
+                    Phoneme("s"),
                     None,
                 ],
             )
@@ -552,7 +551,7 @@ class TestTTSEngine(TestCase):
         mora_index = 0
         phoneme_index = 1
 
-        self.assertTrue(is_same_phoneme(phoneme_data_list[0], OjtPhoneme("pau")))
+        self.assertTrue(is_same_phoneme(phoneme_data_list[0], Phoneme("pau")))
         for accent_phrase in self.accent_phrases_hello_hiho:
             moras = accent_phrase.moras
             for mora in moras:
@@ -561,13 +560,13 @@ class TestTTSEngine(TestCase):
                 if mora.consonant is not None:
                     self.assertTrue(
                         is_same_phoneme(
-                            phoneme_data_list[phoneme_index], OjtPhoneme(mora.consonant)
+                            phoneme_data_list[phoneme_index], Phoneme(mora.consonant)
                         )
                     )
                     phoneme_index += 1
                 self.assertTrue(
                     is_same_phoneme(
-                        phoneme_data_list[phoneme_index], OjtPhoneme(mora.vowel)
+                        phoneme_data_list[phoneme_index], Phoneme(mora.vowel)
                     )
                 )
                 phoneme_index += 1
@@ -575,11 +574,11 @@ class TestTTSEngine(TestCase):
                 self.assertEqual(flatten_moras[mora_index], accent_phrase.pause_mora)
                 mora_index += 1
                 self.assertTrue(
-                    is_same_phoneme(phoneme_data_list[phoneme_index], OjtPhoneme("pau"))
+                    is_same_phoneme(phoneme_data_list[phoneme_index], Phoneme("pau"))
                 )
                 phoneme_index += 1
         self.assertTrue(
-            is_same_phoneme(phoneme_data_list[phoneme_index], OjtPhoneme("pau"))
+            is_same_phoneme(phoneme_data_list[phoneme_index], Phoneme("pau"))
         )
 
     def test_replace_phoneme_length(self):
@@ -683,7 +682,7 @@ class TestTTSEngine(TestCase):
         def result_value(i: int):
             # unvoiced_mora_phoneme_listのPhoneme ID版
             unvoiced_mora_phoneme_id_list = [
-                OjtPhoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list
+                Phoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list
             ]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0

@@ -8,7 +8,7 @@ from soxr import resample
 
 from ..core_wrapper import CoreWrapper, OldCoreError
 from ..model import AccentPhrase, AudioQuery, Mora
-from .acoustic_feature_extractor import OjtPhoneme
+from .acoustic_feature_extractor import Phoneme
 from .tts_engine_base import TTSEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
@@ -36,46 +36,18 @@ def to_flatten_moras(accent_phrases: list[AccentPhrase]) -> list[Mora]:
     return moras
 
 
-def to_flatten_phonemes(moras: list[Mora]) -> list[OjtPhoneme]:
-    """
-    モーラ系列に含まれる音素の抽出
-    Parameters
-    ----------
-    moras : list[Mora]
-        モーラ系列
-    Returns
-    -------
-    phonemes : list[OjtPhoneme]
-        音素系列
-    """
-    phonemes: list[OjtPhoneme] = []
+def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
+    """モーラ系列から音素系列を抽出する"""
+    phonemes: list[Phoneme] = []
     for mora in moras:
         if mora.consonant:
-            phonemes += [OjtPhoneme(mora.consonant)]
-        phonemes += [(OjtPhoneme(mora.vowel))]
+            phonemes += [Phoneme(mora.consonant)]
+        phonemes += [(Phoneme(mora.vowel))]
     return phonemes
 
 
-def split_mora(phoneme_list: List[OjtPhoneme]):
-    """
-    OjtPhonemeのリストから、
-    母音の位置(vowel_indexes)
-    母音の音素列(vowel_phoneme_list)
-    子音の音素列(consonant_phoneme_list)
-    を生成し、返す
-    Parameters
-    ----------
-    phoneme_list : List[OjtPhoneme]
-        phonemeクラスのリスト
-    Returns
-    -------
-    consonant_phoneme_list : List[OjtPhoneme]
-        子音の音素列
-    vowel_phoneme_list : List[OjtPhoneme]
-        母音の音素列
-    vowel_indexes : : List[int]
-        母音の位置
-    """
+def split_mora(phoneme_list: List[Phoneme]):
+    """音素系列から子音系列・母音系列・母音位置を抽出する"""
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
     ]
@@ -85,7 +57,7 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
     # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
     # 2の場合はconsonantが存在するモーラである
     # なので、2の場合(else)でphonemeを取り出している
-    consonant_phoneme_list: List[Optional[OjtPhoneme]] = [None] + [
+    consonant_phoneme_list: List[Optional[Phoneme]] = [None] + [
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
@@ -94,25 +66,13 @@ def split_mora(phoneme_list: List[OjtPhoneme]):
 
 def pre_process(
     accent_phrases: list[AccentPhrase],
-) -> tuple[list[Mora], list[OjtPhoneme]]:
-    """
-    AccentPhraseモデルのリストを整形し、処理に必要なデータの原型を作り出す
-    Parameters
-    ----------
-    accent_phrases : List[AccentPhrase]
-        AccentPhraseモデルのリスト
-    Returns
-    -------
-    flatten_moras : List[Mora]
-        モーラ列（前後の無音含まない）
-    phonemes : List[OjtPhoneme]
-        音素列（前後の無音含む）
-    """
+) -> tuple[list[Mora], list[Phoneme]]:
+    """アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する"""
     flatten_moras = to_flatten_moras(accent_phrases)
     phonemes = to_flatten_phonemes(flatten_moras)
 
     # 前後無音の追加
-    phonemes = [OjtPhoneme("pau")] + phonemes + [OjtPhoneme("pau")]
+    phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
     return flatten_moras, phonemes
 
@@ -387,7 +347,7 @@ class TTSEngine(TTSEngineBase):
 
         # 音素系列を抽出し前後無音を付加する
         phonemes = to_flatten_phonemes(moras)
-        phonemes = [OjtPhoneme("pau")] + phonemes + [OjtPhoneme("pau")]
+        phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
@@ -429,7 +389,7 @@ class TTSEngine(TTSEngineBase):
             return []
 
         # phoneme
-        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
+        # AccentPhraseをすべてMoraおよびPhonemeの形に分解し、処理可能な形にする
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
