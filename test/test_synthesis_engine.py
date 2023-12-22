@@ -470,8 +470,7 @@ class TestTTSEngine(TestCase):
             "sil k o N n i ch i w a pau h i h o d e s U sil".split()
         )
         self.phoneme_data_list_hello_hiho = [
-            Phoneme(p)
-            for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
+            Phoneme(p) for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
         ]
         self.accent_phrases_hello_hiho = [
             AccentPhrase(
