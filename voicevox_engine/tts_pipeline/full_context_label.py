@@ -74,21 +74,6 @@ class Mora:
     consonant: Label | None
     vowel: Label
 
-    def set_context(self, key: str, value: str):
-        """
-        Moraクラス内に含まれるLabelのcontextのうち、指定されたキーの値を変更する
-        consonantが存在する場合は、vowelと同じようにcontextを変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        self.vowel.contexts[key] = value
-        if self.consonant is not None:
-            self.consonant.contexts[key] = value
-
     @property
     def phonemes(self):
         """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。
@@ -168,19 +153,6 @@ class AccentPhrase:
 
         return accent_phrase
 
-    def set_context(self, key: str, value: str):
-        """
-        AccentPhraseに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for mora in self.moras:
-            mora.set_context(key, value)
-
     @property
     def phonemes(self):
         """
@@ -238,19 +210,6 @@ class BreathGroup:
         breath_group = cls(accent_phrases=accent_phrases)
 
         return breath_group
-
-    def set_context(self, key: str, value: str):
-        """
-        BreathGroupに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for accent_phrase in self.accent_phrases:
-            accent_phrase.set_context(key, value)
 
     @property
     def phonemes(self):
@@ -315,19 +274,6 @@ class Utterance:
         utterance = cls(breath_groups=breath_groups, pauses=pauses)
 
         return utterance
-
-    def set_context(self, key: str, value: str):
-        """
-        Utteranceに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
-        Parameters
-        ----------
-        key : str
-            変更したいcontextのキー
-        value : str
-            変更したいcontextの値
-        """
-        for breath_group in self.breath_groups:
-            breath_group.set_context(key, value)
 
     @property
     def phonemes(self):
