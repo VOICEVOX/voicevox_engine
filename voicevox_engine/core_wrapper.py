@@ -378,14 +378,18 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
 
 
+def _type_initialize(core_cdll: CDLL) -> None:
+    """コアDLL `initialize` 関数を型付けする"""
+    core_cdll.initialize.restype = c_bool
+
+
+def _type_metas(core_cdll: CDLL) -> None:
+    """コアDLL `metas` 関数を型付けする"""
+    core_cdll.metas.restype = c_char_p
+
+
 def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `yukarin_s_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `yukarin_s_forward` 関数を型付けする"""
     core_cdll.yukarin_s_forward.argtypes = (
         c_int,
         POINTER(c_long),
@@ -396,13 +400,7 @@ def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
 
 
 def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `yukarin_sa_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `yukarin_sa_forward` 関数を型付けする"""
     core_cdll.yukarin_sa_forward.argtypes = (
         c_int,
         POINTER(c_long),
@@ -418,13 +416,7 @@ def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
 
 
 def _type_decode_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `decode_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `decode_forward` 関数を型付けする"""
     core_cdll.decode_forward.argtypes = (
         c_int,
         c_int,
@@ -434,6 +426,33 @@ def _type_decode_forward(core_cdll: CDLL) -> None:
         POINTER(c_float),
     )
     core_cdll.decode_forward.restype = c_bool
+
+
+def _type_last_error_message(core_cdll: CDLL) -> None:
+    """コアDLL `last_error_message` 関数を型付けする"""
+    core_cdll.last_error_message.restype = c_char_p
+
+
+def _type_load_model(core_cdll: CDLL) -> None:
+    """コアDLL `load_model` 関数を型付けする"""
+    core_cdll.load_model.argtypes = (c_long,)
+    core_cdll.load_model.restype = c_bool
+
+
+def _type_is_model_loaded(core_cdll: CDLL) -> None:
+    """コアDLL `is_model_loaded` 関数を型付けする"""
+    core_cdll.is_model_loaded.argtypes = (c_long,)
+    core_cdll.is_model_loaded.restype = c_bool
+
+
+def _type_supported_devices(core_cdll: CDLL) -> None:
+    """コアDLL `supported_devices` 関数を型付けする"""
+    core_cdll.supported_devices.restype = c_char_p
+
+
+def _type_finalize(core_cdll: CDLL) -> None:
+    """コアDLL `finalize` 関数を型付けする"""
+    core_cdll.finalize.restype = None
 
 
 class CoreWrapper:
@@ -449,12 +468,13 @@ class CoreWrapper:
 
         self.core = load_core(core_dir, use_gpu)
 
-        self.core.initialize.restype = c_bool
-        self.core.metas.restype = c_char_p
+        _type_initialize(self.core)
+
+        _type_metas(self.core)
         _type_yukarin_s_forward(self.core)
         _type_yukarin_sa_forward(self.core)
         _type_decode_forward(self.core)
-        self.core.last_error_message.restype = c_char_p
+        _type_last_error_message(self.core)
 
         self.exist_supported_devices = False
         self.exist_finalize = False
@@ -469,17 +489,15 @@ class CoreWrapper:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
-            self.core.load_model.argtypes = (c_long,)
-            self.core.load_model.restype = c_bool
-            self.core.is_model_loaded.argtypes = (c_long,)
-            self.core.is_model_loaded.restype = c_bool
+            _type_load_model(self.core)
+            _type_is_model_loaded(self.core)
         else:
             model_type = _check_core_type(core_dir)
         assert model_type is not None
 
         if model_type == "onnxruntime":
-            self.core.supported_devices.restype = c_char_p
-            self.core.finalize.restype = None
+            _type_supported_devices(self.core)
+            _type_finalize(self.core)
             self.exist_supported_devices = True
             self.exist_finalize = True
             exist_cpu_num_threads = True

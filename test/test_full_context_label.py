@@ -28,7 +28,11 @@ def contexts_to_feature(contexts: dict[str, str]) -> str:
     ).format(**contexts)
 
 
-def features(ojt_container: Mora | AccentPhrase | BreathGroup | Utterance):
+# OpenJTalk コンテナクラス
+OjtContainer = Mora | AccentPhrase | BreathGroup | Utterance
+
+
+def features(ojt_container: OjtContainer):
     """コンテナインスタンスに直接的・間接的に含まれる全ての feature を返す"""
     return [contexts_to_feature(p.contexts) for p in ojt_container.phonemes]
 
@@ -126,6 +130,20 @@ class TestBasePhonemes(TestCase):
         ]
 
 
+def jointed_phonemes(ojt_container: OjtContainer) -> str:
+    """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を結合してを返す"""
+    return "".join([label.phoneme for label in ojt_container.phonemes])
+    # NOTE: `.phonemes` は `.labels` にリネーム予定
+    # return "".join([label.phoneme for label in ojt_container.labels])
+
+
+def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
+    """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を ` ` 挟みながら結合してを返す"""
+    return " ".join([label.phoneme for label in ojt_container.phonemes])
+    # NOTE: `.phonemes` は `.labels` にリネーム予定
+    # return " ".join([label.phoneme for label in ojt_container.labels])
+
+
 class TestPhoneme(TestBasePhonemes):
     def test_phoneme(self):
         self.assertEqual(
@@ -208,26 +226,21 @@ class TestMora(TestBasePhonemes):
             consonant=self.phonemes_hello_hiho[17], vowel=self.phonemes_hello_hiho[18]
         )
 
-    def assert_phonemes(self, mora: Mora, mora_str: str) -> None:
-        self.assertEqual(
-            "".join([phoneme.phoneme for phoneme in mora.phonemes]), mora_str
-        )
-
     def assert_labels(self, mora: Mora, label_start: int, label_end: int) -> None:
         self.assertEqual(
             features(mora), self.test_case_hello_hiho[label_start:label_end]
         )
 
     def test_phonemes(self) -> None:
-        self.assert_phonemes(self.mora_hello_1, "ko")
-        self.assert_phonemes(self.mora_hello_2, "N")
-        self.assert_phonemes(self.mora_hello_3, "ni")
-        self.assert_phonemes(self.mora_hello_4, "chi")
-        self.assert_phonemes(self.mora_hello_5, "wa")
-        self.assert_phonemes(self.mora_hiho_1, "hi")
-        self.assert_phonemes(self.mora_hiho_2, "ho")
-        self.assert_phonemes(self.mora_hiho_3, "de")
-        self.assert_phonemes(self.mora_hiho_4, "sU")
+        self.assertEqual(jointed_phonemes(self.mora_hello_1), "ko")
+        self.assertEqual(jointed_phonemes(self.mora_hello_2), "N")
+        self.assertEqual(jointed_phonemes(self.mora_hello_3), "ni")
+        self.assertEqual(jointed_phonemes(self.mora_hello_4), "chi")
+        self.assertEqual(jointed_phonemes(self.mora_hello_5), "wa")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_1), "hi")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_2), "ho")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_3), "de")
+        self.assertEqual(jointed_phonemes(self.mora_hiho_4), "sU")
 
     def test_labels(self) -> None:
         self.assert_labels(self.mora_hello_1, 1, 3)
@@ -245,7 +258,7 @@ class TestMora(TestBasePhonemes):
         mora_hello_1 = deepcopy(self.mora_hello_1)
         # phonemeにあたる"p3"を書き換える
         mora_hello_1.set_context("p3", "a")
-        self.assert_phonemes(mora_hello_1, "aa")
+        self.assertEqual(jointed_phonemes(mora_hello_1), "aa")
 
 
 class TestAccentPhrase(TestBasePhonemes):
@@ -268,22 +281,13 @@ class TestAccentPhrase(TestBasePhonemes):
         accent_phrase_hello = deepcopy(self.accent_phrase_hello)
         # phonemeにあたる"p3"を書き換える
         accent_phrase_hello.set_context("p3", "a")
-        self.assertEqual(
-            "".join([phoneme.phoneme for phoneme in accent_phrase_hello.phonemes]),
-            "aaaaaaaaa",
-        )
+        self.assertEqual(jointed_phonemes(accent_phrase_hello), "aaaaaaaaa")
 
     def test_phonemes(self):
-        self.assertEqual(
-            " ".join(
-                [phoneme.phoneme for phoneme in self.accent_phrase_hello.phonemes]
-            ),
-            "k o N n i ch i w a",
-        )
-        self.assertEqual(
-            " ".join([phoneme.phoneme for phoneme in self.accent_phrase_hiho.phonemes]),
-            "h i h o d e s U",
-        )
+        outputs_hello = space_jointed_phonemes(self.accent_phrase_hello)
+        outputs_hiho = space_jointed_phonemes(self.accent_phrase_hiho)
+        self.assertEqual(outputs_hello, "k o N n i ch i w a")
+        self.assertEqual(outputs_hiho, "h i h o d e s U")
 
     def test_labels(self):
         self.assertEqual(
@@ -309,20 +313,13 @@ class TestBreathGroup(TestBasePhonemes):
         breath_group_hello = deepcopy(self.breath_group_hello)
         # phonemeにあたる"p3"を書き換える
         breath_group_hello.set_context("p3", "a")
-        self.assertEqual(
-            "".join([phoneme.phoneme for phoneme in breath_group_hello.phonemes]),
-            "aaaaaaaaa",
-        )
+        self.assertEqual(jointed_phonemes(breath_group_hello), "aaaaaaaaa")
 
     def test_phonemes(self):
-        self.assertEqual(
-            " ".join([phoneme.phoneme for phoneme in self.breath_group_hello.phonemes]),
-            "k o N n i ch i w a",
-        )
-        self.assertEqual(
-            " ".join([phoneme.phoneme for phoneme in self.breath_group_hiho.phonemes]),
-            "h i h o d e s U",
-        )
+        outputs_hello = space_jointed_phonemes(self.breath_group_hello)
+        outputs_hiho = space_jointed_phonemes(self.breath_group_hiho)
+        self.assertEqual(outputs_hello, "k o N n i ch i w a")
+        self.assertEqual(outputs_hiho, "h i h o d e s U")
 
     def test_labels(self):
         self.assertEqual(
@@ -339,12 +336,9 @@ class TestUtterance(TestBasePhonemes):
         self.utterance_hello_hiho = Utterance.from_labels(self.phonemes_hello_hiho)
 
     def test_phonemes(self):
-        self.assertEqual(
-            " ".join(
-                [phoneme.phoneme for phoneme in self.utterance_hello_hiho.phonemes]
-            ),
-            "sil k o N n i ch i w a pau h i h o d e s U sil",
-        )
+        outputs_hello_hiho = space_jointed_phonemes(self.utterance_hello_hiho)
+        expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+        self.assertEqual(outputs_hello_hiho, expects_hello_hiho)
 
     def test_labels(self):
         self.assertEqual(features(self.utterance_hello_hiho), self.test_case_hello_hiho)

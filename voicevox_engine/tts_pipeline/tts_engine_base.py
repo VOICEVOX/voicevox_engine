@@ -5,171 +5,40 @@ from typing import List, Optional
 import numpy as np
 
 from ..model import AccentPhrase, AudioQuery, Mora
-from . import full_context_label
-from .full_context_label import Utterance, extract_full_context_label
+from .full_context_label import text_to_accent_phrases
 from .mora_list import openjtalk_mora2text
 
-
-def mora_to_text(mora: str) -> str:
-    """
-    Parameters
-    ----------
-    mora : str
-        モーラ音素文字列
-    Returns
-    -------
-    mora : str
-        モーラ音素文字列
-    """
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
-        # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
-    else:
-        return mora
+# 疑問文語尾定数
+UPSPEAK_LENGTH = 0.15
+UPSPEAK_PITCH_ADD = 0.3
+UPSPEAK_PITCH_MAX = 6.5
 
 
-def adjust_interrogative_accent_phrases(
-    accent_phrases: List[AccentPhrase],
-) -> List[AccentPhrase]:
-    """
-    アクセント句系列の必要に応じて疑問系に補正
-    各accent_phraseの末尾のモーラより少し音の高い有声母音モーラを付与するすることで疑問文ぽくする
-    Parameters
-    ----------
-    accent_phrases : List[AccentPhrase]
-        アクセント句系列
-    Returns
-    -------
-    accent_phrases : List[AccentPhrase]
-        必要に応じて疑問形補正されたアクセント句系列
-    """
-    # NOTE: リファクタリング時に適切な場所へ移動させること
-    return [
-        AccentPhrase(
-            moras=adjust_interrogative_moras(accent_phrase),
-            accent=accent_phrase.accent,
-            pause_mora=accent_phrase.pause_mora,
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-        for accent_phrase in accent_phrases
-    ]
+def apply_interrogative_upspeak(
+    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
+) -> list[AccentPhrase]:
+    """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
+    # NOTE: 将来的にAudioQueryインスタンスを引数にする予定
+    if not enable_interrogative_upspeak:
+        return accent_phrases
 
-
-def adjust_interrogative_moras(accent_phrase: AccentPhrase) -> List[Mora]:
-    """
-    アクセント句に含まれるモーラ系列の必要に応じた疑問形補正
-    Parameters
-    ----------
-    accent_phrase : AccentPhrase
-        アクセント句
-    Returns
-    -------
-    moras : List[Mora]
-        補正済みモーラ系列
-    """
-    moras = copy.deepcopy(accent_phrase.moras)
-    # 疑問形補正条件: 疑問形フラグON & 終端有声母音
-    if accent_phrase.is_interrogative and not (len(moras) == 0 or moras[-1].pitch == 0):
-        interrogative_mora = make_interrogative_mora(moras[-1])
-        moras.append(interrogative_mora)
-        return moras
-    else:
-        return moras
-
-
-def make_interrogative_mora(last_mora: Mora) -> Mora:
-    """
-    疑問形用のモーラ（同一母音・継続長 0.15秒・音高↑）の生成
-    Parameters
-    ----------
-    last_mora : Mora
-        疑問形にするモーラ
-    Returns
-    -------
-    mora : Mora
-        疑問形用のモーラ
-    """
-    fix_vowel_length = 0.15
-    adjust_pitch = 0.3
-    max_pitch = 6.5
-    return Mora(
-        text=openjtalk_mora2text[last_mora.vowel],
-        consonant=None,
-        consonant_length=None,
-        vowel=last_mora.vowel,
-        vowel_length=fix_vowel_length,
-        pitch=min(last_mora.pitch + adjust_pitch, max_pitch),
-    )
-
-
-def full_context_label_moras_to_moras(
-    full_context_moras: List[full_context_label.Mora],
-) -> List[Mora]:
-    """
-    Moraクラスのキャスト (`full_context_label.Mora` -> `Mora`)
-    Parameters
-    ----------
-    full_context_moras : List[full_context_label.Mora]
-        モーラ系列
-    Returns
-    -------
-    moras : List[Mora]
-        モーラ系列。音素長・モーラ音高は 0 初期化
-    """
-    return [
-        Mora(
-            text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
-            consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
-            consonant_length=0 if mora.consonant is not None else None,
-            vowel=mora.vowel.phoneme,
-            vowel_length=0,
-            pitch=0,
-        )
-        for mora in full_context_moras
-    ]
-
-
-def utterance_to_accent_phrases(utterance: Utterance) -> list[AccentPhrase]:
-    """Utteranceインスタンスをアクセント句系列へドメイン変換する"""
-    return [
-        AccentPhrase(
-            moras=full_context_label_moras_to_moras(accent_phrase.moras),
-            accent=accent_phrase.accent,
-            pause_mora=(
-                Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=0,
-                    pitch=0,
-                )
-                if (
-                    i_accent_phrase == len(breath_group.accent_phrases) - 1
-                    and i_breath_group != len(utterance.breath_groups) - 1
-                )
-                else None
-            ),
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-        for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-        for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
-    ]
-
-
-def test_to_accent_phrases(text: str) -> list[AccentPhrase]:
-    """日本語テキストからアクセント句系列を生成"""
-    if len(text.strip()) == 0:
-        return []
-
-    # 音素とアクセントの推定
-    utterance = extract_full_context_label(text)
-    if len(utterance.breath_groups) == 0:
-        return []
-
-    return utterance_to_accent_phrases(utterance)
+    for accent_phrase in accent_phrases:
+        moras = accent_phrase.moras
+        if len(moras) == 0:
+            continue
+        # 疑問形補正条件: 疑問形アクセント句 & 末尾有声モーラ
+        if accent_phrase.is_interrogative and moras[-1].pitch > 0:
+            last_mora = copy.deepcopy(moras[-1])
+            upspeak_mora = Mora(
+                text=openjtalk_mora2text[last_mora.vowel],
+                consonant=None,
+                consonant_length=None,
+                vowel=last_mora.vowel,
+                vowel_length=UPSPEAK_LENGTH,
+                pitch=min(last_mora.pitch + UPSPEAK_PITCH_ADD, UPSPEAK_PITCH_MAX),
+            )
+            accent_phrase.moras += [upspeak_mora]
+    return accent_phrases
 
 
 class TTSEngineBase(metaclass=ABCMeta):
@@ -302,7 +171,7 @@ class TTSEngineBase(metaclass=ABCMeta):
             アクセント句系列
         """
         # 音素とアクセントの推定
-        accent_phrases = test_to_accent_phrases(text)
+        accent_phrases = text_to_accent_phrases(text)
 
         # 音素長・モーラ音高の推定と更新
         accent_phrases = self.replace_mora_data(
@@ -335,10 +204,9 @@ class TTSEngineBase(metaclass=ABCMeta):
         """
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        if enable_interrogative_upspeak:
-            query.accent_phrases = adjust_interrogative_accent_phrases(
-                query.accent_phrases
-            )
+        query.accent_phrases = apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
         return self._synthesis_impl(query, style_id)
 
     @abstractmethod
