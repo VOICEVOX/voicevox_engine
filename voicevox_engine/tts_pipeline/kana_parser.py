@@ -28,7 +28,7 @@ _NOPAUSE_DELIMITER = "/"  # ポーズ無しアクセント句境界
 _PAUSE_DELIMITER = "、"  # ポーズ有りアクセント句境界
 _WIDE_INTERROGATION_MARK = "？"  # 疑問形
 
-# AquesTalk風記法とモーラの対応（音素長・音高 0 初期化、疑問形 off 初期化）
+# AquesTalk風記法とモーラの対応（音素長・音高 0 初期化）
 _text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
     _text2mora_with_unvoice[text] = Mora(
@@ -38,7 +38,6 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         vowel=vowel,
         vowel_length=0,
         pitch=0,
-        is_interrogative=False,
     )
     if vowel in ["a", "i", "u", "e", "o"]:
         # 「`_` で無声化」の実装
@@ -50,7 +49,6 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
             vowel=vowel.upper(),
             vowel_length=0,
             pitch=0,
-            is_interrogative=False,
         )
 
 
