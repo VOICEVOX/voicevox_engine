@@ -90,10 +90,8 @@ class Mora:
             self.consonant.contexts[key] = value
 
     @property
-    def phonemes(self):
-        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。
-        NOTE: `.labels` に名称変更予定
-        """
+    def labels(self) -> list[Label]:
+        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。"""
         if self.consonant is not None:
             return [self.consonant, self.vowel]
         else:
@@ -182,16 +180,9 @@ class AccentPhrase:
             mora.set_context(key, value)
 
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            AccentPhraseに間接的に含まれる全てのLabelを返す
-        """
-        return list(chain.from_iterable(m.phonemes for m in self.moras))
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
+        return list(chain.from_iterable(m.labels for m in self.moras))
 
 
 @dataclass
@@ -253,18 +244,11 @@ class BreathGroup:
             accent_phrase.set_context(key, value)
 
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            BreathGroupに間接的に含まれる全てのLabelを返す
-        """
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
         return list(
             chain.from_iterable(
-                accent_phrase.phonemes for accent_phrase in self.accent_phrases
+                accent_phrase.labels for accent_phrase in self.accent_phrases
             )
         )
 
@@ -330,22 +314,15 @@ class Utterance:
             breath_group.set_context(key, value)
 
     @property
-    def phonemes(self):
-        """
-        内包する全てのラベルを返す
-        NOTE: `.labels` に名称変更予定
-        Returns
-        -------
-        labels : list[Label]
-            Utteranceクラスに直接的・間接的に含まれる、全てのLabelを返す
-        """
+    def labels(self) -> list[Label]:
+        """内包する全てのラベルを返す"""
         labels: list[Label] = []
         for i in range(len(self.pauses)):
             if self.pauses[i] is not None:
                 labels += [self.pauses[i]]
 
             if i < len(self.pauses) - 1:
-                labels += self.breath_groups[i].phonemes
+                labels += self.breath_groups[i].labels
 
         return labels
 
@@ -402,7 +379,7 @@ def full_context_label_moras_to_moras(full_context_moras: list[Mora]) -> list[Vv
     """
     return [
         VvMora(
-            text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
+            text=mora_to_text("".join([p.phoneme for p in mora.labels])),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
             vowel=mora.vowel.phoneme,
