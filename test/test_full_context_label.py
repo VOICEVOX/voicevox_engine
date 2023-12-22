@@ -1,11 +1,11 @@
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline.full_context_label import (
-    AccentPhrase,
-    BreathGroup,
+    AccentPhraseLabel,
+    BreathGroupLabel,
     Label,
-    Mora,
-    Utterance,
+    MoraLabel,
+    UtteranceLabel,
 )
 
 
@@ -28,7 +28,7 @@ def contexts_to_feature(contexts: dict[str, str]) -> str:
 
 
 # OpenJTalk コンテナクラス
-OjtContainer = Mora | AccentPhrase | BreathGroup | Utterance
+OjtContainer = MoraLabel | AccentPhraseLabel | BreathGroupLabel | UtteranceLabel
 
 
 def features(ojt_container: OjtContainer):
@@ -187,41 +187,41 @@ class TestMora(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
         # contexts["a2"] == "1" ko
-        self.mora_hello_1 = Mora(
+        self.mora_hello_1 = MoraLabel(
             consonant=self.phonemes_hello_hiho[1], vowel=self.phonemes_hello_hiho[2]
         )
         # contexts["a2"] == "2" N
-        self.mora_hello_2 = Mora(consonant=None, vowel=self.phonemes_hello_hiho[3])
+        self.mora_hello_2 = MoraLabel(consonant=None, vowel=self.phonemes_hello_hiho[3])
         # contexts["a2"] == "3" ni
-        self.mora_hello_3 = Mora(
+        self.mora_hello_3 = MoraLabel(
             consonant=self.phonemes_hello_hiho[4], vowel=self.phonemes_hello_hiho[5]
         )
         # contexts["a2"] == "4" chi
-        self.mora_hello_4 = Mora(
+        self.mora_hello_4 = MoraLabel(
             consonant=self.phonemes_hello_hiho[6], vowel=self.phonemes_hello_hiho[7]
         )
         # contexts["a2"] == "5" wa
-        self.mora_hello_5 = Mora(
+        self.mora_hello_5 = MoraLabel(
             consonant=self.phonemes_hello_hiho[8], vowel=self.phonemes_hello_hiho[9]
         )
         # contexts["a2"] == "1" hi
-        self.mora_hiho_1 = Mora(
+        self.mora_hiho_1 = MoraLabel(
             consonant=self.phonemes_hello_hiho[11], vowel=self.phonemes_hello_hiho[12]
         )
         # contexts["a2"] == "2" ho
-        self.mora_hiho_2 = Mora(
+        self.mora_hiho_2 = MoraLabel(
             consonant=self.phonemes_hello_hiho[13], vowel=self.phonemes_hello_hiho[14]
         )
         # contexts["a2"] == "3" de
-        self.mora_hiho_3 = Mora(
+        self.mora_hiho_3 = MoraLabel(
             consonant=self.phonemes_hello_hiho[15], vowel=self.phonemes_hello_hiho[16]
         )
         # contexts["a2"] == "1" sU
-        self.mora_hiho_4 = Mora(
+        self.mora_hiho_4 = MoraLabel(
             consonant=self.phonemes_hello_hiho[17], vowel=self.phonemes_hello_hiho[18]
         )
 
-    def assert_labels(self, mora: Mora, label_start: int, label_end: int) -> None:
+    def assert_labels(self, mora: MoraLabel, label_start: int, label_end: int) -> None:
         self.assertEqual(
             features(mora), self.test_case_hello_hiho[label_start:label_end]
         )
@@ -254,10 +254,10 @@ class TestAccentPhrase(TestBasePhonemes):
         super().setUp()
         # TODO: ValueErrorを吐く作為的ではない自然な例の模索
         # 存在しないなら放置でよい
-        self.accent_phrase_hello = AccentPhrase.from_labels(
+        self.accent_phrase_hello = AccentPhraseLabel.from_labels(
             self.phonemes_hello_hiho[1:10]
         )
-        self.accent_phrase_hiho = AccentPhrase.from_labels(
+        self.accent_phrase_hiho = AccentPhraseLabel.from_labels(
             self.phonemes_hello_hiho[11:19]
         )
 
@@ -283,10 +283,10 @@ class TestAccentPhrase(TestBasePhonemes):
 class TestBreathGroup(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.breath_group_hello = BreathGroup.from_labels(
+        self.breath_group_hello = BreathGroupLabel.from_labels(
             self.phonemes_hello_hiho[1:10]
         )
-        self.breath_group_hiho = BreathGroup.from_labels(
+        self.breath_group_hiho = BreathGroupLabel.from_labels(
             self.phonemes_hello_hiho[11:19]
         )
 
@@ -308,7 +308,7 @@ class TestBreathGroup(TestBasePhonemes):
 class TestUtterance(TestBasePhonemes):
     def setUp(self) -> None:
         super().setUp()
-        self.utterance_hello_hiho = Utterance.from_labels(self.phonemes_hello_hiho)
+        self.utterance_hello_hiho = UtteranceLabel.from_labels(self.phonemes_hello_hiho)
 
     def test_phonemes(self):
         outputs_hello_hiho = space_jointed_phonemes(self.utterance_hello_hiho)
