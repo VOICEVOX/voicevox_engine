@@ -33,7 +33,7 @@ OjtContainer = Mora | AccentPhrase | BreathGroup | Utterance
 
 def features(ojt_container: OjtContainer):
     """コンテナインスタンスに直接的・間接的に含まれる全ての feature を返す"""
-    return [contexts_to_feature(p.contexts) for p in ojt_container.phonemes]
+    return [contexts_to_feature(p.contexts) for p in ojt_container.labels]
 
 
 class TestBasePhonemes(TestCase):
@@ -131,16 +131,12 @@ class TestBasePhonemes(TestCase):
 
 def jointed_phonemes(ojt_container: OjtContainer) -> str:
     """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を結合してを返す"""
-    return "".join([label.phoneme for label in ojt_container.phonemes])
-    # NOTE: `.phonemes` は `.labels` にリネーム予定
-    # return "".join([label.phoneme for label in ojt_container.labels])
+    return "".join([label.phoneme for label in ojt_container.labels])
 
 
 def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
     """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を ` ` 挟みながら結合してを返す"""
-    return " ".join([label.phoneme for label in ojt_container.phonemes])
-    # NOTE: `.phonemes` は `.labels` にリネーム予定
-    # return " ".join([label.phoneme for label in ojt_container.labels])
+    return " ".join([label.phoneme for label in ojt_container.labels])
 
 
 class TestPhoneme(TestBasePhonemes):
