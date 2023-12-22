@@ -261,7 +261,7 @@ def mora_to_text(mora: str) -> str:
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
-        VvMora(
+        Mora(
             text=mora_to_text("".join([p.phoneme for p in mora.labels])),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
