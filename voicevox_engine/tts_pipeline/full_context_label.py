@@ -11,16 +11,9 @@ from .mora_list import openjtalk_mora2text
 
 @dataclass
 class Label:
-    """
-    OpenJTalk Label
+    """OpenJTalkラベル"""
 
-    Attributes
-    ----------
-    contexts: dict[str, str]
-        ラベルの属性
-    """
-
-    contexts: dict[str, str]
+    contexts: dict[str, str] # ラベルの属性
 
     @classmethod
     def from_feature(cls, feature: str):
@@ -58,24 +51,14 @@ class Label:
 
 @dataclass
 class MoraLabel:
-    """
-    モーラクラス
-    モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ
+    """モーララベル。モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ。"""
 
-    Attributes
-    ----------
-    consonant : Label | None
-        子音
-    vowel : Label
-        母音
-    """
-
-    consonant: Label | None
-    vowel: Label
+    consonant: Label | None # 子音
+    vowel: Label # 母音
 
     def set_context(self, key: str, value: str):
         """
-        Moraクラス内に含まれるLabelのcontextのうち、指定されたキーの値を変更する
+        MoraLabelクラス内に含まれるLabelのcontextのうち、指定されたキーの値を変更する
         consonantが存在する場合は、vowelと同じようにcontextを変更する
         Parameters
         ----------
@@ -101,24 +84,15 @@ class MoraLabel:
 
 @dataclass
 class AccentPhraseLabel:
-    """
-    アクセント句クラス
-    同じアクセントのMoraを複数保持する
-    Attributes
-    ----------
-    moras : list[Mora]
-        音韻のリスト
-    accent : int
-        アクセント
-    """
+    """アクセント句ラベル"""
 
-    moras: list[MoraLabel]
-    accent: int
-    is_interrogative: bool
+    moras: list[MoraLabel] # モーラ系列
+    accent: int # アクセント位置
+    is_interrogative: bool # 疑問文か否か
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
-        """ラベル系列をcontextで区切りAccentPhraseインスタンスを生成する"""
+        """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
 
         # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
@@ -160,7 +134,7 @@ class AccentPhraseLabel:
         # f3はアクセント句が疑問文かどうか（1で疑問文）
         is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
 
-        # AccentPhrase インスタンスを生成する
+        # アクセント句ラベルを生成する
         accent_phrase = cls(
             moras=moras, accent=accent, is_interrogative=is_interrogative
         )
@@ -169,7 +143,7 @@ class AccentPhraseLabel:
 
     def set_context(self, key: str, value: str):
         """
-        AccentPhraseに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
+        アクセント句ラベルに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -188,27 +162,20 @@ class AccentPhraseLabel:
         Returns
         -------
         labels : list[Label]
-            AccentPhraseに間接的に含まれる全てのLabelを返す
+            アクセント句ラベルに間接的に含まれる全てのLabelを返す
         """
         return list(chain.from_iterable(m.phonemes for m in self.moras))
 
 
 @dataclass
 class BreathGroupLabel:
-    """
-    発声の区切りクラス
-    アクセントの異なるアクセント句を複数保持する
-    Attributes
-    ----------
-    accent_phrases : list[AccentPhrase]
-        アクセント句のリスト
-    """
+    """発声区切りラベル"""
 
-    accent_phrases: list[AccentPhraseLabel]
+    accent_phrases: list[AccentPhraseLabel] # アクセント句のリスト
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
-        """ラベル系列をcontextで区切りBreathGroupインスタンスを生成する"""
+        """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
 
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
@@ -220,8 +187,8 @@ class BreathGroupLabel:
             accent_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
-            # i3はBreathGroupの番号
-            # f5はBreathGroup内でのアクセント句の番号
+            # i3はBreathGroupLabelの番号
+            # f5はBreathGroupLabel内でのアクセント句の番号
             if (
                 next_label is None
                 or label.contexts["i3"] != next_label.contexts["i3"]
@@ -233,14 +200,14 @@ class BreathGroupLabel:
                 # 次に向けてリセット
                 accent_labels = []
 
-        # BreathGroup インスタンスを生成する
+        # BreathGroupLabel インスタンスを生成する
         breath_group = cls(accent_phrases=accent_phrases)
 
         return breath_group
 
     def set_context(self, key: str, value: str):
         """
-        BreathGroupに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
+        BreathGroupLabelに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -259,7 +226,7 @@ class BreathGroupLabel:
         Returns
         -------
         labels : list[Label]
-            BreathGroupに間接的に含まれる全てのLabelを返す
+            BreathGroupLabelに間接的に含まれる全てのLabelを返す
         """
         return list(
             chain.from_iterable(
@@ -270,29 +237,20 @@ class BreathGroupLabel:
 
 @dataclass
 class UtteranceLabel:
-    """
-    発声クラス
-    発声の区切りと無音を複数保持する
-    Attributes
-    ----------
-    breath_groups : list[BreathGroup]
-        発声の区切りのリスト
-    pauses : list[Label]
-        無音のリスト
-    """
+    """発声ラベル"""
 
-    breath_groups: list[BreathGroupLabel]
-    pauses: list[Label]
+    breath_groups: list[BreathGroupLabel] # 発声の区切りのリスト
+    pauses: list[Label] # 無音のリスト
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
-        """ラベル系列をポーズで区切りUtteranceインスタンスを生成する"""
+        """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
 
-        # NOTE:「BreathGroupごとのラベル系列」はラベル系列をポーズで区切り生成される。
+        # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
 
         pauses: list[Label] = []  # ポーズラベルのリスト
-        breath_groups: list[BreathGroupLabel] = []  # BreathGroup のリスト
-        group_labels: list[Label] = []  # BreathGroupごとのラベル系列を一時保存するコンテナ
+        breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
+        group_labels: list[Label] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する
@@ -304,20 +262,20 @@ class UtteranceLabel:
                 # ポーズラベルを保存する
                 pauses.append(label)
                 if len(group_labels) > 0:
-                    # ラベル系列からBreathGroupを生成して保存する
+                    # ラベル系列からBreathGroupLabelを生成して保存する
                     breath_group = BreathGroupLabel.from_labels(group_labels)
                     breath_groups.append(breath_group)
                     # 次に向けてリセット
                     group_labels = []
 
-        # Utteranceインスタンスを生成する
+        # UtteranceLabelインスタンスを生成する
         utterance = cls(breath_groups=breath_groups, pauses=pauses)
 
         return utterance
 
     def set_context(self, key: str, value: str):
         """
-        Utteranceに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
+        UtteranceLabelに間接的に含まれる全てのLabelのcontextの、指定されたキーの値を変更する
         Parameters
         ----------
         key : str
@@ -336,7 +294,7 @@ class UtteranceLabel:
         Returns
         -------
         labels : list[Label]
-            Utteranceクラスに直接的・間接的に含まれる、全てのLabelを返す
+            UtteranceLabelクラスに直接的・間接的に含まれる、全てのLabelを返す
         """
         labels: list[Label] = []
         for i in range(len(self.pauses)):
