@@ -526,6 +526,12 @@ pysen run format lint
 python -m pytest
 ```
 
+#### スナップショットの更新
+
+```bash
+python -m pytest --snapshot-update
+```
+
 ### タイポチェック
 
 [typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
