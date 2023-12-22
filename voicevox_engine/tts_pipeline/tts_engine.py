@@ -375,7 +375,7 @@ class TTSEngine(TTSEngineBase):
                 style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
             )
 
-        # 推定結果でモーラ内の音素長属性を置換する
+        # 生成結果でモーラ内の音素長属性を置換する
         vowel_indexes = [
             i for i, p in enumerate(phonemes) if p.phoneme in mora_phoneme_list
         ]
