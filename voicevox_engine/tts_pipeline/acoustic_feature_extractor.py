@@ -12,10 +12,8 @@ _PHONEME_LIST = _P_LIST1 + _P_LIST2 + _P_LIST3 + _P_LIST4 + _P_LIST5
 _NUM_PHONEME = len(_PHONEME_LIST)
 
 
-class OjtPhoneme:
-    """
-    OpenJTalkに含まれる音素
-    """
+class Phoneme:
+    """音素"""
 
     _PHONEME_LIST = _PHONEME_LIST
     _NUM_PHONEME = _NUM_PHONEME
@@ -32,25 +30,13 @@ class OjtPhoneme:
         raise NotImplementedError
 
     @property
-    def phoneme_id(self):
-        """
-        phoneme_id (phoneme list内でのindex)を取得する
-        Returns
-        -------
-        id : int
-            phoneme_idを返す
-        """
+    def phoneme_id(self) -> int:
+        """音素ID (音素リスト内でのindex) を取得する"""
         return self._PHONEME_LIST.index(self.phoneme)
 
     @property
     def onehot(self):
-        """
-        音素onehotベクトル
-        Returns
-        -------
-        onehot : numpy.ndarray
-            音素onehotベクトル（listの長さ分の0埋め配列のうち、phoneme id番目が1.0の配列）
-        """
-        array = numpy.zeros(self._NUM_PHONEME, dtype=numpy.float32)
-        array[self.phoneme_id] = 1.0
-        return array
+        """音素onehotベクトルを取得する"""
+        vec = numpy.zeros(self._NUM_PHONEME, dtype=numpy.float32)
+        vec[self.phoneme_id] = 1.0
+        return vec
