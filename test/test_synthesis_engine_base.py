@@ -193,14 +193,6 @@ class TestTTSEngineBase(TestCase):
         )
         self.synthesis_engine._synthesis_impl = Mock()
 
-    def create_accent_phrases_test_base(self, text: str, expected: List[AccentPhrase]):
-        actual = self.synthesis_engine.create_accent_phrases(text, 1)
-        self.assertEqual(
-            expected,
-            actual,
-            "case(text:" + text + ")",
-        )
-
     def create_synthesis_test_base(
         self,
         text: str,
@@ -218,9 +210,11 @@ class TestTTSEngineBase(TestCase):
         """accent_phrasesの作成時では疑問文モーラ処理を行わない
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
+        text = "これはありますか？"
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
-        self.create_accent_phrases_test_base(text="これはありますか？", expected=expected)
+        actual = self.synthesis_engine.create_accent_phrases(text, 1)
+        self.assertEqual(expected, actual, f"case(text:{text})")
 
     def test_synthesis_interrogative(self):
         expected = koreha_arimasuka_base_expected()
