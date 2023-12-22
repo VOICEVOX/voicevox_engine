@@ -367,7 +367,7 @@ class TTSEngine(TTSEngineBase):
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
-        # コアを用いて音素長を推定する
+        # コアを用いて音素長を生成する
         with self.mutex:
             phoneme_lengths = self.core.yukarin_s_forward(
                 length=len(phoneme_ids),
