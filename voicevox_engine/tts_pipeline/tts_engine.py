@@ -300,7 +300,8 @@ class CoreAdapter:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
-        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             phoneme_length = self.core.yukarin_s_forward(
                 length=len(phoneme_list_s),
@@ -319,7 +320,8 @@ class CoreAdapter:
         end_accent_phrase_list: ndarray,
         style_id: int,
     ) -> ndarray:
-        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             f0_list = self.core.yukarin_sa_forward(
                 length=vowel_phoneme_list.shape[0],
@@ -336,7 +338,8 @@ class CoreAdapter:
     def safe_decode_forward(
         self, phoneme: ndarray, f0: ndarray, style_id: int
     ) -> tuple[ndarray, int]:
-        # TODO: `self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)` のファサード的移植
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.decode_forward(
                 length=phoneme.shape[0],
@@ -379,9 +382,6 @@ class TTSEngine(TTSEngineBase):
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
-        # モデルがロードされていない場合はロードする
-        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
-
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
@@ -424,8 +424,6 @@ class TTSEngine(TTSEngineBase):
         accent_phrases : List[AccentPhrase]
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
-        # モデルがロードされていない場合はロードする
-        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -562,14 +560,7 @@ class TTSEngine(TTSEngineBase):
         wave : numpy.ndarray
             音声合成結果
         """
-        # モデルがロードされていない場合はロードする
-        self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
-
         phoneme, f0 = query_to_decoder_feature(query)
-
-        # 今まで生成された情報をdecode_forwardにかけ、推論器によって音声波形を生成する
         raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
-
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
-
         return wave
