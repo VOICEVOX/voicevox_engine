@@ -6,6 +6,7 @@ import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
+from voicevox_engine.tts_pipeline.tts_engine_base import apply_interrogative_upspeak
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
@@ -209,19 +210,9 @@ class TestTTSEngineBase(TestCase):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
-        accent_phrases = self.synthesis_engine.create_accent_phrases(text, 1)
-        query = create_mock_query(accent_phrases=accent_phrases)
-        self.synthesis_engine.synthesis(
-            query, 0, enable_interrogative_upspeak=enable_interrogative_upspeak
-        )
-        # _synthesis_implの第一引数に与えられたqueryを検証
-        actual = self.synthesis_engine._synthesis_impl.call_args[0][0].accent_phrases
-
-        self.assertEqual(
-            expected,
-            actual,
-            "case(text:" + text + ")",
-        )
+        inputs = self.synthesis_engine.create_accent_phrases(text, 1)
+        outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
+        self.assertEqual(expected, outputs, f"case(text:{text})")
 
     def test_create_accent_phrases(self):
         """accent_phrasesの作成時では疑問文モーラ処理を行わない
