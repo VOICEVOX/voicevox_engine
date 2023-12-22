@@ -393,12 +393,7 @@ class TTSEngine(TTSEngineBase):
         phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
         # コアを用いて音素長を生成する
-        with self.mutex:
-            phoneme_lengths = self.core.yukarin_s_forward(
-                length=len(phoneme_ids),
-                phoneme_list=phoneme_ids,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
+        phoneme_lengths = self.core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成結果でモーラ内の音素長属性を置換する
         vowel_indexes = [
