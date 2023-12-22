@@ -5,8 +5,7 @@ from typing import Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase as VvAccentPhrase  # NOTE: 後にOjtコンテナクラスをリネーム予定
-from ..model import Mora as VvMora
+from ..model import Mora, AccentPhrase
 from .mora_list import openjtalk_mora2text
 
 
@@ -378,10 +377,10 @@ def mora_to_text(mora: str) -> str:
         return mora
 
 
-def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[VvMora]:
+def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
-        VvMora(
+        Mora(
             text=mora_to_text("".join([p.phoneme for p in mora.phonemes])),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
@@ -393,14 +392,14 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[VvMora]:
     ]
 
 
-def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[VvAccentPhrase]:
+def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
     """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
     return [
-        VvAccentPhrase(
+        AccentPhrase(
             moras=_mora_labels_to_moras(accent_phrase.moras),
             accent=accent_phrase.accent,
             pause_mora=(
-                VvMora(
+                Mora(
                     text="、",
                     consonant=None,
                     consonant_length=None,
@@ -421,7 +420,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[VvAccentPhra
     ]
 
 
-def text_to_accent_phrases(text: str) -> list[VvAccentPhrase]:
+def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
         return []
