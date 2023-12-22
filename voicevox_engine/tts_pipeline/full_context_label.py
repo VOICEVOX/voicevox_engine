@@ -150,8 +150,8 @@ class BreathGroupLabel:
             accent_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
-            # i3はBreathGroupLabelの番号
-            # f5はBreathGroupLabel内でのアクセント句の番号
+            # i3はBreathGroupの番号
+            # f5はBreathGroup内でのアクセント句の番号
             if (
                 next_label is None
                 or label.contexts["i3"] != next_label.contexts["i3"]
