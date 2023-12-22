@@ -240,6 +240,7 @@ def start_synthesis_subprocess(
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
+            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
             wave = _engine.synthesis(query, style_id, False)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
