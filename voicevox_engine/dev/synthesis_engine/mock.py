@@ -1,13 +1,14 @@
 from logging import getLogger
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
+from ...core_wrapper import CoreWrapper
 from ...model import AccentPhrase, AudioQuery
 from ...tts_pipeline import TTSEngineBase
-from ...tts_pipeline.tts_engine import to_flatten_moras
+from ...tts_pipeline.tts_engine import CoreAdapter, to_flatten_moras
 
 
 class MockTTSEngine(TTSEngineBase):
@@ -15,30 +16,28 @@ class MockTTSEngine(TTSEngineBase):
     TTSEngine [Mock]
     """
 
-    def __init__(
-        self,
-        speakers: str,
-        supported_devices: Optional[str] = None,
-    ):
-        """
-        __init__ [Mock]
-        """
+    def __init__(self, core: CoreWrapper):
         super().__init__()
-
-        self._speakers = speakers
-        self._supported_devices = supported_devices
+        self.core = CoreAdapter(core)
+        # NOTE: self.coreは将来的に消す予定
 
     @property
     def default_sampling_rate(self) -> int:
-        return 24000
+        return self.core.default_sampling_rate
 
     @property
     def speakers(self) -> str:
-        return self._speakers
+        return self.core.speakers
 
     @property
-    def supported_devices(self) -> Optional[str]:
-        return self._supported_devices
+    def supported_devices(self) -> str | None:
+        return self.core.supported_devices
+
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
+
+    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+        return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], style_id: int

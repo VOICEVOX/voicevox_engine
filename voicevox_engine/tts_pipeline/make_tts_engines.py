@@ -127,14 +127,11 @@ def make_synthesis_engines(
 
     else:
         # モック追加
-        from ..dev.core import metas as mock_metas
-        from ..dev.core import supported_devices as mock_supported_devices
+        from ..dev.core import MockCoreWrapper
         from ..dev.synthesis_engine import MockTTSEngine
 
         if "0.0.0" not in synthesis_engines:
             print("Info: Loading mock.")
-            synthesis_engines["0.0.0"] = MockTTSEngine(
-                speakers=mock_metas(), supported_devices=mock_supported_devices()
-            )
+            synthesis_engines["0.0.0"] = MockTTSEngine(MockCoreWrapper())
 
     return synthesis_engines

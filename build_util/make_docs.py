@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from voicevox_engine.dev.core import mock as core
+from voicevox_engine.dev.core import MockCoreWrapper
 from voicevox_engine.dev.synthesis_engine.mock import MockTTSEngine
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import USER_SETTING_PATH, SettingLoader
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = run.generate_app(
-        synthesis_engines={"mock": MockTTSEngine(speakers=core.metas())},
+        synthesis_engines={"mock": MockTTSEngine(MockCoreWrapper())},
         latest_core_version="mock",
         setting_loader=SettingLoader(USER_SETTING_PATH),
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager
