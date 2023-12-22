@@ -376,46 +376,35 @@ class TTSEngine(TTSEngineBase):
         return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], style_id: int
-    ) -> List[AccentPhrase]:
-        """
-        accent_phrasesの母音・子音の長さを設定する
-        Parameters
-        ----------
-        accent_phrases : List[AccentPhrase]
-            アクセント句モデルのリスト
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        accent_phrases : List[AccentPhrase]
-            母音・子音の長さが設定されたアクセント句モデルのリスト
-        """
+        self, accent_phrases: list[AccentPhrase], style_id: int
+    ) -> list[AccentPhrase]:
+        """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モデルがロードされていない場合はロードする
         self.core.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        # phoneme
-        # AccentPhraseをすべてMoraおよびOjtPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = pre_process(accent_phrases)
-        # OjtPhonemeの形に分解されたもの(phoneme_data_list)から、vowel(母音)の位置を抜き出す
-        _, _, vowel_indexes_data = split_mora(phoneme_data_list)
 
-        # yukarin_s
-        # OjtPhonemeのリストからOjtPhonemeのPhoneme ID(OpenJTalkにおける音素のID)のリストを作る
-        phoneme_list_s = numpy.array(
-            [p.phoneme_id for p in phoneme_data_list], dtype=numpy.int64
-        )
-        # Phoneme IDのリスト(phoneme_list_s)をyukarin_s_forwardにかけ、推論器によって適切な音素の長さを割り当てる
-        phoneme_length = self.core.safe_yukarin_s_forward(phoneme_list_s, style_id)
+        # モーラ系列を抽出する
+        moras = to_flatten_moras(accent_phrases)
 
-        # yukarin_s_forwarderの結果をaccent_phrasesに反映する
-        # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
-        for i, mora in enumerate(flatten_moras):
-            mora.consonant_length = (
-                phoneme_length[vowel_indexes_data[i + 1] - 1]
-                if mora.consonant is not None
-                else None
-            )
-            mora.vowel_length = phoneme_length[vowel_indexes_data[i + 1]]
+        # 音素系列を抽出し前後無音を付加する
+        phonemes = to_flatten_phonemes(moras)
+        phonemes = [OjtPhoneme("pau")] + phonemes + [OjtPhoneme("pau")]
+
+        # 音素クラスから音素IDスカラへ表現を変換する
+        phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
+
+        # コアを用いて音素長を生成する
+        phoneme_lengths = self.core.safe_yukarin_s_forward(phoneme_ids, style_id)
+
+        # 生成結果でモーラ内の音素長属性を置換する
+        vowel_indexes = [
+            i for i, p in enumerate(phonemes) if p.phoneme in mora_phoneme_list
+        ]
+        for i, mora in enumerate(moras):
+            if mora.consonant is None:
+                mora.consonant_length = None
+            else:
+                mora.consonant_length = phoneme_lengths[vowel_indexes[i + 1] - 1]
+            mora.vowel_length = phoneme_lengths[vowel_indexes[i + 1]]
 
         return accent_phrases
 
