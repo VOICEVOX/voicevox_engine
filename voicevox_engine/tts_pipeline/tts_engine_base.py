@@ -49,17 +49,6 @@ class TTSEngineBase(metaclass=ABCMeta):
         # FIXME: jsonではなくModelを返すようにする
         raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def supported_devices(self) -> Optional[str]:
-        """
-        デバイス対応情報
-        Returns
-        -------
-            対応デバイス一覧（None: 情報取得不可）
-        """
-        raise NotImplementedError
-
     def initialize_style_id_synthesis(  # noqa: B027
         self, style_id: int, skip_reinit: bool
     ):

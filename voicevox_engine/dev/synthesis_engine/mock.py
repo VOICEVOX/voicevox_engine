@@ -25,10 +25,6 @@ class MockTTSEngine(TTSEngineBase):
     def speakers(self) -> str:
         return self.core.speakers
 
-    @property
-    def supported_devices(self) -> str | None:
-        return self.core.supported_devices
-
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
         return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
 
