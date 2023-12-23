@@ -20,10 +20,6 @@ class MockCoreWrapper(CoreWrapper):
     ) -> None:
         self.default_sampling_rate = 24000
 
-        self.yukarin_s_forward = Mock()
-        self.yukarin_sa_forward = Mock()
-        self.decode_forward = Mock()
-
     def metas(self) -> str:
         return json.dumps(
             [
