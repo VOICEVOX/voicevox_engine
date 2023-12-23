@@ -22,10 +22,6 @@ class MockTTSEngine(TTSEngineBase):
         # NOTE: self.coreは将来的に消す予定
 
     @property
-    def default_sampling_rate(self) -> int:
-        return self.core.default_sampling_rate
-
-    @property
     def speakers(self) -> str:
         return self.core.speakers
 

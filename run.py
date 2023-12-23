@@ -65,7 +65,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines, CoreAdapter
 from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -142,8 +142,6 @@ def generate_app(
 ) -> FastAPI:
     if root_dir is None:
         root_dir = engine_root()
-
-    default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
     app = FastAPI(
         title="VOICEVOX Engine",
@@ -234,6 +232,14 @@ def generate_app(
             return synthesis_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
+    def get_core(core_version: Optional[str]) -> CoreAdapter:
+        """指定したバージョンのコアを取得する"""
+        if core_version is None:
+            return synthesis_engines[latest_core_version].core
+        if core_version in synthesis_engines:
+            return synthesis_engines[core_version].core
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -251,6 +257,7 @@ def generate_app(
         """
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
+        core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -260,7 +267,7 @@ def generate_app(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -280,6 +287,7 @@ def generate_app(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
         except PresetError as err:
@@ -302,7 +310,7 @@ def generate_app(
             volumeScale=selected_preset.volumeScale,
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -596,6 +604,7 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(engine=engine)
@@ -616,6 +625,7 @@ def generate_app(
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
+            core=core,
             query=query,
             base_speaker=base_speaker,
             target_speaker=target_speaker,

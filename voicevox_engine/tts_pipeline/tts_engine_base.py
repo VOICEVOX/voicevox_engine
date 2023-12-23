@@ -44,11 +44,6 @@ def apply_interrogative_upspeak(
 class TTSEngineBase(metaclass=ABCMeta):
     @property
     @abstractmethod
-    def default_sampling_rate(self) -> int:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
     def speakers(self) -> str:
         """話者情報（json文字列）"""
         # FIXME: jsonではなくModelを返すようにする
