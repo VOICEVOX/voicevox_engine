@@ -230,39 +230,23 @@ class UtteranceLabel:
         return labels
 
 
-def _extract_utterance_label(text: str) -> UtteranceLabel:
-    """日本語文からUtteranceLabelを抽出する"""
-    features: list[str] = pyopenjtalk.extract_fullcontext(text)  # type: ignore
-    labels = [Label.from_feature(feature) for feature in features]
-    utterance = UtteranceLabel.from_labels(labels)
-    return utterance
-
-
-def mora_to_text(mora: str) -> str:
-    """
-    Parameters
-    ----------
-    mora : str
-        モーラ音素文字列
-    Returns
-    -------
-    mora : str
-        モーラ音素文字列
-    """
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
+def mora_to_text(mora: MoraLabel) -> str:
+    """モーラを日本語カタカナ文へ変換する（例: MoraLabel('h','O') -> 'ホ')"""
+    mora_phonemes = "".join([label.phoneme for label in mora.labels])
+    if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
+        mora_phonemes = mora_phonemes[:-1] + mora_phonemes[-1].lower()
+    if mora_phonemes in openjtalk_mora2text:
+        return openjtalk_mora2text[mora_phonemes]
     else:
-        return mora
+        return mora_phonemes
 
 
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
         Mora(
-            text=mora_to_text("".join([p.phoneme for p in mora.labels])),
+            text=mora_to_text(mora),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
             vowel=mora.vowel.phoneme,
@@ -275,6 +259,9 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
 
 def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
     """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
+    if len(utterance.breath_groups) == 0:
+        return []
+
     return [
         AccentPhrase(
             moras=_mora_labels_to_moras(accent_phrase.moras),
@@ -307,9 +294,10 @@ def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
         return []
 
     # 日本語文からUtteranceLabelを抽出する
-    utterance = _extract_utterance_label(text)
-    if len(utterance.breath_groups) == 0:
-        return []
+    features: list[str] = pyopenjtalk.extract_fullcontext(text)  # type: ignore
+    utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, features)))
 
     # ドメインを変換する
-    return _utterance_to_accent_phrases(utterance)
+    accent_phrases = _utterance_to_accent_phrases(utterance)
+
+    return accent_phrases
