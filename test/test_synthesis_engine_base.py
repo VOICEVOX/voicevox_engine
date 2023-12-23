@@ -230,16 +230,28 @@ class TestTTSEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_synthesis_test_base("これはありますか？", expected, True)
+        self.create_synthesis_test_base(
+            text="これはありますか？",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # voiced + "？" + flagOFF -> non-upspeak
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
-        self.create_synthesis_test_base("これはありますか？", expected, False)
+        self.create_synthesis_test_base(
+            text="これはありますか？",
+            expected=expected,
+            enable_interrogative_upspeak=False,
+        )
 
         # voiced + "" + flagON -> non-upspeak
         expected = koreha_arimasuka_base_expected()
-        self.create_synthesis_test_base("これはありますか", expected, True)
+        self.create_synthesis_test_base(
+            text="これはありますか",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
     def test_upspeak_voiced_N_last_mora(self):
         def nn_base_expected():
@@ -263,7 +275,11 @@ class TestTTSEngineBase(TestCase):
 
         # voiced + "" + flagON -> upspeak
         expected = nn_base_expected()
-        self.create_synthesis_test_base("ん", expected, True)
+        self.create_synthesis_test_base(
+            text="ん",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # voiced + "？" + flagON -> upspeak
         expected = nn_base_expected()
@@ -278,12 +294,20 @@ class TestTTSEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_synthesis_test_base("ん？", expected, True)
+        self.create_synthesis_test_base(
+            text="ん？",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # voiced + "？" + flagOFF -> non-upspeak
         expected = nn_base_expected()
         expected[-1].is_interrogative = True
-        self.create_synthesis_test_base("ん？", expected, False)
+        self.create_synthesis_test_base(
+            text="ん？",
+            expected=expected,
+            enable_interrogative_upspeak=False,
+        )
 
     def test_upspeak_unvoiced_last_mora(self):
         def ltu_base_expected():
@@ -307,17 +331,29 @@ class TestTTSEngineBase(TestCase):
 
         # unvoiced + "" + flagON -> non-upspeak
         expected = ltu_base_expected()
-        self.create_synthesis_test_base("っ", expected, True)
+        self.create_synthesis_test_base(
+            text="っ",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # unvoiced + "？" + flagON -> non-upspeak
         expected = ltu_base_expected()
         expected[-1].is_interrogative = True
-        self.create_synthesis_test_base("っ？", expected, True)
+        self.create_synthesis_test_base(
+            text="っ？",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # unvoiced + "？" + flagOFF -> non-upspeak
         expected = ltu_base_expected()
         expected[-1].is_interrogative = True
-        self.create_synthesis_test_base("っ？", expected, False)
+        self.create_synthesis_test_base(
+            text="っ？",
+            expected=expected,
+            enable_interrogative_upspeak=False,
+        )
 
     def test_upspeak_voiced_u_last_mora(self):
         def su_base_expected():
@@ -341,7 +377,11 @@ class TestTTSEngineBase(TestCase):
 
         # voiced + "" + flagON -> non-upspeak
         expected = su_base_expected()
-        self.create_synthesis_test_base("す", expected, True)
+        self.create_synthesis_test_base(
+            text="す",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # voiced + "？" + flagON -> upspeak
         expected = su_base_expected()
@@ -356,9 +396,17 @@ class TestTTSEngineBase(TestCase):
                 pitch=expected[-1].moras[-1].pitch + 0.3,
             )
         ]
-        self.create_synthesis_test_base("す？", expected, True)
+        self.create_synthesis_test_base(
+            text="す？",
+            expected=expected,
+            enable_interrogative_upspeak=True,
+        )
 
         # voiced + "？" + flagOFF -> non-upspeak
         expected = su_base_expected()
         expected[-1].is_interrogative = True
-        self.create_synthesis_test_base("す？", expected, False)
+        self.create_synthesis_test_base(
+            text="す？",
+            expected=expected,
+            enable_interrogative_upspeak=False,
+        )
