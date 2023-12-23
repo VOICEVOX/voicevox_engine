@@ -260,7 +260,7 @@ class CoreAdapter:
             pass  # コアが古い場合はどうしようもないので何もしない
 
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        # Coreプロキシ
+        """指定したスタイルでの音声合成が初期化されているかどうかを返す"""
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
@@ -326,9 +326,6 @@ class TTSEngine(TTSEngineBase):
         super().__init__()
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int

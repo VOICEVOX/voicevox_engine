@@ -42,20 +42,6 @@ def apply_interrogative_upspeak(
 
 
 class TTSEngineBase(metaclass=ABCMeta):
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        """
-        指定したスタイルでの音声合成が初期化されているかどうかを返す
-        Parameters
-        ----------
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        bool
-            初期化されているかどうか
-        """
-        return True
-
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], style_id: int

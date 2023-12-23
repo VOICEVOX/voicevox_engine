@@ -984,8 +984,7 @@ def generate_app(
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
-        engine = get_engine(core_version)
-        return engine.is_initialized_style_id_synthesis(style_id)
+        return get_core(core_version).is_initialized_style_id_synthesis(style_id)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
