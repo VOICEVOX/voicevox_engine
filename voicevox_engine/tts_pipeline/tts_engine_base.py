@@ -42,21 +42,6 @@ def apply_interrogative_upspeak(
 
 
 class TTSEngineBase(metaclass=ABCMeta):
-    def initialize_style_id_synthesis(  # noqa: B027
-        self, style_id: int, skip_reinit: bool
-    ):
-        """
-        指定したスタイルでの音声合成を初期化する。
-        何度も実行可能。未実装の場合は何もしない。
-        Parameters
-        ----------
-        style_id : int
-            スタイルID
-        skip_reinit : bool
-            True の場合, 既に初期化済みの話者の再初期化をスキップします
-        """
-        pass
-
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
         """
         指定したスタイルでの音声合成が初期化されているかどうかを返す

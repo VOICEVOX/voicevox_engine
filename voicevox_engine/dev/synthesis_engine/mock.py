@@ -21,9 +21,6 @@ class MockTTSEngine(TTSEngineBase):
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
 
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
-
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
         return self.core.is_initialized_style_id_synthesis(style_id)
 
