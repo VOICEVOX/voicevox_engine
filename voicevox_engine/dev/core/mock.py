@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 from unittest.mock import Mock
 
+import numpy
+from numpy import ndarray
+
 from ...core_wrapper import CoreWrapper
 
 
@@ -64,6 +67,45 @@ class MockCoreWrapper(CoreWrapper):
                 },
             ]
         )
+
+    def yukarin_s_forward(
+        self, length: int, phoneme_list: ndarray, style_id: ndarray
+    ) -> ndarray:
+        """音素系列サイズ・音素ID系列・スタイルIDから音素長系列を生成する"""
+        # Mock: 定数の音素長系列を生成。[0.1, 0.1, ...]
+        return 0.1 * numpy.ones((length,), dtype=numpy.float32)
+
+    def yukarin_sa_forward(
+        self,
+        length: int,
+        vowel_phoneme_list: ndarray,
+        consonant_phoneme_list: ndarray,
+        start_accent_list: ndarray,
+        end_accent_list: ndarray,
+        start_accent_phrase_list: ndarray,
+        end_accent_phrase_list: ndarray,
+        style_id: ndarray,
+    ) -> ndarray:
+        """モーラ系列サイズ・母音系列・子音系列・アクセント位置・アクセント句区切り・スタイルIDからモーラ音高系列を生成する"""
+        assert length > 1, "前後無音を必ず付与しなければならない"
+        # Mock: 定数のモーラ音高系列を生成。[0, 200, 100, 100, ..., 100, 0]
+        pitch = 100 * numpy.ones((1, length), dtype=numpy.float32)
+        pitch[0, 0] = 0.0  # 開始無音 (pau)
+        pitch[0, 1] = 200.0  # 分散 0 を避けるため
+        pitch[0, length] = 0.0  # 終了無音 (pau)
+        return pitch
+
+    def decode_forward(
+        self,
+        length: int,
+        phoneme_size: int,
+        f0: ndarray,
+        phoneme: ndarray,
+        style_id: ndarray,
+    ) -> ndarray:
+        """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDから音声波形を生成する"""
+        # Mock: 定数の音声波形を生成。[0.1, 0.1, ..., 0.1, 0.1]
+        return 0.1 * numpy.one((length * 256,), dtype=numpy.float32)
 
     def supported_devices(self):
         return json.dumps(
