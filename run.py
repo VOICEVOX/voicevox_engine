@@ -973,7 +973,8 @@ def generate_app(
         指定されたstyle_idのスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        get_core(core_version).initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        core = get_core(core_version)
+        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
