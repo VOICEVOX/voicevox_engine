@@ -230,15 +230,15 @@ class UtteranceLabel:
         return labels
 
 
-def mora_to_text(mora_phonemes: str) -> str:
+def mora_to_text(mora: str) -> str:
     """モーラ相当の音素文字系列を日本語カタカナ文へ変換する（例: 'hO' -> 'ホ')"""
-    if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
+    if mora[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
-        mora_phonemes = mora_phonemes[:-1] + mora_phonemes[-1].lower()
-    if mora_phonemes in openjtalk_mora2text:
-        return openjtalk_mora2text[mora_phonemes]
+        mora = mora[:-1] + mora[-1].lower()
+    if mora in openjtalk_mora2text:
+        return openjtalk_mora2text[mora]
     else:
-        return mora_phonemes
+        return mora
 
 
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
