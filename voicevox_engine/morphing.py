@@ -10,7 +10,7 @@ from soxr import resample
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
 from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
-from .tts_pipeline import TTSEngine, CoreAdapter
+from .tts_pipeline import CoreAdapter, TTSEngine
 
 
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
