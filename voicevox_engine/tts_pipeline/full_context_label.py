@@ -230,9 +230,8 @@ class UtteranceLabel:
         return labels
 
 
-def mora_to_text(mora: MoraLabel) -> str:
-    """モーラを日本語カタカナ文へ変換する（例: MoraLabel('h','O') -> 'ホ')"""
-    mora_phonemes = "".join([label.phoneme for label in mora.labels])
+def mora_to_text(mora_phonemes: str) -> str:
+    """モーラ相当の音素文字系列を日本語カタカナ文へ変換する（例: 'hO' -> 'ホ')"""
     if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
         mora_phonemes = mora_phonemes[:-1] + mora_phonemes[-1].lower()
@@ -246,7 +245,7 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
     return [
         Mora(
-            text=mora_to_text(mora),
+            text=mora_to_text("".join([label.phoneme for label in mora.labels])),
             consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
             consonant_length=0 if mora.consonant is not None else None,
             vowel=mora.vowel.phoneme,
