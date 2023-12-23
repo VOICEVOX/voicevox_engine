@@ -566,10 +566,10 @@ def generate_app(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値の話者はstring型なので注意。
         """
-        engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             morphable_targets = get_morphable_targets(
                 speakers=speakers, base_speakers=base_speakers
             )
@@ -611,7 +611,7 @@ def generate_app(
         core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
                 speaker_lookup, base_speaker, target_speaker
@@ -784,8 +784,7 @@ def generate_app(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        engine = get_engine(core_version)
-        return metas_store.load_combined_metas(engine=engine)
+        return metas_store.load_combined_metas(get_core(core_version))
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
@@ -825,7 +824,7 @@ def generate_app(
         #           ...
 
         # 該当話者の検索
-        speakers = json.loads(get_engine(core_version).speakers)
+        speakers = json.loads(get_core(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]

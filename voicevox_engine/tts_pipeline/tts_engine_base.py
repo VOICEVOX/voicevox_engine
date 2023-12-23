@@ -42,13 +42,6 @@ def apply_interrogative_upspeak(
 
 
 class TTSEngineBase(metaclass=ABCMeta):
-    @property
-    @abstractmethod
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        # FIXME: jsonではなくModelを返すようにする
-        raise NotImplementedError
-
     def initialize_style_id_synthesis(  # noqa: B027
         self, style_id: int, skip_reinit: bool
     ):

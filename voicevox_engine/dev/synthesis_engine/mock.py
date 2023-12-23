@@ -21,10 +21,6 @@ class MockTTSEngine(TTSEngineBase):
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
 
-    @property
-    def speakers(self) -> str:
-        return self.core.speakers
-
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
         return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
 
