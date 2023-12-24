@@ -219,7 +219,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
+    synthesis_engines, _ = make_synthesis_engines(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,

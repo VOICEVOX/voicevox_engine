@@ -1,11 +1,11 @@
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from ..core_wrapper import CoreWrapper, load_runtime_lib
 from ..utility import engine_root, get_save_dir
-from .tts_engine import TTSEngine, TTSEngineBase
+from .tts_engine import CoreAdapter, TTSEngine, TTSEngineBase
 
 
 def make_synthesis_engines(
@@ -16,7 +16,7 @@ def make_synthesis_engines(
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> Dict[str, TTSEngineBase]:
+) -> tuple[dict[str, TTSEngineBase], dict[str, CoreAdapter]]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 
@@ -72,8 +72,9 @@ def make_synthesis_engines(
     # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
-    # コアをロードし `synthesis_engines` へ登録する
-    synthesis_engines = {}
+    # コアをロードし `cores` と `synthesis_engines` へ登録する
+    cores: dict[str, CoreAdapter] = {}
+    synthesis_engines: dict[str, TTSEngineBase] = {}
 
     if not enable_mock:
 
@@ -101,7 +102,8 @@ def make_synthesis_engines(
                         file=sys.stderr,
                     )
                 else:
-                    synthesis_engines[core_version] = TTSEngine(core=core)
+                    cores[core_version] = CoreAdapter(core)
+                    synthesis_engines[core_version] = TTSEngine(core)
             except Exception:
                 # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
@@ -130,8 +132,11 @@ def make_synthesis_engines(
         from ..dev.core import MockCoreWrapper
         from ..dev.synthesis_engine import MockTTSEngine
 
-        if "0.0.0" not in synthesis_engines:
+        mock_ver = "0.0.0"
+        if mock_ver not in synthesis_engines:
             print("Info: Loading mock.")
-            synthesis_engines["0.0.0"] = MockTTSEngine(MockCoreWrapper())
+            core = MockCoreWrapper()
+            cores[mock_ver] = CoreAdapter(core)
+            synthesis_engines[mock_ver] = MockTTSEngine(core)
 
-    return synthesis_engines
+    return synthesis_engines, cores
