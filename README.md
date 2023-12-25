@@ -76,7 +76,7 @@ curl -s \
 ### 読み方を AquesTalk 風記法で取得・修正
 
 #### AquesTalk 風記法
-<!-- NOTE: この節は静的リンクとして運用中(voicevox_engine#816) -->
+<!-- NOTE: この節は静的リンクとして運用中なので変更しない方が良い(voicevox_engine#816) -->
 
 「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。  
 AquesTalk 風記法は次のルールに従います：
