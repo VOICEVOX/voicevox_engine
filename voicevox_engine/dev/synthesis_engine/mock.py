@@ -79,22 +79,14 @@ class MockTTSEngine(TTSEngineBase):
         """
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, style_id: int) -> np.ndarray:
-        """
-        synthesis voicevox coreを使わずに、音声合成する [Mock]
+    def synthesis(
+        self,
+        query: AudioQuery,
+        style_id: int,
+        enable_interrogative_upspeak: bool = True,
+    ) -> np.ndarray:
+        """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する (Mock)"""
 
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-
-        Returns
-        -------
-        wave [npt.NDArray[np.int16]]
-            音声波形データをNumPy配列で返します
-        """
         # recall text in katakana
         flatten_moras = to_flatten_moras(query.accent_phrases)
         kana_text = "".join([mora.text for mora in flatten_moras])

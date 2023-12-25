@@ -186,46 +186,5 @@ class TTSEngineBase(metaclass=ABCMeta):
         style_id: int,
         enable_interrogative_upspeak: bool = True,
     ) -> np.ndarray:
-        """
-        音声合成用のクエリ内の疑問文指定されたMoraを変形した後、
-        継承先における実装`_synthesis_impl`を使い音声合成を行う
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-        enable_interrogative_upspeak : bool
-            疑問系のテキストの語尾を自動調整する機能を有効にするか
-        Returns
-        -------
-        wave : numpy.ndarray
-            音声合成結果
-        """
-        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
-        query = copy.deepcopy(query)
-        query.accent_phrases = apply_interrogative_upspeak(
-            query.accent_phrases, enable_interrogative_upspeak
-        )
-        return self._synthesis_impl(query, style_id)
-
-    @abstractmethod
-    def _synthesis_impl(
-        self,
-        query: AudioQuery,
-        style_id: int,
-    ) -> np.ndarray:
-        """
-        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        wave : numpy.ndarray
-            音声合成結果
-        """
+        """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         raise NotImplementedError()
