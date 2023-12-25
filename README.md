@@ -76,12 +76,9 @@ curl -s \
 ### 読み方を AquesTalk 風記法で取得・修正
 
 #### AquesTalk 風記法
-<!-- NOTE: 静的リンクとして運用中(voicevox_engine#816)。節名変更希望時は issue を建てる。-->
-<!-- NOTE: 参照用URL: `https://github.com/VOICEVOX/voicevox_engine?#aquestalk-風記法` -->
+<!-- NOTE: この節は静的リンクとして運用中(voicevox_engine#816) -->
 
-「**AquesTalk 風記法**」は日本語文の音声表現（読み仮名と抑揚）を指定するための記法です。  
-
-[AquesTalk 記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)に似た、カタカナと記号をベースとした記法です。VOICEVOXで提案・利用されています。  
+「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。  
 AquesTalk 風記法は次のルールに従います：
 
 - 全てのカナはカタカナで記述される
