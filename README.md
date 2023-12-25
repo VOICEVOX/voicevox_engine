@@ -73,16 +73,16 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk風記法で取得・修正
+### 読み方を AquesTalk 風記法で取得・修正
 
 #### AquesTalk 風記法
 <!-- NOTE: 静的リンクとして運用中(voicevox_engine#816)。節名変更希望時は issue を建てる。-->
 <!-- NOTE: 参照用URL: `https://github.com/VOICEVOX/voicevox_engine?#aquestalk-風記法` -->
 
-「**AquesTalk風記法**」は日本語文の音声表現（読み仮名と抑揚）を指定するための記法です。  
+「**AquesTalk 風記法**」は日本語文の音声表現（読み仮名と抑揚）を指定するための記法です。  
 
-[AquesTalk記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)に似た、カタカナと記号をベースとした記法です。VOICEVOXで提案・利用されています。  
-AquesTalk風記法は次のルールに従います：
+[AquesTalk 記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)に似た、カタカナと記号をベースとした記法です。VOICEVOXで提案・利用されています。  
+AquesTalk 風記法は次のルールに従います：
 
 - 全てのカナはカタカナで記述される
 - アクセント句は `/` または `、` で区切る。 `、` で区切った場合に限り無音区間が挿入される。
@@ -90,9 +90,9 @@ AquesTalk風記法は次のルールに従います：
 - アクセント位置を `'` で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
 - アクセント句末に `？` (全角)を入れることにより疑問文の発音ができる
 
-#### AquesTalk風記法のサンプルコード
+#### AquesTalk 風記法のサンプルコード
 
-`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk風記法](#aquestalk-風記法)で記述されます。  
+`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk 風記法](#aquestalk-風記法)で記述されます。  
 これを修正することで音声の読み仮名・抑揚を制御できます。  
 
 ```bash

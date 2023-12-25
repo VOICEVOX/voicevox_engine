@@ -328,7 +328,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
-        is_kanaが`true`のとき、テキストは次のAquesTalk風記法で解釈されます。デフォルトは`false`です。
+        is_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。
         * 全てのカナはカタカナで記述される
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
         * カナの手前に`_`を入れるとそのカナは無声化される
@@ -1179,7 +1179,7 @@ def generate_app(
         "/validate_kana",
         response_model=bool,
         tags=["その他"],
-        summary="テキストがAquesTalk風記法に従っているか判定する",
+        summary="テキストがAquesTalk 風記法に従っているか判定する",
         responses={
             400: {
                 "description": "テキストが不正です",
@@ -1189,7 +1189,7 @@ def generate_app(
     )
     def validate_kana(text: str) -> bool:
         """
-        テキストがAquesTalk風記法に従っているかどうかを判定します。
+        テキストがAquesTalk 風記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
 
         Parameters
