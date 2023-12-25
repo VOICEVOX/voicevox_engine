@@ -188,10 +188,7 @@ class MockCore:
 class TestTTSEngineBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.synthesis_engine = TTSEngine(
-            core=MockCore(),
-        )
-        self.synthesis_engine._synthesis_impl = Mock()
+        self.synthesis_engine = TTSEngine(core=MockCore())
 
     def create_synthesis_test_base(
         self,

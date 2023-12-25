@@ -1,3 +1,4 @@
+import copy
 import math
 import threading
 from typing import List, Optional
@@ -9,7 +10,7 @@ from soxr import resample
 from ..core_wrapper import CoreWrapper, OldCoreError
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
-from .tts_engine_base import TTSEngineBase
+from .tts_engine_base import TTSEngineBase, apply_interrogative_upspeak
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -495,20 +496,19 @@ class TTSEngine(TTSEngineBase):
 
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, style_id: int):
-        """
-        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        wave : numpy.ndarray
-            音声合成結果
-        """
+    def synthesis(
+        self,
+        query: AudioQuery,
+        style_id: int,
+        enable_interrogative_upspeak: bool = True,
+    ) -> ndarray:
+        """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
+        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
+        query = copy.deepcopy(query)
+        query.accent_phrases = apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
+
         phoneme, f0 = query_to_decoder_feature(query)
         raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
