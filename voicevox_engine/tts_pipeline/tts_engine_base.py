@@ -1,6 +1,6 @@
 import copy
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -42,58 +42,6 @@ def apply_interrogative_upspeak(
 
 
 class TTSEngineBase(metaclass=ABCMeta):
-    @property
-    @abstractmethod
-    def default_sampling_rate(self) -> int:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        # FIXME: jsonではなくModelを返すようにする
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def supported_devices(self) -> Optional[str]:
-        """
-        デバイス対応情報
-        Returns
-        -------
-            対応デバイス一覧（None: 情報取得不可）
-        """
-        raise NotImplementedError
-
-    def initialize_style_id_synthesis(  # noqa: B027
-        self, style_id: int, skip_reinit: bool
-    ):
-        """
-        指定したスタイルでの音声合成を初期化する。
-        何度も実行可能。未実装の場合は何もしない。
-        Parameters
-        ----------
-        style_id : int
-            スタイルID
-        skip_reinit : bool
-            True の場合, 既に初期化済みの話者の再初期化をスキップします
-        """
-        pass
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        """
-        指定したスタイルでの音声合成が初期化されているかどうかを返す
-        Parameters
-        ----------
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        bool
-            初期化されているかどうか
-        """
-        return True
-
     @abstractmethod
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], style_id: int

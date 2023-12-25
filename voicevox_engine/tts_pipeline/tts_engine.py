@@ -227,13 +227,11 @@ class CoreAdapter:
     @property
     def speakers(self) -> str:
         """話者情報（json文字列）"""
-        # Coreプロキシ
         return self.core.metas()
 
     @property
     def supported_devices(self) -> str | None:
-        """デバイスサポート情報"""
-        # Coreプロキシ
+        """デバイスサポート情報（None: 情報無し）"""
         try:
             supported_devices = self.core.supported_devices()
         except OldCoreError:
@@ -241,7 +239,16 @@ class CoreAdapter:
         return supported_devices
 
     def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        # Core管理
+        """
+        指定したスタイルでの音声合成を初期化する。
+        何度も実行可能。未実装の場合は何もしない。
+        Parameters
+        ----------
+        style_id : int
+            スタイルID
+        skip_reinit : bool
+            True の場合, 既に初期化済みの話者の再初期化をスキップします
+        """
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -253,7 +260,7 @@ class CoreAdapter:
             pass  # コアが古い場合はどうしようもないので何もしない
 
     def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        # Coreプロキシ
+        """指定したスタイルでの音声合成が初期化されているかどうかを返す"""
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
@@ -319,24 +326,6 @@ class TTSEngine(TTSEngineBase):
         super().__init__()
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
-
-    @property
-    def default_sampling_rate(self) -> int:
-        return self.core.default_sampling_rate
-
-    @property
-    def speakers(self) -> str:
-        return self.core.speakers
-
-    @property
-    def supported_devices(self) -> str | None:
-        return self.core.supported_devices
-
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int

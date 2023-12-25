@@ -65,7 +65,11 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import (
+    CoreAdapter,
+    TTSEngineBase,
+    make_synthesis_engines,
+)
 from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -142,8 +146,6 @@ def generate_app(
 ) -> FastAPI:
     if root_dir is None:
         root_dir = engine_root()
-
-    default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
     app = FastAPI(
         title="VOICEVOX Engine",
@@ -234,6 +236,14 @@ def generate_app(
             return synthesis_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
+    def get_core(core_version: Optional[str]) -> CoreAdapter:
+        """指定したバージョンのコアを取得する"""
+        if core_version is None:
+            return synthesis_engines[latest_core_version].core
+        if core_version in synthesis_engines:
+            return synthesis_engines[core_version].core
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
     @app.post(
         "/audio_query",
         response_model=AudioQuery,
@@ -251,6 +261,7 @@ def generate_app(
         """
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
+        core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -260,7 +271,7 @@ def generate_app(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -280,6 +291,7 @@ def generate_app(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
         except PresetError as err:
@@ -302,7 +314,7 @@ def generate_app(
             volumeScale=selected_preset.volumeScale,
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -554,10 +566,10 @@ def generate_app(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値の話者はstring型なので注意。
         """
-        engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             morphable_targets = get_morphable_targets(
                 speakers=speakers, base_speakers=base_speakers
             )
@@ -596,9 +608,10 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
                 speaker_lookup, base_speaker, target_speaker
@@ -616,6 +629,7 @@ def generate_app(
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
+            core=core,
             query=query,
             base_speaker=base_speaker,
             target_speaker=target_speaker,
@@ -770,8 +784,7 @@ def generate_app(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        engine = get_engine(core_version)
-        return metas_store.load_combined_metas(engine=engine)
+        return metas_store.load_combined_metas(get_core(core_version))
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
@@ -811,7 +824,7 @@ def generate_app(
         #           ...
 
         # 該当話者の検索
-        speakers = json.loads(get_engine(core_version).speakers)
+        speakers = json.loads(get_core(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]
@@ -960,8 +973,8 @@ def generate_app(
         指定されたstyle_idのスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        engine = get_engine(core_version)
-        engine.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        core = get_core(core_version)
+        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -972,8 +985,7 @@ def generate_app(
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
-        engine = get_engine(core_version)
-        return engine.is_initialized_style_id_synthesis(style_id)
+        return get_core(core_version).is_initialized_style_id_synthesis(style_id)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
@@ -1163,7 +1175,7 @@ def generate_app(
     def supported_devices(
         core_version: str | None = None,
     ) -> Response:
-        supported_devices = get_engine(core_version).supported_devices
+        supported_devices = get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return Response(
