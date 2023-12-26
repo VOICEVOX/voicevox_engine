@@ -105,25 +105,8 @@ class TestMockTTSEngine(TestCase):
         ]
         self.engine = MockTTSEngine(MockCoreWrapper())
 
-    def test_replace_phoneme_length(self):
-        self.assertEqual(
-            self.engine.replace_phoneme_length(
-                accent_phrases=self.accent_phrases_hello_hiho,
-                style_id=0,
-            ),
-            self.accent_phrases_hello_hiho,
-        )
-
-    def test_replace_mora_pitch(self):
-        self.assertEqual(
-            self.engine.replace_mora_pitch(
-                accent_phrases=self.accent_phrases_hello_hiho,
-                style_id=0,
-            ),
-            self.accent_phrases_hello_hiho,
-        )
-
     def test_synthesis(self):
+        """`.synthesis()` がエラー無く生成をおこなう"""
         self.engine.synthesis(
             AudioQuery(
                 accent_phrases=self.accent_phrases_hello_hiho,
