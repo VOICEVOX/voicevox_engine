@@ -41,7 +41,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
-_mora_list_minimum: tuple[str, str, str] = [
+
+_mora_list_minimum: list[tuple[str, str, str]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
@@ -188,7 +189,7 @@ _mora_list_minimum: tuple[str, str, str] = [
     ("イ", "", "i"),
     ("ア", "", "a"),
 ]
-_mora_list_additional: tuple[str, str, str] = [
+_mora_list_additional: list[tuple[str, str, str]] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
     ("ヴャ", "by", "a"),
