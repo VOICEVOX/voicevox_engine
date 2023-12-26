@@ -73,16 +73,24 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk 風記法で取得・修正するサンプルコード
+### 読み方を AquesTalk 風記法で取得・修正
 
-`/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
-記法は次のルールに従います。
+#### AquesTalk 風記法
+<!-- NOTE: この節は静的リンクとして運用中なので変更しない方が良い(voicevox_engine#816) -->
+
+「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。  
+AquesTalk 風記法は次のルールに従います：
 
 - 全てのカナはカタカナで記述される
-- アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
-- カナの手前に`_`を入れるとそのカナは無声化される
-- アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
-- アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる
+- アクセント句は `/` または `、` で区切る。 `、` で区切った場合に限り無音区間が挿入される。
+- カナの手前に `_` を入れるとそのカナは無声化される
+- アクセント位置を `'` で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
+- アクセント句末に `？` (全角)を入れることにより疑問文の発音ができる
+
+#### AquesTalk 風記法のサンプルコード
+
+`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk 風記法](#aquestalk-風記法)で記述されます。  
+これを修正することで音声の読み仮名やアクセントを制御できます。  
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -474,6 +482,19 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
+##### ユーザーディレクトリに配置する
+
+以下のディレクトリにある音声ライブラリは自動で読み込まれます。
+
+- ビルド版: `<user_data_dir>/voicevox-engine/core_libraries/`
+- Python 版: `<user_data_dir>/voicevox-engine-dev/core_libraries/`
+
+`<user_data_dir>`は OS によって異なります。
+
+- Windows: `C:\Users\<username>\AppData\Local\`
+- macOS: `/Users/<username>/Library/Application\ Support/`
+- Linux: `/home/<username>/.local/share/`
+
 ### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
@@ -515,6 +536,12 @@ pysen run format lint
 
 ```bash
 python -m pytest
+```
+
+#### スナップショットの更新
+
+```bash
+python -m pytest --snapshot-update
 ```
 
 ### タイポチェック

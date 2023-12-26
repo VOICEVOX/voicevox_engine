@@ -28,6 +28,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.core_adapter import CoreAdapter
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
@@ -65,8 +66,8 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import SynthesisEngineBase, make_synthesis_engines
-from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines_and_cores
+from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
@@ -82,6 +83,7 @@ from voicevox_engine.utility import (
     engine_root,
     get_latest_core_version,
     get_save_dir,
+    internal_root,
 )
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
@@ -131,7 +133,8 @@ def set_output_log_utf8() -> None:
 
 
 def generate_app(
-    synthesis_engines: Dict[str, SynthesisEngineBase],
+    synthesis_engines: Dict[str, TTSEngineBase],
+    cores: Dict[str, CoreAdapter],  # NOTE: synthesis_engines の機能を一部代替予定
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
@@ -143,8 +146,6 @@ def generate_app(
 ) -> FastAPI:
     if root_dir is None:
         root_dir = engine_root()
-
-    default_sampling_rate = synthesis_engines[latest_core_version].default_sampling_rate
 
     app = FastAPI(
         title="VOICEVOX Engine",
@@ -216,7 +217,7 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    setting_ui_template = Jinja2Templates(directory=engine_root() / "ui_template")
+    setting_ui_template = Jinja2Templates(directory=internal_root() / "ui_template")
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -233,11 +234,19 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    def get_engine(core_version: Optional[str]) -> SynthesisEngineBase:
+    def get_engine(core_version: Optional[str]) -> TTSEngineBase:
         if core_version is None:
             return synthesis_engines[latest_core_version]
         if core_version in synthesis_engines:
             return synthesis_engines[core_version]
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
+    def get_core(core_version: Optional[str]) -> CoreAdapter:
+        """指定したバージョンのコアを取得する"""
+        if core_version is None:
+            return synthesis_engines[latest_core_version].core
+        if core_version in synthesis_engines:
+            return synthesis_engines[core_version].core
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     @app.post(
@@ -257,6 +266,7 @@ def generate_app(
         """
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
+        core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -266,7 +276,7 @@ def generate_app(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -286,6 +296,7 @@ def generate_app(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
         except PresetError as err:
@@ -308,7 +319,7 @@ def generate_app(
             volumeScale=selected_preset.volumeScale,
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
-            outputSamplingRate=default_sampling_rate,
+            outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -334,7 +345,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
-        is_kanaが`true`のとき、テキストは次のAquesTalk風記法で解釈されます。デフォルトは`false`です。
+        is_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。
         * 全てのカナはカタカナで記述される
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
         * カナの手前に`_`を入れるとそのカナは無声化される
@@ -560,10 +571,10 @@ def generate_app(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値の話者はstring型なので注意。
         """
-        engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             morphable_targets = get_morphable_targets(
                 speakers=speakers, base_speakers=base_speakers
             )
@@ -602,9 +613,10 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースの話者、1.0でターゲットの話者に近づきます。
         """
         engine = get_engine(core_version)
+        core = get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(engine=engine)
+            speakers = metas_store.load_combined_metas(core=core)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
                 speaker_lookup, base_speaker, target_speaker
@@ -622,6 +634,7 @@ def generate_app(
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
+            core=core,
             query=query,
             base_speaker=base_speaker,
             target_speaker=target_speaker,
@@ -791,8 +804,7 @@ def generate_app(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        engine = get_engine(core_version)
-        return metas_store.load_combined_metas(engine=engine)
+        return metas_store.load_combined_metas(get_core(core_version))
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
@@ -832,7 +844,7 @@ def generate_app(
         #           ...
 
         # 該当話者の検索
-        speakers = json.loads(get_engine(core_version).speakers)
+        speakers = json.loads(get_core(core_version).speakers)
         for i in range(len(speakers)):
             if speakers[i]["speaker_uuid"] == speaker_uuid:
                 speaker = speakers[i]
@@ -889,87 +901,87 @@ def generate_app(
 
         return ret_data
 
-    @app.get(
-        "/downloadable_libraries",
-        response_model=list[DownloadableLibraryInfo],
-        tags=["音声ライブラリ管理"],
-    )
-    def downloadable_libraries() -> list[DownloadableLibraryInfo]:
-        """
-        ダウンロード可能な音声ライブラリの情報を返します。
+    if engine_manifest_data.supported_features.manage_library:
 
-        Returns
-        -------
-        ret_data: list[DownloadableLibrary]
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        return library_manager.downloadable_libraries()
-
-    @app.get(
-        "/installed_libraries",
-        response_model=dict[str, InstalledLibraryInfo],
-        tags=["音声ライブラリ管理"],
-    )
-    def installed_libraries() -> dict[str, InstalledLibraryInfo]:
-        """
-        インストールした音声ライブラリの情報を返します。
-
-        Returns
-        -------
-        ret_data: dict[str, InstalledLibrary]
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        return library_manager.installed_libraries()
-
-    @app.post(
-        "/install_library/{library_uuid}",
-        status_code=204,
-        tags=["音声ライブラリ管理"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    async def install_library(
-        library_uuid: str,
-        request: Request,
-    ) -> Response:
-        """
-        音声ライブラリをインストールします。
-        音声ライブラリのZIPファイルをリクエストボディとして送信してください。
-
-        Parameters
-        ----------
-        library_uuid: str
-            音声ライブラリのID
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        archive = BytesIO(await request.body())
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None, library_manager.install_library, library_uuid, archive
+        @app.get(
+            "/downloadable_libraries",
+            response_model=list[DownloadableLibraryInfo],
+            tags=["音声ライブラリ管理"],
         )
-        return Response(status_code=204)
+        def downloadable_libraries() -> list[DownloadableLibraryInfo]:
+            """
+            ダウンロード可能な音声ライブラリの情報を返します。
 
-    @app.post(
-        "/uninstall_library/{library_uuid}",
-        status_code=204,
-        tags=["音声ライブラリ管理"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def uninstall_library(library_uuid: str) -> Response:
-        """
-        音声ライブラリをアンインストールします。
+            Returns
+            -------
+            ret_data: list[DownloadableLibrary]
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            return library_manager.downloadable_libraries()
 
-        Parameters
-        ----------
-        library_uuid: str
-            音声ライブラリのID
-        """
-        if not engine_manifest_data.supported_features.manage_library:
-            raise HTTPException(status_code=404, detail="この機能は実装されていません")
-        library_manager.uninstall_library(library_uuid)
-        return Response(status_code=204)
+        @app.get(
+            "/installed_libraries",
+            response_model=dict[str, InstalledLibraryInfo],
+            tags=["音声ライブラリ管理"],
+        )
+        def installed_libraries() -> dict[str, InstalledLibraryInfo]:
+            """
+            インストールした音声ライブラリの情報を返します。
+
+            Returns
+            -------
+            ret_data: dict[str, InstalledLibrary]
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            return library_manager.installed_libraries()
+
+        @app.post(
+            "/install_library/{library_uuid}",
+            status_code=204,
+            tags=["音声ライブラリ管理"],
+        )
+        async def install_library(
+            library_uuid: str,
+            request: Request,
+        ) -> Response:
+            """
+            音声ライブラリをインストールします。
+            音声ライブラリのZIPファイルをリクエストボディとして送信してください。
+
+            Parameters
+            ----------
+            library_uuid: str
+                音声ライブラリのID
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            archive = BytesIO(await request.body())
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(
+                None, library_manager.install_library, library_uuid, archive
+            )
+            return Response(status_code=204)
+
+        @app.post(
+            "/uninstall_library/{library_uuid}",
+            status_code=204,
+            tags=["音声ライブラリ管理"],
+        )
+        def uninstall_library(library_uuid: str) -> Response:
+            """
+            音声ライブラリをアンインストールします。
+
+            Parameters
+            ----------
+            library_uuid: str
+                音声ライブラリのID
+            """
+            if not engine_manifest_data.supported_features.manage_library:
+                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+            library_manager.uninstall_library(library_uuid)
+            return Response(status_code=204)
 
     @app.post("/initialize_style_id", status_code=204, tags=["その他"])
     def initialize_style_id(
@@ -983,8 +995,8 @@ def generate_app(
         指定されたstyle_idのスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        engine = get_engine(core_version)
-        engine.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        core = get_core(core_version)
+        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -995,8 +1007,7 @@ def generate_app(
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
-        engine = get_engine(core_version)
-        return engine.is_initialized_style_id_synthesis(style_id)
+        return get_core(core_version).is_initialized_style_id_synthesis(style_id)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
@@ -1206,7 +1217,7 @@ def generate_app(
     def supported_devices(
         core_version: str | None = None,
     ) -> Response:
-        supported_devices = get_engine(core_version).supported_devices
+        supported_devices = get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return Response(
@@ -1222,7 +1233,7 @@ def generate_app(
         "/validate_kana",
         response_model=bool,
         tags=["その他"],
-        summary="テキストがAquesTalk風記法に従っているか判定する",
+        summary="テキストがAquesTalk 風記法に従っているか判定する",
         responses={
             400: {
                 "description": "テキストが不正です",
@@ -1232,7 +1243,7 @@ def generate_app(
     )
     def validate_kana(text: str) -> bool:
         """
-        テキストがAquesTalk風記法に従っているかどうかを判定します。
+        テキストがAquesTalk 風記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
 
         Parameters
@@ -1463,7 +1474,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    synthesis_engines = make_synthesis_engines(
+    synthesis_engines, cores = make_synthesis_engines_and_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -1534,6 +1545,7 @@ def main() -> None:
     uvicorn.run(
         generate_app(
             synthesis_engines,
+            cores,
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,

@@ -1,3 +1,5 @@
+# API docs HTML ファイルを生成し、`gh-pages` ブランチへの push によって GitHub Pages 上のドキュメントとして公開
+
 name: upload-docs
 
 on:

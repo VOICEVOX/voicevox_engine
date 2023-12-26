@@ -13,9 +13,9 @@ from pydantic import conint
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import engine_root, get_save_dir, mutex_wrapper
+from .utility import get_save_dir, internal_root, mutex_wrapper
 
-root_dir = engine_root()
+root_dir = internal_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
@@ -75,9 +75,11 @@ def update_dict(
         コンパイル済み辞書ファイルのパス
     """
     random_string = uuid4()
-    tmp_csv_path = save_dir / f".tmp.dict_csv-{random_string}"  # csv形式辞書データの一時保存ファイル
-    tmp_compiled_path = (
-        save_dir / f".tmp.dict_compiled-{random_string}"
+    tmp_csv_path = compiled_dict_path.with_suffix(
+        f".dict_csv-{random_string}.tmp"
+    )  # csv形式辞書データの一時保存ファイル
+    tmp_compiled_path = compiled_dict_path.with_suffix(
+        f".dict_compiled-{random_string}.tmp"
     )  # コンパイル済み辞書データの一時保存ファイル
 
     try:

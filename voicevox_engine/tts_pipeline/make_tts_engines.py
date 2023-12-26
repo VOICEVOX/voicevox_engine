@@ -1,14 +1,14 @@
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from ..core_wrapper import CoreWrapper, load_runtime_lib
 from ..utility import engine_root, get_save_dir
-from .tts_engine import SynthesisEngine, SynthesisEngineBase
+from .tts_engine import CoreAdapter, TTSEngine, TTSEngineBase
 
 
-def make_synthesis_engines(
+def make_synthesis_engines_and_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
@@ -16,7 +16,7 @@ def make_synthesis_engines(
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> Dict[str, SynthesisEngineBase]:
+) -> tuple[dict[str, TTSEngineBase], dict[str, CoreAdapter]]:
     """
     音声ライブラリをロードして、音声合成エンジンを生成
 
@@ -47,6 +47,8 @@ def make_synthesis_engines(
         )
         cpu_num_threads = 0
 
+    # ディレクトリを設定する
+    # 引数による指定を反映する
     if voicevox_dir is not None:
         if voicelib_dirs is not None:
             voicelib_dirs.append(voicevox_dir)
@@ -63,22 +65,34 @@ def make_synthesis_engines(
         if runtime_dirs is None:
             runtime_dirs = [root_dir]
 
+    # `~`をホームディレクトリのパスに置き換える
     voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
 
+    # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
-    synthesis_engines = {}
+    # コアをロードし `cores` と `synthesis_engines` へ登録する
+    cores: dict[str, CoreAdapter] = {}
+    synthesis_engines: dict[str, TTSEngineBase] = {}
 
     if not enable_mock:
 
         def load_core_library(core_dir: Path, suppress_error: bool = False):
             """
-            指定されたディレクトリにあるコアを読み込む。
-            ユーザーディレクトリの場合は存在しないこともあるので、エラーを抑制すると良い。
+            指定されたコアをロードし `synthesis_engines` へ登録する。
+            Parameters
+            ----------
+            core_dir : Path
+                直下にコア（共有ライブラリ）が存在するディレクトリ、あるいはその候補
+            suppress_error: bool
+                エラーを抑制する。`core_dir` がコア候補であることを想定。
             """
+            # 指定されたコアをロードし登録する
             try:
+                # コアをロードする
                 core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
+                # コアを登録する
                 metas = json.loads(core.metas())
                 core_version = metas[0]["version"]
                 print(f"Info: Loading core {core_version}.")
@@ -88,15 +102,19 @@ def make_synthesis_engines(
                         file=sys.stderr,
                     )
                 else:
-                    synthesis_engines[core_version] = SynthesisEngine(core=core)
+                    cores[core_version] = CoreAdapter(core)
+                    synthesis_engines[core_version] = TTSEngine(core)
             except Exception:
+                # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
                     raise
 
+        # `voicelib_dirs` 下のコアをロードし登録する
         for core_dir in voicelib_dirs:
             load_core_library(core_dir)
 
-        # ユーザーディレクトリにあるコアを読み込む
+        # ユーザーディレクトリ下のコアをロードし登録する
+        # コア候補を列挙する
         user_voicelib_dirs = []
         core_libraries_dir = get_save_dir() / "core_libraries"
         core_libraries_dir.mkdir(exist_ok=True)
@@ -105,20 +123,20 @@ def make_synthesis_engines(
             if not path.is_dir():
                 continue
             user_voicelib_dirs.append(path)
-
+        # コア候補をロードし登録する。候補がコアで無かった場合のエラーを抑制する。
         for core_dir in user_voicelib_dirs:
             load_core_library(core_dir, suppress_error=True)
 
     else:
         # モック追加
-        from ..dev.core import metas as mock_metas
-        from ..dev.core import supported_devices as mock_supported_devices
-        from ..dev.synthesis_engine import MockSynthesisEngine
+        from ..dev.core import MockCoreWrapper
+        from ..dev.synthesis_engine import MockTTSEngine
 
-        if "0.0.0" not in synthesis_engines:
+        mock_ver = "0.0.0"
+        if mock_ver not in synthesis_engines:
             print("Info: Loading mock.")
-            synthesis_engines["0.0.0"] = MockSynthesisEngine(
-                speakers=mock_metas(), supported_devices=mock_supported_devices()
-            )
+            core = MockCoreWrapper()
+            cores[mock_ver] = CoreAdapter(core)
+            synthesis_engines[mock_ver] = MockTTSEngine(core)
 
-    return synthesis_engines
+    return synthesis_engines, cores

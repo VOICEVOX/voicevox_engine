@@ -17,7 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .model import AudioQuery
-from .tts_pipeline import make_synthesis_engines
+from .tts_pipeline import make_synthesis_engines_and_cores
 from .utility import get_latest_core_version
 
 
@@ -219,7 +219,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
+    synthesis_engines, _ = make_synthesis_engines_and_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -240,7 +240,8 @@ def start_synthesis_subprocess(
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, style_id)
+            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
+            wave = _engine.synthesis(query, style_id, False)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
