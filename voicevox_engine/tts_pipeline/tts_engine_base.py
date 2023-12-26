@@ -5,8 +5,8 @@ from typing import List
 import numpy as np
 
 from ..model import AccentPhrase, AudioQuery, Mora
-from .full_context_label import text_to_accent_phrases
 from .mora_list import openjtalk_mora2text
+from .text_analyzer import text_to_accent_phrases
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15

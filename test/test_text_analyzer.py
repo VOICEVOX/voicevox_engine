@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.tts_pipeline.full_context_label import (
+from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
     Label,
