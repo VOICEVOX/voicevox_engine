@@ -10,10 +10,16 @@ from soxr import resample
 from ..core_wrapper import CoreWrapper, OldCoreError
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
-from .tts_engine_base import TTSEngineBase, apply_interrogative_upspeak
+from .mora_list import openjtalk_mora2text
+from .tts_engine_base import TTSEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
+
+# 疑問文語尾定数
+UPSPEAK_LENGTH = 0.15
+UPSPEAK_PITCH_ADD = 0.3
+UPSPEAK_PITCH_MAX = 6.5
 
 
 # TODO: move mora utility to mora module
@@ -81,6 +87,33 @@ def pre_process(
 def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
+
+
+def apply_interrogative_upspeak(
+    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
+) -> list[AccentPhrase]:
+    """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
+    # NOTE: 将来的にAudioQueryインスタンスを引数にする予定
+    if not enable_interrogative_upspeak:
+        return accent_phrases
+
+    for accent_phrase in accent_phrases:
+        moras = accent_phrase.moras
+        if len(moras) == 0:
+            continue
+        # 疑問形補正条件: 疑問形アクセント句 & 末尾有声モーラ
+        if accent_phrase.is_interrogative and moras[-1].pitch > 0:
+            last_mora = copy.deepcopy(moras[-1])
+            upspeak_mora = Mora(
+                text=openjtalk_mora2text[last_mora.vowel],
+                consonant=None,
+                consonant_length=None,
+                vowel=last_mora.vowel,
+                vowel_length=UPSPEAK_LENGTH,
+                pitch=min(last_mora.pitch + UPSPEAK_PITCH_ADD, UPSPEAK_PITCH_MAX),
+            )
+            accent_phrase.moras += [upspeak_mora]
+    return accent_phrases
 
 
 def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
