@@ -7,6 +7,7 @@ from pyopenjtalk import tts
 from soxr import resample
 
 from ...core_wrapper import CoreWrapper
+from ...core_adapter import CoreAdapter
 from ...model import AccentPhrase, AudioQuery
 from ...tts_pipeline import TTSEngineBase
 from ...tts_pipeline.tts_engine import CoreAdapter, to_flatten_moras

@@ -65,8 +65,8 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
+from voicevox_engine.core_adapter import CoreAdapter
 from voicevox_engine.tts_pipeline import (
-    CoreAdapter,
     TTSEngineBase,
     make_synthesis_engines,
 )
