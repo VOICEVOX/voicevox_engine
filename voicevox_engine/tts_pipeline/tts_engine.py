@@ -1,18 +1,25 @@
+import copy
 import math
-import threading
 from typing import List, Optional
 
 import numpy
 from numpy import ndarray
 from soxr import resample
 
-from ..core_wrapper import CoreWrapper, OldCoreError
+from ..core_adapter import CoreAdapter
+from ..core_wrapper import CoreWrapper
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
+from .mora_list import openjtalk_mora2text
 from .tts_engine_base import TTSEngineBase
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
+
+# 疑問文語尾定数
+UPSPEAK_LENGTH = 0.15
+UPSPEAK_PITCH_ADD = 0.3
+UPSPEAK_PITCH_MAX = 6.5
 
 
 # TODO: move mora utility to mora module
@@ -80,6 +87,33 @@ def pre_process(
 def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
+
+
+def apply_interrogative_upspeak(
+    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
+) -> list[AccentPhrase]:
+    """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
+    # NOTE: 将来的にAudioQueryインスタンスを引数にする予定
+    if not enable_interrogative_upspeak:
+        return accent_phrases
+
+    for accent_phrase in accent_phrases:
+        moras = accent_phrase.moras
+        if len(moras) == 0:
+            continue
+        # 疑問形補正条件: 疑問形アクセント句 & 末尾有声モーラ
+        if accent_phrase.is_interrogative and moras[-1].pitch > 0:
+            last_mora = copy.deepcopy(moras[-1])
+            upspeak_mora = Mora(
+                text=openjtalk_mora2text[last_mora.vowel],
+                consonant=None,
+                consonant_length=None,
+                vowel=last_mora.vowel,
+                vowel_length=UPSPEAK_LENGTH,
+                pitch=min(last_mora.pitch + UPSPEAK_PITCH_ADD, UPSPEAK_PITCH_MAX),
+            )
+            accent_phrase.moras += [upspeak_mora]
+    return accent_phrases
 
 
 def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -209,109 +243,6 @@ def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> n
     return wave
 
 
-class CoreAdapter:
-    """
-    コアのアダプター。
-    ついでにコア内部で推論している処理をプロセスセーフにする。
-    """
-
-    def __init__(self, core: CoreWrapper):
-        super().__init__()
-        self.core = core
-        self.mutex = threading.Lock()
-
-    @property
-    def default_sampling_rate(self) -> int:
-        return self.core.default_sampling_rate
-
-    @property
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        # Coreプロキシ
-        return self.core.metas()
-
-    @property
-    def supported_devices(self) -> str | None:
-        """デバイスサポート情報"""
-        # Coreプロキシ
-        try:
-            supported_devices = self.core.supported_devices()
-        except OldCoreError:
-            supported_devices = None
-        return supported_devices
-
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        # Core管理
-        try:
-            with self.mutex:
-                # 以下の条件のいずれかを満たす場合, 初期化を実行する
-                # 1. 引数 skip_reinit が False の場合
-                # 2. 話者が初期化されていない場合
-                if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
-                    self.core.load_model(style_id)
-        except OldCoreError:
-            pass  # コアが古い場合はどうしようもないので何もしない
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        # Coreプロキシ
-        try:
-            return self.core.is_model_loaded(style_id)
-        except OldCoreError:
-            return True  # コアが古い場合はどうしようもないのでTrueを返す
-
-    def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
-        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        with self.mutex:
-            phoneme_length = self.core.yukarin_s_forward(
-                length=len(phoneme_list_s),
-                phoneme_list=phoneme_list_s,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
-        return phoneme_length
-
-    def safe_yukarin_sa_forward(
-        self,
-        vowel_phoneme_list: ndarray,
-        consonant_phoneme_list: ndarray,
-        start_accent_list: ndarray,
-        end_accent_list: ndarray,
-        start_accent_phrase_list: ndarray,
-        end_accent_phrase_list: ndarray,
-        style_id: int,
-    ) -> ndarray:
-        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        with self.mutex:
-            f0_list = self.core.yukarin_sa_forward(
-                length=vowel_phoneme_list.shape[0],
-                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
-                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-                start_accent_list=start_accent_list[numpy.newaxis],
-                end_accent_list=end_accent_list[numpy.newaxis],
-                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
-                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )[0]
-        return f0_list
-
-    def safe_decode_forward(
-        self, phoneme: ndarray, f0: ndarray, style_id: int
-    ) -> tuple[ndarray, int]:
-        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
-        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
-        with self.mutex:
-            wave = self.core.decode_forward(
-                length=phoneme.shape[0],
-                phoneme_size=phoneme.shape[1],
-                f0=f0[:, numpy.newaxis],
-                phoneme=phoneme,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
-            )
-        sr_wave = self.default_sampling_rate
-        return wave, sr_wave
-
-
 class TTSEngine(TTSEngineBase):
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
@@ -319,24 +250,6 @@ class TTSEngine(TTSEngineBase):
         super().__init__()
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
-
-    @property
-    def default_sampling_rate(self) -> int:
-        return self.core.default_sampling_rate
-
-    @property
-    def speakers(self) -> str:
-        return self.core.speakers
-
-    @property
-    def supported_devices(self) -> str | None:
-        return self.core.supported_devices
-
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int
@@ -506,20 +419,19 @@ class TTSEngine(TTSEngineBase):
 
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, style_id: int):
-        """
-        音声合成用のクエリから音声合成に必要な情報を構成し、実際に音声合成を行う
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        wave : numpy.ndarray
-            音声合成結果
-        """
+    def synthesis(
+        self,
+        query: AudioQuery,
+        style_id: int,
+        enable_interrogative_upspeak: bool = True,
+    ) -> ndarray:
+        """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
+        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
+        query = copy.deepcopy(query)
+        query.accent_phrases = apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
+
         phoneme, f0 = query_to_decoder_feature(query)
         raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)

@@ -522,10 +522,7 @@ class CoreWrapper:
         return self.core.metas().decode("utf-8")
 
     def yukarin_s_forward(
-        self,
-        length: int,
-        phoneme_list: np.ndarray,
-        style_id: np.ndarray,
+        self, length: int, phoneme_list: np.ndarray, style_id: np.ndarray
     ) -> np.ndarray:
         """
         音素列から、音素ごとの長さを求める関数

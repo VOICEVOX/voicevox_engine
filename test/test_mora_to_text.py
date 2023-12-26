@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 # TODO: import from voicevox_engine.synthesis_engine.mora
-from voicevox_engine.tts_pipeline.full_context_label import mora_to_text
+from voicevox_engine.tts_pipeline.text_analyzer import mora_to_text
 
 
 class TestMoraToText(TestCase):

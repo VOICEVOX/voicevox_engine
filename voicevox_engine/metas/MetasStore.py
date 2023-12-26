@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Dict, List, Tuple
 from voicevox_engine.metas.Metas import CoreSpeaker, EngineSpeaker, Speaker, StyleInfo
 
 if TYPE_CHECKING:
-    from voicevox_engine.tts_pipeline.tts_engine_base import TTSEngineBase
+    from voicevox_engine.core_adapter import CoreAdapter
 
 
 class MetasStore:
@@ -30,20 +30,20 @@ class MetasStore:
 
     # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
     # TTSEngineBaseによる循環importを修正する
-    def load_combined_metas(self, engine: "TTSEngineBase") -> List[Speaker]:
+    def load_combined_metas(self, core: "CoreAdapter") -> List[Speaker]:
         """
         コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
         Parameters
         ----------
-        engine : TTSEngineBase
-            コアに含まれる話者メタ情報をもったエンジン
+        core : CoreAdapter
+            話者メタ情報をもったコア
         Returns
         -------
         ret : List[Speaker]
             エンジンとコアに含まれる話者メタ情報
         """
         # コアに含まれる話者メタ情報の収集
-        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(engine.speakers)]
+        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(

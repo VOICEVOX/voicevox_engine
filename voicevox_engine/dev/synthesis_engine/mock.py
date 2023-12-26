@@ -1,3 +1,4 @@
+import copy
 from logging import getLogger
 from typing import Any, Dict, List
 
@@ -5,10 +6,11 @@ import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
+from ...core_adapter import CoreAdapter
 from ...core_wrapper import CoreWrapper
 from ...model import AccentPhrase, AudioQuery
 from ...tts_pipeline import TTSEngineBase
-from ...tts_pipeline.tts_engine import CoreAdapter, to_flatten_moras
+from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
 class MockTTSEngine(TTSEngineBase):
@@ -20,24 +22,6 @@ class MockTTSEngine(TTSEngineBase):
         super().__init__()
         self.core = CoreAdapter(core)
         # NOTE: self.coreは将来的に消す予定
-
-    @property
-    def default_sampling_rate(self) -> int:
-        return self.core.default_sampling_rate
-
-    @property
-    def speakers(self) -> str:
-        return self.core.speakers
-
-    @property
-    def supported_devices(self) -> str | None:
-        return self.core.supported_devices
-
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
-        return self.core.initialize_style_id_synthesis(style_id, skip_reinit)
-
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
-        return self.core.is_initialized_style_id_synthesis(style_id)
 
     def replace_phoneme_length(
         self, accent_phrases: List[AccentPhrase], style_id: int
@@ -79,22 +63,16 @@ class MockTTSEngine(TTSEngineBase):
         """
         return accent_phrases
 
-    def _synthesis_impl(self, query: AudioQuery, style_id: int) -> np.ndarray:
-        """
-        synthesis voicevox coreを使わずに、音声合成する [Mock]
+    def synthesis(
+        self,
+        query: AudioQuery,
+        style_id: int,
+        enable_interrogative_upspeak: bool = True,
+    ) -> np.ndarray:
+        """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する (Mock)"""
+        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
+        query = copy.deepcopy(query)
 
-        Parameters
-        ----------
-        query : AudioQuery
-            音声合成用のクエリ
-        style_id : int
-            スタイルID
-
-        Returns
-        -------
-        wave [npt.NDArray[np.int16]]
-            音声波形データをNumPy配列で返します
-        """
         # recall text in katakana
         flatten_moras = to_flatten_moras(query.accent_phrases)
         kana_text = "".join([mora.text for mora in flatten_moras])

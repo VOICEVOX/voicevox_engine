@@ -59,7 +59,7 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
-    kana: Optional[str] = Field(title="[読み取り専用]AquesTalk風記法によるテキスト。音声合成用のクエリとしては無視される")
+    kana: Optional[str] = Field(title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される")
 
     def __hash__(self):
         items = [

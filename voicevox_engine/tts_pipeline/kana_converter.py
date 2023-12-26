@@ -1,5 +1,5 @@
 """
-「AquesTalk風記法」を実装した AquesTalk風記法テキスト <-> アクセント句系列 変換。
+「AquesTalk 風記法」を実装した AquesTalk 風記法テキスト <-> アクセント句系列 変換。
 
 記法の規則は以下の通り。
 
@@ -11,7 +11,7 @@
 - `？` で疑問文
 - アクセント位置はちょうど１つ
 
-NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#読み方を-aquestalk風記法で取得修正するサンプルコード` # noqa
+NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
 """
 
 from typing import List, Optional
@@ -21,14 +21,14 @@ from .mora_list import openjtalk_text2mora
 
 _LOOP_LIMIT = 300
 
-# AquesTalk風記法特殊文字
+# AquesTalk 風記法特殊文字
 _UNVOICE_SYMBOL = "_"  # 無声化
 _ACCENT_SYMBOL = "'"  # アクセント位置
 _NOPAUSE_DELIMITER = "/"  # ポーズ無しアクセント句境界
 _PAUSE_DELIMITER = "、"  # ポーズ有りアクセント句境界
 _WIDE_INTERROGATION_MARK = "？"  # 疑問形
 
-# AquesTalk風記法とモーラの対応（音素長・音高 0 初期化）
+# AquesTalk 風記法とモーラの対応（音素長・音高 0 初期化）
 _text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
     _text2mora_with_unvoice[text] = Mora(
@@ -54,12 +54,12 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
 
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
-    単一アクセント句に相当するAquesTalk風記法テキストからアクセント句オブジェクトを生成
+    単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成
     longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
     Parameters
     ----------
     phrase : str
-        単一アクセント句に相当するAquesTalk風記法テキスト
+        単一アクセント句に相当するAquesTalk 風記法テキスト
     Returns
     -------
     accent_phrase : AccentPhrase
@@ -118,11 +118,11 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
 def parse_kana(text: str) -> List[AccentPhrase]:
     """
-    AquesTalk風記法テキストからアクセント句系列を生成
+    AquesTalk 風記法テキストからアクセント句系列を生成
     Parameters
     ----------
     text : str
-        AquesTalk風記法テキスト
+        AquesTalk 風記法テキスト
     Returns
     -------
     parsed_results : List[AccentPhrase]
@@ -176,7 +176,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
 
 def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     """
-    アクセント句系列からAquesTalk風記法テキストを生成
+    アクセント句系列からAquesTalk 風記法テキストを生成
     Parameters
     ----------
     accent_phrases : List[AccentPhrase]
@@ -184,10 +184,10 @@ def create_kana(accent_phrases: List[AccentPhrase]) -> str:
     Returns
     -------
     text : str
-        AquesTalk風記法テキスト
+        AquesTalk 風記法テキスト
     """
     text = ""
-    # アクセント句を先頭から逐次パースし、`text`末尾にAquesTalk風記法の文字を都度追加（ループ）
+    # アクセント句を先頭から逐次パースし、`text`末尾にAquesTalk 風記法の文字を都度追加（ループ）
     for i, phrase in enumerate(accent_phrases):
         for j, mora in enumerate(phrase.moras):
             # 「`_` で無声化」の実装
