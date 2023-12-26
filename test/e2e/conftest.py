@@ -26,20 +26,22 @@ def snapshot_json(snapshot: SnapshotAssertion):
 
 
 @pytest.fixture(scope="session")
-def client():
+def app_params():
     synthesis_engines, cores = make_synthesis_engines_and_cores(use_gpu=False)
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
     setting_loader = SettingLoader(Path("./not_exist.yaml"))
     preset_manager = PresetManager(  # FIXME: impl MockPresetManager
         preset_path=Path("./presets.yaml"),
     )
+    return {
+        "synthesis_engines": synthesis_engines,
+        "cores": cores,
+        "latest_core_version": latest_core_version,
+        "setting_loader": setting_loader,
+        "preset_manager": preset_manager,
+    }
 
-    return TestClient(
-        generate_app(
-            synthesis_engines=synthesis_engines,
-            cores=cores,
-            latest_core_version=latest_core_version,
-            setting_loader=setting_loader,
-            preset_manager=preset_manager,
-        )
-    )
+
+@pytest.fixture(scope="session")
+def client(app_params: dict) -> TestClient:
+    return TestClient(generate_app(**app_params))
