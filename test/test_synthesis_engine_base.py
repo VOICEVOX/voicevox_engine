@@ -6,7 +6,9 @@ import numpy
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
-from voicevox_engine.tts_pipeline.tts_engine import apply_interrogative_upspeak
+from voicevox_engine.tts_pipeline.tts_engine import (
+    apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
+)
 
 
 def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
