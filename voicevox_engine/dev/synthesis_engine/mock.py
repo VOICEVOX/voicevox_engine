@@ -6,10 +6,11 @@ import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
+from ...core_adapter import CoreAdapter
 from ...core_wrapper import CoreWrapper
 from ...model import AccentPhrase, AudioQuery
 from ...tts_pipeline import TTSEngineBase
-from ...tts_pipeline.tts_engine import CoreAdapter, to_flatten_moras
+from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
 class MockTTSEngine(TTSEngineBase):
