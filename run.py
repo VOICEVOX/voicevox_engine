@@ -65,7 +65,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines_and_cores
 from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
 from voicevox_engine.user_dict import (
@@ -1414,7 +1414,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    synthesis_engines, cores = make_synthesis_engines(
+    synthesis_engines, cores = make_synthesis_engines_and_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,

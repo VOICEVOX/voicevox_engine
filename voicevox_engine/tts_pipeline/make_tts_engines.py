@@ -8,7 +8,7 @@ from ..utility import engine_root, get_save_dir
 from .tts_engine import CoreAdapter, TTSEngine, TTSEngineBase
 
 
-def make_synthesis_engines(
+def make_synthesis_engines_and_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
