@@ -1,67 +1,24 @@
 import copy
 from logging import getLogger
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
-from ...core_adapter import CoreAdapter
 from ...core_wrapper import CoreWrapper
-from ...model import AccentPhrase, AudioQuery
-from ...tts_pipeline import TTSEngineBase
+from ...model import AudioQuery
+from ...tts_pipeline import TTSEngine
 from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
-class MockTTSEngine(TTSEngineBase):
+class MockTTSEngine(TTSEngine):
     """
     TTSEngine [Mock]
     """
 
     def __init__(self, core: CoreWrapper):
-        super().__init__()
-        self.core = CoreAdapter(core)
-        # NOTE: self.coreは将来的に消す予定
-
-    def replace_phoneme_length(
-        self, accent_phrases: List[AccentPhrase], style_id: int
-    ) -> List[AccentPhrase]:
-        """
-        replace_phoneme_length 入力accent_phrasesを変更せずにそのまま返します [Mock]
-
-        Parameters
-        ----------
-        accent_phrases : List[AccentPhrase]
-            フレーズ句のリスト
-        style_id : int
-            スタイルID
-
-        Returns
-        -------
-        List[AccentPhrase]
-            フレーズ句のリスト（変更なし）
-        """
-        return accent_phrases
-
-    def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], style_id: int
-    ) -> List[AccentPhrase]:
-        """
-        replace_mora_pitch 入力accent_phrasesを変更せずにそのまま返します [Mock]
-
-        Parameters
-        ----------
-        accent_phrases : List[AccentPhrase]
-            フレーズ句のリスト
-        style_id : int
-            スタイルID
-
-        Returns
-        -------
-        List[AccentPhrase]
-            フレーズ句のリスト（変更なし）
-        """
-        return accent_phrases
+        super().__init__(core)
 
     def synthesis(
         self,
