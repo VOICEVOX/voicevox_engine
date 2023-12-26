@@ -70,7 +70,7 @@ from voicevox_engine.tts_pipeline import (
     TTSEngineBase,
     make_synthesis_engines,
 )
-from voicevox_engine.tts_pipeline.kana_parser import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
