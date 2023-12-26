@@ -941,6 +941,7 @@ def generate_app(
             "/install_library/{library_uuid}",
             status_code=204,
             tags=["音声ライブラリ管理"],
+            dependencies=[Depends(check_disabled_mutable_api)],
         )
         async def install_library(
             library_uuid: str,
@@ -968,6 +969,7 @@ def generate_app(
             "/uninstall_library/{library_uuid}",
             status_code=204,
             tags=["音声ライブラリ管理"],
+            dependencies=[Depends(check_disabled_mutable_api)],
         )
         def uninstall_library(library_uuid: str) -> Response:
             """
