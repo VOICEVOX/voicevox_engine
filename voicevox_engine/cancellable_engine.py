@@ -17,7 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .model import AudioQuery
-from .tts_pipeline import make_synthesis_engines
+from .tts_pipeline import make_synthesis_engines_and_cores
 from .utility import get_latest_core_version
 
 
@@ -219,7 +219,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
+    synthesis_engines, _ = make_synthesis_engines_and_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,

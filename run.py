@@ -66,7 +66,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines_and_cores
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -133,6 +133,7 @@ def set_output_log_utf8() -> None:
 
 def generate_app(
     synthesis_engines: Dict[str, TTSEngineBase],
+    cores: Dict[str, CoreAdapter],  # NOTE: synthesis_engines の機能を一部代替予定
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
@@ -1421,7 +1422,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    synthesis_engines = make_synthesis_engines(
+    synthesis_engines, cores = make_synthesis_engines_and_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -1488,6 +1489,7 @@ def main() -> None:
     uvicorn.run(
         generate_app(
             synthesis_engines,
+            cores,
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,
