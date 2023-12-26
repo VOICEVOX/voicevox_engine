@@ -17,7 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .model import AudioQuery
-from .tts_pipeline import make_synthesis_engines_and_cores
+from .tts_pipeline import cores_to_tts_engines, make_cores
 from .utility import get_latest_core_version
 
 
@@ -219,7 +219,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines, _ = make_synthesis_engines_and_cores(
+    cores = make_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -227,6 +227,8 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
+    synthesis_engines = cores_to_tts_engines(cores)
+
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
     while True:
