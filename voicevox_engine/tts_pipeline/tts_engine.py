@@ -1,17 +1,16 @@
 import copy
 import math
-import threading
 from typing import List, Optional
 
 import numpy
 from numpy import ndarray
 from soxr import resample
 
-from ..core_wrapper import CoreWrapper, OldCoreError
+from ..core_adapter import CoreAdapter
+from ..core_wrapper import CoreWrapper
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
 from .tts_engine_base import TTSEngineBase, apply_interrogative_upspeak
-from ..core_adapter import CoreAdapter
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
