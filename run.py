@@ -133,7 +133,7 @@ def set_output_log_utf8() -> None:
 
 def generate_app(
     synthesis_engines: Dict[str, TTSEngineBase],
-    cores: Dict[str, CoreAdapter],  # NOTE: synthesis_engines の機能を一部代替予定
+    cores: Dict[str, CoreAdapter],
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
@@ -237,9 +237,9 @@ def generate_app(
     def get_core(core_version: Optional[str]) -> CoreAdapter:
         """指定したバージョンのコアを取得する"""
         if core_version is None:
-            return synthesis_engines[latest_core_version].core
-        if core_version in synthesis_engines:
-            return synthesis_engines[core_version].core
+            return cores[latest_core_version]
+        if core_version in cores:
+            return cores[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     @app.post(
@@ -774,7 +774,7 @@ def generate_app(
     @app.get("/core_versions", response_model=list[str], tags=["その他"])
     def core_versions() -> Response:
         return Response(
-            content=json.dumps(list(synthesis_engines.keys())),
+            content=json.dumps(list(cores.keys())),
             media_type="application/json",
         )
 
