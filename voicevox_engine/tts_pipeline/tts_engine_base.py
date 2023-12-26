@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 
 from ..model import AccentPhrase, AudioQuery
-from .full_context_label import text_to_accent_phrases
+from .text_analyzer import text_to_accent_phrases
 
 
 class TTSEngineBase(metaclass=ABCMeta):
