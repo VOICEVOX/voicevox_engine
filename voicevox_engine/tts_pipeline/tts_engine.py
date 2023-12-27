@@ -249,7 +249,7 @@ class TTSEngine(TTSEngineBase):
     def __init__(self, core: CoreWrapper):
         super().__init__()
         self._core = CoreAdapter(core)
-        # NOTE: self.coreは将来的に消す予定
+        # NOTE: self._coreは将来的に消す予定
 
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int
