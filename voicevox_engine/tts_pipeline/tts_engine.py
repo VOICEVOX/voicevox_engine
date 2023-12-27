@@ -438,7 +438,9 @@ class TTSEngine(TTSEngineBase):
         return wave
 
 
-def cores_to_tts_engines(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngineBase]:
+def make_tts_engines_from_cores(
+    cores: dict[str, CoreAdapter]
+) -> dict[str, TTSEngineBase]:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `make_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
