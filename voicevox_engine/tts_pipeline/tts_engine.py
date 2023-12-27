@@ -248,8 +248,8 @@ class TTSEngine(TTSEngineBase):
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
-        self.core = CoreAdapter(core)
-        # NOTE: self.coreは将来的に消す予定
+        self._core = CoreAdapter(core)
+        # NOTE: self._coreは将来的に消す予定
 
     def replace_phoneme_length(
         self, accent_phrases: list[AccentPhrase], style_id: int
@@ -266,7 +266,7 @@ class TTSEngine(TTSEngineBase):
         phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
 
         # コアを用いて音素長を生成する
-        phoneme_lengths = self.core.safe_yukarin_s_forward(phoneme_ids, style_id)
+        phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成結果でモーラ内の音素長属性を置換する
         vowel_indexes = [
@@ -397,7 +397,7 @@ class TTSEngine(TTSEngineBase):
         )
 
         # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        f0_list = self.core.safe_yukarin_sa_forward(
+        f0_list = self._core.safe_yukarin_sa_forward(
             vowel_phoneme_list,
             consonant_phoneme_list,
             start_accent_list,
@@ -433,7 +433,7 @@ class TTSEngine(TTSEngineBase):
         )
 
         phoneme, f0 = query_to_decoder_feature(query)
-        raw_wave, sr_raw_wave = self.core.safe_decode_forward(phoneme, f0, style_id)
+        raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
 

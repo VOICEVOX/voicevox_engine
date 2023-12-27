@@ -87,7 +87,7 @@ class MockCoreWrapper(CoreWrapper):
         pitch = 100 * numpy.ones((1, length), dtype=numpy.float32)
         pitch[0, 0] = 0.0  # 開始無音 (pau)
         pitch[0, 1] = 200.0  # 分散 0 を避けるため
-        pitch[0, length] = 0.0  # 終了無音 (pau)
+        pitch[0, length - 1] = 0.0  # 終了無音 (pau)
         return pitch
 
     def decode_forward(
