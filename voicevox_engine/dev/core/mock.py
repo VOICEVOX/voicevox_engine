@@ -100,7 +100,7 @@ class MockCoreWrapper(CoreWrapper):
     ) -> ndarray:
         """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDから音声波形を生成する"""
         # Mock: 定数の音声波形を生成。[0.1, 0.1, ..., 0.1, 0.1]
-        return 0.1 * numpy.one((length * 256,), dtype=numpy.float32)
+        return 0.1 * numpy.ones((length * 256,), dtype=numpy.float32)
 
     def supported_devices(self):
         return json.dumps(

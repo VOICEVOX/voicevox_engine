@@ -78,7 +78,7 @@ def make_synthesis_engines_and_cores(
 
     if not enable_mock:
 
-        def load_core_library(core_dir: Path, suppress_error: bool = False):
+        def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
             指定されたコアをロードし `synthesis_engines` へ登録する。
             Parameters

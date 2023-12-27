@@ -5,7 +5,7 @@ from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
 
@@ -18,7 +18,7 @@ class CoreError(Exception):
     """コア呼び出しで発生したエラー"""
 
 
-def load_runtime_lib(runtime_dirs: List[Path]):
+def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
@@ -246,13 +246,13 @@ def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
     elif machine == "arm64":
         return "aarch64"
     elif machine in ["armv7l", "aarch64"]:
-        return machine
+        return machine  # type: ignore[return-value]
     else:
         return None
 
 
 def _get_core_name(
-    arch_name: Literal["x64", "x86", "aarch64", "armv7l"],
+    arch_name: Literal["x64", "x86", "aarch64", "armv7l"] | str,
     platform_name: str,
     model_type: Literal["libtorch", "onnxruntime"],
     gpu_type: GPUType,
@@ -463,7 +463,6 @@ class CoreWrapper:
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
-
         self.default_sampling_rate = 24000
 
         self.core = load_core(core_dir, use_gpu)
@@ -485,6 +484,7 @@ class CoreWrapper:
         is_version_0_12_core_or_later = (
             _find_version_0_12_core_or_later(core_dir) is not None
         )
+        model_type: Literal["libtorch", "onnxruntime"] | None
         if is_version_0_12_core_or_later:
             model_type = "onnxruntime"
             self.exist_load_model = True

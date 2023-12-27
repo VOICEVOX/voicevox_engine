@@ -9,11 +9,12 @@ import sys
 import traceback
 import warnings
 import zipfile
+from collections.abc import Awaitable, Callable
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 import soundfile
 import uvicorn
@@ -22,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError, conint
+from pydantic import ValidationError
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -115,7 +116,7 @@ def set_output_log_utf8() -> None:
     if sys.stdout is not None:
         # 必ずしもreconfigure()が実装されているとは限らない
         try:
-            sys.stdout.reconfigure(encoding="utf-8")
+            sys.stdout.reconfigure(encoding="utf-8")  # type:ignore[attr-defined]
         except AttributeError:
             # バッファを全て出力する
             sys.stdout.flush()
@@ -124,7 +125,7 @@ def set_output_log_utf8() -> None:
             )
     if sys.stderr is not None:
         try:
-            sys.stderr.reconfigure(encoding="utf-8")
+            sys.stderr.reconfigure(encoding="utf-8")  # type:ignore[attr-defined]
         except AttributeError:
             sys.stderr.flush()
             sys.stderr = TextIOWrapper(
@@ -179,7 +180,9 @@ def generate_app(
 
     # 許可されていないOriginを遮断するミドルウェア
     @app.middleware("http")
-    async def block_origin_middleware(request: Request, call_next):
+    async def block_origin_middleware(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response | JSONResponse:
         isValidOrigin: bool = False
         if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
             isValidOrigin = True
@@ -1077,7 +1080,7 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_type: WordTypes | None = None,
-        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ) -> Response:
         """
         ユーザー辞書に言葉を追加します。
@@ -1124,7 +1127,7 @@ def generate_app(
         accent_type: int,
         word_uuid: str,
         word_type: WordTypes | None = None,
-        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ) -> Response:
         """
         ユーザー辞書に登録されている言葉を更新します。
@@ -1344,7 +1347,7 @@ def generate_app(
         app.openapi_schema = openapi_schema
         return openapi_schema
 
-    app.openapi = custom_openapi
+    app.openapi = custom_openapi  # type: ignore[method-assign]
 
     return app
 

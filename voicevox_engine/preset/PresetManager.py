@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError, parse_obj_as
 
 from .Preset import Preset
@@ -24,7 +24,7 @@ class PresetManager:
             プリセット情報を一元管理するYAMLファイルへのパス
         """
         self.presets: list[Preset] = []
-        self.last_modified_time = 0
+        self.last_modified_time = 0.0
         self.preset_path = preset_path
 
     def load_presets(self) -> list[Preset]:
@@ -66,7 +66,7 @@ class PresetManager:
 
         return self.presets
 
-    def add_preset(self, preset: Preset):
+    def add_preset(self, preset: Preset) -> int:
         """
         新規プリセットの追加
         Parameters
@@ -100,7 +100,7 @@ class PresetManager:
 
         return preset.id
 
-    def update_preset(self, preset: Preset):
+    def update_preset(self, preset: Preset) -> int:
         """
         既存プリセットの更新
         Parameters
@@ -117,7 +117,7 @@ class PresetManager:
         self.load_presets()
 
         # 対象プリセットの検索
-        prev_preset = (-1, None)
+        prev_preset: tuple[int, Preset | None] = (-1, None)
         for i in range(len(self.presets)):
             if self.presets[i].id == preset.id:
                 prev_preset = (i, self.presets[i])
@@ -130,8 +130,7 @@ class PresetManager:
         try:
             self._write_on_file()
         except Exception as err:
-            if prev_preset != (-1, None):
-                self.presets[prev_preset[0]] = prev_preset[1]
+            self.presets[prev_preset[0]] = prev_preset[1]
             if isinstance(err, FileNotFoundError):
                 raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
             else:
@@ -139,7 +138,7 @@ class PresetManager:
 
         return preset.id
 
-    def delete_preset(self, id: int):
+    def delete_preset(self, id: int) -> int:
         """
         指定したIDのプリセットの削除
         Parameters

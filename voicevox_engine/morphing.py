@@ -8,7 +8,7 @@ import pyworld as pw
 from soxr import resample
 
 from .core_adapter import CoreAdapter
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
 from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
@@ -76,7 +76,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
+    speaker_lookup: Dict[int, Tuple[Speaker, SpeakerStyle]],
     base_speaker: int,
     target_speaker: int,
 ) -> bool:

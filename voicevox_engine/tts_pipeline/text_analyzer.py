@@ -16,7 +16,7 @@ class Label:
     contexts: dict[str, str]  # ラベルの属性
 
     @classmethod
-    def from_feature(cls, feature: str):
+    def from_feature(cls, feature: str) -> Self:
         """OpenJTalk feature から Label インスタンスを生成する"""
         # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
         contexts = re.search(
@@ -33,7 +33,7 @@ class Label:
             r"/J\:(?P<j1>.+?)\_(?P<j2>.+?)"
             r"/K\:(?P<k1>.+?)\+(?P<k2>.+?)\-(?P<k3>.+?)$",
             feature,
-        ).groupdict()
+        ).groupdict()  # type: ignore[union-attr]
         return cls(contexts=contexts)
 
     @property
