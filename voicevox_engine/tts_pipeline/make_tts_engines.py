@@ -10,6 +10,7 @@ from .tts_engine import CoreAdapter
 MOCK_VER = "0.0.0"
 
 
+# FIXME: ファイル名を変えるか関数の場所を変える
 def make_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
