@@ -28,7 +28,9 @@ def snapshot_json(snapshot: SnapshotAssertion):
 @pytest.fixture(scope="session")
 def app_params():
     synthesis_engines, cores = make_synthesis_engines_and_cores(use_gpu=False)
-    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
+    latest_core_version = get_latest_core_version(
+        versions=list(synthesis_engines.keys())
+    )
     setting_loader = SettingLoader(Path("./not_exist.yaml"))
     preset_manager = PresetManager(  # FIXME: impl MockPresetManager
         preset_path=Path("./presets.yaml"),

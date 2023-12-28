@@ -228,7 +228,9 @@ def start_synthesis_subprocess(
         enable_mock=enable_mock,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
+    latest_core_version = get_latest_core_version(
+        versions=list(synthesis_engines.keys())
+    )
     while True:
         try:
             query, style_id, core_version = sub_proc_con.recv()

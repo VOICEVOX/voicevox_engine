@@ -521,7 +521,7 @@ def generate_app(
         summary="複数まとめて音声合成する",
     )
     def multi_synthesis(
-        queries: list[AccentPhrase],
+        queries: list[AudioQuery],
         style_id: int | None = Query(default=None),  # noqa: B008
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
@@ -1486,7 +1486,9 @@ def main() -> None:
         load_all_models=load_all_models,
     )
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
+    latest_core_version = get_latest_core_version(
+        versions=list(synthesis_engines.keys())
+    )
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
