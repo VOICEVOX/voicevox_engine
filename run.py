@@ -114,23 +114,28 @@ def set_output_log_utf8() -> None:
     """
     # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
     if sys.stdout is not None:
-        # 必ずしもreconfigure()が実装されているとは限らない
-        try:
-            sys.stdout.reconfigure(encoding="utf-8")  # type:ignore[attr-defined]
-        except AttributeError:
+        if isinstance(sys.stdout, TextIOWrapper):
+            sys.stdout.reconfigure(encoding="utf-8")
+        else:
             # バッファを全て出力する
             sys.stdout.flush()
-            sys.stdout = TextIOWrapper(
-                sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-            )
+            try:
+                sys.stdout = TextIOWrapper(
+                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
+                )
+            except AttributeError:
+                pass
     if sys.stderr is not None:
-        try:
-            sys.stderr.reconfigure(encoding="utf-8")  # type:ignore[attr-defined]
-        except AttributeError:
+        if isinstance(sys.stderr, TextIOWrapper):
+            sys.stderr.reconfigure(encoding="utf-8")
+        else:
             sys.stderr.flush()
-            sys.stderr = TextIOWrapper(
-                sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-            )
+            try:
+                sys.stderr = TextIOWrapper(
+                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
+                )
+            except AttributeError:
+                pass
 
 
 def generate_app(
