@@ -436,3 +436,20 @@ class TTSEngine(TTSEngineBase):
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+
+def make_tts_engines_from_cores(
+    cores: dict[str, CoreAdapter]
+) -> dict[str, TTSEngineBase]:
+    """コア一覧からTTSエンジン一覧を生成する"""
+    # FIXME: `MOCK_VER` を循環 import 無しに `make_cores()` 関連モジュールから import する
+    MOCK_VER = "0.0.0"
+    tts_engines: dict[str, TTSEngineBase] = {}
+    for ver, core in cores.items():
+        if ver == MOCK_VER:
+            from ..dev.synthesis_engine import MockTTSEngine
+
+            tts_engines[ver] = MockTTSEngine(core.core)
+        else:
+            tts_engines[ver] = TTSEngine(core.core)
+    return tts_engines

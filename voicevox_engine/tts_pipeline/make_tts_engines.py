@@ -5,10 +5,13 @@ from typing import List, Optional
 
 from ..core_wrapper import CoreWrapper, load_runtime_lib
 from ..utility import engine_root, get_save_dir
-from .tts_engine import CoreAdapter, TTSEngine, TTSEngineBase
+from .tts_engine import CoreAdapter
+
+MOCK_VER = "0.0.0"
 
 
-def make_synthesis_engines_and_cores(
+# FIXME: ファイル名を変えるか関数の場所を変える
+def make_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
@@ -16,9 +19,9 @@ def make_synthesis_engines_and_cores(
     cpu_num_threads: Optional[int] = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> tuple[dict[str, TTSEngineBase], dict[str, CoreAdapter]]:
+) -> dict[str, CoreAdapter]:
     """
-    音声ライブラリをロードして、音声合成エンジンを生成
+    音声ライブラリをロードしてコアを生成
 
     Parameters
     ----------
@@ -72,15 +75,14 @@ def make_synthesis_engines_and_cores(
     # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
-    # コアをロードし `cores` と `synthesis_engines` へ登録する
+    # コアをロードし `cores` へ登録する
     cores: dict[str, CoreAdapter] = {}
-    synthesis_engines: dict[str, TTSEngineBase] = {}
 
     if not enable_mock:
 
         def load_core_library(core_dir: Path, suppress_error: bool = False):
             """
-            指定されたコアをロードし `synthesis_engines` へ登録する。
+            指定されたコアをロードし `cores` へ登録する。
             Parameters
             ----------
             core_dir : Path
@@ -96,14 +98,13 @@ def make_synthesis_engines_and_cores(
                 metas = json.loads(core.metas())
                 core_version = metas[0]["version"]
                 print(f"Info: Loading core {core_version}.")
-                if core_version in synthesis_engines:
+                if core_version in cores:
                     print(
                         "Warning: Core loading is skipped because of version duplication.",
                         file=sys.stderr,
                     )
                 else:
                     cores[core_version] = CoreAdapter(core)
-                    synthesis_engines[core_version] = TTSEngine(core)
             except Exception:
                 # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
@@ -130,13 +131,10 @@ def make_synthesis_engines_and_cores(
     else:
         # モック追加
         from ..dev.core import MockCoreWrapper
-        from ..dev.synthesis_engine import MockTTSEngine
 
-        mock_ver = "0.0.0"
-        if mock_ver not in synthesis_engines:
+        if MOCK_VER not in cores:
             print("Info: Loading mock.")
             core = MockCoreWrapper()
-            cores[mock_ver] = CoreAdapter(core)
-            synthesis_engines[mock_ver] = MockTTSEngine(core)
+            cores[MOCK_VER] = CoreAdapter(core)
 
-    return synthesis_engines, cores
+    return cores

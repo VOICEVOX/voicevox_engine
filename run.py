@@ -66,7 +66,11 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines_and_cores
+from voicevox_engine.tts_pipeline import (
+    TTSEngineBase,
+    make_cores,
+    make_tts_engines_from_cores,
+)
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -1476,7 +1480,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    synthesis_engines, cores = make_synthesis_engines_and_cores(
+    cores = make_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -1485,6 +1489,7 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
+    synthesis_engines = make_tts_engines_from_cores(cores)
     assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_core_version(
         versions=list(synthesis_engines.keys())

@@ -8,7 +8,7 @@ from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import SettingLoader
-from voicevox_engine.tts_pipeline import make_synthesis_engines_and_cores
+from voicevox_engine.tts_pipeline import make_cores, make_tts_engines_from_cores
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
@@ -27,7 +27,8 @@ def snapshot_json(snapshot: SnapshotAssertion):
 
 @pytest.fixture(scope="session")
 def app_params():
-    synthesis_engines, cores = make_synthesis_engines_and_cores(use_gpu=False)
+    cores = make_cores(use_gpu=False)
+    synthesis_engines = make_tts_engines_from_cores(cores)
     latest_core_version = get_latest_core_version(
         versions=list(synthesis_engines.keys())
     )
