@@ -245,23 +245,26 @@ def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
         return "x86"
     elif machine == "arm64":
         return "aarch64"
-    elif machine in ["armv7l", "aarch64"]:
-        return machine  # type: ignore[return-value]
+    elif machine == "aarch64":
+        return "aarch64"
+    elif machine == "armv7l":
+        return "armv7l"
     else:
         return None
 
 
 def _get_core_name(
-    arch_name: Literal["x64", "x86", "aarch64", "armv7l"] | str,
+    arch_name: Literal["x64", "x86", "aarch64", "armv7l", "universal"],
     platform_name: str,
     model_type: Literal["libtorch", "onnxruntime"],
     gpu_type: GPUType,
 ) -> str | None:
     """
-    設定値を満たすCoreの名前（None: サポート外）
+    設定値を満たすCoreの名前（None: サポート外）。
+    macOSの場合はarch_nameをuniversalにする。
     Parameters
     ----------
-    arch_name : Literal["x64", "x86", "aarch64", "armv7l"]
+    arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
         実行中マシンのアーキテクチャ
     platform_name : str
         実行中マシンのシステム名

@@ -148,34 +148,27 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     frame_per_mora : ndarray
         モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
-    frame_per_phoneme: list | ndarray = []
-    frame_per_mora: list | ndarray = []
+    frame_per_phoneme: list[int] = []
+    frame_per_mora: list[int] = []
     for mora in moras:
         vowel_frames = _to_frame(mora.vowel_length)
         consonant_frames = (
-            _to_frame(mora.consonant_length)  # type:ignore[arg-type]
-            if mora.consonant
-            else 0
+            _to_frame(mora.consonant_length) if mora.consonant_length is not None else 0
         )
-        mora_frames = (
-            vowel_frames + consonant_frames  # type:ignore[call-overload]
-        )  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
 
         if mora.consonant:
             frame_per_phoneme += [consonant_frames]
         frame_per_phoneme += [vowel_frames]
         frame_per_mora += [mora_frames]
 
-    frame_per_phoneme = numpy.array(frame_per_phoneme)
-    frame_per_mora = numpy.array(frame_per_mora)
-
-    return frame_per_phoneme, frame_per_mora
+    return numpy.array(frame_per_phoneme), numpy.array(frame_per_mora)
 
 
-def _to_frame(sec: float) -> numpy.int32:
+def _to_frame(sec: float) -> int:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
-    return numpy.round(sec * FRAMERATE).astype(numpy.int32)
+    return numpy.round(sec * FRAMERATE).astype(numpy.int32).item()
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:

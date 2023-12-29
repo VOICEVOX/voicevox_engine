@@ -83,7 +83,7 @@ class ParseKanaError(Exception):
     def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name
-        self.kwargs: Dict[str, str] = kwargs
+        self.kwargs = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
 
