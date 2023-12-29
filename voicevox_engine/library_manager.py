@@ -104,9 +104,9 @@ class LibraryManager:
                 # ライブラリ情報の取得 from `library_root_dir / f"{library_uuid}" / "metas.json"`
                 library_uuid = os.path.basename(library_dir)
                 with open(library_dir / INFO_FILE, encoding="utf-8") as f:
-                    library[library_uuid] = json.load(f)
-                    # アンインストール出来ないライブラリを作る場合、何かしらの条件でFalseを設定する
-                    library[library_uuid]["uninstallable"] = True
+                    info = json.load(f)
+                # アンインストール出来ないライブラリを作る場合、何かしらの条件でFalseを設定する
+                library[library_uuid] = InstalledLibraryInfo(**info, uninstallable=True)
         return library
 
     def install_library(self, library_id: str, file: BytesIO) -> Path:
@@ -211,7 +211,7 @@ class LibraryManager:
 
         return library_dir
 
-    def uninstall_library(self, library_id: str):
+    def uninstall_library(self, library_id: str) -> None:
         """
         インストール済み音声ライブラリのアンインストール
         Parameters
@@ -227,7 +227,7 @@ class LibraryManager:
             )
 
         # アンインストール許可フラグのバリデーション
-        if not installed_libraries[library_id]["uninstallable"]:
+        if not installed_libraries[library_id].uninstallable:
             raise HTTPException(
                 status_code=403, detail=f"指定された音声ライブラリ {library_id} はアンインストールできません。"
             )

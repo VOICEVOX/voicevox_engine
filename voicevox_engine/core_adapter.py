@@ -35,7 +35,7 @@ class CoreAdapter:
             supported_devices = None
         return supported_devices
 
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool) -> None:
         """
         指定したスタイルでの音声合成を初期化する。
         何度も実行可能。未実装の場合は何もしない。

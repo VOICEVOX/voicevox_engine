@@ -80,7 +80,7 @@ def make_cores(
 
     if not enable_mock:
 
-        def load_core_library(core_dir: Path, suppress_error: bool = False):
+        def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
             指定されたコアをロードし `cores` へ登録する。
             Parameters

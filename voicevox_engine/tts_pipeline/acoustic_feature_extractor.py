@@ -25,7 +25,7 @@ class Phoneme:
 
         self.phoneme = phoneme
 
-    def __eq__(self, o: object):
+    def __eq__(self, o: object):  # type:ignore[no-untyped-def]
         """Deprecated."""
         raise NotImplementedError
 

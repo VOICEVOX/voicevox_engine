@@ -1,6 +1,5 @@
 import copy
 import math
-from typing import List, Optional
 
 import numpy
 from numpy import ndarray
@@ -53,7 +52,9 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     return phonemes
 
 
-def split_mora(phoneme_list: List[Phoneme]):
+def split_mora(
+    phoneme_list: list[Phoneme],
+) -> tuple[list[Phoneme | None], list[Phoneme], list[int]]:
     """音素系列から子音系列・母音系列・母音位置を抽出する"""
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
@@ -64,7 +65,7 @@ def split_mora(phoneme_list: List[Phoneme]):
     # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
     # 2の場合はconsonantが存在するモーラである
     # なので、2の場合(else)でphonemeを取り出している
-    consonant_phoneme_list: List[Optional[Phoneme]] = [None] + [
+    consonant_phoneme_list = [None] + [
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
@@ -147,12 +148,18 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     frame_per_mora : ndarray
         モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
-    frame_per_phoneme: list[ndarray] = []
-    frame_per_mora: list[ndarray] = []
+    frame_per_phoneme: list | ndarray = []
+    frame_per_mora: list | ndarray = []
     for mora in moras:
         vowel_frames = _to_frame(mora.vowel_length)
-        consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
-        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+        consonant_frames = (
+            _to_frame(mora.consonant_length)  # type:ignore[arg-type]
+            if mora.consonant
+            else 0
+        )
+        mora_frames = (
+            vowel_frames + consonant_frames  # type:ignore[call-overload]
+        )  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
 
         if mora.consonant:
             frame_per_phoneme += [consonant_frames]
@@ -165,7 +172,7 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     return frame_per_phoneme, frame_per_mora
 
 
-def _to_frame(sec: float) -> ndarray:
+def _to_frame(sec: float) -> numpy.int32:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
     return numpy.round(sec * FRAMERATE).astype(numpy.int32)
@@ -282,8 +289,8 @@ class TTSEngine(TTSEngineBase):
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], style_id: int
-    ) -> List[AccentPhrase]:
+        self, accent_phrases: list[AccentPhrase], style_id: int
+    ) -> list[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
         Parameters
@@ -306,7 +313,7 @@ class TTSEngine(TTSEngineBase):
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
-        def _create_one_hot(accent_phrase: AccentPhrase, position: int):
+        def _create_one_hot(accent_phrase: AccentPhrase, position: int) -> ndarray:
             """
             単位行列(numpy.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
             例えば、accent_phraseのmorasの長さが12、positionが1なら
