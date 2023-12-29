@@ -124,6 +124,7 @@ def set_output_log_utf8() -> None:
                     sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
                 )
             except AttributeError:
+                # stdout.bufferがない場合は無視
                 pass
     if sys.stderr is not None:
         if isinstance(sys.stderr, TextIOWrapper):
@@ -135,6 +136,7 @@ def set_output_log_utf8() -> None:
                     sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
                 )
             except AttributeError:
+                # stderr.bufferがない場合は無視
                 pass
 
 
