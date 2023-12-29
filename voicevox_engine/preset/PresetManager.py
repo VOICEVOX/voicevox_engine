@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from pydantic import ValidationError, parse_obj_as
 
 from .Preset import Preset

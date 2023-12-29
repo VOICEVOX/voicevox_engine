@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import yaml  # type:ignore[import-untyped]
+import yaml
 
 from ..utility import get_save_dir
 from .Setting import Setting
