@@ -29,9 +29,7 @@ def snapshot_json(snapshot: SnapshotAssertion):
 def app_params():
     cores = make_cores(use_gpu=False)
     tts_engines = make_tts_engines_from_cores(cores)
-    latest_core_version = get_latest_core_version(
-        versions=list(tts_engines.keys())
-    )
+    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
     setting_loader = SettingLoader(Path("./not_exist.yaml"))
     preset_manager = PresetManager(  # FIXME: impl MockPresetManager
         preset_path=Path("./presets.yaml"),
