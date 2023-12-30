@@ -1,76 +1,11 @@
-from typing import List, Union
 from unittest import TestCase
-from unittest.mock import Mock
 
-import numpy
-
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.dev.core.mock import MockCoreWrapper
+from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
 )
-
-
-def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-    return numpy.array(result)
-
-
-def yukarin_sa_mock(
-    length: int,
-    vowel_phoneme_list: numpy.ndarray,
-    consonant_phoneme_list: numpy.ndarray,
-    start_accent_list: numpy.ndarray,
-    end_accent_list: numpy.ndarray,
-    start_accent_phrase_list: numpy.ndarray,
-    end_accent_phrase_list: numpy.ndarray,
-    style_id: numpy.ndarray,
-):
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(
-            round(
-                (
-                    (
-                        vowel_phoneme_list[0][i]
-                        + consonant_phoneme_list[0][i]
-                        + start_accent_list[0][i]
-                        + end_accent_list[0][i]
-                        + start_accent_phrase_list[0][i]
-                        + end_accent_phrase_list[0][i]
-                    )
-                    * 0.0625
-                    + style_id
-                ).item(),
-                2,
-            )
-        )
-    return numpy.array(result)[numpy.newaxis]
-
-
-def decode_mock(
-    length: int,
-    phoneme_size: int,
-    f0: numpy.ndarray,
-    phoneme: numpy.ndarray,
-    style_id: Union[numpy.ndarray, int],
-):
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
-        for _ in range(256):
-            result.append(
-                (
-                    f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
-                    + style_id
-                ).item()
-            )
-    return numpy.array(result)
 
 
 def koreha_arimasuka_base_expected():
@@ -156,46 +91,15 @@ def koreha_arimasuka_base_expected():
     ]
 
 
-def create_mock_query(accent_phrases):
-    return AudioQuery(
-        accent_phrases=accent_phrases,
-        speedScale=1,
-        pitchScale=0,
-        intonationScale=1,
-        volumeScale=1,
-        prePhonemeLength=0.1,
-        postPhonemeLength=0.1,
-        outputSamplingRate=24000,
-        outputStereo=False,
-        kana="",
-    )
-
-
-class MockCore:
-    default_sampling_rate = 24000
-    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
-    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
-    decode_forward = Mock(side_effect=decode_mock)
-
-    def metas(self):
-        return ""
-
-    def supported_devices(self):
-        return ""
-
-    def is_model_loaded(self, style_id):
-        return True
-
-
 class TestTTSEngineBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.synthesis_engine = TTSEngine(core=MockCore())
+        self.synthesis_engine = TTSEngine(core=MockCoreWrapper())
 
     def create_synthesis_test_base(
         self,
         text: str,
-        expected: List[AccentPhrase],
+        expected: list[AccentPhrase],
         enable_interrogative_upspeak: bool,
     ):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
