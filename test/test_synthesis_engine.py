@@ -598,8 +598,10 @@ class TestTTSEngine(TestCase):
         true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
+
         def result_value(i: int):
             return float(phoneme_list[i] * 0.5 + 1)
+
         for accent_phrase in true_result:
             moras = accent_phrase.moras
             for mora in moras:
