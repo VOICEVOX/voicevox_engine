@@ -6,9 +6,10 @@ from run import generate_app
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
 
+from voicevox_engine.cores_maker import make_cores
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import SettingLoader
-from voicevox_engine.tts_pipeline import make_cores, make_tts_engines_from_cores
+from voicevox_engine.tts_pipeline import make_tts_engines_from_cores
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 

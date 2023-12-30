@@ -30,6 +30,7 @@ from starlette.responses import FileResponse
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core_adapter import CoreAdapter
+from voicevox_engine.cores_maker import make_cores
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
@@ -67,11 +68,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import (
-    TTSEngineBase,
-    make_cores,
-    make_tts_engines_from_cores,
-)
+from voicevox_engine.tts_pipeline import TTSEngineBase, make_tts_engines_from_cores
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
