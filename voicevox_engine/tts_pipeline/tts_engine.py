@@ -447,7 +447,7 @@ def make_tts_engines_from_cores(
     tts_engines: dict[str, TTSEngineBase] = {}
     for ver, core in cores.items():
         if ver == MOCK_VER:
-            from ..dev.synthesis_engine import MockTTSEngine
+            from ..dev.tts_engine import MockTTSEngine
 
             tts_engines[ver] = MockTTSEngine(core.core)
         else:

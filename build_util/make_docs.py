@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from voicevox_engine.dev.core import MockCoreWrapper
-from voicevox_engine.dev.synthesis_engine.mock import MockTTSEngine
+from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import USER_SETTING_PATH, SettingLoader
 from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
