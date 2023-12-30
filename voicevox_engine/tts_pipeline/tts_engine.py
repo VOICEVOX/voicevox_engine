@@ -449,7 +449,7 @@ def make_tts_engines_from_cores(
         if ver == MOCK_VER:
             from ..dev.synthesis_engine import TTSEngineLight
 
-            tts_engines[ver] = TTSEngineLight(core.core)
+            tts_engines[ver] = TTSEngineLight()
         else:
             tts_engines[ver] = TTSEngine(core.core)
     return tts_engines

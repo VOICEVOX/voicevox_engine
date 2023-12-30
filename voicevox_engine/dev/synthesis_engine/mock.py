@@ -6,18 +6,17 @@ import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
-from ...core_wrapper import CoreWrapper
 from ...model import AudioQuery
 from ...tts_pipeline import TTSEngine
 from ...tts_pipeline.tts_engine import to_flatten_moras
+from ..core.mock import MockCoreWrapper
 
 
 class TTSEngineLight(TTSEngine):
     """製品版コア無しに音声合成が可能なTTSEngine"""
 
-    def __init__(self, core: CoreWrapper):
-        """`core` の種類に関わらず `self.synthesis()` での音声合成が可能"""
-        super().__init__(core)
+    def __init__(self):
+        super().__init__(MockCoreWrapper())
 
     def synthesis(
         self,
