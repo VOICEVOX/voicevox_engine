@@ -10,7 +10,7 @@ from .utility import engine_root, get_save_dir
 MOCK_VER = "0.0.0"
 
 
-def make_cores(
+def initialize_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,

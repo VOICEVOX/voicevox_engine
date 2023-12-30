@@ -16,7 +16,7 @@ import soundfile
 # FIXME: remove FastAPI dependency
 from fastapi import HTTPException, Request
 
-from .cores_maker import make_cores
+from .cores_initializer import initialize_cores
 from .model import AudioQuery
 from .tts_pipeline import make_tts_engines_from_cores
 from .utility import get_latest_core_version
@@ -220,7 +220,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    cores = make_cores(
+    cores = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
