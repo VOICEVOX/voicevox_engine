@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
@@ -89,21 +89,6 @@ def koreha_arimasuka_base_expected():
             is_interrogative=False,
         ),
     ]
-
-
-def create_mock_query(accent_phrases):
-    return AudioQuery(
-        accent_phrases=accent_phrases,
-        speedScale=1,
-        pitchScale=0,
-        intonationScale=1,
-        volumeScale=1,
-        prePhonemeLength=0.1,
-        postPhonemeLength=0.1,
-        outputSamplingRate=24000,
-        outputStereo=False,
-        kana="",
-    )
 
 
 class TestTTSEngineBase(TestCase):
