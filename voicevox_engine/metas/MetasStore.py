@@ -34,7 +34,7 @@ class MetasStore:
         }
 
     # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
-    # TTSEngineBaseによる循環importを修正する
+    # TTSEngineによる循環importを修正する
     def load_combined_metas(self, core: "CoreAdapter") -> List[Speaker]:
         """
         コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
