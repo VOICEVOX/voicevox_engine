@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from voicevox_engine.dev.core import MockCoreWrapper
-from voicevox_engine.dev.synthesis_engine.mock import MockTTSEngine
+from voicevox_engine.dev.synthesis_engine.mock import TTSEngineLight
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import USER_SETTING_PATH, SettingLoader
 from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     mock_core = MockCoreWrapper()
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = run.generate_app(
-        synthesis_engines={"mock": MockTTSEngine(mock_core)},
+        synthesis_engines={"mock": TTSEngineLight(mock_core)},
         cores={"mock": CoreAdapter(mock_core)},
         latest_core_version="mock",
         setting_loader=SettingLoader(USER_SETTING_PATH),

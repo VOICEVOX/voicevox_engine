@@ -12,12 +12,11 @@ from ...tts_pipeline import TTSEngine
 from ...tts_pipeline.tts_engine import to_flatten_moras
 
 
-class MockTTSEngine(TTSEngine):
-    """
-    TTSEngine [Mock]
-    """
+class TTSEngineLight(TTSEngine):
+    """製品版コア無しに音声合成が可能なTTSEngine"""
 
     def __init__(self, core: CoreWrapper):
+        """`core` の種類に関わらず `self.synthesis()` での音声合成が可能"""
         super().__init__(core)
 
     def synthesis(
@@ -26,7 +25,7 @@ class MockTTSEngine(TTSEngine):
         style_id: int,
         enable_interrogative_upspeak: bool = True,
     ) -> np.ndarray:
-        """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する (Mock)"""
+        """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
 
