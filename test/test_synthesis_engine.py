@@ -9,7 +9,6 @@ from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 
-# TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
@@ -499,7 +498,7 @@ class TestTTSEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.synthesis_engine = TTSEngine(core=core)
+        self.tts_engine = TTSEngine(core=core)
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -582,7 +581,7 @@ class TestTTSEngine(TestCase):
         )
 
     def test_replace_phoneme_length(self):
-        result = self.synthesis_engine.replace_phoneme_length(
+        result = self.tts_engine.replace_phoneme_length(
             accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
         )
 
@@ -626,13 +625,13 @@ class TestTTSEngine(TestCase):
         # 空のリストでエラーを吐かないか
         empty_accent_phrases = []
         self.assertEqual(
-            self.synthesis_engine.replace_mora_pitch(
+            self.tts_engine.replace_mora_pitch(
                 accent_phrases=empty_accent_phrases, style_id=1
             ),
             [],
         )
 
-        result = self.synthesis_engine.replace_mora_pitch(
+        result = self.tts_engine.replace_mora_pitch(
             accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
         )
 

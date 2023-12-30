@@ -28,16 +28,16 @@ def snapshot_json(snapshot: SnapshotAssertion):
 @pytest.fixture(scope="session")
 def app_params():
     cores = make_cores(use_gpu=False)
-    synthesis_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(cores)
     latest_core_version = get_latest_core_version(
-        versions=list(synthesis_engines.keys())
+        versions=list(tts_engines.keys())
     )
     setting_loader = SettingLoader(Path("./not_exist.yaml"))
     preset_manager = PresetManager(  # FIXME: impl MockPresetManager
         preset_path=Path("./presets.yaml"),
     )
     return {
-        "synthesis_engines": synthesis_engines,
+        "tts_engines": tts_engines,
         "cores": cores,
         "latest_core_version": latest_core_version,
         "setting_loader": setting_loader,

@@ -190,7 +190,7 @@ class MockCore:
 class TestTTSEngineBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.synthesis_engine = TTSEngine(core=MockCore())
+        self.tts_engine = TTSEngine(core=MockCore())
 
     def create_synthesis_test_base(
         self,
@@ -201,7 +201,7 @@ class TestTTSEngineBase(TestCase):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
-        inputs = self.synthesis_engine.create_accent_phrases(text, 1)
+        inputs = self.tts_engine.create_accent_phrases(text, 1)
         outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
         self.assertEqual(expected, outputs, f"case(text:{text})")
 
@@ -212,7 +212,7 @@ class TestTTSEngineBase(TestCase):
         text = "これはありますか？"
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
-        actual = self.synthesis_engine.create_accent_phrases(text, 1)
+        actual = self.tts_engine.create_accent_phrases(text, 1)
         self.assertEqual(expected, actual, f"case(text:{text})")
 
     def test_upspeak_voiced_last_mora(self):
