@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List, Optional
 
 from .core_wrapper import CoreWrapper, load_runtime_lib
-from .utility import engine_root, get_save_dir
 from .tts_pipeline.tts_engine import CoreAdapter
+from .utility import engine_root, get_save_dir
 
 MOCK_VER = "0.0.0"
 
