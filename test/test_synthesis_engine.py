@@ -582,24 +582,28 @@ class TestTTSEngine(TestCase):
         )
 
     def test_replace_phoneme_length(self):
-        result = self.synthesis_engine.replace_phoneme_length(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
-        )
-
-        # yukarin_sに渡される値の検証
+        # Inputs
+        hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
+        # Outputs & Indirect Outputs（yukarin_sに渡される値）
+        result = self.synthesis_engine.replace_phoneme_length(hello_hiho, 1)
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
-        self.assertEqual(list_length, 20)
-        self.assertEqual(list_length, len(phoneme_list))
+        style_id = yukarin_s_args["style_id"]
+        # Expects
+        true_list_length = 20
+        true_style_id = 1
         true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
         true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
         true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
+        # Tests
+        self.assertEqual(list_length, true_list_length)
+        self.assertEqual(list_length, len(phoneme_list))
+        self.assertEqual(style_id, true_style_id)
         numpy.testing.assert_array_equal(
             phoneme_list,
             numpy.array(true_phoneme_list, dtype=numpy.int64),
         )
-        self.assertEqual(yukarin_s_args["style_id"], 1)
 
         # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
         true_result = deepcopy(self.accent_phrases_hello_hiho)
