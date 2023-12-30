@@ -585,7 +585,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
         # Outputs & Indirect Outputs（yukarin_sに渡される値）
-        result = self.synthesis_engine.replace_phoneme_length(hello_hiho, 1)
+        result = self.synthesis_engine.replace_phoneme_length(hello_hiho, style_id=1)
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
@@ -628,7 +628,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         phrases = []
         # Outputs
-        result = self.synthesis_engine.replace_mora_pitch(phrases, 1)
+        result = self.synthesis_engine.replace_mora_pitch(phrases, style_id=1)
         # Expects
         true_result = []
         # Tests
