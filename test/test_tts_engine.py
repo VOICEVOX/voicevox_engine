@@ -8,8 +8,6 @@ import numpy
 from voicevox_engine.model import AccentPhrase, AccentPhrases, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
-
-# TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
@@ -499,7 +497,7 @@ class TestTTSEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.synthesis_engine = TTSEngine(core=core)
+        self.tts_engine = TTSEngine(core=core)
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -585,7 +583,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
         # Outputs & Indirect Outputs（yukarin_sに渡される値）
-        result = self.synthesis_engine.replace_phoneme_length(hello_hiho, style_id=1)
+        result = self.tts_engine.replace_phoneme_length(hello_hiho, style_id=1)
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
@@ -628,7 +626,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         phrases = []
         # Outputs
-        result = self.synthesis_engine.replace_mora_pitch(phrases, style_id=1)
+        result = self.tts_engine.replace_mora_pitch(phrases, style_id=1)
         # Expects
         true_result = []
         # Tests
@@ -637,7 +635,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
         # Outputs & Indirect Outputs（yukarin_saに渡される値）
-        result = self.synthesis_engine.replace_mora_pitch(hello_hiho, 1)
+        result = self.tts_engine.replace_mora_pitch(hello_hiho, style_id=1)
         yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
         list_length = yukarin_sa_args["length"]
         vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
