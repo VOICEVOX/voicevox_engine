@@ -142,7 +142,7 @@ def set_output_log_utf8() -> None:
 
 
 def generate_app(
-    synthesis_engines: Dict[str, TTSEngine],
+    tts_engines: Dict[str, TTSEngine],
     cores: Dict[str, CoreAdapter],
     latest_core_version: str,
     setting_loader: SettingLoader,
@@ -247,9 +247,9 @@ def generate_app(
 
     def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
-            return synthesis_engines[latest_core_version]
-        if core_version in synthesis_engines:
-            return synthesis_engines[core_version]
+            return tts_engines[latest_core_version]
+        if core_version in tts_engines:
+            return tts_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     def get_core(core_version: Optional[str]) -> CoreAdapter:
@@ -1496,11 +1496,9 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    synthesis_engines = make_tts_engines_from_cores(cores)
-    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(
-        versions=list(synthesis_engines.keys())
-    )
+    tts_engines = make_tts_engines_from_cores(cores)
+    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -1560,7 +1558,7 @@ def main() -> None:
 
     uvicorn.run(
         generate_app(
-            synthesis_engines,
+            tts_engines,
             cores,
             latest_core_version,
             setting_loader,
