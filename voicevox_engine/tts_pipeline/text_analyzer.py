@@ -9,7 +9,7 @@ from ..model import AccentPhrase, Mora
 from .mora_list import openjtalk_mora2text
 
 OjtVowel = Literal[
-    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u", "xx"
+    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
 ]
 OjtConsonant = Literal[
     "b",
@@ -45,7 +45,8 @@ OjtConsonant = Literal[
     "y",
     "z",
 ]
-OjtPhoneme = OjtVowel | OjtConsonant
+OjtUnknown = Literal["xx"]
+OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
 
 
 @dataclass
