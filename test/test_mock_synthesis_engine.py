@@ -6,6 +6,18 @@ from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline.kana_converter import create_kana
 
 
+def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
+    """モーラ (length=0, pitch=0) を生成する"""
+    return Mora(
+        text=text,
+        consonant=consonant,
+        consonant_length=0.0 if consonant else None,
+        vowel=vowel,
+        vowel_length=0.0,
+        pitch=0.0,
+    )
+
+
 class TestMockTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
@@ -13,91 +25,21 @@ class TestMockTTSEngine(TestCase):
         self.accent_phrases_hello_hiho = [
             AccentPhrase(
                 moras=[
-                    Mora(
-                        text="コ",
-                        consonant="k",
-                        consonant_length=0.0,
-                        vowel="o",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ン",
-                        consonant=None,
-                        consonant_length=None,
-                        vowel="N",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ニ",
-                        consonant="n",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="チ",
-                        consonant="ch",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ワ",
-                        consonant="w",
-                        consonant_length=0.0,
-                        vowel="a",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
+                    _gen_mora("コ", "k", "o"),
+                    _gen_mora("ン", None, "N"),
+                    _gen_mora("ニ", "n", "i"),
+                    _gen_mora("チ", "ch", "i"),
+                    _gen_mora("ワ", "w", "a"),
                 ],
                 accent=5,
-                pause_mora=Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=0.0,
-                    pitch=0.0,
-                ),
+                pause_mora=_gen_mora("、", None, "pau"),
             ),
             AccentPhrase(
                 moras=[
-                    Mora(
-                        text="ヒ",
-                        consonant="h",
-                        consonant_length=0.0,
-                        vowel="i",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ホ",
-                        consonant="h",
-                        consonant_length=0.0,
-                        vowel="o",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="デ",
-                        consonant="d",
-                        consonant_length=0.0,
-                        vowel="e",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
-                    Mora(
-                        text="ス",
-                        consonant="s",
-                        consonant_length=0.0,
-                        vowel="U",
-                        vowel_length=0.0,
-                        pitch=0.0,
-                    ),
+                    _gen_mora("ヒ", "h", "i"),
+                    _gen_mora("ホ", "h", "o"),
+                    _gen_mora("デ", "d", "e"),
+                    _gen_mora("ス", "s", "U"),
                 ],
                 accent=1,
                 pause_mora=None,
