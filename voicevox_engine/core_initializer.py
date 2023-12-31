@@ -3,15 +3,14 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-from ..core_wrapper import CoreWrapper, load_runtime_lib
-from ..utility import engine_root, get_save_dir
-from .tts_engine import CoreAdapter
+from .core_wrapper import CoreWrapper, load_runtime_lib
+from .tts_pipeline.tts_engine import CoreAdapter
+from .utility import engine_root, get_save_dir
 
 MOCK_VER = "0.0.0"
 
 
-# FIXME: ファイル名を変えるか関数の場所を変える
-def make_cores(
+def initialize_cores(
     use_gpu: bool,
     voicelib_dirs: Optional[List[Path]] = None,
     voicevox_dir: Optional[Path] = None,
@@ -130,7 +129,7 @@ def make_cores(
 
     else:
         # モック追加
-        from ..dev.core import MockCoreWrapper
+        from .dev.core import MockCoreWrapper
 
         if MOCK_VER not in cores:
             print("Info: Loading mock.")
