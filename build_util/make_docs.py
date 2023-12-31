@@ -39,7 +39,7 @@ if __name__ == "__main__":
     mock_core = MockCoreWrapper()
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = run.generate_app(
-        synthesis_engines={"mock": MockTTSEngine(mock_core)},
+        synthesis_engines={"mock": MockTTSEngine()},
         cores={"mock": CoreAdapter(mock_core)},
         latest_core_version="mock",
         setting_loader=SettingLoader(USER_SETTING_PATH),
