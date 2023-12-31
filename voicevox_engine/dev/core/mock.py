@@ -117,18 +117,13 @@ class MockCoreWrapper(CoreWrapper):
         phoneme: ndarray,
         style_id: ndarray,
     ) -> ndarray:
-        """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDから音声波形を生成する"""
-        result = []
-        # mockとしての適当な処理、特に意味はない
+        """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDからダミー音声波形を生成する"""
+        # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
+        result: list[ndarray] = []
         for i in range(length):
-            # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
-            for _ in range(256):
-                result.append(
-                    (
-                        f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
-                        + style_id
-                    ).item()
-                )
+            result += [
+                (f0[i, 0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
+            ] * 256
         return numpy.array(result)
 
     def supported_devices(self):
