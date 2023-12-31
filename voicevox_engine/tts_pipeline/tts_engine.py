@@ -251,7 +251,7 @@ class TTSEngine:
         self._core = CoreAdapter(core)
         # NOTE: self._coreは将来的に消す予定
 
-    def replace_phoneme_length(
+    def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
@@ -424,7 +424,7 @@ class TTSEngine:
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
         return self.replace_mora_pitch(
-            accent_phrases=self.replace_phoneme_length(
+            accent_phrases=self.update_length(
                 accent_phrases=accent_phrases, style_id=style_id
             ),
             style_id=style_id,

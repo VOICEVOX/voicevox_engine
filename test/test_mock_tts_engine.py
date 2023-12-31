@@ -46,12 +46,9 @@ class TestMockTTSEngine(TestCase):
         ]
         self.engine = MockTTSEngine()
 
-    def test_replace_phoneme_length(self):
-        """`.replace_phoneme_length()` がエラー無く生成をおこなう"""
-        self.engine.replace_phoneme_length(
-            accent_phrases=self.accent_phrases_hello_hiho,
-            style_id=0,
-        )
+    def test_update_length(self):
+        """`.update_length()` がエラー無く生成をおこなう"""
+        self.engine.update_length(self.accent_phrases_hello_hiho, style_id=0)
 
     def test_replace_mora_pitch(self):
         """`.replace_mora_pitch()` がエラー無く生成をおこなう"""

@@ -411,9 +411,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_phoneme_length(
-            accent_phrases=accent_phrases, style_id=style_id
-        )
+        return engine.update_length(accent_phrases, style_id)
 
     @app.post(
         "/mora_pitch",

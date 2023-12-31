@@ -579,11 +579,11 @@ class TestTTSEngine(TestCase):
             is_same_phoneme(phoneme_data_list[phoneme_index], Phoneme("pau"))
         )
 
-    def test_replace_phoneme_length(self):
+    def test_update_length(self):
         # Inputs
         hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
         # Outputs & Indirect Outputs（yukarin_sに渡される値）
-        result = self.tts_engine.replace_phoneme_length(hello_hiho, style_id=1)
+        result = self.tts_engine.update_length(hello_hiho, style_id=1)
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
