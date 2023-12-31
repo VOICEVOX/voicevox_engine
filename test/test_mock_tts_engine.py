@@ -50,12 +50,9 @@ class TestMockTTSEngine(TestCase):
         """`.update_length()` がエラー無く生成をおこなう"""
         self.engine.update_length(self.accent_phrases_hello_hiho, style_id=0)
 
-    def test_replace_mora_pitch(self):
-        """`.replace_mora_pitch()` がエラー無く生成をおこなう"""
-        self.engine.replace_mora_pitch(
-            accent_phrases=self.accent_phrases_hello_hiho,
-            style_id=0,
-        )
+    def test_update_pitch(self):
+        """`.update_pitch()` がエラー無く生成をおこなう"""
+        self.engine.update_pitch(self.accent_phrases_hello_hiho, style_id=0)
 
     def test_synthesis(self):
         """`.synthesis()` がエラー無く生成をおこなう"""

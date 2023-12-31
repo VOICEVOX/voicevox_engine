@@ -281,22 +281,10 @@ class TTSEngine:
 
         return accent_phrases
 
-    def replace_mora_pitch(
+    def update_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
-        """
-        accent_phrasesの音高(ピッチ)を設定する
-        Parameters
-        ----------
-        accent_phrases : List[AccentPhrase]
-            アクセント句モデルのリスト
-        style_id : int
-            スタイルID
-        Returns
-        -------
-        accent_phrases : List[AccentPhrase]
-            音高(ピッチ)が設定されたアクセント句モデルのリスト
-        """
+        """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
         # numpy.concatenateが空リストだとエラーを返すのでチェック
         if len(accent_phrases) == 0:
             return []
@@ -423,10 +411,8 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
-        return self.replace_mora_pitch(
-            accent_phrases=self.update_length(
-                accent_phrases=accent_phrases, style_id=style_id
-            ),
+        return self.update_pitch(
+            accent_phrases=self.update_length(accent_phrases, style_id),
             style_id=style_id,
         )
 

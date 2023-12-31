@@ -621,12 +621,12 @@ class TestTTSEngine(TestCase):
         )
         self.assertEqual(result, true_result)
 
-    def test_replace_mora_pitch(self):
+    def test_update_pitch(self):
         # 空のリストでエラーを吐かないか
         # Inputs
         phrases = []
         # Outputs
-        result = self.tts_engine.replace_mora_pitch(phrases, style_id=1)
+        result = self.tts_engine.update_pitch(phrases, style_id=1)
         # Expects
         true_result = []
         # Tests
@@ -635,7 +635,7 @@ class TestTTSEngine(TestCase):
         # Inputs
         hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
         # Outputs & Indirect Outputs（yukarin_saに渡される値）
-        result = self.tts_engine.replace_mora_pitch(hello_hiho, style_id=1)
+        result = self.tts_engine.update_pitch(hello_hiho, style_id=1)
         yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
         list_length = yukarin_sa_args["length"]
         vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
