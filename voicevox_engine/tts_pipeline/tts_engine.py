@@ -10,7 +10,7 @@ from ..core_wrapper import CoreWrapper
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
-from .tts_engine_base import TTSEngineBase
+from .text_analyzer import text_to_accent_phrases
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -243,7 +243,7 @@ def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> n
     return wave
 
 
-class TTSEngine(TTSEngineBase):
+class TTSEngine:
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
     def __init__(self, core: CoreWrapper):
@@ -419,6 +419,29 @@ class TTSEngine(TTSEngineBase):
 
         return accent_phrases
 
+    def replace_mora_data(
+        self, accent_phrases: list[AccentPhrase], style_id: int
+    ) -> list[AccentPhrase]:
+        """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
+        return self.replace_mora_pitch(
+            accent_phrases=self.replace_phoneme_length(
+                accent_phrases=accent_phrases, style_id=style_id
+            ),
+            style_id=style_id,
+        )
+
+    def create_accent_phrases(self, text: str, style_id: int) -> list[AccentPhrase]:
+        """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
+        # 音素とアクセントの推定
+        accent_phrases = text_to_accent_phrases(text)
+
+        # 音素長・モーラ音高の推定と更新
+        accent_phrases = self.replace_mora_data(
+            accent_phrases=accent_phrases,
+            style_id=style_id,
+        )
+        return accent_phrases
+
     def synthesis(
         self,
         query: AudioQuery,
@@ -438,13 +461,11 @@ class TTSEngine(TTSEngineBase):
         return wave
 
 
-def make_tts_engines_from_cores(
-    cores: dict[str, CoreAdapter]
-) -> dict[str, TTSEngineBase]:
+def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngine]:
     """コア一覧からTTSエンジン一覧を生成する"""
-    # FIXME: `MOCK_VER` を循環 import 無しに `make_cores()` 関連モジュールから import する
+    # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
-    tts_engines: dict[str, TTSEngineBase] = {}
+    tts_engines: dict[str, TTSEngine] = {}
     for ver, core in cores.items():
         if ver == MOCK_VER:
             from ..dev.synthesis_engine import MockTTSEngine

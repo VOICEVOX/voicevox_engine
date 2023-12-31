@@ -42,13 +42,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 """
 
-_mora_list_minimum: list[tuple[str, str, str]] = [
+_mora_list_minimum: list[tuple[str, str | None, str]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
     ("ヴァ", "v", "a"),
     ("ヴ", "v", "u"),
-    ("ン", "", "N"),
+    ("ン", None, "N"),
     ("ワ", "w", "a"),
     ("ロ", "r", "o"),
     ("レ", "r", "e"),
@@ -131,7 +131,7 @@ _mora_list_minimum: list[tuple[str, str, str]] = [
     ("ツィ", "ts", "i"),
     ("ツァ", "ts", "a"),
     ("ツ", "ts", "u"),
-    ("ッ", "", "cl"),
+    ("ッ", None, "cl"),
     ("チョ", "ch", "o"),
     ("チュ", "ch", "u"),
     ("チャ", "ch", "a"),
@@ -179,23 +179,23 @@ _mora_list_minimum: list[tuple[str, str, str]] = [
     ("キ", "k", "i"),
     ("ガ", "g", "a"),
     ("カ", "k", "a"),
-    ("オ", "", "o"),
-    ("エ", "", "e"),
+    ("オ", None, "o"),
+    ("エ", None, "e"),
     ("ウォ", "w", "o"),
     ("ウェ", "w", "e"),
     ("ウィ", "w", "i"),
-    ("ウ", "", "u"),
+    ("ウ", None, "u"),
     ("イェ", "y", "e"),
-    ("イ", "", "i"),
-    ("ア", "", "a"),
+    ("イ", None, "i"),
+    ("ア", None, "a"),
 ]
-_mora_list_additional: list[tuple[str, str, str]] = [
+_mora_list_additional: list[tuple[str, str | None, str]] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
     ("ヴャ", "by", "a"),
-    ("ヲ", "", "o"),
-    ("ヱ", "", "e"),
-    ("ヰ", "", "i"),
+    ("ヲ", None, "o"),
+    ("ヱ", None, "e"),
+    ("ヰ", None, "i"),
     ("ヮ", "w", "a"),
     ("ョ", "y", "o"),
     ("ュ", "y", "u"),
@@ -203,15 +203,15 @@ _mora_list_additional: list[tuple[str, str, str]] = [
     ("ヂ", "j", "i"),
     ("ヶ", "k", "e"),
     ("ャ", "y", "a"),
-    ("ォ", "", "o"),
-    ("ェ", "", "e"),
-    ("ゥ", "", "u"),
-    ("ィ", "", "i"),
-    ("ァ", "", "a"),
+    ("ォ", None, "o"),
+    ("ェ", None, "e"),
+    ("ゥ", None, "u"),
+    ("ィ", None, "i"),
+    ("ァ", None, "a"),
 ]
 
 openjtalk_mora2text = {
-    consonant + vowel: text for [text, consonant, vowel] in _mora_list_minimum
+    (consonant or "") + vowel: text for [text, consonant, vowel] in _mora_list_minimum
 }
 openjtalk_text2mora = {
     text: (consonant, vowel)
