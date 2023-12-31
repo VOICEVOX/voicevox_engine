@@ -6,7 +6,6 @@ import argparse
 import json
 from collections import OrderedDict
 from pathlib import Path
-from typing import Dict, List, Union
 
 
 def merge_json_string(src: str, dst: str) -> str:
@@ -23,8 +22,8 @@ def merge_json_string(src: str, dst: str) -> str:
     >>> merge_json_string(src, dst)
     '[{"version": "1"}]'
     """
-    src_json: List[Dict[str, Union[str, List[str]]]] = json.loads(src)
-    dst_json: List[Dict[str, Union[str, List[str]]]] = json.loads(dst)
+    src_json: list[dict[str, str | list[str]]] = json.loads(src)
+    dst_json: list[dict[str, str | list[str]]] = json.loads(dst)
 
     for src_item in src_json:
         for dst_item in dst_json:
@@ -33,10 +32,13 @@ def merge_json_string(src: str, dst: str) -> str:
                     if key == "version":
                         continue
 
+                    src_value = src_item[key]
+                    dst_value = dst_item[key]
+                    assert isinstance(src_value, list)
+                    assert isinstance(dst_value, list)
+
                     # 異なるものがあった場合だけ後ろに付け足す
-                    src_item[key] = list(
-                        OrderedDict.fromkeys(src_item[key] + dst_item[key])
-                    )
+                    src_item[key] = list(OrderedDict.fromkeys(src_value + dst_value))
 
     return json.dumps(src_json)
 

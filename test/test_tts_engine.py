@@ -35,7 +35,7 @@ def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
 
 
 def is_same_ojt_phoneme_list(
-    p1s: list[Phoneme | None], p2s: list[Phoneme | None]
+    p1s: list[Phoneme | None] | list[Phoneme], p2s: list[Phoneme | None] | list[Phoneme]
 ) -> bool:
     """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
     if len(p1s) != len(p2s):
@@ -55,7 +55,9 @@ def is_same_ojt_phoneme_list(
     return True
 
 
-def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
+def yukarin_s_mock(
+    length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -72,7 +74,7 @@ def yukarin_sa_mock(
     start_accent_phrase_list: numpy.ndarray,
     end_accent_phrase_list: numpy.ndarray,
     style_id: numpy.ndarray,
-):
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -99,7 +101,7 @@ def decode_mock(
     f0: numpy.ndarray,
     phoneme: numpy.ndarray,
     style_id: Union[numpy.ndarray, int],
-):
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -140,7 +142,7 @@ def _gen_query(
     volumeScale: float = 1.0,
     outputSamplingRate: int = 24000,
     outputStereo: bool = False,
-):
+) -> AudioQuery:
     """Generate AudioQuery with default meaningless arguments for test simplicity."""
     accent_phrases = [] if accent_phrases is None else accent_phrases
     return AudioQuery(
@@ -356,12 +358,12 @@ def test_count_frame_per_unit():
     ]
 
     # Expects
-    #                        Pre k  o  N pau h  i  h  O Pst
-    true_frame_per_phoneme = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
-    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
-    #                    Pre ko  N pau hi hO Pst
-    true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
-    true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
+    #                             Pre k  o  N pau h  i  h  O Pst
+    true_frame_per_phoneme_list = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
+    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme_list, dtype=numpy.int32)
+    #                         Pre ko  N pau hi hO Pst
+    true_frame_per_mora_list = [2, 6, 4, 2, 6, 6, 6]
+    true_frame_per_mora = numpy.array(true_frame_per_mora_list, dtype=numpy.int32)
 
     # Outputs
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
@@ -497,7 +499,7 @@ class TestTTSEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.tts_engine = TTSEngine(core=core)
+        self.tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -597,7 +599,7 @@ class TestTTSEngine(TestCase):
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
 
-        def result_value(i: int):
+        def result_value(i: int) -> float:
             return float(phoneme_list[i] * 0.5 + 1)
 
         for accent_phrase in true_result:
@@ -624,11 +626,11 @@ class TestTTSEngine(TestCase):
     def test_replace_mora_pitch(self):
         # 空のリストでエラーを吐かないか
         # Inputs
-        phrases = []
+        phrases: list = []
         # Outputs
         result = self.tts_engine.replace_mora_pitch(phrases, style_id=1)
         # Expects
-        true_result = []
+        true_result: list = []
         # Tests
         self.assertEqual(result, true_result)
 
@@ -655,7 +657,7 @@ class TestTTSEngine(TestCase):
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
 
-        def result_value(i: int):
+        def result_value(i: int) -> float:
             # unvoiced_mora_phoneme_listのPhoneme ID版
             unvoiced_mora_phoneme_id_list = [
                 Phoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list

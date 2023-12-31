@@ -31,7 +31,7 @@ def contexts_to_feature(contexts: dict[str, str]) -> str:
 OjtContainer = MoraLabel | AccentPhraseLabel | BreathGroupLabel | UtteranceLabel
 
 
-def features(ojt_container: OjtContainer):
+def features(ojt_container: OjtContainer) -> list[str]:
     """コンテナインスタンスに直接的・間接的に含まれる全ての feature を返す"""
     return [contexts_to_feature(p.contexts) for p in ojt_container.labels]
 
