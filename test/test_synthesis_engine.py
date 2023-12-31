@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AccentPhrases, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 
@@ -133,7 +133,7 @@ class MockCore:
 
 
 def _gen_query(
-    accent_phrases: list[AccentPhrase] | None = None,
+    accent_phrases: AccentPhrases | None = None,
     speedScale: float = 1.0,
     pitchScale: float = 1.0,
     intonationScale: float = 1.0,

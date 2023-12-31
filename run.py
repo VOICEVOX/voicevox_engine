@@ -36,7 +36,7 @@ from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
-    AccentPhrase,
+    AccentPhrases,
     AudioQuery,
     BaseLibraryInfo,
     DownloadableLibraryInfo,
@@ -337,7 +337,7 @@ def generate_app(
 
     @app.post(
         "/accent_phrases",
-        response_model=list[AccentPhrase],
+        response_model=AccentPhrases,
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
         responses={
@@ -353,7 +353,7 @@ def generate_app(
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         is_kana: bool = False,
         core_version: str | None = None,
-    ) -> list[AccentPhrase]:
+    ) -> AccentPhrases:
         """
         テキストからアクセント句を得ます。
         is_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。
@@ -383,32 +383,32 @@ def generate_app(
 
     @app.post(
         "/mora_data",
-        response_model=list[AccentPhrase],
+        response_model=AccentPhrases,
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
     def mora_data(
-        accent_phrases: list[AccentPhrase],
+        accent_phrases: AccentPhrases,
         style_id: int | None = Query(default=None),  # noqa: B008
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
-    ) -> list[AccentPhrase]:
+    ) -> AccentPhrases:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, style_id=style_id)
 
     @app.post(
         "/mora_length",
-        response_model=list[AccentPhrase],
+        response_model=AccentPhrases,
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
     def mora_length(
-        accent_phrases: list[AccentPhrase],
+        accent_phrases: AccentPhrases,
         style_id: int | None = Query(default=None),  # noqa: B008
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
-    ) -> list[AccentPhrase]:
+    ) -> AccentPhrases:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
@@ -417,16 +417,16 @@ def generate_app(
 
     @app.post(
         "/mora_pitch",
-        response_model=list[AccentPhrase],
+        response_model=AccentPhrases,
         tags=["クエリ編集"],
         summary="アクセント句から音高を得る",
     )
     def mora_pitch(
-        accent_phrases: list[AccentPhrase],
+        accent_phrases: AccentPhrases,
         style_id: int | None = Query(default=None),  # noqa: B008
         speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
-    ) -> list[AccentPhrase]:
+    ) -> AccentPhrases:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(

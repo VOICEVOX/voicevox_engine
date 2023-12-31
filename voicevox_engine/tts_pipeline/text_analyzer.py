@@ -5,7 +5,7 @@ from typing import Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora
+from ..model import AccentPhrase, AccentPhrases, Mora
 from .mora_list import openjtalk_mora2text
 
 
@@ -260,7 +260,7 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     ]
 
 
-def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
+def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> AccentPhrases:
     """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
     if len(utterance.breath_groups) == 0:
         return []
@@ -291,7 +291,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
+def text_to_accent_phrases(text: str) -> AccentPhrases:
     """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
         return []

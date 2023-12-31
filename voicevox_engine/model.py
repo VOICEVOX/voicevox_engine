@@ -45,12 +45,15 @@ class AccentPhrase(BaseModel):
         return hash(tuple(sorted(items)))
 
 
+AccentPhrases = list[AccentPhrase]
+
+
 class AudioQuery(BaseModel):
     """
     音声合成用のクエリ
     """
 
-    accent_phrases: List[AccentPhrase] = Field(title="アクセント句のリスト")
+    accent_phrases: AccentPhrases = Field(title="アクセント句のリスト")
     speedScale: float = Field(title="全体の話速")
     pitchScale: float = Field(title="全体の音高")
     intonationScale: float = Field(title="全体の抑揚")

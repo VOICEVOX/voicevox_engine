@@ -7,7 +7,7 @@ from soxr import resample
 
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
-from ..model import AccentPhrase, AudioQuery, Mora
+from ..model import AccentPhrase, AccentPhrases, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
 from .text_analyzer import text_to_accent_phrases
@@ -22,12 +22,12 @@ UPSPEAK_PITCH_MAX = 6.5
 
 
 # TODO: move mora utility to mora module
-def to_flatten_moras(accent_phrases: list[AccentPhrase]) -> list[Mora]:
+def to_flatten_moras(accent_phrases: AccentPhrases) -> list[Mora]:
     """
     アクセント句系列に含まれるモーラの抽出
     Parameters
     ----------
-    accent_phrases : list[AccentPhrase]
+    accent_phrases : AccentPhrases
         アクセント句系列
     Returns
     -------
@@ -72,9 +72,7 @@ def split_mora(
     return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
 
 
-def pre_process(
-    accent_phrases: list[AccentPhrase],
-) -> tuple[list[Mora], list[Phoneme]]:
+def pre_process(accent_phrases: AccentPhrases) -> tuple[list[Mora], list[Phoneme]]:
     """アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する"""
     flatten_moras = to_flatten_moras(accent_phrases)
     phonemes = to_flatten_phonemes(flatten_moras)
@@ -91,8 +89,8 @@ def generate_silence_mora(length: float) -> Mora:
 
 
 def apply_interrogative_upspeak(
-    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
-) -> list[AccentPhrase]:
+    accent_phrases: AccentPhrases, enable_interrogative_upspeak: bool
+) -> AccentPhrases:
     """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
     # NOTE: 将来的にAudioQueryインスタンスを引数にする予定
     if not enable_interrogative_upspeak:
@@ -252,8 +250,8 @@ class TTSEngine:
         # NOTE: self._coreは将来的に消す予定
 
     def replace_phoneme_length(
-        self, accent_phrases: list[AccentPhrase], style_id: int
-    ) -> list[AccentPhrase]:
+        self, accent_phrases: AccentPhrases, style_id: int
+    ) -> AccentPhrases:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
@@ -282,19 +280,19 @@ class TTSEngine:
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: list[AccentPhrase], style_id: int
-    ) -> list[AccentPhrase]:
+        self, accent_phrases: AccentPhrases, style_id: int
+    ) -> AccentPhrases:
         """
         accent_phrasesの音高(ピッチ)を設定する
         Parameters
         ----------
-        accent_phrases : List[AccentPhrase]
+        accent_phrases : AccentPhrases
             アクセント句モデルのリスト
         style_id : int
             スタイルID
         Returns
         -------
-        accent_phrases : List[AccentPhrase]
+        accent_phrases : AccentPhrases
             音高(ピッチ)が設定されたアクセント句モデルのリスト
         """
         # numpy.concatenateが空リストだとエラーを返すのでチェック
@@ -420,8 +418,8 @@ class TTSEngine:
         return accent_phrases
 
     def replace_mora_data(
-        self, accent_phrases: list[AccentPhrase], style_id: int
-    ) -> list[AccentPhrase]:
+        self, accent_phrases: AccentPhrases, style_id: int
+    ) -> AccentPhrases:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
         return self.replace_mora_pitch(
             accent_phrases=self.replace_phoneme_length(
@@ -430,7 +428,7 @@ class TTSEngine:
             style_id=style_id,
         )
 
-    def create_accent_phrases(self, text: str, style_id: int) -> list[AccentPhrase]:
+    def create_accent_phrases(self, text: str, style_id: int) -> AccentPhrases:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         # 音素とアクセントの推定
         accent_phrases = text_to_accent_phrases(text)

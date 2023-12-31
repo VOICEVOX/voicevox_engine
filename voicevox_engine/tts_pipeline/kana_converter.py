@@ -16,7 +16,13 @@ NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob
 
 from typing import List, Optional
 
-from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from ..model import (
+    AccentPhrase,
+    AccentPhrases,
+    Mora,
+    ParseKanaError,
+    ParseKanaErrorCode,
+)
 from .mora_list import openjtalk_text2mora
 
 _LOOP_LIMIT = 300
@@ -116,7 +122,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
+def parse_kana(text: str) -> AccentPhrases:
     """
     AquesTalk 風記法テキストからアクセント句系列を生成
     Parameters
@@ -125,11 +131,11 @@ def parse_kana(text: str) -> List[AccentPhrase]:
         AquesTalk 風記法テキスト
     Returns
     -------
-    parsed_results : List[AccentPhrase]
+    parsed_results : AccentPhrases
         アクセント句（音素・モーラ音高 0初期化）系列を生成
     """
 
-    parsed_results: List[AccentPhrase] = []
+    parsed_results: AccentPhrases = []
     phrase_base = 0
     if len(text) == 0:
         raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
@@ -155,7 +161,7 @@ def parse_kana(text: str) -> List[AccentPhrase]:
                 # 疑問形はモーラでなくアクセント句属性で表現
                 phrase = phrase.replace(_WIDE_INTERROGATION_MARK, "")
 
-            accent_phrase: AccentPhrase = _text_to_accent_phrase(phrase)
+            accent_phrase = _text_to_accent_phrase(phrase)
 
             # 「`、` で無音付き区切り」の実装
             if i < len(text) and text[i] == _PAUSE_DELIMITER:
@@ -174,12 +180,12 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     return parsed_results
 
 
-def create_kana(accent_phrases: List[AccentPhrase]) -> str:
+def create_kana(accent_phrases: AccentPhrases) -> str:
     """
     アクセント句系列からAquesTalk 風記法テキストを生成
     Parameters
     ----------
-    accent_phrases : List[AccentPhrase]
+    accent_phrases : AccentPhrases
         アクセント句系列
     Returns
     -------

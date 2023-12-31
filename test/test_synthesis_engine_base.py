@@ -1,14 +1,14 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, AccentPhrases, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
 )
 
 
-def koreha_arimasuka_base_expected():
+def koreha_arimasuka_base_expected() -> AccentPhrases:
     return [
         AccentPhrase(
             moras=[
@@ -99,7 +99,7 @@ class TestTTSEngineBase(TestCase):
     def create_synthesis_test_base(
         self,
         text: str,
-        expected: list[AccentPhrase],
+        expected: AccentPhrases,
         enable_interrogative_upspeak: bool,
     ):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証

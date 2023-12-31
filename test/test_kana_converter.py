@@ -1,12 +1,17 @@
-from typing import List
 from unittest import TestCase
 
-from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from voicevox_engine.model import (
+    AccentPhrase,
+    AccentPhrases,
+    Mora,
+    ParseKanaError,
+    ParseKanaErrorCode,
+)
 from voicevox_engine.tts_pipeline import kana_converter
 from voicevox_engine.tts_pipeline.kana_converter import create_kana
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
+def parse_kana(text: str) -> AccentPhrases:
     accent_phrases = kana_converter.parse_kana(text)
     return accent_phrases
 
@@ -57,7 +62,7 @@ class TestParseKana(TestCase):
             self.assertEqual(create_kana(parse_kana(text)), text)
 
     def _accent_phrase_marks_base(
-        self, text: str, expected_accent_phrases: List[AccentPhrase]
+        self, text: str, expected_accent_phrases: AccentPhrases
     ) -> None:
         accent_phrases = kana_converter.parse_kana(text)
         self.assertEqual(expected_accent_phrases, accent_phrases)
