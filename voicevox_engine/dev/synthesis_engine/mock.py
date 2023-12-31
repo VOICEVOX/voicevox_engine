@@ -12,8 +12,8 @@ from ...tts_pipeline.tts_engine import to_flatten_moras
 from ..core.mock import MockCoreWrapper
 
 
-class TTSEngineLight(TTSEngine):
-    """製品版コア無しに音声合成が可能なTTSEngine"""
+class MockTTSEngine(TTSEngine):
+    """製品版コア無しに音声合成が可能なモック版TTSEngine"""
 
     def __init__(self):
         super().__init__(MockCoreWrapper())

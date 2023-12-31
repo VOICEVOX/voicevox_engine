@@ -1,3 +1,3 @@
-from .mock import TTSEngineLight
+from .mock import MockTTSEngine
 
-__all__ = ["TTSEngineLight"]
+__all__ = ["MockTTSEngine"]

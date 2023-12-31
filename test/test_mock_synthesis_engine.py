@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from voicevox_engine.dev.synthesis_engine import TTSEngineLight
+from voicevox_engine.dev.synthesis_engine import MockTTSEngine
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline.kana_converter import create_kana
 
 
-class TestTTSEngineLight(TestCase):
+class TestMockTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
 
@@ -102,7 +102,7 @@ class TestTTSEngineLight(TestCase):
                 pause_mora=None,
             ),
         ]
-        self.engine = TTSEngineLight()
+        self.engine = MockTTSEngine()
 
     def test_replace_phoneme_length(self):
         """`.replace_phoneme_length()` がエラー無く生成をおこなう"""
