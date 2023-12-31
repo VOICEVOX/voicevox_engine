@@ -373,9 +373,7 @@ def generate_app(
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            accent_phrases = engine.replace_mora_data(
-                accent_phrases=accent_phrases, style_id=style_id
-            )
+            accent_phrases = engine.update_length_and_pitch(accent_phrases, style_id)
 
             return accent_phrases
         else:
@@ -395,7 +393,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_mora_data(accent_phrases, style_id=style_id)
+        return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @app.post(
         "/mora_length",

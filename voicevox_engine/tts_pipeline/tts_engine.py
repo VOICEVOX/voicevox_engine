@@ -407,7 +407,7 @@ class TTSEngine:
 
         return accent_phrases
 
-    def replace_mora_data(
+    def update_length_and_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: int
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
@@ -418,14 +418,8 @@ class TTSEngine:
 
     def create_accent_phrases(self, text: str, style_id: int) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        # 音素とアクセントの推定
         accent_phrases = text_to_accent_phrases(text)
-
-        # 音素長・モーラ音高の推定と更新
-        accent_phrases = self.replace_mora_data(
-            accent_phrases=accent_phrases,
-            style_id=style_id,
-        )
+        accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
     def synthesis(
