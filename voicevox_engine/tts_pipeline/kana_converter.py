@@ -33,8 +33,8 @@ _text2mora_with_unvoice = {}
 for text, (consonant, vowel) in openjtalk_text2mora.items():
     _text2mora_with_unvoice[text] = Mora(
         text=text,
-        consonant=consonant if len(consonant) > 0 else None,
-        consonant_length=0 if len(consonant) > 0 else None,
+        consonant=consonant,
+        consonant_length=0 if consonant else None,
         vowel=vowel,
         vowel_length=0,
         pitch=0,
@@ -44,8 +44,8 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         # 例: "_ホ" -> "hO"
         _text2mora_with_unvoice[_UNVOICE_SYMBOL + text] = Mora(
             text=text,
-            consonant=consonant if len(consonant) > 0 else None,
-            consonant_length=0 if len(consonant) > 0 else None,
+            consonant=consonant,
+            consonant_length=0 if consonant else None,
             vowel=vowel.upper(),
             vowel_length=0,
             pitch=0,
