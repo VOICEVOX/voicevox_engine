@@ -29,7 +29,7 @@ class CancellableEngine:
     （オリジナルと比べ引数が増えているので注意）
 
     パラメータ use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 cores_maker を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Attributes
     ----------
@@ -212,7 +212,7 @@ def start_synthesis_subprocess(
     pickle化の関係でグローバルに書いている
 
     引数 use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 cores_maker を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Parameters
     ----------
