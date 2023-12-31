@@ -422,7 +422,7 @@ class TTSEngine:
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def synthesis(
+    def synthesize_wave(
         self,
         query: AudioQuery,
         style_id: int,

@@ -54,9 +54,9 @@ class TestMockTTSEngine(TestCase):
         """`.update_pitch()` がエラー無く生成をおこなう"""
         self.engine.update_pitch(self.accent_phrases_hello_hiho, style_id=0)
 
-    def test_synthesis(self):
-        """`.synthesis()` がエラー無く生成をおこなう"""
-        self.engine.synthesis(
+    def test_synthesize_wave(self):
+        """`.synthesize_wave()` がエラー無く生成をおこなう"""
+        self.engine.synthesize_wave(
             AudioQuery(
                 accent_phrases=self.accent_phrases_hello_hiho,
                 speedScale=1,

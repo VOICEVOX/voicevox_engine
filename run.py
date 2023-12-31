@@ -452,11 +452,7 @@ def generate_app(
     ) -> FileResponse:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        wave = engine.synthesis(
-            query=query,
-            style_id=style_id,
-            enable_interrogative_upspeak=enable_interrogative_upspeak,
-        )
+        wave = engine.synthesize_wave(query, style_id, enable_interrogative_upspeak)
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -544,7 +540,7 @@ def generate_app(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesis(query=queries[i], style_id=style_id)
+                        wave = engine.synthesize_wave(queries[i], style_id)
                         soundfile.write(
                             file=wav_file,
                             data=wave,
