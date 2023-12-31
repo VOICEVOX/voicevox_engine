@@ -82,7 +82,7 @@ class Label:
     @property
     def phoneme(self) -> OjtPhoneme:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        return self.contexts["p3"] # type: ignore
+        return self.contexts["p3"]  # type: ignore
 
     def is_pause(self):
         """このラベルが無音 (silent/pause) であれば True、そうでなければ False を返す"""
