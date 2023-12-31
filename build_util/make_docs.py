@@ -33,13 +33,12 @@ def generate_api_docs_html(schema: str) -> str:
 
 
 if __name__ == "__main__":
-
     import run
 
     mock_core = MockCoreWrapper()
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = run.generate_app(
-        tts_engines={"mock": MockTTSEngine(mock_core)},
+        tts_engines={"mock": MockTTSEngine()},
         cores={"mock": CoreAdapter(mock_core)},
         latest_core_version="mock",
         setting_loader=SettingLoader(USER_SETTING_PATH),
