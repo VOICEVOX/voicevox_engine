@@ -17,7 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .core_initializer import initialize_cores
-from .model import AudioQuery
+from .model import AudioQuery, StyleId
 from .tts_pipeline import make_tts_engines_from_cores
 from .utility import get_latest_core_version
 
@@ -141,7 +141,7 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         request: Request,
         core_version: str | None,
     ) -> str:
@@ -153,7 +153,7 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        style_id: int
+        style_id: StyleId
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/

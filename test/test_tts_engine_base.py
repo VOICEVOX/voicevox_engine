@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, Mora, StyleId
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
@@ -105,7 +105,7 @@ class TestTTSEngineBase(TestCase):
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
-        inputs = self.tts_engine.create_accent_phrases(text, 1)
+        inputs = self.tts_engine.create_accent_phrases(text, StyleId(1))
         outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
         self.assertEqual(expected, outputs, f"case(text:{text})")
 
@@ -116,7 +116,7 @@ class TestTTSEngineBase(TestCase):
         text = "これはありますか？"
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
-        actual = self.tts_engine.create_accent_phrases(text, 1)
+        actual = self.tts_engine.create_accent_phrases(text, StyleId(1))
         self.assertEqual(expected, actual, f"case(text:{text})")
 
     def test_upspeak_voiced_last_mora(self):

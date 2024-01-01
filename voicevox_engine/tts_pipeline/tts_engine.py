@@ -7,7 +7,7 @@ from soxr import resample
 
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
-from ..model import AccentPhrase, AudioQuery, Mora
+from ..model import AccentPhrase, AudioQuery, Mora, StyleId
 from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
 from .text_analyzer import text_to_accent_phrases
@@ -252,7 +252,7 @@ class TTSEngine:
         # NOTE: self._coreは将来的に消す予定
 
     def replace_phoneme_length(
-        self, accent_phrases: list[AccentPhrase], style_id: int
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モーラ系列を抽出する
@@ -282,7 +282,7 @@ class TTSEngine:
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: list[AccentPhrase], style_id: int
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
@@ -290,7 +290,7 @@ class TTSEngine:
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        style_id : int
+        style_id : StyleId
             スタイルID
         Returns
         -------
@@ -420,7 +420,7 @@ class TTSEngine:
         return accent_phrases
 
     def replace_mora_data(
-        self, accent_phrases: list[AccentPhrase], style_id: int
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
         return self.replace_mora_pitch(
@@ -430,7 +430,7 @@ class TTSEngine:
             style_id=style_id,
         )
 
-    def create_accent_phrases(self, text: str, style_id: int) -> list[AccentPhrase]:
+    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         # 音素とアクセントの推定
         accent_phrases = text_to_accent_phrases(text)
@@ -445,7 +445,7 @@ class TTSEngine:
     def synthesis(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
     ) -> ndarray:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""

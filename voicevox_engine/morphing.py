@@ -10,7 +10,7 @@ from soxr import resample
 from .core_adapter import CoreAdapter
 from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleId, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
 
 
@@ -132,8 +132,8 @@ def synthesis_morphing_parameter(
     engine: TTSEngine,
     core: CoreAdapter,
     query: AudioQuery,
-    base_speaker: int,
-    target_speaker: int,
+    base_speaker: StyleId,
+    target_speaker: StyleId,
 ) -> MorphingParameter:
     query = deepcopy(query)
 
