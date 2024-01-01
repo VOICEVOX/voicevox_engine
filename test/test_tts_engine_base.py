@@ -101,7 +101,7 @@ class TestTTSEngineBase(TestCase):
         text: str,
         expected: AccentPhrases,
         enable_interrogative_upspeak: bool,
-    ):
+    ) -> None:
         """音声合成時に疑問文モーラ処理を行っているかどうかを検証
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """

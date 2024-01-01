@@ -535,7 +535,7 @@ class TestParseKana(TestCase):
 
 
 class TestParseKanaException(TestCase):
-    def _assert_error_code(self, kana: str, code: ParseKanaErrorCode):
+    def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
         with self.assertRaises(ParseKanaError) as err:
             parse_kana(kana)
         self.assertEqual(err.exception.errcode, code)
