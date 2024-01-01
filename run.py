@@ -1012,7 +1012,7 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
-        core.initialize_style_id_synthesis(StyleId(style_id), skip_reinit=skip_reinit)
+        core.initialize_style_id_synthesis(style_id=StyleId(style_id), skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
