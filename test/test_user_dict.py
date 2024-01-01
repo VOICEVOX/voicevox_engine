@@ -2,7 +2,6 @@ import json
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Dict
 from unittest import TestCase
 
 from fastapi import HTTPException
@@ -61,7 +60,7 @@ import_word = UserDictWord(
 )
 
 
-def get_new_word(user_dict: Dict[str, UserDictWord]):
+def get_new_word(user_dict: dict[str, UserDictWord]) -> UserDictWord:
     assert len(user_dict) == 2 or (
         len(user_dict) == 1 and "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e" not in user_dict
     )

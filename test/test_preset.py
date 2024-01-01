@@ -164,8 +164,8 @@ class TestPresetManager(TestCase):
             }
         )
         preset_manager.load_presets()
-        preset_manager.load_presets = lambda: []
-        preset_manager.preset_path = ""
+        preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
+        preset_manager.preset_path = ""  # type: ignore[assignment]
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
             preset_manager.add_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
@@ -259,8 +259,8 @@ class TestPresetManager(TestCase):
             }
         )
         preset_manager.load_presets()
-        preset_manager.load_presets = lambda: []
-        preset_manager.preset_path = ""
+        preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
+        preset_manager.preset_path = ""  # type: ignore[assignment]
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
             preset_manager.update_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
@@ -295,8 +295,8 @@ class TestPresetManager(TestCase):
         copyfile(Path("test/presets-test-1.yaml"), temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset_manager.load_presets()
-        preset_manager.load_presets = lambda: []
-        preset_manager.preset_path = ""
+        preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
+        preset_manager.preset_path = ""  # type: ignore[assignment]
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
             preset_manager.delete_preset(1)
         self.assertEqual(len(preset_manager.presets), 2)

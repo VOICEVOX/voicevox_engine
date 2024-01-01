@@ -6,8 +6,8 @@
 from fastapi.testclient import TestClient
 
 
-def test_post_user_dict_word(client: TestClient):
-    true_params = {
+def test_post_user_dict_word(client: TestClient) -> None:
+    true_params: dict[str, str | int] = {
         "surface": "test",
         "pronunciation": "テスト",
         "accent_type": 1,
