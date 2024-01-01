@@ -22,6 +22,8 @@ def merge_json_string(src: str, dst: str) -> str:
     >>> merge_json_string(src, dst)
     '[{"version": "1"}]'
     """
+    # FIXME: バリデーションする
+    # TODO: `str | list[str]`だけど`str`が来るとエラーになるのでならないようにしたい
     src_json: list[dict[str, str | list[str]]] = json.loads(src)
     dst_json: list[dict[str, str | list[str]]] = json.loads(dst)
 
