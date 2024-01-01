@@ -186,6 +186,13 @@ def generate_app(
         allow_headers=["*"],
     )
 
+    # 起動時の設定を保存
+    settings = Setting(
+        cors_policy_mode=cors_policy_mode,
+        allow_origin=" ".join(allowed_origins),
+    )
+    setting_loader.dump_setting_file(settings)
+
     # 許可されていないOriginを遮断するミドルウェア
     @app.middleware("http")
     async def block_origin_middleware(
