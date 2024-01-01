@@ -49,6 +49,9 @@ class Label:
         """このラベルが無音 (silent/pause) であれば True、そうでなければ False を返す"""
         return self.contexts["f1"] == "xx"
 
+    def __repr__(self):
+        return f"<Label phoneme='{self.phoneme}'>"
+
 
 @dataclass
 class MoraLabel:
