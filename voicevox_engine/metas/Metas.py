@@ -3,6 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from voicevox_engine.model import StyleId
+
 
 class SpeakerStyle(BaseModel):
     """
@@ -10,7 +12,7 @@ class SpeakerStyle(BaseModel):
     """
 
     name: str = Field(title="スタイル名")
-    id: int = Field(title="スタイルID")
+    id: StyleId = Field(title="スタイルID")
 
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
@@ -67,7 +69,7 @@ class StyleInfo(BaseModel):
     スタイルの追加情報
     """
 
-    id: int = Field(title="スタイルID")
+    id: StyleId = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
     portrait: Optional[str] = Field(title="当該スタイルのportrait.pngをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
