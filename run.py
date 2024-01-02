@@ -92,7 +92,7 @@ from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
 def get_style_id_from_deprecated(
-    style_id: int | None, speaker_id: int | None
+    style_id: StyleId | None, speaker_id: StyleId | None
 ) -> StyleId:
     """
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
@@ -100,9 +100,9 @@ def get_style_id_from_deprecated(
     """
     if speaker_id is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return StyleId(speaker_id)
+        return speaker_id
     elif style_id is not None and speaker_id is None:
-        return StyleId(style_id)
+        return style_id
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
     )
@@ -1001,7 +1001,7 @@ def generate_app(
 
     @app.post("/initialize_style_id", status_code=204, tags=["その他"])
     def initialize_style_id(
-        style_id: int,
+        style_id: StyleId,
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
@@ -1012,25 +1012,23 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
-        core.initialize_style_id_synthesis(
-            style_id=StyleId(style_id), skip_reinit=skip_reinit
-        )
+        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
     def is_initialized_style_id(
-        style_id: int,
+        style_id: StyleId,
         core_version: str | None = None,
     ) -> bool:
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
         core = get_core(core_version)
-        return core.is_initialized_style_id_synthesis(StyleId(style_id))
+        return core.is_initialized_style_id_synthesis(style_id)
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
-        speaker: int,
+        speaker: StyleId,
         skip_reinit: bool = Query(  # noqa: B008
             False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
@@ -1046,16 +1044,14 @@ def generate_app(
             stacklevel=1,
         )
         return initialize_style_id(
-            style_id=StyleId(speaker),
-            skip_reinit=skip_reinit,
-            core_version=core_version,
+            style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
         )
 
     @app.get(
         "/is_initialized_speaker", response_model=bool, tags=["その他"], deprecated=True
     )
     def is_initialized_speaker(
-        speaker: int,
+        speaker: StyleId,
         core_version: str | None = None,
     ) -> bool:
         """
@@ -1066,9 +1062,7 @@ def generate_app(
             "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
             stacklevel=1,
         )
-        return is_initialized_style_id(
-            style_id=StyleId(speaker), core_version=core_version
-        )
+        return is_initialized_style_id(style_id=speaker, core_version=core_version)
 
     @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words() -> dict[str, UserDictWord]:
@@ -1360,7 +1354,8 @@ def generate_app(
             ref_template="#/components/schemas/{model}"
         )
         # definitionsは既存のモデルを重複して定義するため、不要なので削除
-        del base_library_info["definitions"]
+        if "definitions" in base_library_info:
+            del base_library_info["definitions"]
         openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
         app.openapi_schema = openapi_schema
         return openapi_schema
