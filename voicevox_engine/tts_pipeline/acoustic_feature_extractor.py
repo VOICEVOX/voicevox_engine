@@ -40,12 +40,56 @@ Consonant = Literal[
 ]
 
 # 音素のリスト
-_P_LIST1 = ("pau", "A", "E", "I", "N", "O", "U", "a", "b", "by")
-_P_LIST2 = ("ch", "cl", "d", "dy", "e", "f", "g", "gw", "gy", "h")
-_P_LIST3 = ("hy", "i", "j", "k", "kw", "ky", "m", "my", "n", "ny")
-_P_LIST4 = ("o", "p", "py", "r", "ry", "s", "sh", "t", "ts", "ty")
-_P_LIST5 = ("u", "v", "w", "y", "z")
-_PHONEME_LIST: tuple[Vowel | Consonant] = (
+_P_LIST1: tuple[Vowel | Consonant, ...] = (
+    "pau",
+    "A",
+    "E",
+    "I",
+    "N",
+    "O",
+    "U",
+    "a",
+    "b",
+    "by",
+)
+_P_LIST2: tuple[Vowel | Consonant, ...] = (
+    "ch",
+    "cl",
+    "d",
+    "dy",
+    "e",
+    "f",
+    "g",
+    "gw",
+    "gy",
+    "h",
+)
+_P_LIST3: tuple[Vowel | Consonant, ...] = (
+    "hy",
+    "i",
+    "j",
+    "k",
+    "kw",
+    "ky",
+    "m",
+    "my",
+    "n",
+    "ny",
+)
+_P_LIST4: tuple[Vowel | Consonant, ...] = (
+    "o",
+    "p",
+    "py",
+    "r",
+    "ry",
+    "s",
+    "sh",
+    "t",
+    "ts",
+    "ty",
+)
+_P_LIST5: tuple[Vowel | Consonant, ...] = ("u", "v", "w", "y", "z")
+_PHONEME_LIST: tuple[Vowel | Consonant, ...] = (
     _P_LIST1 + _P_LIST2 + _P_LIST3 + _P_LIST4 + _P_LIST5
 )
 
