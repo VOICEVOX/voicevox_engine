@@ -8,9 +8,9 @@ import pyworld as pw
 from soxr import resample
 
 from .core_adapter import CoreAdapter
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleId, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
 
 
@@ -76,7 +76,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
+    speaker_lookup: Dict[int, Tuple[Speaker, SpeakerStyle]],
     base_speaker: int,
     target_speaker: int,
 ) -> bool:
@@ -132,8 +132,8 @@ def synthesis_morphing_parameter(
     engine: TTSEngine,
     core: CoreAdapter,
     query: AudioQuery,
-    base_speaker: int,
-    target_speaker: int,
+    base_speaker: StyleId,
+    target_speaker: StyleId,
 ) -> MorphingParameter:
     query = deepcopy(query)
 
@@ -198,7 +198,7 @@ def synthesis_morphing(
         morph_param.frame_period,
     )
 
-    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
+    # TODO: tts_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
         y_h = resample(y_h, morph_param.fs, output_fs)
 

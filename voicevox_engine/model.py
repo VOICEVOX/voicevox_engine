@@ -1,8 +1,8 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, NewType, Optional
 
-from pydantic import BaseModel, Field, StrictStr, conint, validator
+from pydantic import BaseModel, Field, StrictStr, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
 
@@ -45,6 +45,9 @@ class AccentPhrase(BaseModel):
         return hash(tuple(sorted(items)))
 
 
+StyleId = NewType("StyleId", int)
+
+
 class AudioQuery(BaseModel):
     """
     音声合成用のクエリ
@@ -80,10 +83,10 @@ class ParseKanaErrorCode(Enum):
 
 
 class ParseKanaError(Exception):
-    def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name
-        self.kwargs: Dict[str, str] = kwargs
+        self.kwargs = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
 
@@ -167,8 +170,8 @@ class UserDictWord(BaseModel):
     """
 
     surface: str = Field(title="表層形")
-    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
-        title="優先度"
+    priority: int = Field(
+        title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
     )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")

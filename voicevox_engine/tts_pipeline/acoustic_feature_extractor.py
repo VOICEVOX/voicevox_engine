@@ -68,10 +68,6 @@ class Phoneme:
         # TODO: `phoneme` で受け入れ可能な文字列を型で保証
         # self.phoneme: Vowel | Consonant = phoneme
 
-    def __eq__(self, o: object):
-        """Deprecated."""
-        raise NotImplementedError
-
     @property
     def phoneme_id(self) -> int:
         """音素ID (音素リスト内でのindex) を取得する"""

@@ -9,11 +9,12 @@ import sys
 import traceback
 import warnings
 import zipfile
+from collections.abc import Awaitable, Callable
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 import soundfile
 import uvicorn
@@ -22,13 +23,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError, conint
+from pydantic import ValidationError
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core_adapter import CoreAdapter
+from voicevox_engine.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
@@ -44,6 +46,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    StyleId,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
@@ -66,7 +69,7 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngineBase, make_synthesis_engines_and_cores
+from voicevox_engine.tts_pipeline import TTSEngine, make_tts_engines_from_cores
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.user_dict import (
     apply_word,
@@ -88,16 +91,18 @@ from voicevox_engine.utility import (
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
-def get_style_id_from_deprecated(style_id: int | None, speaker_id: int | None) -> int:
+def get_style_id_from_deprecated(
+    style_id: int | None, speaker_id: int | None
+) -> StyleId:
     """
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
     if speaker_id is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return speaker_id
+        return StyleId(speaker_id)
     elif style_id is not None and speaker_id is None:
-        return style_id
+        return StyleId(style_id)
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
     )
@@ -113,27 +118,34 @@ def set_output_log_utf8() -> None:
     """
     # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
     if sys.stdout is not None:
-        # 必ずしもreconfigure()が実装されているとは限らない
-        try:
+        if isinstance(sys.stdout, TextIOWrapper):
             sys.stdout.reconfigure(encoding="utf-8")
-        except AttributeError:
+        else:
             # バッファを全て出力する
             sys.stdout.flush()
-            sys.stdout = TextIOWrapper(
-                sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-            )
+            try:
+                sys.stdout = TextIOWrapper(
+                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
+                )
+            except AttributeError:
+                # stdout.bufferがない場合は無視
+                pass
     if sys.stderr is not None:
-        try:
+        if isinstance(sys.stderr, TextIOWrapper):
             sys.stderr.reconfigure(encoding="utf-8")
-        except AttributeError:
+        else:
             sys.stderr.flush()
-            sys.stderr = TextIOWrapper(
-                sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-            )
+            try:
+                sys.stderr = TextIOWrapper(
+                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
+                )
+            except AttributeError:
+                # stderr.bufferがない場合は無視
+                pass
 
 
 def generate_app(
-    synthesis_engines: Dict[str, TTSEngineBase],
+    tts_engines: Dict[str, TTSEngine],
     cores: Dict[str, CoreAdapter],
     latest_core_version: str,
     setting_loader: SettingLoader,
@@ -179,7 +191,9 @@ def generate_app(
 
     # 許可されていないOriginを遮断するミドルウェア
     @app.middleware("http")
-    async def block_origin_middleware(request: Request, call_next):
+    async def block_origin_middleware(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response | JSONResponse:
         isValidOrigin: bool = False
         if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
             isValidOrigin = True
@@ -234,11 +248,11 @@ def generate_app(
     def apply_user_dict():
         update_dict()
 
-    def get_engine(core_version: Optional[str]) -> TTSEngineBase:
+    def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
-            return synthesis_engines[latest_core_version]
-        if core_version in synthesis_engines:
-            return synthesis_engines[core_version]
+            return tts_engines[latest_core_version]
+        if core_version in tts_engines:
+            return tts_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     def get_core(core_version: Optional[str]) -> CoreAdapter:
@@ -309,7 +323,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, style_id=selected_preset.style_id
+            text, style_id=StyleId(selected_preset.style_id)
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -998,7 +1012,9 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        core.initialize_style_id_synthesis(
+            style_id=StyleId(style_id), skip_reinit=skip_reinit
+        )
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -1009,7 +1025,8 @@ def generate_app(
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
-        return get_core(core_version).is_initialized_style_id_synthesis(style_id)
+        core = get_core(core_version)
+        return core.is_initialized_style_id_synthesis(StyleId(style_id))
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
@@ -1029,7 +1046,9 @@ def generate_app(
             stacklevel=1,
         )
         return initialize_style_id(
-            style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
+            style_id=StyleId(speaker),
+            skip_reinit=skip_reinit,
+            core_version=core_version,
         )
 
     @app.get(
@@ -1047,7 +1066,9 @@ def generate_app(
             "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
             stacklevel=1,
         )
-        return is_initialized_style_id(style_id=speaker, core_version=core_version)
+        return is_initialized_style_id(
+            style_id=StyleId(speaker), core_version=core_version
+        )
 
     @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words() -> dict[str, UserDictWord]:
@@ -1077,7 +1098,7 @@ def generate_app(
         pronunciation: str,
         accent_type: int,
         word_type: WordTypes | None = None,
-        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ) -> Response:
         """
         ユーザー辞書に言葉を追加します。
@@ -1124,7 +1145,7 @@ def generate_app(
         accent_type: int,
         word_uuid: str,
         word_type: WordTypes | None = None,
-        priority: conint(ge=MIN_PRIORITY, le=MAX_PRIORITY) | None = None,
+        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
     ) -> Response:
         """
         ユーザー辞書に登録されている言葉を更新します。
@@ -1344,7 +1365,7 @@ def generate_app(
         app.openapi_schema = openapi_schema
         return openapi_schema
 
-    app.openapi = custom_openapi
+    app.openapi = custom_openapi  # type: ignore[method-assign]
 
     return app
 
@@ -1476,7 +1497,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    synthesis_engines, cores = make_synthesis_engines_and_cores(
+    cores = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -1485,10 +1506,9 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(
-        versions=list(synthesis_engines.keys())
-    )
+    tts_engines = make_tts_engines_from_cores(cores)
+    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -1548,7 +1568,7 @@ def main() -> None:
 
     uvicorn.run(
         generate_app(
-            synthesis_engines,
+            tts_engines,
             cores,
             latest_core_version,
             setting_loader,

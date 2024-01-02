@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import TypedDict
 from unittest import TestCase
 
 from pydantic import ValidationError
@@ -7,9 +8,25 @@ from voicevox_engine.model import UserDictWord
 from voicevox_engine.tts_pipeline.kana_converter import parse_kana
 
 
+class TestModel(TypedDict):
+    surface: str
+    priority: int
+    part_of_speech: str
+    part_of_speech_detail_1: str
+    part_of_speech_detail_2: str
+    part_of_speech_detail_3: str
+    inflectional_type: str
+    inflectional_form: str
+    stem: str
+    yomi: str
+    pronunciation: str
+    accent_type: int
+    accent_associative_rule: str
+
+
 class TestUserDictWords(TestCase):
     def setUp(self):
-        self.test_model = {
+        self.test_model: TestModel = {
             "surface": "テスト",
             "priority": 0,
             "part_of_speech": "名詞",

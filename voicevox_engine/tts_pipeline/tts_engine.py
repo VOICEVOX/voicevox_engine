@@ -1,6 +1,5 @@
 import copy
 import math
-from typing import List, Optional
 
 import numpy
 from numpy import ndarray
@@ -8,10 +7,10 @@ from soxr import resample
 
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
-from ..model import AccentPhrase, AudioQuery, Mora
+from ..model import AccentPhrase, AudioQuery, Mora, StyleId
 from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
-from .tts_engine_base import TTSEngineBase
+from .text_analyzer import text_to_accent_phrases
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
 mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
@@ -53,7 +52,9 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     return phonemes
 
 
-def split_mora(phoneme_list: List[Phoneme]):
+def split_mora(
+    phoneme_list: list[Phoneme],
+) -> tuple[list[Phoneme | None], list[Phoneme], list[int]]:
     """音素系列から子音系列・母音系列・母音位置を抽出する"""
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
@@ -64,7 +65,7 @@ def split_mora(phoneme_list: List[Phoneme]):
     # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
     # 2の場合はconsonantが存在するモーラである
     # なので、2の場合(else)でphonemeを取り出している
-    consonant_phoneme_list: List[Optional[Phoneme]] = [None] + [
+    consonant_phoneme_list = [None] + [
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
@@ -147,11 +148,13 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
     frame_per_mora : ndarray
         モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
-    frame_per_phoneme: list[ndarray] = []
-    frame_per_mora: list[ndarray] = []
+    frame_per_phoneme: list[int] = []
+    frame_per_mora: list[int] = []
     for mora in moras:
         vowel_frames = _to_frame(mora.vowel_length)
-        consonant_frames = _to_frame(mora.consonant_length) if mora.consonant else 0
+        consonant_frames = (
+            _to_frame(mora.consonant_length) if mora.consonant_length is not None else 0
+        )
         mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
 
         if mora.consonant:
@@ -159,16 +162,13 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
         frame_per_phoneme += [vowel_frames]
         frame_per_mora += [mora_frames]
 
-    frame_per_phoneme = numpy.array(frame_per_phoneme)
-    frame_per_mora = numpy.array(frame_per_mora)
-
-    return frame_per_phoneme, frame_per_mora
+    return numpy.array(frame_per_phoneme), numpy.array(frame_per_mora)
 
 
-def _to_frame(sec: float) -> ndarray:
+def _to_frame(sec: float) -> int:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
-    return numpy.round(sec * FRAMERATE).astype(numpy.int32)
+    return numpy.round(sec * FRAMERATE).astype(numpy.int32).item()
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -243,7 +243,7 @@ def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> n
     return wave
 
 
-class TTSEngine(TTSEngineBase):
+class TTSEngine:
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
     def __init__(self, core: CoreWrapper):
@@ -252,7 +252,7 @@ class TTSEngine(TTSEngineBase):
         # NOTE: self._coreは将来的に消す予定
 
     def replace_phoneme_length(
-        self, accent_phrases: list[AccentPhrase], style_id: int
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モーラ系列を抽出する
@@ -282,15 +282,15 @@ class TTSEngine(TTSEngineBase):
         return accent_phrases
 
     def replace_mora_pitch(
-        self, accent_phrases: List[AccentPhrase], style_id: int
-    ) -> List[AccentPhrase]:
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
+    ) -> list[AccentPhrase]:
         """
         accent_phrasesの音高(ピッチ)を設定する
         Parameters
         ----------
         accent_phrases : List[AccentPhrase]
             アクセント句モデルのリスト
-        style_id : int
+        style_id : StyleId
             スタイルID
         Returns
         -------
@@ -306,7 +306,7 @@ class TTSEngine(TTSEngineBase):
         flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
-        def _create_one_hot(accent_phrase: AccentPhrase, position: int):
+        def _create_one_hot(accent_phrase: AccentPhrase, position: int) -> ndarray:
             """
             単位行列(numpy.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
             例えば、accent_phraseのmorasの長さが12、positionが1なら
@@ -419,10 +419,33 @@ class TTSEngine(TTSEngineBase):
 
         return accent_phrases
 
+    def replace_mora_data(
+        self, accent_phrases: list[AccentPhrase], style_id: StyleId
+    ) -> list[AccentPhrase]:
+        """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
+        return self.replace_mora_pitch(
+            accent_phrases=self.replace_phoneme_length(
+                accent_phrases=accent_phrases, style_id=style_id
+            ),
+            style_id=style_id,
+        )
+
+    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+        """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
+        # 音素とアクセントの推定
+        accent_phrases = text_to_accent_phrases(text)
+
+        # 音素長・モーラ音高の推定と更新
+        accent_phrases = self.replace_mora_data(
+            accent_phrases=accent_phrases,
+            style_id=style_id,
+        )
+        return accent_phrases
+
     def synthesis(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
     ) -> ndarray:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
@@ -436,3 +459,18 @@ class TTSEngine(TTSEngineBase):
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+
+def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngine]:
+    """コア一覧からTTSエンジン一覧を生成する"""
+    # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
+    MOCK_VER = "0.0.0"
+    tts_engines: dict[str, TTSEngine] = {}
+    for ver, core in cores.items():
+        if ver == MOCK_VER:
+            from ..dev.tts_engine import MockTTSEngine
+
+            tts_engines[ver] = MockTTSEngine()
+        else:
+            tts_engines[ver] = TTSEngine(core.core)
+    return tts_engines

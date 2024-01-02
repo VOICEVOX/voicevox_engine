@@ -4,6 +4,7 @@ import numpy
 from numpy import ndarray
 
 from .core_wrapper import CoreWrapper, OldCoreError
+from .model import StyleId
 
 
 class CoreAdapter:
@@ -35,13 +36,15 @@ class CoreAdapter:
             supported_devices = None
         return supported_devices
 
-    def initialize_style_id_synthesis(self, style_id: int, skip_reinit: bool):
+    def initialize_style_id_synthesis(
+        self, style_id: StyleId, skip_reinit: bool
+    ) -> None:
         """
         指定したスタイルでの音声合成を初期化する。
         何度も実行可能。未実装の場合は何もしない。
         Parameters
         ----------
-        style_id : int
+        style_id : StyleId
             スタイルID
         skip_reinit : bool
             True の場合, 既に初期化済みの話者の再初期化をスキップします
@@ -56,14 +59,16 @@ class CoreAdapter:
         except OldCoreError:
             pass  # コアが古い場合はどうしようもないので何もしない
 
-    def is_initialized_style_id_synthesis(self, style_id: int) -> bool:
+    def is_initialized_style_id_synthesis(self, style_id: StyleId) -> bool:
         """指定したスタイルでの音声合成が初期化されているかどうかを返す"""
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
-    def safe_yukarin_s_forward(self, phoneme_list_s: ndarray, style_id: int) -> ndarray:
+    def safe_yukarin_s_forward(
+        self, phoneme_list_s: ndarray, style_id: StyleId
+    ) -> ndarray:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
@@ -82,7 +87,7 @@ class CoreAdapter:
         end_accent_list: ndarray,
         start_accent_phrase_list: ndarray,
         end_accent_phrase_list: ndarray,
-        style_id: int,
+        style_id: StyleId,
     ) -> ndarray:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
@@ -100,7 +105,7 @@ class CoreAdapter:
         return f0_list
 
     def safe_decode_forward(
-        self, phoneme: ndarray, f0: ndarray, style_id: int
+        self, phoneme: ndarray, f0: ndarray, style_id: StyleId
     ) -> tuple[ndarray, int]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)

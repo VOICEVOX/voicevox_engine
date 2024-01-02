@@ -5,11 +5,9 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, StyleId
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
-
-# TODO: import from voicevox_engine.synthesis_engine.mora
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
@@ -37,7 +35,7 @@ def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
 
 
 def is_same_ojt_phoneme_list(
-    p1s: list[Phoneme | None], p2s: list[Phoneme | None]
+    p1s: list[Phoneme | None] | list[Phoneme], p2s: list[Phoneme | None] | list[Phoneme]
 ) -> bool:
     """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
     if len(p1s) != len(p2s):
@@ -57,7 +55,9 @@ def is_same_ojt_phoneme_list(
     return True
 
 
-def yukarin_s_mock(length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray):
+def yukarin_s_mock(
+    length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -74,7 +74,7 @@ def yukarin_sa_mock(
     start_accent_phrase_list: numpy.ndarray,
     end_accent_phrase_list: numpy.ndarray,
     style_id: numpy.ndarray,
-):
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -101,7 +101,7 @@ def decode_mock(
     f0: numpy.ndarray,
     phoneme: numpy.ndarray,
     style_id: Union[numpy.ndarray, int],
-):
+) -> numpy.ndarray:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -142,7 +142,7 @@ def _gen_query(
     volumeScale: float = 1.0,
     outputSamplingRate: int = 24000,
     outputStereo: bool = False,
-):
+) -> AudioQuery:
     """Generate AudioQuery with default meaningless arguments for test simplicity."""
     accent_phrases = [] if accent_phrases is None else accent_phrases
     return AudioQuery(
@@ -358,12 +358,12 @@ def test_count_frame_per_unit():
     ]
 
     # Expects
-    #                        Pre k  o  N pau h  i  h  O Pst
-    true_frame_per_phoneme = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
-    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme, dtype=numpy.int32)
-    #                    Pre ko  N pau hi hO Pst
-    true_frame_per_mora = [2, 6, 4, 2, 6, 6, 6]
-    true_frame_per_mora = numpy.array(true_frame_per_mora, dtype=numpy.int32)
+    #                             Pre k  o  N pau h  i  h  O Pst
+    true_frame_per_phoneme_list = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
+    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme_list, dtype=numpy.int32)
+    #                         Pre ko  N pau hi hO Pst
+    true_frame_per_mora_list = [2, 6, 4, 2, 6, 6, 6]
+    true_frame_per_mora = numpy.array(true_frame_per_mora_list, dtype=numpy.int32)
 
     # Outputs
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
@@ -499,7 +499,7 @@ class TestTTSEngine(TestCase):
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
         self.decode_mock = core.decode_forward
-        self.synthesis_engine = TTSEngine(core=core)
+        self.tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
 
     def test_to_flatten_moras(self):
         flatten_moras = to_flatten_moras(self.accent_phrases_hello_hiho)
@@ -582,30 +582,24 @@ class TestTTSEngine(TestCase):
         )
 
     def test_replace_phoneme_length(self):
-        result = self.synthesis_engine.replace_phoneme_length(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
-        )
-
-        # yukarin_sに渡される値の検証
+        # Inputs
+        hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
+        # Outputs & Indirect Outputs（yukarin_sに渡される値）
+        result = self.tts_engine.replace_phoneme_length(hello_hiho, style_id=StyleId(1))
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
-        self.assertEqual(list_length, 20)
-        self.assertEqual(list_length, len(phoneme_list))
+        style_id = yukarin_s_args["style_id"]
+        # Expects
+        true_list_length = 20
+        true_style_id = 1
         true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
         true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
         true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
-        numpy.testing.assert_array_equal(
-            phoneme_list,
-            numpy.array(true_phoneme_list, dtype=numpy.int64),
-        )
-        self.assertEqual(yukarin_s_args["style_id"], 1)
-
-        # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
 
-        def result_value(i: int):
+        def result_value(i: int) -> float:
             return float(phoneme_list[i] * 0.5 + 1)
 
         for accent_phrase in true_result:
@@ -619,24 +613,31 @@ class TestTTSEngine(TestCase):
             if accent_phrase.pause_mora is not None:
                 accent_phrase.pause_mora.vowel_length = result_value(index)
                 index += 1
-
+        # Tests
+        self.assertEqual(list_length, true_list_length)
+        self.assertEqual(list_length, len(phoneme_list))
+        self.assertEqual(style_id, true_style_id)
+        numpy.testing.assert_array_equal(
+            phoneme_list,
+            numpy.array(true_phoneme_list, dtype=numpy.int64),
+        )
         self.assertEqual(result, true_result)
 
     def test_replace_mora_pitch(self):
         # 空のリストでエラーを吐かないか
-        empty_accent_phrases = []
-        self.assertEqual(
-            self.synthesis_engine.replace_mora_pitch(
-                accent_phrases=empty_accent_phrases, style_id=1
-            ),
-            [],
-        )
+        # Inputs
+        phrases: list = []
+        # Outputs
+        result = self.tts_engine.replace_mora_pitch(phrases, style_id=StyleId(1))
+        # Expects
+        true_result: list = []
+        # Tests
+        self.assertEqual(result, true_result)
 
-        result = self.synthesis_engine.replace_mora_pitch(
-            accent_phrases=deepcopy(self.accent_phrases_hello_hiho), style_id=1
-        )
-
-        # yukarin_saに渡される値の検証
+        # Inputs
+        hello_hiho = deepcopy(self.accent_phrases_hello_hiho)
+        # Outputs & Indirect Outputs（yukarin_saに渡される値）
+        result = self.tts_engine.replace_mora_pitch(hello_hiho, style_id=StyleId(1))
         yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
         list_length = yukarin_sa_args["length"]
         vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
@@ -645,41 +646,18 @@ class TestTTSEngine(TestCase):
         end_accent_list = yukarin_sa_args["end_accent_list"][0]
         start_accent_phrase_list = yukarin_sa_args["start_accent_phrase_list"][0]
         end_accent_phrase_list = yukarin_sa_args["end_accent_phrase_list"][0]
-        self.assertEqual(list_length, 12)
-        self.assertEqual(list_length, len(vowel_phoneme_list))
-        self.assertEqual(list_length, len(consonant_phoneme_list))
-        self.assertEqual(list_length, len(start_accent_list))
-        self.assertEqual(list_length, len(end_accent_list))
-        self.assertEqual(list_length, len(start_accent_phrase_list))
-        self.assertEqual(list_length, len(end_accent_phrase_list))
-        self.assertEqual(yukarin_sa_args["style_id"], 1)
-
-        numpy.testing.assert_array_equal(
-            vowel_phoneme_list,
-            numpy.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0]),
-        )
-        numpy.testing.assert_array_equal(
-            consonant_phoneme_list,
-            numpy.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1]),
-        )
-        numpy.testing.assert_array_equal(
-            start_accent_list, numpy.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        )
-        numpy.testing.assert_array_equal(
-            end_accent_list, numpy.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
-        )
-        numpy.testing.assert_array_equal(
-            start_accent_phrase_list, numpy.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        )
-        numpy.testing.assert_array_equal(
-            end_accent_phrase_list, numpy.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
-        )
-
-        # flatten_morasを使わずに愚直にaccent_phrasesにデータを反映させてみる
+        style_id = yukarin_sa_args["style_id"]
+        # Expects
+        true_vowels = numpy.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0])
+        true_consonants = numpy.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1])
+        true_accent_starts = numpy.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        true_accent_ends = numpy.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
+        true_phrase_starts = numpy.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        true_phrase_ends = numpy.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
         true_result = deepcopy(self.accent_phrases_hello_hiho)
         index = 1
 
-        def result_value(i: int):
+        def result_value(i: int) -> float:
             # unvoiced_mora_phoneme_listのPhoneme ID版
             unvoiced_mora_phoneme_id_list = [
                 Phoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list
@@ -703,5 +681,19 @@ class TestTTSEngine(TestCase):
             if accent_phrase.pause_mora is not None:
                 accent_phrase.pause_mora.pitch = result_value(index)
                 index += 1
-
+        # Tests
+        self.assertEqual(list_length, 12)
+        self.assertEqual(list_length, len(vowel_phoneme_list))
+        self.assertEqual(list_length, len(consonant_phoneme_list))
+        self.assertEqual(list_length, len(start_accent_list))
+        self.assertEqual(list_length, len(end_accent_list))
+        self.assertEqual(list_length, len(start_accent_phrase_list))
+        self.assertEqual(list_length, len(end_accent_phrase_list))
+        self.assertEqual(style_id, 1)
+        numpy.testing.assert_array_equal(vowel_phoneme_list, true_vowels)
+        numpy.testing.assert_array_equal(consonant_phoneme_list, true_consonants)
+        numpy.testing.assert_array_equal(start_accent_list, true_accent_starts)
+        numpy.testing.assert_array_equal(end_accent_list, true_accent_ends)
+        numpy.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
+        numpy.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
         self.assertEqual(result, true_result)
