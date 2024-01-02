@@ -16,8 +16,9 @@ import soundfile
 # FIXME: remove FastAPI dependency
 from fastapi import HTTPException, Request
 
-from .model import AudioQuery
-from .synthesis_engine import make_synthesis_engines
+from .core_initializer import initialize_cores
+from .model import AudioQuery, StyleId
+from .tts_pipeline import make_tts_engines_from_cores
 from .utility import get_latest_core_version
 
 
@@ -28,7 +29,7 @@ class CancellableEngine:
     （オリジナルと比べ引数が増えているので注意）
 
     パラメータ use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Attributes
     ----------
@@ -140,7 +141,7 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         request: Request,
         core_version: str | None,
     ) -> str:
@@ -152,7 +153,7 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        style_id: int
+        style_id: StyleId
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -211,7 +212,7 @@ def start_synthesis_subprocess(
     pickle化の関係でグローバルに書いている
 
     引数 use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Parameters
     ----------
@@ -219,7 +220,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
+    cores = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -227,20 +228,23 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
+    tts_engines = make_tts_engines_from_cores(cores)
+
+    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
     while True:
         try:
             query, style_id, core_version = sub_proc_con.recv()
             if core_version is None:
-                _engine = synthesis_engines[latest_core_version]
-            elif core_version in synthesis_engines:
-                _engine = synthesis_engines[core_version]
+                _engine = tts_engines[latest_core_version]
+            elif core_version in tts_engines:
+                _engine = tts_engines[core_version]
             else:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, style_id)
+            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
+            wave = _engine.synthesis(query, style_id, False)
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"

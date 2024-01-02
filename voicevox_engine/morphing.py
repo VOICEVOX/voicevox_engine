@@ -7,10 +7,11 @@ import numpy as np
 import pyworld as pw
 from soxr import resample
 
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .core_adapter import CoreAdapter
+from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
-from .synthesis_engine import SynthesisEngine
+from .model import AudioQuery, MorphableTargetInfo, StyleId, StyleIdNotFoundError
+from .tts_pipeline import TTSEngine
 
 
 # FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
@@ -75,7 +76,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
+    speaker_lookup: Dict[int, Tuple[Speaker, SpeakerStyle]],
     base_style_id: int,
     target_style_id: int,
 ) -> bool:
@@ -128,15 +129,16 @@ def is_synthesis_morphing_permitted(
 
 
 def synthesis_morphing_parameter(
-    engine: SynthesisEngine,
+    engine: TTSEngine,
+    core: CoreAdapter,
     query: AudioQuery,
-    base_style_id: int,
-    target_style_id: int,
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> MorphingParameter:
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
-    query.outputSamplingRate = engine.default_sampling_rate
+    query.outputSamplingRate = core.default_sampling_rate
 
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
@@ -198,7 +200,7 @@ def synthesis_morphing(
         morph_param.frame_period,
     )
 
-    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
+    # TODO: tts_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
         y_h = resample(y_h, morph_param.fs, output_fs)
 

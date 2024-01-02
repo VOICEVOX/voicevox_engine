@@ -2,12 +2,15 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
-from voicevox_engine.metas.Metas import CoreSpeaker, EngineSpeaker, Speaker, StyleInfo
+from voicevox_engine.metas.Metas import (
+    CoreSpeaker,
+    EngineSpeaker,
+    Speaker,
+    SpeakerStyle,
+)
 
 if TYPE_CHECKING:
-    from voicevox_engine.synthesis_engine.synthesis_engine_base import (
-        SynthesisEngineBase,
-    )
+    from voicevox_engine.core_adapter import CoreAdapter
 
 
 class MetasStore:
@@ -16,7 +19,13 @@ class MetasStore:
     """
 
     def __init__(self, engine_speakers_path: Path) -> None:
-        self._engine_speakers_path = engine_speakers_path
+        """
+        Parameters
+        ----------
+        engine_speakers_path : Path
+            エンジンに含まれる話者メタ情報ディレクトリのパス。
+        """
+        # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: Dict[str, EngineSpeaker] = {
             folder.name: EngineSpeaker(
                 **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
@@ -24,48 +33,47 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def speaker_engine_metas(self, speaker_uuid: str) -> EngineSpeaker:
-        return self.loaded_metas[speaker_uuid]
-
-    def combine_metas(self, core_metas: List[CoreSpeaker]) -> List[Speaker]:
+    # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
+    # TTSEngineによる循環importを修正する
+    def load_combined_metas(self, core: "CoreAdapter") -> List[Speaker]:
         """
-        与えられたmetaにエンジンのコア情報を付加して返す
-        core_metas: コアのmetas()が返すJSONのModel
+        コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
+        Parameters
+        ----------
+        core : CoreAdapter
+            話者メタ情報をもったコア
+        Returns
+        -------
+        ret : List[Speaker]
+            エンジンとコアに含まれる話者メタ情報
         """
-
+        # コアに含まれる話者メタ情報の収集
+        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
+        # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
-                **self.speaker_engine_metas(speaker_meta.speaker_uuid).dict(),
+                **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
                 **speaker_meta.dict(),
             )
             for speaker_meta in core_metas
         ]
 
-    # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
-    # SynthesisEngineBaseによる循環importを修正する
-    def load_combined_metas(self, engine: "SynthesisEngineBase") -> List[Speaker]:
-        """
-        与えられたエンジンから、コア・エンジン両方の情報を含んだMetasを返す
-        """
 
-        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(engine.speakers)]
-        return self.combine_metas(core_metas)
-
-    @property
-    def engine_speakers_path(self) -> Path:
-        return self._engine_speakers_path
-
-    @property
-    def loaded_metas(self) -> Dict[str, EngineSpeaker]:
-        return self._loaded_metas
-
-
-def construct_lookup(speakers: List[Speaker]) -> Dict[int, Tuple[Speaker, StyleInfo]]:
+def construct_lookup(
+    speakers: List[Speaker],
+) -> Dict[int, Tuple[Speaker, SpeakerStyle]]:
     """
-    `{style.id: StyleInfo}`の変換テーブル
+    スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
+    Parameters
+    ----------
+    speakers : List[Speaker]
+        話者メタ情報
+    Returns
+    -------
+    ret : Dict[int, Tuple[Speaker, SpeakerStyle]]
+        スタイルID に話者メタ情報・スタイルメタ情報が紐付いた対応表
     """
-
-    lookup_table = dict()
+    lookup_table: dict[int, tuple[Speaker, SpeakerStyle]] = dict()
     for speaker in speakers:
         for style in speaker.styles:
             lookup_table[style.id] = (speaker, style)
