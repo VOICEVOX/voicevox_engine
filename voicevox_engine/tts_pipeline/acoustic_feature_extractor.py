@@ -1,4 +1,4 @@
-from typing import Literal, Sequence
+from typing import Literal
 
 import numpy
 
@@ -45,7 +45,7 @@ _P_LIST2 = ("ch", "cl", "d", "dy", "e", "f", "g", "gw", "gy", "h")
 _P_LIST3 = ("hy", "i", "j", "k", "kw", "ky", "m", "my", "n", "ny")
 _P_LIST4 = ("o", "p", "py", "r", "ry", "s", "sh", "t", "ts", "ty")
 _P_LIST5 = ("u", "v", "w", "y", "z")
-_PHONEME_LIST: Sequence[Vowel | Consonant] = (
+_PHONEME_LIST: tuple[Vowel | Consonant] = (
     _P_LIST1 + _P_LIST2 + _P_LIST3 + _P_LIST4 + _P_LIST5
 )
 
