@@ -8,6 +8,7 @@ from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
 )
+from voicevox_engine.model import StyleId
 
 if TYPE_CHECKING:
     from voicevox_engine.core_adapter import CoreAdapter
@@ -61,7 +62,7 @@ class MetasStore:
 
 def construct_lookup(
     speakers: List[Speaker],
-) -> Dict[int, Tuple[Speaker, SpeakerStyle]]:
+) -> Dict[StyleId, Tuple[Speaker, SpeakerStyle]]:
     """
     スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
     Parameters
@@ -70,10 +71,10 @@ def construct_lookup(
         話者メタ情報
     Returns
     -------
-    ret : Dict[int, Tuple[Speaker, SpeakerStyle]]
+    ret : Dict[StyleId, Tuple[Speaker, SpeakerStyle]]
         スタイルID に話者メタ情報・スタイルメタ情報が紐付いた対応表
     """
-    lookup_table: dict[int, tuple[Speaker, SpeakerStyle]] = dict()
+    lookup_table: dict[StyleId, tuple[Speaker, SpeakerStyle]] = dict()
     for speaker in speakers:
         for style in speaker.styles:
             lookup_table[style.id] = (speaker, style)

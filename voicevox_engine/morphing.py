@@ -76,9 +76,9 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, SpeakerStyle]],
-    base_style_id: int,
-    target_style_id: int,
+    speaker_lookup: Dict[StyleId, Tuple[Speaker, SpeakerStyle]],
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> bool:
     """
     指定されたstyle_idがモーフィング可能かどうか返す

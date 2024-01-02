@@ -90,8 +90,7 @@ from voicevox_engine.utility import (
 )
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
-# StyleIdの型
-# NOTE: Python 3.12以降で[S: int | list[int]]に置き換えられる
+# NOTE: Python 3.12以降で[S: StyleId | list[StyleId]]に置き換えられる
 S = TypeVar("S", StyleId, list[StyleId])
 
 
