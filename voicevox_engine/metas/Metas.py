@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, NewType, Optional
 
 from pydantic import BaseModel, Field
 
-from voicevox_engine.model import StyleId
+StyleId = NewType("StyleId", int)
 
 
 class SpeakerStyle(BaseModel):

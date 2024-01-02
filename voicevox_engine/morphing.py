@@ -8,9 +8,14 @@ import pyworld as pw
 from soxr import resample
 
 from .core_adapter import CoreAdapter
-from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
+from .metas.Metas import (
+    Speaker,
+    SpeakerStyle,
+    SpeakerSupportPermittedSynthesisMorphing,
+    StyleId,
+)
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, StyleId, StyleIdNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
 
 

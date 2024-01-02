@@ -7,8 +7,8 @@ from voicevox_engine.metas.Metas import (
     EngineSpeaker,
     Speaker,
     SpeakerStyle,
+    StyleId,
 )
-from voicevox_engine.model import StyleId
 
 if TYPE_CHECKING:
     from voicevox_engine.core_adapter import CoreAdapter

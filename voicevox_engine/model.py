@@ -1,6 +1,6 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Any, Dict, List, NewType, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, StrictStr, validator
 
@@ -43,9 +43,6 @@ class AccentPhrase(BaseModel):
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
-
-
-StyleId = NewType("StyleId", int)
 
 
 class AudioQuery(BaseModel):
