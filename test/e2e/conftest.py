@@ -14,7 +14,7 @@ from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
 @pytest.fixture
-def snapshot_json(snapshot: SnapshotAssertion):
+def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
     """
     syrupyでJSONをsnapshotするためのfixture。
 

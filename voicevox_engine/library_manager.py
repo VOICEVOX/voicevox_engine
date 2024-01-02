@@ -3,9 +3,8 @@ import json
 import os
 import shutil
 import zipfile
-from io import BytesIO
 from pathlib import Path
-from typing import Dict
+from typing import BinaryIO
 
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -90,7 +89,7 @@ class LibraryManager:
                 ]
             return list(map(DownloadableLibraryInfo.parse_obj, libraries))
 
-    def installed_libraries(self) -> Dict[str, InstalledLibraryInfo]:
+    def installed_libraries(self) -> dict[str, InstalledLibraryInfo]:
         """
         インストール済み音声ライブラリの情報を取得
         Returns
@@ -98,7 +97,7 @@ class LibraryManager:
         library : Dict[str, InstalledLibraryInfo]
             インストール済みライブラリの情報
         """
-        library: Dict[str, InstalledLibraryInfo] = {}
+        library: dict[str, InstalledLibraryInfo] = {}
         for library_dir in self.library_root_dir.iterdir():
             if library_dir.is_dir():
                 # ライブラリ情報の取得 from `library_root_dir / f"{library_uuid}" / "metas.json"`
@@ -109,7 +108,7 @@ class LibraryManager:
                 library[library_uuid] = InstalledLibraryInfo(**info, uninstallable=True)
         return library
 
-    def install_library(self, library_id: str, file: BytesIO) -> Path:
+    def install_library(self, library_id: str, file: BinaryIO) -> Path:
         """
         音声ライブラリ (`.vvlib`) のインストール
         Parameters

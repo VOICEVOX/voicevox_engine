@@ -6,7 +6,7 @@ import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
-from ...model import AudioQuery
+from ...model import AudioQuery, StyleId
 from ...tts_pipeline import TTSEngine
 from ...tts_pipeline.tts_engine import to_flatten_moras
 from ..core.mock import MockCoreWrapper
@@ -21,7 +21,7 @@ class MockTTSEngine(TTSEngine):
     def synthesize_wave(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
     ) -> np.ndarray:
         """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する"""

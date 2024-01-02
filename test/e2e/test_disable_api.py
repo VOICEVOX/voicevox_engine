@@ -13,7 +13,7 @@ def _assert_request_and_response_403(
     client: TestClient,
     method: Literal["post", "get", "put", "delete"],
     path: str,
-):
+) -> None:
     if method == "post":
         response = client.post(path)
     elif method == "get":
@@ -28,7 +28,7 @@ def _assert_request_and_response_403(
     assert response.status_code == 403, f"{method} {path} が403を返しませんでした"
 
 
-def test_disable_mutable_api(app_params: dict):
+def test_disable_mutable_api(app_params: dict) -> None:
     """エンジンの静的なデータを変更するAPIを無効化するテスト"""
     client = TestClient(generate_app(**app_params, disable_mutable_api=True))
 

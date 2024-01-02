@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.tts_engine import MockTTSEngine
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, StyleId
 from voicevox_engine.tts_pipeline.kana_converter import create_kana
 
 
@@ -48,11 +48,11 @@ class TestMockTTSEngine(TestCase):
 
     def test_update_length(self):
         """`.update_length()` がエラー無く生成をおこなう"""
-        self.engine.update_length(self.accent_phrases_hello_hiho, style_id=0)
+        self.engine.update_length(self.accent_phrases_hello_hiho, style_id=StyleId(0))
 
     def test_update_pitch(self):
         """`.update_pitch()` がエラー無く生成をおこなう"""
-        self.engine.update_pitch(self.accent_phrases_hello_hiho, style_id=0)
+        self.engine.update_pitch(self.accent_phrases_hello_hiho, style_id=StyleId(0))
 
     def test_synthesize_wave(self):
         """`.synthesize_wave()` がエラー無く生成をおこなう"""
@@ -69,5 +69,5 @@ class TestMockTTSEngine(TestCase):
                 outputStereo=False,
                 kana=create_kana(self.accent_phrases_hello_hiho),
             ),
-            style_id=0,
+            style_id=StyleId(0),
         )

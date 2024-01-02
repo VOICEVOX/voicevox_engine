@@ -46,6 +46,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
+    StyleId,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
@@ -90,16 +91,18 @@ from voicevox_engine.utility import (
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
-def get_style_id_from_deprecated(style_id: int | None, speaker_id: int | None) -> int:
+def get_style_id_from_deprecated(
+    style_id: int | None, speaker_id: int | None
+) -> StyleId:
     """
     style_idとspeaker_id両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
     if speaker_id is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return speaker_id
+        return StyleId(speaker_id)
     elif style_id is not None and speaker_id is None:
-        return style_id
+        return StyleId(style_id)
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
     )
@@ -320,7 +323,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, style_id=selected_preset.style_id
+            text, style_id=StyleId(selected_preset.style_id)
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -999,7 +1002,9 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id=style_id, skip_reinit=skip_reinit)
+        core.initialize_style_id_synthesis(
+            style_id=StyleId(style_id), skip_reinit=skip_reinit
+        )
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -1010,7 +1015,8 @@ def generate_app(
         """
         指定されたstyle_idのスタイルが初期化されているかどうかを返します。
         """
-        return get_core(core_version).is_initialized_style_id_synthesis(style_id)
+        core = get_core(core_version)
+        return core.is_initialized_style_id_synthesis(StyleId(style_id))
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
     def initialize_speaker(
@@ -1030,7 +1036,9 @@ def generate_app(
             stacklevel=1,
         )
         return initialize_style_id(
-            style_id=speaker, skip_reinit=skip_reinit, core_version=core_version
+            style_id=StyleId(speaker),
+            skip_reinit=skip_reinit,
+            core_version=core_version,
         )
 
     @app.get(
@@ -1048,7 +1056,9 @@ def generate_app(
             "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
             stacklevel=1,
         )
-        return is_initialized_style_id(style_id=speaker, core_version=core_version)
+        return is_initialized_style_id(
+            style_id=StyleId(speaker), core_version=core_version
+        )
 
     @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words() -> dict[str, UserDictWord]:
