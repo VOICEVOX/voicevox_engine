@@ -1,12 +1,52 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Self
+from typing import Literal, Self
 
 import pyopenjtalk
 
 from ..model import AccentPhrase, Mora
 from .mora_list import openjtalk_mora2text
+
+OjtVowel = Literal[
+    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
+]
+OjtConsonant = Literal[
+    "b",
+    "by",
+    "ch",
+    "d",
+    "dy",
+    "f",
+    "g",
+    "gw",
+    "gy",
+    "h",
+    "hy",
+    "j",
+    "k",
+    "kw",
+    "ky",
+    "m",
+    "my",
+    "n",
+    "ny",
+    "p",
+    "py",
+    "r",
+    "ry",
+    "s",
+    "sh",
+    "t",
+    "ts",
+    "ty",
+    "v",
+    "w",
+    "y",
+    "z",
+]
+OjtUnknown = Literal["xx"]
+OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
 
 
 @dataclass
@@ -41,9 +81,10 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self):
+    def phoneme(self) -> OjtPhoneme:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        return self.contexts["p3"]
+        # FIXME: バリデーションする
+        return self.contexts["p3"]  # type: ignore
 
     def is_pause(self):
         """このラベルが無音 (silent/pause) であれば True、そうでなければ False を返す"""
