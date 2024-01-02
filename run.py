@@ -95,17 +95,15 @@ from voicevox_engine.utility.run_utility import decide_boolean_from_env
 S = TypeVar("S", StyleId, list[StyleId])
 
 
-def get_style_id_from_deprecated(
-    style_id: StyleId | None, speaker_id: StyleId | None
-) -> StyleId:
+def get_style_id_from_deprecated(style_id: S | None, speaker: S | None) -> S:
     """
     style_idとspeaker両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
-    if speaker_id is not None and style_id is None:
+    if speaker is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return speaker_id
-    elif style_id is not None and speaker_id is None:
+        return speaker
+    elif style_id is not None and speaker is None:
         return style_id
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
