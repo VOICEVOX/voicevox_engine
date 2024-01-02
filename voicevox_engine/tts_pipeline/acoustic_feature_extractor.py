@@ -25,10 +25,6 @@ class Phoneme:
 
         self.phoneme = phoneme
 
-    def __eq__(self, o: object) -> bool:
-        """Deprecated."""
-        raise NotImplementedError
-
     @property
     def phoneme_id(self) -> int:
         """音素ID (音素リスト内でのindex) を取得する"""
