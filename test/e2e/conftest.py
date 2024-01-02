@@ -28,7 +28,7 @@ def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
 
 @pytest.fixture(scope="session")
 def app_params():
-    cores = initialize_cores(use_gpu=False)
+    cores = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(cores)
     latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
     setting_loader = SettingLoader(Path("./not_exist.yaml"))
