@@ -51,7 +51,7 @@ def create_morphing_parameter(
 
 def get_morphable_targets(
     speakers: List[Speaker],
-    base_style_ids: List[int],
+    base_style_ids: List[StyleId],
 ) -> List[Dict[int, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報

@@ -3,6 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
+from voicevox_engine.model import StyleId
+
 
 class SpeakerStyle(BaseModel):
     """
@@ -10,7 +12,7 @@ class SpeakerStyle(BaseModel):
     """
 
     name: str = Field(title="スタイル名")
-    id: int = Field(title="スタイルID")
+    id: StyleId = Field(title="スタイルID")
 
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):

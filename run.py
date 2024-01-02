@@ -273,14 +273,16 @@ def generate_app(
     )
     def audio_query(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> AudioQuery:
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
@@ -354,8 +356,10 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         is_kana: bool = False,
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -368,7 +372,7 @@ def generate_app(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -394,11 +398,13 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_data(accent_phrases, style_id=style_id)
 
@@ -410,11 +416,13 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         return engine.replace_phoneme_length(
             accent_phrases=accent_phrases, style_id=style_id
@@ -428,11 +436,13 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         return engine.replace_mora_pitch(
             accent_phrases=accent_phrases, style_id=style_id
@@ -453,15 +463,17 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         wave = engine.synthesis(
             query=query,
@@ -496,11 +508,13 @@ def generate_app(
     def cancellable_synthesis(
         query: AudioQuery,
         request: Request,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
@@ -538,11 +552,13 @@ def generate_app(
     )
     def multi_synthesis(
         queries: list[AudioQuery],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        _style_id: StyleId | None = Query(alias="style_id", default=None),  # noqa: B008
+        _speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="speaker", default=None, deprecated=True
+        ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(style_id=_style_id, speaker=_speaker)
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -578,9 +594,11 @@ def generate_app(
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[int] | None = Query(default=None),  # noqa: B008
-        base_speakers: (list[int] | None) = Query(  # noqa: B008
-            default=None, deprecated=True
+        _base_style_ids: (list[StyleId] | None) = Query(  # noqa: B008
+            alias="base_style_ids", default=None
+        ),
+        _base_speakers: (list[StyleId] | None) = Query(  # noqa: B008
+            alias="base_speakers", default=None
         ),
         core_version: str | None = None,
     ) -> list[dict[str, MorphableTargetInfo]]:
@@ -591,7 +609,7 @@ def generate_app(
         返り値の話者はstring型なので注意。
         """
         base_style_ids = get_style_id_from_deprecated(
-            style_id=base_style_ids, speaker=base_speakers
+            style_id=_base_style_ids, speaker=_base_speakers
         )
         core = get_core(core_version)
 
@@ -625,10 +643,18 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_style_id: int | None = Query(default=None),  # noqa: B008
-        base_speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
-        target_style_id: int | None = Query(default=None),  # noqa: B008
-        target_speaker: int | None = Query(default=None, deprecated=True),  # noqa: B008
+        _base_style_id: (StyleId | None) = Query(  # noqa: B008
+            alias="base_style_id", default=None
+        ),
+        _base_speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="base_speaker", default=None, deprecated=True
+        ),
+        _target_style_id: (StyleId | None) = Query(  # noqa: B008
+            alias="target_style_id", default=None
+        ),
+        _target_speaker: (StyleId | None) = Query(  # noqa: B008
+            alias="target_speaker", default=None, deprecated=True
+        ),
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
@@ -637,10 +663,10 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         base_style_id = get_style_id_from_deprecated(
-            style_id=base_style_id, speaker=base_speaker
+            style_id=_base_style_id, speaker=_base_speaker
         )
         target_style_id = get_style_id_from_deprecated(
-            style_id=target_style_id, speaker=target_speaker
+            style_id=_target_style_id, speaker=_target_speaker
         )
         engine = get_engine(core_version)
         core = get_core(core_version)
