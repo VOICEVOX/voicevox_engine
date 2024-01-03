@@ -17,7 +17,8 @@ NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob
 from typing import List, Optional
 
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from .mora_list import KanaVowel, kana_grapheme2phonemes
+from .mora_list import kana_grapheme2phonemes
+from .acoustic_feature_extractor import Vowel
 
 _LOOP_LIMIT = 300
 
@@ -42,7 +43,7 @@ for grapheme, (consonant, vowel) in kana_grapheme2phonemes.items():
     if vowel in ["a", "i", "u", "e", "o"]:
         # 「`_` で無声化」の実装。例: "_ホ" -> "hO"
         # NOTE: 現行の型システムは Conditional Literal + upper に非対応.
-        upper_vowel: KanaVowel = vowel.upper()  # type: ignore
+        upper_vowel: Vowel = vowel.upper()  # type: ignore
         _kana2mora[_UNVOICE_SYMBOL + grapheme] = Mora(
             text=grapheme,
             consonant=consonant,

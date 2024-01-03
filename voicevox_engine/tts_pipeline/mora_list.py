@@ -44,7 +44,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 from typing import Literal
 
-# 無声化（例: `_ア`）と特殊文字 (`'`, `/`, `、`, `？`) を含まない、AquesTalk 風記法の基本字素
+from .acoustic_feature_extractor import BaseVowel
+
+# AquesTalk 風記法で記述されるモーラ（無声化 `_` を除く）
 _KanaBaseGrapheme = Literal[
     "ァ",
     "ア",
@@ -210,8 +212,7 @@ _KanaBaseGrapheme = Literal[
     "ヴョ",
     "ヶ",
 ]
-_KanaBaseVowel = Literal["N", "a", "cl", "e", "i", "o", "u"]
-KanaVowel = _KanaBaseVowel | Literal["A", "E", "I", "O", "U"]
+
 _KanaConsonant = (
     None
     | Literal[
@@ -250,7 +251,7 @@ _KanaConsonant = (
     ]
 )
 
-_mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant, _KanaBaseVowel]] = [
+_mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant, BaseVowel]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
@@ -398,7 +399,7 @@ _mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant, _KanaBaseVowel
     ("ア", None, "a"),
 ]
 _mora_list_additional: list[
-    tuple[_KanaBaseGrapheme, _KanaConsonant, _KanaBaseVowel]
+    tuple[_KanaBaseGrapheme, _KanaConsonant, BaseVowel]
 ] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
@@ -426,7 +427,7 @@ kana_mora2grapheme: dict[str, _KanaBaseGrapheme] = {
 }
 # AquesTalk 風記法の g2p
 kana_grapheme2phonemes: dict[
-    _KanaBaseGrapheme, tuple[_KanaConsonant, _KanaBaseVowel]
+    _KanaBaseGrapheme, tuple[_KanaConsonant, BaseVowel]
 ] = {
     text: (consonant, vowel)
     for [text, consonant, vowel] in _mora_list_minimum + _mora_list_additional
