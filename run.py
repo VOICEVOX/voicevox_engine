@@ -14,7 +14,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 import soundfile
 import uvicorn
@@ -25,6 +25,7 @@ from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from starlette.background import BackgroundTask
+from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -145,15 +146,15 @@ def set_output_log_utf8() -> None:
 
 
 def generate_app(
-    tts_engines: Dict[str, TTSEngine],
-    cores: Dict[str, CoreAdapter],
+    tts_engines: dict[str, TTSEngine],
+    cores: dict[str, CoreAdapter],
     latest_core_version: str,
     setting_loader: SettingLoader,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
-    allow_origin: Optional[List[str]] = None,
+    allow_origin: Optional[list[str]] = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     if root_dir is None:
@@ -164,6 +165,16 @@ def generate_app(
         description="VOICEVOXの音声合成エンジンです。",
         version=__version__,
     )
+
+    # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
+    # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
+    async def global_execution_handler(request: Request, exc: Exception) -> Response:
+        return JSONResponse(
+            status_code=500,
+            content="Internal Server Error",
+        )
+
+    app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
 
     # CORS用のヘッダを生成するミドルウェア
     localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
