@@ -367,7 +367,6 @@ def test_text_to_accent_phrases_normal():
 
 def fixed_features_koxx(_: str) -> list[str]:
     # sil-k-o-xx-sil
-    # p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx  # noqa: B950
     return [
         ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
         ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
