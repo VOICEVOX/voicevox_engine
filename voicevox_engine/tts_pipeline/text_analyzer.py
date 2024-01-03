@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Literal, Self
+from typing import Callable, Literal, Self
 
 import pyopenjtalk
 
@@ -59,6 +59,7 @@ class Label:
     def from_feature(cls, feature: str) -> Self:
         """OpenJTalk feature から Label インスタンスを生成する"""
         # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
+        # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx  # noqa: B950
         result = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
             r"/A\:(?P<a1>.+?)\+(?P<a2>.+?)\+(?P<a3>.+?)"
@@ -332,13 +333,16 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
+def text_to_accent_phrases(
+    text: str,
+    text_to_features: Callable[[str], list[str]] = pyopenjtalk.extract_fullcontext,
+) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
         return []
 
     # 日本語文からUtteranceLabelを抽出する
-    features: list[str] = pyopenjtalk.extract_fullcontext(text)  # type: ignore
+    features = text_to_features(text)
     utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, features)))
 
     # ドメインを変換する
