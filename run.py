@@ -95,15 +95,17 @@ from voicevox_engine.utility.run_utility import decide_boolean_from_env
 S = TypeVar("S", StyleId, list[StyleId])
 
 
-def get_style_id_from_deprecated(style_id: S | None, speaker: S | None) -> S:
+def get_style_id_from_deprecated(
+    style_id: S | None, depreceated_speaker: S | None
+) -> S:
     """
     style_idとspeaker両方ともNoneかNoneでないかをチェックし、
     どちらか片方しかNoneが存在しなければstyle_idを返す
     """
-    if speaker is not None and style_id is None:
+    if depreceated_speaker is not None and style_id is None:
         warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return speaker
-    elif style_id is not None and speaker is None:
+        return depreceated_speaker
+    elif style_id is not None and depreceated_speaker is None:
         return style_id
     raise HTTPException(
         status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
@@ -290,7 +292,9 @@ def generate_app(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
@@ -376,7 +380,9 @@ def generate_app(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -404,7 +410,9 @@ def generate_app(
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
@@ -420,7 +428,9 @@ def generate_app(
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
 
@@ -436,7 +446,9 @@ def generate_app(
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
 
@@ -463,7 +475,9 @@ def generate_app(
         ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
@@ -500,7 +514,9 @@ def generate_app(
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
@@ -539,7 +555,9 @@ def generate_app(
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(style_id=style_id, speaker=speaker)
+        style_id = get_style_id_from_deprecated(
+            style_id=style_id, depreceated_speaker=speaker
+        )
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -586,7 +604,7 @@ def generate_app(
         返り値の話者はstring型なので注意。
         """
         base_style_ids = get_style_id_from_deprecated(
-            style_id=base_style_ids, speaker=base_speakers
+            style_id=base_style_ids, depreceated_speaker=base_speakers
         )
         core = get_core(core_version)
 
@@ -636,10 +654,10 @@ def generate_app(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         base_style_id = get_style_id_from_deprecated(
-            style_id=base_style_id, speaker=base_speaker
+            style_id=base_style_id, depreceated_speaker=base_speaker
         )
         target_style_id = get_style_id_from_deprecated(
-            style_id=target_style_id, speaker=target_speaker
+            style_id=target_style_id, depreceated_speaker=target_speaker
         )
         engine = get_engine(core_version)
         core = get_core(core_version)
