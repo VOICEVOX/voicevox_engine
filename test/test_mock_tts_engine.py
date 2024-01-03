@@ -49,17 +49,11 @@ class TestMockTTSEngine(TestCase):
 
     def test_replace_phoneme_length(self):
         """`.replace_phoneme_length()` がエラー無く生成をおこなう"""
-        self.engine.replace_phoneme_length(
-            accent_phrases=self.accent_phrases_hello_hiho,
-            style_id=StyleId(0),
-        )
+        self.engine.replace_phoneme_length(self.accent_phrases_hello_hiho, StyleId(0))
 
     def test_replace_mora_pitch(self):
         """`.replace_mora_pitch()` がエラー無く生成をおこなう"""
-        self.engine.replace_mora_pitch(
-            accent_phrases=self.accent_phrases_hello_hiho,
-            style_id=StyleId(0),
-        )
+        self.engine.replace_mora_pitch(self.accent_phrases_hello_hiho, StyleId(0))
 
     def test_synthesis(self):
         """`.synthesis()` がエラー無く生成をおこなう"""
@@ -76,5 +70,5 @@ class TestMockTTSEngine(TestCase):
                 outputStereo=False,
                 kana=create_kana(self.accent_phrases_hello_hiho),
             ),
-            style_id=StyleId(0),
+            StyleId(0),
         )
