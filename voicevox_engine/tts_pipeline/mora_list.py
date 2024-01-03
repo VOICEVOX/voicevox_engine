@@ -47,7 +47,7 @@ from typing import Literal
 from .acoustic_feature_extractor import BaseVowel, Consonant
 
 # AquesTalk 風記法で記述されるモーラ（無声化 `_` を除く）
-_KanaBaseGrapheme = Literal[
+_MoraKatakana = Literal[
     "ァ",
     "ア",
     "ィ",
@@ -213,7 +213,7 @@ _KanaBaseGrapheme = Literal[
     "ヶ",
 ]
 
-_mora_list_minimum: list[tuple[_KanaBaseGrapheme, Consonant | None, BaseVowel]] = [
+_mora_list_minimum: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
@@ -360,7 +360,7 @@ _mora_list_minimum: list[tuple[_KanaBaseGrapheme, Consonant | None, BaseVowel]] 
     ("イ", None, "i"),
     ("ア", None, "a"),
 ]
-_mora_list_additional: list[tuple[_KanaBaseGrapheme, Consonant | None, BaseVowel]] = [
+_mora_list_additional: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
     ("ヴャ", "by", "a"),
@@ -382,11 +382,11 @@ _mora_list_additional: list[tuple[_KanaBaseGrapheme, Consonant | None, BaseVowel
 ]
 
 # AquesTalk 風記法のモーラ p2g
-kana_mora2grapheme: dict[str, _KanaBaseGrapheme] = {
+kana_mora2grapheme: dict[str, _MoraKatakana] = {
     (consonant or "") + vowel: text for [text, consonant, vowel] in _mora_list_minimum
 }
 # AquesTalk 風記法の g2p
-kana_grapheme2phonemes: dict[_KanaBaseGrapheme, tuple[Consonant | None, BaseVowel]] = {
+kana_grapheme2phonemes: dict[_MoraKatakana, tuple[Consonant | None, BaseVowel]] = {
     text: (consonant, vowel)
     for [text, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }
