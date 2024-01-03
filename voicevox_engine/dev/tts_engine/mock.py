@@ -6,7 +6,8 @@ import numpy as np
 from pyopenjtalk import tts
 from soxr import resample
 
-from ...model import AudioQuery, StyleId
+from ...metas.Metas import StyleId
+from ...model import AudioQuery
 from ...tts_pipeline import TTSEngine
 from ...tts_pipeline.tts_engine import to_flatten_moras
 from ..core.mock import MockCoreWrapper

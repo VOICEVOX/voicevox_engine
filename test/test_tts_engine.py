@@ -5,7 +5,8 @@ from unittest.mock import Mock
 
 import numpy
 
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora, StyleId
+from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 from voicevox_engine.tts_pipeline.tts_engine import (

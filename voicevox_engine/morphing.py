@@ -8,9 +8,14 @@ import pyworld as pw
 from soxr import resample
 
 from .core_adapter import CoreAdapter
-from .metas.Metas import Speaker, SpeakerStyle, SpeakerSupportPermittedSynthesisMorphing
+from .metas.Metas import (
+    Speaker,
+    SpeakerStyle,
+    SpeakerSupportPermittedSynthesisMorphing,
+    StyleId,
+)
 from .metas.MetasStore import construct_lookup
-from .model import AudioQuery, MorphableTargetInfo, StyleId, StyleIdNotFoundError
+from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
 
 
@@ -52,7 +57,7 @@ def create_morphing_parameter(
 def get_morphable_targets(
     speakers: List[Speaker],
     base_speakers: List[int],
-) -> List[Dict[int, MorphableTargetInfo]]:
+) -> List[Dict[StyleId, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報
     base_speakers: モーフィング可能か判定したいベースの話者リスト（スタイルID）

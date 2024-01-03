@@ -1,7 +1,8 @@
 from unittest import TestCase
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
-from voicevox_engine.model import AccentPhrase, Mora, StyleId
+from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_interrogative_upspeak,  # FIXME: この関数を使うテストをTTSEngine用のテストに移動する
