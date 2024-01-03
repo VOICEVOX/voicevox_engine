@@ -1,11 +1,13 @@
 from unittest import TestCase
 
+from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
     Label,
     MoraLabel,
     UtteranceLabel,
+    text_to_accent_phrases,
 )
 
 
@@ -316,3 +318,79 @@ class TestUtteranceLabel(TestBaseLabels):
     def test_features(self):
         """UtteranceLabel に含まれる features をテスト"""
         self.assertEqual(features(self.utterance_hello_hiho), self.test_case_hello_hiho)
+
+
+def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
+    return Mora(
+        text=text,
+        consonant=consonant,
+        consonant_length=0 if consonant else None,
+        vowel=vowel,
+        vowel_length=0,
+        pitch=0,
+    )
+
+
+def test_text_to_accent_phrases_normal():
+    """`text_to_accent_phrases` は正常な日本語文をパースする"""
+    # Inputs
+    text = "こんにちは、ヒホです。"
+    # Expects
+    true_accent_phrases = [
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", "o"),
+                _gen_mora("ン", None, "N"),
+                _gen_mora("ニ", "n", "i"),
+                _gen_mora("チ", "ch", "i"),
+                _gen_mora("ワ", "w", "a"),
+            ],
+            accent=5,
+            pause_mora=_gen_mora("、", None, "pau"),
+        ),
+        AccentPhrase(
+            moras=[
+                _gen_mora("ヒ", "h", "i"),
+                _gen_mora("ホ", "h", "o"),
+                _gen_mora("デ", "d", "e"),
+                _gen_mora("ス", "s", "U"),
+            ],
+            accent=1,
+            pause_mora=None,
+        ),
+    ]
+    # Outputs
+    accent_phrases = text_to_accent_phrases(text)
+    # Tests
+    assert accent_phrases == true_accent_phrases
+
+
+def fixed_features_koxx(_: str) -> list[str]:
+    # sil-k-o-xx-sil
+    # p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx  # noqa: B950
+    return [
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-xx+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+    ]
+
+
+def test_text_to_accent_phrases_unknown():
+    """`text_to_accent_phrases` は unknown 音素を含む features をパースする"""
+    # Expects
+    true_accent_phrases = [
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", "o"),
+                _gen_mora("xx", None, "xx"),
+            ],
+            accent=1,
+            pause_mora=None,
+        ),
+    ]
+    # Outputs
+    accent_phrases = text_to_accent_phrases("koxx", fixed_features_koxx)
+    # Tests
+    assert accent_phrases == true_accent_phrases

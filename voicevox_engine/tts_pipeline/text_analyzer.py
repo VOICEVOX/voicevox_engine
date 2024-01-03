@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Literal, Self
+from typing import Callable, Literal, Self
 
 import pyopenjtalk
 
@@ -332,13 +332,16 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
+def text_to_accent_phrases(
+    text: str,
+    text_to_features: Callable[[str], list[str]] = pyopenjtalk.extract_fullcontext,
+) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
         return []
 
     # 日本語文からUtteranceLabelを抽出する
-    features: list[str] = pyopenjtalk.extract_fullcontext(text)  # type: ignore
+    features = text_to_features(text)
     utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, features)))
 
     # ドメインを変換する
