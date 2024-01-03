@@ -4,7 +4,7 @@ import numpy
 from numpy import ndarray
 
 from .core_wrapper import CoreWrapper, OldCoreError
-from .model import StyleId
+from .metas.Metas import StyleId
 
 
 class CoreAdapter:

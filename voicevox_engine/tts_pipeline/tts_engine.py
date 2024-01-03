@@ -7,7 +7,8 @@ from soxr import resample
 
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
-from ..model import AccentPhrase, AudioQuery, Mora, StyleId
+from ..metas.Metas import StyleId
+from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
 from .text_analyzer import text_to_accent_phrases

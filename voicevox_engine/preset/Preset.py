@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from voicevox_engine.model import StyleId
+from voicevox_engine.metas.Metas import StyleId
 
 
 class Preset(BaseModel):

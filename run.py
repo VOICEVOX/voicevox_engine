@@ -34,6 +34,7 @@ from voicevox_engine.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
+from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AccentPhrase,
@@ -46,7 +47,6 @@ from voicevox_engine.model import (
     ParseKanaError,
     Speaker,
     SpeakerInfo,
-    StyleId,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
     UserDictWord,
