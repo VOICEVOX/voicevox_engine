@@ -563,7 +563,7 @@ def generate_app(
         summary="指定した話者に対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_speakers: list[int],
+        base_speakers: list[int],  # FIXME: StyleId型にする
         core_version: str | None = None,
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
@@ -604,7 +604,7 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_speaker: int,
+        base_speaker: int,  # FIXME: StyleId型にする
         target_speaker: int,
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: str | None = None,
