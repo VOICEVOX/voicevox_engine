@@ -148,10 +148,8 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesis(query=query, style_id=base_style_id).astype("float")
-    target_wave = engine.synthesis(query=query, style_id=target_style_id).astype(
-        "float"
-    )
+    base_wave = engine.synthesis(query, base_style_id).astype("float")
+    target_wave = engine.synthesis(query, target_style_id).astype("float")
 
     return create_morphing_parameter(
         base_wave=base_wave,
