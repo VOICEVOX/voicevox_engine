@@ -365,8 +365,8 @@ def test_text_to_accent_phrases_normal():
     assert accent_phrases == true_accent_phrases
 
 
-def fixed_features_koxx(_: str) -> list[str]:
-    # sil-k-o-xx-sil
+def stub_unknown_features_koxx(_: str) -> list[str]:
+    """`sil-k-o-xx-sil` に相当する features を常に返す `text_to_features()` のStub"""
     return [
         ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
         ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
@@ -390,6 +390,8 @@ def test_text_to_accent_phrases_unknown():
         ),
     ]
     # Outputs
-    accent_phrases = text_to_accent_phrases("koxx", fixed_features_koxx)
+    accent_phrases = text_to_accent_phrases(
+        "dummy", text_to_features=stub_unknown_features_koxx
+    )
     # Tests
     assert accent_phrases == true_accent_phrases
