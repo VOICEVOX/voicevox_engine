@@ -87,9 +87,33 @@ class Label:
         # FIXME: バリデーションする
         return self.contexts["p3"]  # type: ignore
 
-    def is_pause(self):
+    @property
+    def mora_index(self) -> int:
+        """アクセント句内におけるモーラのインデックス (1 ~ 49)"""
+        return int(self.contexts["a2"])
+
+    def is_pause(self) -> bool:
         """このラベルが無音 (silent/pause) であれば True、そうでなければ False を返す"""
         return self.contexts["f1"] == "xx"
+
+    @property
+    def accent_position(self) -> int:
+        """アクセント句内でのアクセント位置 (1 ~ 49)"""
+        return int(self.contexts["f2"])
+
+    def is_interrogative(self) -> bool:
+        """疑問形か否か"""
+        return self.contexts["f3"] == "1"
+
+    @property
+    def accent_phrase_index(self) -> str:
+        """BreathGroup内におけるアクセント句のインデックス"""
+        return self.contexts["f5"]
+
+    @property
+    def breath_group_index(self) -> str:
+        """BreathGroupのインデックス"""
+        return self.contexts["i3"]
 
     def __repr__(self):
         return f"<Label phoneme='{self.phoneme}'>"
@@ -130,16 +154,15 @@ class AccentPhraseLabel:
 
         for label, next_label in zip(labels, labels[1:] + [None]):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
-            # context a2（モーラ番号）の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if int(label.contexts["a2"]) == 49:
+            # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
+            if label.mora_index == 49:
                 break
 
             # 区切りまでラベル系列を一時保存する
             mora_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
-            # a2はアクセント句内でのモーラ番号(1~49)
-            if next_label is None or label.contexts["a2"] != next_label.contexts["a2"]:
+            if next_label is None or label.mora_index != next_label.mora_index:
                 # モーラごとのラベル系列長に基づいて子音と母音を得る
                 if len(mora_labels) == 1:
                     consonant, vowel = None, mora_labels[0]
@@ -154,14 +177,12 @@ class AccentPhraseLabel:
                 mora_labels = []
 
         # アクセント位置を決定する
-        # f2はアクセント句のアクセント位置(1~49)
-        accent = int(moras[0].vowel.contexts["f2"])
-        # f2 の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
+        accent = moras[0].vowel.accent_position
+        # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
 
         # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
-        # f3はアクセント句が疑問文かどうか（1で疑問文）
-        is_interrogative = moras[-1].vowel.contexts["f3"] == "1"
+        is_interrogative = moras[-1].vowel.is_interrogative()
 
         # アクセント句ラベルを生成する
         accent_phrase = cls(
@@ -196,12 +217,10 @@ class BreathGroupLabel:
             accent_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
-            # i3はBreathGroupの番号
-            # f5はBreathGroup内でのアクセント句の番号
             if (
                 next_label is None
-                or label.contexts["i3"] != next_label.contexts["i3"]
-                or label.contexts["f5"] != next_label.contexts["f5"]
+                or label.breath_group_index != next_label.breath_group_index
+                or label.accent_phrase_index != next_label.accent_phrase_index
             ):
                 # アクセント句を生成して保存する
                 accent_phrase = AccentPhraseLabel.from_labels(accent_labels)
