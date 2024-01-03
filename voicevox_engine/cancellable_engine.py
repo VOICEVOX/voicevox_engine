@@ -3,8 +3,6 @@ import queue
 import sys
 from multiprocessing import Pipe, Process
 
-from .metas.Metas import StyleId
-
 if sys.platform == "win32":
     from multiprocessing.connection import PipeConnection as ConnectionType
 else:
@@ -19,6 +17,7 @@ import soundfile
 from fastapi import HTTPException, Request
 
 from .core_initializer import initialize_cores
+from .metas.Metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline import make_tts_engines_from_cores
 from .utility import get_latest_core_version
