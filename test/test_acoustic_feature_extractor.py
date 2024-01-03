@@ -1,8 +1,20 @@
 from unittest import TestCase
 
+import pytest
+
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 
 TRUE_NUM_PHONEME = 45
+
+
+def test_unknown_phoneme():
+    """Unknown音素 `xx` のID取得を拒否する"""
+    # Inputs
+    unknown_phoneme = Phoneme("xx")
+
+    # Tests
+    with pytest.raises(ValueError) as _:
+        _ = unknown_phoneme.phoneme_id
 
 
 class TestPhoneme(TestCase):

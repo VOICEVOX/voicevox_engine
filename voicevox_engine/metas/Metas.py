@@ -3,6 +3,8 @@ from typing import List, NewType, Optional
 
 from pydantic import BaseModel, Field
 
+# NOTE: 循環importを防ぐためにとりあえずここに書いている
+# FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
 StyleId = NewType("StyleId", int)
 
 
