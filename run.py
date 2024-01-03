@@ -385,7 +385,7 @@ def generate_app(
                     status_code=400,
                     detail=ParseKanaBadRequest(err).dict(),
                 )
-            accent_phrases = engine.replace_mora_data(accent_phrases, style_id)
+            accent_phrases = engine.update_length_and_pitch(accent_phrases, style_id)
 
             return accent_phrases
         else:
@@ -405,7 +405,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_mora_data(accent_phrases, style_id)
+        return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @app.post(
         "/mora_length",
@@ -421,7 +421,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_phoneme_length(accent_phrases, style_id)
+        return engine.update_length(accent_phrases, style_id)
 
     @app.post(
         "/mora_pitch",
@@ -437,7 +437,7 @@ def generate_app(
     ) -> list[AccentPhrase]:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        return engine.replace_mora_pitch(accent_phrases, style_id)
+        return engine.update_pitch(accent_phrases, style_id)
 
     @app.post(
         "/synthesis",
@@ -464,7 +464,7 @@ def generate_app(
     ) -> FileResponse:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        wave = engine.synthesis(
+        wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
 
@@ -551,7 +551,7 @@ def generate_app(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesis(queries[i], style_id)
+                        wave = engine.synthesize_wave(queries[i], style_id)
                         soundfile.write(
                             file=wav_file,
                             data=wave,

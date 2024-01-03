@@ -19,7 +19,7 @@ class MockTTSEngine(TTSEngine):
     def __init__(self):
         super().__init__(MockCoreWrapper())
 
-    def synthesis(
+    def synthesize_wave(
         self,
         query: AudioQuery,
         style_id: StyleId,
