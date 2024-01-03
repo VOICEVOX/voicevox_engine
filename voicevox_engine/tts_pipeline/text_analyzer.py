@@ -87,7 +87,7 @@ class Label:
         return self.contexts["p3"]  # type: ignore
 
     @property
-    def mora_idx(self) -> int:
+    def mora_index(self) -> int:
         """アクセント句内におけるモーラのインデックス (1 ~ 49)"""
         return int(self.contexts["a2"])
 
@@ -105,12 +105,12 @@ class Label:
         return self.contexts["f3"] == "1"
 
     @property
-    def accent_phrase_idx(self) -> str:
+    def accent_phrase_index(self) -> str:
         """BreathGroup内におけるアクセント句のインデックス"""
         return self.contexts["f5"]
 
     @property
-    def breath_group_idx(self) -> str:
+    def breath_group_index(self) -> str:
         """BreathGroupのインデックス"""
         return self.contexts["i3"]
 
@@ -153,15 +153,15 @@ class AccentPhraseLabel:
 
         for label, next_label in zip(labels, labels[1:] + [None]):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
-            # mora_idx の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if label.mora_idx == 49:
+            # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
+            if label.mora_index == 49:
                 break
 
             # 区切りまでラベル系列を一時保存する
             mora_labels.append(label)
 
             # 一時的なラベル系列を確定させて処理する
-            if next_label is None or label.mora_idx != next_label.mora_idx:
+            if next_label is None or label.mora_index != next_label.mora_index:
                 # モーラごとのラベル系列長に基づいて子音と母音を得る
                 if len(mora_labels) == 1:
                     consonant, vowel = None, mora_labels[0]
@@ -218,8 +218,8 @@ class BreathGroupLabel:
             # 一時的なラベル系列を確定させて処理する
             if (
                 next_label is None
-                or label.breath_group_idx != next_label.breath_group_idx
-                or label.accent_phrase_idx != next_label.accent_phrase_idx
+                or label.breath_group_index != next_label.breath_group_index
+                or label.accent_phrase_index != next_label.accent_phrase_index
             ):
                 # アクセント句を生成して保存する
                 accent_phrase = AccentPhraseLabel.from_labels(accent_labels)
