@@ -17,7 +17,7 @@ NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob
 from typing import List, Optional
 
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from .mora_list import openjtalk_text2mora
+from .mora_list import KanaVowel, kana_grapheme2phonemes
 
 _LOOP_LIMIT = 300
 
@@ -29,10 +29,10 @@ _PAUSE_DELIMITER = "、"  # ポーズ有りアクセント句境界
 _WIDE_INTERROGATION_MARK = "？"  # 疑問形
 
 # AquesTalk 風記法とモーラの対応（音素長・音高 0 初期化）
-_text2mora_with_unvoice = {}
-for text, (consonant, vowel) in openjtalk_text2mora.items():
-    _text2mora_with_unvoice[text] = Mora(
-        text=text,
+_kana2mora: dict[str, Mora] = {}
+for grapheme, (consonant, vowel) in kana_grapheme2phonemes.items():
+    _kana2mora[grapheme] = Mora(
+        text=grapheme,
         consonant=consonant,
         consonant_length=0 if consonant else None,
         vowel=vowel,
@@ -40,13 +40,14 @@ for text, (consonant, vowel) in openjtalk_text2mora.items():
         pitch=0,
     )
     if vowel in ["a", "i", "u", "e", "o"]:
-        # 「`_` で無声化」の実装
-        # 例: "_ホ" -> "hO"
-        _text2mora_with_unvoice[_UNVOICE_SYMBOL + text] = Mora(
-            text=text,
+        # 「`_` で無声化」の実装。例: "_ホ" -> "hO"
+        # NOTE: 現行の型システムは Conditional Literal + upper に非対応.
+        upper_vowel: KanaVowel = vowel.upper()  # type: ignore
+        _kana2mora[_UNVOICE_SYMBOL + grapheme] = Mora(
+            text=grapheme,
             consonant=consonant,
             consonant_length=0 if consonant else None,
-            vowel=vowel.upper(),
+            vowel=upper_vowel,
             vowel_length=0,
             pitch=0,
         )
@@ -98,13 +99,13 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
             if phrase[watch_index] == _ACCENT_SYMBOL:
                 break
             stack += phrase[watch_index]
-            if stack in _text2mora_with_unvoice:
+            if stack in _kana2mora:
                 matched_text = stack
         if matched_text is None:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
         # push mora
         else:
-            moras.append(_text2mora_with_unvoice[matched_text].copy(deep=True))
+            moras.append(_kana2mora[matched_text].copy(deep=True))
             base_index += len(matched_text)
             stack = ""
             matched_text = None
