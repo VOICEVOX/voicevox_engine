@@ -10,7 +10,7 @@ from ..core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
-from .mora_list import kana_mora2grapheme
+from .mora_list import mora_alphabet_to_mora_katakana
 from .text_analyzer import text_to_accent_phrases
 
 unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
@@ -107,7 +107,7 @@ def apply_interrogative_upspeak(
         if accent_phrase.is_interrogative and moras[-1].pitch > 0:
             last_mora = copy.deepcopy(moras[-1])
             upspeak_mora = Mora(
-                text=kana_mora2grapheme[last_mora.vowel],
+                text=mora_alphabet_to_mora_katakana[last_mora.vowel],
                 consonant=None,
                 consonant_length=None,
                 vowel=last_mora.vowel,

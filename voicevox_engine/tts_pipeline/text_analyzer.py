@@ -6,7 +6,7 @@ from typing import Literal, Self
 import pyopenjtalk
 
 from ..model import AccentPhrase, Mora
-from .mora_list import kana_mora2grapheme
+from .mora_list import mora_alphabet_to_mora_katakana
 
 OjtVowel = Literal[
     "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
@@ -280,8 +280,8 @@ def mora_to_text(mora: str) -> str:
     if mora[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
         mora = mora[:-1] + mora[-1].lower()
-    if mora in kana_mora2grapheme:
-        return kana_mora2grapheme[mora]
+    if mora in mora_alphabet_to_mora_katakana:
+        return mora_alphabet_to_mora_katakana[mora]
     else:
         return mora
 

@@ -18,7 +18,7 @@ from typing import List, Optional
 
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .acoustic_feature_extractor import Vowel
-from .mora_list import kana_grapheme2phonemes
+from .mora_list import mora_katakana_to_mora_alphabet
 
 _LOOP_LIMIT = 300
 
@@ -31,9 +31,9 @@ _WIDE_INTERROGATION_MARK = "？"  # 疑問形
 
 # AquesTalk 風記法とモーラの対応（音素長・音高 0 初期化）
 _kana2mora: dict[str, Mora] = {}
-for grapheme, (consonant, vowel) in kana_grapheme2phonemes.items():
-    _kana2mora[grapheme] = Mora(
-        text=grapheme,
+for kana, (consonant, vowel) in mora_katakana_to_mora_alphabet.items():
+    _kana2mora[kana] = Mora(
+        text=kana,
         consonant=consonant,
         consonant_length=0 if consonant else None,
         vowel=vowel,
@@ -44,8 +44,8 @@ for grapheme, (consonant, vowel) in kana_grapheme2phonemes.items():
         # 「`_` で無声化」の実装。例: "_ホ" -> "hO"
         # NOTE: 現行の型システムは Conditional Literal + upper に非対応.
         upper_vowel: Vowel = vowel.upper()  # type: ignore
-        _kana2mora[_UNVOICE_SYMBOL + grapheme] = Mora(
-            text=grapheme,
+        _kana2mora[_UNVOICE_SYMBOL + kana] = Mora(
+            text=kana,
             consonant=consonant,
             consonant_length=0 if consonant else None,
             vowel=upper_vowel,

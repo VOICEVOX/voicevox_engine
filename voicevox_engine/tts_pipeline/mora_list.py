@@ -381,12 +381,14 @@ _mora_list_additional: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] =
     ("ァ", None, "a"),
 ]
 
-# AquesTalk 風記法のモーラ p2g
-kana_mora2grapheme: dict[str, _MoraKatakana] = {
-    (consonant or "") + vowel: text for [text, consonant, vowel] in _mora_list_minimum
+# 「hi」→「ヒ」
+mora_alphabet_to_mora_katakana: dict[str, _MoraKatakana] = {
+    (consonant or "") + vowel: kana for [kana, consonant, vowel] in _mora_list_minimum
 }
-# AquesTalk 風記法の g2p
-kana_grapheme2phonemes: dict[_MoraKatakana, tuple[Consonant | None, BaseVowel]] = {
-    text: (consonant, vowel)
-    for [text, consonant, vowel] in _mora_list_minimum + _mora_list_additional
+# 「ヒ」→「hi」
+mora_katakana_to_mora_alphabet: dict[
+    _MoraKatakana, tuple[Consonant | None, BaseVowel]
+] = {
+    kana: (consonant, vowel)
+    for [kana, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }
