@@ -47,7 +47,7 @@ from typing import Literal
 from .acoustic_feature_extractor import BaseVowel, Consonant
 
 # AquesTalk 風記法で記述されるモーラ（無声化 `_` を除く）
-_MoraKatakana = Literal[
+_MoraKana = Literal[
     "ァ",
     "ア",
     "ィ",
@@ -213,7 +213,7 @@ _MoraKatakana = Literal[
     "ヶ",
 ]
 
-_mora_list_minimum: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] = [
+_mora_list_minimum: list[tuple[_MoraKana, Consonant | None, BaseVowel]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
@@ -360,7 +360,7 @@ _mora_list_minimum: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] = [
     ("イ", None, "i"),
     ("ア", None, "a"),
 ]
-_mora_list_additional: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] = [
+_mora_list_additional: list[tuple[_MoraKana, Consonant | None, BaseVowel]] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
     ("ヴャ", "by", "a"),
@@ -382,13 +382,11 @@ _mora_list_additional: list[tuple[_MoraKatakana, Consonant | None, BaseVowel]] =
 ]
 
 # 「hi」→「ヒ」
-mora_alphabet_to_mora_katakana: dict[str, _MoraKatakana] = {
+mora_phonemes_to_mora_kana: dict[str, _MoraKana] = {
     (consonant or "") + vowel: kana for [kana, consonant, vowel] in _mora_list_minimum
 }
 # 「ヒ」→「hi」
-mora_katakana_to_mora_alphabet: dict[
-    _MoraKatakana, tuple[Consonant | None, BaseVowel]
-] = {
+mora_kana_to_mora_phonemes: dict[_MoraKana, tuple[Consonant | None, BaseVowel]] = {
     kana: (consonant, vowel)
     for [kana, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }
