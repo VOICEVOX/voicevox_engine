@@ -281,7 +281,7 @@ def generate_app(
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
         core = get_core(core_version)
-        accent_phrases = engine.create_accent_phrases(text, style_id=style_id)
+        accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -323,7 +323,7 @@ def generate_app(
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
         accent_phrases = engine.create_accent_phrases(
-            text, style_id=StyleId(selected_preset.style_id)
+            text, StyleId(selected_preset.style_id)
         )
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -380,7 +380,7 @@ def generate_app(
 
             return accent_phrases
         else:
-            return engine.create_accent_phrases(text, style_id=style_id)
+            return engine.create_accent_phrases(text, style_id)
 
     @app.post(
         "/mora_data",
@@ -455,7 +455,9 @@ def generate_app(
     ) -> FileResponse:
         style_id = get_style_id_from_deprecated(style_id=style_id, speaker_id=speaker)
         engine = get_engine(core_version)
-        wave = engine.synthesize_wave(query, style_id, enable_interrogative_upspeak)
+        wave = engine.synthesize_wave(
+            query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
+        )
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -495,10 +497,7 @@ def generate_app(
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
         f_name = cancellable_engine._synthesis_impl(
-            query=query,
-            style_id=style_id,
-            request=request,
-            core_version=core_version,
+            query, style_id, request, core_version=core_version
         )
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
@@ -1002,9 +1001,7 @@ def generate_app(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
-        core.initialize_style_id_synthesis(
-            style_id=StyleId(style_id), skip_reinit=skip_reinit
-        )
+        core.initialize_style_id_synthesis(StyleId(style_id), skip_reinit=skip_reinit)
         return Response(status_code=204)
 
     @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
@@ -1036,9 +1033,7 @@ def generate_app(
             stacklevel=1,
         )
         return initialize_style_id(
-            style_id=StyleId(speaker),
-            skip_reinit=skip_reinit,
-            core_version=core_version,
+            StyleId(speaker), skip_reinit=skip_reinit, core_version=core_version
         )
 
     @app.get(
@@ -1056,9 +1051,7 @@ def generate_app(
             "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
             stacklevel=1,
         )
-        return is_initialized_style_id(
-            style_id=StyleId(speaker), core_version=core_version
-        )
+        return is_initialized_style_id(StyleId(speaker), core_version=core_version)
 
     @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words() -> dict[str, UserDictWord]:
