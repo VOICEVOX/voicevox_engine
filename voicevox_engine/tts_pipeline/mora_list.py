@@ -213,45 +213,43 @@ _KanaBaseGrapheme = Literal[
     "ヶ",
 ]
 
-_KanaConsonant = (
-    None
-    | Literal[
-        "b",
-        "by",
-        "ch",
-        "d",
-        "dy",
-        "f",
-        "g",
-        "gw",
-        "gy",
-        "h",
-        "hy",
-        "j",
-        "k",
-        "kw",
-        "ky",
-        "m",
-        "my",
-        "n",
-        "ny",
-        "p",
-        "py",
-        "r",
-        "ry",
-        "s",
-        "sh",
-        "t",
-        "ts",
-        "ty",
-        "v",
-        "w",
-        "y",
-        "z",
-    ]
-)
+_KanaConsonant = Literal[
+    "b",
+    "by",
+    "ch",
+    "d",
+    "dy",
+    "f",
+    "g",
+    "gw",
+    "gy",
+    "h",
+    "hy",
+    "j",
+    "k",
+    "kw",
+    "ky",
+    "m",
+    "my",
+    "n",
+    "ny",
+    "p",
+    "py",
+    "r",
+    "ry",
+    "s",
+    "sh",
+    "t",
+    "ts",
+    "ty",
+    "v",
+    "w",
+    "y",
+    "z",
+]
 
-_mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant, BaseVowel]] = [
+
+_mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant | None, BaseVowel]] = [
     ("ヴォ", "v", "o"),
     ("ヴェ", "v", "e"),
     ("ヴィ", "v", "i"),
@@ -399,7 +397,7 @@ _mora_list_minimum: list[tuple[_KanaBaseGrapheme, _KanaConsonant, BaseVowel]] = 
     ("ア", None, "a"),
 ]
 _mora_list_additional: list[
-    tuple[_KanaBaseGrapheme, _KanaConsonant, BaseVowel]
+    tuple[_KanaBaseGrapheme, _KanaConsonant | None, BaseVowel]
 ] = [
     ("ヴョ", "by", "o"),
     ("ヴュ", "by", "u"),
@@ -427,7 +425,7 @@ kana_mora2grapheme: dict[str, _KanaBaseGrapheme] = {
 }
 # AquesTalk 風記法の g2p
 kana_grapheme2phonemes: dict[
-    _KanaBaseGrapheme, tuple[_KanaConsonant, BaseVowel]
+    _KanaBaseGrapheme, tuple[_KanaConsonant | None, BaseVowel]
 ] = {
     text: (consonant, vowel)
     for [text, consonant, vowel] in _mora_list_minimum + _mora_list_additional
