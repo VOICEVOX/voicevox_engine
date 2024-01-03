@@ -322,9 +322,7 @@ def generate_app(
         else:
             raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
 
-        accent_phrases = engine.create_accent_phrases(
-            text, selected_preset.style_id
-        )
+        accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=selected_preset.speedScale,
