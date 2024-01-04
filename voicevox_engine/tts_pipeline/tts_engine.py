@@ -1,8 +1,9 @@
 import copy
 import math
+from typing import TypeVar
 
-import numpy
-from numpy import ndarray
+import numpy as np
+import numpy.typing as npt
 from soxr import resample
 
 from ..core_adapter import CoreAdapter
@@ -131,7 +132,9 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
+def count_frame_per_unit(
+    moras: list[Mora],
+) -> tuple[npt.NDArray[np.integer], npt.NDArray[np.integer]]:
     """
     音素あたり・モーラあたりのフレーム長を算出する
     Parameters
@@ -140,9 +143,9 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
         モーラ系列
     Returns
     -------
-    frame_per_phoneme : ndarray
+    frame_per_phoneme : npt.NDArray[np.integer]
         音素あたりのフレーム長。端数丸め。shape = (Phoneme,)
-    frame_per_mora : ndarray
+    frame_per_mora : npt.NDArray[np.integer]
         モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
     frame_per_phoneme: list[int] = []
@@ -159,13 +162,13 @@ def count_frame_per_unit(moras: list[Mora]) -> tuple[ndarray, ndarray]:
         frame_per_phoneme += [vowel_frames]
         frame_per_mora += [mora_frames]
 
-    return numpy.array(frame_per_phoneme), numpy.array(frame_per_mora)
+    return np.array(frame_per_phoneme), np.array(frame_per_mora)
 
 
 def _to_frame(sec: float) -> int:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
-    return numpy.round(sec * FRAMERATE).astype(numpy.int32).item()
+    return np.round(sec * FRAMERATE).astype(np.int32).item()
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -179,22 +182,24 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
     voiced = list(filter(lambda mora: mora.pitch > 0, moras))
-    mean_f0 = numpy.mean(list(map(lambda mora: mora.pitch, voiced))).item()
+    mean_f0 = np.mean(list(map(lambda mora: mora.pitch, voiced))).item()
     if mean_f0 != math.nan:  # 空リスト -> NaN
         for mora in voiced:
             mora.pitch = (mora.pitch - mean_f0) * query.intonationScale + mean_f0
     return moras
 
 
-def apply_volume_scale(wave: numpy.ndarray, query: AudioQuery) -> numpy.ndarray:
+def apply_volume_scale(wave: np.ndarray, query: AudioQuery) -> npt.NDArray[np.floating]:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
-    wave *= query.volumeScale
-    return wave
+    return wave * query.volumeScale
+
+
+_SoxrType = TypeVar("_SoxrType", np.float32, np.float64, np.int16, np.int32)
 
 
 def apply_output_sampling_rate(
-    wave: ndarray, sr_wave: int, query: AudioQuery
-) -> ndarray:
+    wave: npt.NDArray[_SoxrType], sr_wave: float, query: AudioQuery
+) -> npt.NDArray[_SoxrType]:
     """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
@@ -203,14 +208,19 @@ def apply_output_sampling_rate(
     return wave
 
 
-def apply_output_stereo(wave: ndarray, query: AudioQuery) -> ndarray:
+T = TypeVar("T", bound=np.generic)
+
+
+def apply_output_stereo(wave: npt.NDArray[T], query: AudioQuery) -> npt.NDArray[T]:
     """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
     if query.outputStereo:
-        wave = numpy.array([wave, wave]).T
+        wave = np.array([wave, wave]).T
     return wave
 
 
-def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
+def query_to_decoder_feature(
+    query: AudioQuery,
+) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
     moras = to_flatten_moras(query.accent_phrases)
 
@@ -221,18 +231,20 @@ def query_to_decoder_feature(query: AudioQuery) -> tuple[ndarray, ndarray]:
     moras = apply_intonation_scale(moras, query)
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
-    phoneme = numpy.stack([p.onehot for p in to_flatten_phonemes(moras)])
-    f0 = numpy.array([mora.pitch for mora in moras], dtype=numpy.float32)
+    phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])
+    f0 = np.array([mora.pitch for mora in moras], dtype=np.float32)
 
     # 時間スケールを変更する（音素・モーラ → フレーム）
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
-    phoneme = numpy.repeat(phoneme, frame_per_phoneme, axis=0)
-    f0 = numpy.repeat(f0, frame_per_mora)
+    phoneme = np.repeat(phoneme, frame_per_phoneme, axis=0)
+    f0 = np.repeat(f0, frame_per_mora)
 
     return phoneme, f0
 
 
-def raw_wave_to_output_wave(query: AudioQuery, wave: ndarray, sr_wave: int) -> ndarray:
+def raw_wave_to_output_wave(
+    query: AudioQuery, wave: np.ndarray, sr_wave: int
+) -> npt.NDArray[np.floating]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
     wave = apply_volume_scale(wave, query)
     wave = apply_output_sampling_rate(wave, sr_wave, query)
@@ -260,7 +272,7 @@ class TTSEngine:
         phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 音素クラスから音素IDスカラへ表現を変換する
-        phoneme_ids = numpy.array([p.phoneme_id for p in phonemes], dtype=numpy.int64)
+        phoneme_ids = np.array([p.phoneme_id for p in phonemes], dtype=np.int64)
 
         # コアを用いて音素長を生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
@@ -287,9 +299,11 @@ class TTSEngine:
             return []
 
         # accent
-        def _create_one_hot(accent_phrase: AccentPhrase, position: int) -> ndarray:
+        def _create_one_hot(
+            accent_phrase: AccentPhrase, position: int
+        ) -> npt.NDArray[np.floating]:
             """
-            単位行列(numpy.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
+            単位行列(np.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
             例えば、accent_phraseのmorasの長さが12、positionが1なら
             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             morasの長さが同じく12、positionが-1なら
@@ -304,16 +318,16 @@ class TTSEngine:
                 one hotにするindex
             Returns
             -------
-            one_hot : numpy.ndarray
+            one_hot : npt.NDArray[np.floating]
                 one hotな配列(リスト)
             """
-            return numpy.r_[
-                numpy.eye(len(accent_phrase.moras))[position],
+            return np.r_[
+                np.eye(len(accent_phrase.moras))[position],
                 (0 if accent_phrase.pause_mora is not None else []),
             ]
 
         # アクセントの開始/終了位置リストを作る
-        start_accent_list = numpy.concatenate(
+        start_accent_list = np.concatenate(
             [
                 # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
                 # accentが1の場合は0番目を指定している
@@ -322,7 +336,7 @@ class TTSEngine:
                 for accent_phrase in accent_phrases
             ]
         )
-        end_accent_list = numpy.concatenate(
+        end_accent_list = np.concatenate(
             [
                 # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
                 _create_one_hot(accent_phrase, accent_phrase.accent - 1)
@@ -331,35 +345,33 @@ class TTSEngine:
         )
 
         # アクセント句の開始/終了位置リストを作る
-        start_accent_phrase_list = numpy.concatenate(
+        start_accent_phrase_list = np.concatenate(
             [_create_one_hot(accent_phrase, 0) for accent_phrase in accent_phrases]
         )
-        end_accent_phrase_list = numpy.concatenate(
+        end_accent_phrase_list = np.concatenate(
             [_create_one_hot(accent_phrase, -1) for accent_phrase in accent_phrases]
         )
 
         # 前後無音を付加する
-        start_accent_list = numpy.r_[0, start_accent_list, 0]
-        end_accent_list = numpy.r_[0, end_accent_list, 0]
-        start_accent_phrase_list = numpy.r_[0, start_accent_phrase_list, 0]
-        end_accent_phrase_list = numpy.r_[0, end_accent_phrase_list, 0]
+        start_accent_list = np.r_[0, start_accent_list, 0]
+        end_accent_list = np.r_[0, end_accent_list, 0]
+        start_accent_phrase_list = np.r_[0, start_accent_phrase_list, 0]
+        end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
 
         # キャスト
-        start_accent_list = numpy.array(start_accent_list, dtype=numpy.int64)
-        end_accent_list = numpy.array(end_accent_list, dtype=numpy.int64)
-        start_accent_phrase_list = numpy.array(
-            start_accent_phrase_list, dtype=numpy.int64
-        )
-        end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
+        start_accent_list = np.array(start_accent_list, dtype=np.int64)
+        end_accent_list = np.array(end_accent_list, dtype=np.int64)
+        start_accent_phrase_list = np.array(start_accent_phrase_list, dtype=np.int64)
+        end_accent_phrase_list = np.array(end_accent_phrase_list, dtype=np.int64)
 
         # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
         moras, phonemes = pre_process(accent_phrases)
 
         # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
         consonants, vowels = split_mora(phonemes)
-        vowel_ids = numpy.array([p.phoneme_id for p in vowels], dtype=numpy.int64)
-        consonant_ids = numpy.array(
-            [p.phoneme_id if p else -1 for p in consonants], dtype=numpy.int64
+        vowel_ids = np.array([p.phoneme_id for p in vowels], dtype=np.int64)
+        consonant_ids = np.array(
+            [p.phoneme_id if p else -1 for p in consonants], dtype=np.int64
         )
 
         # コアを用いてモーラ音高を生成する
@@ -411,7 +423,7 @@ class TTSEngine:
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
-    ) -> ndarray:
+    ) -> npt.NDArray[np.floating]:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)

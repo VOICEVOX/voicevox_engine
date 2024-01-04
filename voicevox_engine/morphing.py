@@ -1,9 +1,9 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
-from typing import Dict, List, Tuple
 
 import numpy as np
+import numpy.typing as npt
 import pyworld as pw
 from soxr import resample
 
@@ -24,15 +24,15 @@ from .tts_pipeline import TTSEngine
 class MorphingParameter:
     fs: int
     frame_period: float
-    base_f0: np.ndarray
-    base_aperiodicity: np.ndarray
-    base_spectrogram: np.ndarray
-    target_spectrogram: np.ndarray
+    base_f0: npt.NDArray[np.double]
+    base_aperiodicity: npt.NDArray[np.double]
+    base_spectrogram: npt.NDArray[np.double]
+    target_spectrogram: npt.NDArray[np.double]
 
 
 def create_morphing_parameter(
-    base_wave: np.ndarray,
-    target_wave: np.ndarray,
+    base_wave: npt.NDArray[np.double],
+    target_wave: npt.NDArray[np.double],
     fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
@@ -55,9 +55,9 @@ def create_morphing_parameter(
 
 
 def get_morphable_targets(
-    speakers: List[Speaker],
-    base_style_ids: List[StyleId],
-) -> List[Dict[StyleId, MorphableTargetInfo]]:
+    speakers: list[Speaker],
+    base_style_ids: list[StyleId],
+) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報
     base_speakers: モーフィング可能か判定したいベースのスタイルIDリスト
@@ -81,7 +81,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[StyleId, Tuple[Speaker, SpeakerStyle]],
+    speaker_lookup: dict[StyleId, tuple[Speaker, SpeakerStyle]],
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> bool:
@@ -163,7 +163,7 @@ def synthesis_morphing(
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """
     指定した割合で、パラメータをもとにモーフィングした音声を生成します。
 
@@ -178,7 +178,7 @@ def synthesis_morphing(
 
     Returns
     -------
-    generated : np.ndarray
+    generated : npt.NDArray[np.float64]
         モーフィングした音声
 
     Raises
