@@ -29,7 +29,7 @@ _NOPAUSE_DELIMITER = "/"  # ポーズ無しアクセント句境界
 _PAUSE_DELIMITER = "、"  # ポーズ有りアクセント句境界
 _WIDE_INTERROGATION_MARK = "？"  # 疑問形
 
-# AquesTalk 風記法とモーラの対応（音素長・音高 0 初期化）
+# AquesTalk 風記法とモーラの対応。無声母音も含む。（音素長・音高 0 初期化）
 _kana2mora: dict[str, Mora] = {}
 for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
     _kana2mora[kana] = Mora(
