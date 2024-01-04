@@ -412,10 +412,9 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
-        return self.update_pitch(
-            accent_phrases=self.update_length(accent_phrases, style_id),
-            style_id=style_id,
-        )
+        accent_phrases = self.update_length(accent_phrases, style_id)
+        accent_phrases = self.update_pitch(accent_phrases, style_id)
+        return accent_phrases
 
     def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
