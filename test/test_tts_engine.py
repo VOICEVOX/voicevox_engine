@@ -62,7 +62,7 @@ def yukarin_s_mock(
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        result.append((phoneme_list[i] * 0.5 + style_id).item())
+        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
     return numpy.array(result)
 
 
@@ -80,18 +80,21 @@ def yukarin_sa_mock(
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result.append(
-            (
+            round(
                 (
-                    vowel_phoneme_list[0][i]
-                    + consonant_phoneme_list[0][i]
-                    + start_accent_list[0][i]
-                    + end_accent_list[0][i]
-                    + start_accent_phrase_list[0][i]
-                    + end_accent_phrase_list[0][i]
-                )
-                * 0.5
-                + style_id
-            ).item()
+                    (
+                        vowel_phoneme_list[0][i]
+                        + consonant_phoneme_list[0][i]
+                        + start_accent_list[0][i]
+                        + end_accent_list[0][i]
+                        + start_accent_phrase_list[0][i]
+                        + end_accent_phrase_list[0][i]
+                    )
+                    * 0.0625
+                    + style_id
+                ).item(),
+                2,
+            )
         )
     return numpy.array(result)[numpy.newaxis]
 
@@ -106,14 +109,9 @@ def decode_mock(
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
-        # decode forwardはデータサイズがlengthの256倍になるのでとりあえず256回データをresultに入れる
-        for _ in range(256):
-            result.append(
-                (
-                    f0[i][0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size)
-                    + style_id
-                ).item()
-            )
+        result += [
+            (f0[i, 0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
+        ] * 256
     return numpy.array(result)
 
 
@@ -601,7 +599,7 @@ class TestTTSEngine(TestCase):
         index = 1
 
         def result_value(i: int) -> float:
-            return float(phoneme_list[i] * 0.5 + 1)
+            return round(float(phoneme_list[i] * 0.0625 + 1), 2)
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
@@ -665,14 +663,21 @@ class TestTTSEngine(TestCase):
             ]
             if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
                 return 0
-            return (
-                vowel_phoneme_list[i]
-                + consonant_phoneme_list[i]
-                + start_accent_list[i]
-                + end_accent_list[i]
-                + start_accent_phrase_list[i]
-                + end_accent_phrase_list[i]
-            ) * 0.5 + 1
+            return round(
+                (
+                    (
+                        vowel_phoneme_list[i]
+                        + consonant_phoneme_list[i]
+                        + start_accent_list[i]
+                        + end_accent_list[i]
+                        + start_accent_phrase_list[i]
+                        + end_accent_phrase_list[i]
+                    )
+                    * 0.0625
+                    + 1
+                ),
+                2,
+            )
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
