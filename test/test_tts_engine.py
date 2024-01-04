@@ -513,11 +513,9 @@ class TestTTSEngine(TestCase):
 
     def test_split_mora(self):
         # Outputs
-        consonant_phoneme_list, vowel_phoneme_list, vowel_indexes = split_mora(
+        consonant_phoneme_list, vowel_phoneme_list = split_mora(
             self.phoneme_data_list_hello_hiho
         )
-
-        self.assertEqual(vowel_indexes, [0, 2, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19])
 
         ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
         true_vowel_phoneme_list = [Phoneme(p) for p in ps]
