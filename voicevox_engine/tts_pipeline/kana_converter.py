@@ -43,6 +43,7 @@ for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
     if vowel in ["a", "i", "u", "e", "o"]:
         # 「`_` で無声化」の実装。例: "_ホ" -> "hO"
         # NOTE: 現行の型システムは Conditional Literal + upper に非対応.
+        # FIXME: バリデーションする
         upper_vowel: Vowel = vowel.upper()  # type: ignore
         _kana2mora[_UNVOICE_SYMBOL + kana] = Mora(
             text=kana,
