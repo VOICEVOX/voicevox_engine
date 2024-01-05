@@ -6,7 +6,7 @@ from typing import Callable, Literal, Self
 import pyopenjtalk
 
 from ..model import AccentPhrase, Mora
-from .mora_list import openjtalk_mora2text
+from .mora_list import mora_phonemes_to_mora_kana
 
 OjtVowel = Literal[
     "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
@@ -295,15 +295,15 @@ class UtteranceLabel:
         return labels
 
 
-def mora_to_text(mora: str) -> str:
+def mora_to_text(mora_phonemes: str) -> str:
     """モーラ相当の音素文字系列を日本語カタカナ文へ変換する（例: 'hO' -> 'ホ')"""
-    if mora[-1:] in ["A", "I", "U", "E", "O"]:
+    if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
         # 無声化母音を小文字に
-        mora = mora[:-1] + mora[-1].lower()
-    if mora in openjtalk_mora2text:
-        return openjtalk_mora2text[mora]
+        mora_phonemes = mora_phonemes[:-1] + mora_phonemes[-1].lower()
+    if mora_phonemes in mora_phonemes_to_mora_kana:
+        return mora_phonemes_to_mora_kana[mora_phonemes]
     else:
-        return mora
+        return mora_phonemes
 
 
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:

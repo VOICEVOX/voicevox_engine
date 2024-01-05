@@ -3,7 +3,10 @@ from typing import Literal
 import numpy
 
 # NOTE: `Vowel` は母音 (a/i/u/e/o の有声・無声) + 無音 pau + 撥音 N ("ん") + 促音 cl ("っ")
-Vowel = Literal["pau", "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "u"]
+# NOTE: 型の名称は暫定的
+BaseVowel = Literal["pau", "N", "a", "cl", "e", "i", "o", "u"]
+Vowel = BaseVowel | Literal["A", "E", "I", "O", "U"]
+
 Consonant = Literal[
     "b",
     "by",
