@@ -463,6 +463,11 @@ def test_raw_wave_to_output_wave_without_resample():
     assert numpy.allclose(wave, true_wave)
 
 
+def _gen_hello_hiho_phonemes() -> list[Phoneme]:
+    hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+    return [Phoneme(p) for p in hello_hiho.split()]
+
+
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
@@ -492,12 +497,6 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
 class TestTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
-        self.str_list_hello_hiho = (
-            "sil k o N n i ch i w a pau h i h o d e s U sil".split()
-        )
-        self.phoneme_data_list_hello_hiho = [
-            Phoneme(p) for p in "pau k o N n i ch i w a pau h i h o d e s U pau".split()
-        ]
         core = MockCore()
         self.yukarin_s_mock = core.yukarin_s_forward
         self.yukarin_sa_mock = core.yukarin_sa_forward
@@ -517,7 +516,7 @@ class TestTTSEngine(TestCase):
     def test_split_mora(self):
         # Outputs
         consonant_phoneme_list, vowel_phoneme_list = split_mora(
-            self.phoneme_data_list_hello_hiho
+            _gen_hello_hiho_phonemes()
         )
 
         ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
