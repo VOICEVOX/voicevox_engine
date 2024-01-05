@@ -55,8 +55,8 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
 
 def split_mora(
     phoneme_list: list[Phoneme],
-) -> tuple[list[Phoneme | None], list[Phoneme], list[int]]:
-    """音素系列から子音系列・母音系列・母音位置を抽出する"""
+) -> tuple[list[Phoneme | None], list[Phoneme]]:
+    """音素系列から子音系列と母音系列を抽出する"""
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
     ]
@@ -70,7 +70,7 @@ def split_mora(
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
-    return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
+    return consonant_phoneme_list, vowel_phoneme_list
 
 
 def pre_process(
@@ -359,7 +359,7 @@ class TTSEngine:
         moras, phonemes = pre_process(accent_phrases)
 
         # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
-        consonants, vowels, _ = split_mora(phonemes)
+        consonants, vowels = split_mora(phonemes)
         vowel_ids = numpy.array([p.phoneme_id for p in vowels], dtype=numpy.int64)
         consonant_ids = numpy.array(
             [p.phoneme_id if p else -1 for p in consonants], dtype=numpy.int64
@@ -391,10 +391,9 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
-        return self.update_pitch(
-            accent_phrases=self.update_length(accent_phrases, style_id),
-            style_id=style_id,
-        )
+        accent_phrases = self.update_length(accent_phrases, style_id)
+        accent_phrases = self.update_pitch(accent_phrases, style_id)
+        return accent_phrases
 
     def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
