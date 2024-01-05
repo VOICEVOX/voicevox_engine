@@ -55,8 +55,8 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
 
 def split_mora(
     phoneme_list: list[Phoneme],
-) -> tuple[list[Phoneme | None], list[Phoneme], list[int]]:
-    """音素系列から子音系列・母音系列・母音位置を抽出する"""
+) -> tuple[list[Phoneme | None], list[Phoneme]]:
+    """音素系列から子音系列と母音系列を抽出する"""
     vowel_indexes = [
         i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
     ]
@@ -70,7 +70,7 @@ def split_mora(
         None if post - prev == 1 else phoneme_list[post - 1]
         for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
     ]
-    return consonant_phoneme_list, vowel_phoneme_list, vowel_indexes
+    return consonant_phoneme_list, vowel_phoneme_list
 
 
 def pre_process(
@@ -366,11 +366,9 @@ class TTSEngine:
         end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
 
         # phonemeに関するデータを取得(変換)する
-        (
-            consonant_phoneme_data_list,
-            vowel_phoneme_data_list,
-            _,
-        ) = split_mora(phoneme_data_list)
+        (consonant_phoneme_data_list, vowel_phoneme_data_list) = split_mora(
+            phoneme_data_list
+        )
 
         # yukarin_sa
         # Phoneme関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
