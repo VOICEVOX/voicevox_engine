@@ -24,7 +24,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
-    unvoiced_vowels,
+    unvoiced_vowel_likes,
 )
 
 TRUE_NUM_PHONEME = 45
@@ -657,9 +657,9 @@ class TestTTSEngine(TestCase):
         index = 1
 
         def result_value(i: int) -> float:
-            # unvoiced_mora_phoneme_listのPhoneme ID版
-            unvoiced_vowel_ids = [Phoneme(p).phoneme_id for p in unvoiced_vowels]
-            if vowel_phoneme_list[i] in unvoiced_vowel_ids:
+            # unvoiced_vowel_likesのPhoneme ID版
+            unvoiced_vowel_like_ids = [Phoneme(p).phoneme_id for p in unvoiced_vowel_likes]
+            if vowel_phoneme_list[i] in unvoiced_vowel_like_ids:
                 return 0
             return (
                 vowel_phoneme_list[i]

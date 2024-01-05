@@ -13,8 +13,8 @@ from .acoustic_feature_extractor import Phoneme
 from .mora_list import openjtalk_mora2text
 from .text_analyzer import text_to_accent_phrases
 
-unvoiced_vowels = ["A", "I", "U", "E", "O", "cl", "pau"]
-mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_vowels
+unvoiced_vowel_likes = ["A", "I", "U", "E", "O", "cl", "pau"]
+mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_vowel_likes
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
@@ -378,7 +378,7 @@ class TTSEngine:
 
         # 母音が無声であるモーラは音高を 0 とする
         for i, p in enumerate(vowels):
-            if p.phoneme in unvoiced_vowels:
+            if p.phoneme in unvoiced_vowel_likes:
                 f0[i] = 0
 
         # 生成結果でモーラ内の音高属性を更新する
