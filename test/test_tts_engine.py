@@ -658,7 +658,9 @@ class TestTTSEngine(TestCase):
 
         def result_value(i: int) -> float:
             # unvoiced_vowel_likesのPhoneme ID版
-            unvoiced_vowel_like_ids = [Phoneme(p).phoneme_id for p in unvoiced_vowel_likes]
+            unvoiced_vowel_like_ids = [
+                Phoneme(p).phoneme_id for p in unvoiced_vowel_likes
+            ]
             if vowel_phoneme_list[i] in unvoiced_vowel_like_ids:
                 return 0
             return (
