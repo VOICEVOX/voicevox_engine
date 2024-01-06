@@ -382,7 +382,7 @@ class TTSEngine:
             if p.phoneme in unvoiced_vowel_likes:
                 f0[i] = 0
 
-        # 生成結果でモーラ内の音高属性を更新する
+        # 更新する
         for i, mora in enumerate(moras):
             mora.pitch = f0[i + 1]
 
