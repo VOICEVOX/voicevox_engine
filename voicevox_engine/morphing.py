@@ -56,23 +56,23 @@ def create_morphing_parameter(
 
 def get_morphable_targets(
     speakers: List[Speaker],
-    base_speakers: List[int],
+    base_style_ids: List[StyleId],
 ) -> List[Dict[StyleId, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報
-    base_speakers: モーフィング可能か判定したいベースの話者リスト（スタイルID）
+    base_speakers: モーフィング可能か判定したいベースのスタイルIDリスト
     """
     speaker_lookup = construct_lookup(speakers)
 
     morphable_targets_arr = []
-    for base_speaker in base_speakers:
+    for base_style_id in base_style_ids:
         morphable_targets = dict()
         for style in chain.from_iterable(speaker.styles for speaker in speakers):
             morphable_targets[style.id] = MorphableTargetInfo(
                 is_morphable=is_synthesis_morphing_permitted(
                     speaker_lookup=speaker_lookup,
-                    base_speaker=base_speaker,
-                    target_speaker=style.id,
+                    base_style_id=base_style_id,
+                    target_style_id=style.id,
                 )
             )
         morphable_targets_arr.append(morphable_targets)
@@ -81,21 +81,21 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, SpeakerStyle]],
-    base_speaker: int,
-    target_speaker: int,
+    speaker_lookup: Dict[StyleId, Tuple[Speaker, SpeakerStyle]],
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> bool:
     """
     指定されたstyle_idがモーフィング可能かどうか返す
     style_idが見つからない場合はStyleIdNotFoundErrorを送出する
     """
 
-    base_speaker_data = speaker_lookup[base_speaker]
-    target_speaker_data = speaker_lookup[target_speaker]
+    base_speaker_data = speaker_lookup[base_style_id]
+    target_speaker_data = speaker_lookup[target_style_id]
 
     if base_speaker_data is None or target_speaker_data is None:
         raise StyleIdNotFoundError(
-            base_speaker if base_speaker_data is None else target_speaker
+            base_style_id if base_speaker_data is None else target_style_id
         )
 
     base_speaker_info, _ = base_speaker_data
@@ -137,8 +137,8 @@ def synthesis_morphing_parameter(
     engine: TTSEngine,
     core: CoreAdapter,
     query: AudioQuery,
-    base_speaker: StyleId,
-    target_speaker: StyleId,
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> MorphingParameter:
     query = deepcopy(query)
 
@@ -148,8 +148,8 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesize_wave(query, style_id=base_speaker).astype("float")
-    target_wave = engine.synthesize_wave(query, style_id=target_speaker).astype("float")
+    base_wave = engine.synthesize_wave(query, base_style_id).astype("float")
+    target_wave = engine.synthesize_wave(query, target_style_id).astype("float")
 
     return create_morphing_parameter(
         base_wave=base_wave,
@@ -174,7 +174,7 @@ def synthesis_morphing(
 
     morph_rate : float
         モーフィングの割合
-        0.0でベースの話者、1.0でターゲットの話者に近づきます。
+        0.0でベースの音声、1.0でターゲットの音声に近づきます。
 
     Returns
     -------
