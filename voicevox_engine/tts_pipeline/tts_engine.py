@@ -319,7 +319,8 @@ class TTSEngine:
         # アクセントの開始/終了位置リストを作る
         start_accent_list = numpy.concatenate(
             [
-                # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、accentが1の場合は0番目を指定している # noqa: B950
+                # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
+                # accentが1の場合は0番目を指定している
                 # accentが1ではない場合、accentはend_accent_listに用いられる
                 _create_one_hot(accent_phrase, 0 if accent_phrase.accent == 1 else 1)
                 for accent_phrase in accent_phrases
