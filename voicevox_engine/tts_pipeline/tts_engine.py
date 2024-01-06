@@ -286,7 +286,7 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
-        # 更新対象がない場合はアーリーリターン
+        # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
 
