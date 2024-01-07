@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-
 from run import generate_app
+
 from voicevox_engine.core_initializer import initialize_cores
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import SettingLoader
