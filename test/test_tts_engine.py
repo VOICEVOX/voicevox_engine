@@ -1,9 +1,12 @@
+import json
 from typing import Union
 from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
 import pytest
+from pydantic.json import pydantic_encoder
+from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
@@ -26,7 +29,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
-    unvoiced_mora_phoneme_list,
+    unvoiced_vowel_likes,
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
@@ -37,27 +40,6 @@ TRUE_NUM_PHONEME = 45
 def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
     """2つのPhonemeが同じ `.phoneme` を持つ"""
     return p1.phoneme == p2.phoneme
-
-
-def is_same_ojt_phoneme_list(
-    p1s: list[Phoneme | None] | list[Phoneme], p2s: list[Phoneme | None] | list[Phoneme]
-) -> bool:
-    """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
-    if len(p1s) != len(p2s):
-        return False
-
-    for p1, p2 in zip(p1s, p2s):
-        if p1 is None and p2 is None:  # None vs None -> equal
-            pass
-        elif p1 is None:  # None vs OjtOhoneme -> not equal
-            return False
-        elif p2 is None:  # OjtOhoneme vs None -> not equal
-            return False
-        elif is_same_phoneme(p1, p2):
-            pass
-        else:
-            return False
-    return True
 
 
 def yukarin_s_mock(
@@ -466,11 +448,6 @@ def test_raw_wave_to_output_wave_without_resample():
     assert numpy.allclose(wave, true_wave)
 
 
-def _gen_hello_hiho_phonemes() -> list[Phoneme]:
-    hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-    return [Phoneme(p) for p in hello_hiho.split()]
-
-
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
@@ -497,6 +474,43 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     ]
 
 
+def is_same_phonemes(
+    p1s: list[Phoneme] | list[Phoneme | None], p2s: list[Phoneme] | list[Phoneme | None]
+) -> bool:
+    """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
+    if len(p1s) != len(p2s):
+        return False
+
+    for p1, p2 in zip(p1s, p2s):
+        if p1 is None and p2 is None:  # None vs None -> equal
+            pass
+        elif p1 is None:  # None vs OjtOhoneme -> not equal
+            return False
+        elif p2 is None:  # OjtOhoneme vs None -> not equal
+            return False
+        elif is_same_phoneme(p1, p2):
+            pass
+        else:
+            return False
+    return True
+
+
+def test_split_mora():
+    # Inputs
+    hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+    hello_hiho_phonemes = [Phoneme(p) for p in hello_hiho.split()]
+    # Outputs
+    consonants, vowels = split_mora(hello_hiho_phonemes)
+    # Expects
+    cs = [None, "k", None, "n", "ch", "w", None, "h", "h", "d", "s", None]
+    vs = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
+    true_consonants = [Phoneme(p) if p else None for p in cs]
+    true_vowels = [Phoneme(p) for p in vs]
+    # Tests
+    assert is_same_phonemes(vowels, true_vowels)
+    assert is_same_phonemes(consonants, true_consonants)
+
+
 class TestTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
@@ -514,37 +528,6 @@ class TestTTSEngine(TestCase):
             true_accent_phrases_hello_hiho[0].moras
             + [true_accent_phrases_hello_hiho[0].pause_mora]
             + true_accent_phrases_hello_hiho[1].moras,
-        )
-
-    def test_split_mora(self):
-        # Outputs
-        consonant_phoneme_list, vowel_phoneme_list = split_mora(
-            _gen_hello_hiho_phonemes()
-        )
-
-        ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
-        true_vowel_phoneme_list = [Phoneme(p) for p in ps]
-        self.assertTrue(
-            is_same_ojt_phoneme_list(vowel_phoneme_list, true_vowel_phoneme_list)
-        )
-        self.assertTrue(
-            is_same_ojt_phoneme_list(
-                consonant_phoneme_list,
-                [
-                    None,
-                    Phoneme("k"),
-                    None,
-                    Phoneme("n"),
-                    Phoneme("ch"),
-                    Phoneme("w"),
-                    None,
-                    Phoneme("h"),
-                    Phoneme("h"),
-                    Phoneme("d"),
-                    Phoneme("s"),
-                    None,
-                ],
-            )
         )
 
     def test_pre_process(self):
@@ -660,11 +643,11 @@ class TestTTSEngine(TestCase):
         index = 1
 
         def result_value(i: int) -> float:
-            # unvoiced_mora_phoneme_listのPhoneme ID版
-            unvoiced_mora_phoneme_id_list = [
-                Phoneme(p).phoneme_id for p in unvoiced_mora_phoneme_list
+            # unvoiced_vowel_likesのPhoneme ID版
+            unvoiced_vowel_like_ids = [
+                Phoneme(p).phoneme_id for p in unvoiced_vowel_likes
             ]
-            if vowel_phoneme_list[i] in unvoiced_mora_phoneme_id_list:
+            if vowel_phoneme_list[i] in unvoiced_vowel_like_ids:
                 return 0
             return round(
                 (
@@ -719,3 +702,13 @@ def test_create_accent_phrases_toward_unknown():
     with pytest.raises(ValueError) as e:
         accent_phrases = engine.update_length_and_pitch(accent_phrases, StyleId(0))
     assert str(e.value) == "tuple.index(x): x not in tuple"
+
+
+def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Outputs
+    result = tts_engine.update_length(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == json.loads(json.dumps(result, default=pydantic_encoder))

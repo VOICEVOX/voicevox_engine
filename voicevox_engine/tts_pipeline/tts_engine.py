@@ -13,8 +13,8 @@ from .acoustic_feature_extractor import Phoneme
 from .mora_list import mora_phonemes_to_mora_kana
 from .text_analyzer import text_to_accent_phrases
 
-unvoiced_mora_phoneme_list = ["A", "I", "U", "E", "O", "cl", "pau"]
-mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_mora_phoneme_list
+unvoiced_vowel_likes = ["A", "I", "U", "E", "O", "cl", "pau"]
+mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_vowel_likes
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
@@ -53,24 +53,19 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     return phonemes
 
 
-def split_mora(
-    phoneme_list: list[Phoneme],
-) -> tuple[list[Phoneme | None], list[Phoneme]]:
+def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phoneme]]:
     """音素系列から子音系列と母音系列を抽出する"""
-    vowel_indexes = [
-        i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
-    ]
-    vowel_phoneme_list = [phoneme_list[i] for i in vowel_indexes]
-    # postとprevのvowel_indexの差として考えられる値は1か2
-    # 理由としてはphoneme_listは、consonant、vowelの組み合わせか、vowel一つの連続であるから
-    # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
-    # 2の場合はconsonantが存在するモーラである
-    # なので、2の場合(else)でphonemeを取り出している
-    consonant_phoneme_list = [None] + [
-        None if post - prev == 1 else phoneme_list[post - 1]
-        for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
-    ]
-    return consonant_phoneme_list, vowel_phoneme_list
+    consonants: list[Phoneme | None] = []
+    vowels: list[Phoneme] = []
+    for i, p in enumerate(phonemes):
+        if p.phoneme in mora_phoneme_list:
+            vowels += [p]
+            # Vowel のみのモーラの場合（Vowel が連続する場合）、Consonant を None とする
+            if i == 0 or phonemes[i - 1].phoneme in mora_phoneme_list:
+                consonants += [None]
+        else:
+            consonants += [p]
+    return consonants, vowels
 
 
 def pre_process(
@@ -286,13 +281,9 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
-        # numpy.concatenateが空リストだとエラーを返すのでチェック
+        # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
-
-        # phoneme
-        # AccentPhraseをすべてMoraおよびPhonemeの形に分解し、処理可能な形にする
-        flatten_moras, phoneme_data_list = pre_process(accent_phrases)
 
         # accent
         def _create_one_hot(accent_phrase: AccentPhrase, position: int) -> ndarray:
@@ -320,7 +311,7 @@ class TTSEngine:
                 (0 if accent_phrase.pause_mora is not None else []),
             ]
 
-        # accent_phrasesから、アクセントの開始位置のリストを作る
+        # アクセントの開始/終了位置リストを作る
         start_accent_list = numpy.concatenate(
             [
                 # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、
@@ -330,8 +321,6 @@ class TTSEngine:
                 for accent_phrase in accent_phrases
             ]
         )
-
-        # accent_phrasesから、アクセントの終了位置のリストを作る
         end_accent_list = numpy.concatenate(
             [
                 # accentはプログラミング言語におけるindexのように0始まりではなく1始まりなので、1を引いている
@@ -340,24 +329,21 @@ class TTSEngine:
             ]
         )
 
-        # accent_phrasesから、アクセント句の開始位置のリストを作る
-        # これによって、yukarin_sa_forwarder内でアクセント句を区別できる
+        # アクセント句の開始/終了位置リストを作る
         start_accent_phrase_list = numpy.concatenate(
             [_create_one_hot(accent_phrase, 0) for accent_phrase in accent_phrases]
         )
-
-        # accent_phrasesから、アクセント句の終了位置のリストを作る
         end_accent_phrase_list = numpy.concatenate(
             [_create_one_hot(accent_phrase, -1) for accent_phrase in accent_phrases]
         )
 
-        # 最初と最後に0を付け加える。これによってpau(前後の無音のためのもの)を付け加えたことになる
+        # 前後無音を付加する
         start_accent_list = numpy.r_[0, start_accent_list, 0]
         end_accent_list = numpy.r_[0, end_accent_list, 0]
         start_accent_phrase_list = numpy.r_[0, start_accent_phrase_list, 0]
         end_accent_phrase_list = numpy.r_[0, end_accent_phrase_list, 0]
 
-        # アクセント・アクセント句関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
+        # キャスト
         start_accent_list = numpy.array(start_accent_list, dtype=numpy.int64)
         end_accent_list = numpy.array(end_accent_list, dtype=numpy.int64)
         start_accent_phrase_list = numpy.array(
@@ -365,28 +351,20 @@ class TTSEngine:
         )
         end_accent_phrase_list = numpy.array(end_accent_phrase_list, dtype=numpy.int64)
 
-        # phonemeに関するデータを取得(変換)する
-        (consonant_phoneme_data_list, vowel_phoneme_data_list) = split_mora(
-            phoneme_data_list
+        # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
+        moras, phonemes = pre_process(accent_phrases)
+
+        # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
+        consonants, vowels = split_mora(phonemes)
+        vowel_ids = numpy.array([p.phoneme_id for p in vowels], dtype=numpy.int64)
+        consonant_ids = numpy.array(
+            [p.phoneme_id if p else -1 for p in consonants], dtype=numpy.int64
         )
 
-        # yukarin_sa
-        # Phoneme関連のデータをyukarin_sa_forwarderに渡すための最終処理、リスト内のデータをint64に変換する
-        vowel_phoneme_list = numpy.array(
-            [p.phoneme_id for p in vowel_phoneme_data_list], dtype=numpy.int64
-        )
-        consonant_phoneme_list = numpy.array(
-            [
-                p.phoneme_id if p is not None else -1
-                for p in consonant_phoneme_data_list
-            ],
-            dtype=numpy.int64,
-        )
-
-        # 今までに生成された情報をyukarin_sa_forwardにかけ、推論器によってモーラごとに適切な音高(ピッチ)を割り当てる
-        f0_list = self._core.safe_yukarin_sa_forward(
-            vowel_phoneme_list,
-            consonant_phoneme_list,
+        # コアを用いてモーラ音高を生成する
+        f0 = self._core.safe_yukarin_sa_forward(
+            vowel_ids,
+            consonant_ids,
             start_accent_list,
             end_accent_list,
             start_accent_phrase_list,
@@ -394,15 +372,14 @@ class TTSEngine:
             style_id,
         )
 
-        # 無声母音を含むMoraに関しては、音高(ピッチ)を0にする
-        for i, p in enumerate(vowel_phoneme_data_list):
-            if p.phoneme in unvoiced_mora_phoneme_list:
-                f0_list[i] = 0
+        # 母音が無声であるモーラは音高を 0 とする
+        for i, p in enumerate(vowels):
+            if p.phoneme in unvoiced_vowel_likes:
+                f0[i] = 0
 
-        # yukarin_sa_forwarderの結果をaccent_phrasesに反映する
-        # flatten_moras変数に展開された値を変更することでコード量を削減しつつaccent_phrases内のデータを書き換えている
-        for i, mora in enumerate(flatten_moras):
-            mora.pitch = f0_list[i + 1]
+        # 更新する
+        for i, mora in enumerate(moras):
+            mora.pitch = f0[i + 1]
 
         return accent_phrases
 
