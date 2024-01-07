@@ -3,8 +3,6 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
-import pytest
-from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -29,6 +27,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     to_flatten_phonemes,
     unvoiced_mora_phoneme_list,
 )
+
+from .e2e.conftest import snapshot_json  # noqa: F401
 
 TRUE_NUM_PHONEME = 45
 
@@ -707,20 +707,9 @@ class TestTTSEngine(TestCase):
         self.assertEqual(result, true_result)
 
 
-@pytest.fixture
-def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
-    """
-    syrupyでJSONをsnapshotするためのfixture。
-
-    Examples
-    --------
-    >>> def test_foo(snapshot_json: JSONSnapshotExtension):
-    >>>     assert snapshot_json == {"key": "value"}
-    """
-    return snapshot.use_extension(JSONSnapshotExtension)
-
-
-def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_length_output(
+    snapshot_json: JSONSnapshotExtension,  # noqa: F811
+) -> None:
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
