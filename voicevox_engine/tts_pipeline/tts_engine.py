@@ -10,6 +10,7 @@ from ..core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, Mora
 from .acoustic_feature_extractor import Phoneme
+from .kana_converter import parse_kana
 from .mora_list import mora_phonemes_to_mora_kana
 from .text_analyzer import text_to_accent_phrases
 
@@ -417,6 +418,14 @@ class TTSEngine:
     def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         accent_phrases = text_to_accent_phrases(text)
+        accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
+        return accent_phrases
+
+    def create_accent_phrases_from_kana(
+        self, kana: str, style_id: StyleId
+    ) -> list[AccentPhrase]:
+        """AquesTalk 風記法テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
+        accent_phrases = parse_kana(kana)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
