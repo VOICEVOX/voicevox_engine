@@ -10,7 +10,7 @@
 [![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
-[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。
+[VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
 実態は HTTP サーバーなので、リクエストを送信すればテキスト音声合成できます。
 
 （エディターは [VOICEVOX](https://github.com/VOICEVOX/voicevox/) 、
@@ -27,7 +27,7 @@
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)をご参照ください。
 
-VOICEVOX エンジンもしくはエディタを起動した状態で http://127.0.0.1:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。
+VOICEVOX エンジンもしくはエディタを起動した状態で http://127.0.0.1:50021/docs にアクセスすると、起動中のエンジンのドキュメントも確認できます。  
 今後の方針などについては [VOICEVOX 音声合成エンジンとの連携](./docs/VOICEVOX音声合成エンジンとの連携.md) も参考になるかもしれません。
 
 ### Docker イメージ
@@ -78,7 +78,7 @@ curl -s \
 #### AquesTalk 風記法
 <!-- NOTE: この節は静的リンクとして運用中なので変更しない方が良い(voicevox_engine#816) -->
 
-「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。
+「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。  
 AquesTalk 風記法は次のルールに従います：
 
 - 全てのカナはカタカナで記述される
@@ -89,8 +89,8 @@ AquesTalk 風記法は次のルールに従います：
 
 #### AquesTalk 風記法のサンプルコード
 
-`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk 風記法](#aquestalk-風記法)で記述されます。
-これを修正することで音声の読み仮名やアクセントを制御できます。
+`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk 風記法](#aquestalk-風記法)で記述されます。  
+これを修正することで音声の読み仮名やアクセントを制御できます。  
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -139,15 +139,15 @@ curl -s -X GET "127.0.0.1:50021/user_dict"
 
 #### 単語追加
 
-`/user_dict_word`に POST リクエストを投げる事でユーザー辞書に単語を追加することができます。
+`/user_dict_word`に POST リクエストを投げる事でユーザー辞書に単語を追加することができます。  
 URL パラメータとして、以下が必要です。
 
 - surface （辞書に登録する単語）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-アクセント核位置については、こちらの文章が参考になるかと思います。
-〇型となっている数字の部分がアクセント核位置になります。
+アクセント核位置については、こちらの文章が参考になるかと思います。  
+〇型となっている数字の部分がアクセント核位置になります。  
 https://tdmelodic.readthedocs.io/ja/latest/pages/introduction.html
 
 成功した場合の返り値は単語に割り当てられる UUID の文字列になります。
@@ -166,14 +166,14 @@ curl -s -X POST "127.0.0.1:50021/user_dict_word" \
 
 #### 単語修正
 
-`/user_dict_word/{word_uuid}`に PUT リクエストを投げる事でユーザー辞書の単語を修正することができます。
+`/user_dict_word/{word_uuid}`に PUT リクエストを投げる事でユーザー辞書の単語を修正することができます。  
 URL パラメータとして、以下が必要です。
 
 - surface （辞書に登録するワード）
 - pronunciation （カタカナでの読み方）
 - accent_type （アクセント核位置、整数）
 
-word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。
+word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -194,7 +194,7 @@ curl -s -X PUT "127.0.0.1:50021/user_dict_word/$word_uuid" \
 
 `/user_dict_word/{word_uuid}`に DELETE リクエストを投げる事でユーザー辞書の単語を削除することができます。
 
-word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。
+word_uuid は単語追加時に確認できるほか、ユーザー辞書を参照することでも確認できます。  
 成功した場合の返り値は`204 No Content`になります。
 
 ```bash
@@ -208,8 +208,8 @@ curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 
 エンジンの[設定ページ](http://127.0.0.1:50021/setting)内の「ユーザー辞書のエクスポート&インポート」節で、ユーザー辞書のインポート&エクスポートが可能です。
 
-他にも API でユーザー辞書のインポート&エクスポートが可能です。
-インポートには `POST /import_user_dict`、エクスポートには `GET /user_dict` を利用します。
+他にも API でユーザー辞書のインポート&エクスポートが可能です。  
+インポートには `POST /import_user_dict`、エクスポートには `GET /user_dict` を利用します。  
 引数等の詳細は API ドキュメントをご覧ください。
 
 ### プリセット機能について
@@ -289,7 +289,7 @@ curl -s \
 
 ### 話者の追加情報を取得するサンプルコード
 
-追加情報の中の portrait.png を取得するコードです。
+追加情報の中の portrait.png を取得するコードです。  
 （[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
 
 ```bash
@@ -301,15 +301,15 @@ curl -s -X GET "127.0.0.1:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 
 ### キャンセル可能な音声合成
 
-`/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。
-(`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)
-この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。
+`/cancellable_synthesis`では通信を切断した場合に即座に計算リソースが開放されます。  
+(`/synthesis`では通信を切断しても最後まで音声合成の計算が行われます)  
+この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
 ### CORS 設定
 
 VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
-そのため、一部のサードパーティアプリからのレスポンスを受け取れない可能性があります。
+そのため、一部のサードパーティアプリからのレスポンスを受け取れない可能性があります。  
 これを回避する方法として、エンジンから設定できる UI を用意しています。
 
 #### 設定方法
@@ -433,8 +433,8 @@ python run.py --output_log_utf8
 
 #### CPU スレッド数を指定する
 
-CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）
-もし IaaS 上で実行していたり、専用サーバーで実行している場合など、
+CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
+もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
 エンジンが使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
 - 実行時引数で指定する
@@ -449,7 +449,7 @@ CPU スレッド数が未指定の場合は、論理コア数の半分か物理�
 
 #### 過去のバージョンのコアを使う
 
-VOICEVOX Core 0.5.4 以降のコアを使用する事が可能です。
+VOICEVOX Core 0.5.4 以降のコアを使用する事が可能です。  
 Mac での libtorch 版コアのサポートはしていません。
 
 ##### 過去のバイナリを指定する
@@ -468,10 +468,10 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voi
 
 ##### 音声ライブラリを直接指定する
 
-[VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。
-また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。
-ただし、システムの探索パス上に libtorch、onnxruntime がある場合、`--runtime_dir`引数の指定は不要です。
-`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。
+[VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+ただし、システムの探索パス上に libtorch、onnxruntime がある場合、`--runtime_dir`引数の指定は不要です。  
+`--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。  
 API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 
 ```bash
@@ -585,7 +585,7 @@ poetry export --without-hashes --with license -o requirements-license.txt
 
 #### ライセンス
 
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
 
 - MIT/Apache/BSD-3: OK
@@ -641,7 +641,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 ### API ドキュメントの確認
 
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。
+[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
@@ -669,5 +669,5 @@ PYTHONPATH=. python build_util/make_docs.py
 ## ライセンス
 
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
-別ライセンスを取得したい場合は、ヒホに求めてください。
+別ライセンスを取得したい場合は、ヒホに求めてください。  
 X アカウント: [@hiho_karuta](https://x.com/hiho_karuta)
