@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import NDArray
 from pyopenjtalk import tts
 from soxr import resample
 
@@ -25,7 +25,7 @@ class MockTTSEngine(TTSEngine):
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
-    ) -> npt.NDArray[np.float32]:
+    ) -> NDArray[np.float32]:
         """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
@@ -41,7 +41,7 @@ class MockTTSEngine(TTSEngine):
 
         return wave
 
-    def forward(self, text: str, **kwargs: dict[str, Any]) -> npt.NDArray[np.float32]:
+    def forward(self, text: str, **kwargs: dict[str, Any]) -> NDArray[np.float32]:
         """
         forward tts via pyopenjtalk.tts()
         参照→TTSEngine のdocstring [Mock]
@@ -53,7 +53,7 @@ class MockTTSEngine(TTSEngine):
 
         Returns
         -------
-        wave [npt.NDArray[np.float64]]
+        wave [NDArray[np.float64]]
             音声波形データをNumPy配列で返します
 
         Note

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import NDArray
 
 
 class OldCoreError(Exception):
@@ -528,22 +528,22 @@ class CoreWrapper:
     def yukarin_s_forward(
         self,
         length: int,
-        phoneme_list: npt.NDArray[np.integer],
-        style_id: npt.NDArray[np.integer],
-    ) -> npt.NDArray[np.float32]:
+        phoneme_list: NDArray[np.integer],
+        style_id: NDArray[np.integer],
+    ) -> NDArray[np.float32]:
         """
         音素列から、音素ごとの長さを求める関数
         Parameters
         ----------
         length : int
             音素列の長さ
-        phoneme_list : npt.NDArray[np.integer]
+        phoneme_list : NDArray[np.integer]
             音素列
-        style_id : npt.NDArray[np.integer]
+        style_id : NDArray[np.integer]
             スタイル番号
         Returns
         -------
-        output : npt.NDArray[np.float32]
+        output : NDArray[np.float32]
             音素ごとの長さ
         """
         output = np.zeros((length,), dtype=np.float32)
@@ -560,37 +560,37 @@ class CoreWrapper:
     def yukarin_sa_forward(
         self,
         length: int,
-        vowel_phoneme_list: npt.NDArray[np.integer],
-        consonant_phoneme_list: npt.NDArray[np.integer],
-        start_accent_list: npt.NDArray[np.integer],
-        end_accent_list: npt.NDArray[np.integer],
-        start_accent_phrase_list: npt.NDArray[np.integer],
-        end_accent_phrase_list: npt.NDArray[np.integer],
-        style_id: npt.NDArray[np.integer],
-    ) -> npt.NDArray[np.float32]:
+        vowel_phoneme_list: NDArray[np.integer],
+        consonant_phoneme_list: NDArray[np.integer],
+        start_accent_list: NDArray[np.integer],
+        end_accent_list: NDArray[np.integer],
+        start_accent_phrase_list: NDArray[np.integer],
+        end_accent_phrase_list: NDArray[np.integer],
+        style_id: NDArray[np.integer],
+    ) -> NDArray[np.float32]:
         """
         モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
         Parameters
         ----------
         length : int
             モーラ列の長さ
-        vowel_phoneme_list : npt.NDArray[np.integer]
+        vowel_phoneme_list : NDArray[np.integer]
             母音の音素列
-        consonant_phoneme_list : npt.NDArray[np.integer]
+        consonant_phoneme_list : NDArray[np.integer]
             子音の音素列
-        start_accent_list : npt.NDArray[np.integer]
+        start_accent_list : NDArray[np.integer]
         アクセントの開始位置
-        end_accent_list : npt.NDArray[np.integer]
+        end_accent_list : NDArray[np.integer]
             アクセントの終了位置
-        start_accent_phrase_list : npt.NDArray[np.integer]
+        start_accent_phrase_list : NDArray[np.integer]
             アクセント句の開始位置
-        end_accent_phrase_list : npt.NDArray[np.integer]
+        end_accent_phrase_list : NDArray[np.integer]
             アクセント句の終了位置
-        style_id : npt.NDArray[np.integer]
+        style_id : NDArray[np.integer]
             スタイル番号
         Returns
         -------
-        output : npt.NDArray[np.float32]
+        output : NDArray[np.float32]
             モーラごとの音高
         """
         output = np.empty(
@@ -619,10 +619,10 @@ class CoreWrapper:
         self,
         length: int,
         phoneme_size: int,
-        f0: npt.NDArray[np.floating],
-        phoneme: npt.NDArray[np.floating],
-        style_id: npt.NDArray[np.integer],
-    ) -> npt.NDArray[np.float32]:
+        f0: NDArray[np.floating],
+        phoneme: NDArray[np.floating],
+        style_id: NDArray[np.integer],
+    ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
         Parameters
@@ -631,15 +631,15 @@ class CoreWrapper:
             フレームの長さ
         phoneme_size : int
             音素の種類数
-        f0 : npt.NDArray[np.floating]
+        f0 : NDArray[np.floating]
             フレームごとの音高
-        phoneme : npt.NDArray[np.floating]
+        phoneme : NDArray[np.floating]
             フレームごとの音素
-        style_id : npt.NDArray[np.integer]
+        style_id : NDArray[np.integer]
             スタイル番号
         Returns
         -------
-        output : npt.NDArray[np.float32]
+        output : NDArray[np.float32]
             音声波形
         """
 

@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 import numpy as np
-import numpy.typing as npt
 from numpy import ndarray
+from numpy.typing import NDArray
 
 from ...core_wrapper import CoreWrapper
 
@@ -66,7 +66,7 @@ class MockCoreWrapper(CoreWrapper):
 
     def yukarin_s_forward(
         self, length: int, phoneme_list: ndarray, style_id: ndarray
-    ) -> npt.NDArray[np.floating]:
+    ) -> NDArray[np.floating]:
         """音素系列サイズ・音素ID系列・スタイルIDから音素長系列を生成する"""
         result = []
         # mockとしての適当な処理、特に意味はない
@@ -84,7 +84,7 @@ class MockCoreWrapper(CoreWrapper):
         start_accent_phrase_list: ndarray,
         end_accent_phrase_list: ndarray,
         style_id: ndarray,
-    ) -> npt.NDArray[np.floating]:
+    ) -> NDArray[np.floating]:
         """モーラ系列サイズ・母音系列・子音系列・アクセント位置・アクセント句区切り・スタイルIDからモーラ音高系列を生成する"""
         assert length > 1, "前後無音を必ず付与しなければならない"
 
@@ -117,7 +117,7 @@ class MockCoreWrapper(CoreWrapper):
         f0: ndarray,
         phoneme: ndarray,
         style_id: ndarray,
-    ) -> npt.NDArray[np.floating]:
+    ) -> NDArray[np.floating]:
         """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDからダミー音声波形を生成する"""
         # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
         result: list[ndarray] = []

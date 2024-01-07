@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from itertools import chain
 
 import numpy as np
-import numpy.typing as npt
 import pyworld as pw
+from numpy.typing import NDArray
 from soxr import resample
 
 from .core_adapter import CoreAdapter
@@ -24,15 +24,15 @@ from .tts_pipeline import TTSEngine
 class MorphingParameter:
     fs: int
     frame_period: float
-    base_f0: npt.NDArray[np.double]
-    base_aperiodicity: npt.NDArray[np.double]
-    base_spectrogram: npt.NDArray[np.double]
-    target_spectrogram: npt.NDArray[np.double]
+    base_f0: NDArray[np.double]
+    base_aperiodicity: NDArray[np.double]
+    base_spectrogram: NDArray[np.double]
+    target_spectrogram: NDArray[np.double]
 
 
 def create_morphing_parameter(
-    base_wave: npt.NDArray[np.double],
-    target_wave: npt.NDArray[np.double],
+    base_wave: NDArray[np.double],
+    target_wave: NDArray[np.double],
     fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
@@ -163,7 +163,7 @@ def synthesis_morphing(
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
-) -> npt.NDArray[np.float64]:
+) -> NDArray[np.float64]:
     """
     指定した割合で、パラメータをもとにモーフィングした音声を生成します。
 
@@ -178,7 +178,7 @@ def synthesis_morphing(
 
     Returns
     -------
-    generated : npt.NDArray[np.float64]
+    generated : NDArray[np.float64]
         モーフィングした音声
 
     Raises

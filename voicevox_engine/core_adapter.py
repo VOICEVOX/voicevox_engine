@@ -1,7 +1,7 @@
 import threading
 
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import NDArray
 
 from .core_wrapper import CoreWrapper, OldCoreError
 from .metas.Metas import StyleId
@@ -67,8 +67,8 @@ class CoreAdapter:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def safe_yukarin_s_forward(
-        self, phoneme_list_s: npt.NDArray[np.integer], style_id: StyleId
-    ) -> npt.NDArray[np.float32]:
+        self, phoneme_list_s: NDArray[np.integer], style_id: StyleId
+    ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
@@ -81,14 +81,14 @@ class CoreAdapter:
 
     def safe_yukarin_sa_forward(
         self,
-        vowel_phoneme_list: npt.NDArray[np.integer],
-        consonant_phoneme_list: npt.NDArray[np.integer],
-        start_accent_list: npt.NDArray[np.integer],
-        end_accent_list: npt.NDArray[np.integer],
-        start_accent_phrase_list: npt.NDArray[np.integer],
-        end_accent_phrase_list: npt.NDArray[np.integer],
+        vowel_phoneme_list: NDArray[np.integer],
+        consonant_phoneme_list: NDArray[np.integer],
+        start_accent_list: NDArray[np.integer],
+        end_accent_list: NDArray[np.integer],
+        start_accent_phrase_list: NDArray[np.integer],
+        end_accent_phrase_list: NDArray[np.integer],
         style_id: StyleId,
-    ) -> npt.NDArray[np.float32]:
+    ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
@@ -106,10 +106,10 @@ class CoreAdapter:
 
     def safe_decode_forward(
         self,
-        phoneme: npt.NDArray[np.floating],
-        f0: npt.NDArray[np.floating],
+        phoneme: NDArray[np.floating],
+        f0: NDArray[np.floating],
         style_id: StyleId,
-    ) -> tuple[npt.NDArray[np.float32], int]:
+    ) -> tuple[NDArray[np.float32], int]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
