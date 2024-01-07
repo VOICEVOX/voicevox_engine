@@ -513,34 +513,15 @@ class TestTTSEngine(TestCase):
 
     def test_split_mora(self):
         # Outputs
-        consonant_phoneme_list, vowel_phoneme_list = split_mora(
-            _gen_hello_hiho_phonemes()
-        )
-
-        ps = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
-        true_vowel_phoneme_list = [Phoneme(p) for p in ps]
-        self.assertTrue(
-            is_same_ojt_phoneme_list(vowel_phoneme_list, true_vowel_phoneme_list)
-        )
-        self.assertTrue(
-            is_same_ojt_phoneme_list(
-                consonant_phoneme_list,
-                [
-                    None,
-                    Phoneme("k"),
-                    None,
-                    Phoneme("n"),
-                    Phoneme("ch"),
-                    Phoneme("w"),
-                    None,
-                    Phoneme("h"),
-                    Phoneme("h"),
-                    Phoneme("d"),
-                    Phoneme("s"),
-                    None,
-                ],
-            )
-        )
+        consonants, vowels = split_mora(_gen_hello_hiho_phonemes())
+        # Expects
+        cs = [None, "k", None, "n", "ch", "w", None, "h", "h", "d", "s", None]
+        vs = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
+        true_consonants = [Phoneme(p) if p else None for p in cs]
+        true_vowels = [Phoneme(p) for p in vs]
+        # Tests
+        self.assertTrue(is_same_ojt_phoneme_list(vowels, true_vowels))
+        self.assertTrue(is_same_ojt_phoneme_list(consonants, true_consonants))
 
     def test_pre_process(self):
         flatten_moras, phoneme_data_list = pre_process(_gen_hello_hiho_accent_phrases())
