@@ -7,7 +7,7 @@ from run import generate_app
 from voicevox_engine.core_initializer import initialize_cores
 from voicevox_engine.preset import PresetManager
 from voicevox_engine.setting import SettingLoader
-from voicevox_engine.tts_pipeline import make_tts_engines_from_cores
+from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 

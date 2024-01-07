@@ -70,8 +70,9 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngine, make_tts_engines_from_cores
+from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
