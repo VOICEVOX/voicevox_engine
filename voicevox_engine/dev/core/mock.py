@@ -119,7 +119,7 @@ class MockCoreWrapper(CoreWrapper):
     ) -> NDArray[np.float32]:
         """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDからダミー音声波形を生成する"""
         # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
-        result: list[np.ndarray] = []
+        result: list[NDArray[np.float32]] = []
         for i in range(length):
             result += [
                 (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)

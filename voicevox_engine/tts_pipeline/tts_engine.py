@@ -133,7 +133,7 @@ def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 def count_frame_per_unit(
     moras: list[Mora],
-) -> tuple[NDArray[np.integer], NDArray[np.integer]]:
+) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
     音素あたり・モーラあたりのフレーム長を算出する
     Parameters
@@ -142,9 +142,9 @@ def count_frame_per_unit(
         モーラ系列
     Returns
     -------
-    frame_per_phoneme : NDArray[np.integer]
+    frame_per_phoneme : NDArray[np.int64]
         音素あたりのフレーム長。端数丸め。shape = (Phoneme,)
-    frame_per_mora : NDArray[np.integer]
+    frame_per_mora : NDArray[np.int64]
         モーラあたりのフレーム長。端数丸め。shape = (Mora,)
     """
     frame_per_phoneme: list[int] = []
@@ -161,7 +161,10 @@ def count_frame_per_unit(
         frame_per_phoneme += [vowel_frames]
         frame_per_mora += [mora_frames]
 
-    return np.array(frame_per_phoneme), np.array(frame_per_mora)
+    return (
+        np.array(frame_per_phoneme, dtype=np.int64),
+        np.array(frame_per_mora, dtype=np.int64),
+    )
 
 
 def _to_frame(sec: float) -> int:
@@ -188,14 +191,16 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def apply_volume_scale(wave: np.ndarray, query: AudioQuery) -> NDArray[np.floating]:
+def apply_volume_scale(
+    wave: NDArray[np.float32], query: AudioQuery
+) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     return wave * query.volumeScale
 
 
 def apply_output_sampling_rate(
-    wave: NDArray[np.floating], sr_wave: float, query: AudioQuery
-) -> NDArray[np.floating]:
+    wave: NDArray[np.float32], sr_wave: float, query: AudioQuery
+) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
@@ -205,8 +210,8 @@ def apply_output_sampling_rate(
 
 
 def apply_output_stereo(
-    wave: NDArray[np.floating], query: AudioQuery
-) -> NDArray[np.floating]:
+    wave: NDArray[np.float32], query: AudioQuery
+) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
     if query.outputStereo:
         wave = np.array([wave, wave]).T
@@ -238,8 +243,8 @@ def query_to_decoder_feature(
 
 
 def raw_wave_to_output_wave(
-    query: AudioQuery, wave: np.ndarray, sr_wave: int
-) -> NDArray[np.floating]:
+    query: AudioQuery, wave: NDArray[np.float32], sr_wave: int
+) -> NDArray[np.float32]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
     wave = apply_volume_scale(wave, query)
     wave = apply_output_sampling_rate(wave, sr_wave, query)
@@ -296,7 +301,7 @@ class TTSEngine:
         # accent
         def _create_one_hot(
             accent_phrase: AccentPhrase, position: int
-        ) -> NDArray[np.floating]:
+        ) -> NDArray[np.int64]:
             """
             単位行列(np.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
             例えば、accent_phraseのmorasの長さが12、positionが1なら
@@ -313,11 +318,11 @@ class TTSEngine:
                 one hotにするindex
             Returns
             -------
-            one_hot : NDArray[np.floating]
+            one_hot : NDArray[np.int64]
                 one hotな配列(リスト)
             """
             return np.r_[
-                np.eye(len(accent_phrase.moras))[position],
+                np.eye(len(accent_phrase.moras), dtype=np.int64)[position],
                 (0 if accent_phrase.pause_mora is not None else []),
             ]
 
@@ -418,7 +423,7 @@ class TTSEngine:
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
-    ) -> NDArray[np.floating]:
+    ) -> NDArray[np.float32]:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
