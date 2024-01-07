@@ -194,12 +194,9 @@ def apply_volume_scale(wave: np.ndarray, query: AudioQuery) -> NDArray[np.floati
     return wave * query.volumeScale
 
 
-_SoxrType = TypeVar("_SoxrType", np.float32, np.float64, np.int16, np.int32)
-
-
 def apply_output_sampling_rate(
-    wave: NDArray[_SoxrType], sr_wave: float, query: AudioQuery
-) -> NDArray[_SoxrType]:
+    wave: NDArray[np.floating], sr_wave: float, query: AudioQuery
+) -> NDArray[np.floating]:
     """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
     if sr_wave == query.outputSamplingRate:
@@ -208,10 +205,9 @@ def apply_output_sampling_rate(
     return wave
 
 
-T = TypeVar("T", bound=np.generic)
-
-
-def apply_output_stereo(wave: NDArray[T], query: AudioQuery) -> NDArray[T]:
+def apply_output_stereo(
+    wave: NDArray[np.floating], query: AudioQuery
+) -> NDArray[np.floating]:
     """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
     if query.outputStereo:
         wave = np.array([wave, wave]).T
