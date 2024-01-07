@@ -4,9 +4,8 @@ from unittest.mock import Mock
 
 import numpy
 import pytest
-from test.test_text_analyzer import stub_unknown_features_koxx
-from voicevox_engine.dev.core.mock import MockCoreWrapper
 
+from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
@@ -29,6 +28,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     to_flatten_phonemes,
     unvoiced_mora_phoneme_list,
 )
+
+from .test_text_analyzer import stub_unknown_features_koxx
 
 TRUE_NUM_PHONEME = 45
 
