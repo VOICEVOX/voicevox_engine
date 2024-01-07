@@ -1,9 +1,13 @@
+import json
 from typing import Union
 from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
+from pydantic.json import pydantic_encoder
+from syrupy.extensions.json import JSONSnapshotExtension
 
+from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
@@ -681,3 +685,13 @@ class TestTTSEngine(TestCase):
         numpy.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
         numpy.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
         self.assertEqual(result, true_result)
+
+
+def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Outputs
+    result = tts_engine.update_length(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == json.loads(json.dumps(result, default=pydantic_encoder))
