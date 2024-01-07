@@ -713,7 +713,7 @@ def test_mocked_update_length_output(
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
-    # Outputs & Indirect Outputs（yukarin_sに渡される値）
+    # Outputs
     result = tts_engine.update_length(hello_hiho, StyleId(1))
-
+    # Tests
     assert snapshot_json == result  # type: ignore
