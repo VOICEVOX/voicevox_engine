@@ -25,7 +25,7 @@ class MockTTSEngine(TTSEngine):
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
-    ) -> npt.NDArray[np.float64]:
+    ) -> npt.NDArray[np.float32]:
         """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
@@ -41,7 +41,7 @@ class MockTTSEngine(TTSEngine):
 
         return wave
 
-    def forward(self, text: str, **kwargs: dict[str, Any]) -> npt.NDArray[np.float64]:
+    def forward(self, text: str, **kwargs: dict[str, Any]) -> npt.NDArray[np.float32]:
         """
         forward tts via pyopenjtalk.tts()
         参照→TTSEngine のdocstring [Mock]
@@ -64,10 +64,11 @@ class MockTTSEngine(TTSEngine):
         dtype=np.float64, 16 bit, mono 48000 Hz
 
         # resampleの説明
-        非モック実装（decode_forward）と合わせるために、出力を24kHzに変換した。
+        非モック実装（decode_forward）と合わせるために、出力を24kHz、32bit浮動小数に変換した。
         """
         logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
         logger.info("[Mock] input text: %s" % text)
         wave, sr = tts(text)
+        wave /= 2**15
         wave = resample(wave, 48000, 24000)
-        return wave
+        return wave.astype(np.float32)
