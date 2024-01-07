@@ -60,7 +60,7 @@ def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phon
     for i, p in enumerate(phonemes):
         if p.phoneme in mora_phoneme_list:
             vowels += [p]
-            # Vowel-only モーラの場合（母音音素が連続する場合）、Consonant を None とする
+            # Vowel-only モーラの場合（Vowel が連続する場合）、Consonant を None とする
             if i == 0 or phonemes[i - 1].phoneme in mora_phoneme_list:
                 consonants += [None]
         else:
