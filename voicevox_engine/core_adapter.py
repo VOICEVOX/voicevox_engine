@@ -67,7 +67,7 @@ class CoreAdapter:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def safe_yukarin_s_forward(
-        self, phoneme_list_s: NDArray[np.integer], style_id: StyleId
+        self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
     ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
@@ -81,12 +81,12 @@ class CoreAdapter:
 
     def safe_yukarin_sa_forward(
         self,
-        vowel_phoneme_list: NDArray[np.integer],
-        consonant_phoneme_list: NDArray[np.integer],
-        start_accent_list: NDArray[np.integer],
-        end_accent_list: NDArray[np.integer],
-        start_accent_phrase_list: NDArray[np.integer],
-        end_accent_phrase_list: NDArray[np.integer],
+        vowel_phoneme_list: NDArray[np.int64],
+        consonant_phoneme_list: NDArray[np.int64],
+        start_accent_list: NDArray[np.int64],
+        end_accent_list: NDArray[np.int64],
+        start_accent_phrase_list: NDArray[np.int64],
+        end_accent_phrase_list: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する

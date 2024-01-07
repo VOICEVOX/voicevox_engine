@@ -528,8 +528,8 @@ class CoreWrapper:
     def yukarin_s_forward(
         self,
         length: int,
-        phoneme_list: NDArray[np.integer],
-        style_id: NDArray[np.integer],
+        phoneme_list: NDArray[np.int64],
+        style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
         音素列から、音素ごとの長さを求める関数
@@ -537,9 +537,9 @@ class CoreWrapper:
         ----------
         length : int
             音素列の長さ
-        phoneme_list : NDArray[np.integer]
+        phoneme_list : NDArray[np.int64]
             音素列
-        style_id : NDArray[np.integer]
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
@@ -560,13 +560,13 @@ class CoreWrapper:
     def yukarin_sa_forward(
         self,
         length: int,
-        vowel_phoneme_list: NDArray[np.integer],
-        consonant_phoneme_list: NDArray[np.integer],
-        start_accent_list: NDArray[np.integer],
-        end_accent_list: NDArray[np.integer],
-        start_accent_phrase_list: NDArray[np.integer],
-        end_accent_phrase_list: NDArray[np.integer],
-        style_id: NDArray[np.integer],
+        vowel_phoneme_list: NDArray[np.int64],
+        consonant_phoneme_list: NDArray[np.int64],
+        start_accent_list: NDArray[np.int64],
+        end_accent_list: NDArray[np.int64],
+        start_accent_phrase_list: NDArray[np.int64],
+        end_accent_phrase_list: NDArray[np.int64],
+        style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
         モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
@@ -574,19 +574,19 @@ class CoreWrapper:
         ----------
         length : int
             モーラ列の長さ
-        vowel_phoneme_list : NDArray[np.integer]
+        vowel_phoneme_list : NDArray[np.int64]
             母音の音素列
-        consonant_phoneme_list : NDArray[np.integer]
+        consonant_phoneme_list : NDArray[np.int64]
             子音の音素列
-        start_accent_list : NDArray[np.integer]
+        start_accent_list : NDArray[np.int64]
         アクセントの開始位置
-        end_accent_list : NDArray[np.integer]
+        end_accent_list : NDArray[np.int64]
             アクセントの終了位置
-        start_accent_phrase_list : NDArray[np.integer]
+        start_accent_phrase_list : NDArray[np.int64]
             アクセント句の開始位置
-        end_accent_phrase_list : NDArray[np.integer]
+        end_accent_phrase_list : NDArray[np.int64]
             アクセント句の終了位置
-        style_id : NDArray[np.integer]
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
@@ -621,7 +621,7 @@ class CoreWrapper:
         phoneme_size: int,
         f0: NDArray[np.floating],
         phoneme: NDArray[np.floating],
-        style_id: NDArray[np.integer],
+        style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
@@ -635,7 +635,7 @@ class CoreWrapper:
             フレームごとの音高
         phoneme : NDArray[np.floating]
             フレームごとの音素
-        style_id : NDArray[np.integer]
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
