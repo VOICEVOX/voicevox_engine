@@ -6,6 +6,7 @@ import numpy
 import pytest
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
+from voicevox_engine.dev.core.mock import MockCoreWrapper
 
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
@@ -724,29 +725,7 @@ def test_mocked_update_length_output(
 ) -> None:
     # Inputs
     tts_engine = TTSEngine(MockCore())  # type: ignore[arg-type]
-    hello_hiho = [
-        AccentPhrase(
-            moras=[
-                _gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
-                _gen_mora("ン", None, None, "N", 0.0, 0.0),
-                _gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
-                _gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
-            ],
-            accent=5,
-            pause_mora=_gen_mora("、", None, None, "pau", 0.0, 0.0),
-        ),
-        AccentPhrase(
-            moras=[
-                _gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
-                _gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
-                _gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
-            ],
-            accent=1,
-            pause_mora=None,
-        ),
-    ]
+    hello_hiho = _gen_hello_hiho_accent_phrases()
     # Outputs & Indirect Outputs（yukarin_sに渡される値）
     result = tts_engine.update_length(hello_hiho, StyleId(1))
 
