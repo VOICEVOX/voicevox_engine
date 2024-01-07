@@ -619,8 +619,8 @@ class CoreWrapper:
         self,
         length: int,
         phoneme_size: int,
-        f0: NDArray[np.floating],
-        phoneme: NDArray[np.floating],
+        f0: NDArray[np.float32],
+        phoneme: NDArray[np.float32],
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
@@ -631,9 +631,9 @@ class CoreWrapper:
             フレームの長さ
         phoneme_size : int
             音素の種類数
-        f0 : NDArray[np.floating]
+        f0 : NDArray[np.float32]
             フレームごとの音高
-        phoneme : NDArray[np.floating]
+        phoneme : NDArray[np.float32]
             フレームごとの音素
         style_id : NDArray[np.int64]
             スタイル番号

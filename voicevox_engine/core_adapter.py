@@ -106,8 +106,8 @@ class CoreAdapter:
 
     def safe_decode_forward(
         self,
-        phoneme: NDArray[np.floating],
-        f0: NDArray[np.floating],
+        phoneme: NDArray[np.float32],
+        f0: NDArray[np.float32],
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
