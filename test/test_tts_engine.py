@@ -466,8 +466,8 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     ]
 
 
-def is_same_ojt_phoneme_list(
-    p1s: list[Phoneme | None] | list[Phoneme], p2s: list[Phoneme | None] | list[Phoneme]
+def is_same_phonemes(
+    p1s: list[Phoneme] | list[Phoneme | None], p2s: list[Phoneme] | list[Phoneme | None]
 ) -> bool:
     """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
     if len(p1s) != len(p2s):
@@ -487,7 +487,7 @@ def is_same_ojt_phoneme_list(
     return True
 
 
-def test_split_mora(self):
+def test_split_mora():
     # Inputs
     hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
     hello_hiho_phonemes = [Phoneme(p) for p in hello_hiho.split()]
@@ -499,8 +499,8 @@ def test_split_mora(self):
     true_consonants = [Phoneme(p) if p else None for p in cs]
     true_vowels = [Phoneme(p) for p in vs]
     # Tests
-    self.assertTrue(is_same_ojt_phoneme_list(vowels, true_vowels))
-    self.assertTrue(is_same_ojt_phoneme_list(consonants, true_consonants))
+    assert is_same_phonemes(vowels, true_vowels)
+    assert is_same_phonemes(consonants, true_consonants)
 
 
 class TestTTSEngine(TestCase):
