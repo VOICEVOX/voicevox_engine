@@ -3,11 +3,15 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy
+import pytest
+from test.test_text_analyzer import stub_unknown_features_koxx
+from voicevox_engine.dev.core.mock import MockCoreWrapper
 
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
+from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     apply_intonation_scale,
     apply_output_sampling_rate,
@@ -701,3 +705,16 @@ class TestTTSEngine(TestCase):
         numpy.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
         numpy.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
         self.assertEqual(result, true_result)
+
+
+def test_create_accent_phrases_toward_unknown():
+    """`TTSEngine.create_accent_phrases()` は unknown 音素の Phoneme 化に失敗する"""
+    engine = TTSEngine(MockCoreWrapper())
+
+    # NOTE: TTSEngine.create_accent_phrases() のコールで unknown feature を得ることが難しいため、疑似再現
+    accent_phrases = text_to_accent_phrases(
+        "dummy", text_to_features=stub_unknown_features_koxx
+    )
+    with pytest.raises(ValueError) as e:
+        accent_phrases = engine.update_length_and_pitch(accent_phrases, StyleId(0))
+    assert str(e.value) == "tuple.index(x): x not in tuple"
