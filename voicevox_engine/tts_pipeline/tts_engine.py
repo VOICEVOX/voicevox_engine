@@ -53,24 +53,19 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     return phonemes
 
 
-def split_mora(
-    phoneme_list: list[Phoneme],
-) -> tuple[list[Phoneme | None], list[Phoneme]]:
+def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phoneme]]:
     """音素系列から子音系列と母音系列を抽出する"""
-    vowel_indexes = [
-        i for i, p in enumerate(phoneme_list) if p.phoneme in mora_phoneme_list
-    ]
-    vowel_phoneme_list = [phoneme_list[i] for i in vowel_indexes]
-    # postとprevのvowel_indexの差として考えられる値は1か2
-    # 理由としてはphoneme_listは、consonant、vowelの組み合わせか、vowel一つの連続であるから
-    # 1の場合はconsonant(子音)が存在しない=母音のみ(a/i/u/e/o/N/cl/pau)で構成されるモーラ(音)である
-    # 2の場合はconsonantが存在するモーラである
-    # なので、2の場合(else)でphonemeを取り出している
-    consonant_phoneme_list = [None] + [
-        None if post - prev == 1 else phoneme_list[post - 1]
-        for prev, post in zip(vowel_indexes[:-1], vowel_indexes[1:])
-    ]
-    return consonant_phoneme_list, vowel_phoneme_list
+    consonants: list[Phoneme | None] = []
+    vowels: list[Phoneme] = []
+    for i, p in enumerate(phonemes):
+        if p.phoneme in mora_phoneme_list:
+            vowels += [p]
+            # Vowel-only モーラの場合（母音音素が連続する場合）、Consonant を None とする
+            if i == 0 or phonemes[i - 1].phoneme in mora_phoneme_list:
+                consonants += [None]
+        else:
+            consonants += [p]
+    return consonants, vowels
 
 
 def pre_process(
