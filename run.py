@@ -384,15 +384,11 @@ def generate_app(
         engine = get_engine(core_version)
         if is_kana:
             try:
-                accent_phrases = parse_kana(text)
+                return engine.create_accent_phrases_from_kana(text, style_id)
             except ParseKanaError as err:
                 raise HTTPException(
-                    status_code=400,
-                    detail=ParseKanaBadRequest(err).dict(),
+                    status_code=400, detail=ParseKanaBadRequest(err).dict()
                 )
-            accent_phrases = engine.update_length_and_pitch(accent_phrases, style_id)
-
-            return accent_phrases
         else:
             return engine.create_accent_phrases(text, style_id)
 
