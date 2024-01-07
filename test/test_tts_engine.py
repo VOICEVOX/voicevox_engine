@@ -6,8 +6,8 @@ import numpy
 import pytest
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension
-from voicevox_engine.dev.core.mock import MockCoreWrapper
 
+from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
@@ -720,11 +720,9 @@ def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
     return snapshot.use_extension(JSONSnapshotExtension)
 
 
-def test_mocked_update_length_output(
-    snapshot_json: JSONSnapshotExtension,
-) -> None:
+def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
     # Inputs
-    tts_engine = TTSEngine(MockCore())  # type: ignore[arg-type]
+    tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Outputs & Indirect Outputs（yukarin_sに渡される値）
     result = tts_engine.update_length(hello_hiho, StyleId(1))
