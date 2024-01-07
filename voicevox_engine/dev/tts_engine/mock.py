@@ -53,7 +53,7 @@ class MockTTSEngine(TTSEngine):
 
         Returns
         -------
-        wave [NDArray[np.float64]]
+        wave [NDArray[np.float32]]
             音声波形データをNumPy配列で返します
 
         Note
