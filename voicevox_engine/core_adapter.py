@@ -1,7 +1,7 @@
 import threading
 
-import numpy
-from numpy import ndarray
+import numpy as np
+from numpy.typing import NDArray
 
 from .core_wrapper import CoreWrapper, OldCoreError
 from .metas.Metas import StyleId
@@ -67,55 +67,58 @@ class CoreAdapter:
             return True  # コアが古い場合はどうしようもないのでTrueを返す
 
     def safe_yukarin_s_forward(
-        self, phoneme_list_s: ndarray, style_id: StyleId
-    ) -> ndarray:
+        self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
+    ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             phoneme_length = self.core.yukarin_s_forward(
                 length=len(phoneme_list_s),
                 phoneme_list=phoneme_list_s,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )
         return phoneme_length
 
     def safe_yukarin_sa_forward(
         self,
-        vowel_phoneme_list: ndarray,
-        consonant_phoneme_list: ndarray,
-        start_accent_list: ndarray,
-        end_accent_list: ndarray,
-        start_accent_phrase_list: ndarray,
-        end_accent_phrase_list: ndarray,
+        vowel_phoneme_list: NDArray[np.int64],
+        consonant_phoneme_list: NDArray[np.int64],
+        start_accent_list: NDArray[np.int64],
+        end_accent_list: NDArray[np.int64],
+        start_accent_phrase_list: NDArray[np.int64],
+        end_accent_phrase_list: NDArray[np.int64],
         style_id: StyleId,
-    ) -> ndarray:
+    ) -> NDArray[np.float32]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             f0_list = self.core.yukarin_sa_forward(
                 length=vowel_phoneme_list.shape[0],
-                vowel_phoneme_list=vowel_phoneme_list[numpy.newaxis],
-                consonant_phoneme_list=consonant_phoneme_list[numpy.newaxis],
-                start_accent_list=start_accent_list[numpy.newaxis],
-                end_accent_list=end_accent_list[numpy.newaxis],
-                start_accent_phrase_list=start_accent_phrase_list[numpy.newaxis],
-                end_accent_phrase_list=end_accent_phrase_list[numpy.newaxis],
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+                vowel_phoneme_list=vowel_phoneme_list[np.newaxis],
+                consonant_phoneme_list=consonant_phoneme_list[np.newaxis],
+                start_accent_list=start_accent_list[np.newaxis],
+                end_accent_list=end_accent_list[np.newaxis],
+                start_accent_phrase_list=start_accent_phrase_list[np.newaxis],
+                end_accent_phrase_list=end_accent_phrase_list[np.newaxis],
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )[0]
         return f0_list
 
     def safe_decode_forward(
-        self, phoneme: ndarray, f0: ndarray, style_id: StyleId
-    ) -> tuple[ndarray, int]:
+        self,
+        phoneme: NDArray[np.float32],
+        f0: NDArray[np.float32],
+        style_id: StyleId,
+    ) -> tuple[NDArray[np.float32], int]:
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.decode_forward(
                 length=phoneme.shape[0],
                 phoneme_size=phoneme.shape[1],
-                f0=f0[:, numpy.newaxis],
+                f0=f0[:, np.newaxis],
                 phoneme=phoneme,
-                style_id=numpy.array(style_id, dtype=numpy.int64).reshape(-1),
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )
         sr_wave = self.default_sampling_rate
         return wave, sr_wave

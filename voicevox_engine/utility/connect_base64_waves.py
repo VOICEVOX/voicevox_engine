@@ -1,9 +1,9 @@
 import base64
 import io
-from typing import List, Tuple
 
 import numpy as np
 import soundfile
+from numpy.typing import NDArray
 from soxr import resample
 
 
@@ -12,7 +12,7 @@ class ConnectBase64WavesException(Exception):
         self.message = message
 
 
-def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
+def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int]]:
     """
     base64エンコードされた複数のwavデータをデコードする
     Parameters
@@ -21,7 +21,7 @@ def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
         base64エンコードされたwavデータのリスト
     Returns
     -------
-    waves_nparray_sr: List[Tuple[np.ndarray, int]]
+    waves_nparray_sr: List[Tuple[NDArray[np.float64], int]]
         (NumPy配列の音声波形データ, サンプリングレート) 形式のタプルのリスト
     """
     if len(waves) == 0:
@@ -42,7 +42,7 @@ def decode_base64_waves(waves: List[str]) -> List[Tuple[np.ndarray, int]]:
     return waves_nparray_sr
 
 
-def connect_base64_waves(waves: List[str]) -> Tuple[np.ndarray, int]:
+def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
     waves_nparray_sr = decode_base64_waves(waves)
 
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])

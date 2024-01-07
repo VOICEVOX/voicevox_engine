@@ -1,6 +1,7 @@
 from typing import Literal
 
-import numpy
+import numpy as np
+from numpy.typing import NDArray
 
 # NOTE: `Vowel` は母音 (a/i/u/e/o の有声・無声) + 無音 pau + 撥音 N ("ん") + 促音 cl ("っ")
 # NOTE: 型の名称は暫定的
@@ -121,8 +122,8 @@ class Phoneme:
         return self._PHONEME_LIST.index(self.phoneme)
 
     @property
-    def onehot(self):
+    def onehot(self) -> NDArray[np.float32]:
         """音素onehotベクトルを取得する"""
-        vec = numpy.zeros(self._NUM_PHONEME, dtype=numpy.float32)
+        vec = np.zeros(self._NUM_PHONEME, dtype=np.float32)
         vec[self.phoneme_id] = 1.0
         return vec

@@ -1,10 +1,10 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
-from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
+from numpy.typing import NDArray
 from soxr import resample
 
 from .core_adapter import CoreAdapter
@@ -19,20 +19,19 @@ from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline import TTSEngine
 
 
-# FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class MorphingParameter:
     fs: int
     frame_period: float
-    base_f0: np.ndarray
-    base_aperiodicity: np.ndarray
-    base_spectrogram: np.ndarray
-    target_spectrogram: np.ndarray
+    base_f0: NDArray[np.double]
+    base_aperiodicity: NDArray[np.double]
+    base_spectrogram: NDArray[np.double]
+    target_spectrogram: NDArray[np.double]
 
 
 def create_morphing_parameter(
-    base_wave: np.ndarray,
-    target_wave: np.ndarray,
+    base_wave: NDArray[np.double],
+    target_wave: NDArray[np.double],
     fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
@@ -55,9 +54,9 @@ def create_morphing_parameter(
 
 
 def get_morphable_targets(
-    speakers: List[Speaker],
-    base_style_ids: List[StyleId],
-) -> List[Dict[StyleId, MorphableTargetInfo]]:
+    speakers: list[Speaker],
+    base_style_ids: list[StyleId],
+) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報
     base_speakers: モーフィング可能か判定したいベースのスタイルIDリスト
@@ -81,7 +80,7 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[StyleId, Tuple[Speaker, SpeakerStyle]],
+    speaker_lookup: dict[StyleId, tuple[Speaker, SpeakerStyle]],
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> bool:
@@ -163,7 +162,7 @@ def synthesis_morphing(
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """
     指定した割合で、パラメータをもとにモーフィングした音声を生成します。
 
@@ -178,7 +177,7 @@ def synthesis_morphing(
 
     Returns
     -------
-    generated : np.ndarray
+    generated : NDArray[np.float64]
         モーフィングした音声
 
     Raises
