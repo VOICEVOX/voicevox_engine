@@ -319,7 +319,7 @@ class TTSEngine:
             return np.r_[
                 np.eye(len(accent_phrase.moras))[position],
                 (0 if accent_phrase.pause_mora is not None else []),
-            ]
+            ].astype(np.int64)
 
         # アクセントの開始/終了位置リストを作る
         start_accent_list = np.concatenate(
@@ -352,12 +352,6 @@ class TTSEngine:
         end_accent_list = np.r_[0, end_accent_list, 0]
         start_accent_phrase_list = np.r_[0, start_accent_phrase_list, 0]
         end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
-
-        # キャスト
-        start_accent_list = np.array(start_accent_list, dtype=np.int64)
-        end_accent_list = np.array(end_accent_list, dtype=np.int64)
-        start_accent_phrase_list = np.array(start_accent_phrase_list, dtype=np.int64)
-        end_accent_phrase_list = np.array(end_accent_phrase_list, dtype=np.int64)
 
         # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
         moras, phonemes = pre_process(accent_phrases)
