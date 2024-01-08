@@ -14,11 +14,30 @@
       rel="shortcut icon"
       href="https://voicevox.hiroshiba.jp/favicon-32x32.png"
     />
+
+    <style>
+      .before-init-fadein {
+        animation: fadein 0.5s;
+      }
+
+      /* 指定時間の最後に現れるフェードイン */
+      @keyframes fadein {
+        0% {
+          opacity: 0;
+        }
+        95% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
   </head>
 
   <body>
     <!-- Vueの準備が完了した後にdisplay: noneにする -->
-    <div id="before-init" style="display: block">
+    <div id="before-init" style="display: block" class="before-init-fadein">
       <p>読み込み中です。表示には数秒かかることがあります。</p>
     </div>
 
@@ -195,7 +214,7 @@
             const userDictFileForImport = ref();
 
             const importUserDict = () => {
-              if (userDictFileForImport.value == null) {
+              if (userDictFileForImport.value == undefined) {
                 throw new Error("userDictFileForImportが見つかりません。");
               }
 
@@ -218,11 +237,11 @@
             };
 
             // トースト
-            const toastElem = ref(null);
-            const bootstrapToast = ref(null);
+            const toastElem = ref(undefined);
+            const bootstrapToast = ref(undefined);
             const toastMessage = ref("");
             onMounted(() => {
-              if (toastElem.value == null) {
+              if (toastElem.value == undefined) {
                 throw new Error("toastElemが見つかりません。");
               }
               bootstrapToast.value = new bootstrap.Toast(toastElem.value);
