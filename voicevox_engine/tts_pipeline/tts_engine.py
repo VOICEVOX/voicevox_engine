@@ -82,6 +82,17 @@ def pre_process(
     return flatten_moras, phonemes
 
 
+def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64]:
+    """
+    アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+    長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
+    """
+    onehot = np.zeros(len(accent_phrase.moras))
+    onehot[index] = 1
+    onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+    return onehot.astype(np.int64)
+
+
 def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
@@ -292,18 +303,6 @@ class TTSEngine:
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
-
-        def _create_one_hot(
-            accent_phrase: AccentPhrase, index: int
-        ) -> NDArray[np.int64]:
-            """
-            アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
-            長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
-            """
-            onehot = np.zeros(len(accent_phrase.moras))
-            onehot[index] = 1
-            onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
-            return onehot.astype(np.int64)
 
         # アクセントの開始/終了位置リストを作る
         start_accent_list = np.concatenate(
