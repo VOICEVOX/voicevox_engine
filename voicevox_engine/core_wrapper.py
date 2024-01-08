@@ -5,9 +5,10 @@ from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
-from typing import List, Literal
+from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class OldCoreError(Exception):
@@ -18,7 +19,7 @@ class CoreError(Exception):
     """コア呼び出しで発生したエラー"""
 
 
-def load_runtime_lib(runtime_dirs: List[Path]):
+def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
@@ -245,23 +246,26 @@ def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
         return "x86"
     elif machine == "arm64":
         return "aarch64"
-    elif machine in ["armv7l", "aarch64"]:
-        return machine
+    elif machine == "aarch64":
+        return "aarch64"
+    elif machine == "armv7l":
+        return "armv7l"
     else:
         return None
 
 
 def _get_core_name(
-    arch_name: Literal["x64", "x86", "aarch64", "armv7l"],
+    arch_name: Literal["x64", "x86", "aarch64", "armv7l", "universal"],
     platform_name: str,
     model_type: Literal["libtorch", "onnxruntime"],
     gpu_type: GPUType,
 ) -> str | None:
     """
-    設定値を満たすCoreの名前（None: サポート外）
+    設定値を満たすCoreの名前（None: サポート外）。
+    macOSの場合はarch_nameをuniversalにする。
     Parameters
     ----------
-    arch_name : Literal["x64", "x86", "aarch64", "armv7l"]
+    arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
         実行中マシンのアーキテクチャ
     platform_name : str
         実行中マシンのシステム名
@@ -378,14 +382,18 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
 
 
+def _type_initialize(core_cdll: CDLL) -> None:
+    """コアDLL `initialize` 関数を型付けする"""
+    core_cdll.initialize.restype = c_bool
+
+
+def _type_metas(core_cdll: CDLL) -> None:
+    """コアDLL `metas` 関数を型付けする"""
+    core_cdll.metas.restype = c_char_p
+
+
 def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `yukarin_s_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `yukarin_s_forward` 関数を型付けする"""
     core_cdll.yukarin_s_forward.argtypes = (
         c_int,
         POINTER(c_long),
@@ -396,13 +404,7 @@ def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
 
 
 def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `yukarin_sa_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `yukarin_sa_forward` 関数を型付けする"""
     core_cdll.yukarin_sa_forward.argtypes = (
         c_int,
         POINTER(c_long),
@@ -418,13 +420,7 @@ def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
 
 
 def _type_decode_forward(core_cdll: CDLL) -> None:
-    """
-    コアDLL `decode_forward` 関数の型付け
-    Parameters
-    ----------
-    core_cdll : CDLL
-        コアDLL
-    """
+    """コアDLL `decode_forward` 関数を型付けする"""
     core_cdll.decode_forward.argtypes = (
         c_int,
         c_int,
@@ -436,6 +432,33 @@ def _type_decode_forward(core_cdll: CDLL) -> None:
     core_cdll.decode_forward.restype = c_bool
 
 
+def _type_last_error_message(core_cdll: CDLL) -> None:
+    """コアDLL `last_error_message` 関数を型付けする"""
+    core_cdll.last_error_message.restype = c_char_p
+
+
+def _type_load_model(core_cdll: CDLL) -> None:
+    """コアDLL `load_model` 関数を型付けする"""
+    core_cdll.load_model.argtypes = (c_long,)
+    core_cdll.load_model.restype = c_bool
+
+
+def _type_is_model_loaded(core_cdll: CDLL) -> None:
+    """コアDLL `is_model_loaded` 関数を型付けする"""
+    core_cdll.is_model_loaded.argtypes = (c_long,)
+    core_cdll.is_model_loaded.restype = c_bool
+
+
+def _type_supported_devices(core_cdll: CDLL) -> None:
+    """コアDLL `supported_devices` 関数を型付けする"""
+    core_cdll.supported_devices.restype = c_char_p
+
+
+def _type_finalize(core_cdll: CDLL) -> None:
+    """コアDLL `finalize` 関数を型付けする"""
+    core_cdll.finalize.restype = None
+
+
 class CoreWrapper:
     def __init__(
         self,
@@ -444,17 +467,17 @@ class CoreWrapper:
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
-
         self.default_sampling_rate = 24000
 
         self.core = load_core(core_dir, use_gpu)
 
-        self.core.initialize.restype = c_bool
-        self.core.metas.restype = c_char_p
+        _type_initialize(self.core)
+
+        _type_metas(self.core)
         _type_yukarin_s_forward(self.core)
         _type_yukarin_sa_forward(self.core)
         _type_decode_forward(self.core)
-        self.core.last_error_message.restype = c_char_p
+        _type_last_error_message(self.core)
 
         self.exist_supported_devices = False
         self.exist_finalize = False
@@ -465,21 +488,20 @@ class CoreWrapper:
         is_version_0_12_core_or_later = (
             _find_version_0_12_core_or_later(core_dir) is not None
         )
+        model_type: Literal["libtorch", "onnxruntime"] | None
         if is_version_0_12_core_or_later:
             model_type = "onnxruntime"
             self.exist_load_model = True
             self.exist_is_model_loaded = True
-            self.core.load_model.argtypes = (c_long,)
-            self.core.load_model.restype = c_bool
-            self.core.is_model_loaded.argtypes = (c_long,)
-            self.core.is_model_loaded.restype = c_bool
+            _type_load_model(self.core)
+            _type_is_model_loaded(self.core)
         else:
             model_type = _check_core_type(core_dir)
         assert model_type is not None
 
         if model_type == "onnxruntime":
-            self.core.supported_devices.restype = c_char_p
-            self.core.finalize.restype = None
+            _type_supported_devices(self.core)
+            _type_finalize(self.core)
             self.exist_supported_devices = True
             self.exist_finalize = True
             exist_cpu_num_threads = True
@@ -506,22 +528,22 @@ class CoreWrapper:
     def yukarin_s_forward(
         self,
         length: int,
-        phoneme_list: np.ndarray,
-        style_id: np.ndarray,
-    ) -> np.ndarray:
+        phoneme_list: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
         """
         音素列から、音素ごとの長さを求める関数
         Parameters
         ----------
         length : int
             音素列の長さ
-        phoneme_list : np.ndarray
+        phoneme_list : NDArray[np.int64]
             音素列
-        style_id : np.ndarray
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
-        output : np.ndarray
+        output : NDArray[np.float32]
             音素ごとの長さ
         """
         output = np.zeros((length,), dtype=np.float32)
@@ -538,37 +560,37 @@ class CoreWrapper:
     def yukarin_sa_forward(
         self,
         length: int,
-        vowel_phoneme_list: np.ndarray,
-        consonant_phoneme_list: np.ndarray,
-        start_accent_list: np.ndarray,
-        end_accent_list: np.ndarray,
-        start_accent_phrase_list: np.ndarray,
-        end_accent_phrase_list: np.ndarray,
-        style_id: np.ndarray,
-    ) -> np.ndarray:
+        vowel_phoneme_list: NDArray[np.int64],
+        consonant_phoneme_list: NDArray[np.int64],
+        start_accent_list: NDArray[np.int64],
+        end_accent_list: NDArray[np.int64],
+        start_accent_phrase_list: NDArray[np.int64],
+        end_accent_phrase_list: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
         """
         モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
         Parameters
         ----------
         length : int
             モーラ列の長さ
-        vowel_phoneme_list : np.ndarray
+        vowel_phoneme_list : NDArray[np.int64]
             母音の音素列
-        consonant_phoneme_list : np.ndarray
+        consonant_phoneme_list : NDArray[np.int64]
             子音の音素列
-        start_accent_list : np.ndarray
+        start_accent_list : NDArray[np.int64]
         アクセントの開始位置
-        end_accent_list : np.ndarray
+        end_accent_list : NDArray[np.int64]
             アクセントの終了位置
-        start_accent_phrase_list : np.ndarray
+        start_accent_phrase_list : NDArray[np.int64]
             アクセント句の開始位置
-        end_accent_phrase_list : np.ndarray
+        end_accent_phrase_list : NDArray[np.int64]
             アクセント句の終了位置
-        style_id : np.ndarray
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
-        output : np.ndarray
+        output : NDArray[np.float32]
             モーラごとの音高
         """
         output = np.empty(
@@ -597,10 +619,10 @@ class CoreWrapper:
         self,
         length: int,
         phoneme_size: int,
-        f0: np.ndarray,
-        phoneme: np.ndarray,
-        style_id: np.ndarray,
-    ) -> np.ndarray:
+        f0: NDArray[np.float32],
+        phoneme: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
         Parameters
@@ -609,15 +631,15 @@ class CoreWrapper:
             フレームの長さ
         phoneme_size : int
             音素の種類数
-        f0 : np.ndarray
+        f0 : NDArray[np.float32]
             フレームごとの音高
-        phoneme : np.ndarray
+        phoneme : NDArray[np.float32]
             フレームごとの音素
-        style_id : np.ndarray
+        style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
-        output : np.ndarray
+        output : NDArray[np.float32]
             音声波形
         """
 

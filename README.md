@@ -73,16 +73,25 @@ curl -s \
 
 `style_id` に指定する値は `/speakers` エンドポイントで得られます。
 
-### 読み方を AquesTalk 風記法で取得・修正するサンプルコード
+### 読み方を AquesTalk 風記法で取得・修正
 
-`/audio_query`のレスポンスにはエンジンが判断した読み方が AquesTalk 風記法([本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部異なります)で記録されています。
-記法は次のルールに従います。
+#### AquesTalk 風記法
+
+<!-- NOTE: この節は静的リンクとして運用中なので変更しない方が良い(voicevox_engine#816) -->
+
+「**AquesTalk 風記法**」はカタカナと記号だけで読み方を指定する記法です。[AquesTalk 本家の記法](https://www.a-quest.com/archive/manual/siyo_onseikigou.pdf)とは一部が異なります。  
+AquesTalk 風記法は次のルールに従います：
 
 - 全てのカナはカタカナで記述される
-- アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
-- カナの手前に`_`を入れるとそのカナは無声化される
-- アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
-- アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる
+- アクセント句は `/` または `、` で区切る。 `、` で区切った場合に限り無音区間が挿入される。
+- カナの手前に `_` を入れるとそのカナは無声化される
+- アクセント位置を `'` で指定する。全てのアクセント句にはアクセント位置を 1 つ指定する必要がある。
+- アクセント句末に `？` (全角)を入れることにより疑問文の発音ができる
+
+#### AquesTalk 風記法のサンプルコード
+
+`/audio_query`のレスポンスにはエンジンが判断した読み方が[AquesTalk 風記法](#aquestalk-風記法)で記述されます。  
+これを修正することで音声の読み仮名やアクセントを制御できます。
 
 ```bash
 # 読ませたい文章をutf-8でtext.txtに書き出す
@@ -217,7 +226,7 @@ curl -s -X GET "127.0.0.1:50021/presets" > presets.json
 preset_id=$(cat presets.json | sed -r 's/^.+"id"\:\s?([0-9]+?).+$/\1/g')
 style_id=$(cat presets.json | sed -r 's/^.+"style_id"\:\s?([0-9]+?).+$/\1/g')
 
-# AudioQueryの取得
+# 音声合成用のクエリを取得
 curl -s \
     -X POST \
     "127.0.0.1:50021/audio_query_from_preset?preset_id=$preset_id"\
@@ -237,12 +246,12 @@ curl -s \
 - `id`は重複してはいけません
 - エンジン起動後にファイルを書き換えるとエンジンに反映されます
 
-### 2 人の話者でモーフィングするサンプルコード
+### 2 種類のスタイルでモーフィングするサンプルコード
 
-`/synthesis_morphing`では、2 人の話者でそれぞれ合成された音声を元に、モーフィングした音声を生成します。
+`/synthesis_morphing`では、2 種類のスタイルでそれぞれ合成された音声を元に、モーフィングした音声を生成します。
 
 ```bash
-echo -n "モーフィングを利用することで、２つの声を混ぜることができます。" > text.txt
+echo -n "モーフィングを利用することで、２種類の声を混ぜることができます。" > text.txt
 
 curl -s \
     -X POST \
@@ -250,7 +259,7 @@ curl -s \
     --get --data-urlencode text@text.txt \
     > query.json
 
-# 元の話者での合成結果
+# 元のスタイルでの合成結果
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
@@ -260,22 +269,22 @@ curl -s \
 
 export MORPH_RATE=0.5
 
-# 話者2人分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
+# スタイル2種類分の音声合成+WORLDによる音声分析が入るため時間が掛かるので注意
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 
 export MORPH_RATE=0.9
 
-# query、base_speaker、target_speakerが同じ場合はキャッシュが使用されるため比較的高速に生成される
+# query、base_style_id、target_style_idが同じ場合はキャッシュが使用されるため比較的高速に生成される
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_speaker=0&target_speaker=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
     > audio.wav
 ```
 
@@ -310,6 +319,10 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 2. 利用するアプリに合わせて設定を変更、追加してください。
 3. 保存ボタンを押して、変更を確定してください。
 4. 設定の適用にはエンジンの再起動が必要です。必要に応じて再起動をしてください。
+
+### データを変更する API を無効化する
+
+実行時引数`--disable_mutable_api`か環境変数`VV_DISABLE_MUTABLE_API=1`を指定することで、エンジンの設定や辞書などを変更する API を無効にできます。
 
 ### 文字コード
 
@@ -350,8 +363,10 @@ options:
   --output_log_utf8     指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
   --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
                         CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
+                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --allow_origin [ALLOW_ORIGIN ...]
                         許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
@@ -470,6 +485,19 @@ Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が
 DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
+##### ユーザーディレクトリに配置する
+
+以下のディレクトリにある音声ライブラリは自動で読み込まれます。
+
+- ビルド版: `<user_data_dir>/voicevox-engine/core_libraries/`
+- Python 版: `<user_data_dir>/voicevox-engine-dev/core_libraries/`
+
+`<user_data_dir>`は OS によって異なります。
+
+- Windows: `C:\Users\<username>\AppData\Local\`
+- macOS: `/Users/<username>/Library/Application\ Support/`
+- Linux: `/home/<username>/.local/share/`
+
 ### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。
@@ -511,6 +539,12 @@ pysen run format lint
 
 ```bash
 python -m pytest
+```
+
+#### スナップショットの更新
+
+```bash
+python -m pytest --snapshot-update
 ```
 
 ### タイポチェック
@@ -588,8 +622,8 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
-音声合成は`voicevox_engine/synthesis_engine/synthesis_engine.py`で行われています。
-VOICEVOX API での音声合成は、エンジン側で音声合成クエリ`AudioQuery`の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
+音声合成は`voicevox_engine/tts_pipeline/tts_engine.py`で行われています。
+VOICEVOX API での音声合成は、エンジン側で音声合成用のクエリ `AudioQuery` の初期値を作成してユーザーに返し、ユーザーが必要に応じてクエリを編集したあと、エンジンがクエリに従って音声合成することで実現しています。
 クエリ作成は`/audio_query`エンドポイントで、音声合成は`/synthesis`エンドポイントで行っており、最低この２つに対応すれば VOICEVOX API に準拠したことになります。
 
 #### マルチエンジン機能対応エンジンの配布方法

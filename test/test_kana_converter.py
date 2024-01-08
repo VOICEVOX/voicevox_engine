@@ -1,13 +1,12 @@
-from typing import List
 from unittest import TestCase
 
-from voicevox_engine import kana_parser
-from voicevox_engine.kana_parser import create_kana
 from voicevox_engine.model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from voicevox_engine.tts_pipeline import kana_converter
+from voicevox_engine.tts_pipeline.kana_converter import create_kana
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
-    accent_phrases = kana_parser.parse_kana(text)
+def parse_kana(text: str) -> list[AccentPhrase]:
+    accent_phrases = kana_converter.parse_kana(text)
     return accent_phrases
 
 
@@ -57,9 +56,9 @@ class TestParseKana(TestCase):
             self.assertEqual(create_kana(parse_kana(text)), text)
 
     def _accent_phrase_marks_base(
-        self, text: str, expected_accent_phrases: List[AccentPhrase]
+        self, text: str, expected_accent_phrases: list[AccentPhrase]
     ) -> None:
-        accent_phrases = kana_parser.parse_kana(text)
+        accent_phrases = kana_converter.parse_kana(text)
         self.assertEqual(expected_accent_phrases, accent_phrases)
 
     def test_accent_phrase_marks(self):
@@ -530,7 +529,7 @@ class TestParseKana(TestCase):
 
 
 class TestParseKanaException(TestCase):
-    def _assert_error_code(self, kana: str, code: ParseKanaErrorCode):
+    def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
         with self.assertRaises(ParseKanaError) as err:
             parse_kana(kana)
         self.assertEqual(err.exception.errcode, code)
@@ -556,7 +555,7 @@ class TestParseKanaException(TestCase):
         self.assertEqual(err.exception.kwargs, {"position": "2"})
 
         with self.assertRaises(ParseKanaError) as err:
-            kana_parser.parse_kana("ア？ア'")
+            kana_converter.parse_kana("ア？ア'")
         self.assertEqual(
             err.exception.errcode, ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
         )

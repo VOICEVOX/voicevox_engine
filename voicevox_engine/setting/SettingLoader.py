@@ -26,14 +26,13 @@ class SettingLoader:
             setting = {"allow_origin": None, "cors_policy_mode": "localapps"}
         else:
             # 指定された設定ファイルから値を取得
+            # FIXME: 型チェックと例外処理を追加する
             setting = yaml.safe_load(self.setting_file_path.read_text(encoding="utf-8"))
 
-        setting = Setting(
+        return Setting(
             cors_policy_mode=setting["cors_policy_mode"],
             allow_origin=setting["allow_origin"],
         )
-
-        return setting
 
     def dump_setting_file(self, settings: Setting) -> None:
         settings_dict = settings.dict()
