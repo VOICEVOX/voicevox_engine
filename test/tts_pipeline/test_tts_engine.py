@@ -11,10 +11,10 @@ from syrupy.extensions.json import JSONSnapshotExtension
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import Phoneme
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
+    TTSEngine,
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
