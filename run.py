@@ -1333,7 +1333,7 @@ def generate_app(
     def setting_post(
         cors_policy_mode: CorsPolicyMode = Form(),  # noqa
         allow_origin: str | None = Form(default=None),  # noqa
-    ) -> None:
+    ) -> Response:
         """
         設定を更新します。
         """
