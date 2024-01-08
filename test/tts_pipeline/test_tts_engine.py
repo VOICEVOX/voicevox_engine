@@ -1,11 +1,10 @@
-import json
+from test.utility import pydantic_to_native_type, round_floats
 from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
-from pydantic.json import pydantic_encoder
 from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -585,7 +584,7 @@ class TestTTSEngine(TestCase):
         index = 1
 
         def result_value(i: int) -> float:
-            return round(float(phoneme_list[i] * 0.0625 + 1), 2)
+            return np.float32(round(float(phoneme_list[i] * 0.0625 + 1), 2)).item()
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
@@ -649,21 +648,23 @@ class TestTTSEngine(TestCase):
             ]
             if vowel_phoneme_list[i] in unvoiced_vowel_like_ids:
                 return 0
-            return round(
-                (
+            return np.float32(
+                round(
                     (
-                        vowel_phoneme_list[i]
-                        + consonant_phoneme_list[i]
-                        + start_accent_list[i]
-                        + end_accent_list[i]
-                        + start_accent_phrase_list[i]
-                        + end_accent_phrase_list[i]
-                    )
-                    * 0.0625
-                    + 1
-                ),
-                2,
-            )
+                        (
+                            vowel_phoneme_list[i]
+                            + consonant_phoneme_list[i]
+                            + start_accent_list[i]
+                            + end_accent_list[i]
+                            + start_accent_phrase_list[i]
+                            + end_accent_phrase_list[i]
+                        )
+                        * 0.0625
+                        + 1
+                    ),
+                    2,
+                )
+            ).item()
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
@@ -711,4 +712,4 @@ def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> No
     # Outputs
     result = tts_engine.update_length(hello_hiho, StyleId(1))
     # Tests
-    assert snapshot_json == json.loads(json.dumps(result, default=pydantic_encoder))
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)

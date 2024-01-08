@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+import numpy as np
+
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, Mora
@@ -16,26 +18,26 @@ def koreha_arimasuka_base_expected():
                 Mora(
                     text="コ",
                     consonant="k",
-                    consonant_length=2.44,
+                    consonant_length=np.float32(2.44),
                     vowel="o",
-                    vowel_length=2.88,
-                    pitch=4.38,
+                    vowel_length=np.float32(2.88),
+                    pitch=np.float32(4.38),
                 ),
                 Mora(
                     text="レ",
                     consonant="r",
-                    consonant_length=3.06,
+                    consonant_length=np.float32(3.06),
                     vowel="e",
-                    vowel_length=1.88,
-                    pitch=4.0,
+                    vowel_length=np.float32(1.88),
+                    pitch=np.float32(4.0),
                 ),
                 Mora(
                     text="ワ",
                     consonant="w",
-                    consonant_length=3.62,
+                    consonant_length=np.float32(3.62),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=4.19,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(4.19),
                 ),
             ],
             accent=3,
@@ -49,40 +51,40 @@ def koreha_arimasuka_base_expected():
                     consonant=None,
                     consonant_length=None,
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=1.44,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(1.44),
                 ),
                 Mora(
                     text="リ",
                     consonant="r",
-                    consonant_length=3.06,
+                    consonant_length=np.float32(3.06),
                     vowel="i",
-                    vowel_length=2.31,
-                    pitch=4.44,
+                    vowel_length=np.float32(2.31),
+                    pitch=np.float32(4.44),
                 ),
                 Mora(
                     text="マ",
                     consonant="m",
-                    consonant_length=2.62,
+                    consonant_length=np.float32(2.62),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=3.12,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(3.12),
                 ),
                 Mora(
                     text="ス",
                     consonant="s",
-                    consonant_length=3.19,
+                    consonant_length=np.float32(3.19),
                     vowel="U",
-                    vowel_length=1.38,
-                    pitch=0.0,
+                    vowel_length=np.float32(1.38),
+                    pitch=np.float32(0.0),
                 ),
                 Mora(
                     text="カ",
                     consonant="k",
-                    consonant_length=2.44,
+                    consonant_length=np.float32(2.44),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=2.94,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(2.94),
                 ),
             ],
             accent=3,
@@ -131,7 +133,7 @@ class TestTTSEngineBase(TestCase):
                 consonant_length=None,
                 vowel="a",
                 vowel_length=0.15,
-                pitch=expected[-1].moras[-1].pitch + 0.3,
+                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
             )
         ]
         self.create_synthesis_test_base(
@@ -167,8 +169,8 @@ class TestTTSEngineBase(TestCase):
                             consonant=None,
                             consonant_length=None,
                             vowel="N",
-                            vowel_length=1.25,
-                            pitch=1.44,
+                            vowel_length=np.float32(1.25),
+                            pitch=np.float32(1.44),
                         )
                     ],
                     accent=1,
@@ -195,7 +197,7 @@ class TestTTSEngineBase(TestCase):
                 consonant_length=None,
                 vowel="N",
                 vowel_length=0.15,
-                pitch=expected[-1].moras[-1].pitch + 0.3,
+                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
             )
         ]
         self.create_synthesis_test_base(
@@ -223,8 +225,8 @@ class TestTTSEngineBase(TestCase):
                             consonant=None,
                             consonant_length=None,
                             vowel="cl",
-                            vowel_length=1.69,
-                            pitch=0.0,
+                            vowel_length=np.float32(1.69),
+                            pitch=np.float32(0.0),
                         )
                     ],
                     accent=1,
@@ -267,10 +269,10 @@ class TestTTSEngineBase(TestCase):
                         Mora(
                             text="ス",
                             consonant="s",
-                            consonant_length=3.19,
+                            consonant_length=np.float32(3.19),
                             vowel="u",
-                            vowel_length=3.5,
-                            pitch=5.94,
+                            vowel_length=np.float32(3.5),
+                            pitch=np.float32(5.94),
                         )
                     ],
                     accent=1,

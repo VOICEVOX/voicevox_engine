@@ -26,6 +26,9 @@ class Mora(BaseModel):
         ]
         return hash(tuple(sorted(items)))
 
+    class Config:
+        validate_assignment = True
+
 
 class AccentPhrase(BaseModel):
     """
