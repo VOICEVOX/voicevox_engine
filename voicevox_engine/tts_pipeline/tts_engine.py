@@ -293,33 +293,17 @@ class TTSEngine:
         if len(accent_phrases) == 0:
             return []
 
-        # accent
         def _create_one_hot(
-            accent_phrase: AccentPhrase, position: int
-        ) -> NDArray[np.floating]:
+            accent_phrase: AccentPhrase, index: int
+        ) -> NDArray[np.int64]:
             """
-            単位行列(np.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
-            例えば、accent_phraseのmorasの長さが12、positionが1なら
-            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            morasの長さが同じく12、positionが-1なら
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-            のような配列を生成する
-            accent_phraseがpause_moraを含む場合はさらに後ろに0が足される
-            Parameters
-            ----------
-            accent_phrase : AccentPhrase
-                アクセント句モデル
-            position : int
-                one hotにするindex
-            Returns
-            -------
-            one_hot : NDArray[np.floating]
-                one hotな配列(リスト)
+            アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+            長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
             """
-            return np.r_[
-                np.eye(len(accent_phrase.moras))[position],
-                (0 if accent_phrase.pause_mora is not None else []),
-            ].astype(np.int64)
+            onehot = np.zeros(len(accent_phrase.moras))
+            onehot[index] = 1
+            onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+            return onehot.astype(np.int64)
 
         # アクセントの開始/終了位置リストを作る
         start_accent_list = np.concatenate(
