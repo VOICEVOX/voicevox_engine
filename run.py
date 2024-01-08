@@ -587,9 +587,7 @@ def generate_app(
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[StyleId] | None = Query(default=None),  # noqa: B008
-        base_speakers: list[StyleId] | None = Query(default=None),  # noqa: B008
-        core_version: str | None = None,
+        base_style_ids: list[StyleId], core_version: str | None = None
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
@@ -597,9 +595,6 @@ def generate_app(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値の話者はstring型なので注意。
         """
-        base_style_ids = get_style_id_from_deprecated(
-            style_id=base_style_ids, deprecated_speaker=base_speakers
-        )
         core = get_core(core_version)
 
         try:
