@@ -69,19 +69,6 @@ def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phon
     return consonants, vowels
 
 
-def pre_process(
-    accent_phrases: list[AccentPhrase],
-) -> tuple[list[Mora], list[Phoneme]]:
-    """アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する"""
-    flatten_moras = to_flatten_moras(accent_phrases)
-    phonemes = to_flatten_phonemes(flatten_moras)
-
-    # 前後無音の追加
-    phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
-
-    return flatten_moras, phonemes
-
-
 def generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
@@ -360,7 +347,9 @@ class TTSEngine:
         end_accent_phrase_list = np.array(end_accent_phrase_list, dtype=np.int64)
 
         # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
-        moras, phonemes = pre_process(accent_phrases)
+        moras = to_flatten_moras(accent_phrases)
+        phonemes = to_flatten_phonemes(moras)
+        phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
         consonants, vowels = split_mora(phonemes)
