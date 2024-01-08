@@ -100,6 +100,9 @@ _PHONEME_LIST: tuple[Vowel | Consonant, ...] = (
 # 音素リストの要素数
 _NUM_PHONEME = len(_PHONEME_LIST)
 
+UNVOICED_VOWEL_LIKES = ["A", "I", "U", "E", "O", "cl", "pau"]
+MORA_PHONEME_LIST = ["a", "i", "u", "e", "o", "N"] + UNVOICED_VOWEL_LIKES
+
 
 class Phoneme:
     """音素"""
@@ -127,3 +130,11 @@ class Phoneme:
         vec = np.zeros(self._NUM_PHONEME, dtype=np.float32)
         vec[self.phoneme_id] = 1.0
         return vec
+
+    def is_unvoiced_vowel_like(self) -> bool:
+        """この音素は無声母音・促音・無音のいずれかである"""
+        return self.phoneme in UNVOICED_VOWEL_LIKES
+
+    def is_vowel_like(self) -> bool:
+        """この音素は母音・撥音・促音・無音のいずれかである"""
+        return self.phoneme in MORA_PHONEME_LIST
