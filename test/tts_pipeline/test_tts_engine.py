@@ -23,7 +23,6 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     apply_speed_scale,
     apply_volume_scale,
     count_frame_per_unit,
-    pre_process,
     query_to_decoder_feature,
     raw_wave_to_output_wave,
     split_mora,
@@ -528,42 +527,6 @@ class TestTTSEngine(TestCase):
             true_accent_phrases_hello_hiho[0].moras
             + [true_accent_phrases_hello_hiho[0].pause_mora]
             + true_accent_phrases_hello_hiho[1].moras,
-        )
-
-    def test_pre_process(self):
-        flatten_moras, phoneme_data_list = pre_process(_gen_hello_hiho_accent_phrases())
-
-        mora_index = 0
-        phoneme_index = 1
-
-        self.assertTrue(is_same_phoneme(phoneme_data_list[0], Phoneme("pau")))
-        for accent_phrase in _gen_hello_hiho_accent_phrases():
-            moras = accent_phrase.moras
-            for mora in moras:
-                self.assertEqual(flatten_moras[mora_index], mora)
-                mora_index += 1
-                if mora.consonant is not None:
-                    self.assertTrue(
-                        is_same_phoneme(
-                            phoneme_data_list[phoneme_index], Phoneme(mora.consonant)
-                        )
-                    )
-                    phoneme_index += 1
-                self.assertTrue(
-                    is_same_phoneme(
-                        phoneme_data_list[phoneme_index], Phoneme(mora.vowel)
-                    )
-                )
-                phoneme_index += 1
-            if accent_phrase.pause_mora:
-                self.assertEqual(flatten_moras[mora_index], accent_phrase.pause_mora)
-                mora_index += 1
-                self.assertTrue(
-                    is_same_phoneme(phoneme_data_list[phoneme_index], Phoneme("pau"))
-                )
-                phoneme_index += 1
-        self.assertTrue(
-            is_same_phoneme(phoneme_data_list[phoneme_index], Phoneme("pau"))
         )
 
     def test_update_length(self):
