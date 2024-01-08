@@ -1464,11 +1464,17 @@ def main() -> None:
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
+            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
     )
 
     parser.add_argument(
-        "--allow_origin", nargs="*", help="許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
+        "--allow_origin",
+        nargs="*",
+        help=(
+            "許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
+            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+        ),
     )
 
     parser.add_argument(
