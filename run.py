@@ -283,7 +283,7 @@ def generate_app(
     )
     def audio_query(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> AudioQuery:
@@ -364,7 +364,7 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         is_kana: bool = False,
         core_version: str | None = None,
@@ -400,7 +400,7 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -418,7 +418,7 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -436,7 +436,7 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -461,7 +461,7 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
@@ -504,7 +504,7 @@ def generate_app(
     def cancellable_synthesis(
         query: AudioQuery,
         request: Request,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
@@ -545,7 +545,7 @@ def generate_app(
     )
     def multi_synthesis(
         queries: list[AudioQuery],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
+        style_id: StyleId | None = None,
         speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
@@ -627,11 +627,11 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_style_id: StyleId | None = Query(default=None),  # noqa: B008
+        base_style_id: StyleId | None = None,
         base_speaker: (StyleId | None) = Query(  # noqa: B008
             default=None, deprecated=True
         ),
-        target_style_id: StyleId | None = Query(default=None),  # noqa: B008
+        target_style_id: StyleId | None = None,
         target_speaker: (StyleId | None) = Query(  # noqa: B008
             default=None, deprecated=True
         ),
@@ -1025,7 +1025,7 @@ def generate_app(
     def initialize_style_id(
         style_id: StyleId,
         skip_reinit: bool = Query(  # noqa: B008
-            False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
+            default=False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
         core_version: str | None = None,
     ) -> Response:
@@ -1052,7 +1052,7 @@ def generate_app(
     def initialize_speaker(
         speaker: StyleId,
         skip_reinit: bool = Query(  # noqa: B008
-            False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
+            default=False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
         ),
         core_version: str | None = None,
     ) -> Response:
