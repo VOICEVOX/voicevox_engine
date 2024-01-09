@@ -1,6 +1,8 @@
 from unittest import TestCase
 
-from voicevox_engine.model import AccentPhrase, Mora
+import pytest
+
+from voicevox_engine.model import AccentPhrase, Mora, UnknownOjtPhonemeError
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
@@ -402,22 +404,15 @@ def stub_unknown_features_koxx(_: str) -> list[str]:
     ]
 
 
+def test_label_unknown_phoneme():
+    """`Label` は unknown 音素 `xx` をパース失敗する"""
+    unknown_feature = stub_unknown_features_koxx("dummy")[3]
+    with pytest.raises(UnknownOjtPhonemeError):
+        unknown_label = Label.from_feature(unknown_feature)
+        unknown_label.phoneme
+
+
 def test_text_to_accent_phrases_unknown():
-    """`text_to_accent_phrases` は unknown 音素を含む features をパースする"""
-    # Expects
-    true_accent_phrases = [
-        AccentPhrase(
-            moras=[
-                _gen_mora("コ", "k", "o"),
-                _gen_mora("xx", None, "xx"),
-            ],
-            accent=1,
-            pause_mora=None,
-        ),
-    ]
-    # Outputs
-    accent_phrases = text_to_accent_phrases(
-        "dummy", text_to_features=stub_unknown_features_koxx
-    )
-    # Tests
-    assert accent_phrases == true_accent_phrases
+    """`text_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
+    with pytest.raises(UnknownOjtPhonemeError):
+        text_to_accent_phrases("dummy", text_to_features=stub_unknown_features_koxx)

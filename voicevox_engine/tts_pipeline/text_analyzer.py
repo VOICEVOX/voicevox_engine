@@ -5,7 +5,8 @@ from typing import Callable, Literal, Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora
+from ..model import AccentPhrase, Mora, UnknownOjtPhonemeError
+from .acoustic_feature_extractor import Consonant, Vowel
 from .mora_list import mora_phonemes_to_mora_kana
 
 OjtVowel = Literal[
@@ -82,10 +83,13 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self) -> OjtPhoneme:
+    def phoneme(self) -> Vowel | Consonant | Literal["sil"]:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        # FIXME: バリデーションする
-        return self.contexts["p3"]  # type: ignore
+        p: OjtPhoneme = self.contexts["p3"]  # type: ignore
+        if p == "xx":
+            raise UnknownOjtPhonemeError()
+        else:
+            return p
 
     @property
     def mora_index(self) -> int:

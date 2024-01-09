@@ -3,7 +3,6 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy as np
-import pytest
 from numpy.typing import NDArray
 from syrupy.extensions.json import JSONSnapshotExtension
 
@@ -14,15 +13,12 @@ from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
     UNVOICED_MORA_TAIL_PHONEMES,
     Phoneme,
 )
-from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     apply_interrogative_upspeak,
     to_flatten_moras,
     to_flatten_phonemes,
 )
-
-from .test_text_analyzer import stub_unknown_features_koxx
 
 
 def yukarin_s_mock(
@@ -307,19 +303,6 @@ class TestTTSEngine(TestCase):
         np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
         np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
         self.assertEqual(result, true_result)
-
-
-def test_create_accent_phrases_toward_unknown():
-    """`TTSEngine.create_accent_phrases()` は unknown 音素の Phoneme 化に失敗する"""
-    engine = TTSEngine(MockCoreWrapper())
-
-    # NOTE: TTSEngine.create_accent_phrases() のコールで unknown feature を得ることが難しいため、疑似再現
-    accent_phrases = text_to_accent_phrases(
-        "dummy", text_to_features=stub_unknown_features_koxx
-    )
-    with pytest.raises(ValueError) as e:
-        accent_phrases = engine.update_length_and_pitch(accent_phrases, StyleId(0))
-    assert str(e.value) == "tuple.index(x): x not in tuple"
 
 
 def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
