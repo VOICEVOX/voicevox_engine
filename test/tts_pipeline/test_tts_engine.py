@@ -261,7 +261,7 @@ class TestTTSEngine(TestCase):
         def result_value(i: int) -> float:
             # unvoiced_vowel_likesのPhoneme ID版
             unvoiced_mora_tail_ids = [
-                Phoneme(p).phoneme_id for p in UNVOICED_MORA_TAIL_PHONEMES
+                Phoneme(p).id for p in UNVOICED_MORA_TAIL_PHONEMES
             ]
             if vowel_phoneme_list[i] in unvoiced_mora_tail_ids:
                 return 0

@@ -120,7 +120,7 @@ class Phoneme:
         # self.phoneme: Vowel | Consonant = phoneme
 
     @property
-    def phoneme_id(self) -> int:
+    def id(self) -> int:
         """音素ID (音素リスト内でのindex) を取得する"""
         return self._PHONEME_LIST.index(self.phoneme)
 
@@ -128,7 +128,7 @@ class Phoneme:
     def onehot(self) -> NDArray[np.float32]:
         """音素onehotベクトルを取得する"""
         vec = np.zeros(self._NUM_PHONEME, dtype=np.float32)
-        vec[self.phoneme_id] = 1.0
+        vec[self.id] = 1.0
         return vec
 
     def is_mora_tail(self) -> bool:

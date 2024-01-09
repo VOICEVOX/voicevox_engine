@@ -252,7 +252,7 @@ class TTSEngine:
         phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 音素クラスから音素IDスカラへ表現を変換する
-        phoneme_ids = np.array([p.phoneme_id for p in phonemes], dtype=np.int64)
+        phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
         # コアを用いて音素長を生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
@@ -307,12 +307,11 @@ class TTSEngine:
 
         # モーラ系列から子音ID系列・母音ID系列を抽出する
         consonant_id_ints = [
-            Phoneme(mora.consonant).phoneme_id if mora.consonant else -1
-            for mora in moras
+            Phoneme(mora.consonant).id if mora.consonant else -1 for mora in moras
         ]
         consonant_ids = np.array(consonant_id_ints, dtype=np.int64)
         vowels = [Phoneme(mora.vowel) for mora in moras]
-        vowel_ids = np.array([p.phoneme_id for p in vowels], dtype=np.int64)
+        vowel_ids = np.array([p.id for p in vowels], dtype=np.int64)
 
         # コアを用いてモーラ音高を生成する
         f0 = self._core.safe_yukarin_sa_forward(
