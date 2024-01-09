@@ -18,19 +18,11 @@ from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     apply_interrogative_upspeak,
-    split_mora,
     to_flatten_moras,
     to_flatten_phonemes,
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
-
-TRUE_NUM_PHONEME = 45
-
-
-def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
-    """2つのPhonemeが同じ `.phoneme` を持つ"""
-    return p1.phoneme == p2.phoneme
 
 
 def yukarin_s_mock(
@@ -169,43 +161,6 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
             pause_mora=None,
         ),
     ]
-
-
-def is_same_phonemes(
-    p1s: list[Phoneme] | list[Phoneme | None], p2s: list[Phoneme] | list[Phoneme | None]
-) -> bool:
-    """2つのPhonemeリストで全要素ペアが同じ `.phoneme` を持つ"""
-    if len(p1s) != len(p2s):
-        return False
-
-    for p1, p2 in zip(p1s, p2s):
-        if p1 is None and p2 is None:  # None vs None -> equal
-            pass
-        elif p1 is None:  # None vs OjtOhoneme -> not equal
-            return False
-        elif p2 is None:  # OjtOhoneme vs None -> not equal
-            return False
-        elif is_same_phoneme(p1, p2):
-            pass
-        else:
-            return False
-    return True
-
-
-def test_split_mora():
-    # Inputs
-    hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-    hello_hiho_phonemes = [Phoneme(p) for p in hello_hiho.split()]
-    # Outputs
-    consonants, vowels = split_mora(hello_hiho_phonemes)
-    # Expects
-    cs = [None, "k", None, "n", "ch", "w", None, "h", "h", "d", "s", None]
-    vs = ["pau", "o", "N", "i", "i", "a", "pau", "i", "o", "e", "U", "pau"]
-    true_consonants = [Phoneme(p) if p else None for p in cs]
-    true_vowels = [Phoneme(p) for p in vs]
-    # Tests
-    assert is_same_phonemes(vowels, true_vowels)
-    assert is_same_phonemes(consonants, true_consonants)
 
 
 class TestTTSEngine(TestCase):
