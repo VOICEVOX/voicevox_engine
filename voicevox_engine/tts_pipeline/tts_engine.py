@@ -247,9 +247,8 @@ class TTSEngine:
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
-        # 音素系列を抽出し前後無音を付加する
+        # 音素系列を抽出する
         phonemes = to_flatten_phonemes(moras)
-        phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.phoneme_id for p in phonemes], dtype=np.int64)
@@ -263,8 +262,8 @@ class TTSEngine:
             if mora.consonant is None:
                 mora.consonant_length = None
             else:
-                mora.consonant_length = phoneme_lengths[vowel_indexes[i + 1] - 1]
-            mora.vowel_length = phoneme_lengths[vowel_indexes[i + 1]]
+                mora.consonant_length = phoneme_lengths[vowel_indexes[i] - 1]
+            mora.vowel_length = phoneme_lengths[vowel_indexes[i]]
 
         return accent_phrases
 
