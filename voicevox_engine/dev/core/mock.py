@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import numpy as np
-from numpy import ndarray
 from numpy.typing import NDArray
 
 from ...core_wrapper import CoreWrapper
@@ -65,26 +64,26 @@ class MockCoreWrapper(CoreWrapper):
         )
 
     def yukarin_s_forward(
-        self, length: int, phoneme_list: ndarray, style_id: ndarray
-    ) -> NDArray[np.floating]:
+        self, length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
+    ) -> NDArray[np.float32]:
         """音素系列サイズ・音素ID系列・スタイルIDから音素長系列を生成する"""
         result = []
         # mockとしての適当な処理、特に意味はない
         for i in range(length):
             result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-        return np.array(result)
+        return np.array(result, dtype=np.float32)
 
     def yukarin_sa_forward(
         self,
         length: int,
-        vowel_phoneme_list: ndarray,
-        consonant_phoneme_list: ndarray,
-        start_accent_list: ndarray,
-        end_accent_list: ndarray,
-        start_accent_phrase_list: ndarray,
-        end_accent_phrase_list: ndarray,
-        style_id: ndarray,
-    ) -> NDArray[np.floating]:
+        vowel_phoneme_list: NDArray[np.int64],
+        consonant_phoneme_list: NDArray[np.int64],
+        start_accent_list: NDArray[np.int64],
+        end_accent_list: NDArray[np.int64],
+        start_accent_phrase_list: NDArray[np.int64],
+        end_accent_phrase_list: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
         """モーラ系列サイズ・母音系列・子音系列・アクセント位置・アクセント句区切り・スタイルIDからモーラ音高系列を生成する"""
         assert length > 1, "前後無音を必ず付与しなければならない"
 
@@ -108,24 +107,24 @@ class MockCoreWrapper(CoreWrapper):
                     2,
                 )
             )
-        return np.array(result)[np.newaxis]
+        return np.array(result, dtype=np.float32)[np.newaxis]
 
     def decode_forward(
         self,
         length: int,
         phoneme_size: int,
-        f0: ndarray,
-        phoneme: ndarray,
-        style_id: ndarray,
-    ) -> NDArray[np.floating]:
+        f0: NDArray[np.float32],
+        phoneme: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
         """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDからダミー音声波形を生成する"""
         # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
-        result: list[ndarray] = []
+        result: list[NDArray[np.float32]] = []
         for i in range(length):
             result += [
                 (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
             ] * 256
-        return np.array(result)
+        return np.array(result, dtype=np.float32)
 
     def supported_devices(self):
         return json.dumps(

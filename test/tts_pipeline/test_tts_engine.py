@@ -1,11 +1,10 @@
-import json
-from typing import Union
+from test.utility import pydantic_to_native_type, round_floats
 from unittest import TestCase
 from unittest.mock import Mock
 
-import numpy
+import numpy as np
 import pytest
-from pydantic.json import pydantic_encoder
+from numpy.typing import NDArray
 from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -35,25 +34,25 @@ def is_same_phoneme(p1: Phoneme, p2: Phoneme) -> bool:
 
 
 def yukarin_s_mock(
-    length: int, phoneme_list: numpy.ndarray, style_id: numpy.ndarray
-) -> numpy.ndarray:
+    length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
+) -> NDArray[np.float32]:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-    return numpy.array(result)
+    return np.array(result, dtype=np.float32)
 
 
 def yukarin_sa_mock(
     length: int,
-    vowel_phoneme_list: numpy.ndarray,
-    consonant_phoneme_list: numpy.ndarray,
-    start_accent_list: numpy.ndarray,
-    end_accent_list: numpy.ndarray,
-    start_accent_phrase_list: numpy.ndarray,
-    end_accent_phrase_list: numpy.ndarray,
-    style_id: numpy.ndarray,
-) -> numpy.ndarray:
+    vowel_phoneme_list: NDArray[np.int64],
+    consonant_phoneme_list: NDArray[np.int64],
+    start_accent_list: NDArray[np.int64],
+    end_accent_list: NDArray[np.int64],
+    start_accent_phrase_list: NDArray[np.int64],
+    end_accent_phrase_list: NDArray[np.int64],
+    style_id: NDArray[np.int64],
+) -> NDArray[np.float32]:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
@@ -74,23 +73,23 @@ def yukarin_sa_mock(
                 2,
             )
         )
-    return numpy.array(result)[numpy.newaxis]
+    return np.array(result, dtype=np.float32)[np.newaxis]
 
 
 def decode_mock(
     length: int,
     phoneme_size: int,
-    f0: numpy.ndarray,
-    phoneme: numpy.ndarray,
-    style_id: Union[numpy.ndarray, int],
-) -> numpy.ndarray:
+    f0: NDArray[np.float32],
+    phoneme: NDArray[np.float32],
+    style_id: NDArray[np.int64],
+) -> NDArray[np.float32]:
     result = []
     # mockとしての適当な処理、特に意味はない
     for i in range(length):
         result += [
-            (f0[i, 0] * (numpy.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
+            (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
         ] * 256
-    return numpy.array(result)
+    return np.array(result, dtype=np.float32)
 
 
 class MockCore:
@@ -247,7 +246,7 @@ class TestTTSEngine(TestCase):
         index = 1
 
         def result_value(i: int) -> float:
-            return round(float(phoneme_list[i] * 0.0625 + 1), 2)
+            return np.float32(round(float(phoneme_list[i] * 0.0625 + 1), 2)).item()
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
@@ -264,9 +263,9 @@ class TestTTSEngine(TestCase):
         self.assertEqual(list_length, true_list_length)
         self.assertEqual(list_length, len(phoneme_list))
         self.assertEqual(style_id, true_style_id)
-        numpy.testing.assert_array_equal(
+        np.testing.assert_array_equal(
             phoneme_list,
-            numpy.array(true_phoneme_list, dtype=numpy.int64),
+            np.array(true_phoneme_list, dtype=np.int64),
         )
         self.assertEqual(result, true_result)
 
@@ -295,12 +294,12 @@ class TestTTSEngine(TestCase):
         end_accent_phrase_list = yukarin_sa_args["end_accent_phrase_list"][0]
         style_id = yukarin_sa_args["style_id"]
         # Expects
-        true_vowels = numpy.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0])
-        true_consonants = numpy.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1])
-        true_accent_starts = numpy.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        true_accent_ends = numpy.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
-        true_phrase_starts = numpy.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        true_phrase_ends = numpy.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
+        true_vowels = np.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0])
+        true_consonants = np.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1])
+        true_accent_starts = np.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        true_accent_ends = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
+        true_phrase_starts = np.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        true_phrase_ends = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
         true_result = _gen_hello_hiho_accent_phrases()
         index = 1
 
@@ -311,21 +310,23 @@ class TestTTSEngine(TestCase):
             ]
             if vowel_phoneme_list[i] in unvoiced_mora_tail_ids:
                 return 0
-            return round(
-                (
+            return np.float32(
+                round(
                     (
-                        vowel_phoneme_list[i]
-                        + consonant_phoneme_list[i]
-                        + start_accent_list[i]
-                        + end_accent_list[i]
-                        + start_accent_phrase_list[i]
-                        + end_accent_phrase_list[i]
-                    )
-                    * 0.0625
-                    + 1
-                ),
-                2,
-            )
+                        (
+                            vowel_phoneme_list[i]
+                            + consonant_phoneme_list[i]
+                            + start_accent_list[i]
+                            + end_accent_list[i]
+                            + start_accent_phrase_list[i]
+                            + end_accent_phrase_list[i]
+                        )
+                        * 0.0625
+                        + 1
+                    ),
+                    2,
+                )
+            ).item()
 
         for accent_phrase in true_result:
             moras = accent_phrase.moras
@@ -344,12 +345,12 @@ class TestTTSEngine(TestCase):
         self.assertEqual(list_length, len(start_accent_phrase_list))
         self.assertEqual(list_length, len(end_accent_phrase_list))
         self.assertEqual(style_id, 1)
-        numpy.testing.assert_array_equal(vowel_phoneme_list, true_vowels)
-        numpy.testing.assert_array_equal(consonant_phoneme_list, true_consonants)
-        numpy.testing.assert_array_equal(start_accent_list, true_accent_starts)
-        numpy.testing.assert_array_equal(end_accent_list, true_accent_ends)
-        numpy.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
-        numpy.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
+        np.testing.assert_array_equal(vowel_phoneme_list, true_vowels)
+        np.testing.assert_array_equal(consonant_phoneme_list, true_consonants)
+        np.testing.assert_array_equal(start_accent_list, true_accent_starts)
+        np.testing.assert_array_equal(end_accent_list, true_accent_ends)
+        np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
+        np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
         self.assertEqual(result, true_result)
 
 
@@ -373,7 +374,7 @@ def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> No
     # Outputs
     result = tts_engine.update_length(hello_hiho, StyleId(1))
     # Tests
-    assert snapshot_json == json.loads(json.dumps(result, default=pydantic_encoder))
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
 def koreha_arimasuka_base_expected():
@@ -383,26 +384,26 @@ def koreha_arimasuka_base_expected():
                 Mora(
                     text="コ",
                     consonant="k",
-                    consonant_length=2.44,
+                    consonant_length=np.float32(2.44),
                     vowel="o",
-                    vowel_length=2.88,
-                    pitch=4.38,
+                    vowel_length=np.float32(2.88),
+                    pitch=np.float32(4.38),
                 ),
                 Mora(
                     text="レ",
                     consonant="r",
-                    consonant_length=3.06,
+                    consonant_length=np.float32(3.06),
                     vowel="e",
-                    vowel_length=1.88,
-                    pitch=4.0,
+                    vowel_length=np.float32(1.88),
+                    pitch=np.float32(4.0),
                 ),
                 Mora(
                     text="ワ",
                     consonant="w",
-                    consonant_length=3.62,
+                    consonant_length=np.float32(3.62),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=4.19,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(4.19),
                 ),
             ],
             accent=3,
@@ -416,40 +417,40 @@ def koreha_arimasuka_base_expected():
                     consonant=None,
                     consonant_length=None,
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=1.44,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(1.44),
                 ),
                 Mora(
                     text="リ",
                     consonant="r",
-                    consonant_length=3.06,
+                    consonant_length=np.float32(3.06),
                     vowel="i",
-                    vowel_length=2.31,
-                    pitch=4.44,
+                    vowel_length=np.float32(2.31),
+                    pitch=np.float32(4.44),
                 ),
                 Mora(
                     text="マ",
                     consonant="m",
-                    consonant_length=2.62,
+                    consonant_length=np.float32(2.62),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=3.12,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(3.12),
                 ),
                 Mora(
                     text="ス",
                     consonant="s",
-                    consonant_length=3.19,
+                    consonant_length=np.float32(3.19),
                     vowel="U",
-                    vowel_length=1.38,
-                    pitch=0.0,
+                    vowel_length=np.float32(1.38),
+                    pitch=np.float32(0.0),
                 ),
                 Mora(
                     text="カ",
                     consonant="k",
-                    consonant_length=2.44,
+                    consonant_length=np.float32(2.44),
                     vowel="a",
-                    vowel_length=1.44,
-                    pitch=2.94,
+                    vowel_length=np.float32(1.44),
+                    pitch=np.float32(2.94),
                 ),
             ],
             accent=3,
@@ -498,7 +499,7 @@ class TestTTSEngineBase(TestCase):
                 consonant_length=None,
                 vowel="a",
                 vowel_length=0.15,
-                pitch=expected[-1].moras[-1].pitch + 0.3,
+                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
             )
         ]
         self.create_synthesis_test_base(
@@ -534,8 +535,8 @@ class TestTTSEngineBase(TestCase):
                             consonant=None,
                             consonant_length=None,
                             vowel="N",
-                            vowel_length=1.25,
-                            pitch=1.44,
+                            vowel_length=np.float32(1.25),
+                            pitch=np.float32(1.44),
                         )
                     ],
                     accent=1,
@@ -562,7 +563,7 @@ class TestTTSEngineBase(TestCase):
                 consonant_length=None,
                 vowel="N",
                 vowel_length=0.15,
-                pitch=expected[-1].moras[-1].pitch + 0.3,
+                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
             )
         ]
         self.create_synthesis_test_base(
@@ -590,8 +591,8 @@ class TestTTSEngineBase(TestCase):
                             consonant=None,
                             consonant_length=None,
                             vowel="cl",
-                            vowel_length=1.69,
-                            pitch=0.0,
+                            vowel_length=np.float32(1.69),
+                            pitch=np.float32(0.0),
                         )
                     ],
                     accent=1,
@@ -634,10 +635,10 @@ class TestTTSEngineBase(TestCase):
                         Mora(
                             text="ス",
                             consonant="s",
-                            consonant_length=3.19,
+                            consonant_length=np.float32(3.19),
                             vowel="u",
-                            vowel_length=3.5,
-                            pitch=5.94,
+                            vowel_length=np.float32(3.5),
+                            pitch=np.float32(5.94),
                         )
                     ],
                     accent=1,

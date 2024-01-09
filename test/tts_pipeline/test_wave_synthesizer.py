@@ -1,6 +1,6 @@
 """波形合成のテスト"""
 
-import numpy
+import numpy as np
 
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline.tts_engine import (
@@ -170,26 +170,26 @@ def test_apply_volume_scale():
     """Test `apply_volume_scale`."""
     # Inputs
     query = _gen_query(volumeScale=3.0)
-    input_wave = numpy.array([0.0, 1.0, 2.0])
+    input_wave = np.array([0.0, 1.0, 2.0])
 
     # Expects - x3 scale
-    true_wave = numpy.array([0.0, 3.0, 6.0])
+    true_wave = np.array([0.0, 3.0, 6.0])
 
     # Outputs
     wave = apply_volume_scale(input_wave, query)
 
-    assert numpy.allclose(wave, true_wave)
+    assert np.allclose(wave, true_wave)
 
 
 def test_apply_output_sampling_rate():
     """Test `apply_output_sampling_rate`."""
     # Inputs
     query = _gen_query(outputSamplingRate=12000)
-    input_wave = numpy.array([1.0 for _ in range(120)])
+    input_wave = np.array([1.0 for _ in range(120)])
     input_sr_wave = 24000
 
     # Expects - half sampling rate
-    true_wave = numpy.array([1.0 for _ in range(60)])
+    true_wave = np.array([1.0 for _ in range(60)])
     assert true_wave.shape == (60,), "Prerequisites"
 
     # Outputs
@@ -202,15 +202,15 @@ def test_apply_output_stereo():
     """Test `apply_output_stereo`."""
     # Inputs
     query = _gen_query(outputStereo=True)
-    input_wave = numpy.array([1.0, 0.0, 2.0])
+    input_wave = np.array([1.0, 0.0, 2.0])
 
     # Expects - Stereo :: (Time, Channel)
-    true_wave = numpy.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
+    true_wave = np.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
 
     # Outputs
     wave = apply_output_stereo(input_wave, query)
 
-    assert numpy.array_equal(wave, true_wave)
+    assert np.array_equal(wave, true_wave)
 
 
 def test_count_frame_per_unit():
@@ -229,16 +229,16 @@ def test_count_frame_per_unit():
     # Expects
     #                             Pre k  o  N pau h  i  h  O Pst
     true_frame_per_phoneme_list = [2, 2, 4, 4, 2, 2, 4, 4, 2, 6]
-    true_frame_per_phoneme = numpy.array(true_frame_per_phoneme_list, dtype=numpy.int32)
+    true_frame_per_phoneme = np.array(true_frame_per_phoneme_list, dtype=np.int32)
     #                         Pre ko  N pau hi hO Pst
     true_frame_per_mora_list = [2, 6, 4, 2, 6, 6, 6]
-    true_frame_per_mora = numpy.array(true_frame_per_mora_list, dtype=numpy.int32)
+    true_frame_per_mora = np.array(true_frame_per_mora_list, dtype=np.int32)
 
     # Outputs
     frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
 
-    assert numpy.array_equal(frame_per_phoneme, true_frame_per_phoneme)
-    assert numpy.array_equal(frame_per_mora, true_frame_per_mora)
+    assert np.array_equal(frame_per_phoneme, true_frame_per_phoneme)
+    assert np.array_equal(frame_per_mora, true_frame_per_mora)
 
 
 def test_query_to_decoder_feature():
@@ -279,7 +279,7 @@ def test_query_to_decoder_feature():
     # phoneme
     #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
     frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
-    true_phoneme = numpy.zeros([n_frame, TRUE_NUM_PHONEME], dtype=numpy.float32)
+    true_phoneme = np.zeros([n_frame, TRUE_NUM_PHONEME], dtype=np.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
         true_phoneme[frame_idx, phoneme_idx] = 1.0
     # Pitch
@@ -291,20 +291,20 @@ def test_query_to_decoder_feature():
     true2_f0 = [0.0, 400.0, 400.0, 400.0]
     #           hO   hO   hO   paw  paw  paw
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    true_f0 = numpy.array(true1_f0 + true2_f0 + true3_f0, dtype=numpy.float32)
+    true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
 
     # Outputs
     phoneme, f0 = query_to_decoder_feature(query)
 
-    assert numpy.array_equal(phoneme, true_phoneme)
-    assert numpy.array_equal(f0, true_f0)
+    assert np.array_equal(phoneme, true_phoneme)
+    assert np.array_equal(f0, true_f0)
 
 
 def test_raw_wave_to_output_wave_with_resample():
     """Test `raw_wave_to_output_wave` with resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
-    raw_wave = numpy.random.rand(240)
+    raw_wave = np.random.rand(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects
@@ -320,13 +320,13 @@ def test_raw_wave_to_output_wave_without_resample():
     """Test `raw_wave_to_output_wave`  without resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputStereo=True)
-    raw_wave = numpy.random.rand(240)
+    raw_wave = np.random.rand(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects
-    true_wave = numpy.array([2 * raw_wave, 2 * raw_wave]).T
+    true_wave = np.array([2 * raw_wave, 2 * raw_wave]).T
 
     # Outputs
     wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
-    assert numpy.allclose(wave, true_wave)
+    assert np.allclose(wave, true_wave)
