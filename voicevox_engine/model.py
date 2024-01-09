@@ -109,7 +109,12 @@ class ParseKanaBadRequest(BaseModel):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
-class UnknownOjtPhonemeError(Exception):
+class NonOjtPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
+
+
+class OjtUnknownPhonemeError(Exception):
     def __init__(self, **kwargs: Any) -> None:
         self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
 

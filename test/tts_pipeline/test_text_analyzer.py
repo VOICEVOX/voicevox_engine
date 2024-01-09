@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pytest
 
-from voicevox_engine.model import AccentPhrase, Mora, UnknownOjtPhonemeError
+from voicevox_engine.model import AccentPhrase, Mora, OjtUnknownPhonemeError
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
@@ -407,12 +407,12 @@ def stub_unknown_features_koxx(_: str) -> list[str]:
 def test_label_unknown_phoneme():
     """`Label` は unknown 音素 `xx` をパース失敗する"""
     unknown_feature = stub_unknown_features_koxx("dummy")[3]
-    with pytest.raises(UnknownOjtPhonemeError):
+    with pytest.raises(OjtUnknownPhonemeError):
         unknown_label = Label.from_feature(unknown_feature)
         unknown_label.phoneme
 
 
 def test_text_to_accent_phrases_unknown():
     """`text_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
-    with pytest.raises(UnknownOjtPhonemeError):
+    with pytest.raises(OjtUnknownPhonemeError):
         text_to_accent_phrases("dummy", text_to_features=stub_unknown_features_koxx)
