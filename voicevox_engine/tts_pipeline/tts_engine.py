@@ -14,9 +14,6 @@ from .kana_converter import parse_kana
 from .mora_list import mora_phonemes_to_mora_kana
 from .text_analyzer import text_to_accent_phrases
 
-unvoiced_vowel_likes = ["A", "I", "U", "E", "O", "cl", "pau"]
-mora_phoneme_list = ["a", "i", "u", "e", "o", "N"] + unvoiced_vowel_likes
-
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
 UPSPEAK_PITCH_ADD = 0.3
@@ -59,27 +56,25 @@ def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phon
     consonants: list[Phoneme | None] = []
     vowels: list[Phoneme] = []
     for i, p in enumerate(phonemes):
-        if p.phoneme in mora_phoneme_list:
+        if p.is_mora_tail():
             vowels += [p]
             # Vowel のみのモーラの場合（Vowel が連続する場合）、Consonant を None とする
-            if i == 0 or phonemes[i - 1].phoneme in mora_phoneme_list:
+            if i == 0 or phonemes[i - 1].is_mora_tail():
                 consonants += [None]
         else:
             consonants += [p]
     return consonants, vowels
 
 
-def pre_process(
-    accent_phrases: list[AccentPhrase],
-) -> tuple[list[Mora], list[Phoneme]]:
-    """アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する"""
-    flatten_moras = to_flatten_moras(accent_phrases)
-    phonemes = to_flatten_phonemes(flatten_moras)
-
-    # 前後無音の追加
-    phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
-
-    return flatten_moras, phonemes
+def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64]:
+    """
+    アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+    長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
+    """
+    onehot = np.zeros(len(accent_phrase.moras))
+    onehot[index] = 1
+    onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+    return onehot.astype(np.int64)
 
 
 def generate_silence_mora(length: float) -> Mora:
@@ -278,9 +273,7 @@ class TTSEngine:
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成結果でモーラ内の音素長属性を置換する
-        vowel_indexes = [
-            i for i, p in enumerate(phonemes) if p.phoneme in mora_phoneme_list
-        ]
+        vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:
                 mora.consonant_length = None
@@ -297,34 +290,6 @@ class TTSEngine:
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
-
-        # accent
-        def _create_one_hot(
-            accent_phrase: AccentPhrase, position: int
-        ) -> NDArray[np.int64]:
-            """
-            単位行列(np.eye)を応用し、accent_phrase内でone hotな配列(リスト)を作る
-            例えば、accent_phraseのmorasの長さが12、positionが1なら
-            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            morasの長さが同じく12、positionが-1なら
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-            のような配列を生成する
-            accent_phraseがpause_moraを含む場合はさらに後ろに0が足される
-            Parameters
-            ----------
-            accent_phrase : AccentPhrase
-                アクセント句モデル
-            position : int
-                one hotにするindex
-            Returns
-            -------
-            one_hot : NDArray[np.int64]
-                one hotな配列(リスト)
-            """
-            return np.r_[
-                np.eye(len(accent_phrase.moras), dtype=np.int64)[position],
-                (0 if accent_phrase.pause_mora is not None else []),
-            ]
 
         # アクセントの開始/終了位置リストを作る
         start_accent_list = np.concatenate(
@@ -358,14 +323,10 @@ class TTSEngine:
         start_accent_phrase_list = np.r_[0, start_accent_phrase_list, 0]
         end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
 
-        # キャスト
-        start_accent_list = np.array(start_accent_list, dtype=np.int64)
-        end_accent_list = np.array(end_accent_list, dtype=np.int64)
-        start_accent_phrase_list = np.array(start_accent_phrase_list, dtype=np.int64)
-        end_accent_phrase_list = np.array(end_accent_phrase_list, dtype=np.int64)
-
         # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
-        moras, phonemes = pre_process(accent_phrases)
+        moras = to_flatten_moras(accent_phrases)
+        phonemes = to_flatten_phonemes(moras)
+        phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
         # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
         consonants, vowels = split_mora(phonemes)
@@ -387,7 +348,7 @@ class TTSEngine:
 
         # 母音が無声であるモーラは音高を 0 とする
         for i, p in enumerate(vowels):
-            if p.phoneme in unvoiced_vowel_likes:
+            if p.is_unvoiced_mora_tail():
                 f0[i] = 0
 
         # 更新する

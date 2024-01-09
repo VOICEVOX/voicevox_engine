@@ -21,7 +21,7 @@ from .metas.Metas import (
 )
 from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
-from .tts_pipeline import TTSEngine
+from .tts_pipeline.tts_engine import TTSEngine
 
 
 @dataclass(frozen=True)
