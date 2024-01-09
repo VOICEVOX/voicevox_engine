@@ -13,7 +13,7 @@ from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline import TTSEngine
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
-    UNVOICED_VOWEL_LIKES,
+    UNVOICED_MORA_TAIL_PHONEMES,
     Phoneme,
 )
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
@@ -646,10 +646,10 @@ class TestTTSEngine(TestCase):
 
         def result_value(i: int) -> float:
             # unvoiced_vowel_likesのPhoneme ID版
-            unvoiced_vowel_like_ids = [
-                Phoneme(p).phoneme_id for p in UNVOICED_VOWEL_LIKES
+            unvoiced_mora_tail_ids = [
+                Phoneme(p).phoneme_id for p in UNVOICED_MORA_TAIL_PHONEMES
             ]
-            if vowel_phoneme_list[i] in unvoiced_vowel_like_ids:
+            if vowel_phoneme_list[i] in unvoiced_mora_tail_ids:
                 return 0
             return round(
                 (

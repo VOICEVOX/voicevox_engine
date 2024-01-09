@@ -56,10 +56,10 @@ def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phon
     consonants: list[Phoneme | None] = []
     vowels: list[Phoneme] = []
     for i, p in enumerate(phonemes):
-        if p.is_vowel_like():
+        if p.is_mora_tail():
             vowels += [p]
             # Vowel のみのモーラの場合（Vowel が連続する場合）、Consonant を None とする
-            if i == 0 or phonemes[i - 1].is_vowel_like():
+            if i == 0 or phonemes[i - 1].is_mora_tail():
                 consonants += [None]
         else:
             consonants += [p]
@@ -270,7 +270,7 @@ class TTSEngine:
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成結果でモーラ内の音素長属性を置換する
-        vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_vowel_like()]
+        vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:
                 mora.consonant_length = None
@@ -377,7 +377,7 @@ class TTSEngine:
 
         # 母音が無声であるモーラは音高を 0 とする
         for i, p in enumerate(vowels):
-            if p.is_unvoiced_vowel_like():
+            if p.is_unvoiced_mora_tail():
                 f0[i] = 0
 
         # 更新する
