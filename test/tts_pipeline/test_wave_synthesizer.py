@@ -13,7 +13,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     apply_volume_scale,
     count_frame_per_unit,
     query_to_decoder_feature,
-    raw_wave_to_output_wave
+    raw_wave_to_output_wave,
 )
 
 TRUE_NUM_PHONEME = 45
@@ -330,4 +330,3 @@ def test_raw_wave_to_output_wave_without_resample():
     wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     assert numpy.allclose(wave, true_wave)
-
