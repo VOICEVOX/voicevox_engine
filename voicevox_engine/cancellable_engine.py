@@ -19,7 +19,7 @@ from fastapi import HTTPException, Request
 from .core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
-from .tts_pipeline import make_tts_engines_from_cores
+from .tts_pipeline.tts_engine import make_tts_engines_from_cores
 from .utility import get_latest_core_version
 
 
