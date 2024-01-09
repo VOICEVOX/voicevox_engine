@@ -317,18 +317,11 @@ class TTSEngine:
             [_create_one_hot(accent_phrase, -1) for accent_phrase in accent_phrases]
         )
 
-        # 前後無音を付加する
-        start_accent_list = np.r_[0, start_accent_list, 0]
-        end_accent_list = np.r_[0, end_accent_list, 0]
-        start_accent_phrase_list = np.r_[0, start_accent_phrase_list, 0]
-        end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
-
-        # アクセント句系列から（前後の無音含まない）モーラ系列と（前後の無音含む）音素系列を抽出する
+        # アクセント句系列からモーラ系列と音素系列を抽出する
         moras = to_flatten_moras(accent_phrases)
         phonemes = to_flatten_phonemes(moras)
-        phonemes = [Phoneme("pau")] + phonemes + [Phoneme("pau")]
 
-        # 前後無音付加済みの音素系列から子音ID系列・母音ID系列を抽出する
+        # 音素系列から子音ID系列・母音ID系列を抽出する
         consonants, vowels = split_mora(phonemes)
         vowel_ids = np.array([p.phoneme_id for p in vowels], dtype=np.int64)
         consonant_ids = np.array(
@@ -353,7 +346,7 @@ class TTSEngine:
 
         # 更新する
         for i, mora in enumerate(moras):
-            mora.pitch = f0[i + 1]
+            mora.pitch = f0[i]
 
         return accent_phrases
 
