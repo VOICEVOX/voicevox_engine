@@ -69,7 +69,7 @@ class CoreAdapter:
     def safe_yukarin_s_forward(
         self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
     ) -> NDArray[np.float32]:
-        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音自動付加」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         # 前後無音を付加する（詳細: voicevox_engine#924）
@@ -97,7 +97,7 @@ class CoreAdapter:
         end_accent_phrase_list: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
-        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音自動付加」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         # 前後無音を付加する（詳細: voicevox_engine#924）
