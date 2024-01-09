@@ -51,21 +51,6 @@ def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     return phonemes
 
 
-def split_mora(phonemes: list[Phoneme]) -> tuple[list[Phoneme | None], list[Phoneme]]:
-    """音素系列から子音系列と母音系列を抽出する"""
-    consonants: list[Phoneme | None] = []
-    vowels: list[Phoneme] = []
-    for i, p in enumerate(phonemes):
-        if p.is_mora_tail():
-            vowels += [p]
-            # Vowel のみのモーラの場合（Vowel が連続する場合）、Consonant を None とする
-            if i == 0 or phonemes[i - 1].is_mora_tail():
-                consonants += [None]
-        else:
-            consonants += [p]
-    return consonants, vowels
-
-
 def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64]:
     """
     アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
@@ -319,14 +304,15 @@ class TTSEngine:
 
         # アクセント句系列からモーラ系列と音素系列を抽出する
         moras = to_flatten_moras(accent_phrases)
-        phonemes = to_flatten_phonemes(moras)
 
-        # 音素系列から子音ID系列・母音ID系列を抽出する
-        consonants, vowels = split_mora(phonemes)
+        # モーラ系列から子音ID系列・母音ID系列を抽出する
+        consonant_id_ints = [
+            Phoneme(mora.consonant).phoneme_id if mora.consonant else -1
+            for mora in moras
+        ]
+        consonant_ids = np.array(consonant_id_ints, dtype=np.int64)
+        vowels = [Phoneme(mora.vowel) for mora in moras]
         vowel_ids = np.array([p.phoneme_id for p in vowels], dtype=np.int64)
-        consonant_ids = np.array(
-            [p.phoneme_id if p else -1 for p in consonants], dtype=np.int64
-        )
 
         # コアを用いてモーラ音高を生成する
         f0 = self._core.safe_yukarin_sa_forward(
