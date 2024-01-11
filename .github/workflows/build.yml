@@ -21,8 +21,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.8.10"
-  VOICEVOX_RESOURCE_VERSION: "0.14.4"
-  VOICEVOX_CORE_VERSION: "0.14.5"
+  VOICEVOX_RESOURCE_VERSION: "0.14.5"
+  VOICEVOX_CORE_VERSION: "0.14.6"
 
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
