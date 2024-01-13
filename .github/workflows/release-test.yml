@@ -59,9 +59,9 @@ jobs:
           echo "release_url=${{ env.REPO_URL }}/releases/download/${{ env.VERSION }}" >> $GITHUB_OUTPUT
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11.3"
           cache: pip
@@ -77,12 +77,6 @@ jobs:
       - name: chmod +x
         if: startsWith(matrix.target, 'linux') || startsWith(matrix.target, 'macos')
         run: chmod +x dist/run
-
-      - name: Install libsndfile1
-        if: startsWith(matrix.target, 'linux')
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsndfile1
 
       - name: Install requirements
         run: |

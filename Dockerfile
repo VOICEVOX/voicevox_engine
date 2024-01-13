@@ -23,7 +23,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.14.4
+ARG VOICEVOX_CORE_VERSION=0.14.6
 
 RUN <<EOF
     set -eux
@@ -183,9 +183,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# libsndfile1: soundfile shared object for arm64
+# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
@@ -194,10 +195,10 @@ RUN <<EOF
         git \
         wget \
         cmake \
-        libsndfile1 \
         ca-certificates \
         build-essential \
-        gosu
+        gosu \
+        libsndfile1
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
@@ -226,7 +227,8 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setting.yml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./run.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
+ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
@@ -248,7 +250,7 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
@@ -273,7 +275,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.3
+ARG VOICEVOX_RESOURCE_VERSION=0.14.5
 RUN <<EOF
     set -eux
 
