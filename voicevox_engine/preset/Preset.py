@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from voicevox_engine.metas.Metas import StyleId
+
 
 class Preset(BaseModel):
     """
@@ -8,8 +10,8 @@ class Preset(BaseModel):
 
     id: int = Field(title="プリセットID")
     name: str = Field(title="プリセット名")
-    speaker_uuid: str = Field(title="スピーカーのUUID")
-    style_id: int = Field(title="スタイルID")
+    speaker_uuid: str = Field(title="話者のUUID")
+    style_id: StyleId = Field(title="スタイルID")
     speedScale: float = Field(title="全体の話速")
     pitchScale: float = Field(title="全体の音高")
     intonationScale: float = Field(title="全体の抑揚")

@@ -1,16 +1,20 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, NewType, Optional
 
 from pydantic import BaseModel, Field
+
+# NOTE: 循環importを防ぐためにとりあえずここに書いている
+# FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
+StyleId = NewType("StyleId", int)
 
 
 class SpeakerStyle(BaseModel):
     """
-    スピーカーのスタイル情報
+    話者のスタイル情報
     """
 
     name: str = Field(title="スタイル名")
-    id: int = Field(title="スタイルID")
+    id: StyleId = Field(title="スタイルID")
 
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
@@ -35,28 +39,28 @@ class SpeakerSupportedFeatures(BaseModel):
 
 class CoreSpeaker(BaseModel):
     """
-    コアに含まれるスピーカー情報
+    コアに含まれる話者情報
     """
 
     name: str = Field(title="名前")
-    speaker_uuid: str = Field(title="スピーカーのUUID")
-    styles: List[SpeakerStyle] = Field(title="スピーカースタイルの一覧")
-    version: str = Field("スピーカーのバージョン")
+    speaker_uuid: str = Field(title="話者のUUID")
+    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
+    version: str = Field("話者のバージョン")
 
 
 class EngineSpeaker(BaseModel):
     """
-    エンジンに含まれるスピーカー情報
+    エンジンに含まれる話者情報
     """
 
     supported_features: SpeakerSupportedFeatures = Field(
-        title="スピーカーの対応機能", default_factory=SpeakerSupportedFeatures
+        title="話者の対応機能", default_factory=SpeakerSupportedFeatures
     )
 
 
 class Speaker(CoreSpeaker, EngineSpeaker):
     """
-    スピーカー情報
+    話者情報
     """
 
     pass
@@ -67,7 +71,7 @@ class StyleInfo(BaseModel):
     スタイルの追加情報
     """
 
-    id: int = Field(title="スタイルID")
+    id: StyleId = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
     portrait: Optional[str] = Field(title="当該スタイルのportrait.pngをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")

@@ -37,20 +37,15 @@ jobs:
           - cpu-ubuntu20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       #
       # Setup Python Environment
       #
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11.3"
           cache: pip
-
-      - name: Install libsndfile1
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsndfile1
 
       - name: Install requirements
         run: |

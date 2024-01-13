@@ -18,6 +18,7 @@ on:
       code_signing:
         description: "コード署名する"
         type: boolean
+        default: false
       upload_artifact:
         description: "デバッグ用に成果物をartifactにアップロードするか"
         type: boolean
@@ -25,8 +26,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.3"
-  VOICEVOX_CORE_VERSION: "0.14.4"
+  VOICEVOX_RESOURCE_VERSION: "0.14.5"
+  VOICEVOX_CORE_VERSION: "0.14.6"
 
 defaults:
   run:
@@ -109,7 +110,7 @@ jobs:
         run: |
           echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # NOTE: The default 'sed' and 'split' of macOS is BSD 'sed' and 'split'.
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
@@ -273,7 +274,7 @@ jobs:
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ matrix.architecture }}
@@ -393,7 +394,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -436,10 +437,6 @@ jobs:
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
           rm download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
 
-      - name: Copy VOICEVOX Core Models
-        run: |
-          cp -r download/core/model ./
-
       - name: Generate licenses.json
         run: |
           OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
@@ -467,9 +464,10 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
           fi
 
-          LIBCORE_PATH="$LIBCORE_PATH" \
-          LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec
+          pyinstaller --noconfirm run.spec -- \
+            --libcore_path="$LIBCORE_PATH" \
+            --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
+            --core_model_dir_path="download/core/model"
 
       - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
@@ -548,8 +546,9 @@ jobs:
         run: |
           bash build_util/codesign.bash "dist/run/run.exe"
         env:
-          CERT_BASE64: ${{ secrets.CERT_BASE64 }}
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+          ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
+          ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
+          ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: Rename artifact directory to archive
         run: |
@@ -592,9 +591,15 @@ jobs:
       # VVPP archives
       - name: Create VVPP archives
         run: |
-          # Compress to artifact.001.vvppp,artifact.002.vvppp, ...
-          (cd "${{ matrix.target }}" && 7z -r a "../compressed.zip")
-          $split -b 1900M --numeric-suffixes=1 -a 3 --additional-suffix .vvppp ./compressed.zip ./${{ steps.vars.outputs.package_name }}.
+          # Compress to compressed.zip.001, compressed.zip.002, ...
+          # NOTE: 1000th archive will be "compressed.zip.1000" after "compressed.zip.999". This is unconsidered as an extreme case.
+          (cd "${{ matrix.target }}" && 7z -r -v1900M a "../compressed.zip")
+
+          # Rename to artifact.001.vvppp, artifact.002.vvppp, ...
+          for FILE in $(ls "compressed.zip."*); do
+            NUMBER=${FILE##*.} # 001
+            mv "${FILE}" "${{ steps.vars.outputs.package_name }}.${NUMBER}.vvppp"
+          done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
           if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
@@ -628,6 +633,17 @@ jobs:
             ${{ steps.vars.outputs.package_name }}*.vvppp,
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
           commit: ${{ github.sha }}
+
+  update-tag-to-current-commit:
+    if: needs.config.outputs.version != ''
+    needs: [config, build-and-upload]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
+        run: |
+          git tag -f ${{ needs.config.outputs.version }}
+          git push -f --tag
 
   run-release-test-workflow:
     if: needs.config.outputs.version != ''

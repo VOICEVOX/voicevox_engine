@@ -1,8 +1,8 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, StrictStr, conint, validator
+from pydantic import BaseModel, Field, StrictStr, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
 
@@ -25,6 +25,9 @@ class Mora(BaseModel):
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
+
+    class Config:
+        validate_assignment = True
 
 
 class AccentPhrase(BaseModel):
@@ -59,7 +62,7 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
-    kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+    kana: Optional[str] = Field(title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される")
 
     def __hash__(self):
         items = [
@@ -80,10 +83,10 @@ class ParseKanaErrorCode(Enum):
 
 
 class ParseKanaError(Exception):
-    def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name
-        self.kwargs: Dict[str, str] = kwargs
+        self.kwargs = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
 
@@ -112,10 +115,10 @@ class MorphableTargetInfo(BaseModel):
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
 
 
-class SpeakerNotFoundError(LookupError):
-    def __init__(self, speaker: int, *args: object, **kywrds: object) -> None:
-        self.speaker = speaker
-        super().__init__(f"speaker {speaker} is not found.", *args, **kywrds)
+class StyleIdNotFoundError(LookupError):
+    def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
+        self.style_id = style_id
+        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
 
 
 class LibrarySpeaker(BaseModel):
@@ -127,9 +130,9 @@ class LibrarySpeaker(BaseModel):
     speaker_info: SpeakerInfo = Field(title="話者の追加情報")
 
 
-class DownloadableLibrary(BaseModel):
+class BaseLibraryInfo(BaseModel):
     """
-    ダウンロード可能な音声ライブラリの情報
+    音声ライブラリの情報
     """
 
     name: str = Field(title="音声ライブラリの名前")
@@ -140,7 +143,16 @@ class DownloadableLibrary(BaseModel):
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
 
 
-class InstalledLibrary(DownloadableLibrary):
+# 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている
+class DownloadableLibraryInfo(BaseLibraryInfo):
+    """
+    ダウンロード可能な音声ライブラリの情報
+    """
+
+    pass
+
+
+class InstalledLibraryInfo(BaseLibraryInfo):
     """
     インストール済み音声ライブラリの情報
     """
@@ -158,8 +170,8 @@ class UserDictWord(BaseModel):
     """
 
     surface: str = Field(title="表層形")
-    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
-        title="優先度"
+    priority: int = Field(
+        title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
     )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
