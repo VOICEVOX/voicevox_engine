@@ -72,6 +72,46 @@ class AudioQuery(BaseModel):
         return hash(tuple(sorted(items)))
 
 
+class Note(BaseModel):
+    """
+    音符ごとの情報
+    """
+
+    key: int | None = Field(title="音階")
+    length: int = Field(title="音符の長さ")
+    lyric: str = Field(title="音符の歌詞")
+
+
+class Score(BaseModel):
+    """
+    楽譜情報
+    """
+
+    notes: List[Note] = Field(title="音符のリスト")
+
+
+class Phoneme(BaseModel):
+    """
+    音素の情報
+    """
+
+    phoneme: str = Field(title="音素")
+    length: int = Field(title="音素の長さ")
+
+
+class FrameAudioQuery(BaseModel):
+    """
+    フレームごとの音声合成用のクエリ
+    """
+
+    f0: List[float] = Field(title="フレームごとの基本周波数")
+    volume: List[float] = Field(title="フレームごとの音量")
+    phonemes: List[Phoneme] = Field(title="音素のリスト")
+    volumeScale: float = Field(title="全体の音量")
+    outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
+    outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
+
+
 class ParseKanaErrorCode(Enum):
     UNKNOWN_TEXT = "判別できない読み仮名があります: {text}"
     ACCENT_TOP = "句頭にアクセントは置けません: {text}"
