@@ -9,6 +9,7 @@
     "port": 50021,
     "icon": "engine_manifest_assets/icon.png",
     "default_sampling_rate": 24000,
+    "frame_rate": 93.75,
     "terms_of_service": "engine_manifest_assets/terms_of_service.md",
     "update_infos": "engine_manifest_assets/update_infos.json",
     "dependency_licenses": "engine_manifest_assets/dependency_licenses.json",
