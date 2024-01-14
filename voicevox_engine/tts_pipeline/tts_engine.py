@@ -10,7 +10,7 @@ from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, Mora
-from ..model import Phoneme as PhonemeModel
+from ..model import FramePhoneme
 from ..model import Score
 from .acoustic_feature_extractor import Phoneme
 from .kana_converter import parse_kana
@@ -432,7 +432,7 @@ class TTSEngine:
         self,
         score: Score,
         style_id: StyleId,
-    ) -> tuple[list[PhonemeModel], list[float], list[float]]:
+    ) -> tuple[list[FramePhoneme], list[float], list[float]]:
         """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
@@ -450,7 +450,7 @@ class TTSEngine:
                         status_code=400,
                         detail="lyricが空文字列の場合、keyはnullである必要があります。",
                     )
-                note_lengths.append(note.length)
+                note_lengths.append(note.frame_length)
                 note_consonants.append(-1)
                 note_vowels.append(0)  # pau
                 phonemes.append(0)  # pau
@@ -481,7 +481,7 @@ class TTSEngine:
                     consonant_id = Phoneme(consonant).id
                 vowel_id = Phoneme(vowel).id
 
-                note_lengths.append(note.length)
+                note_lengths.append(note.frame_length)
                 note_consonants.append(consonant_id)
                 note_vowels.append(vowel_id)
                 if consonant_id != -1:
@@ -521,9 +521,9 @@ class TTSEngine:
         )
 
         phoneme_data_list = [
-            PhonemeModel(
+            FramePhoneme(
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
-                length=phoneme_duration,
+                frame_length=phoneme_duration,
             )
             for phoneme_id, phoneme_duration in zip(phonemes, phoneme_lengths)
         ]
@@ -549,7 +549,7 @@ class TTSEngine:
                 )
 
             phonemes.append(Phoneme(phoneme.phoneme).id)
-            phoneme_lengths.append(phoneme.length)
+            phoneme_lengths.append(phoneme.frame_length)
 
         phonemes_array = np.array(phonemes, dtype=np.int64)
         phoneme_lengths_array = np.array(phoneme_lengths, dtype=np.int64)

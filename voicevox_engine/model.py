@@ -78,7 +78,7 @@ class Note(BaseModel):
     """
 
     key: int | None = Field(title="音階")
-    length: int = Field(title="音符のフレーム長")
+    frame_length: int = Field(title="音符のフレーム長")
     lyric: str = Field(title="音符の歌詞")
 
 
@@ -90,13 +90,13 @@ class Score(BaseModel):
     notes: List[Note] = Field(title="音符のリスト")
 
 
-class Phoneme(BaseModel):
+class FramePhoneme(BaseModel):
     """
     音素の情報
     """
 
     phoneme: str = Field(title="音素")
-    length: int = Field(title="音素のフレーム長")
+    frame_length: int = Field(title="音素のフレーム長")
 
 
 class FrameAudioQuery(BaseModel):
@@ -106,7 +106,7 @@ class FrameAudioQuery(BaseModel):
 
     f0: List[float] = Field(title="フレームごとの基本周波数")
     volume: List[float] = Field(title="フレームごとの音量")
-    phonemes: List[Phoneme] = Field(title="音素のリスト")
+    phonemes: List[FramePhoneme] = Field(title="音素のリスト")
     volumeScale: float = Field(title="全体の音量")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
