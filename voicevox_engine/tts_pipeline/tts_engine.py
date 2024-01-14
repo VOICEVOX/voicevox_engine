@@ -426,6 +426,7 @@ class TTSEngine:
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
 
+    # FIXME: sing用のエンジンに移すかクラス名変える
     def get_sing_phoneme_and_f0_and_volume(
         self,
         score: Score,
