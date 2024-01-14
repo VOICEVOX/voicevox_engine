@@ -78,7 +78,7 @@ class Note(BaseModel):
     """
 
     key: int | None = Field(title="音階")
-    length: int = Field(title="音符の長さ")
+    length: int = Field(title="音符のフレーム長")
     lyric: str = Field(title="音符の歌詞")
 
 
@@ -96,7 +96,7 @@ class Phoneme(BaseModel):
     """
 
     phoneme: str = Field(title="音素")
-    length: int = Field(title="音素の長さ")
+    length: int = Field(title="音素のフレーム長")
 
 
 class FrameAudioQuery(BaseModel):
