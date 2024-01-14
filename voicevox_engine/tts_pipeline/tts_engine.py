@@ -515,6 +515,7 @@ class TTSEngine:
         )
 
         # コアを用いて音量を生成する
+        # FIXME: 変数名のsいらない？
         volumes = self._core.safe_predict_sing_volume_forward(
             frame_phonemes, frame_keys, f0s, style_id
         )
