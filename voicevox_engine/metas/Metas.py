@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
 StyleId = NewType("StyleId", int)
-StyleType = Literal["talk", "hamming", "sing_teacher"]
+StyleType = Literal["talk", "humming", "sing_teacher"]
 
 
 class SpeakerStyle(BaseModel):
