@@ -427,7 +427,7 @@ class TTSEngine:
         return wave
 
     # FIXME: sing用のエンジンに移すかクラス名変える
-    def get_sing_phoneme_and_f0_and_volume(
+    def create_sing_phoneme_and_f0_and_volume(
         self,
         score: Score,
         style_id: StyleId,

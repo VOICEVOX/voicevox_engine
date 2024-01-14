@@ -726,7 +726,7 @@ def generate_app(
         )
         engine = get_engine(core_version)
         core = get_core(core_version)
-        phonemes, f0, volume = engine.get_sing_phoneme_and_f0_and_volume(
+        phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
             score, style_id
         )
 
