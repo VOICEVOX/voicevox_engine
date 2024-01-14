@@ -16,7 +16,7 @@ class SpeakerStyle(BaseModel):
 
     name: str = Field(title="スタイル名")
     id: StyleId = Field(title="スタイルID")
-    type: StyleType = Field(title="モデルの種類", default="talk")
+    type: Optional[StyleType] = Field(title="モデルの種類")
 
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
