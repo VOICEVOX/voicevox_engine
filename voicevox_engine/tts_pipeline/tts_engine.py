@@ -447,7 +447,7 @@ class TTSEngine:
                 if note.key is not None:
                     raise HTTPException(
                         status_code=400,
-                        detail="note.lyric is empty but note.key is not null",
+                        detail="lyricが空文字列の場合、keyはnullである必要があります。",
                     )
                 note_lengths.append(note.length)
                 note_consonants.append(-1)
@@ -458,7 +458,7 @@ class TTSEngine:
                 if note.key is None:
                     raise HTTPException(
                         status_code=400,
-                        detail="note.lyric is not empty but note.key is null",
+                        detail="keyがnullの場合、lyricは空文字列である必要があります。",
                     )
 
                 # TODO: 1ノートに複数のモーラがある場合の処理
@@ -470,7 +470,7 @@ class TTSEngine:
                 if mora_phonemes is None:
                     raise HTTPException(
                         status_code=400,
-                        detail="note.lyric is not valid",
+                        detail=f"lyricが不正です: {note.lyric}",
                     )
 
                 consonant, vowel = mora_phonemes
