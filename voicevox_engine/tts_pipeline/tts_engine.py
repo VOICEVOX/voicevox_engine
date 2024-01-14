@@ -427,6 +427,7 @@ class TTSEngine:
         return wave
 
     # FIXME: sing用のエンジンに移すかクラス名変える
+    # 返す値の総称を考え、関数名を変更する
     def create_sing_phoneme_and_f0_and_volume(
         self,
         score: Score,
