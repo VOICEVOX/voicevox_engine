@@ -522,7 +522,7 @@ class TTSEngine:
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
                 length=phoneme_duration,
             )
-            for phoneme_id, phoneme_duration in zip(frame_phonemes, phoneme_lengths)
+            for phoneme_id, phoneme_duration in zip(phonemes, phoneme_lengths)
         ]
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
