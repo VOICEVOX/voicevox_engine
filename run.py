@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError, schema_json_of
+from pydantic import ValidationError
 from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
@@ -1334,7 +1334,7 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(
-        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
+        cors_policy_mode: str = Form(),  # noqa  # FIXME: CorsPolicyModeにするとopenapi-generatorがエラーになる
         allow_origin: str | None = Form(default=None),  # noqa
     ) -> Response:
         """
@@ -1366,9 +1366,6 @@ def generate_app(
             terms_of_service=app.terms_of_service,
             contact=app.contact,
             license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"]["CorsPolicyMode"] = schema_json_of(
-            CorsPolicyMode
         )
         openapi_schema["components"]["schemas"][
             "VvlibManifest"
