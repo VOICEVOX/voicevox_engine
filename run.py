@@ -1358,7 +1358,7 @@ def generate_app(
         openapi_schema = get_openapi(
             title=app.title,
             version=app.version,
-            openapi_version="3.0.0",  # openapi-generatorがデフォルトの3.1.0に未対応なため
+            openapi_version="3.0.0",  # openapi-generatorが対応するバージョン
             description=app.description,
             routes=app.routes,
             tags=app.openapi_tags,
