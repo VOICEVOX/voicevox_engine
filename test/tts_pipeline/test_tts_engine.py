@@ -414,7 +414,7 @@ def test_mocked_synthesize_wave_output(snapshot_json: JSONSnapshotExtension) -> 
     # Outputs
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
-    assert snapshot_json == round_floats(result, round_value=2)
+    assert snapshot_json == round_floats(result.tolist(), round_value=5)
 
 
 def koreha_arimasuka_base_expected():
