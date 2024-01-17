@@ -1334,7 +1334,7 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(
-        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
+        cors_policy_mode: str = Form(),  # noqa  # FIXME: CorsPolicyModeにするとopenapi-generatorがうまく行かない
         allow_origin: str | None = Form(default=None),  # noqa
     ) -> Response:
         """
