@@ -9,46 +9,8 @@ from ..model import AccentPhrase, Mora, NonOjtPhonemeError, OjtUnknownPhonemeErr
 from .acoustic_feature_extractor import Consonant, Vowel
 from .mora_list import mora_phonemes_to_mora_kana
 
-OjtVowel = Literal[
-    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
-]
-OjtConsonant = Literal[
-    "b",
-    "by",
-    "ch",
-    "d",
-    "dy",
-    "f",
-    "g",
-    "gw",
-    "gy",
-    "h",
-    "hy",
-    "j",
-    "k",
-    "kw",
-    "ky",
-    "m",
-    "my",
-    "n",
-    "ny",
-    "p",
-    "py",
-    "r",
-    "ry",
-    "s",
-    "sh",
-    "t",
-    "ts",
-    "ty",
-    "v",
-    "w",
-    "y",
-    "z",
-]
-OjtUnknown = Literal["xx"]
-OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
-_OJT_PHONEMES: list[OjtPhoneme] = [
+# OpenJTalk が出力する音素の一覧。
+_OJT_VOWELS = (
     "A",
     "E",
     "I",
@@ -63,6 +25,8 @@ _OJT_PHONEMES: list[OjtPhoneme] = [
     "pau",
     "sil",
     "u",
+)
+_OJT_CONSONANTS = (
     "b",
     "by",
     "ch",
@@ -95,8 +59,9 @@ _OJT_PHONEMES: list[OjtPhoneme] = [
     "w",
     "y",
     "z",
-    "xx",
-]
+)
+_OJT_UNKNOWNS = ("xx",)
+_OJT_PHONEMES = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
 
 
 @dataclass
