@@ -57,7 +57,7 @@ echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
     -X POST \
-    "127.0.0.1:50021/audio_query?style_id=1"\
+    "127.0.0.1:50021/audio_query?speaker=1"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -65,13 +65,13 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis?style_id=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
 生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
 
-`style_id` に指定する値は `/speakers` エンドポイントで得られます。
+`speaker` に指定する値は `/speakers` エンドポイントで得られます。
 
 ### 読み方を AquesTalk 風記法で取得・修正
 
@@ -99,7 +99,7 @@ echo -n "ディープラーニングは万能薬ではありません" >text.txt
 
 curl -s \
     -X POST \
-    "127.0.0.1:50021/audio_query?style_id=1" \
+    "127.0.0.1:50021/audio_query?speaker=1" \
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -111,7 +111,7 @@ cat query.json | grep -o -E "\"kana\":\".*\""
 echo -n "ディイプラ'アニングワ/バンノ'オヤクデワ/アリマセ'ン" > kana.txt
 curl -s \
     -X POST \
-    "127.0.0.1:50021/accent_phrases?style_id=1&is_kana=true" \
+    "127.0.0.1:50021/accent_phrases?speaker=1&is_kana=true" \
     --get --data-urlencode text@kana.txt \
     > newphrases.json
 
@@ -122,7 +122,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @newquery.json \
-    "127.0.0.1:50021/synthesis?style_id=1" \
+    "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
 
@@ -238,7 +238,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis?style_id=$style_id" \
+    "127.0.0.1:50021/synthesis?speaker=$style_id" \
     > audio.wav
 ```
 
@@ -255,7 +255,7 @@ echo -n "モーフィングを利用することで、２種類の声を混ぜ�
 
 curl -s \
     -X POST \
-    "127.0.0.1:50021/audio_query?style_id=0"\
+    "127.0.0.1:50021/audio_query?speaker=8"\
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -264,7 +264,7 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis?style_id=0" \
+    "127.0.0.1:50021/synthesis?speaker=8" \
     > audio.wav
 
 export MORPH_RATE=0.5
@@ -274,17 +274,17 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=8&target_speaker=10&morph_rate=$MORPH_RATE" \
     > audio.wav
 
 export MORPH_RATE=0.9
 
-# query、base_style_id、target_style_idが同じ場合はキャッシュが使用されるため比較的高速に生成される
+# query、base_speaker、target_speakerが同じ場合はキャッシュが使用されるため比較的高速に生成される
 curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
-    "127.0.0.1:50021/synthesis_morphing?base_style_id=0&target_style_id=1&morph_rate=$MORPH_RATE" \
+    "127.0.0.1:50021/synthesis_morphing?base_speaker=8&target_speaker=10&morph_rate=$MORPH_RATE" \
     > audio.wav
 ```
 
