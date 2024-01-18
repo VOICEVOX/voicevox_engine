@@ -146,12 +146,23 @@
             "type": "string"
           },
           "cors_policy_mode": {
-            "title": "Cors Policy Mode",
-            "type": "string"
+            "$ref": "#/components/schemas/CorsPolicyMode"
           }
         },
+        "required": [
+          "cors_policy_mode"
+        ],
         "title": "Body_setting_post_setting_post",
         "type": "object"
+      },
+      "CorsPolicyMode": {
+        "description": "CORSの許可モード",
+        "enum": [
+          "all",
+          "localapps"
+        ],
+        "title": "CorsPolicyMode",
+        "type": "string"
       },
       "DownloadableLibraryInfo": {
         "description": "ダウンロード可能な音声ライブラリの情報",
@@ -2191,6 +2202,7 @@
     },
     "/setting": {
       "get": {
+        "description": "設定ページを返します。",
         "operationId": "setting_get_setting_get",
         "responses": {
           "200": {
@@ -2203,6 +2215,7 @@
         ]
       },
       "post": {
+        "description": "設定を更新します。",
         "operationId": "setting_post_setting_post",
         "requestBody": {
           "content": {
@@ -2211,7 +2224,8 @@
                 "$ref": "#/components/schemas/Body_setting_post_setting_post"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
