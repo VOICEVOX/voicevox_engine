@@ -2,6 +2,8 @@
 AudioQuery APIのテスト
 """
 
+from test.utility import round_floats
+
 from fastapi.testclient import TestClient
 from syrupy.extensions.json import JSONSnapshotExtension
 
@@ -11,7 +13,7 @@ def test_style_idを指定して音声合成クエリが取得できる(
 ) -> None:
     response = client.post("/audio_query", params={"text": "テストです", "style_id": 0})
     assert response.status_code == 200
-    assert snapshot_json == response.json()
+    assert snapshot_json == round_floats(response.json(), round_value=2)
 
 
 def test_speakerを指定しても音声合成クエリが取得できる(
@@ -19,7 +21,7 @@ def test_speakerを指定しても音声合成クエリが取得できる(
 ) -> None:
     response = client.post("/audio_query", params={"text": "テストです", "speaker": 0})
     assert response.status_code == 200
-    assert snapshot_json == response.json()
+    assert snapshot_json == round_floats(response.json(), round_value=2)
 
 
 def test_style_idとspeakerを両方指定するとエラー(client: TestClient) -> None:

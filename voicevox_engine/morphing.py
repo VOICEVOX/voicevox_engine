@@ -1,3 +1,8 @@
+"""
+WORLDを使ってモーフィングするためのモジュール。
+pyworldの入出力はnp.doubleやnp.float64なので注意。
+"""
+
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
@@ -16,17 +21,17 @@ from .metas.Metas import (
 )
 from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
-from .tts_pipeline import TTSEngine
+from .tts_pipeline.tts_engine import TTSEngine
 
 
 @dataclass(frozen=True)
 class MorphingParameter:
     fs: int
     frame_period: float
-    base_f0: NDArray[np.double]
-    base_aperiodicity: NDArray[np.double]
-    base_spectrogram: NDArray[np.double]
-    target_spectrogram: NDArray[np.double]
+    base_f0: NDArray[np.float64]
+    base_aperiodicity: NDArray[np.float64]
+    base_spectrogram: NDArray[np.float64]
+    target_spectrogram: NDArray[np.float64]
 
 
 def create_morphing_parameter(
@@ -147,8 +152,8 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesize_wave(query, base_style_id).astype("float")
-    target_wave = engine.synthesize_wave(query, target_style_id).astype("float")
+    base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
+    target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
 
     return create_morphing_parameter(
         base_wave=base_wave,
@@ -162,7 +167,7 @@ def synthesis_morphing(
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
-) -> NDArray[np.float64]:
+) -> NDArray[np.float32]:
     """
     指定した割合で、パラメータをもとにモーフィングした音声を生成します。
 
@@ -177,7 +182,7 @@ def synthesis_morphing(
 
     Returns
     -------
-    generated : NDArray[np.float64]
+    generated : NDArray[np.float32]
         モーフィングした音声
 
     Raises
@@ -200,7 +205,7 @@ def synthesis_morphing(
         morph_param.base_aperiodicity,
         morph_param.fs,
         morph_param.frame_period,
-    )
+    ).astype(np.float32)
 
     # TODO: tts_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:

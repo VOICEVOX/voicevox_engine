@@ -363,8 +363,10 @@ options:
   --output_log_utf8     指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
   --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
                         CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
+                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --allow_origin [ALLOW_ORIGIN ...]
                         許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE

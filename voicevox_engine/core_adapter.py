@@ -69,14 +69,22 @@ class CoreAdapter:
     def safe_yukarin_s_forward(
         self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
     ) -> NDArray[np.float32]:
-        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+
+        # 前後無音を付加する（詳細: voicevox_engine#924）
+        phoneme_list_s = np.r_[0, phoneme_list_s, 0]
+
         with self.mutex:
             phoneme_length = self.core.yukarin_s_forward(
                 length=len(phoneme_list_s),
                 phoneme_list=phoneme_list_s,
                 style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )
+
+        # 前後無音に相当する領域を破棄する
+        phoneme_length = phoneme_length[1:-1]
+
         return phoneme_length
 
     def safe_yukarin_sa_forward(
@@ -89,8 +97,17 @@ class CoreAdapter:
         end_accent_phrase_list: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
-        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+
+        # 前後無音を付加する（詳細: voicevox_engine#924）
+        vowel_phoneme_list = np.r_[0, vowel_phoneme_list, 0]
+        consonant_phoneme_list = np.r_[-1, consonant_phoneme_list, -1]
+        start_accent_list = np.r_[0, start_accent_list, 0]
+        end_accent_list = np.r_[0, end_accent_list, 0]
+        start_accent_phrase_list = np.r_[0, start_accent_phrase_list, 0]
+        end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
+
         with self.mutex:
             f0_list = self.core.yukarin_sa_forward(
                 length=vowel_phoneme_list.shape[0],
@@ -102,6 +119,10 @@ class CoreAdapter:
                 end_accent_phrase_list=end_accent_phrase_list[np.newaxis],
                 style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )[0]
+
+        # 前後無音に相当する領域を破棄する
+        f0_list = f0_list[1:-1]
+
         return f0_list
 
     def safe_decode_forward(

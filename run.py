@@ -70,8 +70,11 @@ from voicevox_engine.setting import (
     Setting,
     SettingLoader,
 )
-from voicevox_engine.tts_pipeline import TTSEngine, make_tts_engines_from_cores
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.tts_engine import (
+    TTSEngine,
+    make_tts_engines_from_cores,
+)
 from voicevox_engine.user_dict import (
     apply_word,
     delete_word,
@@ -243,7 +246,11 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    setting_ui_template = Jinja2Templates(directory=internal_root() / "ui_template")
+    setting_ui_template = Jinja2Templates(
+        directory=internal_root() / "ui_template",
+        variable_start_string="<JINJA_PRE>",
+        variable_end_string="<JINJA_POST>",
+    )
 
     # キャッシュを有効化
     # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -1298,8 +1305,12 @@ def generate_app(
 
     @app.get("/setting", response_class=Response, tags=["設定"])
     def setting_get(request: Request) -> Response:
+        """
+        設定ページを返します。
+        """
         settings = setting_loader.load_setting_file()
 
+        brand_name = engine_manifest_data.brand_name
         cors_policy_mode = settings.cors_policy_mode
         allow_origin = settings.allow_origin
 
@@ -1310,6 +1321,7 @@ def generate_app(
             "ui.html",
             {
                 "request": request,
+                "brand_name": brand_name,
                 "cors_policy_mode": cors_policy_mode,
                 "allow_origin": allow_origin,
             },
@@ -1322,10 +1334,12 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(
-        request: Request,
-        cors_policy_mode: str | None = Form(None),  # noqa: B008
-        allow_origin: str | None = Form(None),  # noqa: B008
+        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
+        allow_origin: str | None = Form(default=None),  # noqa
     ) -> Response:
+        """
+        設定を更新します。
+        """
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
@@ -1334,20 +1348,7 @@ def generate_app(
         # 更新した設定へ上書き
         setting_loader.dump_setting_file(settings)
 
-        message = "設定を保存しました。"
-
-        if allow_origin is None:
-            allow_origin = ""
-
-        return setting_ui_template.TemplateResponse(
-            "ui.html",
-            {
-                "request": request,
-                "cors_policy_mode": cors_policy_mode,
-                "allow_origin": allow_origin,
-                "message": message,
-            },
-        )
+        return Response(status_code=204)
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
@@ -1464,11 +1465,17 @@ def main() -> None:
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
+            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
     )
 
     parser.add_argument(
-        "--allow_origin", nargs="*", help="許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
+        "--allow_origin",
+        nargs="*",
+        help=(
+            "許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
+            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+        ),
     )
 
     parser.add_argument(
