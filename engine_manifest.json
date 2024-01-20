@@ -12,7 +12,6 @@
     "terms_of_service": "engine_manifest_assets/terms_of_service.md",
     "update_infos": "engine_manifest_assets/update_infos.json",
     "dependency_licenses": "engine_manifest_assets/dependency_licenses.json",
-    "supported_vvlib_manifest_version": "0.15.0",
     "supported_features": {
         "adjust_mora_pitch": {
             "type": "bool",
@@ -56,7 +55,7 @@
         },
         "manage_library": {
             "type": "bool",
-            "value": true,
+            "value": false,
             "name": "音声ライブラリのインストール・アンインストール"
         }
     }
