@@ -1,5 +1,39 @@
 [
   {
+    "version": "0.15.0",
+    "descriptions": [
+      "/validate_kana APIを追加",
+      "起動時のエンジン設定項目追加",
+      "ユーザー辞書のインポート・エクスポート機能追加",
+      "ディレクトリ構造を変更",
+      "書き込み系APIを一括で無効化可能に",
+      "ビルドの改善",
+      "開発環境の向上",
+      "バグ修正"
+    ],
+    "contributors": [
+      "aoirint",
+      "FujisakiEx",
+      "Hiroshiba",
+      "K-shir0",
+      "My-MC",
+      "nagi-miaow",
+      "okaits",
+      "raa0121",
+      "sabonerune",
+      "sevenc-nanashi",
+      "siketyan",
+      "stmtk1",
+      "takana-v",
+      "tarepan",
+      "tomoish",
+      "tuna2134",
+      "weweweok",
+      "whiteball",
+      "y-chan"
+    ]
+  },
+  {
     "version": "0.14.7",
     "descriptions": [
       "キャラクター「小夜」「ずんだもん」「もち子さん」「青山龍星」のスタイルを追加・更新"
