@@ -982,18 +982,8 @@
           },
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -1120,18 +1110,8 @@
           },
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -1242,18 +1222,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -1515,8 +1485,7 @@
     },
     "/initialize_speaker": {
       "post": {
-        "deprecated": true,
-        "description": "こちらのAPIは非推奨です。`initialize_style_id`を利用してください。",
+        "description": "指定されたスタイルを初期化します。\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
         "operationId": "initialize_speaker_initialize_speaker_post",
         "parameters": [
           {
@@ -1525,63 +1494,6 @@
             "required": true,
             "schema": {
               "title": "Speaker",
-              "type": "integer"
-            }
-          },
-          {
-            "description": "既に初期化済みの話者の再初期化をスキップするかどうか",
-            "in": "query",
-            "name": "skip_reinit",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "既に初期化済みの話者の再初期化をスキップするかどうか",
-              "title": "Skip Reinit",
-              "type": "boolean"
-            }
-          },
-          {
-            "in": "query",
-            "name": "core_version",
-            "required": false,
-            "schema": {
-              "title": "Core Version",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Initialize Speaker",
-        "tags": [
-          "その他"
-        ]
-      }
-    },
-    "/initialize_style_id": {
-      "post": {
-        "description": "指定されたstyle_idのスタイルを初期化します。\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
-        "operationId": "initialize_style_id_initialize_style_id_post",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "style_id",
-            "required": true,
-            "schema": {
-              "title": "Style Id",
               "type": "integer"
             }
           },
@@ -1622,7 +1534,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Initialize Style Id",
+        "summary": "Initialize Speaker",
         "tags": [
           "その他"
         ]
@@ -1692,8 +1604,7 @@
     },
     "/is_initialized_speaker": {
       "get": {
-        "deprecated": true,
-        "description": "こちらのAPIは非推奨です。`is_initialize_style_id`を利用してください。",
+        "description": "指定されたスタイルが初期化されているかどうかを返します。",
         "operationId": "is_initialized_speaker_is_initialized_speaker_get",
         "parameters": [
           {
@@ -1744,77 +1655,14 @@
         ]
       }
     },
-    "/is_initialized_style_id": {
-      "get": {
-        "description": "指定されたstyle_idのスタイルが初期化されているかどうかを返します。",
-        "operationId": "is_initialized_style_id_is_initialized_style_id_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "style_id",
-            "required": true,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "core_version",
-            "required": false,
-            "schema": {
-              "title": "Core Version",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "Response Is Initialized Style Id Is Initialized Style Id Get",
-                  "type": "boolean"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Is Initialized Style Id",
-        "tags": [
-          "その他"
-        ]
-      }
-    },
     "/mora_data": {
       "post": {
         "operationId": "mora_data_mora_data_post",
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -1882,18 +1730,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -1961,18 +1799,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -2104,18 +1932,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -2394,18 +2212,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "style_id",
-            "required": false,
-            "schema": {
-              "title": "Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Speaker",
               "type": "integer"
@@ -2479,18 +2287,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "base_style_id",
-            "required": false,
-            "schema": {
-              "title": "Base Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "base_speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Base Speaker",
               "type": "integer"
@@ -2498,18 +2296,8 @@
           },
           {
             "in": "query",
-            "name": "target_style_id",
-            "required": false,
-            "schema": {
-              "title": "Target Style Id",
-              "type": "integer"
-            }
-          },
-          {
-            "deprecated": true,
-            "in": "query",
             "name": "target_speaker",
-            "required": false,
+            "required": true,
             "schema": {
               "title": "Target Speaker",
               "type": "integer"
