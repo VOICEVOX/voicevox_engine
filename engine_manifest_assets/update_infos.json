@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.15.1",
+    "descriptions": ["ビルド成果物のディレクトリ構造を元に戻した"],
+    "contributors": []
+  },
+  {
     "version": "0.15.0",
     "descriptions": [
       "/validate_kana APIを追加",
