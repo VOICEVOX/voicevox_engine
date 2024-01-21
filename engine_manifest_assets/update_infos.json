@@ -1,7 +1,7 @@
 [
   {
     "version": "0.15.1",
-    "descriptions": ["Mac版エディタが起動しない問題の解決"],
+    "descriptions": ["ビルド成果物のディレクトリ構造を元に戻した"],
     "contributors": []
   },
   {
