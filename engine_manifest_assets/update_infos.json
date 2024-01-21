@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.15.1",
+    "descriptions": ["mac版エディタが起動しない問題の解決"],
+    "contributors": []
+  },
+  {
     "version": "0.15.0",
     "descriptions": [
       "/validate_kana APIを追加",
