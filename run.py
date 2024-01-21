@@ -89,7 +89,6 @@ from voicevox_engine.utility import (
     engine_root,
     get_latest_core_version,
     get_save_dir,
-    internal_root,
 )
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
@@ -228,7 +227,7 @@ def generate_app(
     metas_store = MetasStore(root_dir / "speaker_info")
 
     setting_ui_template = Jinja2Templates(
-        directory=internal_root() / "ui_template",
+        directory=engine_root() / "ui_template",
         variable_start_string="<JINJA_PRE>",
         variable_end_string="<JINJA_POST>",
     )
