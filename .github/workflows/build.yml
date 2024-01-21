@@ -464,10 +464,17 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.so
           fi
 
-          pyinstaller --noconfirm run.spec -- \
-            --libcore_path="$LIBCORE_PATH" \
-            --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
-            --core_model_dir_path="download/core/model"
+          if [[ ${{ matrix.os }} == macos-* ]]; then
+            pyinstaller --noconfirm run_macos.spec -- \
+              --libcore_path="$LIBCORE_PATH" \
+              --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
+              --core_model_dir_path="download/core/model"
+          else
+            pyinstaller --noconfirm run.spec -- \
+              --libcore_path="$LIBCORE_PATH" \
+              --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
+              --core_model_dir_path="download/core/model"
+          fi
 
       - name: Gather DLL dependencies to dist/run/ (Windows)
         if: startsWith(matrix.os, 'windows-')
@@ -539,7 +546,7 @@ jobs:
       - name: Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
         run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+          install_name_tool -add_rpath @executable_path/. dist/run.app/MacOS/run
 
       - name: Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
@@ -551,8 +558,13 @@ jobs:
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: Rename artifact directory to archive
+        if: startsWith(matrix.os, 'macos-') != true
         run: |
           mv dist/run/ "${{ matrix.target }}/"
+      - name: Rename artifact directory to archive
+        if: startsWith(matrix.os, 'macos-')
+        run: |
+          mv dist/run.app "${{ matrix.target }}/"
 
       # 7z archives
       - name: Create 7z archives
