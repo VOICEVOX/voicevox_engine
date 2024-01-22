@@ -55,7 +55,7 @@
         },
         "manage_library": {
             "type": "bool",
-            "value": false,
+            "value": true,
             "name": "音声ライブラリのインストール・アンインストール"
         }
     }

@@ -164,6 +164,48 @@
         "title": "CorsPolicyMode",
         "type": "string"
       },
+      "DownloadableLibraryInfo": {
+        "description": "ダウンロード可能な音声ライブラリの情報",
+        "properties": {
+          "bytes": {
+            "title": "音声ライブラリのバイト数",
+            "type": "integer"
+          },
+          "download_url": {
+            "title": "音声ライブラリのダウンロードURL",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリの名前",
+            "type": "string"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/LibrarySpeaker"
+            },
+            "title": "音声ライブラリに含まれる話者のリスト",
+            "type": "array"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uuid",
+          "version",
+          "download_url",
+          "bytes",
+          "speakers"
+        ],
+        "title": "DownloadableLibraryInfo",
+        "type": "object"
+      },
       "EngineManifest": {
         "description": "エンジン自体に関する情報",
         "properties": {
@@ -253,6 +295,80 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InstalledLibraryInfo": {
+        "description": "インストール済み音声ライブラリの情報",
+        "properties": {
+          "bytes": {
+            "title": "音声ライブラリのバイト数",
+            "type": "integer"
+          },
+          "download_url": {
+            "title": "音声ライブラリのダウンロードURL",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリの名前",
+            "type": "string"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/LibrarySpeaker"
+            },
+            "title": "音声ライブラリに含まれる話者のリスト",
+            "type": "array"
+          },
+          "uninstallable": {
+            "title": "アンインストール可能かどうか",
+            "type": "boolean"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uuid",
+          "version",
+          "download_url",
+          "bytes",
+          "speakers",
+          "uninstallable"
+        ],
+        "title": "InstalledLibraryInfo",
+        "type": "object"
+      },
+      "LibrarySpeaker": {
+        "description": "音声ライブラリに含まれる話者の情報",
+        "properties": {
+          "speaker": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Speaker"
+              }
+            ],
+            "title": "話者情報"
+          },
+          "speaker_info": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpeakerInfo"
+              }
+            ],
+            "title": "話者の追加情報"
+          }
+        },
+        "required": [
+          "speaker",
+          "speaker_info"
+        ],
+        "title": "LibrarySpeaker",
         "type": "object"
       },
       "LicenseInfo": {
@@ -1270,6 +1386,32 @@
         ]
       }
     },
+    "/downloadable_libraries": {
+      "get": {
+        "description": "ダウンロード可能な音声ライブラリの情報を返します。\n\nReturns\n-------\nret_data: list[DownloadableLibrary]",
+        "operationId": "downloadable_libraries_downloadable_libraries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DownloadableLibraryInfo"
+                  },
+                  "title": "Response Downloadable Libraries Downloadable Libraries Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Downloadable Libraries",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
     "/engine_manifest": {
       "get": {
         "operationId": "engine_manifest_engine_manifest_get",
@@ -1395,6 +1537,68 @@
         "summary": "Initialize Speaker",
         "tags": [
           "その他"
+        ]
+      }
+    },
+    "/install_library/{library_uuid}": {
+      "post": {
+        "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。\n\nParameters\n----------\nlibrary_uuid: str\n    音声ライブラリのID",
+        "operationId": "install_library_install_library__library_uuid__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "library_uuid",
+            "required": true,
+            "schema": {
+              "title": "Library Uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Install Library",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
+    "/installed_libraries": {
+      "get": {
+        "description": "インストールした音声ライブラリの情報を返します。\n\nReturns\n-------\nret_data: dict[str, InstalledLibrary]",
+        "operationId": "installed_libraries_installed_libraries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/InstalledLibraryInfo"
+                  },
+                  "title": "Response Installed Libraries Installed Libraries Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Installed Libraries",
+        "tags": [
+          "音声ライブラリ管理"
         ]
       }
     },
@@ -2156,6 +2360,42 @@
         "summary": "2種類のスタイルでモーフィングした音声を合成する",
         "tags": [
           "音声合成"
+        ]
+      }
+    },
+    "/uninstall_library/{library_uuid}": {
+      "post": {
+        "description": "音声ライブラリをアンインストールします。\n\nParameters\n----------\nlibrary_uuid: str\n    音声ライブラリのID",
+        "operationId": "uninstall_library_uninstall_library__library_uuid__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "library_uuid",
+            "required": true,
+            "schema": {
+              "title": "Library Uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Uninstall Library",
+        "tags": [
+          "音声ライブラリ管理"
         ]
       }
     },
