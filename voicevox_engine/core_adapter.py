@@ -143,3 +143,84 @@ class CoreAdapter:
             )
         sr_wave = self.default_sampling_rate
         return wave, sr_wave
+
+    def safe_predict_sing_consonant_length_forward(
+        self,
+        consonant: NDArray[np.int64],
+        vowel: NDArray[np.int64],
+        note_duration: NDArray[np.int64],
+        style_id: StyleId,
+    ) -> NDArray[np.int64]:
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+
+        with self.mutex:
+            consonant_length = self.core.predict_sing_consonant_length_forward(
+                length=consonant.shape[0],
+                consonant=consonant[np.newaxis],
+                vowel=vowel[np.newaxis],
+                note_duration=note_duration[np.newaxis],
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+
+        return consonant_length
+
+    def safe_predict_sing_f0_forward(
+        self,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        style_id: StyleId,
+    ) -> NDArray[np.float32]:
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+
+        with self.mutex:
+            f0 = self.core.predict_sing_f0_forward(
+                length=phoneme.shape[0],
+                phoneme=phoneme[np.newaxis],
+                note=note[np.newaxis],
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+
+        return f0
+
+    def safe_predict_sing_volume_forward(
+        self,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        style_id: StyleId,
+    ) -> NDArray[np.float32]:
+        # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+
+        with self.mutex:
+            volume = self.core.predict_sing_volume_forward(
+                length=phoneme.shape[0],
+                phoneme=phoneme[np.newaxis],
+                note=note[np.newaxis],
+                f0=f0[np.newaxis],
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+
+        return volume
+
+    def safe_sf_decode_forward(
+        self,
+        phoneme: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        volume: NDArray[np.float32],
+        style_id: StyleId,
+    ) -> tuple[NDArray[np.float32], int]:
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        with self.mutex:
+            wave = self.core.sf_decode_forward(
+                length=phoneme.shape[0],
+                phoneme=phoneme[np.newaxis],
+                f0=f0[np.newaxis],
+                volume=volume[np.newaxis],
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+        sr_wave = self.default_sampling_rate
+        return wave, sr_wave
