@@ -41,10 +41,12 @@ from voicevox_engine.model import (
     AudioQuery,
     BaseLibraryInfo,
     DownloadableLibraryInfo,
+    FrameAudioQuery,
     InstalledLibraryInfo,
     MorphableTargetInfo,
     ParseKanaBadRequest,
     ParseKanaError,
+    Score,
     Speaker,
     SpeakerInfo,
     StyleIdNotFoundError,
@@ -632,6 +634,69 @@ def generate_app(
                 data=morph_wave,
                 samplerate=query.outputSamplingRate,
                 format="WAV",
+            )
+
+        return FileResponse(
+            f.name,
+            media_type="audio/wav",
+            background=BackgroundTask(delete_file, f.name),
+        )
+
+    @app.post(
+        "/sing_frame_audio_query",
+        response_model=FrameAudioQuery,
+        tags=["クエリ作成"],
+        summary="歌唱音声合成用のクエリを作成する",
+    )
+    def sing_frame_audio_query(
+        score: Score,
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        core_version: str | None = None,
+    ) -> FrameAudioQuery:
+        """
+        歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
+        """
+        engine = get_engine(core_version)
+        core = get_core(core_version)
+        phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
+            score, style_id
+        )
+
+        return FrameAudioQuery(
+            f0=f0,
+            volume=volume,
+            phonemes=phonemes,
+            volumeScale=1,
+            outputSamplingRate=core.default_sampling_rate,
+            outputStereo=False,
+        )
+
+    @app.post(
+        "/frame_synthesis",
+        response_class=FileResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+    )
+    def frame_synthesis(
+        query: FrameAudioQuery,
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        core_version: str | None = None,
+    ) -> FileResponse:
+        """
+        歌唱音声合成を行います。
+        """
+        engine = get_engine(core_version)
+        wave = engine.frame_synthsize_wave(query, style_id)
+
+        with NamedTemporaryFile(delete=False) as f:
+            soundfile.write(
+                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
         return FileResponse(

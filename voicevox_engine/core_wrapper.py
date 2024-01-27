@@ -432,6 +432,57 @@ def _type_decode_forward(core_cdll: CDLL) -> None:
     core_cdll.decode_forward.restype = c_bool
 
 
+def _type_predict_sing_consonant_length_forward(core_cdll: CDLL) -> None:
+    """コアDLL `predict_sing_consonant_length_forward` 関数を型付けする"""
+    core_cdll.predict_sing_consonant_length_forward.argtypes = (
+        c_int,
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_long),
+    )
+    core_cdll.predict_sing_consonant_length_forward.restype = c_bool
+
+
+def _type_predict_sing_f0_forward(core_cdll: CDLL) -> None:
+    """コアDLL `predict_sing_f0_forward` 関数を型付けする"""
+    core_cdll.predict_sing_f0_forward.argtypes = (
+        c_int,
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_float),
+    )
+    core_cdll.predict_sing_f0_forward.restype = c_bool
+
+
+def _type_predict_sing_volume_forward(core_cdll: CDLL) -> None:
+    """コアDLL `predict_sing_volume_forward` 関数を型付けする"""
+    core_cdll.predict_sing_volume_forward.argtypes = (
+        c_int,
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_float),
+        POINTER(c_long),
+        POINTER(c_float),
+    )
+    core_cdll.predict_sing_volume_forward.restype = c_bool
+
+
+def _type_sf_decode_forward(core_cdll: CDLL) -> None:
+    """コアDLL `sf_decoder_forward` 関数を型付けする"""
+    core_cdll.sf_decode_forward.argtypes = (
+        c_int,
+        POINTER(c_long),
+        POINTER(c_float),
+        POINTER(c_float),
+        POINTER(c_long),
+        POINTER(c_float),
+    )
+    core_cdll.sf_decode_forward.restype = c_bool
+
+
 def _type_last_error_message(core_cdll: CDLL) -> None:
     """コアDLL `last_error_message` 関数を型付けする"""
     core_cdll.last_error_message.restype = c_char_p
@@ -477,6 +528,10 @@ class CoreWrapper:
         _type_yukarin_s_forward(self.core)
         _type_yukarin_sa_forward(self.core)
         _type_decode_forward(self.core)
+        _type_predict_sing_consonant_length_forward(self.core)
+        _type_predict_sing_f0_forward(self.core)
+        _type_predict_sing_volume_forward(self.core)
+        _type_sf_decode_forward(self.core)
         _type_last_error_message(self.core)
 
         self.exist_supported_devices = False
@@ -650,6 +705,160 @@ class CoreWrapper:
                 c_int(phoneme_size),
                 f0.ctypes.data_as(POINTER(c_float)),
                 phoneme.ctypes.data_as(POINTER(c_float)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def predict_sing_consonant_length_forward(
+        self,
+        length: int,
+        consonant: NDArray[np.int64],
+        vowel: NDArray[np.int64],
+        note_duration: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.int64]:
+        """
+        子音・母音列から、音素ごとの長さを求める関数
+        Parameters
+        ----------
+        length : int
+            音素列の長さ
+        consonant : NDArray[np.int64]
+            子音列
+        vowel : NDArray[np.int64]
+            母音列
+        note_duration : NDArray[np.int64]
+            ノート列
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.int64]
+            子音長
+        """
+        output = np.zeros((length,), dtype=np.int64)
+        self.assert_core_success(
+            self.core.predict_sing_consonant_length_forward(
+                c_int(length),
+                consonant.ctypes.data_as(POINTER(c_long)),
+                vowel.ctypes.data_as(POINTER(c_long)),
+                note_duration.ctypes.data_as(POINTER(c_long)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_long)),
+            )
+        )
+        return output
+
+    def predict_sing_f0_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """
+        フレームごとの音素列とノート列から、フレームごとのF0を求める関数
+        Parameters
+        ----------
+        length : int
+            音素列の長さ
+        phoneme : NDArray[np.int64]
+            音素列
+        note : NDArray[np.int64]
+            ノート列
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.float32]
+            フレームごとのF0
+        """
+        output = np.zeros((length,), dtype=np.float32)
+        self.assert_core_success(
+            self.core.predict_sing_f0_forward(
+                c_int(length),
+                phoneme.ctypes.data_as(POINTER(c_long)),
+                note.ctypes.data_as(POINTER(c_long)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def predict_sing_volume_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """
+        フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
+        Parameters
+        ----------
+        length : int
+            音素列の長さ
+        phoneme : NDArray[np.int64]
+            音素列
+        note : NDArray[np.int64]
+            ノート列
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.float32]
+            フレームごとのF0
+        """
+        output = np.zeros((length,), dtype=np.float32)
+        self.assert_core_success(
+            self.core.predict_sing_volume_forward(
+                c_int(length),
+                phoneme.ctypes.data_as(POINTER(c_long)),
+                note.ctypes.data_as(POINTER(c_long)),
+                f0.ctypes.data_as(POINTER(c_float)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def sf_decode_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        volume: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """
+        フレームごとの音素と音高から波形を求める関数
+        Parameters
+        ----------
+        length : int
+            フレームの長さ
+        phoneme : NDArray[np.int64]
+            フレームごとの音素
+        f0 : NDArray[np.float32]
+            フレームごとの音高
+        volume : NDArray[np.float32]
+            フレームごとの音量
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.float32]
+            音声波形
+        """
+        output = np.zeros((length * 256,), dtype=np.float32)
+        self.assert_core_success(
+            self.core.sf_decode_forward(
+                c_int(length),
+                phoneme.ctypes.data_as(POINTER(c_long)),
+                f0.ctypes.data_as(POINTER(c_float)),
+                volume.ctypes.data_as(POINTER(c_float)),
                 style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )

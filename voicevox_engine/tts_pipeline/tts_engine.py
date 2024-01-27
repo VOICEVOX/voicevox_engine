@@ -2,16 +2,17 @@ import copy
 import math
 
 import numpy as np
+from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import AccentPhrase, AudioQuery, Mora
+from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
 from .acoustic_feature_extractor import Phoneme
 from .kana_converter import parse_kana
-from .mora_list import mora_phonemes_to_mora_kana
+from .mora_list import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .text_analyzer import text_to_accent_phrases
 
 # 疑問文語尾定数
@@ -172,14 +173,14 @@ def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 
 def apply_volume_scale(
-    wave: NDArray[np.float32], query: AudioQuery
+    wave: NDArray[np.float32], query: AudioQuery | FrameAudioQuery
 ) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
     return wave * query.volumeScale
 
 
 def apply_output_sampling_rate(
-    wave: NDArray[np.float32], sr_wave: float, query: AudioQuery
+    wave: NDArray[np.float32], sr_wave: float, query: AudioQuery | FrameAudioQuery
 ) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
     # サンプリングレート一致のときはスルー
@@ -190,7 +191,7 @@ def apply_output_sampling_rate(
 
 
 def apply_output_stereo(
-    wave: NDArray[np.float32], query: AudioQuery
+    wave: NDArray[np.float32], query: AudioQuery | FrameAudioQuery
 ) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつステレオ出力設定（`outputStereo`）を適用する"""
     if query.outputStereo:
@@ -223,13 +224,62 @@ def query_to_decoder_feature(
 
 
 def raw_wave_to_output_wave(
-    query: AudioQuery, wave: NDArray[np.float32], sr_wave: int
+    query: AudioQuery | FrameAudioQuery, wave: NDArray[np.float32], sr_wave: int
 ) -> NDArray[np.float32]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
     wave = apply_volume_scale(wave, query)
     wave = apply_output_sampling_rate(wave, sr_wave, query)
     wave = apply_output_stereo(wave, query)
     return wave
+
+
+def _hira_to_kana(text: str) -> str:
+    """ひらがなをカタカナに変換する"""
+    return "".join(chr(ord(c) + 96) if "ぁ" <= c <= "ゔ" else c for c in text)
+
+
+def calc_phoneme_lengths(
+    consonant_lengths: NDArray[np.int64],
+    note_durations: NDArray[np.int64],
+) -> NDArray[np.int64]:
+    """
+    子音長と音符長から音素長を計算する
+    ただし、母音はノートの頭にくるようにするため、
+    予測された子音長は前のノートの長さを超えないように調整される
+    """
+    phoneme_durations = []
+    for i in range(len(consonant_lengths)):
+        if i < len(consonant_lengths) - 1:
+            # 最初のノートは子音長が0の、pauである必要がある
+            if i == 0 and consonant_lengths[i] != 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}",
+                )
+
+            next_consonant_length = consonant_lengths[i + 1]
+            note_duration = note_durations[i]
+
+            # もし、次のノートの子音長が負になる場合、現在のノートの半分にする
+            if next_consonant_length < 0:
+                next_consonant_length = consonant_lengths[i + 1] = note_duration // 2
+            vowel_length = note_duration - next_consonant_length
+
+            # もし、現在のノートの母音長が負になる場合、
+            # 次のノートの子音長を現在のノートの半分にする
+            if vowel_length < 0:
+                next_consonant_length = consonant_lengths[i + 1] = note_duration // 2
+                vowel_length = note_duration - next_consonant_length
+
+            phoneme_durations.append(vowel_length)
+            if next_consonant_length > 0:
+                phoneme_durations.append(next_consonant_length)
+        else:
+            vowel_length = note_durations[i]
+            phoneme_durations.append(vowel_length)
+
+    phoneme_durations_array = np.array(phoneme_durations, dtype=np.int64)
+    return phoneme_durations_array
 
 
 class TTSEngine:
@@ -372,6 +422,146 @@ class TTSEngine:
         phoneme, f0 = query_to_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+        return wave
+
+    # FIXME: sing用のエンジンに移すかクラス名変える
+    # 返す値の総称を考え、関数名を変更する
+    def create_sing_phoneme_and_f0_and_volume(
+        self,
+        score: Score,
+        style_id: StyleId,
+    ) -> tuple[list[FramePhoneme], list[float], list[float]]:
+        """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
+        notes = score.notes
+
+        # Scoreを分解し、ノート単位のデータ、音素単位のデータを作成する
+        note_lengths: list[int] = []
+        note_consonants: list[int] = []
+        note_vowels: list[int] = []
+        phonemes: list[int] = []
+        phoneme_keys: list[int] = []
+
+        for note in notes:
+            if note.lyric == "":
+                if note.key is not None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="lyricが空文字列の場合、keyはnullである必要があります。",
+                    )
+                note_lengths.append(note.frame_length)
+                note_consonants.append(-1)
+                note_vowels.append(0)  # pau
+                phonemes.append(0)  # pau
+                phoneme_keys.append(-1)
+            else:
+                if note.key is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="keyがnullの場合、lyricは空文字列である必要があります。",
+                    )
+
+                # TODO: 1ノートに複数のモーラがある場合の処理
+                mora_phonemes = mora_kana_to_mora_phonemes.get(
+                    note.lyric  # type: ignore
+                ) or mora_kana_to_mora_phonemes.get(
+                    _hira_to_kana(note.lyric)  # type: ignore
+                )
+                if mora_phonemes is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"lyricが不正です: {note.lyric}",
+                    )
+
+                consonant, vowel = mora_phonemes
+                if consonant is None:
+                    consonant_id = -1
+                else:
+                    consonant_id = Phoneme(consonant).id
+                vowel_id = Phoneme(vowel).id
+
+                note_lengths.append(note.frame_length)
+                note_consonants.append(consonant_id)
+                note_vowels.append(vowel_id)
+                if consonant_id != -1:
+                    phonemes.append(consonant_id)
+                    phoneme_keys.append(note.key)
+                phonemes.append(vowel_id)
+                phoneme_keys.append(note.key)
+
+        # 各データをnumpy配列に変換する
+        note_lengths_array = np.array(note_lengths, dtype=np.int64)
+        note_consonants_array = np.array(note_consonants, dtype=np.int64)
+        note_vowels_array = np.array(note_vowels, dtype=np.int64)
+        phonemes_array = np.array(phonemes, dtype=np.int64)
+        phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
+
+        # コアを用いて子音長を生成する
+        consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
+            note_consonants_array, note_vowels_array, note_lengths_array, style_id
+        )
+
+        # 予測した子音長を元に、すべての音素長を計算する
+        phoneme_lengths = calc_phoneme_lengths(consonant_lengths, note_lengths_array)
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音高を生成する
+        f0s = self._core.safe_predict_sing_f0_forward(
+            frame_phonemes, frame_keys, style_id
+        )
+
+        # コアを用いて音量を生成する
+        # FIXME: 変数名のsいらない？
+        volumes = self._core.safe_predict_sing_volume_forward(
+            frame_phonemes, frame_keys, f0s, style_id
+        )
+
+        phoneme_data_list = [
+            FramePhoneme(
+                phoneme=Phoneme._PHONEME_LIST[phoneme_id],
+                frame_length=phoneme_duration,
+            )
+            for phoneme_id, phoneme_duration in zip(phonemes, phoneme_lengths)
+        ]
+
+        return phoneme_data_list, f0s.tolist(), volumes.tolist()
+
+    def frame_synthsize_wave(
+        self,
+        frame_audio_query: FrameAudioQuery,
+        style_id: StyleId,
+    ) -> NDArray[np.float32]:
+        """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
+
+        # 各データを分解・numpy配列に変換する
+        phonemes = []
+        phoneme_lengths = []
+
+        for phoneme in frame_audio_query.phonemes:
+            if phoneme.phoneme not in Phoneme._PHONEME_LIST:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"phoneme {phoneme.phoneme} is not valid",
+                )
+
+            phonemes.append(Phoneme(phoneme.phoneme).id)
+            phoneme_lengths.append(phoneme.frame_length)
+
+        phonemes_array = np.array(phonemes, dtype=np.int64)
+        phoneme_lengths_array = np.array(phoneme_lengths, dtype=np.int64)
+
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths_array)
+        f0s = np.array(frame_audio_query.f0, dtype=np.float32)
+        volumes = np.array(frame_audio_query.volume, dtype=np.float32)
+
+        # コアを用いて音声を生成する
+        raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
+            frame_phonemes, f0s, volumes, style_id
+        )
+
+        wave = raw_wave_to_output_wave(frame_audio_query, raw_wave, sr_raw_wave)
         return wave
 
 

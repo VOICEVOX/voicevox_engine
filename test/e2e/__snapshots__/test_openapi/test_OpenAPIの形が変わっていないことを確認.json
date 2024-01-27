@@ -224,6 +224,10 @@
             "title": "依存関係のライセンス情報",
             "type": "array"
           },
+          "frame_rate": {
+            "title": "エンジンのフレームレート",
+            "type": "number"
+          },
           "icon": {
             "title": "エンジンのアイコンをBASE64エンコードしたもの",
             "type": "string"
@@ -276,12 +280,80 @@
           "url",
           "icon",
           "default_sampling_rate",
+          "frame_rate",
           "terms_of_service",
           "update_infos",
           "dependency_licenses",
           "supported_features"
         ],
         "title": "EngineManifest",
+        "type": "object"
+      },
+      "FrameAudioQuery": {
+        "description": "フレームごとの音声合成用のクエリ",
+        "properties": {
+          "f0": {
+            "items": {
+              "type": "number"
+            },
+            "title": "フレームごとの基本周波数",
+            "type": "array"
+          },
+          "outputSamplingRate": {
+            "title": "音声データの出力サンプリングレート",
+            "type": "integer"
+          },
+          "outputStereo": {
+            "title": "音声データをステレオ出力するか否か",
+            "type": "boolean"
+          },
+          "phonemes": {
+            "items": {
+              "$ref": "#/components/schemas/FramePhoneme"
+            },
+            "title": "音素のリスト",
+            "type": "array"
+          },
+          "volume": {
+            "items": {
+              "type": "number"
+            },
+            "title": "フレームごとの音量",
+            "type": "array"
+          },
+          "volumeScale": {
+            "title": "全体の音量",
+            "type": "number"
+          }
+        },
+        "required": [
+          "f0",
+          "volume",
+          "phonemes",
+          "volumeScale",
+          "outputSamplingRate",
+          "outputStereo"
+        ],
+        "title": "FrameAudioQuery",
+        "type": "object"
+      },
+      "FramePhoneme": {
+        "description": "音素の情報",
+        "properties": {
+          "frame_length": {
+            "title": "音素のフレーム長",
+            "type": "integer"
+          },
+          "phoneme": {
+            "title": "音素",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneme",
+          "frame_length"
+        ],
+        "title": "FramePhoneme",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -448,6 +520,29 @@
         "title": "MorphableTargetInfo",
         "type": "object"
       },
+      "Note": {
+        "description": "音符ごとの情報",
+        "properties": {
+          "frame_length": {
+            "title": "音符のフレーム長",
+            "type": "integer"
+          },
+          "key": {
+            "title": "音階",
+            "type": "integer"
+          },
+          "lyric": {
+            "title": "音符の歌詞",
+            "type": "string"
+          }
+        },
+        "required": [
+          "frame_length",
+          "lyric"
+        ],
+        "title": "Note",
+        "type": "object"
+      },
       "ParseKanaBadRequest": {
         "properties": {
           "error_args": {
@@ -534,6 +629,23 @@
         "title": "Preset",
         "type": "object"
       },
+      "Score": {
+        "description": "楽譜情報",
+        "properties": {
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/Note"
+            },
+            "title": "音符のリスト",
+            "type": "array"
+          }
+        },
+        "required": [
+          "notes"
+        ],
+        "title": "Score",
+        "type": "object"
+      },
       "Speaker": {
         "description": "話者情報",
         "properties": {
@@ -610,6 +722,15 @@
           },
           "name": {
             "title": "スタイル名",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "talk",
+              "humming",
+              "sing_teacher"
+            ],
+            "title": "モデルの種類",
             "type": "string"
           }
         },
@@ -1433,6 +1554,69 @@
         ]
       }
     },
+    "/frame_synthesis": {
+      "post": {
+        "description": "歌唱音声合成を行います。",
+        "operationId": "frame_synthesis_frame_synthesis_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FrameAudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Frame Synthesis",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
     "/import_user_dict": {
       "post": {
         "description": "他のユーザー辞書をインポートします。\n\nParameters\n----------\nimport_dict_data: dict[str, UserDictWord]\n    インポートするユーザー辞書のデータ\noverride: bool\n    重複したエントリがあった場合、上書きするかどうか",
@@ -2063,6 +2247,68 @@
         "summary": "Setting Post",
         "tags": [
           "設定"
+        ]
+      }
+    },
+    "/sing_frame_audio_query": {
+      "post": {
+        "description": "歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
+        "operationId": "sing_frame_audio_query_sing_frame_audio_query_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Score"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameAudioQuery"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "歌唱音声合成用のクエリを作成する",
+        "tags": [
+          "クエリ作成"
         ]
       }
     },
