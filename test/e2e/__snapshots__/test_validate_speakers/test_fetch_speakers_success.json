@@ -6,22 +6,22 @@
       {
         "id": 0,
         "name": "style0",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 2,
         "name": "style1",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 4,
         "name": "style2",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 6,
         "name": "style3",
-        "type": null
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -36,22 +36,22 @@
       {
         "id": 1,
         "name": "style0",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 3,
         "name": "style1",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 5,
         "name": "style2",
-        "type": null
+        "type": "talk"
       },
       {
         "id": 7,
         "name": "style3",
-        "type": null
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -66,7 +66,7 @@
       {
         "id": 8,
         "name": "style0",
-        "type": null
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -81,7 +81,7 @@
       {
         "id": 9,
         "name": "style0",
-        "type": null
+        "type": "talk"
       }
     ],
     "supported_features": {

@@ -725,10 +725,12 @@
             "type": "string"
           },
           "type": {
+            "default": "talk",
             "enum": [
               "talk",
               "humming",
-              "sing_teacher"
+              "sing_teacher",
+              "sing"
             ],
             "title": "モデルの種類",
             "type": "string"
