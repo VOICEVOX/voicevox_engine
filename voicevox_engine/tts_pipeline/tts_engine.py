@@ -9,9 +9,7 @@ from soxr import resample
 from ..core_adapter import CoreAdapter
 from ..core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, Mora
-from ..model import FramePhoneme
-from ..model import Score
+from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
 from .acoustic_feature_extractor import Phoneme
 from .kana_converter import parse_kana
 from .mora_list import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana

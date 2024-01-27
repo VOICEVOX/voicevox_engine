@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from run import generate_app
 
@@ -30,5 +31,10 @@ def app_params():
 
 
 @pytest.fixture(scope="session")
-def client(app_params: dict) -> TestClient:
-    return TestClient(generate_app(**app_params))
+def app(app_params: dict) -> FastAPI:
+    return generate_app(**app_params)
+
+
+@pytest.fixture(scope="session")
+def client(app: FastAPI) -> TestClient:
+    return TestClient(app)
