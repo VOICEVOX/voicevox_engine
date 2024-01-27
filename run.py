@@ -7,14 +7,13 @@ import os
 import re
 import sys
 import traceback
-import warnings
 import zipfile
 from collections.abc import Awaitable, Callable
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Any, Optional, TypeVar
+from typing import Annotated, Any, Optional
 
 import soundfile
 import uvicorn
@@ -92,27 +91,8 @@ from voicevox_engine.utility import (
     engine_root,
     get_latest_core_version,
     get_save_dir,
-    internal_root,
 )
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
-
-# NOTE: Python 3.12以降で[S: StyleId | list[StyleId]]に置き換えられる
-S = TypeVar("S", StyleId, list[StyleId])
-
-
-def get_style_id_from_deprecated(style_id: S | None, deprecated_speaker: S | None) -> S:
-    """
-    style_idとspeaker両方ともNoneかNoneでないかをチェックし、
-    どちらか片方しかNoneが存在しなければstyle_idを返す
-    """
-    if deprecated_speaker is not None and style_id is None:
-        warnings.warn("speakerは非推奨です。style_idを利用してください。", stacklevel=1)
-        return deprecated_speaker
-    elif style_id is not None and deprecated_speaker is None:
-        return style_id
-    raise HTTPException(
-        status_code=400, detail="speakerとstyle_idが両方とも存在しないか、両方とも存在しています。"
-    )
 
 
 def b64encode_str(s):
@@ -249,7 +229,7 @@ def generate_app(
     metas_store = MetasStore(root_dir / "speaker_info")
 
     setting_ui_template = Jinja2Templates(
-        directory=internal_root() / "ui_template",
+        directory=engine_root() / "ui_template",
         variable_start_string="<JINJA_PRE>",
         variable_end_string="<JINJA_POST>",
     )
@@ -292,16 +272,12 @@ def generate_app(
     )
     def audio_query(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> AudioQuery:
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
@@ -373,8 +349,7 @@ def generate_app(
     )
     def accent_phrases(
         text: str,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         is_kana: bool = False,
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -387,9 +362,6 @@ def generate_app(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         if is_kana:
             try:
@@ -409,13 +381,9 @@ def generate_app(
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
@@ -427,13 +395,9 @@ def generate_app(
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
 
@@ -445,13 +409,9 @@ def generate_app(
     )
     def mora_pitch(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
 
@@ -470,17 +430,13 @@ def generate_app(
     )
     def synthesis(
         query: AudioQuery,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         enable_interrogative_upspeak: bool = Query(  # noqa: B008
             default=True,
             description="疑問系のテキストが与えられたら語尾を自動調整する",
         ),
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
@@ -513,13 +469,9 @@ def generate_app(
     def cancellable_synthesis(
         query: AudioQuery,
         request: Request,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         if cancellable_engine is None:
             raise HTTPException(
                 status_code=404,
@@ -554,13 +506,9 @@ def generate_app(
     )
     def multi_synthesis(
         queries: list[AudioQuery],
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
@@ -636,14 +584,8 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_style_id: StyleId | None = Query(default=None),  # noqa: B008
-        base_speaker: (StyleId | None) = Query(  # noqa: B008
-            default=None, deprecated=True
-        ),
-        target_style_id: StyleId | None = Query(default=None),  # noqa: B008
-        target_speaker: (StyleId | None) = Query(  # noqa: B008
-            default=None, deprecated=True
-        ),
+        base_style_id: StyleId = Query(alias="base_speaker"),  # noqa: B008
+        target_style_id: StyleId = Query(alias="target_speaker"),  # noqa: B008
         morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
@@ -651,12 +593,6 @@ def generate_app(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        base_style_id = get_style_id_from_deprecated(
-            style_id=base_style_id, deprecated_speaker=base_speaker
-        )
-        target_style_id = get_style_id_from_deprecated(
-            style_id=target_style_id, deprecated_speaker=target_speaker
-        )
         engine = get_engine(core_version)
         core = get_core(core_version)
 
@@ -714,16 +650,12 @@ def generate_app(
     )
     def sing_frame_audio_query(
         score: Score,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> FrameAudioQuery:
         """
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         core = get_core(core_version)
         phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
@@ -753,16 +685,12 @@ def generate_app(
     )
     def frame_synthesis(
         query: FrameAudioQuery,
-        style_id: StyleId | None = Query(default=None),  # noqa: B008
-        speaker: StyleId | None = Query(default=None, deprecated=True),  # noqa: B008
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> FileResponse:
         """
         歌唱音声合成を行います。
         """
-        style_id = get_style_id_from_deprecated(
-            style_id=style_id, deprecated_speaker=speaker
-        )
         engine = get_engine(core_version)
         wave = engine.frame_synthsize_wave(query, style_id)
 
@@ -1101,67 +1029,32 @@ def generate_app(
             library_manager.uninstall_library(library_uuid)
             return Response(status_code=204)
 
-    @app.post("/initialize_style_id", status_code=204, tags=["その他"])
-    def initialize_style_id(
-        style_id: StyleId,
+    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
+    def initialize_speaker(
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         skip_reinit: bool = Query(  # noqa: B008
-            False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
+            default=False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
         ),
         core_version: str | None = None,
     ) -> Response:
         """
-        指定されたstyle_idのスタイルを初期化します。
+        指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
-    @app.get("/is_initialized_style_id", response_model=bool, tags=["その他"])
-    def is_initialized_style_id(
-        style_id: StyleId,
+    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
+    def is_initialized_speaker(
+        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> bool:
         """
-        指定されたstyle_idのスタイルが初期化されているかどうかを返します。
+        指定されたスタイルが初期化されているかどうかを返します。
         """
         core = get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
-
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"], deprecated=True)
-    def initialize_speaker(
-        speaker: StyleId,
-        skip_reinit: bool = Query(  # noqa: B008
-            False, description="既に初期化済みの話者の再初期化をスキップするかどうか"
-        ),
-        core_version: str | None = None,
-    ) -> Response:
-        """
-        こちらのAPIは非推奨です。`initialize_style_id`を利用してください。
-        """
-        warnings.warn(
-            "使用しているAPI(/initialize_speaker)は非推奨です。/initialized_style_idを利用してください。",
-            stacklevel=1,
-        )
-        return initialize_style_id(
-            speaker, skip_reinit=skip_reinit, core_version=core_version
-        )
-
-    @app.get(
-        "/is_initialized_speaker", response_model=bool, tags=["その他"], deprecated=True
-    )
-    def is_initialized_speaker(
-        speaker: StyleId,
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        こちらのAPIは非推奨です。`is_initialize_style_id`を利用してください。
-        """
-        warnings.warn(
-            "使用しているAPI(/is_initialize_speaker)は非推奨です。/is_initialized_style_idを利用してください。",
-            stacklevel=1,
-        )
-        return is_initialized_style_id(speaker, core_version=core_version)
 
     @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
     def get_user_dict_words() -> dict[str, UserDictWord]:
