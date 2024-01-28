@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.16.0",
+    "descriptions": ["ハミング用のAPIを追加"],
+    "contributors": ["Hiroshiba", "y-chan"]
+  },
+  {
     "version": "0.15.1",
     "descriptions": ["ビルド成果物のディレクトリ構造を元に戻した"],
     "contributors": []
