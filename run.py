@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError
+from pydantic import ValidationError, parse_obj_as
 from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
@@ -35,7 +35,7 @@ from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
+from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup, filter_styles
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -848,7 +848,8 @@ def generate_app(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        return metas_store.load_combined_metas(get_core(core_version))
+        speakers = metas_store.load_combined_metas(get_core(core_version))
+        return filter_styles(speakers, "speaker")
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
@@ -888,9 +889,12 @@ def generate_app(
         #           ...
 
         # 該当話者の検索
-        speakers = json.loads(get_core(core_version).speakers)
+        speakers = parse_obj_as(
+            list[Speaker], json.loads(get_core(core_version).speakers)
+        )
+        speakers = filter_styles(speakers, "speaker")
         for i in range(len(speakers)):
-            if speakers[i]["speaker_uuid"] == speaker_uuid:
+            if speakers[i].speaker_uuid == speaker_uuid:
                 speaker = speakers[i]
                 break
         else:
@@ -907,8 +911,8 @@ def generate_app(
             portrait = b64encode_str(portrait_path.read_bytes())
             # スタイル情報の取得
             style_infos = []
-            for style in speaker["styles"]:
-                id = style["id"]
+            for style in speaker.styles:
+                id = style.id
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
                 icon = b64encode_str(style_icon_path.read_bytes())
