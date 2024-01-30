@@ -2,7 +2,6 @@
 話者・歌手のテスト。
 TODO: 話者と歌手の両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
 """
-from test.utility import pydantic_to_native_type
 
 from fastapi.testclient import TestClient
 from pydantic import parse_obj_as
