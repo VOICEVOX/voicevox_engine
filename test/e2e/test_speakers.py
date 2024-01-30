@@ -20,9 +20,9 @@ def test_話者一覧が取得できる(client: TestClient, snapshot_json: Snaps
 def test_話者の情報を取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     speakers = parse_obj_as(list[Speaker], client.get("/speakers").json())
     for speaker in speakers:
-        speaker_info_json = client.get(
+        response = client.get(
             "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
-        ).json()
+        )
         assert (
             snapshot_json(
                 name=speaker.speaker_uuid,
@@ -30,5 +30,5 @@ def test_話者の情報を取得できる(client: TestClient, snapshot_json: Sn
                     "portrait", "icon", "voice_samples"
                 ),  # バイナリファイル系は除外  FIXME: 除外せずにハッシュ化する
             )
-            == speaker_info_json
+            == response.json()
         )
