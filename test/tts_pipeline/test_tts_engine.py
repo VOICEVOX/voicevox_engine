@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 from numpy.typing import NDArray
-from syrupy.extensions.json import JSONSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
@@ -322,7 +322,7 @@ def test_create_accent_phrases_toward_unknown():
     assert str(e.value) == "tuple.index(x): x not in tuple"
 
 
-def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_length_output(snapshot_json: SnapshotAssertion) -> None:
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()

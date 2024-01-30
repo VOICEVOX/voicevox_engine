@@ -6,18 +6,18 @@ TODO: 話者と歌手の両ドメイン共通のドメイン用語を定め、�
 from fastapi.testclient import TestClient
 from pydantic import parse_obj_as
 from syrupy import filters
-from syrupy.extensions.json import JSONSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.metas.Metas import Speaker
 
 
-def test_話者一覧が取得できる(client: TestClient, snapshot_json: JSONSnapshotExtension) -> None:
+def test_話者一覧が取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     response = client.get("/speakers")
     assert response.status_code == 200
     assert snapshot_json == response.json()
 
 
-def test_話者の情報を取得できる(client: TestClient, snapshot_json: JSONSnapshotExtension) -> None:
+def test_話者の情報を取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     speakers = parse_obj_as(list[Speaker], client.get("/speakers").json())
     for speaker in speakers:
         speaker_info_json = client.get(
