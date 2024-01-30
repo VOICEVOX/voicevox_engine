@@ -28,7 +28,7 @@ def test_話者の情報を取得できる(client: TestClient, snapshot_json: JS
                 name=speaker.speaker_uuid,
                 exclude=filters.props(
                     "portrait", "icon", "voice_samples"
-                ),  # バイナリファイル系は除外
+                ),  # バイナリファイル系は除外  FIXME: 除外せずにハッシュ化する
             )
             == speaker_info_json
         )
