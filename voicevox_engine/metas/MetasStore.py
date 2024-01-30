@@ -1,6 +1,7 @@
 import json
+from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
 
 from voicevox_engine.metas.Metas import (
     CoreSpeaker,
@@ -8,6 +9,7 @@ from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
     StyleId,
+    StyleType,
 )
 
 if TYPE_CHECKING:
@@ -79,3 +81,26 @@ def construct_lookup(
         for style in speaker.styles:
             lookup_table[style.id] = (speaker, style)
     return lookup_table
+
+
+def filter_speakers_and_styles(
+    speakers: list[Speaker],
+    speaker_or_singer: Literal["speaker", "singer"],
+) -> list[Speaker]:
+    """
+    話者・スタイルをフィルタリングする。
+    speakerの場合はトーク系スタイルのみ、singerの場合はソング系スタイルのみを残す。
+    スタイル数が0になった話者は除外する。
+    """
+    style_types: list[StyleType]
+    if speaker_or_singer == "speaker":
+        style_types = ["talk"]
+    elif speaker_or_singer == "singer":
+        style_types = ["singing_teacher", "frame_decode", "sing"]
+
+    speakers = deepcopy(speakers)
+    for speaker in speakers:
+        speaker.styles = [
+            style for style in speaker.styles if style.type in style_types
+        ]
+    return [speaker for speaker in speakers if len(speaker.styles) > 0]
