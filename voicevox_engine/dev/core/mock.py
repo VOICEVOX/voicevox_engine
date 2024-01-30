@@ -22,28 +22,31 @@ class MockCoreWrapper(CoreWrapper):
     def metas(self) -> str:
         return json.dumps(
             [
+                # トーク２つ・ハミング２つ
                 {
                     "name": "dummy1",
                     "styles": [
                         {"name": "style0", "id": 0},
                         {"name": "style1", "id": 2},
-                        {"name": "style2", "id": 4},
-                        {"name": "style3", "id": 6},
+                        {"name": "style2", "id": 4, "type": "frame_decode"},
+                        {"name": "style3", "id": 6, "type": "frame_decode"},
                     ],
                     "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
                     "version": "mock",
                 },
+                # トーク２つ・ハミング１つ・ソング１つ
                 {
                     "name": "dummy2",
                     "styles": [
                         {"name": "style0", "id": 1},
                         {"name": "style1", "id": 3},
-                        {"name": "style2", "id": 5},
-                        {"name": "style3", "id": 7},
+                        {"name": "style2", "id": 5, "type": "frame_decode"},
+                        {"name": "style3", "id": 7, "type": "sing"},
                     ],
                     "speaker_uuid": "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9",
                     "version": "mock",
                 },
+                # トーク１つ
                 {
                     "name": "dummy3",
                     "styles": [
@@ -52,10 +55,11 @@ class MockCoreWrapper(CoreWrapper):
                     "speaker_uuid": "35b2c544-660e-401e-b503-0e14c635303a",
                     "version": "mock",
                 },
+                # ソング１つ
                 {
                     "name": "dummy4",
                     "styles": [
-                        {"name": "style0", "id": 9},
+                        {"name": "style0", "id": 9, "type": "sing"},
                     ],
                     "speaker_uuid": "b1a81618-b27b-40d2-b0ea-27a9ad408c4b",
                     "version": "mock",
@@ -67,6 +71,8 @@ class MockCoreWrapper(CoreWrapper):
         self, length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
     ) -> NDArray[np.float32]:
         """音素系列サイズ・音素ID系列・スタイルIDから音素長系列を生成する"""
+        # TODO: トークスタイル以外はエラーにする
+
         result = []
         # mockとしての適当な処理、特に意味はない
         for i in range(length):
@@ -86,6 +92,8 @@ class MockCoreWrapper(CoreWrapper):
     ) -> NDArray[np.float32]:
         """モーラ系列サイズ・母音系列・子音系列・アクセント位置・アクセント句区切り・スタイルIDからモーラ音高系列を生成する"""
         assert length > 1, "前後無音を必ず付与しなければならない"
+
+        # TODO: トークスタイル以外はエラーにする
 
         result = []
         # mockとしての適当な処理、特に意味はない
@@ -118,6 +126,8 @@ class MockCoreWrapper(CoreWrapper):
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """フレーム長・音素種類数・フレーム音高・フレーム音素onehot・スタイルIDからダミー音声波形を生成する"""
+        # TODO: トークスタイル以外はエラーにする
+
         # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
         result: list[NDArray[np.float32]] = []
         for i in range(length):

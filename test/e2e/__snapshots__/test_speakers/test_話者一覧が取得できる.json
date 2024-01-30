@@ -16,12 +16,12 @@
       {
         "id": 4,
         "name": "style2",
-        "type": "talk"
+        "type": "frame_decode"
       },
       {
         "id": 6,
         "name": "style3",
-        "type": "talk"
+        "type": "frame_decode"
       }
     ],
     "supported_features": {
@@ -46,12 +46,12 @@
       {
         "id": 5,
         "name": "style2",
-        "type": "talk"
+        "type": "frame_decode"
       },
       {
         "id": 7,
         "name": "style3",
-        "type": "talk"
+        "type": "sing"
       }
     ],
     "supported_features": {
@@ -81,7 +81,7 @@
       {
         "id": 9,
         "name": "style0",
-        "type": "talk"
+        "type": "sing"
       }
     ],
     "supported_features": {
