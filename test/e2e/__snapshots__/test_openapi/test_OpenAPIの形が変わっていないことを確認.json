@@ -728,11 +728,11 @@
             "default": "talk",
             "enum": [
               "talk",
-              "humming",
-              "sing_teacher",
+              "singing_teacher",
+              "frame_decode",
               "sing"
             ],
-            "title": "モデルの種類",
+            "title": "モデルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
             "type": "string"
           }
         },
@@ -2050,7 +2050,7 @@
     },
     "/morphable_targets": {
       "post": {
-        "description": "指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値の話者はstring型なので注意。",
+        "description": "指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
         "operationId": "morphable_targets_morphable_targets_post",
         "parameters": [
           {
