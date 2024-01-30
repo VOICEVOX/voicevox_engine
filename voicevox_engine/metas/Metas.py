@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
 StyleId = NewType("StyleId", int)
-StyleType = Literal["talk", "humming", "sing_teacher", "sing"]
+StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
 class SpeakerStyle(BaseModel):
@@ -16,7 +16,16 @@ class SpeakerStyle(BaseModel):
 
     name: str = Field(title="スタイル名")
     id: StyleId = Field(title="スタイルID")
-    type: Optional[StyleType] = Field(default="talk", title="モデルの種類")
+    type: Optional[StyleType] = Field(
+        default="talk",
+        title=(
+            "モデルの種類。"
+            "talk:音声合成クエリの作成と音声合成が可能。"
+            "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
+            "frame_decode:歌唱音声合成が可能。"
+            "sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
+        ),
+    )
 
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
