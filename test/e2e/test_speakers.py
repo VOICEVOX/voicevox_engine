@@ -32,3 +32,26 @@ def test_話者の情報を取得できる(client: TestClient, snapshot_json: Sn
             )
             == response.json()
         )
+
+
+def test_歌手一覧が取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+    response = client.get("/singers")
+    assert response.status_code == 200
+    assert snapshot_json == response.json()
+
+
+def test_歌手の情報を取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+    singers = parse_obj_as(list[Speaker], client.get("/singers").json())
+    for singer in singers:
+        response = client.get(
+            "/singer_info", params={"speaker_uuid": singer.speaker_uuid}
+        )
+        assert (
+            snapshot_json(
+                name=singer.speaker_uuid,
+                exclude=filters.props(
+                    "portrait", "icon", "voice_samples"
+                ),  # バイナリファイル系は除外  FIXME: 除外せずにハッシュ化する
+            )
+            == response.json()
+        )

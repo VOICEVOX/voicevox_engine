@@ -13,7 +13,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Literal, Optional
 
 import soundfile
 import uvicorn
