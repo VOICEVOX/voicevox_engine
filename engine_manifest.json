@@ -54,6 +54,11 @@
             "value": true,
             "name": "2種類のスタイルでモーフィングした音声を合成"
         },
+        "sing" : {
+            "type": "bool",
+            "value": true,
+            "name": "歌唱音声合成"
+        },
         "manage_library": {
             "type": "bool",
             "value": true,

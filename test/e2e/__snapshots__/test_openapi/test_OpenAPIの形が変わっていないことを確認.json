@@ -859,6 +859,10 @@
             "title": "音声ライブラリのインストール・アンインストール",
             "type": "boolean"
           },
+          "sing": {
+            "title": "歌唱音声合成",
+            "type": "boolean"
+          },
           "synthesis_morphing": {
             "title": "2種類のスタイルでモーフィングした音声を合成",
             "type": "boolean"
@@ -872,7 +876,8 @@
           "adjust_intonation_scale",
           "adjust_volume_scale",
           "interrogative_upspeak",
-          "synthesis_morphing"
+          "synthesis_morphing",
+          "sing"
         ],
         "title": "SupportedFeatures",
         "type": "object"
