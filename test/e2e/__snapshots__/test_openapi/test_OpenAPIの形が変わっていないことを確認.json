@@ -876,8 +876,7 @@
           "adjust_intonation_scale",
           "adjust_volume_scale",
           "interrogative_upspeak",
-          "synthesis_morphing",
-          "sing"
+          "synthesis_morphing"
         ],
         "title": "SupportedFeatures",
         "type": "object"
