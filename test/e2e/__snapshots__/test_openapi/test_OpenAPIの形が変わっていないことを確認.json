@@ -2319,9 +2319,107 @@
         ]
       }
     },
+    "/singer_info": {
+      "get": {
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "operationId": "singer_info_singer_info_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker_uuid",
+            "required": true,
+            "schema": {
+              "title": "Speaker Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpeakerInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Singer Info",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/singers": {
+      "get": {
+        "operationId": "singers_singers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Speaker"
+                  },
+                  "title": "Response Singers Singers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Singers",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。\n\nReturns\n-------\nret_data: SpeakerInfo",
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {

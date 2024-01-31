@@ -13,7 +13,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Any, Optional
+from typing import Annotated, Literal, Optional
 
 import soundfile
 import uvicorn
@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError
+from pydantic import ValidationError, parse_obj_as
 from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
@@ -35,7 +35,11 @@ from voicevox_engine.engine_manifest import EngineManifestLoader
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
+from voicevox_engine.metas.MetasStore import (
+    MetasStore,
+    construct_lookup,
+    filter_speakers_and_styles,
+)
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -848,22 +852,30 @@ def generate_app(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        return metas_store.load_combined_metas(get_core(core_version))
+        speakers = metas_store.load_combined_metas(get_core(core_version))
+        return filter_speakers_and_styles(speakers, "speaker")
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
         speaker_uuid: str,
         core_version: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-
-        Returns
-        -------
-        ret_data: SpeakerInfo
         """
+        return _speaker_info(
+            speaker_uuid=speaker_uuid,
+            speaker_or_singer="speaker",
+            core_version=core_version,
+        )
 
+    # FIXME: この関数をどこかに切り出す
+    def _speaker_info(
+        speaker_uuid: str,
+        speaker_or_singer: Literal["speaker", "singer"],
+        core_version: str | None,
+    ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
         #   speaker_info/
@@ -888,9 +900,12 @@ def generate_app(
         #           ...
 
         # 該当話者の検索
-        speakers = json.loads(get_core(core_version).speakers)
+        speakers = parse_obj_as(
+            list[Speaker], json.loads(get_core(core_version).speakers)
+        )
+        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         for i in range(len(speakers)):
-            if speakers[i]["speaker_uuid"] == speaker_uuid:
+            if speakers[i].speaker_uuid == speaker_uuid:
                 speaker = speakers[i]
                 break
         else:
@@ -907,8 +922,8 @@ def generate_app(
             portrait = b64encode_str(portrait_path.read_bytes())
             # スタイル情報の取得
             style_infos = []
-            for style in speaker["styles"]:
-                id = style["id"]
+            for style in speaker.styles:
+                id = style.id
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
                 icon = b64encode_str(style_icon_path.read_bytes())
@@ -941,9 +956,34 @@ def generate_app(
             traceback.print_exc()
             raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
 
-        ret_data = {"policy": policy, "portrait": portrait, "style_infos": style_infos}
-
+        ret_data = SpeakerInfo(
+            policy=policy,
+            portrait=portrait,
+            style_infos=style_infos,
+        )
         return ret_data
+
+    @app.get("/singers", response_model=list[Speaker], tags=["その他"])
+    def singers(
+        core_version: str | None = None,
+    ) -> list[Speaker]:
+        singers = metas_store.load_combined_metas(get_core(core_version))
+        return filter_speakers_and_styles(singers, "singer")
+
+    @app.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
+    def singer_info(
+        speaker_uuid: str,
+        core_version: str | None = None,
+    ) -> SpeakerInfo:
+        """
+        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        画像や音声はbase64エンコードされたものが返されます。
+        """
+        return _speaker_info(
+            speaker_uuid=speaker_uuid,
+            speaker_or_singer="singer",
+            core_version=core_version,
+        )
 
     if engine_manifest_data.supported_features.manage_library:
 
