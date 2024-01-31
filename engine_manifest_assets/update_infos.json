@@ -1,7 +1,7 @@
 [
   {
     "version": "0.16.0",
-    "descriptions": ["ハミング用のAPIを追加"],
+    "descriptions": ["ソングAPIを追加"],
     "contributors": ["Hiroshiba", "y-chan"]
   },
   {
