@@ -6,6 +6,11 @@ from unittest import TestCase
 
 from voicevox_engine.preset import Preset, PresetError, PresetManager
 
+presets_test_1_yaml_path = Path("test/preset/presets-test-1.yaml")
+presets_test_2_yaml_path = Path("test/preset/presets-test-2.yaml")
+presets_test_3_yaml_path = Path("test/preset/presets-test-3.yaml")
+presets_test_4_yaml_path = Path("test/preset/presets-test-4.yaml")
+
 
 class TestPresetManager(TestCase):
     def setUp(self):
@@ -16,29 +21,29 @@ class TestPresetManager(TestCase):
         self.tmp_dir.cleanup()
 
     def test_validation(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-1.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_1_yaml_path)
         presets = preset_manager.load_presets()
         self.assertFalse(presets is None)
 
     def test_validation_same(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-1.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_1_yaml_path)
         presets = preset_manager.load_presets()
         presets2 = preset_manager.load_presets()
         self.assertFalse(presets is None)
         self.assertEqual(presets, presets2)
 
     def test_validation_2(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-2.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
             preset_manager.load_presets()
 
     def test_preset_id(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-3.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_3_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットのidに重複があります"):
             preset_manager.load_presets()
 
     def test_empty_file(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-4.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_4_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルが空の内容です"):
             preset_manager.load_presets()
 
@@ -49,7 +54,7 @@ class TestPresetManager(TestCase):
 
     def test_add_preset(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -74,7 +79,7 @@ class TestPresetManager(TestCase):
         remove(temp_path)
 
     def test_add_preset_load_failure(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-2.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
             preset_manager.add_preset(
                 Preset(
@@ -95,7 +100,7 @@ class TestPresetManager(TestCase):
 
     def test_add_preset_conflict_id(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -121,7 +126,7 @@ class TestPresetManager(TestCase):
 
     def test_add_preset_conflict_id2(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -147,7 +152,7 @@ class TestPresetManager(TestCase):
 
     def test_add_preset_write_failure(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -173,7 +178,7 @@ class TestPresetManager(TestCase):
 
     def test_update_preset(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -198,7 +203,7 @@ class TestPresetManager(TestCase):
         remove(temp_path)
 
     def test_update_preset_load_failure(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-2.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
             preset_manager.update_preset(
                 Preset(
@@ -219,7 +224,7 @@ class TestPresetManager(TestCase):
 
     def test_update_preset_not_found(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -242,7 +247,7 @@ class TestPresetManager(TestCase):
 
     def test_update_preset_write_failure(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset = Preset(
             **{
@@ -269,7 +274,7 @@ class TestPresetManager(TestCase):
 
     def test_delete_preset(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         id = preset_manager.delete_preset(1)
         self.assertEqual(id, 1)
@@ -277,13 +282,13 @@ class TestPresetManager(TestCase):
         remove(temp_path)
 
     def test_delete_preset_load_failure(self):
-        preset_manager = PresetManager(preset_path=Path("test/presets-test-2.yaml"))
+        preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
         with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
             preset_manager.delete_preset(10)
 
     def test_delete_preset_not_found(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         with self.assertRaises(PresetError, msg="削除対象のプリセットが存在しません"):
             preset_manager.delete_preset(10)
@@ -292,7 +297,7 @@ class TestPresetManager(TestCase):
 
     def test_delete_preset_write_failure(self):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
-        copyfile(Path("test/presets-test-1.yaml"), temp_path)
+        copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
         preset_manager.load_presets()
         preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
