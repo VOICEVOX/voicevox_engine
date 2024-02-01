@@ -132,7 +132,7 @@ def test_to_flatten_phonemes():
     true_phonemes = ["pau", "h", "i", "pau"]
 
     # Outputs
-    phonemes = list(map(lambda p: p.phoneme, to_flatten_phonemes(moras)))
+    phonemes = list(map(lambda p: p._phoneme, to_flatten_phonemes(moras)))
 
     assert true_phonemes == phonemes
 
