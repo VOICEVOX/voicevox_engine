@@ -13,7 +13,7 @@ from voicevox_engine.metas.Metas import (
 )
 
 if TYPE_CHECKING:
-    from voicevox_engine.core_adapter import CoreAdapter
+    from voicevox_engine.core.core_adapter import CoreAdapter
 
 
 class MetasStore:

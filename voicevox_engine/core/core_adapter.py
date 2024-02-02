@@ -3,8 +3,8 @@ import threading
 import numpy as np
 from numpy.typing import NDArray
 
+from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
-from .metas.Metas import StyleId
 
 
 class CoreAdapter:
