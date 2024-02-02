@@ -12,7 +12,7 @@ import pyworld as pw
 from numpy.typing import NDArray
 from soxr import resample
 
-from .core_adapter import CoreAdapter
+from .core.core_adapter import CoreAdapter
 from .metas.Metas import (
     Speaker,
     SpeakerStyle,

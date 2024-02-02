@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
-from ..core_adapter import CoreAdapter
-from ..core_wrapper import CoreWrapper
+from ..core.core_adapter import CoreAdapter
+from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
 from .acoustic_feature_extractor import Phoneme
