@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from ..tts_pipeline.tts_engine import CoreAdapter
-from ..utility import engine_root, get_save_dir
+from ..utility.path_utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
 MOCK_VER = "0.0.0"
@@ -129,7 +129,7 @@ def initialize_cores(
 
     else:
         # モック追加
-        from ..dev.core import MockCoreWrapper
+        from ..dev.core.mock import MockCoreWrapper
 
         if MOCK_VER not in cores:
             print("Info: Loading mock.")
