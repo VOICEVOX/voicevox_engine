@@ -282,7 +282,7 @@ def calc_phoneme_lengths(
     return phoneme_durations_array
 
 
-def frame_query_to_decoder_feature(
+def frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
 ) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
     """歌声合成用のクエリからフレームごとの音素・音高・音量を得る"""
@@ -564,7 +564,7 @@ class TTSEngine:
     ) -> NDArray[np.float32]:
         """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
 
-        phoneme, f0, volume = frame_query_to_decoder_feature(query)
+        phoneme, f0, volume = frame_query_to_sf_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
             phoneme, f0, volume, style_id
         )
