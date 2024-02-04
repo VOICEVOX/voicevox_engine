@@ -460,7 +460,7 @@ def test_mocked_synthesize_wave_from_score_output(
         volume=volume,
         phonemes=phonemes,
         volumeScale=1.3,
-        outputSamplingRate=12000,
+        outputSamplingRate=1200,
         outputStereo=False,
     )
     # Outputs
