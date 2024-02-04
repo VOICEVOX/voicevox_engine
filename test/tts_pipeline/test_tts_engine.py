@@ -196,14 +196,14 @@ def _gen_hello_hiho_query() -> AudioQuery:
 def _gen_doremi_score() -> Score:
     return Score(
         notes=[
-            Note(key=None, frame_length=50, lyric=""),
-            Note(key=60, frame_length=25, lyric="ど"),
-            Note(key=62, frame_length=30, lyric="れ"),
-            Note(key=64, frame_length=35, lyric="み"),
-            Note(key=None, frame_length=30, lyric=""),
-            Note(key=65, frame_length=40, lyric="ふぁ"),
-            Note(key=67, frame_length=100, lyric="そ"),
-            Note(key=None, frame_length=50, lyric=""),
+            Note(key=None, frame_length=10, lyric=""),
+            Note(key=60, frame_length=12, lyric="ど"),
+            Note(key=62, frame_length=17, lyric="れ"),
+            Note(key=64, frame_length=21, lyric="み"),
+            Note(key=None, frame_length=5, lyric=""),
+            Note(key=65, frame_length=12, lyric="ふぁ"),
+            Note(key=67, frame_length=17, lyric="そ"),
+            Note(key=None, frame_length=10, lyric=""),
         ]
     )
 
