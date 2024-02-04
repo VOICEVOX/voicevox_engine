@@ -5,19 +5,23 @@
     "styles": [
       {
         "id": 0,
-        "name": "style0"
+        "name": "style0",
+        "type": "talk"
       },
       {
         "id": 2,
-        "name": "style1"
+        "name": "style1",
+        "type": "talk"
       },
       {
         "id": 4,
-        "name": "style2"
+        "name": "style2",
+        "type": "talk"
       },
       {
         "id": 6,
-        "name": "style3"
+        "name": "style3",
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -31,19 +35,23 @@
     "styles": [
       {
         "id": 1,
-        "name": "style0"
+        "name": "style0",
+        "type": "talk"
       },
       {
         "id": 3,
-        "name": "style1"
+        "name": "style1",
+        "type": "talk"
       },
       {
         "id": 5,
-        "name": "style2"
+        "name": "style2",
+        "type": "talk"
       },
       {
         "id": 7,
-        "name": "style3"
+        "name": "style3",
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -57,7 +65,8 @@
     "styles": [
       {
         "id": 8,
-        "name": "style0"
+        "name": "style0",
+        "type": "talk"
       }
     ],
     "supported_features": {
@@ -71,7 +80,8 @@
     "styles": [
       {
         "id": 9,
-        "name": "style0"
+        "name": "style0",
+        "type": "talk"
       }
     ],
     "supported_features": {

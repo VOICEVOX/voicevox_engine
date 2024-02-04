@@ -14,7 +14,7 @@ def test_unknown_phoneme():
 
     # Tests
     with pytest.raises(ValueError) as _:
-        _ = unknown_phoneme.phoneme_id
+        _ = unknown_phoneme.id
 
 
 class TestPhoneme(TestCase):
@@ -34,10 +34,10 @@ class TestPhoneme(TestCase):
 
     def test_convert(self):
         sil_phoneme = Phoneme("sil")
-        self.assertEqual(sil_phoneme.phoneme, "pau")
+        self.assertEqual(sil_phoneme._phoneme, "pau")
 
     def test_phoneme_id(self):
-        ojt_str_hello_hiho = " ".join([str(p.phoneme_id) for p in self.ojt_hello_hiho])
+        ojt_str_hello_hiho = " ".join([str(p.id) for p in self.ojt_hello_hiho])
         self.assertEqual(
             ojt_str_hello_hiho, "0 23 30 4 28 21 10 21 42 7 0 19 21 19 30 12 14 35 6 0"
         )

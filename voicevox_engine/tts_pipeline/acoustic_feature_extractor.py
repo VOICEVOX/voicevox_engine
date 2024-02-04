@@ -115,26 +115,26 @@ class Phoneme:
         if "sil" in phoneme:
             phoneme = "pau"
 
-        self.phoneme = phoneme
+        self._phoneme = phoneme
         # TODO: `phoneme` で受け入れ可能な文字列を型で保証
         # self.phoneme: Vowel | Consonant = phoneme
 
     @property
-    def phoneme_id(self) -> int:
+    def id(self) -> int:
         """音素ID (音素リスト内でのindex) を取得する"""
-        return self._PHONEME_LIST.index(self.phoneme)
+        return self._PHONEME_LIST.index(self._phoneme)
 
     @property
     def onehot(self) -> NDArray[np.float32]:
         """音素onehotベクトルを取得する"""
         vec = np.zeros(self._NUM_PHONEME, dtype=np.float32)
-        vec[self.phoneme_id] = 1.0
+        vec[self.id] = 1.0
         return vec
 
     def is_mora_tail(self) -> bool:
         """この音素はモーラ末尾音素（母音・撥音・促音・無音）である"""
-        return self.phoneme in MORA_TAIL_PHONEMES
+        return self._phoneme in MORA_TAIL_PHONEMES
 
     def is_unvoiced_mora_tail(self) -> bool:
         """この音素は無声のモーラ末尾音素（無声母音・促音・無音）である"""
-        return self.phoneme in UNVOICED_MORA_TAIL_PHONEMES
+        return self._phoneme in UNVOICED_MORA_TAIL_PHONEMES

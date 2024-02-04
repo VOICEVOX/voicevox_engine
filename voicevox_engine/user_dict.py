@@ -12,9 +12,10 @@ from fastapi import HTTPException
 
 from .model import UserDictWord, WordTypes
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
-from .utility import get_save_dir, internal_root, mutex_wrapper
+from .utility.mutex_utility import mutex_wrapper
+from .utility.path_utility import engine_root, get_save_dir
 
-root_dir = internal_root()
+root_dir = engine_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
