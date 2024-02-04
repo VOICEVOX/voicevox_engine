@@ -139,12 +139,17 @@ class MockCoreWrapper(CoreWrapper):
         # mockとしての適当な処理、特に意味はない
         for i in range(length):
             # 子音が無い場合は長さ0
-            if consonant[i] == -1:
+            if consonant[0, i] == -1:
                 result.append(0)
                 continue
 
             result.append(
-                consonant[i] % 2 + vowel[i] % 3 + note_duration[i] % 5 + style_id % 7
+                (
+                    consonant[0, i] % 3
+                    + vowel[0, i] % 5
+                    + note_duration[0, i] % 7
+                    + style_id % 11
+                ).item()
             )
         return np.array(result, dtype=np.int64)
 
@@ -159,10 +164,15 @@ class MockCoreWrapper(CoreWrapper):
         result = []
         # mockとしての適当な処理。大体MIDIノートに従う周波数になるように調整
         for i in range(length):
-            if note[i] == -1:
+            if note[0, i] == -1:
                 result.append(0)
                 continue
-            result.append(2 ** ((note[i] - 69) / 12) * (440 + phoneme / 10 + style_id))
+            result.append(
+                (
+                    2 ** ((note[0, i] - 69) / 12)
+                    * (440 + phoneme[0, i] / 10 + style_id)
+                ).item()
+            )
         return np.array(result, dtype=np.float32)
 
     def predict_sing_volume_forward(
@@ -175,16 +185,19 @@ class MockCoreWrapper(CoreWrapper):
     ) -> NDArray[np.float32]:
         """音素系列・ノート系列・音高系列・スタイルIDから音量系列を生成する"""
         result = []
-        # mockとしての適当な処理。大体0~1の範囲になるように調整
+        # mockとしての適当な処理。大体0~10の範囲になるように調整
         for i in range(length):
-            if note[i] == -1:
+            if note[0, i] == -1:
                 result.append(0)
                 continue
             result.append(
-                (phoneme[i] / 100)
-                * (note[i] / 88)
-                * (f0[i] / 880)
-                * ((style_id % 10 + 1) / 10)
+                (
+                    (phoneme[0, i] / 40)
+                    * (note[0, i] / 88)
+                    * (f0[0, i] / 440)
+                    * ((1 / 2) ** style_id)
+                    * 10
+                ).item()
             )
         return np.array(result, dtype=np.float32)
 
@@ -201,7 +214,7 @@ class MockCoreWrapper(CoreWrapper):
         result: list[NDArray[np.float32]] = []
         for i in range(length):
             result += [
-                ((f0[i] / 880) * volume[i] * (phoneme[i] / 100) + style_id)
+                (f0[0, i] / 440) * volume[0, i] * (phoneme[0, i] / 40) + style_id
             ] * 256
         return np.array(result, dtype=np.float32)
 

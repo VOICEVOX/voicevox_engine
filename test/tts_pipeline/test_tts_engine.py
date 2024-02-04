@@ -9,7 +9,14 @@ from syrupy.extensions.json import JSONSnapshotExtension
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import (
+    AccentPhrase,
+    AudioQuery,
+    FrameAudioQuery,
+    Mora,
+    Note,
+    Score,
+)
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
     UNVOICED_MORA_TAIL_PHONEMES,
     Phoneme,
@@ -183,6 +190,21 @@ def _gen_hello_hiho_query() -> AudioQuery:
         outputSamplingRate=12000,
         outputStereo=True,
         kana=_gen_hello_hiho_kana(),
+    )
+
+
+def _gen_doremi_score() -> Score:
+    return Score(
+        notes=[
+            Note(key=None, frame_length=50, lyric=""),
+            Note(key=60, frame_length=25, lyric="ど"),
+            Note(key=62, frame_length=30, lyric="れ"),
+            Note(key=64, frame_length=35, lyric="み"),
+            Note(key=None, frame_length=30, lyric=""),
+            Note(key=65, frame_length=40, lyric="ふぁ"),
+            Note(key=67, frame_length=100, lyric="そ"),
+            Note(key=None, frame_length=50, lyric=""),
+        ]
     )
 
 
@@ -415,6 +437,36 @@ def test_mocked_synthesize_wave_output(snapshot_json: JSONSnapshotExtension) -> 
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(result.tolist(), round_value=2)
+
+
+def test_mocked_synthesize_wave_from_score_output(
+    snapshot_json: JSONSnapshotExtension,
+) -> None:
+    """モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    doremi_srore = _gen_doremi_score()
+    # Outputs
+    result = tts_engine.create_sing_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    # Tests
+    assert snapshot_json(name="query") == round_floats(
+        pydantic_to_native_type(result), round_value=2
+    )
+
+    # Inputs
+    phonemes, f0, volume = result
+    doremi_query = FrameAudioQuery(
+        f0=f0,
+        volume=volume,
+        phonemes=phonemes,
+        volumeScale=1.3,
+        outputSamplingRate=12000,
+        outputStereo=False,
+    )
+    # Outputs
+    result = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    # Tests
+    assert snapshot_json(name="wave") == round_floats(result.tolist(), round_value=2)
 
 
 def koreha_arimasuka_base_expected():
