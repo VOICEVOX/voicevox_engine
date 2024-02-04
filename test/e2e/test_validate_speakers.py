@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
-from syrupy.extensions.json import JSONSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 
 def test_fetch_speakers_success(
-    client: TestClient, snapshot_json: JSONSnapshotExtension
+    client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/speakers")
     assert response.status_code == 200
