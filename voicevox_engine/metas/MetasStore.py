@@ -13,7 +13,7 @@ from voicevox_engine.metas.Metas import (
 )
 
 if TYPE_CHECKING:
-    from voicevox_engine.core_adapter import CoreAdapter
+    from voicevox_engine.core.core_adapter import CoreAdapter
 
 
 class MetasStore:
@@ -83,7 +83,7 @@ def construct_lookup(
     return lookup_table
 
 
-def filter_styles(
+def filter_speakers_and_styles(
     speakers: list[Speaker],
     speaker_or_singer: Literal["speaker", "singer"],
 ) -> list[Speaker]:

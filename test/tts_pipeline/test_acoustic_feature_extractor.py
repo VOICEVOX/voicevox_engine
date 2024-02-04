@@ -34,7 +34,7 @@ class TestPhoneme(TestCase):
 
     def test_convert(self):
         sil_phoneme = Phoneme("sil")
-        self.assertEqual(sil_phoneme.phoneme, "pau")
+        self.assertEqual(sil_phoneme._phoneme, "pau")
 
     def test_phoneme_id(self):
         ojt_str_hello_hiho = " ".join([str(p.id) for p in self.ojt_hello_hiho])

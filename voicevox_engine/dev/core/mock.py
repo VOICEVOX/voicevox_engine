@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
-from ...core_wrapper import CoreWrapper
+from ...core.core_wrapper import CoreWrapper
 
 
 class MockCoreWrapper(CoreWrapper):

@@ -29,13 +29,17 @@ from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core_adapter import CoreAdapter
-from voicevox_engine.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest import EngineManifestLoader
+from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
+from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup, filter_styles
+from voicevox_engine.metas.MetasStore import (
+    MetasStore,
+    construct_lookup,
+    filter_speakers_and_styles,
+)
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -64,13 +68,11 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.preset import Preset, PresetError, PresetManager
-from voicevox_engine.setting import (
-    USER_SETTING_PATH,
-    CorsPolicyMode,
-    Setting,
-    SettingLoader,
-)
+from voicevox_engine.preset.Preset import Preset
+from voicevox_engine.preset.PresetError import PresetError
+from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
+from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingLoader
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -84,14 +86,12 @@ from voicevox_engine.user_dict import (
     rewrite_word,
     update_dict,
 )
-from voicevox_engine.utility import (
+from voicevox_engine.utility.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
-    delete_file,
-    engine_root,
-    get_latest_core_version,
-    get_save_dir,
 )
+from voicevox_engine.utility.core_version_utility import get_latest_core_version
+from voicevox_engine.utility.path_utility import delete_file, engine_root, get_save_dir
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
@@ -849,7 +849,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(get_core(core_version))
-        return filter_styles(speakers, "speaker")
+        return filter_speakers_and_styles(speakers, "speaker")
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
@@ -859,10 +859,6 @@ def generate_app(
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-
-        Returns
-        -------
-        ret_data: SpeakerInfo
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
@@ -903,7 +899,7 @@ def generate_app(
         speakers = parse_obj_as(
             list[Speaker], json.loads(get_core(core_version).speakers)
         )
-        speakers = filter_styles(speakers, speaker_or_singer)
+        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         for i in range(len(speakers)):
             if speakers[i].speaker_uuid == speaker_uuid:
                 speaker = speakers[i]
@@ -968,7 +964,7 @@ def generate_app(
         core_version: str | None = None,
     ) -> list[Speaker]:
         singers = metas_store.load_combined_metas(get_core(core_version))
-        return filter_styles(singers, "singer")
+        return filter_speakers_and_styles(singers, "singer")
 
     @app.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
     def singer_info(
@@ -978,10 +974,6 @@ def generate_app(
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
-
-        Returns
-        -------
-        ret_data: SpeakerInfo
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,

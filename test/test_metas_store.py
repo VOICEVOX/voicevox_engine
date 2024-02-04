@@ -2,7 +2,7 @@ import uuid
 from unittest import TestCase
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleType
-from voicevox_engine.metas.MetasStore import filter_styles
+from voicevox_engine.metas.MetasStore import filter_speakers_and_styles
 
 
 def _gen_speaker(style_types: list[StyleType]) -> Speaker:
@@ -30,7 +30,7 @@ def _equal_speakers(a: list[Speaker], b: list[Speaker]) -> bool:
 
 
 class TestMetasStore(TestCase):
-    def test_filter_styles_with_speaker(self):
+    def test_filter_speakers_and_styles_with_speaker(self):
         # Inputs
         speaker_talk_only = _gen_speaker(["talk"])
         speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
@@ -41,7 +41,7 @@ class TestMetasStore(TestCase):
         )
 
         # Outputs
-        result = filter_styles(
+        result = filter_speakers_and_styles(
             [
                 speaker_talk_only,
                 speaker_singing_teacher_only,
@@ -63,7 +63,7 @@ class TestMetasStore(TestCase):
             for style in speaker.styles:
                 self.assertEqual(style.type, "talk")
 
-    def test_filter_styles_with_singer(self):
+    def test_filter_speakers_and_styles_with_singer(self):
         # Inputs
         speaker_talk_only = _gen_speaker(["talk"])
         speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
@@ -74,7 +74,7 @@ class TestMetasStore(TestCase):
         )
 
         # Outputs
-        result = filter_styles(
+        result = filter_speakers_and_styles(
             [
                 speaker_talk_only,
                 speaker_singing_teacher_only,

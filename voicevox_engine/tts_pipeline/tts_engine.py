@@ -6,8 +6,8 @@ from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
-from ..core_adapter import CoreAdapter
-from ..core_wrapper import CoreWrapper
+from ..core.core_adapter import CoreAdapter
+from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
 from .acoustic_feature_extractor import Phoneme
@@ -282,6 +282,35 @@ def calc_phoneme_lengths(
     return phoneme_durations_array
 
 
+def frame_query_to_sf_decoder_feature(
+    query: FrameAudioQuery,
+) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
+    """歌声合成用のクエリからフレームごとの音素・音高・音量を得る"""
+
+    # 各データを分解・numpy配列に変換する
+    phonemes = []
+    phoneme_lengths = []
+
+    for phoneme in query.phonemes:
+        if phoneme.phoneme not in Phoneme._PHONEME_LIST:
+            raise HTTPException(
+                status_code=400,
+                detail=f"phoneme {phoneme.phoneme} is not valid",
+            )
+
+        phonemes.append(Phoneme(phoneme.phoneme).id)
+        phoneme_lengths.append(phoneme.frame_length)
+
+    phonemes_array = np.array(phonemes, dtype=np.int64)
+    phoneme_lengths_array = np.array(phoneme_lengths, dtype=np.int64)
+
+    frame_phonemes = np.repeat(phonemes_array, phoneme_lengths_array)
+    f0s = np.array(query.f0, dtype=np.float32)
+    volumes = np.array(query.volume, dtype=np.float32)
+
+    return frame_phonemes, f0s, volumes
+
+
 class TTSEngine:
     """音声合成器（core）の管理/実行/プロキシと音声合成フロー"""
 
@@ -530,38 +559,16 @@ class TTSEngine:
 
     def frame_synthsize_wave(
         self,
-        frame_audio_query: FrameAudioQuery,
+        query: FrameAudioQuery,
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
 
-        # 各データを分解・numpy配列に変換する
-        phonemes = []
-        phoneme_lengths = []
-
-        for phoneme in frame_audio_query.phonemes:
-            if phoneme.phoneme not in Phoneme._PHONEME_LIST:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"phoneme {phoneme.phoneme} is not valid",
-                )
-
-            phonemes.append(Phoneme(phoneme.phoneme).id)
-            phoneme_lengths.append(phoneme.frame_length)
-
-        phonemes_array = np.array(phonemes, dtype=np.int64)
-        phoneme_lengths_array = np.array(phoneme_lengths, dtype=np.int64)
-
-        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths_array)
-        f0s = np.array(frame_audio_query.f0, dtype=np.float32)
-        volumes = np.array(frame_audio_query.volume, dtype=np.float32)
-
-        # コアを用いて音声を生成する
+        phoneme, f0, volume = frame_query_to_sf_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
-            frame_phonemes, f0s, volumes, style_id
+            phoneme, f0, volume, style_id
         )
-
-        wave = raw_wave_to_output_wave(frame_audio_query, raw_wave, sr_raw_wave)
+        wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
 
 
@@ -572,7 +579,7 @@ def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSE
     tts_engines: dict[str, TTSEngine] = {}
     for ver, core in cores.items():
         if ver == MOCK_VER:
-            from ..dev.tts_engine import MockTTSEngine
+            from ..dev.tts_engine.mock import MockTTSEngine
 
             tts_engines[ver] = MockTTSEngine()
         else:

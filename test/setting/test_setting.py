@@ -2,7 +2,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from voicevox_engine.setting import CorsPolicyMode, Setting, SettingLoader
+from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
+from voicevox_engine.setting.SettingLoader import SettingLoader
 
 
 class TestSettingLoader(TestCase):
@@ -21,7 +22,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_2(self):
         setting_loader = SettingLoader(
-            setting_file_path=Path("test/setting-test-load-1.yaml")
+            setting_file_path=Path("test/setting/setting-test-load-1.yaml")
         )
         settings = setting_loader.load_setting_file()
 
@@ -32,7 +33,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_3(self):
         setting_loader = SettingLoader(
-            setting_file_path=Path("test/setting-test-load-2.yaml")
+            setting_file_path=Path("test/setting/setting-test-load-2.yaml")
         )
         settings = setting_loader.load_setting_file()
 
@@ -43,7 +44,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_4(self):
         setting_loader = SettingLoader(
-            setting_file_path=Path("test/setting-test-load-3.yaml")
+            setting_file_path=Path("test/setting/setting-test-load-3.yaml")
         )
         settings = setting_loader.load_setting_file()
 

@@ -859,6 +859,10 @@
             "title": "音声ライブラリのインストール・アンインストール",
             "type": "boolean"
           },
+          "sing": {
+            "title": "歌唱音声合成",
+            "type": "boolean"
+          },
           "synthesis_morphing": {
             "title": "2種類のスタイルでモーフィングした音声を合成",
             "type": "boolean"
@@ -2316,7 +2320,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。\n\nReturns\n-------\nret_data: SpeakerInfo",
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2414,7 +2418,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。\n\nReturns\n-------\nret_data: SpeakerInfo",
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {

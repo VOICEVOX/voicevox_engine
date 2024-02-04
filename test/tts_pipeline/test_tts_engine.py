@@ -9,7 +9,7 @@ from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
 from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
     UNVOICED_MORA_TAIL_PHONEMES,
     Phoneme,
@@ -132,9 +132,17 @@ def test_to_flatten_phonemes():
     true_phonemes = ["pau", "h", "i", "pau"]
 
     # Outputs
-    phonemes = list(map(lambda p: p.phoneme, to_flatten_phonemes(moras)))
+    phonemes = list(map(lambda p: p._phoneme, to_flatten_phonemes(moras)))
 
     assert true_phonemes == phonemes
+
+
+def _gen_hello_hiho_text() -> str:
+    return "こんにちは、ヒホです"
+
+
+def _gen_hello_hiho_kana() -> str:
+    return "コンニチワ'、ヒ'ホデ_ス"
 
 
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
@@ -161,6 +169,21 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
             pause_mora=None,
         ),
     ]
+
+
+def _gen_hello_hiho_query() -> AudioQuery:
+    return AudioQuery(
+        accent_phrases=_gen_hello_hiho_accent_phrases(),
+        speedScale=2.0,
+        pitchScale=1.1,
+        intonationScale=0.9,
+        volumeScale=1.3,
+        prePhonemeLength=0.1,
+        postPhonemeLength=0.2,
+        outputSamplingRate=12000,
+        outputStereo=True,
+        kana=_gen_hello_hiho_kana(),
+    )
 
 
 class TestTTSEngine(TestCase):
@@ -330,6 +353,67 @@ def test_mocked_update_length_output(snapshot_json: SnapshotAssertion) -> None:
     result = tts_engine.update_length(hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
+
+
+def test_mocked_update_pitch_output(snapshot_json: SnapshotAssertion) -> None:
+    """モックされた `TTSEngine.update_pitch()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Outputs
+    result = tts_engine.update_pitch(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
+
+
+def test_mocked_update_length_and_pitch_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """モックされた `TTSEngine.update_length_and_pitch()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Outputs
+    result = tts_engine.update_length_and_pitch(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
+
+
+def test_mocked_create_accent_phrases_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_text()
+    # Outputs
+    result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
+
+
+def test_mocked_create_accent_phrases_from_kana_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_kana()
+    # Outputs
+    result = tts_engine.create_accent_phrases_from_kana(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
+
+
+def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None:
+    """モックされた `TTSEngine.synthesize_wave()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_query()
+    # Outputs
+    result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
+    # Tests
+    assert snapshot_json == round_floats(result.tolist(), round_value=2)
 
 
 def koreha_arimasuka_base_expected():
