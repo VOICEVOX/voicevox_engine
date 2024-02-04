@@ -440,9 +440,12 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
 
 
 def test_mocked_synthesize_wave_from_score_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
-    """モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である"""
+    """
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
+    `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である
+    """
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
@@ -464,9 +467,11 @@ def test_mocked_synthesize_wave_from_score_output(
         outputStereo=False,
     )
     # Outputs
-    result = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
     # Tests
-    assert snapshot_json(name="wave") == round_floats(result.tolist(), round_value=2)
+    assert snapshot_json(name="wave") == round_floats(
+        result_wave.tolist(), round_value=2
+    )
 
 
 def koreha_arimasuka_base_expected():
