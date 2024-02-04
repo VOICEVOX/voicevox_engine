@@ -2,7 +2,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from voicevox_engine.setting import CorsPolicyMode, Setting, SettingLoader
+from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
+from voicevox_engine.setting.SettingLoader import SettingLoader
 
 
 class TestSettingLoader(TestCase):

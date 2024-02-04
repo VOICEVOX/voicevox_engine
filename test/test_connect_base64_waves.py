@@ -8,7 +8,10 @@ import soundfile
 from numpy.typing import NDArray
 from soxr import resample
 
-from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility.connect_base64_waves import (
+    ConnectBase64WavesException,
+    connect_base64_waves,
+)
 
 
 def generate_sine_wave_ndarray(

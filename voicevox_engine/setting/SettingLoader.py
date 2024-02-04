@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from ..utility import get_save_dir
+from ..utility.path_utility import get_save_dir
 from .Setting import Setting
 
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"

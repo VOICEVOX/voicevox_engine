@@ -20,7 +20,7 @@ from .core.core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import make_tts_engines_from_cores
-from .utility import get_latest_core_version
+from .utility.core_version_utility import get_latest_core_version
 
 
 class CancellableEngine:
