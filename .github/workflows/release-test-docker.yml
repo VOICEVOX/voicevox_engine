@@ -58,9 +58,9 @@ jobs:
         id: docker_vars
         run: |
           if [ "${{ matrix.tag }}" != "" ]; then
-            echo "image_tag=${{ env.IMAGE_NAME }}:${{ matrix.tag }}-${{ env.VERSION }}" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ env.IMAGE_NAME }}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+            echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Docker pull
@@ -81,14 +81,14 @@ jobs:
           max_attempts=10
           sleep_interval=5
           
-          for i in $(seq 1 $max_attempts); do
-            status=$(curl -o /dev/null -s -w '%{http_code}\n' $url)
-            if [ $status -eq 200 ]; then
-              echo "Container is ready! Response status code: $status"
+          for i in $(seq 1 "$max_attempts"); do
+            status=$(curl -o /dev/null -s -w '%{http_code}\n' "$url")
+            if [ "$status" -eq 200 ]; then
+              echo "Container is ready! Response status code: ${status}"
               exit 0
             else
-              echo "Attempt $i/$max_attempts: Response status code $status"
-              sleep $sleep_interval
+              echo "Attempt ${i}/${max_attempts}: Response status code $status"
+              sleep "${sleep_interval}"
             fi
           done
           exit 1
