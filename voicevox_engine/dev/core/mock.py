@@ -136,6 +136,98 @@ class MockCoreWrapper(CoreWrapper):
             ] * 256
         return np.array(result, dtype=np.float32)
 
+    def predict_sing_consonant_length_forward(
+        self,
+        length: int,
+        consonant: NDArray[np.int64],
+        vowel: NDArray[np.int64],
+        note_duration: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.int64]:
+        """母音系列・子音系列・ノート列・スタイルIDから子音長系列を生成する"""
+        result = []
+        # mockとしての適当な処理、特に意味はない
+        for i in range(length):
+            # 子音が無い場合は長さ0
+            if consonant[0, i] == -1:
+                result.append(0)
+                continue
+
+            result.append(
+                (
+                    consonant[0, i] % 3
+                    + vowel[0, i] % 5
+                    + note_duration[0, i] % 7
+                    + style_id % 11
+                ).item()
+            )
+        return np.array(result, dtype=np.int64)
+
+    def predict_sing_f0_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """音素系列・ノート系列・スタイルIDから音高系列を生成する"""
+        result = []
+        # mockとしての適当な処理。大体MIDIノートに従う周波数になるように調整
+        for i in range(length):
+            if note[0, i] == -1:
+                result.append(0)
+                continue
+            result.append(
+                (
+                    2 ** ((note[0, i] - 69) / 12)
+                    * (440 + phoneme[0, i] / 10 + style_id)
+                ).item()
+            )
+        return np.array(result, dtype=np.float32)
+
+    def predict_sing_volume_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        note: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """音素系列・ノート系列・音高系列・スタイルIDから音量系列を生成する"""
+        result = []
+        # mockとしての適当な処理。大体0~10の範囲になるように調整
+        for i in range(length):
+            if note[0, i] == -1:
+                result.append(0)
+                continue
+            result.append(
+                (
+                    (phoneme[0, i] / 40)
+                    * (note[0, i] / 88)
+                    * (f0[0, i] / 440)
+                    * ((1 / 2) ** style_id)
+                    * 10
+                ).item()
+            )
+        return np.array(result, dtype=np.float32)
+
+    def sf_decode_forward(
+        self,
+        length: int,
+        phoneme: NDArray[np.int64],
+        f0: NDArray[np.float32],
+        volume: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """入力からダミー音声波形を生成する"""
+        # 入力値を反映し、長さが 256 倍であるダミー配列を出力する
+        result: list[NDArray[np.float32]] = []
+        for i in range(length):
+            result += [
+                (f0[0, i] / 440) * volume[0, i] * (phoneme[0, i] / 40) + style_id
+            ] * 256
+        return np.array(result, dtype=np.float32)
+
     def supported_devices(self):
         return json.dumps(
             {
