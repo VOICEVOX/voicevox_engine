@@ -83,7 +83,7 @@ class StyleInfo(BaseModel):
     """
 
     id: StyleId = Field(title="スタイルID")
-    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    icon: Optional[str] = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
     portrait: Optional[str] = Field(title="当該スタイルのportrait.pngをbase64エンコードしたもの")
     voice_samples: List[str] = Field(title="voice_sampleのwavファイルをbase64エンコードしたもの")
 
@@ -94,5 +94,6 @@ class SpeakerInfo(BaseModel):
     """
 
     policy: str = Field(title="policy.md")
+    icon: str = Field(title="アイコンをbase64エンコードしたもの")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
     style_infos: List[StyleInfo] = Field(title="スタイルの追加情報")
