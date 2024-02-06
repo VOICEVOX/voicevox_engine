@@ -3,9 +3,10 @@
 TODO: 話者と歌手の両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
 """
 
+from test.utility import hash_long_string
+
 from fastapi.testclient import TestClient
 from pydantic import parse_obj_as
-from syrupy import filters
 from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.metas.Metas import Speaker
@@ -23,15 +24,9 @@ def test_話者の情報を取得できる(client: TestClient, snapshot_json: Sn
         response = client.get(
             "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
         )
-        assert (
-            snapshot_json(
-                name=speaker.speaker_uuid,
-                exclude=filters.props(
-                    "portrait", "icon", "voice_samples"
-                ),  # バイナリファイル系は除外  FIXME: 除外せずにハッシュ化する
-            )
-            == response.json()
-        )
+        assert snapshot_json(
+            name=speaker.speaker_uuid,
+        ) == hash_long_string(response.json())
 
 
 def test_歌手一覧が取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
@@ -46,12 +41,6 @@ def test_歌手の情報を取得できる(client: TestClient, snapshot_json: Sn
         response = client.get(
             "/singer_info", params={"speaker_uuid": singer.speaker_uuid}
         )
-        assert (
-            snapshot_json(
-                name=singer.speaker_uuid,
-                exclude=filters.props(
-                    "portrait", "icon", "voice_samples"
-                ),  # バイナリファイル系は除外  FIXME: 除外せずにハッシュ化する
-            )
-            == response.json()
-        )
+        assert snapshot_json(
+            name=singer.speaker_uuid,
+        ) == hash_long_string(response.json())
