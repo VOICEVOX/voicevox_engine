@@ -22,7 +22,7 @@ class MockCoreWrapper(CoreWrapper):
     def metas(self) -> str:
         return json.dumps(
             [
-                # トーク２つ・ハミング２つ
+                # トーク２つ・ハミング２つ・ソングティーチャー１つ
                 {
                     "name": "dummy1",
                     "styles": [
@@ -30,6 +30,7 @@ class MockCoreWrapper(CoreWrapper):
                         {"name": "style1", "id": 2},
                         {"name": "style2", "id": 4, "type": "frame_decode"},
                         {"name": "style3", "id": 6, "type": "frame_decode"},
+                        {"name": "style4", "id": 6000, "type": "singing_teacher"},
                     ],
                     "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
                     "version": "mock",
