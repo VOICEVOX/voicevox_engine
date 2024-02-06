@@ -10,7 +10,7 @@ def snapshot_json(snapshot: SnapshotAssertion) -> SnapshotAssertion:
 
     Examples
     --------
-    >>> def test_foo(snapshot_json: JSONSnapshotExtension):
+    >>> def test_foo(snapshot_json: SnapshotAssertion):
     >>>     assert snapshot_json == {"key": "value"}
     """
     return snapshot.use_extension(JSONSnapshotExtension)

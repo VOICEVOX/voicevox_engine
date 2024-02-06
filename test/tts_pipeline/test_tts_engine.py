@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 from numpy.typing import NDArray
-from syrupy.extensions.json import JSONSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
@@ -287,7 +287,7 @@ def test_create_accent_phrases_toward_unknown():
     assert str(e.value) == "tuple.index(x): x not in tuple"
 
 
-def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_length_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.update_length()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -298,7 +298,7 @@ def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> No
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
-def test_mocked_update_pitch_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_pitch_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.update_pitch()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -310,7 +310,7 @@ def test_mocked_update_pitch_output(snapshot_json: JSONSnapshotExtension) -> Non
 
 
 def test_mocked_update_length_and_pitch_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.update_length_and_pitch()` の出力スナップショットが一定である"""
     # Inputs
@@ -323,7 +323,7 @@ def test_mocked_update_length_and_pitch_output(
 
 
 def test_mocked_create_accent_phrases_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
     # Inputs
@@ -336,7 +336,7 @@ def test_mocked_create_accent_phrases_output(
 
 
 def test_mocked_create_accent_phrases_from_kana_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
     # Inputs
@@ -348,7 +348,7 @@ def test_mocked_create_accent_phrases_from_kana_output(
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
-def test_mocked_synthesize_wave_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.synthesize_wave()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
