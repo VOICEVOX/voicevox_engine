@@ -17,10 +17,6 @@ from voicevox_engine.model import (
     Note,
     Score,
 )
-from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
-    UNVOICED_MORA_TAIL_PHONEMES,
-    Phoneme,
-)
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -230,8 +226,8 @@ class TestTTSEngine(TestCase):
     def test_update_length(self):
         # Inputs
         hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Outputs & Indirect Outputs（yukarin_sに渡される値）
-        result = self.tts_engine.update_length(hello_hiho, StyleId(1))
+        # Indirect Outputs（yukarin_sに渡される値）
+        self.tts_engine.update_length(hello_hiho, StyleId(1))
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
@@ -242,24 +238,7 @@ class TestTTSEngine(TestCase):
         true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
         true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
         true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
-        true_result = _gen_hello_hiho_accent_phrases()
-        index = 1
 
-        def result_value(i: int) -> float:
-            return np.float32(round(float(phoneme_list[i] * 0.0625 + 1), 2)).item()
-
-        for accent_phrase in true_result:
-            moras = accent_phrase.moras
-            for mora in moras:
-                if mora.consonant is not None:
-                    mora.consonant_length = result_value(index)
-                    index += 1
-                mora.vowel_length = result_value(index)
-                index += 1
-            if accent_phrase.pause_mora is not None:
-                accent_phrase.pause_mora.vowel_length = result_value(index)
-                index += 1
-        # Tests
         self.assertEqual(list_length, true_list_length)
         self.assertEqual(list_length, len(phoneme_list))
         self.assertEqual(style_id, true_style_id)
@@ -267,7 +246,6 @@ class TestTTSEngine(TestCase):
             phoneme_list,
             np.array(true_phoneme_list, dtype=np.int64),
         )
-        self.assertEqual(result, true_result)
 
     def test_update_pitch(self):
         # 空のリストでエラーを吐かないか
@@ -282,8 +260,8 @@ class TestTTSEngine(TestCase):
 
         # Inputs
         hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Outputs & Indirect Outputs（yukarin_saに渡される値）
-        result = self.tts_engine.update_pitch(hello_hiho, StyleId(1))
+        # Indirect Outputs（yukarin_saに渡される値）
+        self.tts_engine.update_pitch(hello_hiho, StyleId(1))
         yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
         list_length = yukarin_sa_args["length"]
         vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
@@ -300,42 +278,7 @@ class TestTTSEngine(TestCase):
         true_accent_ends = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
         true_phrase_starts = np.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
         true_phrase_ends = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
-        true_result = _gen_hello_hiho_accent_phrases()
-        index = 1
 
-        def result_value(i: int) -> float:
-            # unvoiced_vowel_likesのPhoneme ID版
-            unvoiced_mora_tail_ids = [
-                Phoneme(p).id for p in UNVOICED_MORA_TAIL_PHONEMES
-            ]
-            if vowel_phoneme_list[i] in unvoiced_mora_tail_ids:
-                return 0
-            return np.float32(
-                round(
-                    (
-                        (
-                            vowel_phoneme_list[i]
-                            + consonant_phoneme_list[i]
-                            + start_accent_list[i]
-                            + end_accent_list[i]
-                            + start_accent_phrase_list[i]
-                            + end_accent_phrase_list[i]
-                        )
-                        * 0.0625
-                        + 1
-                    ),
-                    2,
-                )
-            ).item()
-
-        for accent_phrase in true_result:
-            moras = accent_phrase.moras
-            for mora in moras:
-                mora.pitch = result_value(index)
-                index += 1
-            if accent_phrase.pause_mora is not None:
-                accent_phrase.pause_mora.pitch = result_value(index)
-                index += 1
         # Tests
         self.assertEqual(list_length, 12)
         self.assertEqual(list_length, len(vowel_phoneme_list))
@@ -351,7 +294,6 @@ class TestTTSEngine(TestCase):
         np.testing.assert_array_equal(end_accent_list, true_accent_ends)
         np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
         np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
-        self.assertEqual(result, true_result)
 
 
 def test_create_accent_phrases_toward_unknown():

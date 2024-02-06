@@ -32,7 +32,7 @@ jobs:
         id: vars
         run: |
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
 
   build-docker:
     needs: [config]

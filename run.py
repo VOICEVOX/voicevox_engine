@@ -550,7 +550,7 @@ def generate_app(
         指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
-        返り値の話者はstring型なので注意。
+        返り値のスタイルIDはstring型なので注意。
         """
         core = get_core(core_version)
 
@@ -605,7 +605,7 @@ def generate_app(
             if not is_permitted:
                 raise HTTPException(
                     status_code=400,
-                    detail="指定された話者ペアでのモーフィングはできません",
+                    detail="指定されたスタイルペアでのモーフィングはできません",
                 )
         except StyleIdNotFoundError as e:
             raise HTTPException(
