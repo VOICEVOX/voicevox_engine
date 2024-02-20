@@ -261,6 +261,7 @@ def calc_phoneme_lengths(
             note_duration = note_durations[i]
 
             # もし、次のノートの子音長が負になる場合、現在のノートの半分にする
+            # NOTE: 将来的にコアは非負になるのでこの処理は不要になる
             if next_consonant_length < 0:
                 next_consonant_length = consonant_lengths[i + 1] = note_duration // 2
             vowel_length = note_duration - next_consonant_length

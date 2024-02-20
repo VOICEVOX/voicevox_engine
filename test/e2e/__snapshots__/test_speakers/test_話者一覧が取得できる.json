@@ -12,16 +12,6 @@
         "id": 2,
         "name": "style1",
         "type": "talk"
-      },
-      {
-        "id": 4,
-        "name": "style2",
-        "type": "talk"
-      },
-      {
-        "id": 6,
-        "name": "style3",
-        "type": "talk"
       }
     ],
     "supported_features": {
@@ -42,16 +32,6 @@
         "id": 3,
         "name": "style1",
         "type": "talk"
-      },
-      {
-        "id": 5,
-        "name": "style2",
-        "type": "talk"
-      },
-      {
-        "id": 7,
-        "name": "style3",
-        "type": "talk"
       }
     ],
     "supported_features": {
@@ -71,21 +51,6 @@
     ],
     "supported_features": {
       "permitted_synthesis_morphing": "NOTHING"
-    },
-    "version": "mock"
-  },
-  {
-    "name": "dummy4",
-    "speaker_uuid": "b1a81618-b27b-40d2-b0ea-27a9ad408c4b",
-    "styles": [
-      {
-        "id": 9,
-        "name": "style0",
-        "type": "talk"
-      }
-    ],
-    "supported_features": {
-      "permitted_synthesis_morphing": "ALL"
     },
     "version": "mock"
   }

@@ -4,14 +4,17 @@ from unittest.mock import Mock
 
 import numpy as np
 from numpy.typing import NDArray
-from syrupy.extensions.json import JSONSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
-from voicevox_engine.tts_pipeline.acoustic_feature_extractor import (
-    UNVOICED_MORA_TAIL_PHONEMES,
-    Phoneme,
+from voicevox_engine.model import (
+    AccentPhrase,
+    AudioQuery,
+    FrameAudioQuery,
+    Mora,
+    Note,
+    Score,
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -182,6 +185,21 @@ def _gen_hello_hiho_query() -> AudioQuery:
     )
 
 
+def _gen_doremi_score() -> Score:
+    return Score(
+        notes=[
+            Note(key=None, frame_length=10, lyric=""),
+            Note(key=60, frame_length=12, lyric="ど"),
+            Note(key=62, frame_length=17, lyric="れ"),
+            Note(key=64, frame_length=21, lyric="み"),
+            Note(key=None, frame_length=5, lyric=""),
+            Note(key=65, frame_length=12, lyric="ふぁ"),
+            Note(key=67, frame_length=17, lyric="そ"),
+            Note(key=None, frame_length=10, lyric=""),
+        ]
+    )
+
+
 class TestTTSEngine(TestCase):
     def setUp(self):
         super().setUp()
@@ -204,8 +222,8 @@ class TestTTSEngine(TestCase):
     def test_update_length(self):
         # Inputs
         hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Outputs & Indirect Outputs（yukarin_sに渡される値）
-        result = self.tts_engine.update_length(hello_hiho, StyleId(1))
+        # Indirect Outputs（yukarin_sに渡される値）
+        self.tts_engine.update_length(hello_hiho, StyleId(1))
         yukarin_s_args = self.yukarin_s_mock.call_args[1]
         list_length = yukarin_s_args["length"]
         phoneme_list = yukarin_s_args["phoneme_list"]
@@ -216,24 +234,7 @@ class TestTTSEngine(TestCase):
         true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
         true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
         true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
-        true_result = _gen_hello_hiho_accent_phrases()
-        index = 1
 
-        def result_value(i: int) -> float:
-            return np.float32(round(float(phoneme_list[i] * 0.0625 + 1), 2)).item()
-
-        for accent_phrase in true_result:
-            moras = accent_phrase.moras
-            for mora in moras:
-                if mora.consonant is not None:
-                    mora.consonant_length = result_value(index)
-                    index += 1
-                mora.vowel_length = result_value(index)
-                index += 1
-            if accent_phrase.pause_mora is not None:
-                accent_phrase.pause_mora.vowel_length = result_value(index)
-                index += 1
-        # Tests
         self.assertEqual(list_length, true_list_length)
         self.assertEqual(list_length, len(phoneme_list))
         self.assertEqual(style_id, true_style_id)
@@ -241,7 +242,6 @@ class TestTTSEngine(TestCase):
             phoneme_list,
             np.array(true_phoneme_list, dtype=np.int64),
         )
-        self.assertEqual(result, true_result)
 
     def test_update_pitch(self):
         # 空のリストでエラーを吐かないか
@@ -256,8 +256,8 @@ class TestTTSEngine(TestCase):
 
         # Inputs
         hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Outputs & Indirect Outputs（yukarin_saに渡される値）
-        result = self.tts_engine.update_pitch(hello_hiho, StyleId(1))
+        # Indirect Outputs（yukarin_saに渡される値）
+        self.tts_engine.update_pitch(hello_hiho, StyleId(1))
         yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
         list_length = yukarin_sa_args["length"]
         vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
@@ -274,42 +274,7 @@ class TestTTSEngine(TestCase):
         true_accent_ends = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
         true_phrase_starts = np.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
         true_phrase_ends = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
-        true_result = _gen_hello_hiho_accent_phrases()
-        index = 1
 
-        def result_value(i: int) -> float:
-            # unvoiced_vowel_likesのPhoneme ID版
-            unvoiced_mora_tail_ids = [
-                Phoneme(p).id for p in UNVOICED_MORA_TAIL_PHONEMES
-            ]
-            if vowel_phoneme_list[i] in unvoiced_mora_tail_ids:
-                return 0
-            return np.float32(
-                round(
-                    (
-                        (
-                            vowel_phoneme_list[i]
-                            + consonant_phoneme_list[i]
-                            + start_accent_list[i]
-                            + end_accent_list[i]
-                            + start_accent_phrase_list[i]
-                            + end_accent_phrase_list[i]
-                        )
-                        * 0.0625
-                        + 1
-                    ),
-                    2,
-                )
-            ).item()
-
-        for accent_phrase in true_result:
-            moras = accent_phrase.moras
-            for mora in moras:
-                mora.pitch = result_value(index)
-                index += 1
-            if accent_phrase.pause_mora is not None:
-                accent_phrase.pause_mora.pitch = result_value(index)
-                index += 1
         # Tests
         self.assertEqual(list_length, 12)
         self.assertEqual(list_length, len(vowel_phoneme_list))
@@ -325,10 +290,9 @@ class TestTTSEngine(TestCase):
         np.testing.assert_array_equal(end_accent_list, true_accent_ends)
         np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
         np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
-        self.assertEqual(result, true_result)
 
 
-def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_length_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.update_length()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -339,7 +303,7 @@ def test_mocked_update_length_output(snapshot_json: JSONSnapshotExtension) -> No
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
-def test_mocked_update_pitch_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_update_pitch_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.update_pitch()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -351,7 +315,7 @@ def test_mocked_update_pitch_output(snapshot_json: JSONSnapshotExtension) -> Non
 
 
 def test_mocked_update_length_and_pitch_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.update_length_and_pitch()` の出力スナップショットが一定である"""
     # Inputs
@@ -364,7 +328,7 @@ def test_mocked_update_length_and_pitch_output(
 
 
 def test_mocked_create_accent_phrases_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
     # Inputs
@@ -377,7 +341,7 @@ def test_mocked_create_accent_phrases_output(
 
 
 def test_mocked_create_accent_phrases_from_kana_output(
-    snapshot_json: JSONSnapshotExtension,
+    snapshot_json: SnapshotAssertion,
 ) -> None:
     """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
     # Inputs
@@ -389,7 +353,7 @@ def test_mocked_create_accent_phrases_from_kana_output(
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
-def test_mocked_synthesize_wave_output(snapshot_json: JSONSnapshotExtension) -> None:
+def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None:
     """モックされた `TTSEngine.synthesize_wave()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -398,6 +362,41 @@ def test_mocked_synthesize_wave_output(snapshot_json: JSONSnapshotExtension) -> 
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(result.tolist(), round_value=2)
+
+
+def test_mocked_synthesize_wave_from_score_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
+    `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である
+    """
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    doremi_srore = _gen_doremi_score()
+    # Outputs
+    result = tts_engine.create_sing_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    # Tests
+    assert snapshot_json(name="query") == round_floats(
+        pydantic_to_native_type(result), round_value=2
+    )
+
+    # Inputs
+    phonemes, f0, volume = result
+    doremi_query = FrameAudioQuery(
+        f0=f0,
+        volume=volume,
+        phonemes=phonemes,
+        volumeScale=1.3,
+        outputSamplingRate=1200,
+        outputStereo=False,
+    )
+    # Outputs
+    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    # Tests
+    assert snapshot_json(name="wave") == round_floats(
+        result_wave.tolist(), round_value=2
+    )
 
 
 def koreha_arimasuka_base_expected():

@@ -763,17 +763,17 @@ class CoreWrapper:
         Parameters
         ----------
         length : int
-            音素列の長さ
+            フレームの長さ
         phoneme : NDArray[np.int64]
-            音素列
+            フレームごとの音素
         note : NDArray[np.int64]
-            ノート列
+            フレームごとのノート
         style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
         output : NDArray[np.float32]
-            フレームごとのF0
+            フレームごとの音高
         """
         output = np.zeros((length,), dtype=np.float32)
         self.assert_core_success(
@@ -800,17 +800,19 @@ class CoreWrapper:
         Parameters
         ----------
         length : int
-            音素列の長さ
+            フレームの長さ
         phoneme : NDArray[np.int64]
-            音素列
+            フレームごとの音素
         note : NDArray[np.int64]
-            ノート列
+            フレームごとのノート
+        f0 : NDArray[np.float32]
+            フレームごとの音高
         style_id : NDArray[np.int64]
             スタイル番号
         Returns
         -------
         output : NDArray[np.float32]
-            フレームごとのF0
+            フレームごとの音量
         """
         output = np.zeros((length,), dtype=np.float32)
         self.assert_core_success(
