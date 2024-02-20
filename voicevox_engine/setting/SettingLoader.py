@@ -8,7 +8,7 @@ from .Setting import Setting
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
-class SettingLoader:
+class SettingHander:
     def __init__(self, setting_file_path: Path) -> None:
         """
         設定ファイルの管理
@@ -19,8 +19,8 @@ class SettingLoader:
         """
         self.setting_file_path = setting_file_path
 
-    def load_setting_file(self) -> Setting:
-        # 設定値の読み込み
+    def read(self) -> Setting:
+        """設定値をファイルから読み込む。"""
         if not self.setting_file_path.is_file():
             # 設定ファイルが存在しないためデフォルト値を取得
             setting = {"allow_origin": None, "cors_policy_mode": "localapps"}
@@ -34,7 +34,8 @@ class SettingLoader:
             allow_origin=setting["allow_origin"],
         )
 
-    def dump_setting_file(self, settings: Setting) -> None:
+    def write(self, settings: Setting) -> None:
+        """設定値をファイルへ書き込む。"""
         settings_dict = settings.dict()
 
         with open(self.setting_file_path, mode="w", encoding="utf-8") as f:
