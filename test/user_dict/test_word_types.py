@@ -1,7 +1,7 @@
 from unittest import TestCase
 
+from voicevox_engine.dict.part_of_speech_data import part_of_speech_data
 from voicevox_engine.model import WordTypes
-from voicevox_engine.part_of_speech_data import part_of_speech_data
 
 
 class TestWordTypes(TestCase):

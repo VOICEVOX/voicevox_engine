@@ -1,6 +1,6 @@
 from typing import Dict
 
-from .model import (
+from ..model import (
     USER_DICT_MAX_PRIORITY,
     USER_DICT_MIN_PRIORITY,
     PartOfSpeechDetail,
