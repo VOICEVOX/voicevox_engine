@@ -8,7 +8,7 @@ from .Setting import Setting
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
-class SettingHander:
+class SettingHandler:
     def __init__(self, setting_file_path: Path) -> None:
         """
         設定ファイルの管理

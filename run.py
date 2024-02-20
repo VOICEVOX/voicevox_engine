@@ -72,7 +72,7 @@ from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHander
+from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -135,7 +135,7 @@ def generate_app(
     tts_engines: dict[str, TTSEngine],
     cores: dict[str, CoreAdapter],
     latest_core_version: str,
-    setting_loader: SettingHander,
+    setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
@@ -1552,7 +1552,7 @@ def main() -> None:
     if root_dir is None:
         root_dir = engine_root()
 
-    setting_loader = SettingHander(args.setting_file)
+    setting_loader = SettingHandler(args.setting_file)
 
     settings = setting_loader.read()
 
