@@ -11,9 +11,9 @@ import pyopenjtalk
 from fastapi import HTTPException
 
 from ..model import UserDictWord, WordTypes
-from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 from ..utility.mutex_utility import mutex_wrapper
 from ..utility.path_utility import engine_root, get_save_dir
+from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 
 root_dir = engine_root()
 save_dir = get_save_dir()
