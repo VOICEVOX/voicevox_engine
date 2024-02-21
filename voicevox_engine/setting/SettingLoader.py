@@ -19,7 +19,7 @@ class SettingHandler:
         """
         self.setting_file_path = setting_file_path
 
-    def read(self) -> Setting:
+    def load(self) -> Setting:
         """設定値をファイルから読み込む。"""
         if not self.setting_file_path.is_file():
             # 設定ファイルが存在しないためデフォルト値を取得
@@ -34,7 +34,7 @@ class SettingHandler:
             allow_origin=setting["allow_origin"],
         )
 
-    def write(self, settings: Setting) -> None:
+    def save(self, settings: Setting) -> None:
         """設定値をファイルへ書き込む。"""
         settings_dict = settings.dict()
 

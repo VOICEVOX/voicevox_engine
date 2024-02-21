@@ -1310,7 +1310,7 @@ def generate_app(
         """
         設定ページを返します。
         """
-        settings = setting_loader.read()
+        settings = setting_loader.load()
 
         brand_name = engine_manifest_data.brand_name
         cors_policy_mode = settings.cors_policy_mode
@@ -1348,7 +1348,7 @@ def generate_app(
         )
 
         # 更新した設定へ上書き
-        setting_loader.write(settings)
+        setting_loader.save(settings)
 
         return Response(status_code=204)
 
@@ -1554,7 +1554,7 @@ def main() -> None:
 
     setting_loader = SettingHandler(args.setting_file)
 
-    settings = setting_loader.read()
+    settings = setting_loader.load()
 
     cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
     if cors_policy_mode is None:

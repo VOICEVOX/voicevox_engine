@@ -13,7 +13,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_1(self):
         setting_loader = SettingHandler(Path("not_exist.yaml"))
-        settings = setting_loader.read()
+        settings = setting_loader.load()
 
         self.assertEqual(
             settings.dict(),
@@ -24,7 +24,7 @@ class TestSettingLoader(TestCase):
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-1.yaml")
         )
-        settings = setting_loader.read()
+        settings = setting_loader.load()
 
         self.assertEqual(
             settings.dict(),
@@ -35,7 +35,7 @@ class TestSettingLoader(TestCase):
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-2.yaml")
         )
-        settings = setting_loader.read()
+        settings = setting_loader.load()
 
         self.assertEqual(
             settings.dict(),
@@ -46,7 +46,7 @@ class TestSettingLoader(TestCase):
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-3.yaml")
         )
-        settings = setting_loader.read()
+        settings = setting_loader.load()
 
         self.assertEqual(
             settings.dict(),
@@ -61,11 +61,11 @@ class TestSettingLoader(TestCase):
             setting_file_path=Path(self.tmp_dir_path / "setting-test-dump.yaml")
         )
         settings = Setting(cors_policy_mode=CorsPolicyMode.localapps)
-        setting_loader.write(settings)
+        setting_loader.save(settings)
 
         self.assertTrue(setting_loader.setting_file_path.is_file())
         self.assertEqual(
-            setting_loader.read().dict(),
+            setting_loader.load().dict(),
             {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps},
         )
 
