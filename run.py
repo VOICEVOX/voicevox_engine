@@ -31,15 +31,6 @@ from voicevox_engine import __version__
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.dict.user_dict import (
-    apply_word,
-    delete_word,
-    import_user_dict,
-    read_dict,
-    rewrite_word,
-    update_dict,
-)
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
@@ -85,6 +76,15 @@ from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     make_tts_engines_from_cores,
+)
+from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
+from voicevox_engine.user_dict.user_dict import (
+    apply_word,
+    delete_word,
+    import_user_dict,
+    read_dict,
+    rewrite_word,
+    update_dict,
 )
 from voicevox_engine.utility.connect_base64_waves import (
     ConnectBase64WavesException,
