@@ -67,7 +67,6 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
 from voicevox_engine.preset.PresetManager import PresetManager
@@ -78,7 +77,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     make_tts_engines_from_cores,
 )
-from voicevox_engine.user_dict import (
+from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
+from voicevox_engine.user_dict.user_dict import (
     apply_word,
     delete_word,
     import_user_dict,

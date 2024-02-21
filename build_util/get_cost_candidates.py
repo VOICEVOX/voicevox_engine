@@ -1,5 +1,5 @@
 """
-voicevox_engine/part_of_speech_data.pyのcost_candidatesを計算するプログラムです。
+voicevox_engine/user_dict/part_of_speech_data.pyのcost_candidatesを計算するプログラムです。
 引数のnaist_jdic_pathには、open_jtalkのsrc/mecab-naist-jdic/naist-jdic.csvを指定してください。
 
 実行例:
