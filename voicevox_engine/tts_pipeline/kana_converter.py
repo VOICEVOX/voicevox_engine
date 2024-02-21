@@ -17,8 +17,8 @@ NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob
 from typing import List, Optional
 
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
-from .acoustic_feature_extractor import Vowel
-from .mora_list import mora_kana_to_mora_phonemes
+from .mora_mapping import mora_kana_to_mora_phonemes
+from .phoneme import Vowel
 
 _LOOP_LIMIT = 300
 

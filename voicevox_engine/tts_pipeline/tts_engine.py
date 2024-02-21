@@ -10,9 +10,9 @@ from ..core.core_adapter import CoreAdapter
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
-from .acoustic_feature_extractor import Phoneme
 from .kana_converter import parse_kana
-from .mora_list import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
+from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
+from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
 
 # 疑問文語尾定数
