@@ -44,7 +44,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 from typing import Literal
 
-from .acoustic_feature_extractor import BaseVowel, Consonant
+from .phoneme import BaseVowel, Consonant
 
 # AquesTalk 風記法で記述されるモーラ（無声化 `_` を除く）
 _MoraKana = Literal[
