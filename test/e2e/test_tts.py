@@ -2,9 +2,9 @@
 TTSのテスト
 """
 
+import io
 from test.utility import hash_long_string, round_floats
 
-import io
 import soundfile as sf
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -32,7 +32,7 @@ def test_テキストと話者IDから音声を合成できる(
     # リクエストが成功している
     assert synthesis_res.status_code == 200
     # レスポンスが音声ファイルである
-    assert synthesis_res.headers['content-type'] == 'audio/wav'
+    assert synthesis_res.headers["content-type"] == "audio/wav"
     # 音声波形が commit 間で不変である
     wave_str = " ".join(map(lambda point: str(point), wave))
     assert snapshot_json == hash_long_string(wave_str)
