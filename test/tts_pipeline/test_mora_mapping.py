@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from voicevox_engine.tts_pipeline.mora_list import mora_phonemes_to_mora_kana
+from voicevox_engine.tts_pipeline.mora_mapping import mora_phonemes_to_mora_kana
 
 
 class TestOpenJTalkMoraList(TestCase):

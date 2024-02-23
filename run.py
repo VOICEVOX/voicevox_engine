@@ -67,18 +67,18 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingLoader
+from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     make_tts_engines_from_cores,
 )
-from voicevox_engine.user_dict import (
+from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
+from voicevox_engine.user_dict.user_dict import (
     apply_word,
     delete_word,
     import_user_dict,
@@ -135,7 +135,7 @@ def generate_app(
     tts_engines: dict[str, TTSEngine],
     cores: dict[str, CoreAdapter],
     latest_core_version: str,
-    setting_loader: SettingLoader,
+    setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
@@ -1310,7 +1310,7 @@ def generate_app(
         """
         設定ページを返します。
         """
-        settings = setting_loader.load_setting_file()
+        settings = setting_loader.load()
 
         brand_name = engine_manifest_data.brand_name
         cors_policy_mode = settings.cors_policy_mode
@@ -1348,7 +1348,7 @@ def generate_app(
         )
 
         # 更新した設定へ上書き
-        setting_loader.dump_setting_file(settings)
+        setting_loader.save(settings)
 
         return Response(status_code=204)
 
@@ -1552,9 +1552,9 @@ def main() -> None:
     if root_dir is None:
         root_dir = engine_root()
 
-    setting_loader = SettingLoader(args.setting_file)
+    setting_loader = SettingHandler(args.setting_file)
 
-    settings = setting_loader.load_setting_file()
+    settings = setting_loader.load()
 
     cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
     if cors_policy_mode is None:

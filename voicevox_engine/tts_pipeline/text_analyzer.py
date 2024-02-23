@@ -6,8 +6,8 @@ from typing import Callable, Literal, Self
 import pyopenjtalk
 
 from ..model import AccentPhrase, Mora, NonOjtPhonemeError, OjtUnknownPhonemeError
-from .acoustic_feature_extractor import Consonant, Vowel
-from .mora_list import mora_phonemes_to_mora_kana
+from .phoneme import Consonant, Vowel
+from .mora_mapping import mora_phonemes_to_mora_kana
 
 # OpenJTalk が出力する音素の一覧。
 _OJT_VOWELS = (
