@@ -420,14 +420,7 @@ jobs:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          # NOTE: Windows 版コアのみ PowerShell の Compress-Archive コマンドレットを用いて zip を作成している（デフォルト状態では zip コマンドが存在していないため）。
-          #       このコマンドはバージョンによっては作成した zip 内のパスの区切り文字がバックスラッシュになる。 (cf. https://github.com/PowerShell/Microsoft.PowerShell.Archive/issues/48)
-          #       unzip コマンドはこのような zip ファイルを解凍できるものの、終了コード 1 を報告して CI が落ちてしまう。
-          #       回避策として、unzip コマンドの代わりに 7z コマンドを用いて zip ファイルを解凍する。
-          # unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          if [[ ${{ matrix.os }} == windows-* ]]; then
-            7z x -o"download" download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          elif [[ ${{ matrix.os }} == mac-* ]]; then
+          if [[ ${{ matrix.os }} == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
           else
             unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
