@@ -1,4 +1,3 @@
-import aiofiles
 import argparse
 import asyncio
 import base64
@@ -16,6 +15,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Annotated, Literal, Optional
 
+import aiofiles
 import soundfile
 import uvicorn
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, Response
