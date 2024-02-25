@@ -232,6 +232,7 @@ def _create_word(
         yomi=pronunciation,
         pronunciation=pronunciation,
         accent_type=accent_type,
+        mora_count=None,
         accent_associative_rule="*",
     )
 

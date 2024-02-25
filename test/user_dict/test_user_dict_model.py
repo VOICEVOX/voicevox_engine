@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import TypedDict
 from unittest import TestCase
 
@@ -21,45 +20,51 @@ class TestModel(TypedDict):
     yomi: str
     pronunciation: str
     accent_type: int
+    mora_count: int | None
     accent_associative_rule: str
+
+
+def generate_model() -> TestModel:
+    return {
+        "surface": "テスト",
+        "priority": 0,
+        "part_of_speech": "名詞",
+        "part_of_speech_detail_1": "固有名詞",
+        "part_of_speech_detail_2": "一般",
+        "part_of_speech_detail_3": "*",
+        "inflectional_type": "*",
+        "inflectional_form": "*",
+        "stem": "*",
+        "yomi": "テスト",
+        "pronunciation": "テスト",
+        "accent_type": 0,
+        "mora_count": None,
+        "accent_associative_rule": "*",
+    }
 
 
 class TestUserDictWords(TestCase):
     def setUp(self):
-        self.test_model: TestModel = {
-            "surface": "テスト",
-            "priority": 0,
-            "part_of_speech": "名詞",
-            "part_of_speech_detail_1": "固有名詞",
-            "part_of_speech_detail_2": "一般",
-            "part_of_speech_detail_3": "*",
-            "inflectional_type": "*",
-            "inflectional_form": "*",
-            "stem": "*",
-            "yomi": "テスト",
-            "pronunciation": "テスト",
-            "accent_type": 0,
-            "accent_associative_rule": "*",
-        }
+        pass
 
     def test_valid_word(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         try:
             UserDictWord(**test_value)
         except ValidationError as e:
             self.fail(f"Unexpected Validation Error\n{str(e)}")
 
     def test_convert_to_zenkaku(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["surface"] = "test"
         self.assertEqual(UserDictWord(**test_value).surface, "ｔｅｓｔ")
 
     def test_count_mora(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         self.assertEqual(UserDictWord(**test_value).mora_count, 3)
 
     def test_count_mora_x(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         for s in [chr(i) for i in range(12449, 12533)]:
             if s in ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]:
                 continue
@@ -77,7 +82,7 @@ class TestUserDictWords(TestCase):
                     )
 
     def test_count_mora_xwa(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["pronunciation"] = "クヮンセイ"
         expected_count = 0
         for accent_phrase in parse_kana(
@@ -90,36 +95,36 @@ class TestUserDictWords(TestCase):
         )
 
     def test_invalid_pronunciation_not_katakana(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["pronunciation"] = "ぼいぼ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
     def test_invalid_pronunciation_invalid_sutegana(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["pronunciation"] = "アィウェォ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
     def test_invalid_pronunciation_invalid_xwa(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["pronunciation"] = "アヮ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
     def test_count_mora_voiced_sound(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["pronunciation"] = "ボイボ"
         self.assertEqual(UserDictWord(**test_value).mora_count, 3)
 
     def test_invalid_accent_type(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["accent_type"] = 4
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
     def test_invalid_accent_type_2(self):
-        test_value = deepcopy(self.test_model)
+        test_value = generate_model()
         test_value["accent_type"] = -1
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)

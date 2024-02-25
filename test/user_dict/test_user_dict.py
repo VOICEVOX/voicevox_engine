@@ -59,6 +59,7 @@ import_word = UserDictWord(
     yomi="テストツー",
     pronunciation="テストツー",
     accent_type=1,
+    mora_count=None,
     accent_associative_rule="*",
 )
 
@@ -106,6 +107,7 @@ class TestUserDict(TestCase):
                 yomi="テスト",
                 pronunciation="テスト",
                 accent_type=1,
+                mora_count=None,
                 accent_associative_rule="*",
             ),
         )
