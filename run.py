@@ -1,3 +1,4 @@
+import aiofiles
 import argparse
 import asyncio
 import base64
@@ -852,7 +853,7 @@ def generate_app(
         return filter_speakers_and_styles(speakers, "speaker")
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(
+    async def speaker_info(
         speaker_uuid: str,
         core_version: str | None = None,
     ) -> SpeakerInfo:
@@ -860,14 +861,14 @@ def generate_app(
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
-        return _speaker_info(
+        return await _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
             core_version=core_version,
         )
 
     # FIXME: この関数をどこかに切り出す
-    def _speaker_info(
+    async def _speaker_info(
         speaker_uuid: str,
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
@@ -915,29 +916,29 @@ def generate_app(
             policy = policy_path.read_text("utf-8")
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
-            portrait = b64encode_str(portrait_path.read_bytes())
+            async with aiofiles.open(portrait_path, "rb") as f:
+                portrait = b64encode_str(await f.read())
             # スタイル情報の取得
             style_infos = []
             for style in speaker.styles:
                 id = style.id
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = b64encode_str(style_icon_path.read_bytes())
+                async with aiofiles.open(style_icon_path, "rb") as f:
+                    icon = b64encode_str(await f.read())
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
-                    style_portrait = b64encode_str(style_portrait_path.read_bytes())
+                    async with aiofiles.open(style_portrait_path, "rb") as f:
+                        style_portrait = b64encode_str(await f.read())
                 # voice samples
-                voice_samples = [
-                    b64encode_str(
-                        (
-                            speaker_path
-                            / "voice_samples/{}_{}.wav".format(id, str(j + 1).zfill(3))
-                        ).read_bytes()
-                    )
-                    for j in range(3)
-                ]
+                voice_samples = []
+                for j in range(3):
+                    voice_sample_path = speaker_path / "voice_samples" / f"{id}_{j}.wav"
+                    if voice_sample_path.exists():
+                        async with aiofiles.open(voice_sample_path, "rb") as f:
+                            voice_samples.append(b64encode_str(await f.read()))
                 style_infos.append(
                     {
                         "id": id,
@@ -967,7 +968,7 @@ def generate_app(
         return filter_speakers_and_styles(singers, "singer")
 
     @app.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
-    def singer_info(
+    async def singer_info(
         speaker_uuid: str,
         core_version: str | None = None,
     ) -> SpeakerInfo:
@@ -975,7 +976,7 @@ def generate_app(
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
-        return _speaker_info(
+        return await _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
             core_version=core_version,
