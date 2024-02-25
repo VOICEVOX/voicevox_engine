@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import TypedDict
 from unittest import TestCase
 
@@ -27,21 +26,22 @@ class TestModel(TypedDict):
 
 def generate_model() -> TestModel:
     return {
-            "surface": "テスト",
-            "priority": 0,
-            "part_of_speech": "名詞",
-            "part_of_speech_detail_1": "固有名詞",
-            "part_of_speech_detail_2": "一般",
-            "part_of_speech_detail_3": "*",
-            "inflectional_type": "*",
-            "inflectional_form": "*",
-            "stem": "*",
-            "yomi": "テスト",
-            "pronunciation": "テスト",
-            "accent_type": 0,
-            "mora_count": None,
-            "accent_associative_rule": "*",
-        }
+        "surface": "テスト",
+        "priority": 0,
+        "part_of_speech": "名詞",
+        "part_of_speech_detail_1": "固有名詞",
+        "part_of_speech_detail_2": "一般",
+        "part_of_speech_detail_3": "*",
+        "inflectional_type": "*",
+        "inflectional_form": "*",
+        "stem": "*",
+        "yomi": "テスト",
+        "pronunciation": "テスト",
+        "accent_type": 0,
+        "mora_count": None,
+        "accent_associative_rule": "*",
+    }
+
 
 class TestUserDictWords(TestCase):
     def setUp(self):
