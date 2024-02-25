@@ -935,7 +935,11 @@ def generate_app(
                 # voice samples
                 voice_samples = []
                 for j in range(3):
-                    voice_sample_path = speaker_path / "voice_samples" / f"{id}_{j}.wav"
+                    voice_sample_path = (
+                        speaker_path
+                        / "voice_samples"
+                        / f"{id}_{str(j + 1).zfill(3)}.wav"
+                    )
                     if voice_sample_path.exists():
                         async with aiofiles.open(voice_sample_path, "rb") as f:
                             voice_samples.append(b64encode_str(await f.read()))
