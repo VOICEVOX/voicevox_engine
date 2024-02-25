@@ -7,38 +7,47 @@ on:
       - "**"
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest] # [ubuntu-20.04, macos-latest, windows-latest]
-        python: ["3.8.10"]
-        include:
-          - os: ubuntu-20.04
-            path: ~/.cache/pip
-          # - os: macos-latest
-          #   path: ~/Library/Caches/pip
-          - os: windows-latest
-            path: ~\AppData\Local\pip\Cache
+        os: [ubuntu-20.04, macos-latest, windows-latest]
+        python: ["3.11.3"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-
-      - name: Install libraries for ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run: sudo apt-get install libsndfile1
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
+
+      - name: Run poetry and check
+        run: |
+          poetry export --without-hashes -o requirements.txt.check
+          poetry export --without-hashes --with dev -o requirements-dev.txt.check
+          poetry export --without-hashes --with test -o requirements-test.txt.check
+          poetry export --without-hashes --with license -o requirements-license.txt.check
+          
+          diff -q requirements.txt requirements.txt.check || \
+          diff -q requirements-dev.txt requirements-dev.txt.check || \
+          diff -q requirements-test.txt requirements-test.txt.check || \
+          diff -q requirements-license.txt requirements-license.txt.check > /dev/null
+          if [ $? = 1 ]; then
+            echo "poetry export has some diff"
+            exit 1
+          fi
 
       - run: pysen run lint
 

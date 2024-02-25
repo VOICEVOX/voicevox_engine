@@ -1,19 +1,26 @@
-import argparse
 import asyncio
 import queue
-from distutils.version import LooseVersion
+import sys
 from multiprocessing import Pipe, Process
-from multiprocessing.connection import Connection
+
+if sys.platform == "win32":
+    from multiprocessing.connection import PipeConnection as ConnectionType
+else:
+    from multiprocessing.connection import Connection as ConnectionType
+
+from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List, Optional, Tuple
 
 import soundfile
 
 # FIXME: remove FastAPI dependency
 from fastapi import HTTPException, Request
 
+from .core.core_initializer import initialize_cores
+from .metas.Metas import StyleId
 from .model import AudioQuery
-from .synthesis_engine import make_synthesis_engines
+from .tts_pipeline.tts_engine import make_tts_engines_from_cores
+from .utility.core_version_utility import get_latest_core_version
 
 
 class CancellableEngine:
@@ -22,37 +29,52 @@ class CancellableEngine:
     初期化後は、synthesis関数で音声合成できる
     （オリジナルと比べ引数が増えているので注意）
 
+    パラメータ use_gpu, voicelib_dirs, voicevox_dir,
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
+
     Attributes
     ----------
-    watch_con_list: List[Tuple[Request, Process]]
+    watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとListにTupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: queue.Queue[Tuple[Process, Connection]]
+    procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
     """
 
-    def __init__(self, args: argparse.Namespace) -> None:
+    def __init__(
+        self,
+        init_processes: int,
+        use_gpu: bool,
+        voicelib_dirs: list[Path] | None,
+        voicevox_dir: Path | None,
+        runtime_dirs: list[Path] | None,
+        cpu_num_threads: int | None,
+        enable_mock: bool,
+    ) -> None:
         """
         変数の初期化を行う
-        また、args.init_processesの数だけプロセスを起動し、procs_and_consに格納する
+        また、init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
-        self.args = args
-        if not self.args.enable_cancellable_synthesis:
-            raise HTTPException(
-                status_code=404,
-                detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
-            )
 
-        self.watch_con_list: List[Tuple[Request, Process]] = []
-        self.procs_and_cons: queue.Queue[Tuple[Process, Connection]] = queue.Queue()
-        for _ in range(self.args.init_processes):
-            self.procs_and_cons.put(self.start_new_proc())
+        self.use_gpu = use_gpu
+        self.voicelib_dirs = voicelib_dirs
+        self.voicevox_dir = voicevox_dir
+        self.runtime_dirs = runtime_dirs
+        self.cpu_num_threads = cpu_num_threads
+        self.enable_mock = enable_mock
+
+        self.watch_con_list: list[tuple[Request, Process]] = []
+
+        procs_and_cons: queue.Queue[tuple[Process, ConnectionType]] = queue.Queue()
+        for _ in range(init_processes):
+            procs_and_cons.put(self.start_new_proc())
+        self.procs_and_cons = procs_and_cons
 
     def start_new_proc(
         self,
-    ) -> Tuple[Process, Connection]:
+    ) -> tuple[Process, ConnectionType]:
         """
         新しく開始したプロセスを返す関数
 
@@ -60,14 +82,19 @@ class CancellableEngine:
         -------
         ret_proc: Process
             新規のプロセス
-        sub_proc_con1: Connection
+        sub_proc_con1: ConnectionType
             ret_procのプロセスと通信するためのPipe
         """
         sub_proc_con1, sub_proc_con2 = Pipe(True)
         ret_proc = Process(
             target=start_synthesis_subprocess,
             kwargs={
-                "args": self.args,
+                "use_gpu": self.use_gpu,
+                "voicelib_dirs": self.voicelib_dirs,
+                "voicevox_dir": self.voicevox_dir,
+                "runtime_dirs": self.runtime_dirs,
+                "cpu_num_threads": self.cpu_num_threads,
+                "enable_mock": self.enable_mock,
                 "sub_proc_con": sub_proc_con2,
             },
             daemon=True,
@@ -79,7 +106,7 @@ class CancellableEngine:
         self,
         req: Request,
         proc: Process,
-        sub_proc_con: Optional[Connection],
+        sub_proc_con: ConnectionType | None,
     ) -> None:
         """
         接続が切断された時の処理を行う関数
@@ -94,7 +121,7 @@ class CancellableEngine:
             https://fastapi.tiangolo.com/advanced/using-request-directly/
         proc: Process
             音声合成を行っていたプロセス
-        sub_proc_con: Connection, optional
+        sub_proc_con: ConnectionType, optional
             音声合成を行っていたプロセスとのPipe
             指定されていない場合、プロセスは再利用されず終了される
         """
@@ -115,9 +142,9 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        speaker_id: int,
+        style_id: StyleId,
         request: Request,
-        core_version: Optional[str],
+        core_version: str | None,
     ) -> str:
         """
         音声合成を行う関数
@@ -127,7 +154,7 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        speaker_id: int
+        style_id: StyleId
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -141,7 +168,7 @@ class CancellableEngine:
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
-            sub_proc_con1.send((query, speaker_id, core_version))
+            sub_proc_con1.send((query, style_id, core_version))
             f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
@@ -173,43 +200,54 @@ class CancellableEngine:
 
 
 def start_synthesis_subprocess(
-    args: argparse.Namespace,
-    sub_proc_con: Connection,
-):
+    use_gpu: bool,
+    voicelib_dirs: list[Path] | None,
+    voicevox_dir: Path | None,
+    runtime_dirs: list[Path] | None,
+    cpu_num_threads: int | None,
+    enable_mock: bool,
+    sub_proc_con: ConnectionType,
+) -> None:
     """
     音声合成を行うサブプロセスで行うための関数
     pickle化の関係でグローバルに書いている
 
+    引数 use_gpu, voicelib_dirs, voicevox_dir,
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
+
     Parameters
     ----------
-    args: argparse.Namespace
-        起動時に作られたものをそのまま渡す
-    sub_proc_con: Connection
+    sub_proc_con: ConnectionType
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
-        use_gpu=args.use_gpu,
-        voicelib_dirs=args.voicelib_dir,
-        voicevox_dir=args.voicevox_dir,
-        runtime_dirs=args.runtime_dir,
-        cpu_num_threads=args.cpu_num_threads,
-        enable_mock=args.enable_mock,
+    cores = initialize_cores(
+        use_gpu=use_gpu,
+        voicelib_dirs=voicelib_dirs,
+        voicevox_dir=voicevox_dir,
+        runtime_dirs=runtime_dirs,
+        cpu_num_threads=cpu_num_threads,
+        enable_mock=enable_mock,
     )
-    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = str(max([LooseVersion(ver) for ver in synthesis_engines]))
+    tts_engines = make_tts_engines_from_cores(cores)
+
+    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
+    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
     while True:
         try:
-            query, speaker_id, core_version = sub_proc_con.recv()
+            query, style_id, core_version = sub_proc_con.recv()
             if core_version is None:
-                _engine = synthesis_engines[latest_core_version]
-            elif core_version in synthesis_engines:
-                _engine = synthesis_engines[core_version]
+                _engine = tts_engines[latest_core_version]
+            elif core_version in tts_engines:
+                _engine = tts_engines[core_version]
             else:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, speaker_id)
+            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
+            wave = _engine.synthesize_wave(
+                query, style_id, enable_interrogative_upspeak=False
+            )
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"

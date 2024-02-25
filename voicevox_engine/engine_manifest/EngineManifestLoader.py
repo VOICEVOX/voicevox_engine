@@ -20,6 +20,7 @@ class EngineManifestLoader:
             uuid=manifest["uuid"],
             url=manifest["url"],
             default_sampling_rate=manifest["default_sampling_rate"],
+            frame_rate=manifest["frame_rate"],
             icon=b64encode((self.root_dir / manifest["icon"]).read_bytes()).decode(
                 "utf-8"
             ),
@@ -32,6 +33,11 @@ class EngineManifestLoader:
                     (self.root_dir / manifest["update_infos"]).read_text("utf-8")
                 )
             ],
+            # supported_vvlib_manifest_versionを持たないengine_manifestのために
+            # キーが存在しない場合はNoneを返すgetを使う
+            supported_vvlib_manifest_version=manifest.get(
+                "supported_vvlib_manifest_version"
+            ),
             dependency_licenses=[
                 LicenseInfo(**license_info)
                 for license_info in json.loads(

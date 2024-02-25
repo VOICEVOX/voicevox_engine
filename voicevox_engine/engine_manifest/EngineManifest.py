@@ -1,3 +1,8 @@
+# マルチエンジン環境下においては、エンジンのバージョンがエディタのバージョンより
+# 古くなる可能性が十分に考えられる。その場合、エディタ側がEngineManifestの情報不足によって
+# エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
+# 変更する際は、Optionalにする必要があることに留意しなければならない。
+
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -36,8 +41,9 @@ class SupportedFeatures(BaseModel):
     adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
-    synthesis_morphing: bool = Field(title="2人の話者でモーフィングした音声を合成")
-    manage_library: bool = Field(title="音声ライブラリのインストール・アンインストール")
+    synthesis_morphing: bool = Field(title="2種類のスタイルでモーフィングした音声を合成")
+    sing: Optional[bool] = Field(title="歌唱音声合成")
+    manage_library: Optional[bool] = Field(title="音声ライブラリのインストール・アンインストール")
 
 
 class EngineManifest(BaseModel):
@@ -52,7 +58,11 @@ class EngineManifest(BaseModel):
     url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
+    frame_rate: float = Field(title="エンジンのフレームレート")
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
+    supported_vvlib_manifest_version: Optional[str] = Field(
+        title="エンジンが対応するvvlibのバージョン"
+    )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")

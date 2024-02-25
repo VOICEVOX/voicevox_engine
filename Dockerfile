@@ -21,10 +21,28 @@ RUN <<EOF
 EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
-ARG VOICEVOX_CORE_ASSET_PREFIX=voicevox_core-linux-x64-cpu
-ARG VOICEVOX_CORE_VERSION=0.14.2
+ARG TARGETPLATFORM
+ARG USE_GPU=false
+ARG VOICEVOX_CORE_VERSION=0.15.0
+
 RUN <<EOF
     set -eux
+
+    # Processing Switch
+    if [ "${USE_GPU}" = "true" ]; then
+        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="gpu"
+    else
+        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="cpu"
+    fi
+
+    # TARGETARCH Switch
+    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
+        VOICEVOX_CORE_ASSET_TARGETARCH="x64"
+    else
+        VOICEVOX_CORE_ASSET_TARGETARCH="arm64"
+    fi
+
+    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}-${VOICEVOX_CORE_ASSET_ASSET_PROCESSING}"
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
@@ -64,9 +82,27 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG ONNXRUNTIME_URL=https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-1.13.1.tgz
+ARG TARGETPLATFORM
+ARG USE_GPU=false
+ARG ONNXRUNTIME_VERSION=1.13.1
 RUN <<EOF
     set -eux
+
+    # Processing Switch
+    if [ "${USE_GPU}" = "true" ]; then
+        ONNXRUNTIME_PROCESSING="gpu-"
+    else
+        ONNXRUNTIME_PROCESSING=""
+    fi
+
+    # TARGETARCH Switch
+    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
+        ONNXRUNTIME_TARGETARCH=x64
+    else
+        ONNXRUNTIME_TARGETARCH=aarch64
+    fi
+    
+    ONNXRUNTIME_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-${ONNXRUNTIME_TARGETARCH}-${ONNXRUNTIME_PROCESSING}${ONNXRUNTIME_VERSION}.tgz"
 
     # Download ONNX Runtime
     wget -nv --show-progress -c -O "./onnxruntime.tgz" "${ONNXRUNTIME_URL}"
@@ -99,23 +135,21 @@ RUN <<EOF
         libbz2-dev \
         libreadline-dev \
         libsqlite3-dev \
-        wget \
         curl \
-        llvm \
-        libncurses5-dev \
         libncursesw5-dev \
         xz-utils \
         tk-dev \
+        libxml2-dev \
+        libxmlsec1-dev \
         libffi-dev \
         liblzma-dev \
-        python-openssl \
         git
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG PYTHON_VERSION=3.8.10
-ARG PYENV_VERSION=v2.3.7
+ARG PYTHON_VERSION=3.11.3
+ARG PYENV_VERSION=v2.3.17
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
@@ -149,9 +183,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# libsndfile1: soundfile shared object
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# libsndfile1: soundfile shared object for arm64
+# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
@@ -160,10 +195,10 @@ RUN <<EOF
         git \
         wget \
         cmake \
-        libsndfile1 \
         ca-certificates \
         build-essential \
-        gosu
+        gosu \
+        libsndfile1
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
@@ -192,7 +227,8 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setting.yml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./run.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
+ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
 ADD ./ui_template /opt/voicevox_engine/ui_template
 ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
@@ -200,6 +236,7 @@ ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
 RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/voicevox_engine/__init__.py
+RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
 ADD ./requirements-license.txt /tmp/
@@ -213,7 +250,7 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
+    gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
@@ -238,7 +275,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.1
+ARG VOICEVOX_RESOURCE_VERSION=0.16.0
 RUN <<EOF
     set -eux
 
