@@ -1,3 +1,4 @@
+aiofiles==23.2.1 ; python_version >= "3.11" and python_version < "3.12"
 altgraph==0.17.3 ; python_version >= "3.11" and python_version < "3.12"
 anyio==3.7.1 ; python_version >= "3.11" and python_version < "3.12"
 asgiref==3.7.2 ; python_version >= "3.11" and python_version < "3.12"
