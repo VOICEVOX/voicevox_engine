@@ -665,7 +665,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ## 事例紹介
 
-**[voicevox-client](https://github.com/tuna2134/voicevox-client) [@tuna2134](https://github.com/tuna2134)** ･･･ VOICEVOX ENGINE のための Python ラッパー
+**[voicevox-client](https://github.com/voicevox-client) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINEの各言語向けAPIラッパー
 
 ## ライセンス
 
