@@ -20,6 +20,7 @@ class EngineManifestLoader:
             uuid=manifest["uuid"],
             url=manifest["url"],
             default_sampling_rate=manifest["default_sampling_rate"],
+            frame_rate=manifest["frame_rate"],
             icon=b64encode((self.root_dir / manifest["icon"]).read_bytes()).decode(
                 "utf-8"
             ),

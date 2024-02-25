@@ -1,3 +1,5 @@
+test/**/__snapshots__/**/*.json linguist-generated=true
+
 * text=auto
 *.png -text
 *.wav -text

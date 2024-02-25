@@ -1,0 +1,181 @@
+{
+  "brand_name": "DUMMY",
+  "default_sampling_rate": 24000,
+  "dependency_licenses": [
+    {
+      "license": "dummy license",
+      "name": "dummy library",
+      "text": "dummy license text",
+      "version": "0.0.1"
+    }
+  ],
+  "frame_rate": 93.75,
+  "icon": "MD5:f957eb4f5daedccb4eb6a5170f384bf4",
+  "manifest_version": "0.13.1",
+  "name": "DUMMY Engine",
+  "supported_features": {
+    "adjust_intonation_scale": true,
+    "adjust_mora_pitch": true,
+    "adjust_phoneme_length": true,
+    "adjust_pitch_scale": true,
+    "adjust_speed_scale": true,
+    "adjust_volume_scale": true,
+    "interrogative_upspeak": true,
+    "manage_library": true,
+    "sing": true,
+    "synthesis_morphing": true
+  },
+  "supported_vvlib_manifest_version": null,
+  "terms_of_service": "dummy teams of service",
+  "update_infos": [
+    {
+      "contributors": [
+        "Hiroshiba",
+        "y-chan"
+      ],
+      "descriptions": [
+        "ソングAPIを追加",
+        "キャラクター「四国めたん」「ずんだもん」「春日部つむぎ」「雨晴はう」「波音リツ」のハミングを追加",
+        "キャラクター「波音リツ」のソングを追加"
+      ],
+      "version": "0.16.0"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "ビルド成果物のディレクトリ構造を元に戻した"
+      ],
+      "version": "0.15.1"
+    },
+    {
+      "contributors": [
+        "aoirint",
+        "FujisakiEx",
+        "Hiroshiba",
+        "K-shir0",
+        "My-MC",
+        "nagi-miaow",
+        "okaits",
+        "raa0121",
+        "sabonerune",
+        "sevenc-nanashi",
+        "siketyan",
+        "stmtk1",
+        "takana-v",
+        "tarepan",
+        "tomoish",
+        "tuna2134",
+        "weweweok",
+        "whiteball",
+        "y-chan"
+      ],
+      "descriptions": [
+        "/validate_kana APIを追加",
+        "起動時のエンジン設定項目追加",
+        "ユーザー辞書のインポート・エクスポート機能追加",
+        "ビルド成果物のディレクトリ構造を変更",
+        "書き込み系APIを一括で無効化可能に",
+        "開発環境の向上",
+        "バグ修正"
+      ],
+      "version": "0.15.0"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「小夜」「ずんだもん」「もち子さん」「青山龍星」のスタイルを追加・更新"
+      ],
+      "version": "0.14.7"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「栗田まろん」「あいえるたん」「満別花丸」「琴詠ニア」を追加"
+      ],
+      "version": "0.14.6"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「中国うさぎ」を追加",
+        "キャラクター「波音リツ」「もち子さん」のスタイルを追加"
+      ],
+      "version": "0.14.5"
+    },
+    {
+      "contributors": [
+        "Hiroshiba"
+      ],
+      "descriptions": [
+        "キャラクター「春歌ナナ」「猫使アル」「猫使ビィ」を追加",
+        "バグ修正"
+      ],
+      "version": "0.14.4"
+    },
+    {
+      "contributors": [
+        "Hiroshiba"
+      ],
+      "descriptions": [
+        "キャラクター「†聖騎士 紅桜†」「雀松朱司」「麒ヶ島宗麟」を追加",
+        "同時書き込みで辞書が破損する問題を修正"
+      ],
+      "version": "0.14.3"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "DirectML版の生成が遅い問題を修正"
+      ],
+      "version": "0.14.2"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "AquesTalkライクな記法で生成した音声のバグを修正"
+      ],
+      "version": "0.14.1"
+    },
+    {
+      "contributors": [
+        "aoirint",
+        "Appletigerv",
+        "haru3me",
+        "Hiroshiba",
+        "ksk001100",
+        "masinc",
+        "misogihagi",
+        "My-MC",
+        "nebocco",
+        "PickledChair",
+        "qryxip",
+        "qwerty2501",
+        "sabonerune",
+        "sarisia",
+        "Segu-g",
+        "sevenc-nanashi",
+        "shigobu",
+        "smly",
+        "takana-v",
+        "ts-klassen",
+        "whiteball",
+        "y-chan"
+      ],
+      "descriptions": [
+        "コアをRust言語に移行",
+        "セキュリティアップデート",
+        "スタイルごとに異なる立ち絵の提供を可能に",
+        "VVPPファイルの提供",
+        "設定GUIの提供",
+        "プリセットの保存",
+        "モーフィングAPIの仕様変更",
+        "DirectML利用時に適したGPUを自動選択",
+        "開発環境の向上",
+        "バグ修正"
+      ],
+      "version": "0.14.0"
+    }
+  ],
+  "url": "https://github.com/VOICEVOX/voicevox_engine",
+  "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06"
+}

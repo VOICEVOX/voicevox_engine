@@ -4,6 +4,8 @@
 # 良いGPUが自動的に選択されるようにしている
 # https://github.com/VOICEVOX/voicevox_engine/issues/502
 
+# 自前ビルドすることでブートローダーのハッシュ値が変わってウイルス判定を回避する効果もあるかも
+
 set -eux
 
 pyinstaller_version=$(pyinstaller -v)

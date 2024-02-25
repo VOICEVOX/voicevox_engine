@@ -5,21 +5,25 @@ from unittest import TestCase
 import numpy as np
 import numpy.testing
 import soundfile
+from numpy.typing import NDArray
 from soxr import resample
 
-from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility.connect_base64_waves import (
+    ConnectBase64WavesException,
+    connect_base64_waves,
+)
 
 
 def generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
-) -> np.ndarray:
+) -> NDArray[np.float32]:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
     wave = np.sin(2 * np.pi * frequency * x).astype(np.float32)
 
     return wave
 
 
-def encode_bytes(wave_ndarray: np.ndarray, samplerate: int) -> bytes:
+def encode_bytes(wave_ndarray: NDArray[np.float32], samplerate: int) -> bytes:
     wave_bio = io.BytesIO()
     soundfile.write(
         file=wave_bio,

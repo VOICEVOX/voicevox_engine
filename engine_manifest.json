@@ -9,10 +9,10 @@
     "port": 50021,
     "icon": "engine_manifest_assets/icon.png",
     "default_sampling_rate": 24000,
+    "frame_rate": 93.75,
     "terms_of_service": "engine_manifest_assets/terms_of_service.md",
     "update_infos": "engine_manifest_assets/update_infos.json",
     "dependency_licenses": "engine_manifest_assets/dependency_licenses.json",
-    "supported_vvlib_manifest_version": "0.15.0",
     "supported_features": {
         "adjust_mora_pitch": {
             "type": "bool",
@@ -52,7 +52,12 @@
         "synthesis_morphing" : {
             "type": "bool",
             "value": true,
-            "name": "2人の話者でモーフィングした音声を合成"
+            "name": "2種類のスタイルでモーフィングした音声を合成"
+        },
+        "sing" : {
+            "type": "bool",
+            "value": true,
+            "name": "歌唱音声合成"
         },
         "manage_library": {
             "type": "bool",

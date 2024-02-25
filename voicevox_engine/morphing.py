@@ -1,32 +1,42 @@
+"""
+WORLDを使ってモーフィングするためのモジュール。
+pyworldの入出力はnp.doubleやnp.float64なので注意。
+"""
+
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import chain
-from typing import Dict, List, Tuple
 
 import numpy as np
 import pyworld as pw
+from numpy.typing import NDArray
 from soxr import resample
 
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleInfo
+from .core.core_adapter import CoreAdapter
+from .metas.Metas import (
+    Speaker,
+    SpeakerStyle,
+    SpeakerSupportPermittedSynthesisMorphing,
+    StyleId,
+)
 from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
-from .synthesis_engine import SynthesisEngine
+from .tts_pipeline.tts_engine import TTSEngine
 
 
-# FIXME: ndarray type hint, https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder/blob/2b64f86197573497c685c785c6e0e743f407b63e/pyworld/pyworld.pyx#L398  # noqa
 @dataclass(frozen=True)
 class MorphingParameter:
     fs: int
     frame_period: float
-    base_f0: np.ndarray
-    base_aperiodicity: np.ndarray
-    base_spectrogram: np.ndarray
-    target_spectrogram: np.ndarray
+    base_f0: NDArray[np.float64]
+    base_aperiodicity: NDArray[np.float64]
+    base_spectrogram: NDArray[np.float64]
+    target_spectrogram: NDArray[np.float64]
 
 
 def create_morphing_parameter(
-    base_wave: np.ndarray,
-    target_wave: np.ndarray,
+    base_wave: NDArray[np.double],
+    target_wave: NDArray[np.double],
     fs: int,
 ) -> MorphingParameter:
     frame_period = 1.0
@@ -49,24 +59,24 @@ def create_morphing_parameter(
 
 
 def get_morphable_targets(
-    speakers: List[Speaker],
-    base_speakers: List[int],
-) -> List[Dict[int, MorphableTargetInfo]]:
+    speakers: list[Speaker],
+    base_style_ids: list[StyleId],
+) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     speakers: 全話者の情報
-    base_speakers: モーフィング可能か判定したいベースの話者リスト（スタイルID）
+    base_speakers: モーフィング可能か判定したいベースのスタイルIDリスト
     """
     speaker_lookup = construct_lookup(speakers)
 
     morphable_targets_arr = []
-    for base_speaker in base_speakers:
+    for base_style_id in base_style_ids:
         morphable_targets = dict()
         for style in chain.from_iterable(speaker.styles for speaker in speakers):
             morphable_targets[style.id] = MorphableTargetInfo(
                 is_morphable=is_synthesis_morphing_permitted(
                     speaker_lookup=speaker_lookup,
-                    base_speaker=base_speaker,
-                    target_speaker=style.id,
+                    base_style_id=base_style_id,
+                    target_style_id=style.id,
                 )
             )
         morphable_targets_arr.append(morphable_targets)
@@ -75,21 +85,21 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: Dict[int, Tuple[Speaker, StyleInfo]],
-    base_speaker: int,
-    target_speaker: int,
+    speaker_lookup: dict[StyleId, tuple[Speaker, SpeakerStyle]],
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> bool:
     """
     指定されたstyle_idがモーフィング可能かどうか返す
     style_idが見つからない場合はStyleIdNotFoundErrorを送出する
     """
 
-    base_speaker_data = speaker_lookup[base_speaker]
-    target_speaker_data = speaker_lookup[target_speaker]
+    base_speaker_data = speaker_lookup[base_style_id]
+    target_speaker_data = speaker_lookup[target_style_id]
 
     if base_speaker_data is None or target_speaker_data is None:
         raise StyleIdNotFoundError(
-            base_speaker if base_speaker_data is None else target_speaker
+            base_style_id if base_speaker_data is None else target_style_id
         )
 
     base_speaker_info, _ = base_speaker_data
@@ -128,21 +138,22 @@ def is_synthesis_morphing_permitted(
 
 
 def synthesis_morphing_parameter(
-    engine: SynthesisEngine,
+    engine: TTSEngine,
+    core: CoreAdapter,
     query: AudioQuery,
-    base_speaker: int,
-    target_speaker: int,
+    base_style_id: StyleId,
+    target_style_id: StyleId,
 ) -> MorphingParameter:
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
-    query.outputSamplingRate = engine.default_sampling_rate
+    query.outputSamplingRate = core.default_sampling_rate
 
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesis(query=query, style_id=base_speaker).astype("float")
-    target_wave = engine.synthesis(query=query, style_id=target_speaker).astype("float")
+    base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
+    target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
 
     return create_morphing_parameter(
         base_wave=base_wave,
@@ -156,7 +167,7 @@ def synthesis_morphing(
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float32]:
     """
     指定した割合で、パラメータをもとにモーフィングした音声を生成します。
 
@@ -167,11 +178,11 @@ def synthesis_morphing(
 
     morph_rate : float
         モーフィングの割合
-        0.0でベースの話者、1.0でターゲットの話者に近づきます。
+        0.0でベースの音声、1.0でターゲットの音声に近づきます。
 
     Returns
     -------
-    generated : np.ndarray
+    generated : NDArray[np.float32]
         モーフィングした音声
 
     Raises
@@ -194,9 +205,9 @@ def synthesis_morphing(
         morph_param.base_aperiodicity,
         morph_param.fs,
         morph_param.frame_period,
-    )
+    ).astype(np.float32)
 
-    # TODO: synthesis_engine.py でのリサンプル処理と共通化する
+    # TODO: tts_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
         y_h = resample(y_h, morph_param.fs, output_fs)
 
