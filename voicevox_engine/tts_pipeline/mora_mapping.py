@@ -387,6 +387,6 @@ mora_phonemes_to_mora_kana: dict[str, _MoraKana] = {
 }
 # 「ヒ」→「hi」
 mora_kana_to_mora_phonemes: dict[_MoraKana, tuple[Consonant | None, BaseVowel]] = {
-    kana: (consonant, vowel)
+    kana: (consonant, vowel)  # noqa B035
     for [kana, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }
