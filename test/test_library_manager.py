@@ -16,7 +16,7 @@ vvlib_manifest_name = "vvlib_manifest.json"
 
 
 class TestLibraryManager(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.tmp_dir = TemporaryDirectory()
         self.tmp_dir_path = Path(self.tmp_dir.name)
@@ -39,7 +39,7 @@ class TestLibraryManager(TestCase):
             zf.writestr(vvlib_manifest_name, json.dumps(self.vvlib_manifest))
         self.library_file = open(self.library_filename, "br")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.tmp_dir.cleanup()
         self.library_file.close()
         self.library_filename.unlink()
@@ -57,7 +57,7 @@ class TestLibraryManager(TestCase):
         vvlib_manifest = copy.deepcopy(self.vvlib_manifest)
         return {**vvlib_manifest, **kwargs}
 
-    def test_installed_libraries(self):
+    def test_installed_libraries(self) -> None:
         self.assertEqual(self.library_manger.installed_libraries(), {})
 
         self.library_manger.install_library(
@@ -72,7 +72,7 @@ class TestLibraryManager(TestCase):
         self.library_manger.uninstall_library(self.library_uuid)
         self.assertEqual(self.library_manger.installed_libraries(), {})
 
-    def test_install_library(self):
+    def test_install_library(self) -> None:
         # エンジンが把握していないライブラリのテスト
         invalid_uuid = "52398bd5-3cc3-406c-a159-dfec5ace4bab"
         with self.assertRaises(HTTPException) as e:
@@ -184,7 +184,7 @@ class TestLibraryManager(TestCase):
 
         os.remove(invalid_vvlib_name)
 
-    def test_uninstall_library(self):
+    def test_uninstall_library(self) -> None:
         # TODO: アンインストール出来ないライブラリをテストできるようにしたい
         with self.assertRaises(HTTPException) as e:
             self.library_manger.uninstall_library(self.library_uuid)

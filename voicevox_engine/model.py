@@ -19,7 +19,7 @@ class Mora(BaseModel):
     vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
@@ -40,7 +40,7 @@ class AccentPhrase(BaseModel):
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
     is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
@@ -64,7 +64,7 @@ class AudioQuery(BaseModel):
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: Optional[str] = Field(title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()

@@ -19,7 +19,7 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
 
 
 class TestMockTTSEngine(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.accent_phrases_hello_hiho = [
@@ -47,15 +47,15 @@ class TestMockTTSEngine(TestCase):
         ]
         self.engine = MockTTSEngine()
 
-    def test_update_length(self):
+    def test_update_length(self) -> None:
         """`.update_length()` がエラー無く生成をおこなう"""
         self.engine.update_length(self.accent_phrases_hello_hiho, StyleId(0))
 
-    def test_update_pitch(self):
+    def test_update_pitch(self) -> None:
         """`.update_pitch()` がエラー無く生成をおこなう"""
         self.engine.update_pitch(self.accent_phrases_hello_hiho, StyleId(0))
 
-    def test_synthesize_wave(self):
+    def test_synthesize_wave(self) -> None:
         """`.synthesize_wave()` がエラー無く生成をおこなう"""
         self.engine.synthesize_wave(
             AudioQuery(

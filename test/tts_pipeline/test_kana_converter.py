@@ -11,7 +11,7 @@ def parse_kana(text: str) -> list[AccentPhrase]:
 
 
 class TestParseKana(TestCase):
-    def test_phrase_length(self):
+    def test_phrase_length(self) -> None:
         self.assertEqual(len(parse_kana("ア'/ア'")), 2)
         self.assertEqual(len(parse_kana("ア'、ア'")), 2)
         self.assertEqual(len(parse_kana("ア'/ア'/ア'/ア'/ア'")), 5)
@@ -20,7 +20,7 @@ class TestParseKana(TestCase):
         self.assertEqual(len(parse_kana("ギェ'")), 1)
         self.assertEqual(len(parse_kana("ギェ'、ギェ'/ギェ'")), 3)
 
-    def test_accent(self):
+    def test_accent(self) -> None:
         self.assertEqual(parse_kana("シャ'シシュシェショ")[0].accent, 1)
         self.assertEqual(parse_kana("シャ'_シシュシェショ")[0].accent, 1)
         self.assertEqual(parse_kana("シャシ'シュシェショ")[0].accent, 2)
@@ -30,7 +30,7 @@ class TestParseKana(TestCase):
         self.assertEqual(parse_kana("シャシシュシェショ'")[0].accent, 5)
         self.assertEqual(parse_kana("シャ_シシュシェショ'")[0].accent, 5)
 
-    def test_mora_length(self):
+    def test_mora_length(self) -> None:
         self.assertEqual(len(parse_kana("シャ'シシュシェショ")[0].moras), 5)
         self.assertEqual(len(parse_kana("シャ'_シシュシェショ")[0].moras), 5)
         self.assertEqual(len(parse_kana("シャシ'シュシェショ")[0].moras), 5)
@@ -38,17 +38,17 @@ class TestParseKana(TestCase):
         self.assertEqual(len(parse_kana("シャシシュシェショ'")[0].moras), 5)
         self.assertEqual(len(parse_kana("シャ_シシュシェショ'")[0].moras), 5)
 
-    def test_pause(self):
+    def test_pause(self) -> None:
         self.assertIsNone(parse_kana("ア'/ア'")[0].pause_mora)
         self.assertIsNone(parse_kana("ア'/ア'")[1].pause_mora)
         self.assertIsNotNone(parse_kana("ア'、ア'")[0].pause_mora)
         self.assertIsNone(parse_kana("ア'、ア'")[1].pause_mora)
 
-    def test_unvoice(self):
+    def test_unvoice(self) -> None:
         self.assertEqual(parse_kana("ス'")[0].moras[0].vowel, "u")
         self.assertEqual(parse_kana("_ス'")[0].moras[0].vowel, "U")
 
-    def test_roundtrip(self):
+    def test_roundtrip(self) -> None:
         for text in ["コンニチワ'", "ワタシワ'/シャチョオデ'_ス", "トテモ'、エラ'インデス"]:
             self.assertEqual(create_kana(parse_kana(text)), text)
 
@@ -61,8 +61,8 @@ class TestParseKana(TestCase):
         accent_phrases = kana_converter.parse_kana(text)
         self.assertEqual(expected_accent_phrases, accent_phrases)
 
-    def test_accent_phrase_marks(self):
-        def a_slash_a_accent_phrases():
+    def test_accent_phrase_marks(self) -> None:
+        def a_slash_a_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -100,7 +100,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def a_jp_comma_a_accent_phrases():
+        def a_jp_comma_a_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -145,7 +145,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def a_slash_a_slash_a_slash_a_slash_a_accent_phrases():
+        def a_slash_a_slash_a_slash_a_slash_a_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -225,7 +225,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def su_accent_phrases():
+        def su_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -249,7 +249,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def under_score_su_accent_phrases():
+        def under_score_su_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -273,7 +273,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def gye_accent_phrases():
+        def gye_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -297,7 +297,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def gye_gye_gye_accent_phrases():
+        def gye_gye_gye_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -356,8 +356,8 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-    def test_interrogative_accent_phrase_marks(self):
-        def a_question_mark_accent_phrases():
+    def test_interrogative_accent_phrase_marks(self) -> None:
+        def a_question_mark_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -382,7 +382,7 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def gye_gye_gye_question_mark_accent_phrases():
+        def gye_gye_gye_question_mark_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -442,7 +442,9 @@ class TestParseKana(TestCase):
             expected_accent_phrases=expected_accent_phrases,
         )
 
-        def a_pause_a_question_pause_a_question_a_question_mark_accent_phrases():
+        def a_pause_a_question_pause_a_question_a_question_mark_accent_phrases() -> list[
+            AccentPhrase
+        ]:
             return [
                 AccentPhrase(
                     moras=[
@@ -534,7 +536,7 @@ class TestParseKanaException(TestCase):
             parse_kana(kana)
         self.assertEqual(err.exception.errcode, code)
 
-    def test_exceptions(self):
+    def test_exceptions(self) -> None:
         self._assert_error_code("アクセント", ParseKanaErrorCode.ACCENT_NOTFOUND)
         self._assert_error_code("'アクセント", ParseKanaErrorCode.ACCENT_TOP)
         self._assert_error_code("ア'ク'セント", ParseKanaErrorCode.ACCENT_TWICE)
@@ -562,8 +564,8 @@ class TestParseKanaException(TestCase):
 
 
 class TestCreateKana(TestCase):
-    def test_create_kana_interrogative(self):
-        def koreha_arimasuka_accent_phrases():
+    def test_create_kana_interrogative(self) -> None:
+        def koreha_arimasuka_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -652,7 +654,7 @@ class TestCreateKana(TestCase):
         accent_phrases[-1].is_interrogative = True
         self.assertEqual(create_kana(accent_phrases), "コレワ'/アリマ'_スカ？")
 
-        def kya_accent_phrases():
+        def kya_accent_phrases() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[

@@ -30,7 +30,7 @@ def _equal_speakers(a: list[Speaker], b: list[Speaker]) -> bool:
 
 
 class TestMetasStore(TestCase):
-    def test_filter_speakers_and_styles_with_speaker(self):
+    def test_filter_speakers_and_styles_with_speaker(self) -> None:
         # Inputs
         speaker_talk_only = _gen_speaker(["talk"])
         speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
@@ -63,7 +63,7 @@ class TestMetasStore(TestCase):
             for style in speaker.styles:
                 self.assertEqual(style.type, "talk")
 
-    def test_filter_speakers_and_styles_with_singer(self):
+    def test_filter_speakers_and_styles_with_singer(self) -> None:
         # Inputs
         speaker_talk_only = _gen_speaker(["talk"])
         speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])

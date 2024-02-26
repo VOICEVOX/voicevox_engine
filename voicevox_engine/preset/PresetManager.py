@@ -174,7 +174,7 @@ class PresetManager:
 
         return id
 
-    def _write_on_file(self):
+    def _write_on_file(self) -> None:
         """プリセット情報のファイル（簡易データベース）書き込み"""
         with open(self.preset_path, mode="w", encoding="utf-8") as f:
             yaml.safe_dump(

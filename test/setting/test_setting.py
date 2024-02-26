@@ -7,11 +7,11 @@ from voicevox_engine.setting.SettingLoader import SettingHandler
 
 
 class TestSettingLoader(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.tmp_dir = TemporaryDirectory()
         self.tmp_dir_path = Path(self.tmp_dir.name)
 
-    def test_loading_1(self):
+    def test_loading_1(self) -> None:
         setting_loader = SettingHandler(Path("not_exist.yaml"))
         settings = setting_loader.load()
 
@@ -20,7 +20,7 @@ class TestSettingLoader(TestCase):
             {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps},
         )
 
-    def test_loading_2(self):
+    def test_loading_2(self) -> None:
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-1.yaml")
         )
@@ -31,7 +31,7 @@ class TestSettingLoader(TestCase):
             {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps},
         )
 
-    def test_loading_3(self):
+    def test_loading_3(self) -> None:
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-2.yaml")
         )
@@ -42,7 +42,7 @@ class TestSettingLoader(TestCase):
             {"allow_origin": None, "cors_policy_mode": "all"},
         )
 
-    def test_loading_4(self):
+    def test_loading_4(self) -> None:
         setting_loader = SettingHandler(
             setting_file_path=Path("test/setting/setting-test-load-3.yaml")
         )
@@ -56,7 +56,7 @@ class TestSettingLoader(TestCase):
             },
         )
 
-    def test_dump(self):
+    def test_dump(self) -> None:
         setting_loader = SettingHandler(
             setting_file_path=Path(self.tmp_dir_path / "setting-test-dump.yaml")
         )
@@ -69,5 +69,5 @@ class TestSettingLoader(TestCase):
             {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps},
         )
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.tmp_dir.cleanup()
