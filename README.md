@@ -519,6 +519,11 @@ LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
 
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
+
 ### コードフォーマット
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
@@ -665,7 +670,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ## 事例紹介
 
-**[voicevox-client](https://github.com/voicevox-client) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINEの各言語向けAPIラッパー
+**[voicevox-client](https://github.com/voicevox-client) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINE の各言語向け API ラッパー
 
 ## ライセンス
 
