@@ -5,13 +5,28 @@ from typing import Callable, Literal, Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora
+from ..model import AccentPhrase, Mora, NonOjtPhonemeError, OjtUnknownPhonemeError
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .phoneme import Consonant, Vowel
 
-OjtVowel = Literal[
-    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
-]
-OjtConsonant = Literal[
+# OpenJTalk が出力する音素の一覧。
+_OJT_VOWELS = (
+    "A",
+    "E",
+    "I",
+    "N",
+    "O",
+    "U",
+    "a",
+    "cl",
+    "e",
+    "i",
+    "o",
+    "pau",
+    "sil",
+    "u",
+)
+_OJT_CONSONANTS = (
     "b",
     "by",
     "ch",
@@ -44,9 +59,9 @@ OjtConsonant = Literal[
     "w",
     "y",
     "z",
-]
-OjtUnknown = Literal["xx"]
-OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
+)
+_OJT_UNKNOWNS = ("xx",)
+_OJT_PHONEMES = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
 
 
 @dataclass
@@ -82,10 +97,16 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self) -> OjtPhoneme:
+    def phoneme(self) -> Vowel | Consonant | Literal["sil"]:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        # FIXME: バリデーションする
-        return self.contexts["p3"]  # type: ignore
+        p = self.contexts["p3"]
+        if p not in _OJT_PHONEMES:
+            raise NonOjtPhonemeError()
+        elif p == "xx":
+            raise OjtUnknownPhonemeError()
+        else:
+            # NOTE: mypy が型推論に失敗。pyright の推論した型が返り値型と一致することをマニュアル確認済み @2024-01-10 tarepan
+            return p  # type: ignore
 
     @property
     def mora_index(self) -> int:
