@@ -330,7 +330,9 @@ def rewrite_word(
     # 既存単語の上書きによる辞書データの更新
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
-        raise HTTPException(status_code=422, detail="UUIDに該当するワードが見つかりませんでした")
+        raise HTTPException(
+            status_code=422, detail="UUIDに該当するワードが見つかりませんでした"
+        )
     user_dict[word_uuid] = word
 
     # 更新された辞書データの保存と適用
@@ -357,7 +359,9 @@ def delete_word(
     # 既存単語の削除による辞書データの更新
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
-        raise HTTPException(status_code=422, detail="IDに該当するワードが見つかりませんでした")
+        raise HTTPException(
+            status_code=422, detail="IDに該当するワードが見つかりませんでした"
+        )
     del user_dict[word_uuid]
 
     # 更新された辞書データの保存と適用

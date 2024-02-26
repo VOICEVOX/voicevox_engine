@@ -2,7 +2,6 @@
 ユーザー辞書の言葉のAPIのテスト
 """
 
-
 from fastapi.testclient import TestClient
 
 
