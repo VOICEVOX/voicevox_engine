@@ -77,7 +77,7 @@ syrupy = "^4.6.1"
 types-pyyaml = "^6.0"
 
 [tool.poetry.group.license.dependencies]
-pip-licenses = "^4.2.0"
+pip-licenses = "^4.3.4"
 
 [build-system]
 requires = ["poetry-core"]
