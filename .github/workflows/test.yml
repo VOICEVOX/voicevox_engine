@@ -33,6 +33,11 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
+      - name: Validate format version of poetry.lock
+        run: |
+          poetry lock --no-update
+          git diff --exit-code
+
       - name: Run poetry and check
         run: |
           poetry export --without-hashes -o requirements.txt.check
