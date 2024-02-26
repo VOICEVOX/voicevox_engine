@@ -46,12 +46,12 @@ authors = ["Hiroshiba <hihokaruta@gmail.com>"]
 python = "~3.11"
 numpy = "^1.20.0"
 fastapi = "^0.103.2"
-python-multipart = "^0.0.5"
+python-multipart = "^0.0.5" # NOTE: required by fastapi
 uvicorn = "^0.15.0"
 soundfile = "^0.12.1"
 pyyaml = "^6.0"
 pyworld = "^0.3.0"
-jinja2 = "^3.1.2"
+jinja2 = "^3.1.2" # NOTE: required by fastapi
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "b35fc89fe42948a28e33aed886ea145a51113f88" }
 semver = "^3.0.0"
 platformdirs = "^3.10.0"
