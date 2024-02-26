@@ -12,13 +12,17 @@ from syrupy.assertion import SnapshotAssertion
 from voicevox_engine.metas.Metas import Speaker
 
 
-def test_話者一覧が取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_話者一覧が取得できる(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     response = client.get("/speakers")
     assert response.status_code == 200
     assert snapshot_json == response.json()
 
 
-def test_話者の情報を取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_話者の情報を取得できる(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     speakers = parse_obj_as(list[Speaker], client.get("/speakers").json())
     for speaker in speakers:
         response = client.get(
@@ -29,13 +33,17 @@ def test_話者の情報を取得できる(client: TestClient, snapshot_json: Sn
         ) == hash_long_string(response.json())
 
 
-def test_歌手一覧が取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_歌手一覧が取得できる(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     response = client.get("/singers")
     assert response.status_code == 200
     assert snapshot_json == response.json()
 
 
-def test_歌手の情報を取得できる(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_歌手の情報を取得できる(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     singers = parse_obj_as(list[Speaker], client.get("/singers").json())
     for singer in singers:
         response = client.get(

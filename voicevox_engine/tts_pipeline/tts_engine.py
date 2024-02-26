@@ -135,7 +135,9 @@ def count_frame_per_unit(
         consonant_frames = (
             _to_frame(mora.consonant_length) if mora.consonant_length is not None else 0
         )
-        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+        mora_frames = (
+            vowel_frames + consonant_frames
+        )  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
 
         if mora.consonant:
             frame_per_phoneme += [consonant_frames]

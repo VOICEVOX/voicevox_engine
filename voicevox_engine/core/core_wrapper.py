@@ -379,7 +379,9 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                         err = err_
             raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
     else:
-        raise RuntimeError(f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません")
+        raise RuntimeError(
+            f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
+        )
 
 
 def _type_initialize(core_cdll: CDLL) -> None:

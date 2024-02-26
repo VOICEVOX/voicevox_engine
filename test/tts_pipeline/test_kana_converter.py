@@ -49,7 +49,11 @@ class TestParseKana(TestCase):
         self.assertEqual(parse_kana("_ス'")[0].moras[0].vowel, "U")
 
     def test_roundtrip(self):
-        for text in ["コンニチワ'", "ワタシワ'/シャチョオデ'_ス", "トテモ'、エラ'インデス"]:
+        for text in [
+            "コンニチワ'",
+            "ワタシワ'/シャチョオデ'_ス",
+            "トテモ'、エラ'インデス",
+        ]:
             self.assertEqual(create_kana(parse_kana(text)), text)
 
         for text in ["ヲ'", "ェ'"]:

@@ -45,9 +45,10 @@ class TestLibraryManager(TestCase):
         self.library_filename.unlink()
 
     def create_vvlib_without_manifest(self, filename: str) -> None:
-        with ZipFile(filename, "w") as zf_out, ZipFile(
-            self.library_filename, "r"
-        ) as zf_in:
+        with (
+            ZipFile(filename, "w") as zf_out,
+            ZipFile(self.library_filename, "r") as zf_in,
+        ):
             for file in zf_in.infolist():
                 buffer = zf_in.read(file.filename)
                 if file.filename != vvlib_manifest_name:
@@ -77,12 +78,18 @@ class TestLibraryManager(TestCase):
         invalid_uuid = "52398bd5-3cc3-406c-a159-dfec5ace4bab"
         with self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(invalid_uuid, self.library_file)
-        self.assertEqual(e.exception.detail, f"指定された音声ライブラリ {invalid_uuid} が見つかりません。")
+        self.assertEqual(
+            e.exception.detail,
+            f"指定された音声ライブラリ {invalid_uuid} が見つかりません。",
+        )
 
         # 不正なZIPファイルのテスト
         with self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, BytesIO())
-        self.assertEqual(e.exception.detail, f"音声ライブラリ {self.library_uuid} は不正なファイルです。")
+        self.assertEqual(
+            e.exception.detail,
+            f"音声ライブラリ {self.library_uuid} は不正なファイルです。",
+        )
 
         # vvlib_manifestの存在確認のテスト
         invalid_vvlib_name = "test/invalid.vvlib"
@@ -129,7 +136,8 @@ class TestLibraryManager(TestCase):
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
-            e.exception.detail, f"指定された音声ライブラリ {self.library_uuid} のversionが不正です。"
+            e.exception.detail,
+            f"指定された音声ライブラリ {self.library_uuid} のversionが不正です。",
         )
 
         # vvlib_manifestの不正なmanifest_versionのテスト
@@ -156,7 +164,8 @@ class TestLibraryManager(TestCase):
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
-            e.exception.detail, f"指定された音声ライブラリ {self.library_uuid} は未対応です。"
+            e.exception.detail,
+            f"指定された音声ライブラリ {self.library_uuid} は未対応です。",
         )
 
         # vvlib_manifestのインストール先エンジンの検証のテスト
@@ -189,7 +198,8 @@ class TestLibraryManager(TestCase):
         with self.assertRaises(HTTPException) as e:
             self.library_manger.uninstall_library(self.library_uuid)
         self.assertEqual(
-            e.exception.detail, f"指定された音声ライブラリ {self.library_uuid} はインストールされていません。"
+            e.exception.detail,
+            f"指定された音声ライブラリ {self.library_uuid} はインストールされていません。",
         )
 
         self.library_manger.install_library(self.library_uuid, self.library_file)
