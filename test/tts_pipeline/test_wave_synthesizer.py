@@ -64,7 +64,7 @@ def _gen_mora(
     )
 
 
-def test_apply_prepost_silence():
+def test_apply_prepost_silence() -> None:
     """Test `apply_prepost_silence`."""
     # Inputs
     query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
@@ -85,7 +85,7 @@ def test_apply_prepost_silence():
     assert moras_with_silence == true_moras_with_silence
 
 
-def test_apply_speed_scale():
+def test_apply_speed_scale() -> None:
     """Test `apply_speed_scale`."""
     # Inputs
     query = _gen_query(speedScale=2.0)
@@ -112,7 +112,7 @@ def test_apply_speed_scale():
     assert moras == true_moras
 
 
-def test_apply_pitch_scale():
+def test_apply_pitch_scale() -> None:
     """Test `apply_pitch_scale`."""
     # Inputs
     query = _gen_query(pitchScale=2.0)
@@ -139,7 +139,7 @@ def test_apply_pitch_scale():
     assert moras == true_moras
 
 
-def test_apply_intonation_scale():
+def test_apply_intonation_scale() -> None:
     """Test `apply_intonation_scale`."""
     # Inputs
     query = _gen_query(intonationScale=0.5)
@@ -166,7 +166,7 @@ def test_apply_intonation_scale():
     assert moras == true_moras
 
 
-def test_apply_volume_scale():
+def test_apply_volume_scale() -> None:
     """Test `apply_volume_scale`."""
     # Inputs
     query = _gen_query(volumeScale=3.0)
@@ -181,7 +181,7 @@ def test_apply_volume_scale():
     assert np.allclose(wave, true_wave)
 
 
-def test_apply_output_sampling_rate():
+def test_apply_output_sampling_rate() -> None:
     """Test `apply_output_sampling_rate`."""
     # Inputs
     query = _gen_query(outputSamplingRate=12000)
@@ -198,7 +198,7 @@ def test_apply_output_sampling_rate():
     assert wave.shape[0] == true_wave.shape[0]
 
 
-def test_apply_output_stereo():
+def test_apply_output_stereo() -> None:
     """Test `apply_output_stereo`."""
     # Inputs
     query = _gen_query(outputStereo=True)
@@ -213,7 +213,7 @@ def test_apply_output_stereo():
     assert np.array_equal(wave, true_wave)
 
 
-def test_count_frame_per_unit():
+def test_count_frame_per_unit() -> None:
     """Test `count_frame_per_unit`."""
     # Inputs
     moras = [
@@ -241,7 +241,7 @@ def test_count_frame_per_unit():
     assert np.array_equal(frame_per_mora, true_frame_per_mora)
 
 
-def test_query_to_decoder_feature():
+def test_query_to_decoder_feature() -> None:
     """Test `query_to_decoder_feature`."""
     # Inputs
     accent_phrases = [
@@ -300,7 +300,7 @@ def test_query_to_decoder_feature():
     assert np.array_equal(f0, true_f0)
 
 
-def test_raw_wave_to_output_wave_with_resample():
+def test_raw_wave_to_output_wave_with_resample() -> None:
     """Test `raw_wave_to_output_wave` with resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
@@ -316,7 +316,7 @@ def test_raw_wave_to_output_wave_with_resample():
     assert wave.shape == true_wave_shape
 
 
-def test_raw_wave_to_output_wave_without_resample():
+def test_raw_wave_to_output_wave_without_resample() -> None:
     """Test `raw_wave_to_output_wave`  without resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputStereo=True)

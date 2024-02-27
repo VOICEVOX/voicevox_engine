@@ -115,7 +115,7 @@ class Label:
         """BreathGroupのインデックス"""
         return self.contexts["i3"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Label phoneme='{self.phoneme}'>"
 
 

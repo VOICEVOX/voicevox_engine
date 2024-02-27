@@ -40,7 +40,7 @@ def features(ojt_container: OjtContainer) -> list[str]:
 
 
 class TestBaseLabels(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         # pyopenjtalk.extract_fullcontext("こんにちは、ヒホです。")の結果
         # 出来る限りテスト内で他のライブラリに依存しないため、
@@ -143,14 +143,14 @@ def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
 
 
 class TestLabel(TestBaseLabels):
-    def test_phoneme(self):
+    def test_phoneme(self) -> None:
         """Label に含まれる音素をテスト"""
         self.assertEqual(
             " ".join([label.phoneme for label in self.labels_hello_hiho]),
             "sil k o N n i ch i w a pau h i h o d e s U sil",
         )
 
-    def test_is_pause(self):
+    def test_is_pause(self) -> None:
         """Label のポーズ判定をテスト"""
         self.assertEqual(
             [label.is_pause() for label in self.labels_hello_hiho],
@@ -262,19 +262,19 @@ class TestAccentPhraseLabel(TestBaseLabels):
             self.labels_hello_hiho[11:19]
         )
 
-    def test_accent(self):
+    def test_accent(self) -> None:
         """AccentPhraseLabel に含まれるアクセント位置をテスト"""
         self.assertEqual(self.accent_phrase_hello.accent, 5)
         self.assertEqual(self.accent_phrase_hiho.accent, 1)
 
-    def test_phonemes(self):
+    def test_phonemes(self) -> None:
         """AccentPhraseLabel に含まれる音素系列をテスト"""
         outputs_hello = space_jointed_phonemes(self.accent_phrase_hello)
         outputs_hiho = space_jointed_phonemes(self.accent_phrase_hiho)
         self.assertEqual(outputs_hello, "k o N n i ch i w a")
         self.assertEqual(outputs_hiho, "h i h o d e s U")
 
-    def test_features(self):
+    def test_features(self) -> None:
         """AccentPhraseLabel に含まれる features をテスト"""
         expects = self.test_case_hello_hiho
         self.assertEqual(features(self.accent_phrase_hello), expects[1:10])
@@ -291,14 +291,14 @@ class TestBreathGroupLabel(TestBaseLabels):
             self.labels_hello_hiho[11:19]
         )
 
-    def test_phonemes(self):
+    def test_phonemes(self) -> None:
         """BreathGroupLabel に含まれる音素系列をテスト"""
         outputs_hello = space_jointed_phonemes(self.breath_group_hello)
         outputs_hiho = space_jointed_phonemes(self.breath_group_hiho)
         self.assertEqual(outputs_hello, "k o N n i ch i w a")
         self.assertEqual(outputs_hiho, "h i h o d e s U")
 
-    def test_features(self):
+    def test_features(self) -> None:
         """BreathGroupLabel に含まれる features をテスト"""
         expects = self.test_case_hello_hiho
         self.assertEqual(features(self.breath_group_hello), expects[1:10])
@@ -310,19 +310,19 @@ class TestUtteranceLabel(TestBaseLabels):
         super().setUp()
         self.utterance_hello_hiho = UtteranceLabel.from_labels(self.labels_hello_hiho)
 
-    def test_phonemes(self):
+    def test_phonemes(self) -> None:
         """UtteranceLabel に含まれる音素系列をテスト"""
         outputs_hello_hiho = space_jointed_phonemes(self.utterance_hello_hiho)
         expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
         self.assertEqual(outputs_hello_hiho, expects_hello_hiho)
 
-    def test_features(self):
+    def test_features(self) -> None:
         """UtteranceLabel に含まれる features をテスト"""
         self.assertEqual(features(self.utterance_hello_hiho), self.test_case_hello_hiho)
 
 
 class TestMoraToText(TestCase):
-    def test_voice(self):
+    def test_voice(self) -> None:
         self.assertEqual(mora_to_text("a"), "ア")
         self.assertEqual(mora_to_text("i"), "イ")
         self.assertEqual(mora_to_text("ka"), "カ")
@@ -332,7 +332,7 @@ class TestMoraToText(TestCase):
         self.assertEqual(mora_to_text("ye"), "イェ")
         self.assertEqual(mora_to_text("wo"), "ウォ")
 
-    def test_unvoice(self):
+    def test_unvoice(self) -> None:
         self.assertEqual(mora_to_text("A"), "ア")
         self.assertEqual(mora_to_text("I"), "イ")
         self.assertEqual(mora_to_text("kA"), "カ")
@@ -340,7 +340,7 @@ class TestMoraToText(TestCase):
         self.assertEqual(mora_to_text("yE"), "イェ")
         self.assertEqual(mora_to_text("wO"), "ウォ")
 
-    def test_invalid_mora(self):
+    def test_invalid_mora(self) -> None:
         """変なモーラが来ても例外を投げない"""
         self.assertEqual(mora_to_text("x"), "x")
         self.assertEqual(mora_to_text(""), "")
@@ -357,7 +357,7 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-def test_text_to_accent_phrases_normal():
+def test_text_to_accent_phrases_normal() -> None:
     """`text_to_accent_phrases` は正常な日本語文をパースする"""
     # Inputs
     text = "こんにちは、ヒホです。"
@@ -402,7 +402,7 @@ def stub_unknown_features_koxx(_: str) -> list[str]:
     ]
 
 
-def test_text_to_accent_phrases_unknown():
+def test_text_to_accent_phrases_unknown() -> None:
     """`text_to_accent_phrases` は unknown 音素を含む features をパースする"""
     # Expects
     true_accent_phrases = [

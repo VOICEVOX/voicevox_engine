@@ -21,7 +21,7 @@ class Mora(BaseModel):
         title="音高"
     )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
@@ -42,7 +42,7 @@ class AccentPhrase(BaseModel):
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
     is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
@@ -68,7 +68,7 @@ class AudioQuery(BaseModel):
         title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される"
     )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()

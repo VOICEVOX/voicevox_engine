@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi import FastAPI
@@ -13,7 +14,7 @@ from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
 @pytest.fixture(scope="session")
-def app_params():
+def app_params() -> dict[str, Any]:
     cores = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(cores)
     latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
