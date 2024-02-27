@@ -2,9 +2,9 @@
 /mora_length API のテスト
 """
 
-from fastapi.testclient import TestClient
-
 from test.e2e.single_api.utils import gen_mora
+
+from fastapi.testclient import TestClient
 
 
 def test_post_mora_length_200(client: TestClient) -> None:
