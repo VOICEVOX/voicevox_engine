@@ -4,7 +4,7 @@
 
 from fastapi.testclient import TestClient
 
-from .utils import gen_mora
+from test.e2e.single_api.utils import gen_mora
 
 
 def test_post_mora_pitch_200(client: TestClient) -> None:
