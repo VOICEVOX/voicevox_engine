@@ -4,15 +4,21 @@
 
 from fastapi.testclient import TestClient
 
+from .utils import gen_mora
+
 
 def test_post_mora_pitch_200(client: TestClient) -> None:
     accent_phrases = [
-        {'moras': [
-            {'text': 'テ', 'consonant': 't', 'consonant_length': 2.3, 'vowel': 'e', 'vowel_length': 0.8, 'pitch': 3.3},
-            {'text': 'ス', 'consonant': 's', 'consonant_length': 2.1, 'vowel': 'U', 'vowel_length': 0.3, 'pitch': 0.0},
-            {'text': 'ト', 'consonant': 't', 'consonant_length': 2.3, 'vowel': 'o', 'vowel_length': 1.8, 'pitch': 4.1},
-        ], 'accent': 1, 'pause_mora': None, 'is_interrogative': False}
+        {
+            "moras": [
+                gen_mora("テ", "t", 2.3, "e", 0.8, 3.3),
+                gen_mora("ス", "s", 2.1, "U", 0.3, 0.0),
+                gen_mora("ト", "t", 2.3, "o", 1.8, 4.1),
+            ],
+            "accent": 1,
+            "pause_mora": None,
+            "is_interrogative": False,
+        }
     ]
     response = client.post("/mora_pitch", params={"speaker": 0}, json=accent_phrases)
     assert response.status_code == 200
-
