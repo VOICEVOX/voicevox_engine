@@ -10,9 +10,7 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_テキストと話者IDから音声を合成できる(
-    client: TestClient, snapshot_json: SnapshotAssertion
-) -> None:
+def test_テキストと話者IDから音声を合成できる(client: TestClient, snapshot: SnapshotAssertion) -> None:
     # テキストと話者 ID から AudioQuery を生成する
     audio_query_res = client.post(
         "/audio_query", params={"text": "テストです", "speaker": 0}
@@ -35,4 +33,4 @@ def test_テキストと話者IDから音声を合成できる(
     assert synthesis_res.headers["content-type"] == "audio/wav"
     # 音声波形が commit 間で不変である
     wave_str = " ".join(map(lambda point: str(point), wave))
-    assert snapshot_json == hash_long_string(wave_str)
+    assert snapshot == hash_long_string(wave_str)
