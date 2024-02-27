@@ -45,13 +45,13 @@ poetry install
   windowsやlinuxなどのOS
 * ARCHITECTURE
   x64やarm64などのCPUアーキテクチャ
-* PROCESSER
+* PROCESSOR
   cpuかgpuか
 
 を指定してダウンロードして環境変数をセットしてください。。
 
 ```
-curl -L https://github.com/VOICEVOX/voicevox_core/releases/download/0.14.3/voicevox_core-${OS}-${arch}-${processer}-${}.zip -o voicevox_core
+curl -L https://github.com/VOICEVOX/voicevox_core/releases/download/0.14.3/voicevox_core-${OS}-${arch}-${processor}-${}.zip -o voicevox_core
 unzip voicevox_core.zip
 VOICEVOX_DIR=voicevox_core
 ```
