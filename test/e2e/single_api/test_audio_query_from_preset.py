@@ -5,7 +5,8 @@
 from fastapi.testclient import TestClient
 
 # def test_post_audio_query_from_preset_200(client: TestClient) -> None:
-#     response = client.post("/audio_query_from_preset", params={"text": "テストです", "preset_id": 0})
+#     query_params = {"text": "テストです", "preset_id": 0}
+#     response = client.post("/audio_query_from_preset", params=query_params)
 #     assert response.status_code == 200
 
 
