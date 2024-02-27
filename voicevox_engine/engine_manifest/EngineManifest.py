@@ -41,9 +41,13 @@ class SupportedFeatures(BaseModel):
     adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
-    synthesis_morphing: bool = Field(title="2種類のスタイルでモーフィングした音声を合成")
+    synthesis_morphing: bool = Field(
+        title="2種類のスタイルでモーフィングした音声を合成"
+    )
     sing: Optional[bool] = Field(title="歌唱音声合成")
-    manage_library: Optional[bool] = Field(title="音声ライブラリのインストール・アンインストール")
+    manage_library: Optional[bool] = Field(
+        title="音声ライブラリのインストール・アンインストール"
+    )
 
 
 class EngineManifest(BaseModel):

@@ -17,7 +17,9 @@ class Mora(BaseModel):
     consonant_length: Optional[float] = Field(title="子音の音長")
     vowel: str = Field(title="母音の音素")
     vowel_length: float = Field(title="母音の音長")
-    pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
+    pitch: float = Field(
+        title="音高"
+    )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
     def __hash__(self) -> int:
         items = [
@@ -62,7 +64,9 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
-    kana: Optional[str] = Field(title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される")
+    kana: Optional[str] = Field(
+        title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される"
+    )
 
     def __hash__(self) -> int:
         items = [
@@ -258,7 +262,9 @@ class UserDictWord(BaseModel):
                     raise ValueError("無効な発音です。(捨て仮名の連続)")
             if pronunciation[i] == "ヮ":
                 if i != 0 and pronunciation[i - 1] not in ["ク", "グ"]:
-                    raise ValueError("無効な発音です。(「くゎ」「ぐゎ」以外の「ゎ」の使用)")
+                    raise ValueError(
+                        "無効な発音です。(「くゎ」「ぐゎ」以外の「ゎ」の使用)"
+                    )
         return pronunciation
 
     @validator("mora_count", pre=True, always=True)
@@ -268,7 +274,9 @@ class UserDictWord(BaseModel):
             return mora_count
 
         if mora_count is None:
-            rule_others = "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
+            rule_others = (
+                "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
+            )
             rule_line_i = "[キシチニヒミリギジビピ][ェャュョ]"
             rule_line_u = "[ツフヴ][ァ]|[ウスツフヴズ][ィ]|[ウツフヴ][ェォ]"
             rule_one_mora = "[ァ-ヴー]"
@@ -336,8 +344,12 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_pitch_scale: bool = Field(title="音高が調整可能かどうか")
     support_adjusting_intonation_scale: bool = Field(title="抑揚が調整可能かどうか")
     support_adjusting_volume_scale: bool = Field(title="音量が調整可能かどうか")
-    support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
-    support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
+    support_adjusting_silence_scale: bool = Field(
+        title="前後の無音時間が調節可能かどうか"
+    )
+    support_interrogative_upspeak: bool = Field(
+        title="疑似疑問文に対応しているかどうか"
+    )
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
 
 

@@ -213,7 +213,10 @@ def generate_app(
     # 許可されていないAPIを無効化する
     def check_disabled_mutable_api() -> None:
         if disable_mutable_api:
-            raise HTTPException(status_code=403, detail="エンジンの静的なデータを変更するAPIは無効化されています")
+            raise HTTPException(
+                status_code=403,
+                detail="エンジンの静的なデータを変更するAPIは無効化されています",
+            )
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
@@ -319,7 +322,9 @@ def generate_app(
                 selected_preset = preset
                 break
         else:
-            raise HTTPException(status_code=422, detail="該当するプリセットIDが見つかりません")
+            raise HTTPException(
+                status_code=422, detail="該当するプリセットIDが見つかりません"
+            )
 
         accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
         return AudioQuery(
@@ -517,7 +522,8 @@ def generate_app(
                 for i in range(len(queries)):
                     if queries[i].outputSamplingRate != sampling_rate:
                         raise HTTPException(
-                            status_code=422, detail="サンプリングレートが異なるクエリがあります"
+                            status_code=422,
+                            detail="サンプリングレートが異なるクエリがあります",
                         )
 
                     with TemporaryFile() as wav_file:
@@ -566,7 +572,8 @@ def generate_app(
             ]
         except StyleIdNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当するスタイル(style_id={e.style_id})が見つかりません"
+                status_code=404,
+                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
             )
 
     @app.post(
@@ -609,7 +616,8 @@ def generate_app(
                 )
         except StyleIdNotFoundError as e:
             raise HTTPException(
-                status_code=404, detail=f"該当するスタイル(style_id={e.style_id})が見つかりません"
+                status_code=404,
+                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
             )
 
         # 生成したパラメータはキャッシュされる
@@ -950,7 +958,9 @@ def generate_app(
             import traceback
 
             traceback.print_exc()
-            raise HTTPException(status_code=500, detail="追加情報が見つかりませんでした")
+            raise HTTPException(
+                status_code=500, detail="追加情報が見つかりませんでした"
+            )
 
         ret_data = SpeakerInfo(
             policy=policy,
@@ -997,7 +1007,9 @@ def generate_app(
             ret_data: list[DownloadableLibrary]
             """
             if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+                raise HTTPException(
+                    status_code=404, detail="この機能は実装されていません"
+                )
             return library_manager.downloadable_libraries()
 
         @app.get(
@@ -1014,7 +1026,9 @@ def generate_app(
             ret_data: dict[str, InstalledLibrary]
             """
             if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+                raise HTTPException(
+                    status_code=404, detail="この機能は実装されていません"
+                )
             return library_manager.installed_libraries()
 
         @app.post(
@@ -1037,7 +1051,9 @@ def generate_app(
                 音声ライブラリのID
             """
             if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+                raise HTTPException(
+                    status_code=404, detail="この機能は実装されていません"
+                )
             archive = BytesIO(await request.body())
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(
@@ -1061,7 +1077,9 @@ def generate_app(
                 音声ライブラリのID
             """
             if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(status_code=404, detail="この機能は実装されていません")
+                raise HTTPException(
+                    status_code=404, detail="この機能は実装されていません"
+                )
             library_manager.uninstall_library(library_uuid)
             return Response(status_code=204)
 
@@ -1069,7 +1087,8 @@ def generate_app(
     def initialize_speaker(
         style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         skip_reinit: bool = Query(  # noqa: B008
-            default=False, description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
+            default=False,
+            description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
         ),
         core_version: str | None = None,
     ) -> Response:
@@ -1092,7 +1111,9 @@ def generate_app(
         core = get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
 
-    @app.get("/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"])
+    @app.get(
+        "/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"]
+    )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
@@ -1107,7 +1128,9 @@ def generate_app(
             return read_dict()
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
+            raise HTTPException(
+                status_code=422, detail="辞書の読み込みに失敗しました。"
+            )
 
     @app.post(
         "/user_dict_word",
@@ -1150,10 +1173,14 @@ def generate_app(
             )
             return Response(content=word_uuid)
         except ValidationError as e:
-            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
+            raise HTTPException(
+                status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
+            )
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザー辞書への追加に失敗しました。")
+            raise HTTPException(
+                status_code=422, detail="ユーザー辞書への追加に失敗しました。"
+            )
 
     @app.put(
         "/user_dict_word/{word_uuid}",
@@ -1202,10 +1229,14 @@ def generate_app(
         except HTTPException:
             raise
         except ValidationError as e:
-            raise HTTPException(status_code=422, detail="パラメータに誤りがあります。\n" + str(e))
+            raise HTTPException(
+                status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
+            )
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
+            raise HTTPException(
+                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
+            )
 
     @app.delete(
         "/user_dict_word/{word_uuid}",
@@ -1229,7 +1260,9 @@ def generate_app(
             raise
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザー辞書の更新に失敗しました。")
+            raise HTTPException(
+                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
+            )
 
     @app.post(
         "/import_user_dict",
@@ -1256,7 +1289,9 @@ def generate_app(
             return Response(status_code=204)
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="ユーザー辞書のインポートに失敗しました。")
+            raise HTTPException(
+                status_code=422, detail="ユーザー辞書のインポートに失敗しました。"
+            )
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
@@ -1395,12 +1430,22 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     parser.add_argument(
-        "--host", type=str, default="127.0.0.1", help="接続を受け付けるホストアドレスです。"
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="接続を受け付けるホストアドレスです。",
     )
-    parser.add_argument("--port", type=int, default=50021, help="接続を受け付けるポート番号です。")
-    parser.add_argument("--use_gpu", action="store_true", help="GPUを使って音声合成するようになります。")
     parser.add_argument(
-        "--voicevox_dir", type=Path, default=None, help="VOICEVOXのディレクトリパスです。"
+        "--port", type=int, default=50021, help="接続を受け付けるポート番号です。"
+    )
+    parser.add_argument(
+        "--use_gpu", action="store_true", help="GPUを使って音声合成するようになります。"
+    )
+    parser.add_argument(
+        "--voicevox_dir",
+        type=Path,
+        default=None,
+        help="VOICEVOXのディレクトリパスです。",
     )
     parser.add_argument(
         "--voicelib_dir",
@@ -1433,7 +1478,9 @@ def main() -> None:
         help="cancellable_synthesis機能の初期化時に生成するプロセス数です。",
     )
     parser.add_argument(
-        "--load_all_models", action="store_true", help="起動時に全ての音声合成モデルを読み込みます。"
+        "--load_all_models",
+        action="store_true",
+        help="起動時に全ての音声合成モデルを読み込みます。",
     )
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
@@ -1481,7 +1528,10 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--setting_file", type=Path, default=USER_SETTING_PATH, help="設定ファイルを指定できます。"
+        "--setting_file",
+        type=Path,
+        default=USER_SETTING_PATH,
+        help="設定ファイルを指定できます。",
     )
 
     parser.add_argument(

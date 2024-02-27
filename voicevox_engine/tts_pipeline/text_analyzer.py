@@ -210,7 +210,9 @@ class BreathGroupLabel:
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[Label] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
+        accent_labels: list[Label] = (
+            []
+        )  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
         for label, next_label in zip(labels, labels[1:] + [None]):
             # 区切りまでラベル系列を一時保存する
@@ -258,7 +260,9 @@ class UtteranceLabel:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[Label] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
+        group_labels: list[Label] = (
+            []
+        )  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する

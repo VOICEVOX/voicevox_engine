@@ -1,6 +1,7 @@
 """
 ビルド結果をテストする
 """
+
 import argparse
 import json
 import time

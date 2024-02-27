@@ -36,7 +36,9 @@ class TestPresetManager(TestCase):
 
     def test_validation_2(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルにミスがあります"
+        ):
             preset_manager.load_presets()
 
     def test_preset_id(self) -> None:
@@ -46,12 +48,16 @@ class TestPresetManager(TestCase):
 
     def test_empty_file(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_4_yaml_path)
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルが空の内容です"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルが空の内容です"
+        ):
             preset_manager.load_presets()
 
     def test_not_exist_file(self) -> None:
         preset_manager = PresetManager(preset_path=Path("test/presets-dummy.yaml"))
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルが見つかりません"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルが見つかりません"
+        ):
             preset_manager.load_presets()
 
     def test_add_preset(self) -> None:
@@ -82,7 +88,9 @@ class TestPresetManager(TestCase):
 
     def test_add_preset_load_failure(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルにミスがあります"
+        ):
             preset_manager.add_preset(
                 Preset(
                     **{
@@ -173,7 +181,9 @@ class TestPresetManager(TestCase):
         preset_manager.load_presets()
         preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
         preset_manager.preset_path = ""  # type: ignore[assignment]
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"
+        ):
             preset_manager.add_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
         remove(temp_path)
@@ -206,7 +216,9 @@ class TestPresetManager(TestCase):
 
     def test_update_preset_load_failure(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルにミスがあります"
+        ):
             preset_manager.update_preset(
                 Preset(
                     **{
@@ -268,7 +280,9 @@ class TestPresetManager(TestCase):
         preset_manager.load_presets()
         preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
         preset_manager.preset_path = ""  # type: ignore[assignment]
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"
+        ):
             preset_manager.update_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
         self.assertEqual(preset_manager.presets[0].name, "test")
@@ -285,7 +299,9 @@ class TestPresetManager(TestCase):
 
     def test_delete_preset_load_failure(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_2_yaml_path)
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルにミスがあります"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルにミスがあります"
+        ):
             preset_manager.delete_preset(10)
 
     def test_delete_preset_not_found(self) -> None:
@@ -304,7 +320,9 @@ class TestPresetManager(TestCase):
         preset_manager.load_presets()
         preset_manager.load_presets = lambda: []  # type:ignore[method-assign]
         preset_manager.preset_path = ""  # type: ignore[assignment]
-        with self.assertRaises(PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"):
+        with self.assertRaises(
+            PresetError, msg="プリセットの設定ファイルに書き込み失敗しました"
+        ):
             preset_manager.delete_preset(1)
         self.assertEqual(len(preset_manager.presets), 2)
         remove(temp_path)
