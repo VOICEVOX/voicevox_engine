@@ -10,7 +10,9 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_テキストと話者IDから音声を合成できる(client: TestClient, snapshot: SnapshotAssertion) -> None:
+def test_テキストと話者IDから音声を合成できる(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     # テキストと話者 ID から AudioQuery を生成する
     audio_query_res = client.post(
         "/audio_query", params={"text": "テストです", "speaker": 0}
