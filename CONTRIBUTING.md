@@ -109,6 +109,10 @@ LIBCORE_PATH="/path/to/libcore" \
     pyinstaller --noconfirm run.spec
 ```
 
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
 
 ### コードフォーマット
 
