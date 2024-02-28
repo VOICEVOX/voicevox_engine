@@ -17,6 +17,12 @@ TODO: deprecated 部分を省く
   * [ユーザー辞書の更新について](#ユーザー辞書の更新について)
 * [Issue](#issue)
 
+## 貢献者の方へ
+
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
 ## インストール
 
@@ -109,6 +115,10 @@ LIBCORE_PATH="/path/to/libcore" \
     pyinstaller --noconfirm run.spec
 ```
 
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
 
 ### コードフォーマット
 
@@ -169,12 +179,28 @@ poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
-### ユーザー辞書の更新について
+#### ライセンス
 
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
 
-poetry run python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
+- MIT/Apache/BSD-3: OK
+- LGPL: OK （コアと動的分離されているため）
+- GPL: NG （全関連コードの公開が必要なため）
 
+### GitHub Actions
+
+#### Variables
+
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## Issue
 不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
