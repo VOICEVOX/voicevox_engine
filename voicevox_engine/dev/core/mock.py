@@ -228,7 +228,7 @@ class MockCoreWrapper(CoreWrapper):
             ] * 256
         return np.array(result, dtype=np.float32)
 
-    def supported_devices(self):
+    def supported_devices(self) -> str:
         return json.dumps(
             {
                 "cpu": True,

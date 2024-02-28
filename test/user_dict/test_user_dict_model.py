@@ -44,26 +44,26 @@ def generate_model() -> TestModel:
 
 
 class TestUserDictWords(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def test_valid_word(self):
+    def test_valid_word(self) -> None:
         test_value = generate_model()
         try:
             UserDictWord(**test_value)
         except ValidationError as e:
             self.fail(f"Unexpected Validation Error\n{str(e)}")
 
-    def test_convert_to_zenkaku(self):
+    def test_convert_to_zenkaku(self) -> None:
         test_value = generate_model()
         test_value["surface"] = "test"
         self.assertEqual(UserDictWord(**test_value).surface, "ｔｅｓｔ")
 
-    def test_count_mora(self):
+    def test_count_mora(self) -> None:
         test_value = generate_model()
         self.assertEqual(UserDictWord(**test_value).mora_count, 3)
 
-    def test_count_mora_x(self):
+    def test_count_mora_x(self) -> None:
         test_value = generate_model()
         for s in [chr(i) for i in range(12449, 12533)]:
             if s in ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]:
@@ -81,7 +81,7 @@ class TestUserDictWords(TestCase):
                         expected_count,
                     )
 
-    def test_count_mora_xwa(self):
+    def test_count_mora_xwa(self) -> None:
         test_value = generate_model()
         test_value["pronunciation"] = "クヮンセイ"
         expected_count = 0
@@ -94,36 +94,36 @@ class TestUserDictWords(TestCase):
             expected_count,
         )
 
-    def test_invalid_pronunciation_not_katakana(self):
+    def test_invalid_pronunciation_not_katakana(self) -> None:
         test_value = generate_model()
         test_value["pronunciation"] = "ぼいぼ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
-    def test_invalid_pronunciation_invalid_sutegana(self):
+    def test_invalid_pronunciation_invalid_sutegana(self) -> None:
         test_value = generate_model()
         test_value["pronunciation"] = "アィウェォ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
-    def test_invalid_pronunciation_invalid_xwa(self):
+    def test_invalid_pronunciation_invalid_xwa(self) -> None:
         test_value = generate_model()
         test_value["pronunciation"] = "アヮ"
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
-    def test_count_mora_voiced_sound(self):
+    def test_count_mora_voiced_sound(self) -> None:
         test_value = generate_model()
         test_value["pronunciation"] = "ボイボ"
         self.assertEqual(UserDictWord(**test_value).mora_count, 3)
 
-    def test_invalid_accent_type(self):
+    def test_invalid_accent_type(self) -> None:
         test_value = generate_model()
         test_value["accent_type"] = 4
         with self.assertRaises(ValidationError):
             UserDictWord(**test_value)
 
-    def test_invalid_accent_type_2(self):
+    def test_invalid_accent_type_2(self) -> None:
         test_value = generate_model()
         test_value["accent_type"] = -1
         with self.assertRaises(ValidationError):

@@ -55,7 +55,7 @@ def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float)
 
 
 class TestConnectBase64Waves(TestCase):
-    def test_connect(self):
+    def test_connect(self) -> None:
         samplerate = 1000
         wave = generate_sine_wave_ndarray(
             seconds=2, samplerate=samplerate, frequency=10
@@ -70,10 +70,10 @@ class TestConnectBase64Waves(TestCase):
 
         self.assertTrue((wave_x2_ref == wave_x2).all())
 
-    def test_no_wave_error(self):
+    def test_no_wave_error(self) -> None:
         self.assertRaises(ConnectBase64WavesException, connect_base64_waves, waves=[])
 
-    def test_invalid_base64_error(self):
+    def test_invalid_base64_error(self) -> None:
         wave_1000hz = generate_sine_wave_base64(
             seconds=2, samplerate=1000, frequency=10
         )
@@ -87,7 +87,7 @@ class TestConnectBase64Waves(TestCase):
             ],
         )
 
-    def test_invalid_wave_file_error(self):
+    def test_invalid_wave_file_error(self) -> None:
         wave_1000hz = generate_sine_wave_bytes(seconds=2, samplerate=1000, frequency=10)
         wave_1000hz_broken_bytes = wave_1000hz[1:]  # remove head 1 byte
         wave_1000hz_broken = encode_base64(wave_1000hz_broken_bytes)
@@ -100,7 +100,7 @@ class TestConnectBase64Waves(TestCase):
             ],
         )
 
-    def test_different_frequency(self):
+    def test_different_frequency(self) -> None:
         wave_24000hz = generate_sine_wave_ndarray(
             seconds=1, samplerate=24000, frequency=10
         )
@@ -118,7 +118,7 @@ class TestConnectBase64Waves(TestCase):
         self.assertEqual(wave_x2_ref.shape, wave_x2.shape)
         numpy.testing.assert_array_almost_equal(wave_x2_ref, wave_x2)
 
-    def test_different_channels(self):
+    def test_different_channels(self) -> None:
         wave_1000hz = generate_sine_wave_ndarray(
             seconds=2, samplerate=1000, frequency=10
         )

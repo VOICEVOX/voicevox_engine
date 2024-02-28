@@ -13,7 +13,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 import soundfile
 import uvicorn
@@ -211,7 +211,7 @@ def generate_app(
             )
 
     # 許可されていないAPIを無効化する
-    def check_disabled_mutable_api():
+    def check_disabled_mutable_api() -> None:
         if disable_mutable_api:
             raise HTTPException(
                 status_code=403,
@@ -249,7 +249,7 @@ def generate_app(
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
 
     @app.on_event("startup")
-    def apply_user_dict():
+    def apply_user_dict() -> None:
         update_dict()
 
     def get_engine(core_version: Optional[str]) -> TTSEngine:
@@ -1389,7 +1389,7 @@ def generate_app(
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi():
+    def custom_openapi() -> Any:
         if app.openapi_schema:
             return app.openapi_schema
         openapi_schema = get_openapi(
