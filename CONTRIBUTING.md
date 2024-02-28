@@ -169,12 +169,5 @@ poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
-### ユーザー辞書の更新について
-
-以下のコマンドで openjtalk のユーザー辞書をコンパイルできます。
-
-poetry run python -c "import pyopenjtalk; pyopenjtalk.create_user_dict('default.csv','user.dic')"
-
-
 ## Issue
 不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
