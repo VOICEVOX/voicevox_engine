@@ -61,6 +61,7 @@ soxr = "^0.3.6"
 pyinstaller = "^5.13"
 pre-commit = "^2.16.0"
 poetry = "1.8.1"
+poetry-plugin-export = "^1.6.0"
 
 [tool.poetry.group.test.dependencies]
 pysen = "~0.10.5"
@@ -72,6 +73,7 @@ mypy = "^1.8.0"
 pytest = "^8.0.0"
 coveralls = "^3.2.0"
 poetry = "1.8.1"
+poetry-plugin-export = "^1.6.0"
 httpx = "^0.25.0"          # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0"
