@@ -178,5 +178,19 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
+### GitHub Actions
+
+#### Variables
+
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
+
 ## Issue
 不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
