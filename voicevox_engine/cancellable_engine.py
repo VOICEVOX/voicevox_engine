@@ -172,7 +172,7 @@ class CancellableEngine:
             f_name = sub_proc_con1.recv()
         except EOFError:
             raise HTTPException(
-                status_code=422, detail="既にサブプロセスは終了されています"
+                status_code=500, detail="既にサブプロセスは終了されています"
             )
         except Exception:
             self.finalize_con(request, proc, sub_proc_con1)
