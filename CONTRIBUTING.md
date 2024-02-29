@@ -28,7 +28,6 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 
 このプロジェクトでは
 * 3.11以上のpython
-* poetry
 * 依存ライブラリ
   * cmake
   * libsndfile1
@@ -38,9 +37,9 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 #### セットアップ
 以下のコマンドで使用できるようになります。
 
-```console
+```bash
 git clone https://github.com/VOICEVOX/voicevox_engine.git
-poetry install
+python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 ```
 
 実際に動かす場合はvoicevox製品版をダウンロードする必要があります。
@@ -54,7 +53,7 @@ poetry install
 * PROCESSOR
   cpuかgpuか
 
-を指定してダウンロードして環境変数をセットしてください。。
+を指定してダウンロードして環境変数をセットしてください。
 
 ```
 curl -L https://github.com/VOICEVOX/voicevox_core/releases/download/0.14.3/voicevox_core-${OS}-${arch}-${processor}-${}.zip -o voicevox_core
@@ -71,48 +70,49 @@ https://github.com/VOICEVOX/voicevox_core/releases/latest
 ### 実行
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
-```console
+```bash
 python run.py --help
 ```
 
 製品版 VOICEVOX でサーバーを起動
-```console
+```bash
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-poetry run python run.py --voicevox_dir=$VOICEVOX_DIR
+python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
 モックでサーバー起動
-```console
-poetry run python run.py --enable_mock
+```bash
+python run.py --enable_mock
 ```
 
 ログをUTF8に変更
-```console
-poetry run python run.py --output_log_utf8
-```
-もしくは
-```console
-VV_OUTPUT_LOG_UTF8=1
-poetry run python run.py
+```bash
+python run.py --output_log_utf8
+# もしくは
+VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
 ### テスト
-```console
-poetry run pytest
+```bash
+python -m pytest
 ```
 
 ### ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。 また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
 
-```console
-poetry install --with dev
+```bash
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
-# ビルド自体はLIBCORE_PATH及びLIBONNXRUNTIME_PATHの指定がなくても可能です
+
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
-    LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-    pyinstaller --noconfirm run.spec
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec  
 ```
 
 #### Github Actions でビルド
@@ -124,21 +124,21 @@ fork したリポジトリで Actions を ON にし、workflow_dispatch で`buil
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。 利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。 プルリクエストを作成する際は、利用することを推奨します。
 
-```console
-poetry run pre-commit install -t pre-push
+```bash
+pre-commit install -t pre-push
 ```
 
 エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
 
-```console
-poetry run pysen run format lint
+```bash
+pysen run format lint
 ```
 
 ### タイポチェック
 
 typos を使ってタイポのチェックを行っています。 typos をインストール した後
 
-```console
+```bash
 typos
 ```
 
@@ -149,8 +149,8 @@ typos
 API ドキュメント（実体はdocs/api/index.html）は自動で更新されます。
 次のコマンドで API ドキュメントを手動で作成することができます。
 
-```console
-python make_docs.py
+```bash
+PYTHONPATH=. python build_util/make_docs.py
 ```
 
 
@@ -159,20 +159,20 @@ python make_docs.py
 Poetry を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
 
 パッケージを追加する場合
-```console
+```bash
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
 poetry add --group test `パッケージ名` # テスト依存の追加
 ```
 
 パッケージをアップデートする場合
-```console
+```bash
 poetry update `パッケージ名`
 poetry update # 全部更新
 ```
 
 requirements.txtの更新
-```console
+```bash
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
