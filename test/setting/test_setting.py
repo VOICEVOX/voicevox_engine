@@ -69,5 +69,17 @@ class TestSettingLoader(TestCase):
             {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps},
         )
 
+    def test_cors_policy_mode_type(self) -> None:
+        setting_loader = SettingHandler(
+            setting_file_path=Path("test/setting/setting-test-load-1.yaml")
+        )
+        settings = setting_loader.load()
+
+        self.assertIsInstance(settings.cors_policy_mode, CorsPolicyMode)
+
+    def test_invalid_cors_policy_mode_type(self):
+        with self.assertRaises(ValueError):
+            Setting(cors_policy_mode="invalid_value", allow_origin="*")
+
     def tearDown(self) -> None:
         self.tmp_dir.cleanup()
