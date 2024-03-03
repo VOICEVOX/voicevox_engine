@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class CorsPolicyMode(str, Enum):
@@ -21,5 +21,8 @@ class Setting(BaseModel):
     cors_policy_mode: CorsPolicyMode = Field(title="リソース共有ポリシー")
     allow_origin: Optional[str] = Field(title="許可するオリジン")
 
-    class Config:
-        use_enum_values = True
+    @validator("cors_policy_mode", pre=True)
+    def convert_cors_policy_mode(cls, value):
+        if isinstance(value, str):
+            CorsPolicyMode(value)
+        return value
