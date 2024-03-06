@@ -1,6 +1,7 @@
 import os
 import platform
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long, _Pointer
+from ctypes import _Pointer  # noqa: F401
+from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
 from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
