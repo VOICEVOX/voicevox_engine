@@ -1348,7 +1348,7 @@ def generate_app(
         settings = setting_loader.load()
 
         brand_name = engine_manifest_data.brand_name
-        cors_policy_mode = settings.cors_policy_mode.value
+        cors_policy_mode = settings.cors_policy_mode
         allow_origin = settings.allow_origin
 
         if allow_origin is None:
@@ -1359,7 +1359,7 @@ def generate_app(
             {
                 "request": request,
                 "brand_name": brand_name,
-                "cors_policy_mode": cors_policy_mode,
+                "cors_policy_mode": cors_policy_mode.value,
                 "allow_origin": allow_origin,
             },
         )
