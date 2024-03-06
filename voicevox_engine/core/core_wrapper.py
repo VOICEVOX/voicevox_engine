@@ -517,10 +517,10 @@ def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
         コアDLL
     Returns
     -------
-    found_api_info : dict[str, bool]
+    api_exists : dict[str, bool]
         key: API名, value: APIの有無
     """
-    found_api_info = {}
+    api_exists = {}
 
     for api_name, api_type in _CORE_API_TYPES.items():
         if hasattr(core_cdll, api_name):
@@ -530,11 +530,11 @@ def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
                 api.argtypes = api_type.argtypes
             api.restype = api_type.restype
 
-            found_api_info[api_name] = True
+            api_exists[api_name] = True
         else:
-            found_api_info[api_name] = False
+            api_exists[api_name] = False
 
-    return found_api_info
+    return api_exists
 
 
 class CoreWrapper:
@@ -549,7 +549,7 @@ class CoreWrapper:
 
         self.core = load_core(core_dir, use_gpu)
 
-        self.found_api_info = _check_and_type_apis(self.core)
+        self.api_exists = _check_and_type_apis(self.core)
 
         exist_cpu_num_threads = False
 
@@ -743,7 +743,7 @@ class CoreWrapper:
         output : NDArray[np.int64]
             子音長
         """
-        if self.found_api_info["predict_sing_consonant_length_forward"]:
+        if self.api_exists["predict_sing_consonant_length_forward"]:
             output = np.zeros((length,), dtype=np.int64)
             self.assert_core_success(
                 self.core.predict_sing_consonant_length_forward(
@@ -782,7 +782,7 @@ class CoreWrapper:
         output : NDArray[np.float32]
             フレームごとの音高
         """
-        if self.found_api_info["predict_sing_f0_forward"]:
+        if self.api_exists["predict_sing_f0_forward"]:
             output = np.zeros((length,), dtype=np.float32)
             self.assert_core_success(
                 self.core.predict_sing_f0_forward(
@@ -823,7 +823,7 @@ class CoreWrapper:
         output : NDArray[np.float32]
             フレームごとの音量
         """
-        if self.found_api_info["predict_sing_volume_forward"]:
+        if self.api_exists["predict_sing_volume_forward"]:
             output = np.zeros((length,), dtype=np.float32)
             self.assert_core_success(
                 self.core.predict_sing_volume_forward(
@@ -865,7 +865,7 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声波形
         """
-        if self.found_api_info["sf_decode_forward"]:
+        if self.api_exists["sf_decode_forward"]:
             output = np.zeros((length * 256,), dtype=np.float32)
             self.assert_core_success(
                 self.core.sf_decode_forward(
@@ -884,23 +884,23 @@ class CoreWrapper:
         """
         coreから取得した対応デバイスに関するjsonデータの文字列
         """
-        if self.found_api_info["supported_devices"]:
+        if self.api_exists["supported_devices"]:
             return self.core.supported_devices().decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
-        if self.found_api_info["finalize"]:
+        if self.api_exists["finalize"]:
             self.core.finalize()
             return
         raise OldCoreError
 
     def load_model(self, style_id: int) -> None:
-        if self.found_api_info["load_model"]:
+        if self.api_exists["load_model"]:
             self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:
-        if self.found_api_info["is_model_loaded"]:
+        if self.api_exists["is_model_loaded"]:
             return self.core.is_model_loaded(c_long(style_id))
         raise OldCoreError
 
