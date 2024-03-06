@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.17.0",
+    "descriptions": ["開発環境の向上"],
+    "contributors": ["Hiroshiba", "misogihagi", "tarepan", "tuna2134"]
+  },
+  {
     "version": "0.16.0",
     "descriptions": [
       "ソングAPIを追加",
