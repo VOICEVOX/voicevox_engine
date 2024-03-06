@@ -26,7 +26,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.16.0"
+  VOICEVOX_RESOURCE_VERSION: "0.17.0"
   VOICEVOX_CORE_VERSION: "0.15.0"
 
 defaults:
@@ -558,7 +558,7 @@ jobs:
           mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
 
       - name: Upload 7z archives to artifact
-        if: github.event.inputs.upload_artifact
+        if: github.event.inputs.upload_artifact == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.package_name }}
@@ -604,7 +604,7 @@ jobs:
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 
       - name: Upload VVPP archives to artifact
-        if: github.event.inputs.upload_artifact
+        if: github.event.inputs.upload_artifact == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.vars.outputs.package_name }}
