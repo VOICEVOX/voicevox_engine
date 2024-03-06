@@ -1,6 +1,6 @@
 import os
 import platform
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
+from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long, _Pointer
 from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -384,132 +384,156 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         )
 
 
-def _type_initialize(core_cdll: CDLL) -> None:
-    """コアDLL `initialize` 関数を型付けする"""
-    core_cdll.initialize.restype = c_bool
+_C_TYPE = (
+    type[c_bool]
+    | type[c_int]
+    | type[c_long]
+    | type[c_float]
+    | type[c_char_p]
+    | type["_Pointer[c_long]"]
+    | type["_Pointer[c_float]"]
+)
 
 
-def _type_metas(core_cdll: CDLL) -> None:
-    """コアDLL `metas` 関数を型付けする"""
-    core_cdll.metas.restype = c_char_p
+@dataclass(frozen=True)
+class _CoreApiType:
+    argtypes: tuple[_C_TYPE, ...]
+    restype: _C_TYPE | None
 
 
-def _type_yukarin_s_forward(core_cdll: CDLL) -> None:
-    """コアDLL `yukarin_s_forward` 関数を型付けする"""
-    core_cdll.yukarin_s_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.yukarin_s_forward.restype = c_bool
+# コアAPIの型情報
+_CORE_API_TYPES = {
+    # NOTE: initialize 関数には実際には引数があるが、コアのバージョンによって引数が異なるため、意図的に引数の型付けをしない
+    "initialize": _CoreApiType(
+        argtypes=(),
+        restype=c_bool,
+    ),
+    "metas": _CoreApiType(
+        argtypes=(),
+        restype=c_char_p,
+    ),
+    "yukarin_s_forward": _CoreApiType(
+        argtypes=(c_int, POINTER(c_long), POINTER(c_long), POINTER(c_float)),
+        restype=c_bool,
+    ),
+    "yukarin_sa_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "decode_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            c_int,
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "predict_sing_consonant_length_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+        ),
+        restype=c_bool,
+    ),
+    "predict_sing_f0_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "predict_sing_volume_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            POINTER(c_long),
+            POINTER(c_long),
+            POINTER(c_float),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "sf_decode_forward": _CoreApiType(
+        argtypes=(
+            c_int,
+            POINTER(c_long),
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "last_error_message": _CoreApiType(
+        argtypes=(),
+        restype=c_char_p,
+    ),
+    "load_model": _CoreApiType(
+        argtypes=(c_long,),
+        restype=c_bool,
+    ),
+    "is_model_loaded": _CoreApiType(
+        argtypes=(c_long,),
+        restype=c_bool,
+    ),
+    "supported_devices": _CoreApiType(
+        argtypes=(),
+        restype=c_char_p,
+    ),
+    "finalize": _CoreApiType(
+        argtypes=(),
+        restype=None,
+    ),
+}
 
 
-def _type_yukarin_sa_forward(core_cdll: CDLL) -> None:
-    """コアDLL `yukarin_sa_forward` 関数を型付けする"""
-    core_cdll.yukarin_sa_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.yukarin_sa_forward.restype = c_bool
+def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
+    """
+    コアDLLの各関数を（その関数があれば）型付けする。APIの有無の情報を辞書として返す
+    Parameters
+    ----------
+    core_cdll : CDLL
+        コアDLL
+    Returns
+    -------
+    found_api_info : dict[str, bool]
+        key: API名, value: APIの有無
+    """
+    found_api_info = {}
 
+    for api_name, api_type in _CORE_API_TYPES.items():
+        if hasattr(core_cdll, api_name):
+            api = getattr(core_cdll, api_name)
 
-def _type_decode_forward(core_cdll: CDLL) -> None:
-    """コアDLL `decode_forward` 関数を型付けする"""
-    core_cdll.decode_forward.argtypes = (
-        c_int,
-        c_int,
-        POINTER(c_float),
-        POINTER(c_float),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.decode_forward.restype = c_bool
+            if len(api_type.argtypes) > 0:
+                api.argtypes = api_type.argtypes
+            api.restype = api_type.restype
 
+            found_api_info[api_name] = True
+        else:
+            found_api_info[api_name] = False
 
-def _type_predict_sing_consonant_length_forward(core_cdll: CDLL) -> None:
-    """コアDLL `predict_sing_consonant_length_forward` 関数を型付けする"""
-    core_cdll.predict_sing_consonant_length_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-    )
-    core_cdll.predict_sing_consonant_length_forward.restype = c_bool
-
-
-def _type_predict_sing_f0_forward(core_cdll: CDLL) -> None:
-    """コアDLL `predict_sing_f0_forward` 関数を型付けする"""
-    core_cdll.predict_sing_f0_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.predict_sing_f0_forward.restype = c_bool
-
-
-def _type_predict_sing_volume_forward(core_cdll: CDLL) -> None:
-    """コアDLL `predict_sing_volume_forward` 関数を型付けする"""
-    core_cdll.predict_sing_volume_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_long),
-        POINTER(c_float),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.predict_sing_volume_forward.restype = c_bool
-
-
-def _type_sf_decode_forward(core_cdll: CDLL) -> None:
-    """コアDLL `sf_decoder_forward` 関数を型付けする"""
-    core_cdll.sf_decode_forward.argtypes = (
-        c_int,
-        POINTER(c_long),
-        POINTER(c_float),
-        POINTER(c_float),
-        POINTER(c_long),
-        POINTER(c_float),
-    )
-    core_cdll.sf_decode_forward.restype = c_bool
-
-
-def _type_last_error_message(core_cdll: CDLL) -> None:
-    """コアDLL `last_error_message` 関数を型付けする"""
-    core_cdll.last_error_message.restype = c_char_p
-
-
-def _type_load_model(core_cdll: CDLL) -> None:
-    """コアDLL `load_model` 関数を型付けする"""
-    core_cdll.load_model.argtypes = (c_long,)
-    core_cdll.load_model.restype = c_bool
-
-
-def _type_is_model_loaded(core_cdll: CDLL) -> None:
-    """コアDLL `is_model_loaded` 関数を型付けする"""
-    core_cdll.is_model_loaded.argtypes = (c_long,)
-    core_cdll.is_model_loaded.restype = c_bool
-
-
-def _type_supported_devices(core_cdll: CDLL) -> None:
-    """コアDLL `supported_devices` 関数を型付けする"""
-    core_cdll.supported_devices.restype = c_char_p
-
-
-def _type_finalize(core_cdll: CDLL) -> None:
-    """コアDLL `finalize` 関数を型付けする"""
-    core_cdll.finalize.restype = None
+    return found_api_info
 
 
 class CoreWrapper:
@@ -524,23 +548,9 @@ class CoreWrapper:
 
         self.core = load_core(core_dir, use_gpu)
 
-        _type_initialize(self.core)
+        self.found_api_info = _check_and_type_apis(self.core)
 
-        _type_metas(self.core)
-        _type_yukarin_s_forward(self.core)
-        _type_yukarin_sa_forward(self.core)
-        _type_decode_forward(self.core)
-        _type_predict_sing_consonant_length_forward(self.core)
-        _type_predict_sing_f0_forward(self.core)
-        _type_predict_sing_volume_forward(self.core)
-        _type_sf_decode_forward(self.core)
-        _type_last_error_message(self.core)
-
-        self.exist_supported_devices = False
-        self.exist_finalize = False
         exist_cpu_num_threads = False
-        self.exist_load_model = False
-        self.exist_is_model_loaded = False
 
         is_version_0_12_core_or_later = (
             _find_version_0_12_core_or_later(core_dir) is not None
@@ -548,19 +558,11 @@ class CoreWrapper:
         model_type: Literal["libtorch", "onnxruntime"] | None
         if is_version_0_12_core_or_later:
             model_type = "onnxruntime"
-            self.exist_load_model = True
-            self.exist_is_model_loaded = True
-            _type_load_model(self.core)
-            _type_is_model_loaded(self.core)
         else:
             model_type = _check_core_type(core_dir)
         assert model_type is not None
 
         if model_type == "onnxruntime":
-            _type_supported_devices(self.core)
-            _type_finalize(self.core)
-            self.exist_supported_devices = True
-            self.exist_finalize = True
             exist_cpu_num_threads = True
 
         cwd = os.getcwd()
@@ -740,18 +742,20 @@ class CoreWrapper:
         output : NDArray[np.int64]
             子音長
         """
-        output = np.zeros((length,), dtype=np.int64)
-        self.assert_core_success(
-            self.core.predict_sing_consonant_length_forward(
-                c_int(length),
-                consonant.ctypes.data_as(POINTER(c_long)),
-                vowel.ctypes.data_as(POINTER(c_long)),
-                note_duration.ctypes.data_as(POINTER(c_long)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_long)),
+        if self.found_api_info["predict_sing_consonant_length_forward"]:
+            output = np.zeros((length,), dtype=np.int64)
+            self.assert_core_success(
+                self.core.predict_sing_consonant_length_forward(
+                    c_int(length),
+                    consonant.ctypes.data_as(POINTER(c_long)),
+                    vowel.ctypes.data_as(POINTER(c_long)),
+                    note_duration.ctypes.data_as(POINTER(c_long)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_long)),
+                )
             )
-        )
-        return output
+            return output
+        raise OldCoreError
 
     def predict_sing_f0_forward(
         self,
@@ -777,17 +781,19 @@ class CoreWrapper:
         output : NDArray[np.float32]
             フレームごとの音高
         """
-        output = np.zeros((length,), dtype=np.float32)
-        self.assert_core_success(
-            self.core.predict_sing_f0_forward(
-                c_int(length),
-                phoneme.ctypes.data_as(POINTER(c_long)),
-                note.ctypes.data_as(POINTER(c_long)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        if self.found_api_info["predict_sing_f0_forward"]:
+            output = np.zeros((length,), dtype=np.float32)
+            self.assert_core_success(
+                self.core.predict_sing_f0_forward(
+                    c_int(length),
+                    phoneme.ctypes.data_as(POINTER(c_long)),
+                    note.ctypes.data_as(POINTER(c_long)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
-        return output
+            return output
+        raise OldCoreError
 
     def predict_sing_volume_forward(
         self,
@@ -816,18 +822,20 @@ class CoreWrapper:
         output : NDArray[np.float32]
             フレームごとの音量
         """
-        output = np.zeros((length,), dtype=np.float32)
-        self.assert_core_success(
-            self.core.predict_sing_volume_forward(
-                c_int(length),
-                phoneme.ctypes.data_as(POINTER(c_long)),
-                note.ctypes.data_as(POINTER(c_long)),
-                f0.ctypes.data_as(POINTER(c_float)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        if self.found_api_info["predict_sing_volume_forward"]:
+            output = np.zeros((length,), dtype=np.float32)
+            self.assert_core_success(
+                self.core.predict_sing_volume_forward(
+                    c_int(length),
+                    phoneme.ctypes.data_as(POINTER(c_long)),
+                    note.ctypes.data_as(POINTER(c_long)),
+                    f0.ctypes.data_as(POINTER(c_float)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
-        return output
+            return output
+        raise OldCoreError
 
     def sf_decode_forward(
         self,
@@ -856,40 +864,42 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声波形
         """
-        output = np.zeros((length * 256,), dtype=np.float32)
-        self.assert_core_success(
-            self.core.sf_decode_forward(
-                c_int(length),
-                phoneme.ctypes.data_as(POINTER(c_long)),
-                f0.ctypes.data_as(POINTER(c_float)),
-                volume.ctypes.data_as(POINTER(c_float)),
-                style_id.ctypes.data_as(POINTER(c_long)),
-                output.ctypes.data_as(POINTER(c_float)),
+        if self.found_api_info["sf_decode_forward"]:
+            output = np.zeros((length * 256,), dtype=np.float32)
+            self.assert_core_success(
+                self.core.sf_decode_forward(
+                    c_int(length),
+                    phoneme.ctypes.data_as(POINTER(c_long)),
+                    f0.ctypes.data_as(POINTER(c_float)),
+                    volume.ctypes.data_as(POINTER(c_float)),
+                    style_id.ctypes.data_as(POINTER(c_long)),
+                    output.ctypes.data_as(POINTER(c_float)),
+                )
             )
-        )
-        return output
+            return output
+        raise OldCoreError
 
     def supported_devices(self) -> str:
         """
         coreから取得した対応デバイスに関するjsonデータの文字列
         """
-        if self.exist_supported_devices:
+        if self.found_api_info["supported_devices"]:
             return self.core.supported_devices().decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
-        if self.exist_finalize:
+        if self.found_api_info["finalize"]:
             self.core.finalize()
             return
         raise OldCoreError
 
     def load_model(self, style_id: int) -> None:
-        if self.exist_load_model:
+        if self.found_api_info["load_model"]:
             self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:
-        if self.exist_is_model_loaded:
+        if self.found_api_info["is_model_loaded"]:
             return self.core.is_model_loaded(c_long(style_id))
         raise OldCoreError
 
