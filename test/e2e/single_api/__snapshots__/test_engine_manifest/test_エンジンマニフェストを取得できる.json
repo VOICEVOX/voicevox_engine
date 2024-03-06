@@ -31,6 +31,18 @@
     {
       "contributors": [
         "Hiroshiba",
+        "misogihagi",
+        "tarepan",
+        "tuna2134"
+      ],
+      "descriptions": [
+        "開発環境の向上"
+      ],
+      "version": "0.17.0"
+    },
+    {
+      "contributors": [
+        "Hiroshiba",
         "y-chan"
       ],
       "descriptions": [
