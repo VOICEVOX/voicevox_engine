@@ -2,6 +2,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
+from pydantic import ValidationError
+
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
 from voicevox_engine.setting.SettingLoader import SettingHandler
 
@@ -78,7 +80,7 @@ class TestSettingLoader(TestCase):
         self.assertIsInstance(settings.cors_policy_mode, CorsPolicyMode)
 
     def test_invalid_cors_policy_mode_type(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValidationError):
             Setting(cors_policy_mode="invalid_value", allow_origin="*")
 
     def tearDown(self) -> None:
