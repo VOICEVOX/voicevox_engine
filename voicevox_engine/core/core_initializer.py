@@ -36,7 +36,7 @@ def initialize_cores(
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional, default=None
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
-        Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
+        Noneのとき、論理コア数の半分が指定される
     enable_mock: bool, optional, default=True
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     load_all_models: bool, optional, default=False
