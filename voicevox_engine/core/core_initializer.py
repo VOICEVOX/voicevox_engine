@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from ..tts_pipeline.tts_engine import CoreAdapter
+from ..utility.core_utility import get_half_logical_cores
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
@@ -44,10 +45,10 @@ def initialize_cores(
     if cpu_num_threads == 0 or cpu_num_threads is None:
         print(
             "Warning: cpu_num_threads is set to 0. "
-            + "( The library leaves the decision to the synthesis runtime )",
+            + "Setting it to half of the logical cores.",
             file=sys.stderr,
         )
-        cpu_num_threads = 0
+        cpu_num_threads = get_half_logical_cores()
 
     # ディレクトリを設定する
     # 引数による指定を反映する

@@ -10,6 +10,8 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 
+from voicevox_engine.utility.core_utility import get_half_logical_cores
+
 
 class OldCoreError(Exception):
     """古いコアが使用されている場合に発生するエラー"""
@@ -517,7 +519,7 @@ class CoreWrapper:
         self,
         use_gpu: bool,
         core_dir: Path,
-        cpu_num_threads: int = 0,
+        cpu_num_threads: int = get_half_logical_cores(),
         load_all_models: bool = False,
     ) -> None:
         self.default_sampling_rate = 24000
