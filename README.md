@@ -377,14 +377,7 @@ options:
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
-## 開発者・貢献者向けガイド
-
-### 貢献者の方へ
-
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
-
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+## 開発者向けガイド
 
 ### 環境構築
 
@@ -498,105 +491,6 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 - macOS: `/Users/<username>/Library/Application\ Support/`
 - Linux: `/home/<username>/.local/share/`
 
-### ビルド
-
-この方法でビルドしたものは、リリースで公開されているものとは異なります。
-また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
-
-```bash
-python -m pip install -r requirements-dev.txt
-
-OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
-
-# モックでビルドする場合
-pyinstaller --noconfirm run.spec
-
-# 製品版でビルドする場合
-CORE_MODEL_DIR_PATH="/path/to/core_model" \
-LIBCORE_PATH="/path/to/libcore" \
-LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
-```
-
-#### Github Actions でビルド
-
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
-成果物は Release にアップロードされます。
-
-### コードフォーマット
-
-このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
-利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
-プルリクエストを作成する際は、利用することを推奨します。
-
-```bash
-pre-commit install -t pre-push
-```
-
-エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
-
-```bash
-pysen run format lint
-```
-
-### テスト
-
-```bash
-python -m pytest
-```
-
-#### スナップショットの更新
-
-```bash
-python -m pytest --snapshot-update
-```
-
-### タイポチェック
-
-[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
-[typos をインストール](https://github.com/crate-ci/typos#install) した後
-
-```bash
-typos
-```
-
-でタイポチェックを行えます。
-もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
-
-### 依存関係
-
-#### 更新
-
-[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
-以下のコマンドで操作できます:
-
-```bash
-# パッケージを追加する場合
-poetry add `パッケージ名`
-poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group test `パッケージ名` # テスト依存の追加
-
-# パッケージをアップデートする場合
-poetry update `パッケージ名`
-poetry update # 全部更新
-
-# requirements.txtの更新
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with test -o requirements-test.txt
-poetry export --without-hashes --with license -o requirements-license.txt
-```
-
-#### ライセンス
-
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。
-
-- MIT/Apache/BSD-3: OK
-- LGPL: OK （コアと動的分離されているため）
-- GPL: NG （全関連コードの公開が必要なため）
 
 ### マルチエンジン機能に関して
 
@@ -645,28 +539,9 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 </details>
 
-### API ドキュメントの確認
-
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
-次のコマンドで API ドキュメントを手動で作成することができます。
-
-```bash
-PYTHONPATH=. python build_util/make_docs.py
-```
-
-### GitHub Actions
-
-#### Variables
-
-| name               | description         |
-| :----------------- | :------------------ |
-| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
-
-#### Secrets
-
-| name            | description                                                             |
-| :-------------- | :---------------------------------------------------------------------- |
-| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
+## 貢献者向けガイド
+VOICEVOX ENGINE は皆さんのコントリビューションをお待ちしています！  
+詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。  
 
 ## 事例紹介
 
