@@ -1,7 +1,6 @@
 **このガイドラインは現在工事中です。**
 
 TODO: 重複部分を省く
-TODO: deprecated 部分を省く
 
 ## 目次
 
@@ -25,14 +24,18 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 [VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
 ## インストール
+`Python 3.11.3` を用いて開発されています。
+インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
+<!-->
 このプロジェクトでは
-* 3.11以上のpython
+* `Python 3.11.3`
 * 依存ライブラリ
   * cmake
   * libsndfile1
 * (実際に動かす時のみ)voicevox製品版
 を使います。
+<-->
 
 #### セットアップ
 以下のコマンドで使用できるようになります。
@@ -80,6 +83,14 @@ VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパ
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
+<!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
+```bash
+# 音声ライブラリを差し替える
+VOICELIB_DIR="C:/path/to/your/tts-model"
+python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+```
+-->
+
 モックでサーバー起動
 ```bash
 python run.py --enable_mock
@@ -95,6 +106,12 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 ### テスト
 ```bash
 python -m pytest
+```
+
+#### スナップショットの更新
+
+```bash
+python -m pytest --snapshot-update
 ```
 
 ### ビルド
@@ -136,13 +153,13 @@ pysen run format lint
 
 ### タイポチェック
 
-typos を使ってタイポのチェックを行っています。 typos をインストール した後
+[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。 [typos をインストール](https://github.com/crate-ci/typos#install) した後
 
 ```bash
 typos
 ```
 
-でタイポチェックを行えます。 もし誤判定やチェックから除外すべきファイルがあれば 設定ファイルの説明 に従って_typos.tomlを編集してください。
+でタイポチェックを行えます。 もし誤判定やチェックから除外すべきファイルがあれば [設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
 
 ### APIドキュメントの確認
 
@@ -156,7 +173,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ### 依存関係
 
-Poetry を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
+[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
 
 パッケージを追加する場合
 ```bash
@@ -188,6 +205,15 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
+### API ドキュメントの確認
+
+[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
+次のコマンドで API ドキュメントを手動で作成することができます。
+
+```bash
+PYTHONPATH=. python build_util/make_docs.py
+```
+
 ### GitHub Actions
 
 #### Variables
@@ -204,3 +230,9 @@ poetry export --without-hashes --with license -o requirements-license.txt
 
 ## Issue
 不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
+
+## ライセンス
+
+LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
+別ライセンスを取得したい場合は、ヒホに求めてください。  
+X アカウント: [@hiho_karuta](https://x.com/hiho_karuta)

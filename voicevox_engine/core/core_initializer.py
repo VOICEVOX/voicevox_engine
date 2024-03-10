@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from ..tts_pipeline.tts_engine import CoreAdapter
+from ..utility.core_utility import get_half_logical_cores
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
@@ -35,7 +36,7 @@ def initialize_cores(
         None のとき、voicevox_dir、カレントディレクトリになる
     cpu_num_threads: int, optional, default=None
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
-        Noneのとき、ライブラリ側の挙動により論理コア数の半分か、物理コア数が指定される
+        Noneのとき、論理コア数の半分が指定される
     enable_mock: bool, optional, default=True
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     load_all_models: bool, optional, default=False
@@ -44,10 +45,10 @@ def initialize_cores(
     if cpu_num_threads == 0 or cpu_num_threads is None:
         print(
             "Warning: cpu_num_threads is set to 0. "
-            + "( The library leaves the decision to the synthesis runtime )",
+            + "Setting it to half of the logical cores.",
             file=sys.stderr,
         )
-        cpu_num_threads = 0
+        cpu_num_threads = get_half_logical_cores()
 
     # ディレクトリを設定する
     # 引数による指定を反映する
