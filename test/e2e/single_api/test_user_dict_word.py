@@ -6,7 +6,9 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_user_dict_word(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_post_user_dict_word(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     true_params: dict[str, str | int] = {
         "surface": "test",
         "pronunciation": "テスト",

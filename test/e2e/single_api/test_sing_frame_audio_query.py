@@ -2,13 +2,15 @@
 /sing_frame_audio_query API のテスト
 """
 
+from test.utility import round_floats
+
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
-from test.utility import round_floats
 
-
-def test_post_sing_frame_audio_query_200(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_post_sing_frame_audio_query_200(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     score = {
         "notes": [
             {"key": None, "frame_length": 10, "lyric": ""},
