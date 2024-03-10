@@ -3,9 +3,10 @@
 """
 
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_user_dict_word(client: TestClient) -> None:
+def test_post_user_dict_word(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     true_params: dict[str, str | int] = {
         "surface": "test",
         "pronunciation": "テスト",
@@ -21,3 +22,4 @@ def test_post_user_dict_word(client: TestClient) -> None:
     # 範囲外の優先度はエラー
     response = client.post("/user_dict_word", params={**true_params, "priority": 100})
     assert response.status_code == 422
+    assert snapshot_json == response.json()
