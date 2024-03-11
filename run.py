@@ -1429,10 +1429,13 @@ def main() -> None:
         set_output_log_utf8()
 
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
+    # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
+    # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
+    # ref: https://github.com/VOICEVOX/voicevox_engine/pull/647#issuecomment-1540204653
     parser.add_argument(
         "--host",
         type=str,
-        default="127.0.0.1",
+        default="localhost",
         help="接続を受け付けるホストアドレスです。",
     )
     parser.add_argument(
