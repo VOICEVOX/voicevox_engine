@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import re
 import sys
+import time
 import traceback
 import zipfile
 from collections.abc import Awaitable, Callable
@@ -23,6 +24,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, parse_obj_as
+from semver.version import Version
 from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
@@ -228,6 +230,24 @@ def generate_app(
         engine_manifest_data.name,
         engine_manifest_data.uuid,
     )
+
+    # 開発版がビルドされていることもあるので判定に"__version__"を使用する
+    if Version.is_valid(__version__) and Version.parse(__version__).prerelease is None:
+        speaker_and_singer_info_etag = f'W/"{engine_manifest_data.uuid}-{__version__}"'
+    else:
+        # 開発版はバージョンとは無関係にリソースが更新されるのでETagに起動時間を使用する
+        speaker_and_singer_info_etag = f'W/"{time.time_ns()}"'
+
+    async def speaker_and_singer_info_header(
+        request: Request, response: Response
+    ) -> bool:
+        """
+        レスポンスに"Cache-Control"と"ETag"ヘッダを付与すると同時に"If-None-Match"の"ETag"が一致するか返す。
+        """
+        response.headers["Cache-Control"] = "no-cache"
+        response.headers["ETag"] = speaker_and_singer_info_etag
+        if_none_match = request.headers.get("If-None-Match")
+        return if_none_match == speaker_and_singer_info_etag
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
@@ -861,13 +881,16 @@ def generate_app(
 
     @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
+        is_cached: Annotated[bool, Depends(speaker_and_singer_info_header)],
         speaker_uuid: str,
         core_version: str | None = None,
-    ) -> SpeakerInfo:
+    ) -> SpeakerInfo | Response:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
+        if is_cached:
+            return Response(status_code=304)
         return _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
@@ -978,13 +1001,16 @@ def generate_app(
 
     @app.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
     def singer_info(
+        is_cached: Annotated[bool, Depends(speaker_and_singer_info_header)],
         speaker_uuid: str,
         core_version: str | None = None,
-    ) -> SpeakerInfo:
+    ) -> SpeakerInfo | Response:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
+        if is_cached:
+            return Response(status_code=304)
         return _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",

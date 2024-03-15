@@ -33,6 +33,27 @@ def test_話者の情報を取得できる(
         ) == hash_long_string(response.json())
 
 
+def test_話者の情報取得時にETagヘッダの検証が正しくできる(client: TestClient) -> None:
+    speakers = parse_obj_as(list[Speaker], client.get("/speakers").json())
+    for speaker in speakers:
+        first_response = client.get(
+            "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
+        )
+        cached_response = client.get(
+            "/speaker_info",
+            params={"speaker_uuid": speaker.speaker_uuid},
+            headers={"If-None-Match": first_response.headers.get("ETag")},
+        )
+        assert cached_response.status_code == 304
+
+        non_cached_response = client.get(
+            "/speaker_info",
+            params={"speaker_uuid": speaker.speaker_uuid},
+            headers={"If-None-Match": "NOT_CACHED"},
+        )
+        assert non_cached_response.status_code == 200
+
+
 def test_歌手一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
@@ -52,3 +73,24 @@ def test_歌手の情報を取得できる(
         assert snapshot_json(
             name=singer.speaker_uuid,
         ) == hash_long_string(response.json())
+
+
+def test_歌手の情報取得時にETagヘッダの検証が正しくできる(client: TestClient) -> None:
+    singers = parse_obj_as(list[Speaker], client.get("/singers").json())
+    for singer in singers:
+        first_response = client.get(
+            "/singer_info", params={"speaker_uuid": singer.speaker_uuid}
+        )
+        cached_response = client.get(
+            "/singer_info",
+            params={"speaker_uuid": singer.speaker_uuid},
+            headers={"If-None-Match": first_response.headers.get("ETag")},
+        )
+        assert cached_response.status_code == 304
+
+        non_cached_response = client.get(
+            "/singer_info",
+            params={"speaker_uuid": singer.speaker_uuid},
+            headers={"If-None-Match": "NOT_CACHED"},
+        )
+        assert non_cached_response.status_code == 200
