@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
 StyleId = NewType("StyleId", int)
+PitchRange = NewType("PitchRange", float)
 StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
@@ -27,6 +28,11 @@ class SpeakerStyle(BaseModel):
         ),
     )
 
+
+class SpeakerOptimalPitchRangeItem(BaseModel):
+    style_id: StyleId
+    high: PitchRange
+    low: PitchRange
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
     ALL = "ALL"  # 全て許可
@@ -66,6 +72,9 @@ class EngineSpeaker(BaseModel):
 
     supported_features: SpeakerSupportedFeatures = Field(
         title="話者の対応機能", default_factory=SpeakerSupportedFeatures
+    )
+    range: List[SpeakerOptimalPitchRangeItem] = Field(
+        title="話者の最適ピッチ範囲", default_factory=list[SpeakerOptimalPitchRangeItem]
     )
 
 
