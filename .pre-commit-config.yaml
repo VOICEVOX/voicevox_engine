@@ -10,6 +10,12 @@ repos:
         types: [file, python]
         stages: [push]
         pass_filenames: false
+      - id: poetry-check # `pyproject.toml` と `poetry.lock` が整合する
+        name: poetry-check
+        entry: poetry check
+        language: python
+        stages: [push]
+        pass_filenames: false
       - id: poetry-export
         name: poetry-export
         entry: poetry export --without-hashes -o requirements.txt
