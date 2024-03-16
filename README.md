@@ -344,6 +344,8 @@ curl -s \
 `/frame_synthesis`で指定できる`speaker`は、`/singers`で取得できるスタイルの内、種類が`frame_decode`の`style_id`です。  
 引数が `speaker` という名前になっているのは、他の API と一貫性をもたせるためです。
 
+`/sing_frame_audio_query`と`/frame_synthesis`に異なるスタイルを指定することも可能です。
+
 ### CORS 設定
 
 VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
