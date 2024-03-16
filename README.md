@@ -434,7 +434,7 @@ python run.py --output_log_utf8
 
 #### CPU スレッド数を指定する
 
-CPU スレッド数が未指定の場合は、論理コア数の半分か物理コア数が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
+CPU スレッド数が未指定の場合は、論理コア数の半分が使われます。（殆どの CPU で、これは全体の処理能力の半分です）  
 もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
 エンジンが使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
@@ -518,6 +518,11 @@ LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
+
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
 
 ### コードフォーマット
 
@@ -665,7 +670,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ## 事例紹介
 
-**[voicevox-client](https://github.com/tuna2134/voicevox-client) [@tuna2134](https://github.com/tuna2134)** ･･･ VOICEVOX ENGINE のための Python ラッパー
+**[voicevox-client](https://github.com/voicevox-client) [@voicevox-client](https://github.com/voicevox-client)** ･･･ VOICEVOX ENGINE の各言語向け API ラッパー
 
 ## ライセンス
 

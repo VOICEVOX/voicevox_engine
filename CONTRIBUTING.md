@@ -1,0 +1,206 @@
+**このガイドラインは現在工事中です。**
+
+TODO: 重複部分を省く
+TODO: deprecated 部分を省く
+
+## 目次
+
+* [インストール](#インストール)
+* [スクリプトの使い方](#スクリプトの使い方)
+  * [実行](#実行)
+  * [テスト](#テスト)
+  * [ビルド](#ビルド)
+  * [コードフォーマット](#コードフォーマット)
+  * [タイポチェック](#タイポチェック)
+  * [APIドキュメントの確認](#APIドキュメントの確認)
+  * [依存関係](#依存関係)
+  * [ユーザー辞書の更新について](#ユーザー辞書の更新について)
+* [Issue](#issue)
+
+## 貢献者の方へ
+
+Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
+Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+
+[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+
+## インストール
+
+このプロジェクトでは
+* 3.11以上のpython
+* 依存ライブラリ
+  * cmake
+  * libsndfile1
+* (実際に動かす時のみ)voicevox製品版
+を使います。
+
+#### セットアップ
+以下のコマンドで使用できるようになります。
+
+```bash
+git clone https://github.com/VOICEVOX/voicevox_engine.git
+python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+```
+
+実際に動かす場合はvoicevox製品版をダウンロードする必要があります。
+
+* VERSION
+  voicevox_coreのバージョン
+* OS
+  windowsやlinuxなどのOS
+* ARCHITECTURE
+  x64やarm64などのCPUアーキテクチャ
+* PROCESSOR
+  cpuかgpuか
+
+を指定してダウンロードして環境変数をセットしてください。
+
+```
+curl -L https://github.com/VOICEVOX/voicevox_core/releases/download/0.14.3/voicevox_core-${OS}-${arch}-${processor}-${}.zip -o voicevox_core
+unzip voicevox_core.zip
+VOICEVOX_DIR=voicevox_core
+```
+
+最新のリリースは以下にあります。
+https://github.com/VOICEVOX/voicevox_core/releases/latest
+
+    
+## スクリプトの使い方
+
+### 実行
+コマンドライン引数の詳細は以下のコマンドで確認してください。
+
+```bash
+python run.py --help
+```
+
+製品版 VOICEVOX でサーバーを起動
+```bash
+VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+python run.py --voicevox_dir=$VOICEVOX_DIR
+```
+
+モックでサーバー起動
+```bash
+python run.py --enable_mock
+```
+
+ログをUTF8に変更
+```bash
+python run.py --output_log_utf8
+# もしくは
+VV_OUTPUT_LOG_UTF8=1 python run.py
+```
+
+### テスト
+```bash
+python -m pytest
+```
+
+### ビルド
+
+この方法でビルドしたものは、リリースで公開されているものとは異なります。 また、GPUで利用するにはcuDNNやCUDA、DirectMLなどのライブラリが追加で必要となります。
+
+```bash
+OUTPUT_LICENSE_JSON_PATH=licenses.json \
+bash build_util/create_venv_and_generate_licenses.bash
+
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
+LIBCORE_PATH="/path/to/libcore" \
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec  
+```
+
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
+
+### コードフォーマット
+
+このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。 利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。 プルリクエストを作成する際は、利用することを推奨します。
+
+```bash
+pre-commit install -t pre-push
+```
+
+エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
+
+```bash
+pysen run format lint
+```
+
+### タイポチェック
+
+typos を使ってタイポのチェックを行っています。 typos をインストール した後
+
+```bash
+typos
+```
+
+でタイポチェックを行えます。 もし誤判定やチェックから除外すべきファイルがあれば 設定ファイルの説明 に従って_typos.tomlを編集してください。
+
+### APIドキュメントの確認
+
+API ドキュメント（実体はdocs/api/index.html）は自動で更新されます。
+次のコマンドで API ドキュメントを手動で作成することができます。
+
+```bash
+PYTHONPATH=. python build_util/make_docs.py
+```
+
+
+### 依存関係
+
+Poetry を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
+
+パッケージを追加する場合
+```bash
+poetry add `パッケージ名`
+poetry add --group dev `パッケージ名` # 開発依存の追加
+poetry add --group test `パッケージ名` # テスト依存の追加
+```
+
+パッケージをアップデートする場合
+```bash
+poetry update `パッケージ名`
+poetry update # 全部更新
+```
+
+requirements.txtの更新
+```bash
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
+poetry export --without-hashes --with dev -o requirements-dev.txt
+poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with license -o requirements-license.txt
+```
+
+#### ライセンス
+
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
+
+- MIT/Apache/BSD-3: OK
+- LGPL: OK （コアと動的分離されているため）
+- GPL: NG （全関連コードの公開が必要なため）
+
+### GitHub Actions
+
+#### Variables
+
+| name               | description         |
+| :----------------- | :------------------ |
+| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
+
+#### Secrets
+
+| name            | description                                                             |
+| :-------------- | :---------------------------------------------------------------------- |
+| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
+
+## Issue
+不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。

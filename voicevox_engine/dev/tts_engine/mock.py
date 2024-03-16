@@ -16,7 +16,7 @@ from ..core.mock import MockCoreWrapper
 class MockTTSEngine(TTSEngine):
     """製品版コア無しに音声合成が可能なモック版TTSEngine"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(MockCoreWrapper())
 
     def synthesize_wave(

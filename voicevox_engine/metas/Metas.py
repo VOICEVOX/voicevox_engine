@@ -44,7 +44,8 @@ class SpeakerSupportedFeatures(BaseModel):
     """
 
     permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
-        title="モーフィング機能への対応", default=SpeakerSupportPermittedSynthesisMorphing(None)
+        title="モーフィング機能への対応",
+        default=SpeakerSupportPermittedSynthesisMorphing(None),
     )
 
 
@@ -83,8 +84,12 @@ class StyleInfo(BaseModel):
     """
 
     id: StyleId = Field(title="スタイルID")
-    icon: Optional[str] = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
-    portrait: Optional[str] = Field(title="当該スタイルのportrait.pngをbase64エンコードしたもの")
+    icon: Optional[str] = Field(
+        title="当該スタイルのアイコンをbase64エンコードしたもの"
+    )
+    portrait: Optional[str] = Field(
+        title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+    )
     voice_samples: Optional[List[str]] = Field(
         title="voice_sampleのwavファイルをbase64エンコードしたもの"
     )

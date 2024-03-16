@@ -8,8 +8,11 @@ from fastapi import HTTPException
 from pyopenjtalk import g2p, unset_user_dict
 
 from voicevox_engine.model import UserDictWord, WordTypes
-from voicevox_engine.part_of_speech_data import MAX_PRIORITY, part_of_speech_data
-from voicevox_engine.user_dict import (
+from voicevox_engine.user_dict.part_of_speech_data import (
+    MAX_PRIORITY,
+    part_of_speech_data,
+)
+from voicevox_engine.user_dict.user_dict import (
     _create_word,
     apply_word,
     delete_word,
@@ -56,6 +59,7 @@ import_word = UserDictWord(
     yomi="テストツー",
     pronunciation="テストツー",
     accent_type=1,
+    mora_count=None,
     accent_associative_rule="*",
 )
 
@@ -72,21 +76,21 @@ def get_new_word(user_dict: dict[str, UserDictWord]) -> UserDictWord:
 
 
 class TestUserDict(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.tmp_dir = TemporaryDirectory()
         self.tmp_dir_path = Path(self.tmp_dir.name)
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         unset_user_dict()
         self.tmp_dir.cleanup()
 
-    def test_read_not_exist_json(self):
+    def test_read_not_exist_json(self) -> None:
         self.assertEqual(
             read_dict(user_dict_path=(self.tmp_dir_path / "not_exist.json")),
             {},
         )
 
-    def test_create_word(self):
+    def test_create_word(self) -> None:
         # 将来的に品詞などが追加された時にテストを増やす
         self.assertEqual(
             _create_word(surface="test", pronunciation="テスト", accent_type=1),
@@ -103,11 +107,12 @@ class TestUserDict(TestCase):
                 yomi="テスト",
                 pronunciation="テスト",
                 accent_type=1,
+                mora_count=None,
                 accent_associative_rule="*",
             ),
         )
 
-    def test_apply_word_without_json(self):
+    def test_apply_word_without_json(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_apply_word_without_json.json"
         apply_word(
             surface="test",
@@ -128,7 +133,7 @@ class TestUserDict(TestCase):
             ("ｔｅｓｔ", "テスト", 1),
         )
 
-    def test_apply_word_with_json(self):
+    def test_apply_word_with_json(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_apply_word_with_json.json"
         user_dict_path.write_text(
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
@@ -152,7 +157,7 @@ class TestUserDict(TestCase):
             ("ｔｅｓｔ２", "テストツー", 3),
         )
 
-    def test_rewrite_word_invalid_id(self):
+    def test_rewrite_word_invalid_id(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_rewrite_word_invalid_id.json"
         user_dict_path.write_text(
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
@@ -168,7 +173,7 @@ class TestUserDict(TestCase):
             compiled_dict_path=(self.tmp_dir_path / "test_rewrite_word_invalid_id.dic"),
         )
 
-    def test_rewrite_word_valid_id(self):
+    def test_rewrite_word_valid_id(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_rewrite_word_valid_id.json"
         user_dict_path.write_text(
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
@@ -189,7 +194,7 @@ class TestUserDict(TestCase):
             ("ｔｅｓｔ２", "テストツー", 2),
         )
 
-    def test_delete_word_invalid_id(self):
+    def test_delete_word_invalid_id(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_delete_word_invalid_id.json"
         user_dict_path.write_text(
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
@@ -202,7 +207,7 @@ class TestUserDict(TestCase):
             compiled_dict_path=(self.tmp_dir_path / "test_delete_word_invalid_id.dic"),
         )
 
-    def test_delete_word_valid_id(self):
+    def test_delete_word_valid_id(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_delete_word_valid_id.json"
         user_dict_path.write_text(
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
@@ -214,7 +219,7 @@ class TestUserDict(TestCase):
         )
         self.assertEqual(len(read_dict(user_dict_path=user_dict_path)), 0)
 
-    def test_priority(self):
+    def test_priority(self) -> None:
         for pos in part_of_speech_data:
             for i in range(MAX_PRIORITY + 1):
                 self.assertEqual(
@@ -228,7 +233,7 @@ class TestUserDict(TestCase):
                     i,
                 )
 
-    def test_import_dict(self):
+    def test_import_dict(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_import_dict.json"
         compiled_dict_path = self.tmp_dir_path / "test_import_dict.dic"
         user_dict_path.write_text(
@@ -249,7 +254,7 @@ class TestUserDict(TestCase):
             UserDictWord(**valid_dict_dict_api["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"]),
         )
 
-    def test_import_dict_no_override(self):
+    def test_import_dict_no_override(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_import_dict_no_override.json"
         compiled_dict_path = self.tmp_dir_path / "test_import_dict_no_override.dic"
         user_dict_path.write_text(
@@ -266,7 +271,7 @@ class TestUserDict(TestCase):
             UserDictWord(**valid_dict_dict_api["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"]),
         )
 
-    def test_import_dict_override(self):
+    def test_import_dict_override(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_import_dict_override.json"
         compiled_dict_path = self.tmp_dir_path / "test_import_dict_override.dic"
         user_dict_path.write_text(
@@ -283,7 +288,7 @@ class TestUserDict(TestCase):
             import_word,
         )
 
-    def test_import_invalid_word(self):
+    def test_import_invalid_word(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_import_invalid_dict.json"
         compiled_dict_path = self.tmp_dir_path / "test_import_invalid_dict.dic"
         invalid_accent_associative_rule_word = deepcopy(import_word)
@@ -316,7 +321,7 @@ class TestUserDict(TestCase):
             compiled_dict_path=compiled_dict_path,
         )
 
-    def test_update_dict(self):
+    def test_update_dict(self) -> None:
         user_dict_path = self.tmp_dir_path / "test_update_dict.json"
         compiled_dict_path = self.tmp_dir_path / "test_update_dict.dic"
         update_dict(

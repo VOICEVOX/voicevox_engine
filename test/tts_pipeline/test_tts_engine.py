@@ -9,7 +9,14 @@ from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import (
+    AccentPhrase,
+    AudioQuery,
+    FrameAudioQuery,
+    Mora,
+    Note,
+    Score,
+)
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -86,13 +93,13 @@ class MockCore:
     yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
     decode_forward = Mock(side_effect=decode_mock)
 
-    def metas(self):
+    def metas(self) -> str:
         return ""
 
-    def supported_devices(self):
+    def supported_devices(self) -> str:
         return ""
 
-    def is_model_loaded(self, style_id):
+    def is_model_loaded(self, style_id: str) -> bool:
         return True
 
 
@@ -115,7 +122,7 @@ def _gen_mora(
     )
 
 
-def test_to_flatten_phonemes():
+def test_to_flatten_phonemes() -> None:
     """Test `to_flatten_phonemes`."""
     # Inputs
     moras = [
@@ -182,8 +189,23 @@ def _gen_hello_hiho_query() -> AudioQuery:
     )
 
 
+def _gen_doremi_score() -> Score:
+    return Score(
+        notes=[
+            Note(key=None, frame_length=10, lyric=""),
+            Note(key=60, frame_length=12, lyric="ど"),
+            Note(key=62, frame_length=17, lyric="れ"),
+            Note(key=64, frame_length=21, lyric="み"),
+            Note(key=None, frame_length=5, lyric=""),
+            Note(key=65, frame_length=12, lyric="ふぁ"),
+            Note(key=67, frame_length=17, lyric="そ"),
+            Note(key=None, frame_length=10, lyric=""),
+        ]
+    )
+
+
 class TestTTSEngine(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         core = MockCore()
         self.yukarin_s_mock = core.yukarin_s_forward
@@ -191,7 +213,7 @@ class TestTTSEngine(TestCase):
         self.decode_mock = core.decode_forward
         self.tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
 
-    def test_to_flatten_moras(self):
+    def test_to_flatten_moras(self) -> None:
         flatten_moras = to_flatten_moras(_gen_hello_hiho_accent_phrases())
         true_accent_phrases_hello_hiho = _gen_hello_hiho_accent_phrases()
         self.assertEqual(
@@ -201,7 +223,7 @@ class TestTTSEngine(TestCase):
             + true_accent_phrases_hello_hiho[1].moras,
         )
 
-    def test_update_length(self):
+    def test_update_length(self) -> None:
         # Inputs
         hello_hiho = _gen_hello_hiho_accent_phrases()
         # Indirect Outputs（yukarin_sに渡される値）
@@ -225,7 +247,7 @@ class TestTTSEngine(TestCase):
             np.array(true_phoneme_list, dtype=np.int64),
         )
 
-    def test_update_pitch(self):
+    def test_update_pitch(self) -> None:
         # 空のリストでエラーを吐かないか
         # Inputs
         phrases: list = []
@@ -274,7 +296,7 @@ class TestTTSEngine(TestCase):
         np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
 
 
-def test_create_accent_phrases_toward_unknown():
+def test_create_accent_phrases_toward_unknown() -> None:
     """`TTSEngine.create_accent_phrases()` は unknown 音素の Phoneme 化に失敗する"""
     engine = TTSEngine(MockCoreWrapper())
 
@@ -359,7 +381,42 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     assert snapshot_json == round_floats(result.tolist(), round_value=2)
 
 
-def koreha_arimasuka_base_expected():
+def test_mocked_synthesize_wave_from_score_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
+    `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である
+    """
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    doremi_srore = _gen_doremi_score()
+    # Outputs
+    result = tts_engine.create_sing_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    # Tests
+    assert snapshot_json(name="query") == round_floats(
+        pydantic_to_native_type(result), round_value=2
+    )
+
+    # Inputs
+    phonemes, f0, volume = result
+    doremi_query = FrameAudioQuery(
+        f0=f0,
+        volume=volume,
+        phonemes=phonemes,
+        volumeScale=1.3,
+        outputSamplingRate=1200,
+        outputStereo=False,
+    )
+    # Outputs
+    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    # Tests
+    assert snapshot_json(name="wave") == round_floats(
+        result_wave.tolist(), round_value=2
+    )
+
+
+def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
@@ -443,7 +500,7 @@ def koreha_arimasuka_base_expected():
 
 
 class TestTTSEngineBase(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.tts_engine = TTSEngine(core=MockCoreWrapper())
 
@@ -460,7 +517,7 @@ class TestTTSEngineBase(TestCase):
         outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
         self.assertEqual(expected, outputs, f"case(text:{text})")
 
-    def test_create_accent_phrases(self):
+    def test_create_accent_phrases(self) -> None:
         """accent_phrasesの作成時では疑問文モーラ処理を行わない
         (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
         """
@@ -470,7 +527,7 @@ class TestTTSEngineBase(TestCase):
         actual = self.tts_engine.create_accent_phrases(text, StyleId(1))
         self.assertEqual(expected, actual, f"case(text:{text})")
 
-    def test_upspeak_voiced_last_mora(self):
+    def test_upspeak_voiced_last_mora(self) -> None:
         # voiced + "？" + flagON -> upspeak
         expected = koreha_arimasuka_base_expected()
         expected[-1].is_interrogative = True
@@ -507,8 +564,8 @@ class TestTTSEngineBase(TestCase):
             enable_interrogative_upspeak=True,
         )
 
-    def test_upspeak_voiced_N_last_mora(self):
-        def nn_base_expected():
+    def test_upspeak_voiced_N_last_mora(self) -> None:
+        def nn_base_expected() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -563,8 +620,8 @@ class TestTTSEngineBase(TestCase):
             enable_interrogative_upspeak=False,
         )
 
-    def test_upspeak_unvoiced_last_mora(self):
-        def ltu_base_expected():
+    def test_upspeak_unvoiced_last_mora(self) -> None:
+        def ltu_base_expected() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[
@@ -609,8 +666,8 @@ class TestTTSEngineBase(TestCase):
             enable_interrogative_upspeak=False,
         )
 
-    def test_upspeak_voiced_u_last_mora(self):
-        def su_base_expected():
+    def test_upspeak_voiced_u_last_mora(self) -> None:
+        def su_base_expected() -> list[AccentPhrase]:
             return [
                 AccentPhrase(
                     moras=[

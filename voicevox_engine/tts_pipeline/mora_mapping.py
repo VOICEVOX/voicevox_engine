@@ -44,7 +44,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 from typing import Literal
 
-from .acoustic_feature_extractor import BaseVowel, Consonant
+from .phoneme import BaseVowel, Consonant
 
 # AquesTalk 風記法で記述されるモーラ（無声化 `_` を除く）
 _MoraKana = Literal[
@@ -387,6 +387,6 @@ mora_phonemes_to_mora_kana: dict[str, _MoraKana] = {
 }
 # 「ヒ」→「hi」
 mora_kana_to_mora_phonemes: dict[_MoraKana, tuple[Consonant | None, BaseVowel]] = {
-    kana: (consonant, vowel)
+    kana: (consonant, vowel)  # noqa B035 キー(kana)が一意であれば無視できる
     for [kana, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }

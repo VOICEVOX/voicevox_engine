@@ -6,7 +6,7 @@ from typing import Callable, Literal, Self
 import pyopenjtalk
 
 from ..model import AccentPhrase, Mora
-from .mora_list import mora_phonemes_to_mora_kana
+from .mora_mapping import mora_phonemes_to_mora_kana
 
 OjtVowel = Literal[
     "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
@@ -115,7 +115,7 @@ class Label:
         """BreathGroupのインデックス"""
         return self.contexts["i3"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Label phoneme='{self.phoneme}'>"
 
 
@@ -210,7 +210,9 @@ class BreathGroupLabel:
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[Label] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
+        accent_labels: list[Label] = (
+            []
+        )  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
         for label, next_label in zip(labels, labels[1:] + [None]):
             # 区切りまでラベル系列を一時保存する
@@ -258,7 +260,9 @@ class UtteranceLabel:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[Label] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
+        group_labels: list[Label] = (
+            []
+        )  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する

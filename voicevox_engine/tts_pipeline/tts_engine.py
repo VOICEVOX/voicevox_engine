@@ -10,9 +10,9 @@ from ..core.core_adapter import CoreAdapter
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
-from .acoustic_feature_extractor import Phoneme
 from .kana_converter import parse_kana
-from .mora_list import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
+from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
+from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
 
 # 疑問文語尾定数
@@ -135,7 +135,9 @@ def count_frame_per_unit(
         consonant_frames = (
             _to_frame(mora.consonant_length) if mora.consonant_length is not None else 0
         )
-        mora_frames = vowel_frames + consonant_frames  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
+        mora_frames = (
+            vowel_frames + consonant_frames
+        )  # 音素ごとにフレーム長を算出し、和をモーラのフレーム長とする
 
         if mora.consonant:
             frame_per_phoneme += [consonant_frames]
@@ -261,6 +263,7 @@ def calc_phoneme_lengths(
             note_duration = note_durations[i]
 
             # もし、次のノートの子音長が負になる場合、現在のノートの半分にする
+            # NOTE: 将来的にコアは非負になるのでこの処理は不要になる
             if next_consonant_length < 0:
                 next_consonant_length = consonant_lengths[i + 1] = note_duration // 2
             vowel_length = note_duration - next_consonant_length
