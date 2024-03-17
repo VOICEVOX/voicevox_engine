@@ -54,6 +54,7 @@ from voicevox_engine.model import (
     Speaker,
     SpeakerInfo,
     StyleIdNotFoundError,
+    StylePitchRange,
     SupportedDevicesInfo,
     UserDictWord,
     VvlibManifest,
@@ -536,6 +537,21 @@ def generate_app(
             media_type="application/zip",
             background=BackgroundTask(delete_file, f.name),
         )
+
+    @app.post(
+        "/optimal_pitch",
+        response_model=StylePitchRange,
+        tags=["その他"],
+        summary="指定したスタイルに対して最適なピッチ範囲を得る",
+    )
+    def optimal_pitch(style_id: StyleId) -> StylePitchRange:
+        try:
+            low, high = metas_store.get_style_optimal_pitch_range(style_id)
+            return StylePitchRange(low=low, high=high)
+        except StyleIdNotFoundError as e:
+            raise HTTPException(
+                status_code=404, detail=f"該当するスタイル(style_id={e.style_id})が見つかりません"
+            )
 
     @app.post(
         "/morphable_targets",

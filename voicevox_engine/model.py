@@ -155,6 +155,11 @@ class MorphableTargetInfo(BaseModel):
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
 
 
+class StylePitchRange(BaseModel):
+    low: float
+    high: float
+
+
 class StyleIdNotFoundError(LookupError):
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.style_id = style_id

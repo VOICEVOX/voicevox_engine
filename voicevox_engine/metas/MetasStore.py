@@ -11,6 +11,7 @@ from voicevox_engine.metas.Metas import (
     StyleId,
     StyleType,
 )
+from voicevox_engine.model import StyleIdNotFoundError
 
 if TYPE_CHECKING:
     from voicevox_engine.core.core_adapter import CoreAdapter
@@ -60,6 +61,14 @@ class MetasStore:
             )
             for speaker_meta in core_metas
         ]
+
+    def get_style_optimal_pitch_range(self, style_id: StyleId) -> tuple[float, float]:
+        for meta in self._loaded_metas.values():
+            for range in meta.range:
+                if range.style_id == style_id:
+                    return (range.low, range.high)
+        else:
+            raise StyleIdNotFoundError(style_id=style_id)
 
 
 def construct_lookup(

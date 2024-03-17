@@ -34,6 +34,7 @@ class SpeakerOptimalPitchRangeItem(BaseModel):
     high: PitchRange
     low: PitchRange
 
+
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
     ALL = "ALL"  # 全て許可
     SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
