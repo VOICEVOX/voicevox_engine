@@ -17,7 +17,9 @@ from typing import Annotated, Any, Literal, Optional
 
 import soundfile
 import uvicorn
-from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, Response
+from fastapi import Body, Depends, FastAPI, Form, HTTPException
+from fastapi import Path as FAPath
+from fastapi import Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
@@ -1139,29 +1141,28 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_user_dict_word(
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
+        surface: Annotated[str, Query(description="言葉の表層形")],
+        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
+        accent_type: Annotated[
+            int, Query(description="アクセント型（音が下がる場所を指す）")
+        ],
+        word_type: Annotated[
+            WordTypes | None,
+            Query(
+                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+            ),
+        ] = None,
+        priority: Annotated[
+            int | None,
+            Query(
+                ge=MIN_PRIORITY,
+                le=MAX_PRIORITY,
+                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+            ),
+        ] = None,
     ) -> Response:
         """
         ユーザー辞書に言葉を追加します。
-
-        Parameters
-        ----------
-        surface : str
-            言葉の表層形
-        pronunciation: str
-            言葉の発音（カタカナ）
-        accent_type: int
-            アクセント型（音が下がる場所を指す）
-        word_type: WordTypes, optional
-            PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか
-        priority: int, optional
-            単語の優先度（0から10までの整数）
-            数字が大きいほど優先度が高くなる
-            1から9までの値を指定することを推奨
         """
         try:
             word_uuid = apply_word(
@@ -1189,32 +1190,29 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def rewrite_user_dict_word(
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_uuid: str,
-        word_type: WordTypes | None = None,
-        priority: Annotated[int | None, Query(ge=MIN_PRIORITY, le=MAX_PRIORITY)] = None,
+        surface: Annotated[str, Query(description="言葉の表層形")],
+        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
+        accent_type: Annotated[
+            int, Query(description="アクセント型（音が下がる場所を指す）")
+        ],
+        word_uuid: Annotated[str, FAPath(description="更新する言葉のUUID")],
+        word_type: Annotated[
+            WordTypes | None,
+            Query(
+                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+            ),
+        ] = None,
+        priority: Annotated[
+            int | None,
+            Query(
+                ge=MIN_PRIORITY,
+                le=MAX_PRIORITY,
+                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
+            ),
+        ] = None,
     ) -> Response:
         """
         ユーザー辞書に登録されている言葉を更新します。
-
-        Parameters
-        ----------
-        surface : str
-            言葉の表層形
-        pronunciation: str
-            言葉の発音（カタカナ）
-        accent_type: int
-            アクセント型（音が下がる場所を指す）
-        word_uuid: str
-            更新する言葉のUUID
-        word_type: WordTypes, optional
-            PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか
-        priority: int, optional
-            単語の優先度（0から10までの整数）
-            数字が大きいほど優先度が高くなる
-            1から9までの値を指定することを推奨
         """
         try:
             rewrite_word(
@@ -1244,14 +1242,11 @@ def generate_app(
         tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def delete_user_dict_word(word_uuid: str) -> Response:
+    def delete_user_dict_word(
+        word_uuid: Annotated[str, FAPath(description="削除する言葉のUUID")]
+    ) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
-
-        Parameters
-        ----------
-        word_uuid: str
-            削除する言葉のUUID
         """
         try:
             delete_word(word_uuid=word_uuid)
@@ -1271,18 +1266,16 @@ def generate_app(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def import_user_dict_words(
-        import_dict_data: dict[str, UserDictWord],
-        override: bool,
+        import_dict_data: Annotated[
+            dict[str, UserDictWord],
+            Body(description="インポートするユーザー辞書のデータ"),
+        ],
+        override: Annotated[
+            bool, Query(description="重複したエントリがあった場合、上書きするかどうか")
+        ],
     ) -> Response:
         """
         他のユーザー辞書をインポートします。
-
-        Parameters
-        ----------
-        import_dict_data: dict[str, UserDictWord]
-            インポートするユーザー辞書のデータ
-        override: bool
-            重複したエントリがあった場合、上書きするかどうか
         """
         try:
             import_user_dict(dict_data=import_dict_data, override=override)
