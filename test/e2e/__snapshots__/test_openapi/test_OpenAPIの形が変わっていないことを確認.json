@@ -1625,14 +1625,16 @@
     },
     "/import_user_dict": {
       "post": {
-        "description": "他のユーザー辞書をインポートします。\n\nParameters\n----------\nimport_dict_data: dict[str, UserDictWord]\n    インポートするユーザー辞書のデータ\noverride: bool\n    重複したエントリがあった場合、上書きするかどうか",
+        "description": "他のユーザー辞書をインポートします。",
         "operationId": "import_user_dict_words_import_user_dict_post",
         "parameters": [
           {
+            "description": "重複したエントリがあった場合、上書きするかどうか",
             "in": "query",
             "name": "override",
             "required": true,
             "schema": {
+              "description": "重複したエントリがあった場合、上書きするかどうか",
               "title": "Override",
               "type": "boolean"
             }
@@ -1645,6 +1647,7 @@
                 "additionalProperties": {
                   "$ref": "#/components/schemas/UserDictWord"
                 },
+                "description": "インポートするユーザー辞書のデータ",
                 "title": "Import Dict Data",
                 "type": "object"
               }
@@ -2820,49 +2823,63 @@
     },
     "/user_dict_word": {
       "post": {
-        "description": "ユーザー辞書に言葉を追加します。\n\nParameters\n----------\nsurface : str\n    言葉の表層形\npronunciation: str\n    言葉の発音（カタカナ）\naccent_type: int\n    アクセント型（音が下がる場所を指す）\nword_type: WordTypes, optional\n    PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか\npriority: int, optional\n    単語の優先度（0から10までの整数）\n    数字が大きいほど優先度が高くなる\n    1から9までの値を指定することを推奨",
+        "description": "ユーザー辞書に言葉を追加します。",
         "operationId": "add_user_dict_word_user_dict_word_post",
         "parameters": [
           {
+            "description": "言葉の表層形",
             "in": "query",
             "name": "surface",
             "required": true,
             "schema": {
+              "description": "言葉の表層形",
               "title": "Surface",
               "type": "string"
             }
           },
           {
+            "description": "言葉の発音（カタカナ）",
             "in": "query",
             "name": "pronunciation",
             "required": true,
             "schema": {
+              "description": "言葉の発音（カタカナ）",
               "title": "Pronunciation",
               "type": "string"
             }
           },
           {
+            "description": "アクセント型（音が下がる場所を指す）",
             "in": "query",
             "name": "accent_type",
             "required": true,
             "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
               "title": "Accent Type",
               "type": "integer"
             }
           },
           {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
             "in": "query",
             "name": "word_type",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/WordTypes"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
             "in": "query",
             "name": "priority",
             "required": false,
             "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
               "maximum": 10.0,
               "minimum": 0.0,
               "title": "Priority",
@@ -2901,14 +2918,16 @@
     },
     "/user_dict_word/{word_uuid}": {
       "delete": {
-        "description": "ユーザー辞書に登録されている言葉を削除します。\n\nParameters\n----------\nword_uuid: str\n    削除する言葉のUUID",
+        "description": "ユーザー辞書に登録されている言葉を削除します。",
         "operationId": "delete_user_dict_word_user_dict_word__word_uuid__delete",
         "parameters": [
           {
+            "description": "削除する言葉のUUID",
             "in": "path",
             "name": "word_uuid",
             "required": true,
             "schema": {
+              "description": "削除する言葉のUUID",
               "title": "Word Uuid",
               "type": "string"
             }
@@ -2935,58 +2954,74 @@
         ]
       },
       "put": {
-        "description": "ユーザー辞書に登録されている言葉を更新します。\n\nParameters\n----------\nsurface : str\n    言葉の表層形\npronunciation: str\n    言葉の発音（カタカナ）\naccent_type: int\n    アクセント型（音が下がる場所を指す）\nword_uuid: str\n    更新する言葉のUUID\nword_type: WordTypes, optional\n    PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか\npriority: int, optional\n    単語の優先度（0から10までの整数）\n    数字が大きいほど優先度が高くなる\n    1から9までの値を指定することを推奨",
+        "description": "ユーザー辞書に登録されている言葉を更新します。",
         "operationId": "rewrite_user_dict_word_user_dict_word__word_uuid__put",
         "parameters": [
           {
+            "description": "更新する言葉のUUID",
             "in": "path",
             "name": "word_uuid",
             "required": true,
             "schema": {
+              "description": "更新する言葉のUUID",
               "title": "Word Uuid",
               "type": "string"
             }
           },
           {
+            "description": "言葉の表層形",
             "in": "query",
             "name": "surface",
             "required": true,
             "schema": {
+              "description": "言葉の表層形",
               "title": "Surface",
               "type": "string"
             }
           },
           {
+            "description": "言葉の発音（カタカナ）",
             "in": "query",
             "name": "pronunciation",
             "required": true,
             "schema": {
+              "description": "言葉の発音（カタカナ）",
               "title": "Pronunciation",
               "type": "string"
             }
           },
           {
+            "description": "アクセント型（音が下がる場所を指す）",
             "in": "query",
             "name": "accent_type",
             "required": true,
             "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
               "title": "Accent Type",
               "type": "integer"
             }
           },
           {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
             "in": "query",
             "name": "word_type",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/WordTypes"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
             "in": "query",
             "name": "priority",
             "required": false,
             "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
               "maximum": 10.0,
               "minimum": 0.0,
               "title": "Priority",
