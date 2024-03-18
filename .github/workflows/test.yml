@@ -89,3 +89,12 @@ jobs:
       - name: Test names by checking typo
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         uses: crate-ci/typos@v1.12.12
+
+  actionlint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check workflow files
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint
+        shell: bash
