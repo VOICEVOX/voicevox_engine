@@ -93,6 +93,8 @@ jobs:
   actionlint:
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/checkout@v4
+
       - name: Check workflow files
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
