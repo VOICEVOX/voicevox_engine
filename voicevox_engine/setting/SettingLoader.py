@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 
 import yaml
@@ -37,6 +38,9 @@ class SettingHandler:
     def save(self, settings: Setting) -> None:
         """設定値をファイルへ書き込む。"""
         settings_dict = settings.dict()
+
+        if isinstance(settings_dict["cors_policy_mode"], Enum):
+            settings_dict["cors_policy_mode"] = settings_dict["cors_policy_mode"].value
 
         with open(self.setting_file_path, mode="w", encoding="utf-8") as f:
             yaml.safe_dump(settings_dict, f)

@@ -1359,7 +1359,7 @@ def generate_app(
             {
                 "request": request,
                 "brand_name": brand_name,
-                "cors_policy_mode": cors_policy_mode,
+                "cors_policy_mode": cors_policy_mode.value,
                 "allow_origin": allow_origin,
             },
         )
