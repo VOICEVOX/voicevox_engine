@@ -153,6 +153,8 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.os }} == windows-* ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
@@ -202,6 +204,8 @@ jobs:
         run: |
           set -eux
 
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.os }} == windows-* ]]; then
             curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
@@ -358,6 +362,8 @@ jobs:
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.target }} != *-directml ]]; then
             unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
             mv download/onnxruntime-* download/onnxruntime
@@ -420,6 +426,8 @@ jobs:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
           curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.os }} == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
           else
@@ -446,6 +454,8 @@ jobs:
 
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.os }} == windows-* ]]; then
             LIBCORE_PATH=download/core/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
@@ -494,6 +504,8 @@ jobs:
             rm -rf download/zlib
           fi
 
+          # Lint disabled because of actionlint's implicit `________________` replacement
+          # shellcheck disable=SC2193
           if [[ ${{ matrix.target }} == *-directml ]]; then
             # DirectML
             mv download/directml/DirectML.dll dist/run/
