@@ -54,7 +54,7 @@ pyworld = "^0.3.0"
 jinja2 = "^3.1.2" # NOTE: required by fastapi
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "b35fc89fe42948a28e33aed886ea145a51113f88" }
 semver = "^3.0.0"
-platformdirs = "^3.10.0"
+platformdirs = "^4.2.0"
 soxr = "^0.3.6"
 pydantic = "<2"
 starlette = "^0.27.0"
