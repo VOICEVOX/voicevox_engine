@@ -1,0 +1,33 @@
+[
+  {
+    "accent": 1,
+    "is_interrogative": false,
+    "moras": [
+      {
+        "consonant": "t",
+        "consonant_length": 2.31,
+        "pitch": 3.3,
+        "text": "テ",
+        "vowel": "e",
+        "vowel_length": 0.88
+      },
+      {
+        "consonant": "s",
+        "consonant_length": 2.19,
+        "pitch": 0.0,
+        "text": "ス",
+        "vowel": "U",
+        "vowel_length": 0.38
+      },
+      {
+        "consonant": "t",
+        "consonant_length": 2.31,
+        "pitch": 4.1,
+        "text": "ト",
+        "vowel": "o",
+        "vowel_length": 1.88
+      }
+    ],
+    "pause_mora": null
+  }
+]
