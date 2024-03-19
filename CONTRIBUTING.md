@@ -36,34 +36,37 @@ cd ./voicevox_engine
 python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 ```
 
-<!-->
-このプロジェクトでは
+<!-- このプロジェクトでは
 * `Python 3.11.3`
 * 依存ライブラリ
   * cmake
   * libsndfile1
-* (実際に動かす時のみ)VOICEVOX製品版
-を使います。
-<-->
+* (実際に動かす時のみ)製品版 VOICEVOX
+を使います。 -->
 
+OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声モデルを含んでいません。  
+これら音声モデルは、利用規約を遵守の上、以下の手順で製品版 VOICEVOX CORE を導入することにより利用できます。  
+なお、VOICEVOX ENGINE 単体でもモック利用により起動自体は可能です。  
 
-実際に動かす場合はVOICEVOX製品版をダウンロードする必要があります。
+1. 環境変数をセットする
 
-* VERSION
-  voicevox_coreのバージョン
-* OS
-  windowsやlinuxなどのOS
-* ARCHITECTURE
-  x64やarm64などのCPUアーキテクチャ
-* PROCESSOR
-  cpuかgpuか
+* `VERSION`: voicevox_core のバージョン (例: `0.15.0`)
+* `OS`: OS 種別 (`windows` | `osx` | `linux`)
+* `ARCHITECTURE`: CPU アーキテクチャ (`x86` | `x64` | `arm64`)
+* `PROCESSOR`: プロセッサ種別 (`cpu` | `gpu` | `cuda` | `directml`)
 
-を指定してダウンロードして環境変数をセットしてください。
-
+例（x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）:  
+```bash
+VERSION="0.15.0"; OS="linux"; ARCHITECTURE="x64"; PROCESSOR="cpu";
 ```
-curl -L https://github.com/VOICEVOX/voicevox_core/releases/download/0.14.3/voicevox_core-${OS}-${arch}-${processor}-${}.zip -o voicevox_core
-unzip voicevox_core.zip
-VOICEVOX_DIR=voicevox_core
+
+2. 製品版 VOICEVOX CORE をダウンロード・展開する
+
+```bash
+CORENAME="voicevox_core-${OS}-${ARCHITECTURE}-${PROCESSOR}-${VERSION}"
+curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${VERSION}/${CORENAME}.zip" -o "${CORENAME}.zip"
+unzip "${CORENAME}.zip"
+VOICELIB_DIR_1=$CORENAME
 ```
 
 最新のリリースは以下にあります。
@@ -83,6 +86,12 @@ python run.py --help
 ```bash
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
+```
+
+製品版 VOICEVOX CORE を読み込んでサーバーを起動
+```bash
+VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
+python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
 <!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
