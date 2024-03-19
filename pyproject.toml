@@ -45,7 +45,7 @@ authors = ["Hiroshiba <hihokaruta@gmail.com>"]
 [tool.poetry.dependencies]
 python = "~3.11"
 numpy = "^1.20.0"
-fastapi = "^0.103.2"
+fastapi = "^0.110.0"
 python-multipart = "^0.0.5" # NOTE: required by fastapi
 uvicorn = "^0.15.0"
 soundfile = "^0.12.1"
@@ -57,7 +57,7 @@ semver = "^3.0.0"
 platformdirs = "^4.2.0"
 soxr = "^0.3.6"
 pydantic = "<2"
-starlette = "^0.27.0"
+starlette = "^0.36.3"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^5.13"
