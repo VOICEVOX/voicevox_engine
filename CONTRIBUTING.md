@@ -33,7 +33,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 * 依存ライブラリ
   * cmake
   * libsndfile1
-* (実際に動かす時のみ)voicevox製品版
+* (実際に動かす時のみ)VOICEVOX製品版
 を使います。
 <-->
 
@@ -45,7 +45,7 @@ git clone https://github.com/VOICEVOX/voicevox_engine.git
 python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 ```
 
-実際に動かす場合はvoicevox製品版をダウンロードする必要があります。
+実際に動かす場合はVOICEVOX製品版をダウンロードする必要があります。
 
 * VERSION
   voicevox_coreのバージョン
