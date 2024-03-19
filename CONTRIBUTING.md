@@ -27,6 +27,15 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 `Python 3.11.3` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
+```bash
+# レポジトリのクローン
+git clone https://github.com/VOICEVOX/voicevox_engine.git
+cd ./voicevox_engine
+
+# 実行・開発・テスト環境のインストール
+python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+```
+
 <!-->
 このプロジェクトでは
 * `Python 3.11.3`
@@ -37,13 +46,6 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 を使います。
 <-->
 
-### セットアップ
-以下のコマンドで使用できるようになります。
-
-```bash
-git clone https://github.com/VOICEVOX/voicevox_engine.git
-python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
-```
 
 実際に動かす場合はVOICEVOX製品版をダウンロードする必要があります。
 
