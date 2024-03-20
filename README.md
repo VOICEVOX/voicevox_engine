@@ -307,6 +307,45 @@ curl -s -X GET "127.0.0.1:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
+### HTTP リクエストで歌声合成するサンプルコード
+
+```bash
+echo -n '{
+  "notes": [
+    { "key": null, "frame_length": 15, "lyric": "" },
+    { "key": 60, "frame_length": 45, "lyric": "ド" },
+    { "key": 62, "frame_length": 45, "lyric": "レ" },
+    { "key": 64, "frame_length": 45, "lyric": "ミ" },
+    { "key": null, "frame_length": 15, "lyric": "" }
+  ]
+}' > score.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @score.json \
+    "127.0.0.1:50021/sing_frame_audio_query?speaker=6000" \
+    > query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/frame_synthesis?speaker=3001" \
+    > audio.wav
+```
+
+スコアの`key`は MIDI 番号です。  
+`lyric`は歌詞で、任意の文字列を指定できますが、エンジンによってはひらがな・カタカナ１モーラ以外の文字列はエラーになることがあります。  
+フレームレートはデフォルトが 93.75Hz で、エンジンマニフェストの`frame_rate`で取得できます。  
+１つ目のノートは無音である必要があります。
+
+`/sing_frame_audio_query`で指定できる`speaker`は、`/singers`で取得できるスタイルの内、種類が`sing`か`singing_teacher`なスタイルの`style_id`です。  
+`/frame_synthesis`で指定できる`speaker`は、`/singers`で取得できるスタイルの内、種類が`frame_decode`の`style_id`です。  
+引数が `speaker` という名前になっているのは、他の API と一貫性をもたせるためです。
+
+`/sing_frame_audio_query`と`/frame_synthesis`に異なるスタイルを指定することも可能です。
+
 ### CORS 設定
 
 VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
