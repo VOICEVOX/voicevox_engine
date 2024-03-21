@@ -751,15 +751,10 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get("/presets", response_model=list[Preset], tags=["その他"])
+    @app.get("/presets", response_model=list[Preset], response_description="プリセットのリスト", tags=["その他"])
     def get_presets() -> list[Preset]:
         """
         エンジンが保持しているプリセットの設定を返します
-
-        Returns
-        -------
-        presets: list[Preset]
-            プリセットのリスト
         """
         try:
             presets = preset_manager.load_presets()
@@ -770,17 +765,13 @@ def generate_app(
     @app.post(
         "/add_preset",
         response_model=int,
+        response_description="追加したプリセットのプリセットID",
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_preset(preset: Annotated[Preset, Body(description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。")]) -> int:
         """
         新しいプリセットを追加します
-
-        Returns
-        -------
-        id: int
-            追加したプリセットのプリセットID
         """
         try:
             id = preset_manager.add_preset(preset)
@@ -791,17 +782,13 @@ def generate_app(
     @app.post(
         "/update_preset",
         response_model=int,
+        response_description="更新したプリセットのプリセットID",
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def update_preset(preset: Annotated[Preset, Body(description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。")]) -> int:
         """
         既存のプリセットを更新します
-
-        Returns
-        -------
-        id: int
-            更新したプリセットのプリセットID
         """
         try:
             id = preset_manager.update_preset(preset)
@@ -980,15 +967,12 @@ def generate_app(
         @app.get(
             "/downloadable_libraries",
             response_model=list[DownloadableLibraryInfo],
+            response_description="ダウンロード可能な音声ライブラリの情報リスト",
             tags=["音声ライブラリ管理"],
         )
         def downloadable_libraries() -> list[DownloadableLibraryInfo]:
             """
             ダウンロード可能な音声ライブラリの情報を返します。
-
-            Returns
-            -------
-            ret_data: list[DownloadableLibrary]
             """
             if not engine_manifest_data.supported_features.manage_library:
                 raise HTTPException(
@@ -999,15 +983,12 @@ def generate_app(
         @app.get(
             "/installed_libraries",
             response_model=dict[str, InstalledLibraryInfo],
+            response_description="インストールした音声ライブラリの情報",
             tags=["音声ライブラリ管理"],
         )
         def installed_libraries() -> dict[str, InstalledLibraryInfo]:
             """
             インストールした音声ライブラリの情報を返します。
-
-            Returns
-            -------
-            ret_data: dict[str, InstalledLibrary]
             """
             if not engine_manifest_data.supported_features.manage_library:
                 raise HTTPException(
@@ -1086,17 +1067,12 @@ def generate_app(
         return core.is_initialized_style_id_synthesis(style_id)
 
     @app.get(
-        "/user_dict", response_model=dict[str, UserDictWord], tags=["ユーザー辞書"]
+        "/user_dict", response_model=dict[str, UserDictWord], response_description="単語のUUIDとその詳細", tags=["ユーザー辞書"]
     )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
         単語の表層形(surface)は正規化済みの物を返します。
-
-        Returns
-        -------
-        dict[str, UserDictWord]
-            単語のUUIDとその詳細
         """
         try:
             return read_dict()
