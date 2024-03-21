@@ -22,7 +22,7 @@ class CoreError(Exception):
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     """
-    指定されたディレクトリ直下のランタイム DLL をロードする
+    ランタイム DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
 
     Args:
         runtime_dirs - 直下にランタイム DLL が存在するディレクトリの一覧
@@ -48,15 +48,15 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     else:
         raise RuntimeError("不明なOSです")
 
-    # ランタイム DLL をロードする
-    # 名前がハードコードされたランタイム DLL をロードする
+    # 引数指定ディレクトリ直下のランタイム DLL をロードする
     for runtime_dir in runtime_dirs:
         for lib_file_name in lib_file_names:
             try:
                 CDLL(str((runtime_dir / lib_file_name).resolve(strict=True)))
             except OSError:
                 pass
-    # 部分名を元に動的検索してランタイム DLL をロードする
+
+    # システム検索ディレクトリ直下のランタイム DLL をロードする
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
