@@ -773,15 +773,9 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def add_preset(preset: Preset) -> int:
+    def add_preset(preset: Annotated[Preset, Body(description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。")]) -> int:
         """
         新しいプリセットを追加します
-
-        Parameters
-        -------
-        preset: Preset
-            新しいプリセット。
-            プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。
 
         Returns
         -------
@@ -800,15 +794,9 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def update_preset(preset: Preset) -> int:
+    def update_preset(preset: Annotated[Preset, Body(description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。")]) -> int:
         """
         既存のプリセットを更新します
-
-        Parameters
-        -------
-        preset: Preset
-            更新するプリセット。
-            プリセットIDが更新対象と一致している必要があります。
 
         Returns
         -------
@@ -827,15 +815,9 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def delete_preset(id: int) -> Response:
+    def delete_preset(id: Annotated[int, Query(description="削除するプリセットのプリセットID")]) -> Response:
         """
         既存のプリセットを削除します
-
-        Parameters
-        -------
-        id: int
-            削除するプリセットのプリセットID
-
         """
         try:
             preset_manager.delete_preset(id)
@@ -1040,17 +1022,12 @@ def generate_app(
             dependencies=[Depends(check_disabled_mutable_api)],
         )
         async def install_library(
-            library_uuid: str,
+            library_uuid: Annotated[str, Query(description="音声ライブラリのID")],
             request: Request,
         ) -> Response:
             """
             音声ライブラリをインストールします。
             音声ライブラリのZIPファイルをリクエストボディとして送信してください。
-
-            Parameters
-            ----------
-            library_uuid: str
-                音声ライブラリのID
             """
             if not engine_manifest_data.supported_features.manage_library:
                 raise HTTPException(
@@ -1069,14 +1046,9 @@ def generate_app(
             tags=["音声ライブラリ管理"],
             dependencies=[Depends(check_disabled_mutable_api)],
         )
-        def uninstall_library(library_uuid: str) -> Response:
+        def uninstall_library(library_uuid: Annotated[str, Query(description="音声ライブラリのID")]) -> Response:
             """
             音声ライブラリをアンインストールします。
-
-            Parameters
-            ----------
-            library_uuid: str
-                音声ライブラリのID
             """
             if not engine_manifest_data.supported_features.manage_library:
                 raise HTTPException(
@@ -1314,15 +1286,10 @@ def generate_app(
             }
         },
     )
-    def validate_kana(text: str) -> bool:
+    def validate_kana(text: Annotated[str, Query(description="判定する対象の文字列")]) -> bool:
         """
         テキストがAquesTalk 風記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
-
-        Parameters
-        ----------
-        text: str
-            判定する対象の文字列
         """
         try:
             parse_kana(text)
