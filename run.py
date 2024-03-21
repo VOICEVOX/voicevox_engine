@@ -1024,7 +1024,7 @@ def generate_app(
             dependencies=[Depends(check_disabled_mutable_api)],
         )
         async def install_library(
-            library_uuid: Annotated[str, Query(description="音声ライブラリのID")],
+            library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")],
             request: Request,
         ) -> Response:
             """
@@ -1049,7 +1049,7 @@ def generate_app(
             dependencies=[Depends(check_disabled_mutable_api)],
         )
         def uninstall_library(
-            library_uuid: Annotated[str, Query(description="音声ライブラリのID")]
+            library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")]
         ) -> Response:
             """
             音声ライブラリをアンインストールします。
