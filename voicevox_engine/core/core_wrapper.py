@@ -21,6 +21,13 @@ class CoreError(Exception):
 
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
+    """
+    指定されたディレクトリ直下のランタイム DLL をロードする
+
+    Args:
+        runtime_dirs - 直下にランタイム DLL が存在するディレクトリの一覧
+    """
+    # OS を検出し、対応する `lib_file_names` および `lib_names` を決定する
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
@@ -40,12 +47,16 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
         lib_names = ["onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
-    for lib_path in runtime_dirs:
-        for file_name in lib_file_names:
+
+    # ランタイム DLL をロードする
+    # 名前がハードコードされたランタイム DLL をロードする
+    for runtime_dir in runtime_dirs:
+        for lib_file_name in lib_file_names:
             try:
-                CDLL(str((lib_path / file_name).resolve(strict=True)))
+                CDLL(str((runtime_dir / lib_file_name).resolve(strict=True)))
             except OSError:
                 pass
+    # 部分名を元に動的検索してランタイム DLL をロードする
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
