@@ -751,7 +751,12 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get("/presets", response_model=list[Preset], response_description="プリセットのリスト", tags=["その他"])
+    @app.get(
+        "/presets",
+        response_model=list[Preset],
+        response_description="プリセットのリスト",
+        tags=["その他"],
+    )
     def get_presets() -> list[Preset]:
         """
         エンジンが保持しているプリセットの設定を返します
@@ -769,7 +774,14 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def add_preset(preset: Annotated[Preset, Body(description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。")]) -> int:
+    def add_preset(
+        preset: Annotated[
+            Preset,
+            Body(
+                description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
+            ),
+        ]
+    ) -> int:
         """
         新しいプリセットを追加します
         """
@@ -786,7 +798,14 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def update_preset(preset: Annotated[Preset, Body(description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。")]) -> int:
+    def update_preset(
+        preset: Annotated[
+            Preset,
+            Body(
+                description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
+            ),
+        ]
+    ) -> int:
         """
         既存のプリセットを更新します
         """
@@ -802,7 +821,9 @@ def generate_app(
         tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def delete_preset(id: Annotated[int, Query(description="削除するプリセットのプリセットID")]) -> Response:
+    def delete_preset(
+        id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
+    ) -> Response:
         """
         既存のプリセットを削除します
         """
@@ -1027,7 +1048,9 @@ def generate_app(
             tags=["音声ライブラリ管理"],
             dependencies=[Depends(check_disabled_mutable_api)],
         )
-        def uninstall_library(library_uuid: Annotated[str, Query(description="音声ライブラリのID")]) -> Response:
+        def uninstall_library(
+            library_uuid: Annotated[str, Query(description="音声ライブラリのID")]
+        ) -> Response:
             """
             音声ライブラリをアンインストールします。
             """
@@ -1067,7 +1090,10 @@ def generate_app(
         return core.is_initialized_style_id_synthesis(style_id)
 
     @app.get(
-        "/user_dict", response_model=dict[str, UserDictWord], response_description="単語のUUIDとその詳細", tags=["ユーザー辞書"]
+        "/user_dict",
+        response_model=dict[str, UserDictWord],
+        response_description="単語のUUIDとその詳細",
+        tags=["ユーザー辞書"],
     )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
@@ -1262,7 +1288,9 @@ def generate_app(
             }
         },
     )
-    def validate_kana(text: Annotated[str, Query(description="判定する対象の文字列")]) -> bool:
+    def validate_kana(
+        text: Annotated[str, Query(description="判定する対象の文字列")]
+    ) -> bool:
         """
         テキストがAquesTalk 風記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
