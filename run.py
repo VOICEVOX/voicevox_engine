@@ -211,7 +211,7 @@ def generate_app(
             )
 
     # 許可されていないAPIを無効化する
-    def check_disabled_mutable_api() -> None:
+    async def check_disabled_mutable_api() -> None:
         if disable_mutable_api:
             raise HTTPException(
                 status_code=403,
@@ -842,18 +842,18 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/version", tags=["その他"])
-    def version() -> str:
+    async def version() -> str:
         return __version__
 
     @app.get("/core_versions", response_model=list[str], tags=["その他"])
-    def core_versions() -> Response:
+    async def core_versions() -> Response:
         return Response(
             content=json.dumps(list(cores.keys())),
             media_type="application/json",
         )
 
     @app.get("/speakers", response_model=list[Speaker], tags=["その他"])
-    def speakers(
+    async def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(get_core(core_version))
@@ -970,7 +970,7 @@ def generate_app(
         return ret_data
 
     @app.get("/singers", response_model=list[Speaker], tags=["その他"])
-    def singers(
+    async def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         singers = metas_store.load_combined_metas(get_core(core_version))
@@ -1101,7 +1101,7 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
+    async def is_initialized_speaker(
         style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> bool:
@@ -1294,7 +1294,7 @@ def generate_app(
             )
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
-    def supported_devices(
+    async def supported_devices(
         core_version: str | None = None,
     ) -> Response:
         supported_devices = get_core(core_version).supported_devices
@@ -1306,7 +1306,7 @@ def generate_app(
         )
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    def engine_manifest() -> EngineManifest:
+    async def engine_manifest() -> EngineManifest:
         return engine_manifest_data
 
     @app.post(
@@ -1321,7 +1321,7 @@ def generate_app(
             }
         },
     )
-    def validate_kana(text: str) -> bool:
+    async def validate_kana(text: str) -> bool:
         """
         テキストがAquesTalk 風記法に従っているかどうかを判定します。
         従っていない場合はエラーが返ります。
