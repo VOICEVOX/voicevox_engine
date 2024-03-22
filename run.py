@@ -853,7 +853,7 @@ def generate_app(
         )
 
     @app.get("/speakers", response_model=list[Speaker], tags=["その他"])
-    async def speakers(
+    def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(get_core(core_version))
@@ -970,7 +970,7 @@ def generate_app(
         return ret_data
 
     @app.get("/singers", response_model=list[Speaker], tags=["その他"])
-    async def singers(
+    def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         singers = metas_store.load_combined_metas(get_core(core_version))
@@ -1101,7 +1101,7 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    async def is_initialized_speaker(
+    def is_initialized_speaker(
         style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
     ) -> bool:
@@ -1294,7 +1294,7 @@ def generate_app(
             )
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
-    async def supported_devices(
+    def supported_devices(
         core_version: str | None = None,
     ) -> Response:
         supported_devices = get_core(core_version).supported_devices
