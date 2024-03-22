@@ -30,6 +30,21 @@
   "update_infos": [
     {
       "contributors": [
+        "Hiroshiba",
+        "sabonerune",
+        "siketyan",
+        "tarepan",
+        "tomoish"
+      ],
+      "descriptions": [
+        "デフォルトで全てのCPUを使うことがあるバグを修正",
+        "デフォルトで127.0.0.1と::1を待ち受けるように変更",
+        "開発環境の向上"
+      ],
+      "version": "0.18.0"
+    },
+    {
+      "contributors": [
         "PickledChair"
       ],
       "descriptions": [
