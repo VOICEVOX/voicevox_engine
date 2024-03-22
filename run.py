@@ -8,7 +8,8 @@ import re
 import sys
 import traceback
 import zipfile
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
@@ -148,10 +149,16 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        update_dict()
+        yield
+
     app = FastAPI(
         title="VOICEVOX Engine",
         description="VOICEVOXの音声合成エンジンです。",
         version=__version__,
+        lifespan=lifespan,
     )
 
     # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
@@ -249,10 +256,6 @@ def generate_app(
     #     if cancellable_engine is not None:
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
-
-    @app.on_event("startup")
-    def apply_user_dict() -> None:
-        update_dict()
 
     def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
