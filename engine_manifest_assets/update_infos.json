@@ -1,5 +1,20 @@
 [
   {
+    "version": "0.18.0",
+    "descriptions": [
+      "デフォルトで全てのCPUを使うことがあるバグを修正",
+      "デフォルトで127.0.0.1と::1を待ち受けるように変更",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "Hiroshiba",
+      "sabonerune",
+      "siketyan",
+      "tarepan",
+      "tomoish"
+    ]
+  },
+  {
     "version": "0.17.1",
     "descriptions": [
       "キャラクター「玄野武宏」「白上虎太郎」「青山龍星」「冥鳴ひまり」「九州そら」のハミングを追加",
