@@ -81,12 +81,13 @@ jobs:
             platforms: linux/amd64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Set up the repository
+        uses: actions/checkout@v4
 
-      - name: Setup QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Setup Docker Buildx
+      - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
 
@@ -96,15 +97,14 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
+      - name: Set up VOICEVOX RESOURCE cache
         uses: actions/cache@v3
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
-      - name: Checkout VOICEVOX RESOURCE
+      - name: Set up VOICEVOX RESOURCE repository
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
@@ -112,13 +112,12 @@ jobs:
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
+      - name: Build VOICEVOX RESOURCE
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
 
-      - name: Build and Deploy Docker image
+      - name: Build and Deploy the application Docker image
         uses: docker/build-push-action@v3
         env:
           IMAGE_TAG:

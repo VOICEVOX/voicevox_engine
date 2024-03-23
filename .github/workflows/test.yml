@@ -20,25 +20,26 @@ jobs:
         python: ["3.11.3"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Set up the repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Set up Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
-      - name: Validate poetry.lock
+      - name: Test poetry.lock
         run: |
           poetry lock --no-update
           git diff --exit-code
 
-      - name: Run poetry and check
+      - name: Test dependency lists
         run: |
           poetry export --without-hashes -o requirements.txt.check
           poetry export --without-hashes --with dev -o requirements-dev.txt.check
@@ -54,9 +55,10 @@ jobs:
             exit 1
           fi
 
-      - run: pysen run lint
+      - name: Test format
+        run: pysen run lint
 
-      - name: Run pytest and get coverage
+      - name: Test codes and Get coverage
         run: |
           coverage run --omit=test/* -m pytest
 
