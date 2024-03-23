@@ -62,20 +62,20 @@ jobs:
         run: |
           coverage run --omit=test/* -m pytest
 
-      - name: Submit coverage to Coveralls
+      - name: Test coverage and Deploy the results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create coverage result
+      - name: Deploy coverage report to local files
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
         run: |
           mkdir report
           coverage report > report/report.txt
           echo ${{ github.event.number }} > report/pr_num.txt
 
-      - name: Upload coverage result
+      - name: Deploy coverage report to GitHub
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v3
         with:
