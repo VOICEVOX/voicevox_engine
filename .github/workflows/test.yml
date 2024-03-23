@@ -58,11 +58,11 @@ jobs:
       - name: Test format
         run: pysen run lint
 
-      - name: Test codes and Get coverage
+      - name: Test codes and coverage
         run: |
           coverage run --omit=test/* -m pytest
 
-      - name: Test coverage and Deploy the results to Coveralls
+      - name: Deploy coverage results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
