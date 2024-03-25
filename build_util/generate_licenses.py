@@ -167,7 +167,8 @@ def generate_licenses() -> List[License]:
             license=license_json["License"],
             text=license_json["LicenseText"],
         )
-        license_names = license.license.split("; ")
+        license_names_str = license.license or ""
+        license_names = license_names_str.split("; ")
         for license_name in license_names:
             if license_name in [
                 "GNU General Public License v2 (GPLv2)",
