@@ -1,0 +1,3150 @@
+{
+  "components": {
+    "schemas": {
+      "AccentPhrase": {
+        "description": "アクセント句ごとの情報",
+        "properties": {
+          "accent": {
+            "title": "アクセント箇所",
+            "type": "integer"
+          },
+          "is_interrogative": {
+            "default": false,
+            "title": "疑問系かどうか",
+            "type": "boolean"
+          },
+          "moras": {
+            "items": {
+              "$ref": "#/components/schemas/Mora"
+            },
+            "title": "モーラのリスト",
+            "type": "array"
+          },
+          "pause_mora": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Mora"
+              }
+            ],
+            "title": "後ろに無音を付けるかどうか"
+          }
+        },
+        "required": [
+          "moras",
+          "accent"
+        ],
+        "title": "AccentPhrase",
+        "type": "object"
+      },
+      "AudioQuery": {
+        "description": "音声合成用のクエリ",
+        "properties": {
+          "accent_phrases": {
+            "items": {
+              "$ref": "#/components/schemas/AccentPhrase"
+            },
+            "title": "アクセント句のリスト",
+            "type": "array"
+          },
+          "intonationScale": {
+            "title": "全体の抑揚",
+            "type": "number"
+          },
+          "kana": {
+            "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
+            "type": "string"
+          },
+          "outputSamplingRate": {
+            "title": "音声データの出力サンプリングレート",
+            "type": "integer"
+          },
+          "outputStereo": {
+            "title": "音声データをステレオ出力するか否か",
+            "type": "boolean"
+          },
+          "pitchScale": {
+            "title": "全体の音高",
+            "type": "number"
+          },
+          "postPhonemeLength": {
+            "title": "音声の後の無音時間",
+            "type": "number"
+          },
+          "prePhonemeLength": {
+            "title": "音声の前の無音時間",
+            "type": "number"
+          },
+          "speedScale": {
+            "title": "全体の話速",
+            "type": "number"
+          },
+          "volumeScale": {
+            "title": "全体の音量",
+            "type": "number"
+          }
+        },
+        "required": [
+          "accent_phrases",
+          "speedScale",
+          "pitchScale",
+          "intonationScale",
+          "volumeScale",
+          "prePhonemeLength",
+          "postPhonemeLength",
+          "outputSamplingRate",
+          "outputStereo"
+        ],
+        "title": "AudioQuery",
+        "type": "object"
+      },
+      "BaseLibraryInfo": {
+        "description": "音声ライブラリの情報",
+        "properties": {
+          "bytes": {
+            "title": "音声ライブラリのバイト数",
+            "type": "integer"
+          },
+          "download_url": {
+            "title": "音声ライブラリのダウンロードURL",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリの名前",
+            "type": "string"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/LibrarySpeaker"
+            },
+            "title": "音声ライブラリに含まれる話者のリスト",
+            "type": "array"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uuid",
+          "version",
+          "download_url",
+          "bytes",
+          "speakers"
+        ],
+        "title": "BaseLibraryInfo",
+        "type": "object"
+      },
+      "Body_setting_post_setting_post": {
+        "properties": {
+          "allow_origin": {
+            "title": "Allow Origin",
+            "type": "string"
+          },
+          "cors_policy_mode": {
+            "$ref": "#/components/schemas/CorsPolicyMode"
+          }
+        },
+        "required": [
+          "cors_policy_mode"
+        ],
+        "title": "Body_setting_post_setting_post",
+        "type": "object"
+      },
+      "CorsPolicyMode": {
+        "description": "CORSの許可モード",
+        "enum": [
+          "all",
+          "localapps"
+        ],
+        "title": "CorsPolicyMode",
+        "type": "string"
+      },
+      "DownloadableLibraryInfo": {
+        "description": "ダウンロード可能な音声ライブラリの情報",
+        "properties": {
+          "bytes": {
+            "title": "音声ライブラリのバイト数",
+            "type": "integer"
+          },
+          "download_url": {
+            "title": "音声ライブラリのダウンロードURL",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリの名前",
+            "type": "string"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/LibrarySpeaker"
+            },
+            "title": "音声ライブラリに含まれる話者のリスト",
+            "type": "array"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uuid",
+          "version",
+          "download_url",
+          "bytes",
+          "speakers"
+        ],
+        "title": "DownloadableLibraryInfo",
+        "type": "object"
+      },
+      "EngineManifest": {
+        "description": "エンジン自体に関する情報",
+        "properties": {
+          "brand_name": {
+            "title": "ブランド名",
+            "type": "string"
+          },
+          "default_sampling_rate": {
+            "title": "デフォルトのサンプリング周波数",
+            "type": "integer"
+          },
+          "dependency_licenses": {
+            "items": {
+              "$ref": "#/components/schemas/LicenseInfo"
+            },
+            "title": "依存関係のライセンス情報",
+            "type": "array"
+          },
+          "frame_rate": {
+            "title": "エンジンのフレームレート",
+            "type": "number"
+          },
+          "icon": {
+            "title": "エンジンのアイコンをBASE64エンコードしたもの",
+            "type": "string"
+          },
+          "manifest_version": {
+            "title": "マニフェストのバージョン",
+            "type": "string"
+          },
+          "name": {
+            "title": "エンジン名",
+            "type": "string"
+          },
+          "supported_features": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SupportedFeatures"
+              }
+            ],
+            "title": "エンジンが持つ機能"
+          },
+          "supported_vvlib_manifest_version": {
+            "title": "エンジンが対応するvvlibのバージョン",
+            "type": "string"
+          },
+          "terms_of_service": {
+            "title": "エンジンの利用規約",
+            "type": "string"
+          },
+          "update_infos": {
+            "items": {
+              "$ref": "#/components/schemas/UpdateInfo"
+            },
+            "title": "エンジンのアップデート情報",
+            "type": "array"
+          },
+          "url": {
+            "title": "エンジンのURL",
+            "type": "string"
+          },
+          "uuid": {
+            "title": "エンジンのUUID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manifest_version",
+          "name",
+          "brand_name",
+          "uuid",
+          "url",
+          "icon",
+          "default_sampling_rate",
+          "frame_rate",
+          "terms_of_service",
+          "update_infos",
+          "dependency_licenses",
+          "supported_features"
+        ],
+        "title": "EngineManifest",
+        "type": "object"
+      },
+      "FrameAudioQuery": {
+        "description": "フレームごとの音声合成用のクエリ",
+        "properties": {
+          "f0": {
+            "items": {
+              "type": "number"
+            },
+            "title": "フレームごとの基本周波数",
+            "type": "array"
+          },
+          "outputSamplingRate": {
+            "title": "音声データの出力サンプリングレート",
+            "type": "integer"
+          },
+          "outputStereo": {
+            "title": "音声データをステレオ出力するか否か",
+            "type": "boolean"
+          },
+          "phonemes": {
+            "items": {
+              "$ref": "#/components/schemas/FramePhoneme"
+            },
+            "title": "音素のリスト",
+            "type": "array"
+          },
+          "volume": {
+            "items": {
+              "type": "number"
+            },
+            "title": "フレームごとの音量",
+            "type": "array"
+          },
+          "volumeScale": {
+            "title": "全体の音量",
+            "type": "number"
+          }
+        },
+        "required": [
+          "f0",
+          "volume",
+          "phonemes",
+          "volumeScale",
+          "outputSamplingRate",
+          "outputStereo"
+        ],
+        "title": "FrameAudioQuery",
+        "type": "object"
+      },
+      "FramePhoneme": {
+        "description": "音素の情報",
+        "properties": {
+          "frame_length": {
+            "title": "音素のフレーム長",
+            "type": "integer"
+          },
+          "phoneme": {
+            "title": "音素",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phoneme",
+          "frame_length"
+        ],
+        "title": "FramePhoneme",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InstalledLibraryInfo": {
+        "description": "インストール済み音声ライブラリの情報",
+        "properties": {
+          "bytes": {
+            "title": "音声ライブラリのバイト数",
+            "type": "integer"
+          },
+          "download_url": {
+            "title": "音声ライブラリのダウンロードURL",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリの名前",
+            "type": "string"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/LibrarySpeaker"
+            },
+            "title": "音声ライブラリに含まれる話者のリスト",
+            "type": "array"
+          },
+          "uninstallable": {
+            "title": "アンインストール可能かどうか",
+            "type": "boolean"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "uuid",
+          "version",
+          "download_url",
+          "bytes",
+          "speakers",
+          "uninstallable"
+        ],
+        "title": "InstalledLibraryInfo",
+        "type": "object"
+      },
+      "LibrarySpeaker": {
+        "description": "音声ライブラリに含まれる話者の情報",
+        "properties": {
+          "speaker": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Speaker"
+              }
+            ],
+            "title": "話者情報"
+          },
+          "speaker_info": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpeakerInfo"
+              }
+            ],
+            "title": "話者の追加情報"
+          }
+        },
+        "required": [
+          "speaker",
+          "speaker_info"
+        ],
+        "title": "LibrarySpeaker",
+        "type": "object"
+      },
+      "LicenseInfo": {
+        "description": "依存ライブラリのライセンス情報",
+        "properties": {
+          "license": {
+            "title": "依存ライブラリのライセンス名",
+            "type": "string"
+          },
+          "name": {
+            "title": "依存ライブラリ名",
+            "type": "string"
+          },
+          "text": {
+            "title": "依存ライブラリのライセンス本文",
+            "type": "string"
+          },
+          "version": {
+            "title": "依存ライブラリのバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "text"
+        ],
+        "title": "LicenseInfo",
+        "type": "object"
+      },
+      "Mora": {
+        "description": "モーラ（子音＋母音）ごとの情報",
+        "properties": {
+          "consonant": {
+            "title": "子音の音素",
+            "type": "string"
+          },
+          "consonant_length": {
+            "title": "子音の音長",
+            "type": "number"
+          },
+          "pitch": {
+            "title": "音高",
+            "type": "number"
+          },
+          "text": {
+            "title": "文字",
+            "type": "string"
+          },
+          "vowel": {
+            "title": "母音の音素",
+            "type": "string"
+          },
+          "vowel_length": {
+            "title": "母音の音長",
+            "type": "number"
+          }
+        },
+        "required": [
+          "text",
+          "vowel",
+          "vowel_length",
+          "pitch"
+        ],
+        "title": "Mora",
+        "type": "object"
+      },
+      "MorphableTargetInfo": {
+        "properties": {
+          "is_morphable": {
+            "title": "指定した話者に対してモーフィングの可否",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_morphable"
+        ],
+        "title": "MorphableTargetInfo",
+        "type": "object"
+      },
+      "Note": {
+        "description": "音符ごとの情報",
+        "properties": {
+          "frame_length": {
+            "title": "音符のフレーム長",
+            "type": "integer"
+          },
+          "key": {
+            "title": "音階",
+            "type": "integer"
+          },
+          "lyric": {
+            "title": "音符の歌詞",
+            "type": "string"
+          }
+        },
+        "required": [
+          "frame_length",
+          "lyric"
+        ],
+        "title": "Note",
+        "type": "object"
+      },
+      "ParseKanaBadRequest": {
+        "properties": {
+          "error_args": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "エラーを起こした箇所",
+            "type": "object"
+          },
+          "error_name": {
+            "description": "|name|description|\n|---|---|\n| UNKNOWN_TEXT | 判別できない読み仮名があります: {text} |\n| ACCENT_TOP | 句頭にアクセントは置けません: {text} |\n| ACCENT_TWICE | 1つのアクセント句に二つ以上のアクセントは置けません: {text} |\n| ACCENT_NOTFOUND | アクセントを指定していないアクセント句があります: {text} |\n| EMPTY_PHRASE | {position}番目のアクセント句が空白です |\n| INTERROGATION_MARK_NOT_AT_END | アクセント句末以外に「？」は置けません: {text} |\n| INFINITE_LOOP | 処理時に無限ループになってしまいました...バグ報告をお願いします。 |",
+            "title": "エラー名",
+            "type": "string"
+          },
+          "text": {
+            "title": "エラーメッセージ",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "error_name",
+          "error_args"
+        ],
+        "title": "ParseKanaBadRequest",
+        "type": "object"
+      },
+      "Preset": {
+        "description": "プリセット情報",
+        "properties": {
+          "id": {
+            "title": "プリセットID",
+            "type": "integer"
+          },
+          "intonationScale": {
+            "title": "全体の抑揚",
+            "type": "number"
+          },
+          "name": {
+            "title": "プリセット名",
+            "type": "string"
+          },
+          "pitchScale": {
+            "title": "全体の音高",
+            "type": "number"
+          },
+          "postPhonemeLength": {
+            "title": "音声の後の無音時間",
+            "type": "number"
+          },
+          "prePhonemeLength": {
+            "title": "音声の前の無音時間",
+            "type": "number"
+          },
+          "speaker_uuid": {
+            "title": "話者のUUID",
+            "type": "string"
+          },
+          "speedScale": {
+            "title": "全体の話速",
+            "type": "number"
+          },
+          "style_id": {
+            "title": "スタイルID",
+            "type": "integer"
+          },
+          "volumeScale": {
+            "title": "全体の音量",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "speaker_uuid",
+          "style_id",
+          "speedScale",
+          "pitchScale",
+          "intonationScale",
+          "volumeScale",
+          "prePhonemeLength",
+          "postPhonemeLength"
+        ],
+        "title": "Preset",
+        "type": "object"
+      },
+      "Score": {
+        "description": "楽譜情報",
+        "properties": {
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/Note"
+            },
+            "title": "音符のリスト",
+            "type": "array"
+          }
+        },
+        "required": [
+          "notes"
+        ],
+        "title": "Score",
+        "type": "object"
+      },
+      "Speaker": {
+        "description": "話者情報",
+        "properties": {
+          "name": {
+            "title": "名前",
+            "type": "string"
+          },
+          "speaker_uuid": {
+            "title": "話者のUUID",
+            "type": "string"
+          },
+          "styles": {
+            "items": {
+              "$ref": "#/components/schemas/SpeakerStyle"
+            },
+            "title": "スタイルの一覧",
+            "type": "array"
+          },
+          "supported_features": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpeakerSupportedFeatures"
+              }
+            ],
+            "title": "話者の対応機能"
+          },
+          "version": {
+            "default": "話者のバージョン",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "speaker_uuid",
+          "styles"
+        ],
+        "title": "Speaker",
+        "type": "object"
+      },
+      "SpeakerInfo": {
+        "description": "話者の追加情報",
+        "properties": {
+          "policy": {
+            "title": "policy.md",
+            "type": "string"
+          },
+          "portrait": {
+            "title": "portrait.pngをbase64エンコードしたもの",
+            "type": "string"
+          },
+          "style_infos": {
+            "items": {
+              "$ref": "#/components/schemas/StyleInfo"
+            },
+            "title": "スタイルの追加情報",
+            "type": "array"
+          }
+        },
+        "required": [
+          "policy",
+          "portrait",
+          "style_infos"
+        ],
+        "title": "SpeakerInfo",
+        "type": "object"
+      },
+      "SpeakerStyle": {
+        "description": "話者のスタイル情報",
+        "properties": {
+          "id": {
+            "title": "スタイルID",
+            "type": "integer"
+          },
+          "name": {
+            "title": "スタイル名",
+            "type": "string"
+          },
+          "type": {
+            "default": "talk",
+            "enum": [
+              "talk",
+              "singing_teacher",
+              "frame_decode",
+              "sing"
+            ],
+            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "id"
+        ],
+        "title": "SpeakerStyle",
+        "type": "object"
+      },
+      "SpeakerSupportPermittedSynthesisMorphing": {
+        "description": "An enumeration.",
+        "enum": [
+          "ALL",
+          "SELF_ONLY",
+          "NOTHING"
+        ],
+        "title": "SpeakerSupportPermittedSynthesisMorphing",
+        "type": "string"
+      },
+      "SpeakerSupportedFeatures": {
+        "description": "話者の対応機能の情報",
+        "properties": {
+          "permitted_synthesis_morphing": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpeakerSupportPermittedSynthesisMorphing"
+              }
+            ],
+            "default": "ALL",
+            "title": "モーフィング機能への対応"
+          }
+        },
+        "title": "SpeakerSupportedFeatures",
+        "type": "object"
+      },
+      "StyleInfo": {
+        "description": "スタイルの追加情報",
+        "properties": {
+          "icon": {
+            "title": "当該スタイルのアイコンをbase64エンコードしたもの",
+            "type": "string"
+          },
+          "id": {
+            "title": "スタイルID",
+            "type": "integer"
+          },
+          "portrait": {
+            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの",
+            "type": "string"
+          },
+          "voice_samples": {
+            "items": {
+              "type": "string"
+            },
+            "title": "voice_sampleのwavファイルをbase64エンコードしたもの",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "icon",
+          "voice_samples"
+        ],
+        "title": "StyleInfo",
+        "type": "object"
+      },
+      "SupportedDevicesInfo": {
+        "description": "対応しているデバイスの情報",
+        "properties": {
+          "cpu": {
+            "title": "CPUに対応しているか",
+            "type": "boolean"
+          },
+          "cuda": {
+            "title": "CUDA(Nvidia GPU)に対応しているか",
+            "type": "boolean"
+          },
+          "dml": {
+            "title": "DirectML(Nvidia GPU/Radeon GPU等)に対応しているか",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cpu",
+          "cuda",
+          "dml"
+        ],
+        "title": "SupportedDevicesInfo",
+        "type": "object"
+      },
+      "SupportedFeatures": {
+        "description": "エンジンが持つ機能の一覧",
+        "properties": {
+          "adjust_intonation_scale": {
+            "title": "全体の抑揚の調整",
+            "type": "boolean"
+          },
+          "adjust_mora_pitch": {
+            "title": "モーラごとの音高の調整",
+            "type": "boolean"
+          },
+          "adjust_phoneme_length": {
+            "title": "音素ごとの長さの調整",
+            "type": "boolean"
+          },
+          "adjust_pitch_scale": {
+            "title": "全体の音高の調整",
+            "type": "boolean"
+          },
+          "adjust_speed_scale": {
+            "title": "全体の話速の調整",
+            "type": "boolean"
+          },
+          "adjust_volume_scale": {
+            "title": "全体の音量の調整",
+            "type": "boolean"
+          },
+          "interrogative_upspeak": {
+            "title": "疑問文の自動調整",
+            "type": "boolean"
+          },
+          "manage_library": {
+            "title": "音声ライブラリのインストール・アンインストール",
+            "type": "boolean"
+          },
+          "sing": {
+            "title": "歌唱音声合成",
+            "type": "boolean"
+          },
+          "synthesis_morphing": {
+            "title": "2種類のスタイルでモーフィングした音声を合成",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "adjust_mora_pitch",
+          "adjust_phoneme_length",
+          "adjust_speed_scale",
+          "adjust_pitch_scale",
+          "adjust_intonation_scale",
+          "adjust_volume_scale",
+          "interrogative_upspeak",
+          "synthesis_morphing"
+        ],
+        "title": "SupportedFeatures",
+        "type": "object"
+      },
+      "UpdateInfo": {
+        "description": "エンジンのアップデート情報",
+        "properties": {
+          "contributors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "貢献者名",
+            "type": "array"
+          },
+          "descriptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "アップデートの詳細についての説明",
+            "type": "array"
+          },
+          "version": {
+            "title": "エンジンのバージョン名",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "descriptions"
+        ],
+        "title": "UpdateInfo",
+        "type": "object"
+      },
+      "UserDictWord": {
+        "description": "辞書のコンパイルに使われる情報",
+        "properties": {
+          "accent_associative_rule": {
+            "title": "アクセント結合規則",
+            "type": "string"
+          },
+          "accent_type": {
+            "title": "アクセント型",
+            "type": "integer"
+          },
+          "context_id": {
+            "default": 1348,
+            "title": "文脈ID",
+            "type": "integer"
+          },
+          "inflectional_form": {
+            "title": "活用形",
+            "type": "string"
+          },
+          "inflectional_type": {
+            "title": "活用型",
+            "type": "string"
+          },
+          "mora_count": {
+            "title": "モーラ数",
+            "type": "integer"
+          },
+          "part_of_speech": {
+            "title": "品詞",
+            "type": "string"
+          },
+          "part_of_speech_detail_1": {
+            "title": "品詞細分類1",
+            "type": "string"
+          },
+          "part_of_speech_detail_2": {
+            "title": "品詞細分類2",
+            "type": "string"
+          },
+          "part_of_speech_detail_3": {
+            "title": "品詞細分類3",
+            "type": "string"
+          },
+          "priority": {
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "優先度",
+            "type": "integer"
+          },
+          "pronunciation": {
+            "title": "発音",
+            "type": "string"
+          },
+          "stem": {
+            "title": "原形",
+            "type": "string"
+          },
+          "surface": {
+            "title": "表層形",
+            "type": "string"
+          },
+          "yomi": {
+            "title": "読み",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surface",
+          "priority",
+          "part_of_speech",
+          "part_of_speech_detail_1",
+          "part_of_speech_detail_2",
+          "part_of_speech_detail_3",
+          "inflectional_type",
+          "inflectional_form",
+          "stem",
+          "yomi",
+          "pronunciation",
+          "accent_type",
+          "accent_associative_rule"
+        ],
+        "title": "UserDictWord",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VvlibManifest": {
+        "description": "vvlib(VOICEVOX Library)に関する情報",
+        "properties": {
+          "brand_name": {
+            "title": "エンジンのブランド名",
+            "type": "string"
+          },
+          "engine_name": {
+            "title": "エンジン名",
+            "type": "string"
+          },
+          "engine_uuid": {
+            "title": "エンジンのUUID",
+            "type": "string"
+          },
+          "manifest_version": {
+            "title": "マニフェストバージョン",
+            "type": "string"
+          },
+          "name": {
+            "title": "音声ライブラリ名",
+            "type": "string"
+          },
+          "uuid": {
+            "title": "音声ライブラリのUUID",
+            "type": "string"
+          },
+          "version": {
+            "title": "音声ライブラリバージョン",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manifest_version",
+          "name",
+          "version",
+          "uuid",
+          "brand_name",
+          "engine_name",
+          "engine_uuid"
+        ],
+        "title": "VvlibManifest",
+        "type": "object"
+      },
+      "WordTypes": {
+        "description": "fastapiでword_type引数を検証する時に使用するクラス",
+        "enum": [
+          "PROPER_NOUN",
+          "COMMON_NOUN",
+          "VERB",
+          "ADJECTIVE",
+          "SUFFIX"
+        ],
+        "title": "WordTypes",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "VOICEVOXの音声合成エンジンです。",
+    "title": "VOICEVOX Engine",
+    "version": "latest"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/accent_phrases": {
+      "post": {
+        "description": "テキストからアクセント句を得ます。\nis_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。\n* 全てのカナはカタカナで記述される\n* アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。\n* カナの手前に`_`を入れるとそのカナは無声化される\n* アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。\n* アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。",
+        "operationId": "accent_phrases_accent_phrases_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "text",
+            "required": true,
+            "schema": {
+              "title": "Text",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_kana",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Is Kana",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccentPhrase"
+                  },
+                  "title": "Response Accent Phrases Accent Phrases Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseKanaBadRequest"
+                }
+              }
+            },
+            "description": "読み仮名のパースに失敗"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "テキストからアクセント句を得る",
+        "tags": [
+          "クエリ編集"
+        ]
+      }
+    },
+    "/add_preset": {
+      "post": {
+        "description": "新しいプリセットを追加します",
+        "operationId": "add_preset_add_preset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Preset"
+                  }
+                ],
+                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。",
+                "title": "Preset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Add Preset Add Preset Post",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "追加したプリセットのプリセットID"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Preset",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/audio_query": {
+      "post": {
+        "description": "音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
+        "operationId": "audio_query_audio_query_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "text",
+            "required": true,
+            "schema": {
+              "title": "Text",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioQuery"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "音声合成用のクエリを作成する",
+        "tags": [
+          "クエリ作成"
+        ]
+      }
+    },
+    "/audio_query_from_preset": {
+      "post": {
+        "description": "音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
+        "operationId": "audio_query_from_preset_audio_query_from_preset_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "text",
+            "required": true,
+            "schema": {
+              "title": "Text",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "preset_id",
+            "required": true,
+            "schema": {
+              "title": "Preset Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioQuery"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "音声合成用のクエリをプリセットを用いて作成する",
+        "tags": [
+          "クエリ作成"
+        ]
+      }
+    },
+    "/cancellable_synthesis": {
+      "post": {
+        "operationId": "cancellable_synthesis_cancellable_synthesis_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "音声合成する（キャンセル可能）",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/connect_waves": {
+      "post": {
+        "description": "base64エンコードされたwavデータを一纏めにし、wavファイルで返します。",
+        "operationId": "connect_waves_connect_waves_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Waves",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "base64エンコードされた複数のwavデータを一つに結合する",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/core_versions": {
+      "get": {
+        "operationId": "core_versions_core_versions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Core Versions Core Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Core Versions",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/delete_preset": {
+      "post": {
+        "description": "既存のプリセットを削除します",
+        "operationId": "delete_preset_delete_preset_post",
+        "parameters": [
+          {
+            "description": "削除するプリセットのプリセットID",
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "削除するプリセットのプリセットID",
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Preset",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/downloadable_libraries": {
+      "get": {
+        "description": "ダウンロード可能な音声ライブラリの情報を返します。",
+        "operationId": "downloadable_libraries_downloadable_libraries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DownloadableLibraryInfo"
+                  },
+                  "title": "Response Downloadable Libraries Downloadable Libraries Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "ダウンロード可能な音声ライブラリの情報リスト"
+          }
+        },
+        "summary": "Downloadable Libraries",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
+    "/engine_manifest": {
+      "get": {
+        "operationId": "engine_manifest_engine_manifest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineManifest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Engine Manifest",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/frame_synthesis": {
+      "post": {
+        "description": "歌唱音声合成を行います。",
+        "operationId": "frame_synthesis_frame_synthesis_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FrameAudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Frame Synthesis",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/import_user_dict": {
+      "post": {
+        "description": "他のユーザー辞書をインポートします。",
+        "operationId": "import_user_dict_words_import_user_dict_post",
+        "parameters": [
+          {
+            "description": "重複したエントリがあった場合、上書きするかどうか",
+            "in": "query",
+            "name": "override",
+            "required": true,
+            "schema": {
+              "description": "重複したエントリがあった場合、上書きするかどうか",
+              "title": "Override",
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/UserDictWord"
+                },
+                "description": "インポートするユーザー辞書のデータ",
+                "title": "Import Dict Data",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import User Dict Words",
+        "tags": [
+          "ユーザー辞書"
+        ]
+      }
+    },
+    "/initialize_speaker": {
+      "post": {
+        "description": "指定されたスタイルを初期化します。\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
+        "operationId": "initialize_speaker_initialize_speaker_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "既に初期化済みのスタイルの再初期化をスキップするかどうか",
+            "in": "query",
+            "name": "skip_reinit",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "既に初期化済みのスタイルの再初期化をスキップするかどうか",
+              "title": "Skip Reinit",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Initialize Speaker",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/install_library/{library_uuid}": {
+      "post": {
+        "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。",
+        "operationId": "install_library_install_library__library_uuid__post",
+        "parameters": [
+          {
+            "description": "音声ライブラリのID",
+            "in": "path",
+            "name": "library_uuid",
+            "required": true,
+            "schema": {
+              "description": "音声ライブラリのID",
+              "title": "Library Uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Install Library",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
+    "/installed_libraries": {
+      "get": {
+        "description": "インストールした音声ライブラリの情報を返します。",
+        "operationId": "installed_libraries_installed_libraries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/InstalledLibraryInfo"
+                  },
+                  "title": "Response Installed Libraries Installed Libraries Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "インストールした音声ライブラリの情報"
+          }
+        },
+        "summary": "Installed Libraries",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
+    "/is_initialized_speaker": {
+      "get": {
+        "description": "指定されたスタイルが初期化されているかどうかを返します。",
+        "operationId": "is_initialized_speaker_is_initialized_speaker_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Is Initialized Speaker Is Initialized Speaker Get",
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Is Initialized Speaker",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/mora_data": {
+      "post": {
+        "operationId": "mora_data_mora_data_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AccentPhrase"
+                },
+                "title": "Accent Phrases",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccentPhrase"
+                  },
+                  "title": "Response Mora Data Mora Data Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "アクセント句から音高・音素長を得る",
+        "tags": [
+          "クエリ編集"
+        ]
+      }
+    },
+    "/mora_length": {
+      "post": {
+        "operationId": "mora_length_mora_length_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AccentPhrase"
+                },
+                "title": "Accent Phrases",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccentPhrase"
+                  },
+                  "title": "Response Mora Length Mora Length Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "アクセント句から音素長を得る",
+        "tags": [
+          "クエリ編集"
+        ]
+      }
+    },
+    "/mora_pitch": {
+      "post": {
+        "operationId": "mora_pitch_mora_pitch_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AccentPhrase"
+                },
+                "title": "Accent Phrases",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccentPhrase"
+                  },
+                  "title": "Response Mora Pitch Mora Pitch Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "アクセント句から音高を得る",
+        "tags": [
+          "クエリ編集"
+        ]
+      }
+    },
+    "/morphable_targets": {
+      "post": {
+        "description": "指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
+        "operationId": "morphable_targets_morphable_targets_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "type": "integer"
+                },
+                "title": "Base Style Ids",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/MorphableTargetInfo"
+                    },
+                    "type": "object"
+                  },
+                  "title": "Response Morphable Targets Morphable Targets Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/multi_synthesis": {
+      "post": {
+        "operationId": "multi_synthesis_multi_synthesis_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AudioQuery"
+                },
+                "title": "Queries",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "複数まとめて音声合成する",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/presets": {
+      "get": {
+        "description": "エンジンが保持しているプリセットの設定を返します",
+        "operationId": "get_presets_presets_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Preset"
+                  },
+                  "title": "Response Get Presets Presets Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "プリセットのリスト"
+          }
+        },
+        "summary": "Get Presets",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/setting": {
+      "get": {
+        "description": "設定ページを返します。",
+        "operationId": "setting_get_setting_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Setting Get",
+        "tags": [
+          "設定"
+        ]
+      },
+      "post": {
+        "description": "設定を更新します。",
+        "operationId": "setting_post_setting_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_setting_post_setting_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Setting Post",
+        "tags": [
+          "設定"
+        ]
+      }
+    },
+    "/sing_frame_audio_query": {
+      "post": {
+        "description": "歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
+        "operationId": "sing_frame_audio_query_sing_frame_audio_query_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Score"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameAudioQuery"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "歌唱音声合成用のクエリを作成する",
+        "tags": [
+          "クエリ作成"
+        ]
+      }
+    },
+    "/singer_info": {
+      "get": {
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "operationId": "singer_info_singer_info_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker_uuid",
+            "required": true,
+            "schema": {
+              "title": "Speaker Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpeakerInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Singer Info",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/singers": {
+      "get": {
+        "operationId": "singers_singers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Speaker"
+                  },
+                  "title": "Response Singers Singers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Singers",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/speaker_info": {
+      "get": {
+        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "operationId": "speaker_info_speaker_info_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker_uuid",
+            "required": true,
+            "schema": {
+              "title": "Speaker Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpeakerInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Speaker Info",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/speakers": {
+      "get": {
+        "operationId": "speakers_speakers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Speaker"
+                  },
+                  "title": "Response Speakers Speakers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Speakers",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/supported_devices": {
+      "get": {
+        "operationId": "supported_devices_supported_devices_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportedDevicesInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Supported Devices",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/synthesis": {
+      "post": {
+        "operationId": "synthesis_synthesis_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "音声合成する",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/synthesis_morphing": {
+      "post": {
+        "description": "指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。\nモーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。",
+        "operationId": "_synthesis_morphing_synthesis_morphing_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "base_speaker",
+            "required": true,
+            "schema": {
+              "title": "Base Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target_speaker",
+            "required": true,
+            "schema": {
+              "title": "Target Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "morph_rate",
+            "required": true,
+            "schema": {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "title": "Morph Rate",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "2種類のスタイルでモーフィングした音声を合成する",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
+    "/uninstall_library/{library_uuid}": {
+      "post": {
+        "description": "音声ライブラリをアンインストールします。",
+        "operationId": "uninstall_library_uninstall_library__library_uuid__post",
+        "parameters": [
+          {
+            "description": "音声ライブラリのID",
+            "in": "path",
+            "name": "library_uuid",
+            "required": true,
+            "schema": {
+              "description": "音声ライブラリのID",
+              "title": "Library Uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Uninstall Library",
+        "tags": [
+          "音声ライブラリ管理"
+        ]
+      }
+    },
+    "/update_preset": {
+      "post": {
+        "description": "既存のプリセットを更新します",
+        "operationId": "update_preset_update_preset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Preset"
+                  }
+                ],
+                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。",
+                "title": "Preset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Update Preset Update Preset Post",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "更新したプリセットのプリセットID"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Preset",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/user_dict": {
+      "get": {
+        "description": "ユーザー辞書に登録されている単語の一覧を返します。\n単語の表層形(surface)は正規化済みの物を返します。",
+        "operationId": "get_user_dict_words_user_dict_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/UserDictWord"
+                  },
+                  "title": "Response Get User Dict Words User Dict Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "単語のUUIDとその詳細"
+          }
+        },
+        "summary": "Get User Dict Words",
+        "tags": [
+          "ユーザー辞書"
+        ]
+      }
+    },
+    "/user_dict_word": {
+      "post": {
+        "description": "ユーザー辞書に言葉を追加します。",
+        "operationId": "add_user_dict_word_user_dict_word_post",
+        "parameters": [
+          {
+            "description": "言葉の表層形",
+            "in": "query",
+            "name": "surface",
+            "required": true,
+            "schema": {
+              "description": "言葉の表層形",
+              "title": "Surface",
+              "type": "string"
+            }
+          },
+          {
+            "description": "言葉の発音（カタカナ）",
+            "in": "query",
+            "name": "pronunciation",
+            "required": true,
+            "schema": {
+              "description": "言葉の発音（カタカナ）",
+              "title": "Pronunciation",
+              "type": "string"
+            }
+          },
+          {
+            "description": "アクセント型（音が下がる場所を指す）",
+            "in": "query",
+            "name": "accent_type",
+            "required": true,
+            "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
+              "title": "Accent Type",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+            "in": "query",
+            "name": "word_type",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+            }
+          },
+          {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "title": "Priority",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Add User Dict Word User Dict Word Post",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add User Dict Word",
+        "tags": [
+          "ユーザー辞書"
+        ]
+      }
+    },
+    "/user_dict_word/{word_uuid}": {
+      "delete": {
+        "description": "ユーザー辞書に登録されている言葉を削除します。",
+        "operationId": "delete_user_dict_word_user_dict_word__word_uuid__delete",
+        "parameters": [
+          {
+            "description": "削除する言葉のUUID",
+            "in": "path",
+            "name": "word_uuid",
+            "required": true,
+            "schema": {
+              "description": "削除する言葉のUUID",
+              "title": "Word Uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete User Dict Word",
+        "tags": [
+          "ユーザー辞書"
+        ]
+      },
+      "put": {
+        "description": "ユーザー辞書に登録されている言葉を更新します。",
+        "operationId": "rewrite_user_dict_word_user_dict_word__word_uuid__put",
+        "parameters": [
+          {
+            "description": "更新する言葉のUUID",
+            "in": "path",
+            "name": "word_uuid",
+            "required": true,
+            "schema": {
+              "description": "更新する言葉のUUID",
+              "title": "Word Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "言葉の表層形",
+            "in": "query",
+            "name": "surface",
+            "required": true,
+            "schema": {
+              "description": "言葉の表層形",
+              "title": "Surface",
+              "type": "string"
+            }
+          },
+          {
+            "description": "言葉の発音（カタカナ）",
+            "in": "query",
+            "name": "pronunciation",
+            "required": true,
+            "schema": {
+              "description": "言葉の発音（カタカナ）",
+              "title": "Pronunciation",
+              "type": "string"
+            }
+          },
+          {
+            "description": "アクセント型（音が下がる場所を指す）",
+            "in": "query",
+            "name": "accent_type",
+            "required": true,
+            "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
+              "title": "Accent Type",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+            "in": "query",
+            "name": "word_type",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+            }
+          },
+          {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
+            "in": "query",
+            "name": "priority",
+            "required": false,
+            "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
+              "maximum": 10.0,
+              "minimum": 0.0,
+              "title": "Priority",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rewrite User Dict Word",
+        "tags": [
+          "ユーザー辞書"
+        ]
+      }
+    },
+    "/validate_kana": {
+      "post": {
+        "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n従っていない場合はエラーが返ります。",
+        "operationId": "validate_kana_validate_kana_post",
+        "parameters": [
+          {
+            "description": "判定する対象の文字列",
+            "in": "query",
+            "name": "text",
+            "required": true,
+            "schema": {
+              "description": "判定する対象の文字列",
+              "title": "Text",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Validate Kana Validate Kana Post",
+                  "type": "boolean"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseKanaBadRequest"
+                }
+              }
+            },
+            "description": "テキストが不正です"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "テキストがAquesTalk 風記法に従っているか判定する",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/version": {
+      "get": {
+        "operationId": "version_version_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Version Version Get",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Version",
+        "tags": [
+          "その他"
+        ]
+      }
+    }
+  }
+}

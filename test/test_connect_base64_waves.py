@@ -5,21 +5,25 @@ from unittest import TestCase
 import numpy as np
 import numpy.testing
 import soundfile
-from scipy.signal import resample
+from numpy.typing import NDArray
+from soxr import resample
 
-from voicevox_engine.utility import ConnectBase64WavesException, connect_base64_waves
+from voicevox_engine.utility.connect_base64_waves import (
+    ConnectBase64WavesException,
+    connect_base64_waves,
+)
 
 
 def generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
-) -> np.ndarray:
+) -> NDArray[np.float32]:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
     wave = np.sin(2 * np.pi * frequency * x).astype(np.float32)
 
     return wave
 
 
-def encode_bytes(wave_ndarray: np.ndarray, samplerate: int) -> bytes:
+def encode_bytes(wave_ndarray: NDArray[np.float32], samplerate: int) -> bytes:
     wave_bio = io.BytesIO()
     soundfile.write(
         file=wave_bio,
@@ -51,7 +55,7 @@ def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float)
 
 
 class TestConnectBase64Waves(TestCase):
-    def test_connect(self):
+    def test_connect(self) -> None:
         samplerate = 1000
         wave = generate_sine_wave_ndarray(
             seconds=2, samplerate=samplerate, frequency=10
@@ -66,10 +70,10 @@ class TestConnectBase64Waves(TestCase):
 
         self.assertTrue((wave_x2_ref == wave_x2).all())
 
-    def test_no_wave_error(self):
+    def test_no_wave_error(self) -> None:
         self.assertRaises(ConnectBase64WavesException, connect_base64_waves, waves=[])
 
-    def test_invalid_base64_error(self):
+    def test_invalid_base64_error(self) -> None:
         wave_1000hz = generate_sine_wave_base64(
             seconds=2, samplerate=1000, frequency=10
         )
@@ -83,7 +87,7 @@ class TestConnectBase64Waves(TestCase):
             ],
         )
 
-    def test_invalid_wave_file_error(self):
+    def test_invalid_wave_file_error(self) -> None:
         wave_1000hz = generate_sine_wave_bytes(seconds=2, samplerate=1000, frequency=10)
         wave_1000hz_broken_bytes = wave_1000hz[1:]  # remove head 1 byte
         wave_1000hz_broken = encode_base64(wave_1000hz_broken_bytes)
@@ -96,7 +100,7 @@ class TestConnectBase64Waves(TestCase):
             ],
         )
 
-    def test_different_frequency(self):
+    def test_different_frequency(self) -> None:
         wave_24000hz = generate_sine_wave_ndarray(
             seconds=1, samplerate=24000, frequency=10
         )
@@ -106,15 +110,15 @@ class TestConnectBase64Waves(TestCase):
         wave_24000_base64 = encode_base64(encode_bytes(wave_24000hz, samplerate=24000))
         wave_1000_base64 = encode_base64(encode_bytes(wave_1000hz, samplerate=1000))
 
-        wave_1000hz_to2400hz = resample(wave_1000hz, 24000 * len(wave_1000hz) // 1000)
-        wave_x2_ref = np.concatenate([wave_24000hz, wave_1000hz_to2400hz])
+        wave_1000hz_to24000hz = resample(wave_1000hz, 1000, 24000)
+        wave_x2_ref = np.concatenate([wave_24000hz, wave_1000hz_to24000hz])
 
         wave_x2, _ = connect_base64_waves(waves=[wave_24000_base64, wave_1000_base64])
 
         self.assertEqual(wave_x2_ref.shape, wave_x2.shape)
         numpy.testing.assert_array_almost_equal(wave_x2_ref, wave_x2)
 
-    def test_different_channels(self):
+    def test_different_channels(self) -> None:
         wave_1000hz = generate_sine_wave_ndarray(
             seconds=2, samplerate=1000, frequency=10
         )

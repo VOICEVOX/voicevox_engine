@@ -1,33 +1,46 @@
+from enum import Enum
 from pathlib import Path
 
 import yaml
 
-from ..utility import engine_root, get_save_dir
+from ..utility.path_utility import get_save_dir
 from .Setting import Setting
 
-DEFAULT_SETTING_PATH: Path = engine_root() / "default_setting.yml"
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
-class SettingLoader:
+class SettingHandler:
     def __init__(self, setting_file_path: Path) -> None:
+        """
+        設定ファイルの管理
+        Parameters
+        ----------
+        setting_file_path : Path
+            設定ファイルのパス。存在しない場合はデフォルト値を設定。
+        """
         self.setting_file_path = setting_file_path
 
-    def load_setting_file(self) -> Setting:
+    def load(self) -> Setting:
+        """設定値をファイルから読み込む。"""
         if not self.setting_file_path.is_file():
-            setting = yaml.safe_load(DEFAULT_SETTING_PATH.read_text(encoding="utf-8"))
+            # 設定ファイルが存在しないためデフォルト値を取得
+            setting = {"allow_origin": None, "cors_policy_mode": "localapps"}
         else:
+            # 指定された設定ファイルから値を取得
+            # FIXME: 型チェックと例外処理を追加する
             setting = yaml.safe_load(self.setting_file_path.read_text(encoding="utf-8"))
 
-        setting = Setting(
+        return Setting(
             cors_policy_mode=setting["cors_policy_mode"],
             allow_origin=setting["allow_origin"],
         )
 
-        return setting
-
-    def dump_setting_file(self, settings: Setting) -> None:
+    def save(self, settings: Setting) -> None:
+        """設定値をファイルへ書き込む。"""
         settings_dict = settings.dict()
+
+        if isinstance(settings_dict["cors_policy_mode"], Enum):
+            settings_dict["cors_policy_mode"] = settings_dict["cors_policy_mode"].value
 
         with open(self.setting_file_path, mode="w", encoding="utf-8") as f:
             yaml.safe_dump(settings_dict, f)

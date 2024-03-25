@@ -1,8 +1,8 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, conint, validator
+from pydantic import BaseModel, Field, StrictStr, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
 
@@ -17,14 +17,19 @@ class Mora(BaseModel):
     consonant_length: Optional[float] = Field(title="子音の音長")
     vowel: str = Field(title="母音の音素")
     vowel_length: float = Field(title="母音の音長")
-    pitch: float = Field(title="音高")  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
+    pitch: float = Field(
+        title="音高"
+    )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
+
+    class Config:
+        validate_assignment = True
 
 
 class AccentPhrase(BaseModel):
@@ -37,7 +42,7 @@ class AccentPhrase(BaseModel):
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
     is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
@@ -59,14 +64,56 @@ class AudioQuery(BaseModel):
     postPhonemeLength: float = Field(title="音声の後の無音時間")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
-    kana: Optional[str] = Field(title="[読み取り専用]AquesTalkライクな読み仮名。音声合成クエリとしては無視される")
+    kana: Optional[str] = Field(
+        title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される"
+    )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         items = [
             (k, tuple(v)) if isinstance(v, List) else (k, v)
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
+
+
+class Note(BaseModel):
+    """
+    音符ごとの情報
+    """
+
+    key: int | None = Field(title="音階")
+    frame_length: int = Field(title="音符のフレーム長")
+    lyric: str = Field(title="音符の歌詞")
+
+
+class Score(BaseModel):
+    """
+    楽譜情報
+    """
+
+    notes: List[Note] = Field(title="音符のリスト")
+
+
+class FramePhoneme(BaseModel):
+    """
+    音素の情報
+    """
+
+    phoneme: str = Field(title="音素")
+    frame_length: int = Field(title="音素のフレーム長")
+
+
+class FrameAudioQuery(BaseModel):
+    """
+    フレームごとの音声合成用のクエリ
+    """
+
+    f0: List[float] = Field(title="フレームごとの基本周波数")
+    volume: List[float] = Field(title="フレームごとの音量")
+    phonemes: List[FramePhoneme] = Field(title="音素のリスト")
+    volumeScale: float = Field(title="全体の音量")
+    outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
+    outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
 
 
 class ParseKanaErrorCode(Enum):
@@ -80,10 +127,10 @@ class ParseKanaErrorCode(Enum):
 
 
 class ParseKanaError(Exception):
-    def __init__(self, errcode: ParseKanaErrorCode, **kwargs):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name
-        self.kwargs: Dict[str, str] = kwargs
+        self.kwargs = kwargs
         err_fmt: str = errcode.value
         self.text = err_fmt.format(**kwargs)
 
@@ -107,16 +154,15 @@ class ParseKanaBadRequest(BaseModel):
 
 
 class MorphableTargetInfo(BaseModel):
-
     is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
     # FIXME: add reason property
     # reason: Optional[str] = Field(title="is_morphableがfalseである場合、その理由")
 
 
-class SpeakerNotFoundError(LookupError):
-    def __init__(self, speaker: int, *args: object, **kywrds: object) -> None:
-        self.speaker = speaker
-        super().__init__(f"speaker {speaker} is not found.", *args, **kywrds)
+class StyleIdNotFoundError(LookupError):
+    def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
+        self.style_id = style_id
+        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
 
 
 class LibrarySpeaker(BaseModel):
@@ -128,9 +174,9 @@ class LibrarySpeaker(BaseModel):
     speaker_info: SpeakerInfo = Field(title="話者の追加情報")
 
 
-class DownloadableLibrary(BaseModel):
+class BaseLibraryInfo(BaseModel):
     """
-    ダウンロード可能な音声ライブラリの情報
+    音声ライブラリの情報
     """
 
     name: str = Field(title="音声ライブラリの名前")
@@ -139,6 +185,23 @@ class DownloadableLibrary(BaseModel):
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
     speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
+
+
+# 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている
+class DownloadableLibraryInfo(BaseLibraryInfo):
+    """
+    ダウンロード可能な音声ライブラリの情報
+    """
+
+    pass
+
+
+class InstalledLibraryInfo(BaseLibraryInfo):
+    """
+    インストール済み音声ライブラリの情報
+    """
+
+    uninstallable: bool = Field(title="アンインストール可能かどうか")
 
 
 USER_DICT_MIN_PRIORITY = 0
@@ -151,8 +214,8 @@ class UserDictWord(BaseModel):
     """
 
     surface: str = Field(title="表層形")
-    priority: conint(ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY) = Field(
-        title="優先度"
+    priority: int = Field(
+        title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
     )
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
@@ -199,7 +262,9 @@ class UserDictWord(BaseModel):
                     raise ValueError("無効な発音です。(捨て仮名の連続)")
             if pronunciation[i] == "ヮ":
                 if i != 0 and pronunciation[i - 1] not in ["ク", "グ"]:
-                    raise ValueError("無効な発音です。(「くゎ」「ぐゎ」以外の「ゎ」の使用)")
+                    raise ValueError(
+                        "無効な発音です。(「くゎ」「ぐゎ」以外の「ゎ」の使用)"
+                    )
         return pronunciation
 
     @validator("mora_count", pre=True, always=True)
@@ -209,7 +274,9 @@ class UserDictWord(BaseModel):
             return mora_count
 
         if mora_count is None:
-            rule_others = "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
+            rule_others = (
+                "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
+            )
             rule_line_i = "[キシチニヒミリギジビピ][ェャュョ]"
             rule_line_u = "[ツフヴ][ァ]|[ウスツフヴズ][ィ]|[ウツフヴ][ェォ]"
             rule_one_mora = "[ァ-ヴー]"
@@ -277,6 +344,24 @@ class SupportedFeaturesInfo(BaseModel):
     support_adjusting_pitch_scale: bool = Field(title="音高が調整可能かどうか")
     support_adjusting_intonation_scale: bool = Field(title="抑揚が調整可能かどうか")
     support_adjusting_volume_scale: bool = Field(title="音量が調整可能かどうか")
-    support_adjusting_silence_scale: bool = Field(title="前後の無音時間が調節可能かどうか")
-    support_interrogative_upspeak: bool = Field(title="疑似疑問文に対応しているかどうか")
+    support_adjusting_silence_scale: bool = Field(
+        title="前後の無音時間が調節可能かどうか"
+    )
+    support_interrogative_upspeak: bool = Field(
+        title="疑似疑問文に対応しているかどうか"
+    )
     support_switching_device: bool = Field(title="CPU/GPUの切り替えが可能かどうか")
+
+
+class VvlibManifest(BaseModel):
+    """
+    vvlib(VOICEVOX Library)に関する情報
+    """
+
+    manifest_version: StrictStr = Field(title="マニフェストバージョン")
+    name: StrictStr = Field(title="音声ライブラリ名")
+    version: StrictStr = Field(title="音声ライブラリバージョン")
+    uuid: StrictStr = Field(title="音声ライブラリのUUID")
+    brand_name: StrictStr = Field(title="エンジンのブランド名")
+    engine_name: StrictStr = Field(title="エンジン名")
+    engine_uuid: StrictStr = Field(title="エンジンのUUID")

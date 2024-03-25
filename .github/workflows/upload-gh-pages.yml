@@ -1,3 +1,5 @@
+# API docs HTML ファイルを生成し、`gh-pages` ブランチへの push によって GitHub Pages 上のドキュメントとして公開
+
 name: upload-docs
 
 on:
@@ -11,31 +13,30 @@ env:
   PUBLISH_BRANCH: "gh-pages"
   DESTINATION_DIR: "api"
 
+defaults:
+  run:
+    shell: bash
+  
 jobs:
   upload-doc:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install libraries for ubuntu
-        run: sudo apt-get install libsndfile1
-
       - name: Install Python dependencies
-        shell: bash
         run: |
           pip install -r requirements.txt
 
       - name: Make documents
-        shell: bash
         run: |
-          python make_docs.py
+          PYTHONPATH=. python build_util/make_docs.py
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

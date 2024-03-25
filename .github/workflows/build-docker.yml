@@ -15,8 +15,12 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.14.3-preview.1"
-  VOICEVOX_CORE_VERSION: "0.14.3"
+  VOICEVOX_RESOURCE_VERSION: "0.18.0"
+  VOICEVOX_CORE_VERSION: "0.15.2"
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
@@ -26,18 +30,17 @@ jobs:
     steps:
       - name: declare variables
         id: vars
-        shell: bash
         run: |
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> $GITHUB_OUTPUT
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
 
   build-docker:
-    needs: [ config ]
+    needs: [config]
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
         tag:
           - ""
           - cpu
@@ -67,18 +70,18 @@ jobs:
           - tag: nvidia
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
           - tag: nvidia-ubuntu20.04
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.6.2-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -103,7 +106,7 @@ jobs:
 
       - name: Checkout VOICEVOX RESOURCE
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -111,7 +114,6 @@ jobs:
 
       # Merge VOICEVOX RESOURCE
       - name: Merge VOICEVOX RESOURCE
-        shell: bash
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
@@ -125,6 +127,22 @@ jobs:
               matrix.tag != '' && (
                 format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, needs.config.outputs.version_or_latest)
               ) || format('{0}:{1}', env.IMAGE_NAME, needs.config.outputs.version_or_latest)
+            ) }}
+          IMAGE_CACHE_FROM:
+            |- # Always use the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
+            ${{ (
+              matrix.tag != '' && (
+                format('type=registry,ref={0}:{1}-latest-buildcache', env.IMAGE_NAME, matrix.tag)
+              ) || format('type=registry,ref={0}:latest-buildcache', env.IMAGE_NAME)
+            ) }}
+          IMAGE_CACHE_TO:
+            |- # If it's a release, do not create buildcache, otherwise create the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
+            ${{ (
+              needs.config.outputs.version_or_latest == 'latest' && (
+                matrix.tag != '' && (
+                  format('type=registry,ref={0}:{1}-latest-buildcache,mode=max', env.IMAGE_NAME, matrix.tag)
+                ) || format('type=registry,ref={0}:latest-buildcache,mode=max', env.IMAGE_NAME)
+              ) || ''
             ) }}
         with:
           context: .
@@ -142,14 +160,14 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           tags: ${{ env.IMAGE_TAG }}
-          cache-from: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE_TAG }}-buildcache,mode=max
+          cache-from: ${{ env.IMAGE_CACHE_FROM }}
+          cache-to: ${{ env.IMAGE_CACHE_TO }}
           platforms: ${{ matrix.platforms }}
 
   run-release-test-workflow:
     # version が指定されている場合のみ実行する
     if: needs.config.outputs.version_or_latest != 'latest'
-    needs: [ config, build-docker ]
+    needs: [config, build-docker]
     uses: ./.github/workflows/release-test-docker.yml
     with:
       version: ${{ needs.config.outputs.version_or_latest }}

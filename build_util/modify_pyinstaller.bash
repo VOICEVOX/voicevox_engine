@@ -4,6 +4,8 @@
 # 良いGPUが自動的に選択されるようにしている
 # https://github.com/VOICEVOX/voicevox_engine/issues/502
 
+# 自前ビルドすることでブートローダーのハッシュ値が変わってウイルス判定を回避する効果もあるかも
+
 set -eux
 
 pyinstaller_version=$(pyinstaller -v)
@@ -21,5 +23,5 @@ __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 EOF
-(cd "$tempdir/bootloader" && python ./waf all)
+(cd "$tempdir/bootloader" && python ./waf all --msvc_targets="x64")
 pip install -U "$tempdir"

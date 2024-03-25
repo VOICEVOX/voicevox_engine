@@ -1,6 +1,7 @@
 """
 ビルド結果をテストする
 """
+
 import argparse
 import json
 import time
@@ -56,6 +57,7 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
 
     if not skip_run_process:
         # プロセスが稼働中であることを確認
+        assert process is not None
         assert process.poll() is None
 
         # 停止
