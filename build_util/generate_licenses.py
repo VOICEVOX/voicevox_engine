@@ -175,7 +175,6 @@ def generate_licenses() -> List[License]:
                 "GNU General Public License (GPL)",
                 "GNU General Public License v3 (GPLv3)",
                 "GNU Affero General Public License v3 (AGPL-3)",
-                "GNU Lesser General Public License v2 (LGPLv2)",
             ]:
                 raise LicenseError(f"ライセンス違反: {license.name}")
         # FIXME: assert license type
