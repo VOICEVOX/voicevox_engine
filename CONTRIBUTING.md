@@ -48,26 +48,23 @@ OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを含ん�
 これら音声ライブラリは、利用規約を遵守の上、以下の手順で製品版 VOICEVOX CORE を導入することにより利用できます。  
 なお、VOICEVOX ENGINE 単体でもモック利用により起動自体は可能です。  
 
-1. 環境変数をセットする
-
-* `VERSION`: voicevox_core のバージョン (例: `0.15.0`)
-* `OS`: OS 種別 (`windows` | `osx` | `linux`)
-* `ARCHITECTURE`: CPU アーキテクチャ (`x86` | `x64` | `arm64`)
-* `PROCESSOR`: プロセッサ種別 (`cpu` | `gpu` | `cuda` | `directml`)
-
-例（x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）:  
 ```bash
+# CORE のバリエーション指定変数を定義する（例: x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）
 VERSION="0.15.0"; OS="linux"; ARCHITECTURE="x64"; PROCESSOR="cpu";
-```
 
-2. 製品版 VOICEVOX CORE をダウンロード・展開する
-
-```bash
+# CORE をダウンロード・展開する
 CORENAME="voicevox_core-${OS}-${ARCHITECTURE}-${PROCESSOR}-${VERSION}"
 curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${VERSION}/${CORENAME}.zip" -o "${CORENAME}.zip"
 unzip "${CORENAME}.zip"
 VOICELIB_DIR_1=$CORENAME
 ```
+
+CORE のバリエーション指定変数は以下の値を受け入れます：  
+
+* `VERSION`: voicevox_core のバージョン (例: `0.15.0`)
+* `OS`: OS 種別 (`windows` | `osx` | `linux`)
+* `ARCHITECTURE`: CPU アーキテクチャ (`x86` | `x64` | `arm64`)
+* `PROCESSOR`: プロセッサ種別 (`cpu` | `gpu` | `cuda` | `directml`)
 
 最新のリリースは以下にあります。
 https://github.com/VOICEVOX/voicevox_core/releases/latest
