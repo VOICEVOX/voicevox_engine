@@ -62,7 +62,6 @@ VERSION="0.15.0"; OS="linux"; ARCHITECTURE="x64"; PROCESSOR="cpu";
 CORENAME="voicevox_core-${OS}-${ARCHITECTURE}-${PROCESSOR}-${VERSION}"
 curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${VERSION}/${CORENAME}.zip" -o "${CORENAME}.zip"
 unzip "${CORENAME}.zip"
-VOICELIB_DIR_1=$CORENAME
 ```
 
 CORE のバリエーション指定変数は以下の値を受け入れます：  
