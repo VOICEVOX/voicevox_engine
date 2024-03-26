@@ -79,7 +79,7 @@ class TestSettingLoader(TestCase):
 
         self.assertIsInstance(settings.cors_policy_mode, CorsPolicyMode)
 
-    def test_invalid_cors_policy_mode_type(self):
+    def test_invalid_cors_policy_mode_type(self) -> None:
         with self.assertRaises(ValidationError):
             Setting(cors_policy_mode="invalid_value", allow_origin="*")
 

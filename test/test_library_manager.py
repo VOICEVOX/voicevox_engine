@@ -5,6 +5,7 @@ import os
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest import TestCase
 from zipfile import ZipFile
 
@@ -54,7 +55,7 @@ class TestLibraryManager(TestCase):
                 if file.filename != vvlib_manifest_name:
                     zf_out.writestr(file, buffer)
 
-    def create_vvlib_manifest(self, **kwargs):
+    def create_vvlib_manifest(self, **kwargs: Any) -> dict[str, Any]:
         vvlib_manifest = copy.deepcopy(self.vvlib_manifest)
         return {**vvlib_manifest, **kwargs}
 
