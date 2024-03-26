@@ -27,10 +27,16 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 `Python 3.11.3` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
+まずリポジトリをフォークします。  
+次に以下の手順でローカル環境を構築します：  
+
 ```bash
 # レポジトリのクローン
-git clone https://github.com/VOICEVOX/voicevox_engine.git
+git clone "https://github.com/<your_user_name>/voicevox_engine.git"
 cd ./voicevox_engine
+
+# プルリクエスト用ブランチの作成
+git switch -c "<your_branch_name>"
 
 # 実行・開発・テスト環境のインストール
 python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
