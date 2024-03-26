@@ -44,8 +44,8 @@ python -m pip install -r requirements.txt -r requirements-dev.txt -r requirement
 * (実際に動かす時のみ)製品版 VOICEVOX
 を使います。 -->
 
-OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声モデルを含んでいません。  
-これら音声モデルは、利用規約を遵守の上、以下の手順で製品版 VOICEVOX CORE を導入することにより利用できます。  
+OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを含んでいません。  
+これら音声ライブラリは、利用規約を遵守の上、以下の手順で製品版 VOICEVOX CORE を導入することにより利用できます。  
 なお、VOICEVOX ENGINE 単体でもモック利用により起動自体は可能です。  
 
 1. 環境変数をセットする
