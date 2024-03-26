@@ -27,7 +27,8 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     Args:
         runtime_dirs - 直下に DLL が存在するディレクトリの一覧
     """
-    # OS を検出し、対応する `lib_file_names` および `lib_names` を決定する
+    # `lib_file_names`は「ENGINE が利用可能な DLL のファイル名一覧」である
+    # `lib_names` は「ENGINE が利用可能な DLL のライブラリ名一覧」である（ライブラリ名は `libtorch.so.1.0` の `torch` 部分）
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
