@@ -7,7 +7,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
     def wrap(f):
-        def func(*args, **kw):
+        def func(*args: Any, **kw: Any) -> Any:
             lock.acquire()
             try:
                 return f(*args, **kw)
