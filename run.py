@@ -98,7 +98,7 @@ from voicevox_engine.utility.path_utility import delete_file, engine_root, get_s
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
-def b64encode_str(s):
+def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
