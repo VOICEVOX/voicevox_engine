@@ -220,7 +220,7 @@ def generate_app(
             )
 
     # 許可されていないAPIを無効化する
-    def check_disabled_mutable_api() -> None:
+    async def check_disabled_mutable_api() -> None:
         if disable_mutable_api:
             raise HTTPException(
                 status_code=403,
@@ -837,11 +837,11 @@ def generate_app(
         return Response(status_code=204)
 
     @app.get("/version", tags=["その他"])
-    def version() -> str:
+    async def version() -> str:
         return __version__
 
     @app.get("/core_versions", response_model=list[str], tags=["その他"])
-    def core_versions() -> Response:
+    async def core_versions() -> Response:
         return Response(
             content=json.dumps(list(cores.keys())),
             media_type="application/json",
@@ -1276,7 +1276,7 @@ def generate_app(
         )
 
     @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    def engine_manifest() -> EngineManifest:
+    async def engine_manifest() -> EngineManifest:
         return engine_manifest_data
 
     @app.post(
@@ -1291,7 +1291,7 @@ def generate_app(
             }
         },
     )
-    def validate_kana(
+    async def validate_kana(
         text: Annotated[str, Query(description="判定する対象の文字列")]
     ) -> bool:
         """
