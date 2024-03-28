@@ -1,0 +1,33 @@
+# Python 依存パッケージの脆弱性診断を定期的に行う
+
+name: audit-python
+
+on:
+  schedule:
+    - cron: '00 04 15 * *' # 毎月15日 13:00 JST
+
+env:
+  PYTHON_VERSION: "3.11.3"
+
+defaults:
+  run:
+    shell: bash
+  
+jobs:
+  audit:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: <Setup> Check out the repository 
+        uses: actions/checkout@v4
+
+      - name: <Setup> Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: <Setup> Install Python dependencies
+        run: pip install safety
+
+      - name: <Test> Audit Python dependencies
+        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
