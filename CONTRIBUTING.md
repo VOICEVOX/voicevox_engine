@@ -205,6 +205,14 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
+#### 脆弱性診断
+`safety` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
+以下のコマンドにより脆弱性を診断できます：  
+
+```bash
+safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
+```
+
 ### API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
