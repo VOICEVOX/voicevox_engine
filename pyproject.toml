@@ -58,7 +58,6 @@ platformdirs = "^4.2.0"
 soxr = "^0.3.6"
 pydantic = "<2"
 starlette = "^0.36.3"
-urllib3 = "^2.0.5" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^5.13"
@@ -67,6 +66,7 @@ poetry = "1.8.1"
 poetry-plugin-export = "^1.6.0"
 safety = "^3.1.0"
 cryptography = "^42.0.5" # NOTE: explicitly version controlled for vulnerability
+urllib3 = "^2.0.5" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.test.dependencies]
 pysen = "~0.10.5"
