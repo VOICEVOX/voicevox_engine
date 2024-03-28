@@ -1,4 +1,5 @@
 # Python 依存パッケージの脆弱性診断を定期的に行う
+# NOTE: 公式 Action は API key 等を必要とするため利用しない（https://github.com/pyupio/safety-action/tree/main）
 
 name: audit-python
 
