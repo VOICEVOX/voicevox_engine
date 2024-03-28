@@ -4,7 +4,6 @@
 
 import pytest
 from fastapi.testclient import TestClient
-
 from syrupy.assertion import SnapshotAssertion
 
 
