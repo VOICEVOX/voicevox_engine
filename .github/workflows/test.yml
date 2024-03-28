@@ -20,7 +20,7 @@ jobs:
         python: ["3.11.3"]
 
     steps:
-      - name: [Setup] Check out the repository
+      - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
       - name: Set up Python
