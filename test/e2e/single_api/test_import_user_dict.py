@@ -27,7 +27,7 @@ def test_post_import_user_dict_204(
             "pronunciation": "テストイチ",
             "stem": "*",
             "surface": "ｔｅｓｔ１",
-            "yomi": "テストイチ"
+            "yomi": "テストイチ",
         },
     }
     response = client.post("/import_user_dict", json=user_dict)
