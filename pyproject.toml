@@ -81,6 +81,7 @@ poetry-plugin-export = "^1.6.0"
 httpx = "^0.25.0"          # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0"
+gitpython = "^3.1.41" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.license.dependencies]
 pip-licenses = "^4.3.4"
