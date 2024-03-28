@@ -344,10 +344,10 @@ jobs:
           path: download/directml
 
       # ONNX Runtime (`ORT`)
-      - name: Set up ORT url file
+      - name: <Setup> Export ONNX Runtime url to calc hash
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
-      - name: <Setup> Export ONNX Runtime url to calc hash
+      - name: <Setup> Restore cached ONNX Runtime
         uses: actions/cache/restore@v3
         id: onnxruntime-cache-restore
         with:
