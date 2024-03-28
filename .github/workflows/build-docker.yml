@@ -81,7 +81,7 @@ jobs:
             platforms: linux/amd64
 
     steps:
-      - name: Set up the repository
+      - name: [Setup] Check out the repository
         uses: actions/checkout@v4
 
       - name: Set up QEMU
