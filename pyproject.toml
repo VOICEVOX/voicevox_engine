@@ -58,6 +58,7 @@ platformdirs = "^4.2.0"
 soxr = "^0.3.6"
 pydantic = "<2"
 starlette = "^0.36.3"
+urllib3 = "^2.0.5" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^5.13"
