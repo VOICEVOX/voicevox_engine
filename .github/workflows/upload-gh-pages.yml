@@ -21,25 +21,25 @@ jobs:
   upload-doc:
     runs-on: ubuntu-20.04
     steps:
-      - name: Set up the repository
+      - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: <Setup> Set up Python
         id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Set up Python dependencies
+      - name: <Setup> Install Python dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Build documents
+      - name: <Build> Make documents
         run: |
           PYTHONPATH=. python build_util/make_docs.py
 
-      - name: Deploy documents to GitHub Pages
+      - name: <Deploy> Deploy documents to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

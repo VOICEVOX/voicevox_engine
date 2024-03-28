@@ -23,23 +23,23 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: <Setup> Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: pip
 
-      - name: Set up Python dependencies
+      - name: <Setup> Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
-      - name: Test poetry.lock
+      - name: <Test> Check poetry.lock
         run: |
           poetry lock --no-update
           git diff --exit-code
 
-      - name: Test dependency lists
+      - name: <Test> Check dependency lists
         run: |
           poetry export --without-hashes -o requirements.txt.check
           poetry export --without-hashes --with dev -o requirements-dev.txt.check
@@ -55,27 +55,27 @@ jobs:
             exit 1
           fi
 
-      - name: Test format
+      - name: <Test> Check format
         run: pysen run lint
 
-      - name: Test codes and coverage
+      - name: <Test> Test codes and coverage
         run: |
           coverage run --omit=test/* -m pytest
 
-      - name: Deploy coverage results to Coveralls
+      - name: <Deploy> Submit coverage results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy coverage report to local files
+      - name: <Deploy> Create coverage report
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
         run: |
           mkdir report
           coverage report > report/report.txt
           echo ${{ github.event.number }} > report/pr_num.txt
 
-      - name: Deploy coverage report to GitHub
+      - name: <Deploy> Upload coverage report to GitHub
         if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v3
         with:
