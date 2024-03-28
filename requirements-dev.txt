@@ -12,7 +12,7 @@ cleo==2.1.0 ; python_version >= "3.11" and python_version < "3.12"
 click==8.1.7 ; python_version >= "3.11" and python_version < "3.12"
 colorama==0.4.6 ; python_version >= "3.11" and python_version < "3.12" and (platform_system == "Windows" or os_name == "nt")
 crashtest==0.4.1 ; python_version >= "3.11" and python_version < "3.12"
-cryptography==41.0.3 ; python_version >= "3.11" and python_version < "3.12"
+cryptography==42.0.5 ; python_version >= "3.11" and python_version < "3.12"
 cython==3.0.7 ; python_version >= "3.11" and python_version < "3.12"
 distlib==0.3.7 ; python_version >= "3.11" and python_version < "3.12"
 dparse==0.6.4b0 ; python_version >= "3.11" and python_version < "3.12"

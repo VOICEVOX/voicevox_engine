@@ -66,6 +66,7 @@ pre-commit = "^2.16.0"
 poetry = "1.8.1"
 poetry-plugin-export = "^1.6.0"
 safety = "^3.1.0"
+cryptography = "^42.0.5" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.test.dependencies]
 pysen = "~0.10.5"
