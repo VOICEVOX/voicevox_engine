@@ -56,8 +56,13 @@ jobs:
 
       - run: pysen run lint
 
-      - name: Run pytest
-        run: python -m pytest
+      - name: Run pytest and get coverage
+        run: coverage run --omit=test/* -m pytest
+      - name: Submit coverage to Coveralls
+        if: matrix.os == 'ubuntu-20.04'
+        run: coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check licenses
         shell: bash
