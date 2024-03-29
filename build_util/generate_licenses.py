@@ -41,25 +41,25 @@ def generate_licenses() -> list[License]:
         ("remote", "Python",                    python_ver, "Python Software Foundation License",       f"https://raw.githubusercontent.com/python/cpython/v{python_ver}/LICENSE"),                                    # noqa: B950
     ]
 
-    for l in license_infos:
+    for info in license_infos:
         # ローカルに事前保存されたライセンス情報を登録する
-        if l[0] == "local":
+        if info[0] == "local":
             licenses.append(
                 License(
-                    name=l[1],
-                    version=l[2],
-                    license=l[3],
-                    text=Path(l[4]).read_text(),
+                    name=info[1],
+                    version=info[2],
+                    license=info[3],
+                    text=Path(info[4]).read_text(),
                 )
             )
         # リモートに存在するライセンス情報を登録する
-        elif l[0] == "remote":
-            with urllib.request.urlopen(l[4]) as res:
+        elif info[0] == "remote":
+            with urllib.request.urlopen(info[4]) as res:
                 licenses.append(
                     License(
-                        name=l[1],
-                        version=l[2],
-                        license=l[3],
+                        name=info[1],
+                        version=info[2],
+                        license=info[3],
                         text=res.read().decode(),
                     )
                 )
@@ -182,25 +182,25 @@ def generate_licenses() -> list[License]:
         ("local",  "cuDNN",               "8.9.2",  None,                          "docs/licenses/cudnn/LICENSE"),                                                                                    # noqa: B950
     ]
 
-    for l in license_infos:
+    for info in license_infos:
         # ローカルに事前保存されたライセンス情報を登録する
-        if l[0] == "local":
+        if info[0] == "local":
             licenses.append(
                 License(
-                    name=l[1],
-                    version=l[2],
-                    license=l[3],
-                    text=Path(l[4]).read_text(),
+                    name=info[1],
+                    version=info[2],
+                    license=info[3],
+                    text=Path(info[4]).read_text(),
                 )
             )
         # リモートに存在するライセンス情報を登録する
-        elif l[0] == "remote":
-            with urllib.request.urlopen(l[4]) as res:
+        elif info[0] == "remote":
+            with urllib.request.urlopen(info[4]) as res:
                 licenses.append(
                     License(
-                        name=l[1],
-                        version=l[2],
-                        license=l[3],
+                        name=info[1],
+                        version=info[2],
+                        license=info[3],
                         text=res.read().decode(),
                     )
                 )
