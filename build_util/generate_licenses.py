@@ -54,7 +54,7 @@ def generate_licenses() -> list[License]:
                     name=info[1],
                     version=info[2],
                     license=info[3],
-                    text=Path(info[4]).read_text(),
+                    text=Path(info[4]).read_text(encoding="utf8"),
                 )
             )
         # リモートに存在するライセンス情報を登録する
@@ -197,7 +197,7 @@ def generate_licenses() -> list[License]:
                     name=info[1],
                     version=info[2],
                     license=info[3],
-                    text=Path(info[4]).read_text(),
+                    text=Path(info[4]).read_text(encoding="utf8"),
                 )
             )
         # リモートに存在するライセンス情報を登録する
