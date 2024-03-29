@@ -160,7 +160,7 @@ def generate_licenses() -> list[License]:
         licenses.append(license)
     # /pip
 
-    license_infos: list[LicenseInfo] = [
+    license_infos = [
         ("remote", "OpenBLAS",            None,     "BSD 3-clause license",        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"),                                              # noqa: B950
         ("remote", "libsndfile-binaries", "1.2.0",  "LGPL-2.1 license",            "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING"), # noqa: B950
         ("remote", "libogg",              "1.3.5",  "BSD 3-clause license",        "https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING"),                                                      # noqa: B950
