@@ -6,7 +6,7 @@ import subprocess
 import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Literal, Optional, TypeAlias
+from typing import Literal, Optional, TypeAlias
 
 
 @dataclass
