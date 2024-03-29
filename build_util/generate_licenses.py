@@ -17,7 +17,7 @@ class License:
     text: str
 
 # ライセンス情報: (place_type, name, version, license_type, place)
-LicenseInfo: TypeAlias = tuple[Literal["local", "remote"], str, str | None, str, str]
+LicenseInfo: TypeAlias = tuple[Literal["local", "remote"], str, str | None, str | None, str]
 
 
 def generate_licenses() -> list[License]:
