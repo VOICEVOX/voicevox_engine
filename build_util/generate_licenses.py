@@ -1,10 +1,12 @@
+"""依存パッケージ/ライブラリのライセンス情報を収集・定型化・保存する。"""
+
 import json
 import os
 import subprocess
 import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Literal, Optional, TypeAlias
 
 
 @dataclass
@@ -14,128 +16,57 @@ class License:
     license: Optional[str]
     text: str
 
+# ライセンス情報: (place_type, name, version, license_type, place)
+LicenseInfo: TypeAlias = tuple[Literal["local", "remote"], str, str | None, str, str]
 
-def generate_licenses() -> List[License]:
-    licenses: List[License] = []
 
-    # openjtalk
-    # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
-    licenses.append(
-        License(
-            name="Open JTalk",
-            version="1.11",
-            license="Modified BSD license",
-            text=Path("docs/licenses/open_jtalk/COPYING").read_text(),
-        )
-    )
-    licenses.append(
-        License(
-            name="MeCab",
-            version=None,
-            license="Modified BSD license",
-            text=Path("docs/licenses/open_jtalk/mecab/COPYING").read_text(),
-        )
-    )
-    licenses.append(
-        License(
-            name="NAIST Japanese Dictionary",
-            version=None,
-            license="Modified BSD license",
-            text=Path("docs/licenses//open_jtalk/mecab-naist-jdic/COPYING").read_text(),
-        )
-    )
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice"  # noqa: B950
-    ) as res:
-        licenses.append(
-            License(
-                name='HTS Voice "Mei"',
-                version=None,
-                license="Creative Commons Attribution 3.0 license",
-                text=res.read().decode(),
+def generate_licenses() -> list[License]:
+    """依存パッケージ/ライブラリのライセンス情報を収集し、定型化する。"""
+
+    licenses: list[License] = []
+
+    python_ver = "3.11.3"
+
+    license_infos: list[LicenseInfo] = [
+        # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
+        ("local",  "Open JTalk",                "1.11",     "Modified BSD license",                     "docs/licenses/open_jtalk/COPYING"),                                                                           # noqa: B950
+        ("local",  "MeCab",                     None,       "Modified BSD license",                     "docs/licenses/open_jtalk/mecab/COPYING"),                                                                     # noqa: B950
+        ("local",  "NAIST Japanese Dictionary", None,       "Modified BSD license",                     "docs/licenses//open_jtalk/mecab-naist-jdic/COPYING"),                                                         # noqa: B950
+        ("remote", 'HTS Voice "Mei"',           None,       "Creative Commons Attribution 3.0 license", "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice"), # noqa: B950
+        ("remote", "VOICEVOX CORE",             None,       "MIT license",                              "https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE"),                                      # noqa: B950
+        ("remote", "VOICEVOX ENGINE",           None,       "LGPL license",                             "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"),                             # noqa: B950
+        ("remote", "world",                     None,       "Modified BSD license",                     "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"),                                         # noqa: B950
+        ("remote", "PyTorch",                   "1.9.0",    "BSD-style license",                        "https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE"),                                           # noqa: B950
+        ("remote", "ONNX Runtime",              "1.13.1",   "MIT license",                              "https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE"),                                     # noqa: B950
+        ("remote", "Python",                    python_ver, "Python Software Foundation License",       f"https://raw.githubusercontent.com/python/cpython/v{python_ver}/LICENSE"),                                    # noqa: B950
+    ]
+
+    for l in license_infos:
+        # ローカルに事前保存されたライセンス情報を登録する
+        if l[0] == "local":
+            licenses.append(
+                License(
+                    name=l[1],
+                    version=l[2],
+                    license=l[3],
+                    text=Path(l[4]).read_text(),
+                )
             )
-        )
+        # リモートに存在するライセンス情報を登録する
+        elif l[0] == "remote":
+            with urllib.request.urlopen(l[4]) as res:
+                licenses.append(
+                    License(
+                        name=l[1],
+                        version=l[2],
+                        license=l[3],
+                        text=res.read().decode(),
+                    )
+                )
+        else:
+            raise Exception("Never occur")
 
-    # VOICEVOX CORE
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="VOICEVOX CORE",
-                version=None,
-                license="MIT license",
-                text=res.read().decode(),
-            )
-        )
-
-    # VOICEVOX ENGINE
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="VOICEVOX ENGINE",
-                version=None,
-                license="LGPL license",
-                text=res.read().decode(),
-            )
-        )
-
-    # world
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
-    ) as res:
-        licenses.append(
-            License(
-                name="world",
-                version=None,
-                license="Modified BSD license",
-                text=res.read().decode(),
-            )
-        )
-
-    # pytorch
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="PyTorch",
-                version="1.9.0",
-                license="BSD-style license",
-                text=res.read().decode(),
-            )
-        )
-
-    # onnxruntime
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="ONNX Runtime",
-                version="1.13.1",
-                license="MIT license",
-                text=res.read().decode(),
-            )
-        )
-
-    # Python
-    python_version = "3.11.3"
-    with urllib.request.urlopen(
-        f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="Python",
-                version=python_version,
-                license="Python Software Foundation License",
-                text=res.read().decode(),
-            )
-        )
-
-    # pip
+    # `pip install` されたパッケージのライセンス情報を登録する
     try:
         pip_licenses_output = subprocess.run(
             "pip-licenses "
@@ -153,7 +84,6 @@ def generate_licenses() -> List[License]:
         raise Exception(
             f"command output:\n{err.stderr and err.stderr.decode()}"
         ) from err
-
     licenses_json = json.loads(pip_licenses_output)
     for license_json in licenses_json:
         license = License(
@@ -228,137 +158,54 @@ def generate_licenses() -> List[License]:
                 license.text = res.read().decode()
 
         licenses.append(license)
+    # /pip
 
-    # OpenBLAS
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="OpenBLAS",
-                version=None,
-                license="BSD 3-clause license",
-                text=res.read().decode(),
+    license_infos: list[LicenseInfo] = [
+        ("remote", "OpenBLAS",            None,     "BSD 3-clause license",        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"),                                              # noqa: B950
+        ("remote", "libsndfile-binaries", "1.2.0",  "LGPL-2.1 license",            "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING"), # noqa: B950
+        ("remote", "libogg",              "1.3.5",  "BSD 3-clause license",        "https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING"),                                                      # noqa: B950
+        ("remote", "libvorbis",           "1.3.7",  "BSD 3-clause license",        "https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING"),                                                   # noqa: B950
+        ("remote", "FLAC",                "1.4.2",  "Xiph.org's BSD-like license", "https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph"),                                                 # noqa: B950
+        ("remote", "Opus",                "1.3.1",  "BSD 3-clause license",        "https://raw.githubusercontent.com/xiph/opus/v1.3.1/COPYING"),                                                     # noqa: B950
+        # https://sourceforge.net/projects/mpg123/files/mpg123/1.30.2/
+        ("local",  "mpg123",              "1.30.2", "LGPL-2.1 license",            "docs/licenses/mpg123/COPYING"),                                                                                   # noqa: B950
+        # https://sourceforge.net/projects/lame/files/lame/3.100/
+        ("remote", "lame",                "3.100",  "LGPL-2.0 license",            "https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING"),                                            # noqa: B950
+        # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
+        # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe # noqa: B950
+        # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
+        ("local",  "CUDA Toolkit",        "11.8.0", None,                          "docs/licenses/cuda/EULA.txt"),                                                                                    # noqa: B950
+        # cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows
+        # https://developer.nvidia.com/rdp/cudnn-archive # noqa: B950
+        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip # noqa: B950
+        # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE)                                                                                     # noqa: B950
+        ("local",  "cuDNN",               "8.9.2",  None,                          "docs/licenses/cudnn/LICENSE"),                                                                                    # noqa: B950
+    ]
+
+    for l in license_infos:
+        # ローカルに事前保存されたライセンス情報を登録する
+        if l[0] == "local":
+            licenses.append(
+                License(
+                    name=l[1],
+                    version=l[2],
+                    license=l[3],
+                    text=Path(l[4]).read_text(),
+                )
             )
-        )
-
-    # libsndfile-binaries
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING"  # noqa: B950
-    ) as res:
-        licenses.append(
-            License(
-                name="libsndfile-binaries",
-                version="1.2.0",
-                license="LGPL-2.1 license",
-                text=res.read().decode(),
-            )
-        )
-
-    # libogg
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="libogg",
-                version="1.3.5",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
-        )
-
-    # libvorbis
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="libvorbis",
-                version="1.3.7",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
-        )
-
-    # libflac
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph"
-    ) as res:
-        licenses.append(
-            License(
-                name="FLAC",
-                version="1.4.2",
-                license="Xiph.org's BSD-like license",
-                text=res.read().decode(),
-            )
-        )
-
-    # libopus
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/opus/v1.3.1/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="Opus",
-                version="1.3.1",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
-        )
-
-    # mpg123
-    # https://sourceforge.net/projects/mpg123/files/mpg123/1.30.2/
-    licenses.append(
-        License(
-            name="mpg123",
-            version="1.30.2",
-            license="LGPL-2.1 license",
-            text=Path("docs/licenses/mpg123/COPYING").read_text(encoding="utf-8"),
-        )
-    )
-
-    # liblame
-    # https://sourceforge.net/projects/lame/files/lame/3.100/
-    with urllib.request.urlopen(
-        "https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="lame",
-                version="3.100",
-                license="LGPL-2.0 license",
-                text=res.read().decode(),
-            )
-        )
-
-    # cuda
-    # license text from CUDA 11.8.0
-    # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
-    # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe # noqa: B950
-    # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
-    licenses.append(
-        License(
-            name="CUDA Toolkit",
-            version="11.8.0",
-            license=None,
-            text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
-        )
-    )
-    # cudnn
-    # license text from
-    # cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows
-    # https://developer.nvidia.com/rdp/cudnn-archive # noqa: B950
-    # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip # noqa: B950
-    # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE) # noqa: B950
-    licenses.append(
-        License(
-            name="cuDNN",
-            version="8.9.2",
-            license=None,
-            text=Path("docs/licenses/cudnn/LICENSE").read_text(encoding="utf8"),
-        )
-    )
+        # リモートに存在するライセンス情報を登録する
+        elif l[0] == "remote":
+            with urllib.request.urlopen(l[4]) as res:
+                licenses.append(
+                    License(
+                        name=l[1],
+                        version=l[2],
+                        license=l[3],
+                        text=res.read().decode(),
+                    )
+                )
+        else:
+            raise Exception("Never occur")
 
     return licenses
 
