@@ -7,8 +7,7 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-@pytest.mark.skip(reason="プリセット変更が他のテストに干渉するから")
-def test_post_update_preset_200(client: TestClient) -> None:
+def test_post_update_preset_200(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     preset = {
         "id": 1,
         "name": "test_preset",
@@ -23,6 +22,7 @@ def test_post_update_preset_200(client: TestClient) -> None:
     }
     response = client.post("/update_preset", params={}, json=preset)
     assert response.status_code == 200
+    assert snapshot_json == response.json()
 
 
 def test_post_update_preset_422(

@@ -2,12 +2,11 @@
 /add_preset API のテスト
 """
 
-import pytest
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
 
-@pytest.mark.skip(reason="プリセット追加が他のテストに干渉するから")
-def test_post_add_preset_200(client: TestClient) -> None:
+def test_post_add_preset_200(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     preset = {
         "id": 9999,
         "name": "test_preset",
@@ -22,3 +21,4 @@ def test_post_add_preset_200(client: TestClient) -> None:
     }
     response = client.post("/add_preset", params={}, json=preset)
     assert response.status_code == 200
+    assert snapshot_json == response.json()
