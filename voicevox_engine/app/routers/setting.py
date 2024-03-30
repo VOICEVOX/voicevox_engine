@@ -1,8 +1,6 @@
 """設定機能を提供する API Router"""
 
-from fastapi import APIRouter, Depends, Response
-from fastapi import Form
-from fastapi import Request
+from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
