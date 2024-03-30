@@ -31,6 +31,8 @@ from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
+from voicevox_engine.app.dependencies import check_disabled_mutable_api, mutable_api
+from voicevox_engine.app.routers import preset
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -70,7 +72,6 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
@@ -219,13 +220,8 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    # 許可されていないAPIを無効化する
-    async def check_disabled_mutable_api() -> None:
-        if disable_mutable_api:
-            raise HTTPException(
-                status_code=403,
-                detail="エンジンの静的なデータを変更するAPIは無効化されています",
-            )
+    if disable_mutable_api:
+        mutable_api.enable = False
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
@@ -322,9 +318,9 @@ def generate_app(
             presets = preset_manager.load_presets()
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
-        for preset in presets:
-            if preset.id == preset_id:
-                selected_preset = preset
+        for _preset in presets:
+            if _preset.id == preset_id:
+                selected_preset = _preset
                 break
         else:
             raise HTTPException(
@@ -754,87 +750,7 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get(
-        "/presets",
-        response_model=list[Preset],
-        response_description="プリセットのリスト",
-        tags=["その他"],
-    )
-    def get_presets() -> list[Preset]:
-        """
-        エンジンが保持しているプリセットの設定を返します
-        """
-        try:
-            presets = preset_manager.load_presets()
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        return presets
-
-    @app.post(
-        "/add_preset",
-        response_model=int,
-        response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def add_preset(
-        preset: Annotated[
-            Preset,
-            Body(
-                description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
-            ),
-        ]
-    ) -> int:
-        """
-        新しいプリセットを追加します
-        """
-        try:
-            id = preset_manager.add_preset(preset)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        return id
-
-    @app.post(
-        "/update_preset",
-        response_model=int,
-        response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def update_preset(
-        preset: Annotated[
-            Preset,
-            Body(
-                description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
-            ),
-        ]
-    ) -> int:
-        """
-        既存のプリセットを更新します
-        """
-        try:
-            id = preset_manager.update_preset(preset)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        return id
-
-    @app.post(
-        "/delete_preset",
-        status_code=204,
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def delete_preset(
-        id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
-        """
-        既存のプリセットを削除します
-        """
-        try:
-            preset_manager.delete_preset(id)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        return Response(status_code=204)
+    app.include_router(preset.router(preset_manager))
 
     @app.get("/version", tags=["その他"])
     async def version() -> str:
