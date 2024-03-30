@@ -40,8 +40,9 @@ def router() -> APIRouter:
             return read_dict()
         except Exception:
             traceback.print_exc()
-            raise HTTPException(status_code=422, detail="辞書の読み込みに失敗しました。")
-
+            raise HTTPException(
+                status_code=422, detail="辞書の読み込みに失敗しました。"
+            )
 
     @_router.post(
         "/user_dict_word",
@@ -91,7 +92,6 @@ def router() -> APIRouter:
             raise HTTPException(
                 status_code=422, detail="ユーザー辞書への追加に失敗しました。"
             )
-
 
     @_router.put(
         "/user_dict_word/{word_uuid}",
@@ -146,7 +146,6 @@ def router() -> APIRouter:
                 status_code=422, detail="ユーザー辞書の更新に失敗しました。"
             )
 
-
     @_router.delete(
         "/user_dict_word/{word_uuid}",
         status_code=204,
@@ -169,7 +168,6 @@ def router() -> APIRouter:
             raise HTTPException(
                 status_code=422, detail="ユーザー辞書の更新に失敗しました。"
             )
-
 
     @_router.post(
         "/import_user_dict",
