@@ -2,8 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi import Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response
 
 from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
