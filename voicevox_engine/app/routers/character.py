@@ -3,20 +3,14 @@
 import base64
 import json
 from pathlib import Path
-from typing import Literal, Callable
+from typing import Callable, Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.metas.MetasStore import (
-    MetasStore,
-    filter_speakers_and_styles,
-)
-from voicevox_engine.model import (
-    Speaker,
-    SpeakerInfo,
-)
+from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
+from voicevox_engine.model import Speaker, SpeakerInfo
 
 
 def b64encode_str(s):
