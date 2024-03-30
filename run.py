@@ -18,7 +18,7 @@ from typing import Annotated, Any, Literal, Optional
 
 import soundfile
 import uvicorn
-from fastapi import Body, Depends, FastAPI, Form, HTTPException
+from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +31,8 @@ from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
+from voicevox_engine.app.dependencies import check_disabled_mutable_api, mutable_api
+from voicevox_engine.app.routers import setting
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -73,7 +75,7 @@ from voicevox_engine.morphing import (
 from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetError
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
+from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
@@ -219,13 +221,8 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    # 許可されていないAPIを無効化する
-    async def check_disabled_mutable_api() -> None:
-        if disable_mutable_api:
-            raise HTTPException(
-                status_code=403,
-                detail="エンジンの静的なデータを変更するAPIは無効化されています",
-            )
+    if disable_mutable_api:
+        mutable_api.enable = False
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
@@ -1307,52 +1304,9 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    @app.get("/setting", response_class=Response, tags=["設定"])
-    def setting_get(request: Request) -> Response:
-        """
-        設定ページを返します。
-        """
-        settings = setting_loader.load()
-
-        brand_name = engine_manifest_data.brand_name
-        cors_policy_mode = settings.cors_policy_mode
-        allow_origin = settings.allow_origin
-
-        if allow_origin is None:
-            allow_origin = ""
-
-        return setting_ui_template.TemplateResponse(
-            "ui.html",
-            {
-                "request": request,
-                "brand_name": brand_name,
-                "cors_policy_mode": cors_policy_mode.value,
-                "allow_origin": allow_origin,
-            },
-        )
-
-    @app.post(
-        "/setting",
-        response_class=Response,
-        tags=["設定"],
-        dependencies=[Depends(check_disabled_mutable_api)],
+    app.include_router(
+        setting.router(setting_loader, engine_manifest_data, setting_ui_template)
     )
-    def setting_post(
-        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
-        allow_origin: str | None = Form(default=None),  # noqa
-    ) -> Response:
-        """
-        設定を更新します。
-        """
-        settings = Setting(
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-        )
-
-        # 更新した設定へ上書き
-        setting_loader.save(settings)
-
-        return Response(status_code=204)
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
