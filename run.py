@@ -837,7 +837,7 @@ def generate_app(
             media_type="application/json",
         )
 
-    app.include_router(character.router(get_core, metas_store, root_dir))
+    app.include_router(character.generate_router(get_core, metas_store, root_dir))
 
     if engine_manifest_data.supported_features.manage_library:
 

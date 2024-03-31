@@ -17,22 +17,22 @@ def b64encode_str(s):
     return base64.b64encode(s).decode("utf-8")
 
 
-def router(
+def generate_router(
     get_core: Callable[[str | None], CoreAdapter],
     metas_store: MetasStore,
     root_dir: Path,
 ) -> APIRouter:
     """キャラクター情報 API Router を生成する"""
-    _router = APIRouter()
+    router = APIRouter()
 
-    @_router.get("/speakers", response_model=list[Speaker], tags=["その他"])
+    @router.get("/speakers", response_model=list[Speaker], tags=["その他"])
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
-    @_router.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
+    @router.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
     def speaker_info(
         speaker_uuid: str,
         core_version: str | None = None,
@@ -142,14 +142,14 @@ def router(
         )
         return ret_data
 
-    @_router.get("/singers", response_model=list[Speaker], tags=["その他"])
+    @router.get("/singers", response_model=list[Speaker], tags=["その他"])
     def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
         singers = metas_store.load_combined_metas(get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
-    @_router.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
+    @router.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
     def singer_info(
         speaker_uuid: str,
         core_version: str | None = None,
@@ -164,4 +164,4 @@ def router(
             core_version=core_version,
         )
 
-    return _router
+    return router
