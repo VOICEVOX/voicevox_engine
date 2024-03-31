@@ -10,15 +10,15 @@ from voicevox_engine.setting.SettingLoader import SettingHandler
 from ..dependencies import check_disabled_mutable_api
 
 
-def router(
+def generate_router(
     setting_loader: SettingHandler,
     engine_manifest_data: EngineManifest,
     setting_ui_template: Jinja2Templates,
 ) -> APIRouter:
     """設定 API Router を生成する"""
-    _router = APIRouter()
+    router = APIRouter()
 
-    @_router.get("/setting", response_class=Response, tags=["設定"])
+    @router.get("/setting", response_class=Response, tags=["設定"])
     def setting_get(request: Request) -> Response:
         """
         設定ページを返します。
@@ -42,7 +42,7 @@ def router(
             },
         )
 
-    @_router.post(
+    @router.post(
         "/setting",
         response_class=Response,
         tags=["設定"],
@@ -65,4 +65,4 @@ def router(
 
         return Response(status_code=204)
 
-    return _router
+    return router

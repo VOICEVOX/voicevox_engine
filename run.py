@@ -1305,7 +1305,9 @@ def generate_app(
             )
 
     app.include_router(
-        setting.router(setting_loader, engine_manifest_data, setting_ui_template)
+        setting.generate_router(
+            setting_loader, engine_manifest_data, setting_ui_template
+        )
     )
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
