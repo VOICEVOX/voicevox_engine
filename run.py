@@ -1078,7 +1078,7 @@ def generate_app(
         core = get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
 
-    app.include_router(user_dict.router())
+    app.include_router(user_dict.generate_router())
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(

@@ -21,11 +21,11 @@ from voicevox_engine.user_dict.user_dict import (
 from ..dependencies import check_disabled_mutable_api
 
 
-def router() -> APIRouter:
+def generate_router() -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
-    _router = APIRouter()
+    router = APIRouter()
 
-    @_router.get(
+    @router.get(
         "/user_dict",
         response_model=dict[str, UserDictWord],
         response_description="単語のUUIDとその詳細",
@@ -44,7 +44,7 @@ def router() -> APIRouter:
                 status_code=422, detail="辞書の読み込みに失敗しました。"
             )
 
-    @_router.post(
+    @router.post(
         "/user_dict_word",
         response_model=str,
         tags=["ユーザー辞書"],
@@ -93,7 +93,7 @@ def router() -> APIRouter:
                 status_code=422, detail="ユーザー辞書への追加に失敗しました。"
             )
 
-    @_router.put(
+    @router.put(
         "/user_dict_word/{word_uuid}",
         status_code=204,
         tags=["ユーザー辞書"],
@@ -146,7 +146,7 @@ def router() -> APIRouter:
                 status_code=422, detail="ユーザー辞書の更新に失敗しました。"
             )
 
-    @_router.delete(
+    @router.delete(
         "/user_dict_word/{word_uuid}",
         status_code=204,
         tags=["ユーザー辞書"],
@@ -169,7 +169,7 @@ def router() -> APIRouter:
                 status_code=422, detail="ユーザー辞書の更新に失敗しました。"
             )
 
-    @_router.post(
+    @router.post(
         "/import_user_dict",
         status_code=204,
         tags=["ユーザー辞書"],
@@ -196,4 +196,4 @@ def router() -> APIRouter:
                 status_code=422, detail="ユーザー辞書のインポートに失敗しました。"
             )
 
-    return _router
+    return router
