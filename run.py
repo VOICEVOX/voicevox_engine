@@ -750,7 +750,7 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    app.include_router(preset.router(preset_manager))
+    app.include_router(preset.generate_router(preset_manager))
 
     @app.get("/version", tags=["その他"])
     async def version() -> str:

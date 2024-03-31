@@ -11,11 +11,11 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from ..dependencies import check_disabled_mutable_api
 
 
-def router(preset_manager: PresetManager) -> APIRouter:
+def generate_router(preset_manager: PresetManager) -> APIRouter:
     """プリセット API Router を生成する"""
-    _router = APIRouter()
+    router = APIRouter()
 
-    @_router.get(
+    @router.get(
         "/presets",
         response_model=list[Preset],
         response_description="プリセットのリスト",
@@ -31,7 +31,7 @@ def router(preset_manager: PresetManager) -> APIRouter:
             raise HTTPException(status_code=422, detail=str(err))
         return presets
 
-    @_router.post(
+    @router.post(
         "/add_preset",
         response_model=int,
         response_description="追加したプリセットのプリセットID",
@@ -55,7 +55,7 @@ def router(preset_manager: PresetManager) -> APIRouter:
             raise HTTPException(status_code=422, detail=str(err))
         return id
 
-    @_router.post(
+    @router.post(
         "/update_preset",
         response_model=int,
         response_description="更新したプリセットのプリセットID",
@@ -79,7 +79,7 @@ def router(preset_manager: PresetManager) -> APIRouter:
             raise HTTPException(status_code=422, detail=str(err))
         return id
 
-    @_router.post(
+    @router.post(
         "/delete_preset",
         status_code=204,
         tags=["その他"],
@@ -97,4 +97,4 @@ def router(preset_manager: PresetManager) -> APIRouter:
             raise HTTPException(status_code=422, detail=str(err))
         return Response(status_code=204)
 
-    return _router
+    return router
