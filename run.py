@@ -263,7 +263,9 @@ def generate_app(
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     app.include_router(
-        tts_pipeline.router(get_engine, get_core, preset_manager, cancellable_engine)
+        tts_pipeline.generate_router(
+            get_engine, get_core, preset_manager, cancellable_engine
+        )
     )
 
     @app.post(

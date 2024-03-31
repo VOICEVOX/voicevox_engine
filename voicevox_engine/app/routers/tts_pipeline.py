@@ -31,16 +31,16 @@ from voicevox_engine.utility.connect_base64_waves import (
 from voicevox_engine.utility.path_utility import delete_file
 
 
-def router(
+def generate_router(
     get_engine: Callable[[str | None], TTSEngine],
     get_core: Callable[[str | None], CoreAdapter],
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:
     """音声合成 API Router を生成する"""
-    _router = APIRouter()
+    router = APIRouter()
 
-    @_router.post(
+    @router.post(
         "/audio_query",
         response_model=AudioQuery,
         tags=["クエリ作成"],
@@ -70,7 +70,7 @@ def router(
             kana=create_kana(accent_phrases),
         )
 
-    @_router.post(
+    @router.post(
         "/audio_query_from_preset",
         response_model=AudioQuery,
         tags=["クエリ作成"],
@@ -113,7 +113,7 @@ def router(
             kana=create_kana(accent_phrases),
         )
 
-    @_router.post(
+    @router.post(
         "/accent_phrases",
         response_model=list[AccentPhrase],
         tags=["クエリ編集"],
@@ -151,7 +151,7 @@ def router(
         else:
             return engine.create_accent_phrases(text, style_id)
 
-    @_router.post(
+    @router.post(
         "/mora_data",
         response_model=list[AccentPhrase],
         tags=["クエリ編集"],
@@ -165,7 +165,7 @@ def router(
         engine = get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
-    @_router.post(
+    @router.post(
         "/mora_length",
         response_model=list[AccentPhrase],
         tags=["クエリ編集"],
@@ -179,7 +179,7 @@ def router(
         engine = get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
 
-    @_router.post(
+    @router.post(
         "/mora_pitch",
         response_model=list[AccentPhrase],
         tags=["クエリ編集"],
@@ -193,7 +193,7 @@ def router(
         engine = get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
 
-    @_router.post(
+    @router.post(
         "/synthesis",
         response_class=FileResponse,
         responses={
@@ -231,7 +231,7 @@ def router(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @_router.post(
+    @router.post(
         "/cancellable_synthesis",
         response_class=FileResponse,
         responses={
@@ -267,7 +267,7 @@ def router(
             background=BackgroundTask(delete_file, f_name),
         )
 
-    @_router.post(
+    @router.post(
         "/multi_synthesis",
         response_class=FileResponse,
         responses={
@@ -316,7 +316,7 @@ def router(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @_router.post(
+    @router.post(
         "/sing_frame_audio_query",
         response_model=FrameAudioQuery,
         tags=["クエリ作成"],
@@ -345,7 +345,7 @@ def router(
             outputStereo=False,
         )
 
-    @_router.post(
+    @router.post(
         "/frame_synthesis",
         response_class=FileResponse,
         responses={
@@ -379,7 +379,7 @@ def router(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @_router.post(
+    @router.post(
         "/connect_waves",
         response_class=FileResponse,
         responses={
@@ -415,7 +415,7 @@ def router(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @_router.post(
+    @router.post(
         "/validate_kana",
         response_model=bool,
         tags=["その他"],
@@ -443,4 +443,4 @@ def router(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    return _router
+    return router
