@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_エンジンマニフェストを取得できる(
+def test_get_engine_manifest_200(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/engine_manifest")
