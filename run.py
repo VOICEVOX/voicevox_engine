@@ -319,7 +319,7 @@ def generate_app(
         engine = get_engine(core_version)
         core = get_core(core_version)
         try:
-            presets = preset_manager.load_presets()
+            presets = preset_manager.read_all()
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
         for preset in presets:
@@ -765,7 +765,7 @@ def generate_app(
         エンジンが保持しているプリセットの設定を返します
         """
         try:
-            presets = preset_manager.load_presets()
+            presets = preset_manager.read_all()
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
         return presets
@@ -789,7 +789,7 @@ def generate_app(
         新しいプリセットを追加します
         """
         try:
-            id = preset_manager.add_preset(preset)
+            id = preset_manager.create(preset)
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
         return id
@@ -813,7 +813,7 @@ def generate_app(
         既存のプリセットを更新します
         """
         try:
-            id = preset_manager.update_preset(preset)
+            id = preset_manager.update(preset)
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
         return id
@@ -831,7 +831,7 @@ def generate_app(
         既存のプリセットを削除します
         """
         try:
-            preset_manager.delete_preset(id)
+            preset_manager.delete(id)
         except PresetError as err:
             raise HTTPException(status_code=422, detail=str(err))
         return Response(status_code=204)
