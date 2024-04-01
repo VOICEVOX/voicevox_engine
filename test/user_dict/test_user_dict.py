@@ -4,7 +4,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from fastapi import HTTPException
 from pyopenjtalk import g2p, unset_user_dict
 
 from voicevox_engine.model import UserDictWord, WordTypes
@@ -13,6 +12,7 @@ from voicevox_engine.user_dict.part_of_speech_data import (
     part_of_speech_data,
 )
 from voicevox_engine.user_dict.user_dict import (
+    UserDictInputError,
     _create_word,
     apply_word,
     delete_word,
@@ -163,7 +163,7 @@ class TestUserDict(TestCase):
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
         )
         self.assertRaises(
-            HTTPException,
+            UserDictInputError,
             rewrite_word,
             word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
             surface="test2",
@@ -200,7 +200,7 @@ class TestUserDict(TestCase):
             json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
         )
         self.assertRaises(
-            HTTPException,
+            UserDictInputError,
             delete_word,
             word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
             user_dict_path=user_dict_path,

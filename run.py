@@ -82,6 +82,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.user_dict.user_dict import (
+    UserDictInputError,
     apply_word,
     delete_word,
     import_user_dict,
@@ -1105,10 +1106,12 @@ def generate_app(
         """
         try:
             return read_dict()
+        except UserDictInputError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         except Exception:
             traceback.print_exc()
             raise HTTPException(
-                status_code=422, detail="辞書の読み込みに失敗しました。"
+                status_code=500, detail="辞書の読み込みに失敗しました。"
             )
 
     @app.post(
@@ -1154,10 +1157,12 @@ def generate_app(
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
             )
+        except UserDictInputError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         except Exception:
             traceback.print_exc()
             raise HTTPException(
-                status_code=422, detail="ユーザー辞書への追加に失敗しました。"
+                status_code=500, detail="ユーザー辞書への追加に失敗しました。"
             )
 
     @app.put(
@@ -1201,16 +1206,16 @@ def generate_app(
                 priority=priority,
             )
             return Response(status_code=204)
-        except HTTPException:
-            raise
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
             )
+        except UserDictInputError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         except Exception:
             traceback.print_exc()
             raise HTTPException(
-                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
+                status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
 
     @app.delete(
@@ -1228,12 +1233,12 @@ def generate_app(
         try:
             delete_word(word_uuid=word_uuid)
             return Response(status_code=204)
-        except HTTPException:
-            raise
+        except UserDictInputError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         except Exception:
             traceback.print_exc()
             raise HTTPException(
-                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
+                status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
 
     @app.post(
@@ -1257,10 +1262,12 @@ def generate_app(
         try:
             import_user_dict(dict_data=import_dict_data, override=override)
             return Response(status_code=204)
+        except UserDictInputError as err:
+            raise HTTPException(status_code=422, detail=str(err))
         except Exception:
             traceback.print_exc()
             raise HTTPException(
-                status_code=422, detail="ユーザー辞書のインポートに失敗しました。"
+                status_code=500, detail="ユーザー辞書のインポートに失敗しました。"
             )
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])

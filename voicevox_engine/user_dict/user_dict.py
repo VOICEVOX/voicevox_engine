@@ -8,12 +8,18 @@ from uuid import UUID, uuid4
 
 import numpy as np
 import pyopenjtalk
-from fastapi import HTTPException
 
 from ..model import UserDictWord, WordTypes
 from ..utility.mutex_utility import mutex_wrapper
 from ..utility.path_utility import engine_root, get_save_dir
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
+
+
+class UserDictInputError(Exception):
+    """クライアントのリクエスト値に起因するエラー"""
+
+    pass
+
 
 root_dir = engine_root()
 save_dir = get_save_dir()
@@ -212,11 +218,11 @@ def _create_word(
     if word_type is None:
         word_type = WordTypes.PROPER_NOUN
     if word_type not in part_of_speech_data.keys():
-        raise HTTPException(status_code=422, detail="不明な品詞です")
+        raise UserDictInputError("不明な品詞です")
     if priority is None:
         priority = 5
     if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
-        raise HTTPException(status_code=422, detail="優先度の値が無効です")
+        raise UserDictInputError("優先度の値が無効です")
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
         surface=surface,
@@ -330,9 +336,7 @@ def rewrite_word(
     # 既存単語の上書きによる辞書データの更新
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
-        raise HTTPException(
-            status_code=422, detail="UUIDに該当するワードが見つかりませんでした"
-        )
+        raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
     user_dict[word_uuid] = word
 
     # 更新された辞書データの保存と適用
@@ -359,9 +363,7 @@ def delete_word(
     # 既存単語の削除による辞書データの更新
     user_dict = read_dict(user_dict_path=user_dict_path)
     if word_uuid not in user_dict:
-        raise HTTPException(
-            status_code=422, detail="IDに該当するワードが見つかりませんでした"
-        )
+        raise UserDictInputError("IDに該当するワードが見つかりませんでした")
     del user_dict[word_uuid]
 
     # 更新された辞書データの保存と適用
@@ -438,7 +440,7 @@ def _search_cost_candidates(context_id: int) -> List[int]:
     for value in part_of_speech_data.values():
         if value.context_id == context_id:
             return value.cost_candidates
-    raise HTTPException(status_code=422, detail="品詞IDが不正です")
+    raise UserDictInputError("品詞IDが不正です")
 
 
 def _cost2priority(context_id: int, cost: int) -> int:
