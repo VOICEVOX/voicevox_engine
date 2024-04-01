@@ -1,5 +1,5 @@
 """
-/engine_manifest APIのテスト
+/engine_manifest API のテスト
 """
 
 from test.utility import hash_long_string
