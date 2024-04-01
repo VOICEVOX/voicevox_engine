@@ -2,12 +2,18 @@
 /synthesis_morphing API のテスト
 """
 
+import io
 from test.e2e.single_api.utils import gen_mora
+from test.utility import hash_long_string, round_floats
 
+import soundfile as sf
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_synthesis_morphing_200(client: TestClient) -> None:
+def test_post_synthesis_morphing_200(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     queries = {
         "accent_phrases": [
             {
@@ -37,3 +43,11 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
         json=queries,
     )
     assert response.status_code == 200
+
+    # FileResponse 内の .wav から抽出された音声波形が一致する
+    assert response.headers["content-type"] == "audio/wav"
+    wave = sf.read(io.BytesIO(response.read()))[0].tolist()
+    # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
+    wave = round_floats(wave, 2)
+    wave_str = " ".join(map(lambda point: str(point), wave))
+    assert snapshot == hash_long_string(wave_str)
