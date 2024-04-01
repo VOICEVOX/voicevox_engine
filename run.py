@@ -71,7 +71,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetError
+from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
@@ -320,8 +320,10 @@ def generate_app(
         core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -766,8 +768,10 @@ def generate_app(
         """
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return presets
 
     @app.post(
@@ -790,8 +794,10 @@ def generate_app(
         """
         try:
             id = preset_manager.add_preset(preset)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return id
 
     @app.post(
@@ -814,8 +820,10 @@ def generate_app(
         """
         try:
             id = preset_manager.update_preset(preset)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return id
 
     @app.post(
@@ -832,8 +840,10 @@ def generate_app(
         """
         try:
             preset_manager.delete_preset(id)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return Response(status_code=204)
 
     @app.get("/version", tags=["その他"])
