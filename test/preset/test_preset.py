@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetInternalError, PresetInputError
+from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 
 presets_test_1_yaml_path = Path("test/preset/presets-test-1.yaml")
@@ -43,7 +43,9 @@ class TestPresetManager(TestCase):
 
     def test_preset_id(self) -> None:
         preset_manager = PresetManager(preset_path=presets_test_3_yaml_path)
-        with self.assertRaises(PresetInternalError, msg="プリセットのidに重複があります"):
+        with self.assertRaises(
+            PresetInternalError, msg="プリセットのidに重複があります"
+        ):
             preset_manager.load_presets()
 
     def test_empty_file(self) -> None:
@@ -254,7 +256,9 @@ class TestPresetManager(TestCase):
                 "postPhonemeLength": 0.1,
             }
         )
-        with self.assertRaises(PresetInputError, msg="更新先のプリセットが存在しません"):
+        with self.assertRaises(
+            PresetInputError, msg="更新先のプリセットが存在しません"
+        ):
             preset_manager.update_preset(preset)
         self.assertEqual(len(preset_manager.presets), 2)
         remove(temp_path)
@@ -308,7 +312,9 @@ class TestPresetManager(TestCase):
         temp_path = self.tmp_dir_path / "presets-test-temp.yaml"
         copyfile(presets_test_1_yaml_path, temp_path)
         preset_manager = PresetManager(preset_path=temp_path)
-        with self.assertRaises(PresetInputError, msg="削除対象のプリセットが存在しません"):
+        with self.assertRaises(
+            PresetInputError, msg="削除対象のプリセットが存在しません"
+        ):
             preset_manager.delete_preset(10)
         self.assertEqual(len(preset_manager.presets), 2)
         remove(temp_path)
