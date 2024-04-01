@@ -134,7 +134,7 @@ pyinstaller --noconfirm run.spec
 
 #### Github Actions でビルド
 
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 
 ### コードフォーマット
