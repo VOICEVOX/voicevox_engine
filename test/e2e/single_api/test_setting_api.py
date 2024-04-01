@@ -1,5 +1,5 @@
 """
-/setting APIのテスト
+/setting API のテスト
 """
 
 from fastapi.testclient import TestClient
