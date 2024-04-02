@@ -6,7 +6,8 @@ name: Release latest dev build
 on:
   push:
     branches:
-      - master
+      - main
+      - master # TODO-main: main branch 切り替え後に削除
     paths-ignore:
       - "docs/**"
       - "test/**"
@@ -31,7 +32,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'build-engine-package.yml',
-              ref: 'master',
+              ref: 'main',
               inputs: {
                 version: dev_version,
                 prerelease: true
@@ -41,7 +42,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'build-engine-container.yml',
-              ref: 'master',
+              ref: 'main',
               inputs: {
                 version: dev_version
               }

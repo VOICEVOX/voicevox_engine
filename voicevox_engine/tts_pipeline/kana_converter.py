@@ -11,7 +11,7 @@
 - `？` で疑問文
 - アクセント位置はちょうど１つ
 
-NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
+NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/main/README.md#aquestalk-風記法` # noqa
 """
 
 from typing import List, Optional

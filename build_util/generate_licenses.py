@@ -76,6 +76,8 @@ def generate_licenses() -> List[License]:
 
     # VOICEVOX ENGINE
     with urllib.request.urlopen(
+        # TODO-main: main branch 切り替え後にこちらへ切り替え
+        # "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/main/LGPL_LICENSE"
         "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
     ) as res:
         licenses.append(
