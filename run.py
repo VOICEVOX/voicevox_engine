@@ -23,7 +23,7 @@ from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError, parse_obj_as
 from starlette.background import BackgroundTask
@@ -1353,6 +1353,29 @@ def generate_app(
         setting_loader.save(settings)
 
         return Response(status_code=204)
+
+    @app.get("/", response_class=HTMLResponse)
+    async def get_portal() -> str:
+        """ポータルページを返します。"""
+        code_licence_url = "https://github.com/VOICEVOX/voicevox_engine?tab=readme-ov-file#%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9-1"  # noqa B950
+        software_licence_url = "https://github.com/VOICEVOX/voicevox_resource/tree/main/engine"  # noqa B950
+        return f"""
+        <html>
+            <head>
+                <title>VOICEVOX ENGINE</title>
+            </head>
+            <body>
+                <h1>VOICEVOX ENGINE</h1>
+                VOICEVOX ENGINE へようこそ！
+                <ul>
+                    <li><a href='/setting'>設定</a></li>
+                    <li><a href='/docs'>API ドキュメント & API 呼び出し</a></li>
+                    <li>ライセンス
+                        <ul>
+                            <li><a href='{code_licence_url}'>コード</a></li>
+                            <li><a href='{software_licence_url}'>製品版ソフトウェア</a></li>
+        </ul></li></ul></body></html>
+        """
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
