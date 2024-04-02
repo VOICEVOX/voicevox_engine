@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import urllib.request
+import urllib.error
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
@@ -75,20 +76,25 @@ def generate_licenses() -> List[License]:
         )
 
     # VOICEVOX ENGINE
-    with urllib.request.urlopen(
-        # TODO-main: main branch 切り替え後にこちらへ切り替え
-        # "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/main/LGPL_LICENSE"
-        "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="VOICEVOX ENGINE",
-                version=None,
-                license="LGPL license",
-                text=res.read().decode(),
-            )
+    # TODO-main: main branch 切り替え後に try-except 廃止
+    try:
+        with urllib.request.urlopen(
+            "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
+        ) as res:
+            text = res.read().decode()
+    except urllib.error.HTTPError:
+        with urllib.request.urlopen(
+            "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/main/LGPL_LICENSE"
+        ) as res:
+            text = res.read().decode()
+    licenses.append(
+        License(
+            name="VOICEVOX ENGINE",
+            version=None,
+            license="LGPL license",
+            text=text,
         )
-
+    )
     # world
     with urllib.request.urlopen(
         "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
