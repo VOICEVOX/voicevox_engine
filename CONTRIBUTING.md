@@ -50,9 +50,18 @@ python -m pip install -r requirements.txt -r requirements-dev.txt -r requirement
 * (実際に動かす時のみ)製品版 VOICEVOX
 を使います。 -->
 
+次に音声ライブラリを準備します。  
 OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを含んでいません。  
-これら音声ライブラリは、利用規約を遵守の上、以下の手順で製品版 VOICEVOX CORE を導入することにより利用できます。  
-なお、VOICEVOX ENGINE 単体でもモック利用により起動自体は可能です。  
+これら音声ライブラリは、利用規約を遵守の上、以下のいずれかの手順で導入できます。これにより「ずんだもん」等の製品版キャラクター音声を合成できます。  
+なお、OSS 版 VOICEVOX ENGINE 単体でもモック利用により機能制限版の音声合成が可能です。その場合、音声ライブラリの導入は不要です。    
+
+### 製品版 VOICEVOX を用いた音声ライブラリの導入
+製品版 VOICEVOX を導入することで音声ライブラリを利用できます。  
+[VOICEVOX 公式ホームページ](https://voicevox.hiroshiba.jp/)に従いソフトウェアを導入してください。  
+
+### 製品版 VOICEVOX CORE を用いた音声ライブラリの導入
+製品版 VOICEVOX CORE を導入することで音声ライブラリを利用できます。  
+以下のコマンドにより必要なファイルが準備されます：  
 
 ```bash
 # CORE のバリエーション指定変数を定義する（例: x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）
@@ -78,38 +87,31 @@ https://github.com/VOICEVOX/voicevox_core/releases/latest
 ## スクリプトの使い方
 
 ### 実行
+VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がります。  
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
 python run.py --help
 ```
 
-製品版 VOICEVOX でサーバーを起動
+#### 音声ライブラリに製品版 VOICEVOX を利用して実行
 ```bash
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
-製品版 VOICEVOX CORE を読み込んでサーバーを起動
+#### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
 python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
-<!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
-```bash
-# 音声ライブラリを差し替える
-VOICELIB_DIR="C:/path/to/your/tts-model"
-python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
-```
--->
-
-モックでサーバー起動
+#### 音声ライブラリ無しで実行
 ```bash
 python run.py --enable_mock
 ```
 
-ログをUTF8に変更
+#### ログをUTF8に変更
 ```bash
 python run.py --output_log_utf8
 # もしくは
