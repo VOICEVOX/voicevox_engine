@@ -13,7 +13,7 @@ from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_sty
 from voicevox_engine.model import Speaker, SpeakerInfo
 
 
-def b64encode_str(s):
+def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
