@@ -54,7 +54,7 @@ class PresetManager:
         self.presets = _presets
         self.last_modified_time = _last_modified_time
 
-    def create(self, preset: Preset) -> int:
+    def add_preset(self, preset: Preset) -> int:
         """新規プリセットを追加し、その ID を取得する。"""
 
         # データベース更新の反映
@@ -78,7 +78,7 @@ class PresetManager:
 
         return preset.id
 
-    def read_all(self) -> list[Preset]:
+    def load_presets(self) -> list[Preset]:
         """全てのプリセットを取得する"""
 
         # データベース更新の反映
@@ -86,7 +86,7 @@ class PresetManager:
 
         return self.presets
 
-    def update(self, preset: Preset) -> int:
+    def update_preset(self, preset: Preset) -> int:
         """指定されたプリセットを更新し、その ID を取得する。"""
 
         # データベース更新の反映
@@ -114,7 +114,7 @@ class PresetManager:
 
         return preset.id
 
-    def delete(self, id: int) -> int:
+    def delete_preset(self, id: int) -> int:
         """ID で指定されたプリセットを削除し、その ID を取得する。"""
 
         # データベース更新の反映
