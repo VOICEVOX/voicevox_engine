@@ -18,7 +18,7 @@ class License:
         version: str | None,  # TODO: `package_version` へリネーム
         license: str | None,  # TODO: `license_name` へリネーム
         text: str,  # TODO: `license_text` へリネーム
-        license_text_type: Literal["raw", "local_adress", "remote_adress"],
+        license_text_type: Literal["raw", "local_address", "remote_address"],
     ):
         self.name = name  # TODO: `package_name` へリネーム
         self.version = version  # TODO: `package_version` へリネーム
@@ -26,10 +26,10 @@ class License:
 
         if license_text_type == "raw":
             self.text = text  # TODO: `license_text` へリネーム
-        elif license_text_type == "local_adress":
+        elif license_text_type == "local_address":
             # ライセンステキストをローカルのライセンスファイルから抽出する
             self.text = Path(text).read_text(encoding="utf8")
-        elif license_text_type == "remote_adress":
+        elif license_text_type == "remote_address":
             # ライセンステキストをリモートのライセンスファイルから抽出する
             with urllib.request.urlopen(text) as res:
                 license_text: str = res.read().decode()
@@ -49,7 +49,7 @@ def generate_licenses() -> list[License]:
             version="1.11",
             license="Modified BSD license",
             text="docs/licenses/open_jtalk/COPYING",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
     licenses.append(
@@ -58,7 +58,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="Modified BSD license",
             text="docs/licenses/open_jtalk/mecab/COPYING",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
     licenses.append(
@@ -67,7 +67,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="Modified BSD license",
             text="docs/licenses//open_jtalk/mecab-naist-jdic/COPYING",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
     licenses.append(
@@ -76,7 +76,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="Creative Commons Attribution 3.0 license",
             text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",  # noqa: B950
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -87,7 +87,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="MIT license",
             text="https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -98,7 +98,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="LGPL license",
             text="https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -109,7 +109,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="Modified BSD license",
             text="https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -120,7 +120,7 @@ def generate_licenses() -> list[License]:
             version="1.9.0",
             license="BSD-style license",
             text="https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -131,7 +131,7 @@ def generate_licenses() -> list[License]:
             version="1.13.1",
             license="MIT license",
             text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -143,7 +143,7 @@ def generate_licenses() -> list[License]:
             version=python_version,
             license="Python Software Foundation License",
             text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -259,7 +259,7 @@ def generate_licenses() -> list[License]:
             version=None,
             license="BSD 3-clause license",
             text="https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -270,7 +270,7 @@ def generate_licenses() -> list[License]:
             version="1.2.0",
             license="LGPL-2.1 license",
             text="https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING",  # noqa: B950
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -281,7 +281,7 @@ def generate_licenses() -> list[License]:
             version="1.3.5",
             license="BSD 3-clause license",
             text="https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -292,7 +292,7 @@ def generate_licenses() -> list[License]:
             version="1.3.7",
             license="BSD 3-clause license",
             text="https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -303,7 +303,7 @@ def generate_licenses() -> list[License]:
             version="1.4.2",
             license="Xiph.org's BSD-like license",
             text="https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -314,7 +314,7 @@ def generate_licenses() -> list[License]:
             version="1.3.1",
             license="BSD 3-clause license",
             text="https://raw.githubusercontent.com/xiph/opus/v1.3.1/COPYING",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -326,7 +326,7 @@ def generate_licenses() -> list[License]:
             version="1.30.2",
             license="LGPL-2.1 license",
             text="docs/licenses/mpg123/COPYING",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
 
@@ -338,7 +338,7 @@ def generate_licenses() -> list[License]:
             version="3.100",
             license="LGPL-2.0 license",
             text="https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING",
-            license_text_type="remote_adress",
+            license_text_type="remote_address",
         )
     )
 
@@ -353,7 +353,7 @@ def generate_licenses() -> list[License]:
             version="11.8.0",
             license=None,
             text="docs/licenses/cuda/EULA.txt",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
     # cudnn
@@ -368,7 +368,7 @@ def generate_licenses() -> list[License]:
             version="8.9.2",
             license=None,
             text="docs/licenses/cudnn/LICENSE",
-            license_text_type="local_adress",
+            license_text_type="local_address",
         )
     )
 
