@@ -732,7 +732,7 @@
               "frame_decode",
               "sing"
             ],
-            "title": "モデルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
+            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
             "type": "string"
           }
         },
@@ -1180,13 +1180,19 @@
     },
     "/add_preset": {
       "post": {
-        "description": "新しいプリセットを追加します\n\nParameters\n-------\npreset: Preset\n    新しいプリセット。\n    プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。\n\nReturns\n-------\nid: int\n    追加したプリセットのプリセットID",
+        "description": "新しいプリセットを追加します",
         "operationId": "add_preset_add_preset_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Preset"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Preset"
+                  }
+                ],
+                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。",
+                "title": "Preset"
               }
             }
           },
@@ -1202,7 +1208,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "追加したプリセットのプリセットID"
           },
           "422": {
             "content": {
@@ -1479,14 +1485,16 @@
     },
     "/delete_preset": {
       "post": {
-        "description": "既存のプリセットを削除します\n\nParameters\n-------\nid: int\n    削除するプリセットのプリセットID",
+        "description": "既存のプリセットを削除します",
         "operationId": "delete_preset_delete_preset_post",
         "parameters": [
           {
+            "description": "削除するプリセットのプリセットID",
             "in": "query",
             "name": "id",
             "required": true,
             "schema": {
+              "description": "削除するプリセットのプリセットID",
               "title": "Id",
               "type": "integer"
             }
@@ -1515,7 +1523,7 @@
     },
     "/downloadable_libraries": {
       "get": {
-        "description": "ダウンロード可能な音声ライブラリの情報を返します。\n\nReturns\n-------\nret_data: list[DownloadableLibrary]",
+        "description": "ダウンロード可能な音声ライブラリの情報を返します。",
         "operationId": "downloadable_libraries_downloadable_libraries_get",
         "responses": {
           "200": {
@@ -1530,7 +1538,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "ダウンロード可能な音声ライブラリの情報リスト"
           }
         },
         "summary": "Downloadable Libraries",
@@ -1625,14 +1633,16 @@
     },
     "/import_user_dict": {
       "post": {
-        "description": "他のユーザー辞書をインポートします。\n\nParameters\n----------\nimport_dict_data: dict[str, UserDictWord]\n    インポートするユーザー辞書のデータ\noverride: bool\n    重複したエントリがあった場合、上書きするかどうか",
+        "description": "他のユーザー辞書をインポートします。",
         "operationId": "import_user_dict_words_import_user_dict_post",
         "parameters": [
           {
+            "description": "重複したエントリがあった場合、上書きするかどうか",
             "in": "query",
             "name": "override",
             "required": true,
             "schema": {
+              "description": "重複したエントリがあった場合、上書きするかどうか",
               "title": "Override",
               "type": "boolean"
             }
@@ -1645,6 +1655,7 @@
                 "additionalProperties": {
                   "$ref": "#/components/schemas/UserDictWord"
                 },
+                "description": "インポートするユーザー辞書のデータ",
                 "title": "Import Dict Data",
                 "type": "object"
               }
@@ -1732,14 +1743,16 @@
     },
     "/install_library/{library_uuid}": {
       "post": {
-        "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。\n\nParameters\n----------\nlibrary_uuid: str\n    音声ライブラリのID",
+        "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。",
         "operationId": "install_library_install_library__library_uuid__post",
         "parameters": [
           {
+            "description": "音声ライブラリのID",
             "in": "path",
             "name": "library_uuid",
             "required": true,
             "schema": {
+              "description": "音声ライブラリのID",
               "title": "Library Uuid",
               "type": "string"
             }
@@ -1768,7 +1781,7 @@
     },
     "/installed_libraries": {
       "get": {
-        "description": "インストールした音声ライブラリの情報を返します。\n\nReturns\n-------\nret_data: dict[str, InstalledLibrary]",
+        "description": "インストールした音声ライブラリの情報を返します。",
         "operationId": "installed_libraries_installed_libraries_get",
         "responses": {
           "200": {
@@ -1783,7 +1796,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "インストールした音声ライブラリの情報"
           }
         },
         "summary": "Installed Libraries",
@@ -2184,7 +2197,7 @@
     },
     "/presets": {
       "get": {
-        "description": "エンジンが保持しているプリセットの設定を返します\n\nReturns\n-------\npresets: list[Preset]\n    プリセットのリスト",
+        "description": "エンジンが保持しているプリセットの設定を返します",
         "operationId": "get_presets_presets_get",
         "responses": {
           "200": {
@@ -2199,7 +2212,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "プリセットのリスト"
           }
         },
         "summary": "Get Presets",
@@ -2715,14 +2728,16 @@
     },
     "/uninstall_library/{library_uuid}": {
       "post": {
-        "description": "音声ライブラリをアンインストールします。\n\nParameters\n----------\nlibrary_uuid: str\n    音声ライブラリのID",
+        "description": "音声ライブラリをアンインストールします。",
         "operationId": "uninstall_library_uninstall_library__library_uuid__post",
         "parameters": [
           {
+            "description": "音声ライブラリのID",
             "in": "path",
             "name": "library_uuid",
             "required": true,
             "schema": {
+              "description": "音声ライブラリのID",
               "title": "Library Uuid",
               "type": "string"
             }
@@ -2751,13 +2766,19 @@
     },
     "/update_preset": {
       "post": {
-        "description": "既存のプリセットを更新します\n\nParameters\n-------\npreset: Preset\n    更新するプリセット。\n    プリセットIDが更新対象と一致している必要があります。\n\nReturns\n-------\nid: int\n    更新したプリセットのプリセットID",
+        "description": "既存のプリセットを更新します",
         "operationId": "update_preset_update_preset_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Preset"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Preset"
+                  }
+                ],
+                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。",
+                "title": "Preset"
               }
             }
           },
@@ -2773,7 +2794,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "更新したプリセットのプリセットID"
           },
           "422": {
             "content": {
@@ -2794,7 +2815,7 @@
     },
     "/user_dict": {
       "get": {
-        "description": "ユーザー辞書に登録されている単語の一覧を返します。\n単語の表層形(surface)は正規化済みの物を返します。\n\nReturns\n-------\ndict[str, UserDictWord]\n    単語のUUIDとその詳細",
+        "description": "ユーザー辞書に登録されている単語の一覧を返します。\n単語の表層形(surface)は正規化済みの物を返します。",
         "operationId": "get_user_dict_words_user_dict_get",
         "responses": {
           "200": {
@@ -2809,7 +2830,7 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "単語のUUIDとその詳細"
           }
         },
         "summary": "Get User Dict Words",
@@ -2820,49 +2841,63 @@
     },
     "/user_dict_word": {
       "post": {
-        "description": "ユーザー辞書に言葉を追加します。\n\nParameters\n----------\nsurface : str\n    言葉の表層形\npronunciation: str\n    言葉の発音（カタカナ）\naccent_type: int\n    アクセント型（音が下がる場所を指す）\nword_type: WordTypes, optional\n    PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか\npriority: int, optional\n    単語の優先度（0から10までの整数）\n    数字が大きいほど優先度が高くなる\n    1から9までの値を指定することを推奨",
+        "description": "ユーザー辞書に言葉を追加します。",
         "operationId": "add_user_dict_word_user_dict_word_post",
         "parameters": [
           {
+            "description": "言葉の表層形",
             "in": "query",
             "name": "surface",
             "required": true,
             "schema": {
+              "description": "言葉の表層形",
               "title": "Surface",
               "type": "string"
             }
           },
           {
+            "description": "言葉の発音（カタカナ）",
             "in": "query",
             "name": "pronunciation",
             "required": true,
             "schema": {
+              "description": "言葉の発音（カタカナ）",
               "title": "Pronunciation",
               "type": "string"
             }
           },
           {
+            "description": "アクセント型（音が下がる場所を指す）",
             "in": "query",
             "name": "accent_type",
             "required": true,
             "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
               "title": "Accent Type",
               "type": "integer"
             }
           },
           {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
             "in": "query",
             "name": "word_type",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/WordTypes"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
             "in": "query",
             "name": "priority",
             "required": false,
             "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
               "maximum": 10.0,
               "minimum": 0.0,
               "title": "Priority",
@@ -2901,14 +2936,16 @@
     },
     "/user_dict_word/{word_uuid}": {
       "delete": {
-        "description": "ユーザー辞書に登録されている言葉を削除します。\n\nParameters\n----------\nword_uuid: str\n    削除する言葉のUUID",
+        "description": "ユーザー辞書に登録されている言葉を削除します。",
         "operationId": "delete_user_dict_word_user_dict_word__word_uuid__delete",
         "parameters": [
           {
+            "description": "削除する言葉のUUID",
             "in": "path",
             "name": "word_uuid",
             "required": true,
             "schema": {
+              "description": "削除する言葉のUUID",
               "title": "Word Uuid",
               "type": "string"
             }
@@ -2935,58 +2972,74 @@
         ]
       },
       "put": {
-        "description": "ユーザー辞書に登録されている言葉を更新します。\n\nParameters\n----------\nsurface : str\n    言葉の表層形\npronunciation: str\n    言葉の発音（カタカナ）\naccent_type: int\n    アクセント型（音が下がる場所を指す）\nword_uuid: str\n    更新する言葉のUUID\nword_type: WordTypes, optional\n    PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか\npriority: int, optional\n    単語の優先度（0から10までの整数）\n    数字が大きいほど優先度が高くなる\n    1から9までの値を指定することを推奨",
+        "description": "ユーザー辞書に登録されている言葉を更新します。",
         "operationId": "rewrite_user_dict_word_user_dict_word__word_uuid__put",
         "parameters": [
           {
+            "description": "更新する言葉のUUID",
             "in": "path",
             "name": "word_uuid",
             "required": true,
             "schema": {
+              "description": "更新する言葉のUUID",
               "title": "Word Uuid",
               "type": "string"
             }
           },
           {
+            "description": "言葉の表層形",
             "in": "query",
             "name": "surface",
             "required": true,
             "schema": {
+              "description": "言葉の表層形",
               "title": "Surface",
               "type": "string"
             }
           },
           {
+            "description": "言葉の発音（カタカナ）",
             "in": "query",
             "name": "pronunciation",
             "required": true,
             "schema": {
+              "description": "言葉の発音（カタカナ）",
               "title": "Pronunciation",
               "type": "string"
             }
           },
           {
+            "description": "アクセント型（音が下がる場所を指す）",
             "in": "query",
             "name": "accent_type",
             "required": true,
             "schema": {
+              "description": "アクセント型（音が下がる場所を指す）",
               "title": "Accent Type",
               "type": "integer"
             }
           },
           {
+            "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
             "in": "query",
             "name": "word_type",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/WordTypes"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/WordTypes"
+                }
+              ],
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
+            "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
             "in": "query",
             "name": "priority",
             "required": false,
             "schema": {
+              "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
               "maximum": 10.0,
               "minimum": 0.0,
               "title": "Priority",
@@ -3017,14 +3070,16 @@
     },
     "/validate_kana": {
       "post": {
-        "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n従っていない場合はエラーが返ります。\n\nParameters\n----------\ntext: str\n    判定する対象の文字列",
+        "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n従っていない場合はエラーが返ります。",
         "operationId": "validate_kana_validate_kana_post",
         "parameters": [
           {
+            "description": "判定する対象の文字列",
             "in": "query",
             "name": "text",
             "required": true,
             "schema": {
+              "description": "判定する対象の文字列",
               "title": "Text",
               "type": "string"
             }

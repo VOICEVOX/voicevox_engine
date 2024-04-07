@@ -3,11 +3,15 @@
 """
 
 from test.e2e.single_api.utils import gen_mora
+from test.utility import round_floats
 
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_mora_length_200(client: TestClient) -> None:
+def test_post_mora_length_200(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     accent_phrases = [
         {
             "moras": [
@@ -22,3 +26,4 @@ def test_post_mora_length_200(client: TestClient) -> None:
     ]
     response = client.post("/mora_length", params={"speaker": 0}, json=accent_phrases)
     assert response.status_code == 200
+    assert snapshot_json == round_floats(response.json(), 2)

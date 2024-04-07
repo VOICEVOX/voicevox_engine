@@ -15,8 +15,8 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.17.1"
-  VOICEVOX_CORE_VERSION: "0.15.1"
+  VOICEVOX_RESOURCE_VERSION: "0.18.0"
+  VOICEVOX_CORE_VERSION: "0.15.2"
 
 defaults:
   run:
@@ -168,7 +168,7 @@ jobs:
     # version が指定されている場合のみ実行する
     if: needs.config.outputs.version_or_latest != 'latest'
     needs: [config, build-docker]
-    uses: ./.github/workflows/release-test-docker.yml
+    uses: ./.github/workflows/test-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version_or_latest }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL

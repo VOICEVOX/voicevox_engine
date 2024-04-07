@@ -26,8 +26,8 @@ on:
 
 env:
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.17.1"
-  VOICEVOX_CORE_VERSION: "0.15.1"
+  VOICEVOX_RESOURCE_VERSION: "0.18.0"
+  VOICEVOX_CORE_VERSION: "0.15.2"
 
 defaults:
   run:
@@ -654,7 +654,7 @@ jobs:
   run-release-test-workflow:
     if: needs.config.outputs.version != ''
     needs: [config, build-and-upload]
-    uses: ./.github/workflows/release-test.yml
+    uses: ./.github/workflows/test-engine-package.yml
     with:
       version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL

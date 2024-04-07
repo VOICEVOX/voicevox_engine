@@ -85,3 +85,7 @@ jobs:
         run: |
           OUTPUT_LICENSE_JSON_PATH=/dev/null \
           bash build_util/create_venv_and_generate_licenses.bash
+
+      - name: Test names by checking typo
+        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        uses: crate-ci/typos@v1.12.12

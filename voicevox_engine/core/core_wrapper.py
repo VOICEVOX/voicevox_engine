@@ -21,6 +21,14 @@ class CoreError(Exception):
 
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
+    """
+    コアの実行に必要な依存 DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
+
+    Args:
+        runtime_dirs - 直下に DLL が存在するディレクトリの一覧
+    """
+    # `lib_file_names`は「ENGINE が利用可能な DLL のファイル名一覧」である
+    # `lib_names` は「ENGINE が利用可能な DLL のライブラリ名一覧」である（ライブラリ名は `libtorch.so.1.0` の `torch` 部分）
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
@@ -40,12 +48,16 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
         lib_names = ["onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
-    for lib_path in runtime_dirs:
-        for file_name in lib_file_names:
+
+    # 引数指定ディレクトリ直下の DLL をロードする
+    for runtime_dir in runtime_dirs:
+        for lib_file_name in lib_file_names:
             try:
-                CDLL(str((lib_path / file_name).resolve(strict=True)))
+                CDLL(str((runtime_dir / lib_file_name).resolve(strict=True)))
             except OSError:
                 pass
+
+    # システム検索ディレクトリ直下の DLL をロードする
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
