@@ -65,8 +65,6 @@ pre-commit = "^2.16.0"
 poetry = "1.8.1"
 poetry-plugin-export = "^1.6.0"
 safety = "^3.1.0"
-cryptography = "^42.0.5" # NOTE: explicitly version controlled for vulnerability
-urllib3 = "^2.0.5" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.test.dependencies]
 pysen = "~0.10.5"
@@ -79,10 +77,9 @@ pytest = "^8.0.0"
 coveralls = "^3.2.0"
 poetry = "1.8.1"
 poetry-plugin-export = "^1.6.0"
-httpx = "^0.25.0"          # NOTE: required by fastapi.testclient.TestClient
+httpx = "^0.25.0" # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0"
-gitpython = "^3.1.41" # NOTE: explicitly version controlled for vulnerability
 
 [tool.poetry.group.license.dependencies]
 pip-licenses = "^4.3.4"
