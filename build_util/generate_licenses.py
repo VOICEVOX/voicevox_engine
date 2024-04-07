@@ -2,9 +2,8 @@ import json
 import os
 import subprocess
 import urllib.request
-from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Literal
 
 
 class LicenseError(Exception):
@@ -12,16 +11,35 @@ class LicenseError(Exception):
     pass
 
 
-@dataclass
 class License:
-    name: str
-    version: Optional[str]
-    license: Optional[str]
-    text: str
+    def __init__(
+        self,
+        name: str,  # TODO: `package_name` へリネーム
+        version: str | None,  # TODO: `package_version` へリネーム
+        license: str | None,  # TODO: `license_name` へリネーム
+        text: str,  # TODO: `license_text` へリネーム
+        license_text_type: Literal["raw", "local_adress", "remote_adress"],
+    ):
+        self.name = name  # TODO: `package_name` へリネーム
+        self.version = version  # TODO: `package_version` へリネーム
+        self.license = license  # TODO: `license_name` へリネーム
+
+        if license_text_type == "raw":
+            self.text = text  # TODO: `license_text` へリネーム
+        elif license_text_type == "local_adress":
+            # ライセンステキストをローカルのライセンスファイルから抽出する
+            self.text = Path(text).read_text(encoding="utf8")
+        elif license_text_type == "remote_adress":
+            # ライセンステキストをリモートのライセンスファイルから抽出する
+            with urllib.request.urlopen(text) as res:
+                license_text: str = res.read().decode()
+                self.text = license_text
+        else:
+            raise Exception("型で保護され実行されないはずのパスが実行されました")
 
 
-def generate_licenses() -> List[License]:
-    licenses: List[License] = []
+def generate_licenses() -> list[License]:
+    licenses: list[License] = []
 
     # openjtalk
     # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
@@ -30,7 +48,8 @@ def generate_licenses() -> List[License]:
             name="Open JTalk",
             version="1.11",
             license="Modified BSD license",
-            text=Path("docs/licenses/open_jtalk/COPYING").read_text(),
+            text="docs/licenses/open_jtalk/COPYING",
+            license_text_type="local_adress",
         )
     )
     licenses.append(
@@ -38,7 +57,8 @@ def generate_licenses() -> List[License]:
             name="MeCab",
             version=None,
             license="Modified BSD license",
-            text=Path("docs/licenses/open_jtalk/mecab/COPYING").read_text(),
+            text="docs/licenses/open_jtalk/mecab/COPYING",
+            license_text_type="local_adress",
         )
     )
     licenses.append(
@@ -46,99 +66,86 @@ def generate_licenses() -> List[License]:
             name="NAIST Japanese Dictionary",
             version=None,
             license="Modified BSD license",
-            text=Path("docs/licenses//open_jtalk/mecab-naist-jdic/COPYING").read_text(),
+            text="docs/licenses//open_jtalk/mecab-naist-jdic/COPYING",
+            license_text_type="local_adress",
         )
     )
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice"  # noqa: B950
-    ) as res:
-        licenses.append(
-            License(
-                name='HTS Voice "Mei"',
-                version=None,
-                license="Creative Commons Attribution 3.0 license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name='HTS Voice "Mei"',
+            version=None,
+            license="Creative Commons Attribution 3.0 license",
+            text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",  # noqa: B950
+            license_text_type="remote_adress",
         )
+    )
 
     # VOICEVOX CORE
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="VOICEVOX CORE",
-                version=None,
-                license="MIT license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="VOICEVOX CORE",
+            version=None,
+            license="MIT license",
+            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # VOICEVOX ENGINE
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="VOICEVOX ENGINE",
-                version=None,
-                license="LGPL license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="VOICEVOX ENGINE",
+            version=None,
+            license="LGPL license",
+            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # world
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt"
-    ) as res:
-        licenses.append(
-            License(
-                name="world",
-                version=None,
-                license="Modified BSD license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="world",
+            version=None,
+            license="Modified BSD license",
+            text="https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt",
+            license_text_type="remote_adress",
         )
+    )
 
     # pytorch
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="PyTorch",
-                version="1.9.0",
-                license="BSD-style license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="PyTorch",
+            version="1.9.0",
+            license="BSD-style license",
+            text="https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # onnxruntime
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="ONNX Runtime",
-                version="1.13.1",
-                license="MIT license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="ONNX Runtime",
+            version="1.13.1",
+            license="MIT license",
+            text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # Python
     python_version = "3.11.3"
-    with urllib.request.urlopen(
-        f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="Python",
-                version=python_version,
-                license="Python Software Foundation License",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="Python",
+            version=python_version,
+            license="Python Software Foundation License",
+            text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # pip
     try:
@@ -166,6 +173,7 @@ def generate_licenses() -> List[License]:
             version=license_json["Version"],
             license=license_json["License"],
             text=license_json["LicenseText"],
+            license_text_type="raw",
         )
         license_names_str = license.license or ""
         license_names = license_names_str.split("; ")
@@ -245,82 +253,70 @@ def generate_licenses() -> List[License]:
         licenses.append(license)
 
     # OpenBLAS
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE"
-    ) as res:
-        licenses.append(
-            License(
-                name="OpenBLAS",
-                version=None,
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="OpenBLAS",
+            version=None,
+            license="BSD 3-clause license",
+            text="https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE",
+            license_text_type="remote_adress",
         )
+    )
 
     # libsndfile-binaries
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING"  # noqa: B950
-    ) as res:
-        licenses.append(
-            License(
-                name="libsndfile-binaries",
-                version="1.2.0",
-                license="LGPL-2.1 license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="libsndfile-binaries",
+            version="1.2.0",
+            license="LGPL-2.1 license",
+            text="https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING",  # noqa: B950
+            license_text_type="remote_adress",
         )
+    )
 
     # libogg
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="libogg",
-                version="1.3.5",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="libogg",
+            version="1.3.5",
+            license="BSD 3-clause license",
+            text="https://raw.githubusercontent.com/xiph/ogg/v1.3.5/COPYING",
+            license_text_type="remote_adress",
         )
+    )
 
     # libvorbis
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="libvorbis",
-                version="1.3.7",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="libvorbis",
+            version="1.3.7",
+            license="BSD 3-clause license",
+            text="https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING",
+            license_text_type="remote_adress",
         )
+    )
 
     # libflac
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph"
-    ) as res:
-        licenses.append(
-            License(
-                name="FLAC",
-                version="1.4.2",
-                license="Xiph.org's BSD-like license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="FLAC",
+            version="1.4.2",
+            license="Xiph.org's BSD-like license",
+            text="https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph",
+            license_text_type="remote_adress",
         )
+    )
 
     # libopus
-    with urllib.request.urlopen(
-        "https://raw.githubusercontent.com/xiph/opus/v1.3.1/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="Opus",
-                version="1.3.1",
-                license="BSD 3-clause license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="Opus",
+            version="1.3.1",
+            license="BSD 3-clause license",
+            text="https://raw.githubusercontent.com/xiph/opus/v1.3.1/COPYING",
+            license_text_type="remote_adress",
         )
+    )
 
     # mpg123
     # https://sourceforge.net/projects/mpg123/files/mpg123/1.30.2/
@@ -329,23 +325,22 @@ def generate_licenses() -> List[License]:
             name="mpg123",
             version="1.30.2",
             license="LGPL-2.1 license",
-            text=Path("docs/licenses/mpg123/COPYING").read_text(encoding="utf-8"),
+            text="docs/licenses/mpg123/COPYING",
+            license_text_type="local_adress",
         )
     )
 
     # liblame
     # https://sourceforge.net/projects/lame/files/lame/3.100/
-    with urllib.request.urlopen(
-        "https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING"
-    ) as res:
-        licenses.append(
-            License(
-                name="lame",
-                version="3.100",
-                license="LGPL-2.0 license",
-                text=res.read().decode(),
-            )
+    licenses.append(
+        License(
+            name="lame",
+            version="3.100",
+            license="LGPL-2.0 license",
+            text="https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING",
+            license_text_type="remote_adress",
         )
+    )
 
     # cuda
     # license text from CUDA 11.8.0
@@ -357,7 +352,8 @@ def generate_licenses() -> List[License]:
             name="CUDA Toolkit",
             version="11.8.0",
             license=None,
-            text=Path("docs/licenses/cuda/EULA.txt").read_text(encoding="utf8"),
+            text="docs/licenses/cuda/EULA.txt",
+            license_text_type="local_adress",
         )
     )
     # cudnn
@@ -371,7 +367,8 @@ def generate_licenses() -> List[License]:
             name="cuDNN",
             version="8.9.2",
             license=None,
-            text=Path("docs/licenses/cudnn/LICENSE").read_text(encoding="utf8"),
+            text="docs/licenses/cudnn/LICENSE",
+            license_text_type="local_adress",
         )
     )
 
@@ -393,6 +390,6 @@ if __name__ == "__main__":
     # dump
     out = Path(output_path).open("w") if output_path else sys.stdout
     json.dump(
-        [asdict(license) for license in licenses],
+        [vars(license) for license in licenses],
         out,
     )
