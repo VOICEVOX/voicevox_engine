@@ -170,9 +170,10 @@ class CancellableEngine:
         try:
             sub_proc_con1.send((query, style_id, core_version))
             f_name = sub_proc_con1.recv()
-            if type(f_name) is str:
+            if isinstance(f_name, str):
                 audio_file_name = f_name
             else:
+                # ここには来ないはず
                 raise HTTPException(status_code=500, detail="不正な値が生成されました")
         except EOFError:
             raise HTTPException(
