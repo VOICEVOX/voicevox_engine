@@ -38,7 +38,7 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
     )
     assert response.status_code == 200
 
-    # FIXME: Linux-MacOS 数値精度問題によりスナップショットテストがコケる
+    # FIXME: Linux-MacOS 計算結果不一致問題によりスナップショットテストがコケる
     # import io
     # from test.utility import hash_long_string, round_floats
     # import soundfile as sf
