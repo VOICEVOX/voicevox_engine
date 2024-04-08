@@ -46,5 +46,5 @@ def summarize_wav_bytes(wav_bytes: bytes) -> str:
     # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
     wave = round_floats(wave, 2)
     wave_str = " ".join(map(lambda point: str(point), wave))
-    summary = hash_long_string(wave_str)
+    summary: str = hash_long_string(wave_str)
     return summary
