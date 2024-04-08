@@ -39,14 +39,8 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
     assert response.status_code == 200
 
     # FIXME: Linux-MacOS 計算結果不一致問題によりスナップショットテストがコケる
-    # import io
-    # from test.utility import hash_long_string, round_floats
-    # import soundfile as sf
+    # from test.utility import summarize_wav_bytes
     # from syrupy.assertion import SnapshotAssertion
     # # FileResponse 内の .wav から抽出された音声波形が一致する
     # assert response.headers["content-type"] == "audio/wav"
-    # wave = sf.read(io.BytesIO(response.read()))[0].tolist()
-    # # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
-    # wave = round_floats(wave, 2)
-    # wave_str = " ".join(map(lambda point: str(point), wave))
-    # assert snapshot == hash_long_string(wave_str)
+    # assert snapshot == summarize_wav_bytes(response.read())

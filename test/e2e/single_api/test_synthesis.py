@@ -2,11 +2,9 @@
 /synthesis API のテスト
 """
 
-import io
 from test.e2e.single_api.utils import gen_mora
-from test.utility import hash_long_string, round_floats
+from test.utility import summarize_wav_bytes
 
-import soundfile as sf
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
@@ -40,8 +38,4 @@ def test_post_synthesis_200(client: TestClient, snapshot: SnapshotAssertion) -> 
 
     # FileResponse 内の .wav から抽出された音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
-    wave = sf.read(io.BytesIO(response.read()))[0].tolist()
-    # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
-    wave = round_floats(wave, 2)
-    wave_str = " ".join(map(lambda point: str(point), wave))
-    assert snapshot == hash_long_string(wave_str)
+    assert snapshot == summarize_wav_bytes(response.read())

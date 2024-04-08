@@ -1,7 +1,9 @@
 import hashlib
+import io
 import json
 from typing import Any
 
+import soundfile as sf
 from pydantic.json import pydantic_encoder
 
 
@@ -36,3 +38,13 @@ def hash_long_string(value: Any) -> Any:
         return {k: hash_long_string(v) for k, v in value.items()}
     else:
         return value
+
+
+def summarize_wav_bytes(wav_bytes: bytes) -> str:
+    """.wavファイルバイト列をデコードしスナップショットテストに利用可能なサマリーを生成する"""
+    wave = sf.read(io.BytesIO(wav_bytes))[0].tolist()
+    # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
+    wave = round_floats(wave, 2)
+    wave_str = " ".join(map(lambda point: str(point), wave))
+    summary = hash_long_string(wave_str)
+    return summary

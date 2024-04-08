@@ -60,16 +60,12 @@ def test_post_multi_synthesis_200(client: TestClient) -> None:
     response = client.post("/multi_synthesis", params={"speaker": 0}, json=queries)
     assert response.status_code == 200
 
+    # FileResponse 内の zip ファイルに圧縮された .wav から抽出された音声波形が一致する
     # FIXME: ZIP ファイル内の .wav に Linux-Windows 数値精度問題があるため、スナップショットテストには解凍が必要
     assert response.headers["content-type"] == "application/zip"
-    # import io
-    # from test.utility import hash_long_string, round_floats
-    # import soundfile as sf
+    # from test.utility import summarize_wav_bytes
     # from syrupy.assertion import SnapshotAssertion
-    # FileResponse 内の zip ファイルに圧縮された .wav から抽出された音声波形が一致する
     # # zip 解凍
-    # waves = concatenate_func(map(lambda path: sf.read(path)[0].tolist(), wave_paths))
-    # # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
-    # waves = round_floats(waves, 2)
-    # waves_str = " ".join(map(lambda point: str(point), waves))
-    # assert snapshot == hash_long_string(waves_str)
+    # wav_summarys = map(lambda wav_byte: summarize_wav_bytes(wav_byte), wav_bytes)
+    # wavs_summary = concatenate_func(wav_summarys)
+    # assert snapshot == wavs_summary
