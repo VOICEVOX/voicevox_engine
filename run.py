@@ -25,8 +25,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from ko2kana import toKana
 from pydantic import ValidationError, parse_obj_as
-from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
@@ -140,6 +140,7 @@ def generate_app(
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
+    experimental_katakana_transcription: bool,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Optional[Path] = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -288,6 +289,8 @@ def generate_app(
         """
         engine = get_engine(core_version)
         core = get_core(core_version)
+        if experimental_katakana_transcription:
+            text = toKana(text).replace(" ", "")
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -331,6 +334,8 @@ def generate_app(
                 status_code=422, detail="該当するプリセットIDが見つかりません"
             )
 
+        if experimental_katakana_transcription:
+            text = toKana(text).replace(" ", "")
         accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -381,6 +386,8 @@ def generate_app(
                     status_code=400, detail=ParseKanaBadRequest(err).dict()
                 )
         else:
+            if experimental_katakana_transcription:
+                text = toKana(text).replace(" ", "")
             return engine.create_accent_phrases(text, style_id)
 
     @app.post(
@@ -1516,6 +1523,12 @@ def main() -> None:
     )
 
     parser.add_argument(
+        "--experimental_katakana_transcription",
+        action="store_true",
+        help="韓国語と英語の発音をカタカナに置き換えます。数字は変換しません。",
+    )
+
+    parser.add_argument(
         "--disable_mutable_api",
         action="store_true",
         help=(
@@ -1615,6 +1628,7 @@ def main() -> None:
             latest_core_version,
             setting_loader,
             preset_manager=preset_manager,
+            experimental_katakana_transcription=args.experimental_katakana_transcription,
             cancellable_engine=cancellable_engine,
             root_dir=root_dir,
             cors_policy_mode=cors_policy_mode,
