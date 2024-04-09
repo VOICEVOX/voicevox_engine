@@ -31,7 +31,7 @@ from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import check_disabled_mutable_api, mutable_api
+from voicevox_engine.app.dependencies import check_disabled_mutable_api, deprecated_mutable_api
 from voicevox_engine.app.routers import preset
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
@@ -221,7 +221,7 @@ def generate_app(
             )
 
     if disable_mutable_api:
-        mutable_api.enable = False
+        deprecated_mutable_api.enable = False
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
