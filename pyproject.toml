@@ -38,10 +38,6 @@ use_parentheses = true
 
 [tool.poetry]
 package-mode = false
-name = "voicevox_engine"
-version = "0.0.0"
-description = ""
-authors = ["Hiroshiba <hihokaruta@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "~3.11"
