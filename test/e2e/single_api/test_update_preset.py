@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_update_preset_200(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+def test_post_update_preset_200(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
     preset = {
         "id": 1,
         "name": "test_preset",
