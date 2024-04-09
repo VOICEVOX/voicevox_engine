@@ -37,10 +37,7 @@ multi_line_output = 3
 use_parentheses = true
 
 [tool.poetry]
-name = "voicevox_engine"
-version = "0.0.0"
-description = ""
-authors = ["Hiroshiba <hihokaruta@gmail.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.11"
