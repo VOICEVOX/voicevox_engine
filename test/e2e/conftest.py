@@ -22,8 +22,10 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
     # 隔離されたプリセットの生成
-    preset_path = shutil.copy(Path("./presets.yaml"), tmp_path)
-    preset_manager = PresetManager(preset_path=Path(preset_path))
+    original_preset_path = Path("./presets.yaml")
+    preset_path = tmp_path / "presets.yaml"
+    shutil.copyfile(original_preset_path, preset_path)
+    preset_manager = PresetManager(preset_path)
 
     return {
         "tts_engines": tts_engines,
