@@ -13,7 +13,7 @@ from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def app_params() -> dict[str, Any]:
     cores = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(cores)
@@ -31,11 +31,11 @@ def app_params() -> dict[str, Any]:
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def app(app_params: dict) -> FastAPI:
     return generate_app(**app_params)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
