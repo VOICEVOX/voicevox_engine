@@ -64,8 +64,8 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
+from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
