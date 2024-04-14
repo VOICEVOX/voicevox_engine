@@ -1,4 +1,4 @@
-"""キャラクター情報機能を提供する API Router"""
+"""話者情報機能を提供する API Router"""
 
 import base64
 import json
@@ -22,7 +22,7 @@ def generate_router(
     metas_store: MetasStore,
     root_dir: Path,
 ) -> APIRouter:
-    """キャラクター情報 API Router を生成する"""
+    """話者情報 API Router を生成する"""
     router = APIRouter()
 
     @router.get("/speakers", response_model=list[Speaker], tags=["その他"])

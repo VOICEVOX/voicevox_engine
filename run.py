@@ -32,7 +32,7 @@ from voicevox_engine.app.dependencies import (
     check_disabled_mutable_api,
     deprecated_mutable_api,
 )
-from voicevox_engine.app.routers import character, preset, setting, user_dict
+from voicevox_engine.app.routers import preset, setting, speaker, user_dict
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -743,7 +743,7 @@ def generate_app(
             media_type="application/json",
         )
 
-    app.include_router(character.generate_router(get_core, metas_store, root_dir))
+    app.include_router(speaker.generate_router(get_core, metas_store, root_dir))
 
     if engine_manifest_data.supported_features.manage_library:
 
