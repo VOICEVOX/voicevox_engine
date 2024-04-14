@@ -1,5 +1,7 @@
 """設定機能を提供する API Router"""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 
@@ -49,8 +51,8 @@ def generate_router(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(
-        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
-        allow_origin: str | None = Form(default=None),  # noqa
+        cors_policy_mode: Annotated[CorsPolicyMode, Form()],
+        allow_origin: Annotated[str | None, Form()] = None,
     ) -> Response:
         """
         設定を更新します。

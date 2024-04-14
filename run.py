@@ -296,9 +296,9 @@ def generate_app(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_style_id: StyleId = Query(alias="base_speaker"),  # noqa: B008
-        target_style_id: StyleId = Query(alias="target_speaker"),  # noqa: B008
-        morph_rate: float = Query(..., ge=0.0, le=1.0),  # noqa: B008
+        base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
+        target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
+        morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
         core_version: str | None = None,
     ) -> FileResponse:
         """
@@ -450,11 +450,13 @@ def generate_app(
 
     @app.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
-        skip_reinit: bool = Query(  # noqa: B008
-            default=False,
-            description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
-        ),
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        skip_reinit: Annotated[
+            bool,
+            Query(
+                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
+            ),
+        ] = False,
         core_version: str | None = None,
     ) -> Response:
         """
@@ -467,7 +469,7 @@ def generate_app(
 
     @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
     def is_initialized_speaker(
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> bool:
         """

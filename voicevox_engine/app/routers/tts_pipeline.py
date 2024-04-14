@@ -48,7 +48,7 @@ def generate_router(
     )
     def audio_query(
         text: str,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> AudioQuery:
         """
@@ -127,7 +127,7 @@ def generate_router(
     )
     def accent_phrases(
         text: str,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         is_kana: bool = False,
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
@@ -159,7 +159,7 @@ def generate_router(
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
@@ -173,7 +173,7 @@ def generate_router(
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
@@ -187,7 +187,7 @@ def generate_router(
     )
     def mora_pitch(
         accent_phrases: list[AccentPhrase],
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
@@ -208,11 +208,13 @@ def generate_router(
     )
     def synthesis(
         query: AudioQuery,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
-        enable_interrogative_upspeak: bool = Query(  # noqa: B008
-            default=True,
-            description="疑問系のテキストが与えられたら語尾を自動調整する",
-        ),
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
         core_version: str | None = None,
     ) -> FileResponse:
         engine = get_engine(core_version)
@@ -247,7 +249,7 @@ def generate_router(
     def cancellable_synthesis(
         query: AudioQuery,
         request: Request,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FileResponse:
         if cancellable_engine is None:
@@ -284,7 +286,7 @@ def generate_router(
     )
     def multi_synthesis(
         queries: list[AudioQuery],
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FileResponse:
         engine = get_engine(core_version)
@@ -324,7 +326,7 @@ def generate_router(
     )
     def sing_frame_audio_query(
         score: Score,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FrameAudioQuery:
         """
@@ -359,7 +361,7 @@ def generate_router(
     )
     def frame_synthesis(
         query: FrameAudioQuery,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FileResponse:
         """
