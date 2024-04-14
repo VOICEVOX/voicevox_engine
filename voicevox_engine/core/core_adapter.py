@@ -109,7 +109,7 @@ class CoreAdapter:
         end_accent_phrase_list = np.r_[0, end_accent_phrase_list, 0]
 
         with self.mutex:
-            f0_list = self.core.yukarin_sa_forward(
+            f0_list: NDArray[np.float32] = self.core.yukarin_sa_forward(
                 length=vowel_phoneme_list.shape[0],
                 vowel_phoneme_list=vowel_phoneme_list[np.newaxis],
                 consonant_phoneme_list=consonant_phoneme_list[np.newaxis],

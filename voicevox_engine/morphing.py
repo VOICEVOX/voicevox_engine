@@ -199,13 +199,14 @@ def synthesis_morphing(
         + morph_param.target_spectrogram * morph_rate
     )
 
-    y_h = pw.synthesize(
+    _y_h: NDArray[np.float64] = pw.synthesize(
         morph_param.base_f0,
         morph_spectrogram,
         morph_param.base_aperiodicity,
         morph_param.fs,
         morph_param.frame_period,
-    ).astype(np.float32)
+    )
+    y_h = _y_h.astype(np.float32)
 
     # TODO: tts_engine.py でのリサンプル処理と共通化する
     if output_fs != morph_param.fs:
