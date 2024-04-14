@@ -170,6 +170,11 @@ class CancellableEngine:
         try:
             sub_proc_con1.send((query, style_id, core_version))
             f_name = sub_proc_con1.recv()
+            if isinstance(f_name, str):
+                audio_file_name = f_name
+            else:
+                # ここには来ないはず
+                raise HTTPException(status_code=500, detail="不正な値が生成されました")
         except EOFError:
             raise HTTPException(
                 status_code=500, detail="既にサブプロセスは終了されています"
@@ -179,9 +184,9 @@ class CancellableEngine:
             raise
 
         self.finalize_con(request, proc, sub_proc_con1)
-        return f_name
+        return audio_file_name
 
-    async def catch_disconnection(self):
+    async def catch_disconnection(self) -> None:
         """
         接続監視を行うコルーチン
         """
