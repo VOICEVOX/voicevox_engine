@@ -1,12 +1,10 @@
 import argparse
 import asyncio
-import base64
 import json
 import multiprocessing
 import os
 import re
 import sys
-import traceback
 import zipfile
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
@@ -14,23 +12,27 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Any, Optional
 
 import soundfile
 import uvicorn
-from fastapi import Body, Depends, FastAPI, Form, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import ValidationError, parse_obj_as
 from starlette.background import BackgroundTask
 from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
+from voicevox_engine.app.dependencies import (
+    check_disabled_mutable_api,
+    deprecated_mutable_api,
+)
+from voicevox_engine.app.routers import preset, setting, speaker, user_dict
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -38,11 +40,7 @@ from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import (
-    MetasStore,
-    construct_lookup,
-    filter_speakers_and_styles,
-)
+from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AccentPhrase,
     AudioQuery,
@@ -54,13 +52,9 @@ from voicevox_engine.model import (
     ParseKanaBadRequest,
     ParseKanaError,
     Score,
-    Speaker,
-    SpeakerInfo,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
-    UserDictWord,
     VvlibManifest,
-    WordTypes,
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -70,25 +64,16 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
+from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
+from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     make_tts_engines_from_cores,
 )
-from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.user_dict.user_dict import (
-    apply_word,
-    delete_word,
-    import_user_dict,
-    read_dict,
-    rewrite_word,
-    update_dict,
-)
+from voicevox_engine.user_dict.user_dict import update_dict
 from voicevox_engine.utility.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -96,10 +81,6 @@ from voicevox_engine.utility.connect_base64_waves import (
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 from voicevox_engine.utility.path_utility import delete_file, engine_root, get_save_dir
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
-
-
-def b64encode_str(s):
-    return base64.b64encode(s).decode("utf-8")
 
 
 def set_output_log_utf8() -> None:
@@ -219,13 +200,8 @@ def generate_app(
                 status_code=403, content={"detail": "Origin not allowed"}
             )
 
-    # 許可されていないAPIを無効化する
-    async def check_disabled_mutable_api() -> None:
-        if disable_mutable_api:
-            raise HTTPException(
-                status_code=403,
-                detail="エンジンの静的なデータを変更するAPIは無効化されています",
-            )
+    if disable_mutable_api:
+        deprecated_mutable_api.enable = False
 
     engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
@@ -324,9 +300,9 @@ def generate_app(
             raise HTTPException(status_code=422, detail=str(err))
         except PresetInternalError as err:
             raise HTTPException(status_code=500, detail=str(err))
-        for preset in presets:
-            if preset.id == preset_id:
-                selected_preset = preset
+        for _preset in presets:
+            if _preset.id == preset_id:
+                selected_preset = _preset
                 break
         else:
             raise HTTPException(
@@ -756,95 +732,7 @@ def generate_app(
             background=BackgroundTask(delete_file, f.name),
         )
 
-    @app.get(
-        "/presets",
-        response_model=list[Preset],
-        response_description="プリセットのリスト",
-        tags=["その他"],
-    )
-    def get_presets() -> list[Preset]:
-        """
-        エンジンが保持しているプリセットの設定を返します
-        """
-        try:
-            presets = preset_manager.load_presets()
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
-        return presets
-
-    @app.post(
-        "/add_preset",
-        response_model=int,
-        response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def add_preset(
-        preset: Annotated[
-            Preset,
-            Body(
-                description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
-            ),
-        ]
-    ) -> int:
-        """
-        新しいプリセットを追加します
-        """
-        try:
-            id = preset_manager.add_preset(preset)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
-        return id
-
-    @app.post(
-        "/update_preset",
-        response_model=int,
-        response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def update_preset(
-        preset: Annotated[
-            Preset,
-            Body(
-                description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
-            ),
-        ]
-    ) -> int:
-        """
-        既存のプリセットを更新します
-        """
-        try:
-            id = preset_manager.update_preset(preset)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
-        return id
-
-    @app.post(
-        "/delete_preset",
-        status_code=204,
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def delete_preset(
-        id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
-        """
-        既存のプリセットを削除します
-        """
-        try:
-            preset_manager.delete_preset(id)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
-        return Response(status_code=204)
+    app.include_router(preset.generate_router(preset_manager))
 
     @app.get("/version", tags=["その他"])
     async def version() -> str:
@@ -857,144 +745,7 @@ def generate_app(
             media_type="application/json",
         )
 
-    @app.get("/speakers", response_model=list[Speaker], tags=["その他"])
-    def speakers(
-        core_version: str | None = None,
-    ) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(get_core(core_version))
-        return filter_speakers_and_styles(speakers, "speaker")
-
-    @app.get("/speaker_info", response_model=SpeakerInfo, tags=["その他"])
-    def speaker_info(
-        speaker_uuid: str,
-        core_version: str | None = None,
-    ) -> SpeakerInfo:
-        """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
-        """
-        return _speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="speaker",
-            core_version=core_version,
-        )
-
-    # FIXME: この関数をどこかに切り出す
-    def _speaker_info(
-        speaker_uuid: str,
-        speaker_or_singer: Literal["speaker", "singer"],
-        core_version: str | None,
-    ) -> SpeakerInfo:
-        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
-        # {root_dir}/
-        #   speaker_info/
-        #       {speaker_uuid_0}/
-        #           policy.md
-        #           portrait.png
-        #           icons/
-        #               {id_0}.png
-        #               {id_1}.png
-        #               ...
-        #           portraits/
-        #               {id_0}.png
-        #               {id_1}.png
-        #               ...
-        #           voice_samples/
-        #               {id_0}_001.wav
-        #               {id_0}_002.wav
-        #               {id_0}_003.wav
-        #               {id_1}_001.wav
-        #               ...
-        #       {speaker_uuid_1}/
-        #           ...
-
-        # 該当話者の検索
-        speakers = parse_obj_as(
-            list[Speaker], json.loads(get_core(core_version).speakers)
-        )
-        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
-        for i in range(len(speakers)):
-            if speakers[i].speaker_uuid == speaker_uuid:
-                speaker = speakers[i]
-                break
-        else:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
-
-        try:
-            speaker_path = root_dir / "speaker_info" / speaker_uuid
-            # 話者情報の取得
-            # speaker policy
-            policy_path = speaker_path / "policy.md"
-            policy = policy_path.read_text("utf-8")
-            # speaker portrait
-            portrait_path = speaker_path / "portrait.png"
-            portrait = b64encode_str(portrait_path.read_bytes())
-            # スタイル情報の取得
-            style_infos = []
-            for style in speaker.styles:
-                id = style.id
-                # style icon
-                style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = b64encode_str(style_icon_path.read_bytes())
-                # style portrait
-                style_portrait_path = speaker_path / "portraits" / f"{id}.png"
-                style_portrait = None
-                if style_portrait_path.exists():
-                    style_portrait = b64encode_str(style_portrait_path.read_bytes())
-                # voice samples
-                voice_samples = [
-                    b64encode_str(
-                        (
-                            speaker_path
-                            / "voice_samples/{}_{}.wav".format(id, str(j + 1).zfill(3))
-                        ).read_bytes()
-                    )
-                    for j in range(3)
-                ]
-                style_infos.append(
-                    {
-                        "id": id,
-                        "icon": icon,
-                        "portrait": style_portrait,
-                        "voice_samples": voice_samples,
-                    }
-                )
-        except FileNotFoundError:
-            import traceback
-
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=500, detail="追加情報が見つかりませんでした"
-            )
-
-        ret_data = SpeakerInfo(
-            policy=policy,
-            portrait=portrait,
-            style_infos=style_infos,
-        )
-        return ret_data
-
-    @app.get("/singers", response_model=list[Speaker], tags=["その他"])
-    def singers(
-        core_version: str | None = None,
-    ) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(get_core(core_version))
-        return filter_speakers_and_styles(singers, "singer")
-
-    @app.get("/singer_info", response_model=SpeakerInfo, tags=["その他"])
-    def singer_info(
-        speaker_uuid: str,
-        core_version: str | None = None,
-    ) -> SpeakerInfo:
-        """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
-        """
-        return _speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="singer",
-            core_version=core_version,
-        )
+    app.include_router(speaker.generate_router(get_core, metas_store, root_dir))
 
     if engine_manifest_data.supported_features.manage_library:
 
@@ -1102,176 +853,7 @@ def generate_app(
         core = get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
 
-    @app.get(
-        "/user_dict",
-        response_model=dict[str, UserDictWord],
-        response_description="単語のUUIDとその詳細",
-        tags=["ユーザー辞書"],
-    )
-    def get_user_dict_words() -> dict[str, UserDictWord]:
-        """
-        ユーザー辞書に登録されている単語の一覧を返します。
-        単語の表層形(surface)は正規化済みの物を返します。
-        """
-        try:
-            return read_dict()
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=422, detail="辞書の読み込みに失敗しました。"
-            )
-
-    @app.post(
-        "/user_dict_word",
-        response_model=str,
-        tags=["ユーザー辞書"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def add_user_dict_word(
-        surface: Annotated[str, Query(description="言葉の表層形")],
-        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
-        accent_type: Annotated[
-            int, Query(description="アクセント型（音が下がる場所を指す）")
-        ],
-        word_type: Annotated[
-            WordTypes | None,
-            Query(
-                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
-            ),
-        ] = None,
-        priority: Annotated[
-            int | None,
-            Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
-                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
-            ),
-        ] = None,
-    ) -> Response:
-        """
-        ユーザー辞書に言葉を追加します。
-        """
-        try:
-            word_uuid = apply_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_type=word_type,
-                priority=priority,
-            )
-            return Response(content=word_uuid)
-        except ValidationError as e:
-            raise HTTPException(
-                status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
-            )
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=422, detail="ユーザー辞書への追加に失敗しました。"
-            )
-
-    @app.put(
-        "/user_dict_word/{word_uuid}",
-        status_code=204,
-        tags=["ユーザー辞書"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def rewrite_user_dict_word(
-        surface: Annotated[str, Query(description="言葉の表層形")],
-        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
-        accent_type: Annotated[
-            int, Query(description="アクセント型（音が下がる場所を指す）")
-        ],
-        word_uuid: Annotated[str, FAPath(description="更新する言葉のUUID")],
-        word_type: Annotated[
-            WordTypes | None,
-            Query(
-                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
-            ),
-        ] = None,
-        priority: Annotated[
-            int | None,
-            Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
-                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
-            ),
-        ] = None,
-    ) -> Response:
-        """
-        ユーザー辞書に登録されている言葉を更新します。
-        """
-        try:
-            rewrite_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_uuid=word_uuid,
-                word_type=word_type,
-                priority=priority,
-            )
-            return Response(status_code=204)
-        except HTTPException:
-            raise
-        except ValidationError as e:
-            raise HTTPException(
-                status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
-            )
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
-            )
-
-    @app.delete(
-        "/user_dict_word/{word_uuid}",
-        status_code=204,
-        tags=["ユーザー辞書"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def delete_user_dict_word(
-        word_uuid: Annotated[str, FAPath(description="削除する言葉のUUID")]
-    ) -> Response:
-        """
-        ユーザー辞書に登録されている言葉を削除します。
-        """
-        try:
-            delete_word(word_uuid=word_uuid)
-            return Response(status_code=204)
-        except HTTPException:
-            raise
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=422, detail="ユーザー辞書の更新に失敗しました。"
-            )
-
-    @app.post(
-        "/import_user_dict",
-        status_code=204,
-        tags=["ユーザー辞書"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
-    def import_user_dict_words(
-        import_dict_data: Annotated[
-            dict[str, UserDictWord],
-            Body(description="インポートするユーザー辞書のデータ"),
-        ],
-        override: Annotated[
-            bool, Query(description="重複したエントリがあった場合、上書きするかどうか")
-        ],
-    ) -> Response:
-        """
-        他のユーザー辞書をインポートします。
-        """
-        try:
-            import_user_dict(dict_data=import_dict_data, override=override)
-            return Response(status_code=204)
-        except Exception:
-            traceback.print_exc()
-            raise HTTPException(
-                status_code=422, detail="ユーザー辞書のインポートに失敗しました。"
-            )
+    app.include_router(user_dict.generate_router())
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
     def supported_devices(
@@ -1317,52 +899,11 @@ def generate_app(
                 detail=ParseKanaBadRequest(err).dict(),
             )
 
-    @app.get("/setting", response_class=Response, tags=["設定"])
-    def setting_get(request: Request) -> Response:
-        """
-        設定ページを返します。
-        """
-        settings = setting_loader.load()
-
-        brand_name = engine_manifest_data.brand_name
-        cors_policy_mode = settings.cors_policy_mode
-        allow_origin = settings.allow_origin
-
-        if allow_origin is None:
-            allow_origin = ""
-
-        return setting_ui_template.TemplateResponse(
-            "ui.html",
-            {
-                "request": request,
-                "brand_name": brand_name,
-                "cors_policy_mode": cors_policy_mode.value,
-                "allow_origin": allow_origin,
-            },
+    app.include_router(
+        setting.generate_router(
+            setting_loader, engine_manifest_data, setting_ui_template
         )
-
-    @app.post(
-        "/setting",
-        response_class=Response,
-        tags=["設定"],
-        dependencies=[Depends(check_disabled_mutable_api)],
     )
-    def setting_post(
-        cors_policy_mode: CorsPolicyMode = Form(),  # noqa
-        allow_origin: str | None = Form(default=None),  # noqa
-    ) -> Response:
-        """
-        設定を更新します。
-        """
-        settings = Setting(
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-        )
-
-        # 更新した設定へ上書き
-        setting_loader.save(settings)
-
-        return Response(status_code=204)
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema

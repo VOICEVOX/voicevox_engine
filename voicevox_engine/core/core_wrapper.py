@@ -595,7 +595,8 @@ class CoreWrapper:
             os.chdir(cwd)
 
     def metas(self) -> str:
-        return self.core.metas().decode("utf-8")
+        metas_bytes: bytes = self.core.metas()
+        return metas_bytes.decode("utf-8")
 
     def yukarin_s_forward(
         self,
@@ -897,7 +898,8 @@ class CoreWrapper:
         coreから取得した対応デバイスに関するjsonデータの文字列
         """
         if self.api_exists["supported_devices"]:
-            return self.core.supported_devices().decode("utf-8")
+            supported_devices_byte: bytes = self.core.supported_devices()
+            return supported_devices_byte.decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
@@ -913,7 +915,8 @@ class CoreWrapper:
 
     def is_model_loaded(self, style_id: int) -> bool:
         if self.api_exists["is_model_loaded"]:
-            return self.core.is_model_loaded(c_long(style_id))
+            loaded_bool: bool = self.core.is_model_loaded(c_long(style_id))
+            return loaded_bool
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:
