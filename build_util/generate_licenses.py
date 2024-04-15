@@ -184,7 +184,9 @@ def generate_licenses() -> list[License]:
                 "GNU General Public License v3 (GPLv3)",
                 "GNU Affero General Public License v3 (AGPL-3)",
             ]:
-                raise LicenseError(f"ライセンス違反: {license.name}")
+                raise LicenseError(
+                    f"ライセンス違反: {license.name} is {license.license}"
+                )
         # FIXME: assert license type
         if license.text == "UNKNOWN":
             if license.name.lower() == "core" and license.version == "0.0.0":
@@ -390,6 +392,14 @@ if __name__ == "__main__":
     # dump
     out = Path(output_path).open("w") if output_path else sys.stdout
     json.dump(
-        [vars(license) for license in licenses],
+        [
+            {
+                "name": license.name,
+                "version": license.version,
+                "license": license.license,
+                "text": license.text,
+            }
+            for license in licenses
+        ],
         out,
     )
