@@ -2,7 +2,7 @@
 TTSのテスト
 """
 
-from test.utility import summarize_wav_bytes
+from test.utility import hash_wave_floats_from_wav_bytes
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -25,4 +25,4 @@ def test_テキストと話者IDから音声を合成できる(
 
     # FileResponse 内の .wav から抽出された音声波形が一致する
     assert synthesis_res.headers["content-type"] == "audio/wav"
-    assert snapshot == summarize_wav_bytes(synthesis_res.read())
+    assert snapshot == hash_wave_floats_from_wav_bytes(synthesis_res.read())

@@ -3,7 +3,7 @@
 """
 
 from test.e2e.single_api.utils import gen_mora
-from test.utility import summarize_wav_bytes
+from test.utility import hash_wave_floats_from_wav_bytes
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -38,4 +38,4 @@ def test_post_synthesis_200(client: TestClient, snapshot: SnapshotAssertion) -> 
 
     # 音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
-    assert snapshot == summarize_wav_bytes(response.read())
+    assert snapshot == hash_wave_floats_from_wav_bytes(response.read())

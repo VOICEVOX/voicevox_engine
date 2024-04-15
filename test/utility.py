@@ -40,8 +40,8 @@ def hash_long_string(value: Any) -> Any:
         return value
 
 
-def summarize_wav_bytes(wav_bytes: bytes) -> str:
-    """.wavファイルバイト列をデコードしスナップショットテストに利用可能なサマリーを生成する"""
+def hash_wave_floats_from_wav_bytes(wav_bytes: bytes) -> str:
+    """.wavファイルバイト列から音声波形を抽出しハッシュ化する"""
     wave = sf.read(io.BytesIO(wav_bytes))[0].tolist()
     # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
     wave = round_floats(wave, 2)
