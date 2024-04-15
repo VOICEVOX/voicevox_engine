@@ -4,11 +4,11 @@
   
           <html>
               <head>
-                  <title>VOICEVOX ENGINE</title>
+                  <title>DUMMY Engine</title>
               </head>
               <body>
-                  <h1>VOICEVOX ENGINE</h1>
-                  VOICEVOX ENGINE へようこそ！
+                  <h1>DUMMY Engine</h1>
+                  DUMMY Engine へようこそ！
                   <ul>
                       <li><a href='/setting'>設定</a></li>
                       <li><a href='/docs'>API ドキュメント & API 呼び出し</a></li>

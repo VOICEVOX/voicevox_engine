@@ -1357,16 +1357,18 @@ def generate_app(
     @app.get("/", response_class=HTMLResponse, tags=["その他"])
     async def get_portal() -> str:
         """ポータルページを返します。"""
+        engine_name = engine_manifest_data.name
+
         code_licence_url = "https://github.com/VOICEVOX/voicevox_engine?tab=readme-ov-file#%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9-1"  # noqa B950
         software_licence_url = "https://github.com/VOICEVOX/voicevox_resource/tree/main/engine"  # noqa B950
         return f"""
         <html>
             <head>
-                <title>VOICEVOX ENGINE</title>
+                <title>{engine_name}</title>
             </head>
             <body>
-                <h1>VOICEVOX ENGINE</h1>
-                VOICEVOX ENGINE へようこそ！
+                <h1>{engine_name}</h1>
+                {engine_name} へようこそ！
                 <ul>
                     <li><a href='/setting'>設定</a></li>
                     <li><a href='/docs'>API ドキュメント & API 呼び出し</a></li>
