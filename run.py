@@ -1354,7 +1354,7 @@ def generate_app(
 
         return Response(status_code=204)
 
-    @app.get("/", response_class=HTMLResponse)
+    @app.get("/", response_class=HTMLResponse, tags=["その他"])
     async def get_portal() -> str:
         """ポータルページを返します。"""
         code_licence_url = "https://github.com/VOICEVOX/voicevox_engine?tab=readme-ov-file#%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9-1"  # noqa B950

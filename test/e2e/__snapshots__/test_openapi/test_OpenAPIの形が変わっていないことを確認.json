@@ -1109,7 +1109,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get Portal"
+        "summary": "Get Portal",
+        "tags": [
+          "その他"
+        ]
       }
     },
     "/accent_phrases": {
