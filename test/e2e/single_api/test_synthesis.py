@@ -36,6 +36,6 @@ def test_post_synthesis_200(client: TestClient, snapshot: SnapshotAssertion) -> 
     response = client.post("/synthesis", params={"speaker": 0}, json=query)
     assert response.status_code == 200
 
-    # FileResponse 内の .wav から抽出された音声波形が一致する
+    # 音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
     assert snapshot == summarize_wav_bytes(response.read())
