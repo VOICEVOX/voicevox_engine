@@ -59,17 +59,17 @@ jobs:
             echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: <Setup> Pull the application image
+      - name: <Setup> Pull ENGINE application docker image
         run: docker pull "${{ steps.docker_vars.outputs.image_tag }}"
 
-      - name: <Setup> Run application container
+      - name: <Setup> Run ENGINE application docker container
         run: docker run -d -p 50021:50021 "${{ steps.docker_vars.outputs.image_tag }}"
 
       # Docker コンテナが起動してから、レスポンスが返ってくるまで待機する
       # リトライは10回まで `/version` にアクセスしてレスポンスのステータスコードをチェック
       # - ステータスコードが `200` の場合は正常終了します
       # - ステータスコードが `200` 以外の場合は、5秒間スリープしてリトライします
-      - name: <Setup> Warm up the application server by waiting
+      - name: <Setup> Warm up ENGINE server by waiting
         run: |
           set +e # curlのエラーを無視する
           
@@ -89,5 +89,5 @@ jobs:
           done
           exit 1
 
-      - name: <Test> Test the application
+      - name: <Test> Test ENGINE application docker container
         run: python build_util/check_release_build.py --skip_run_process --dist_dir dist/

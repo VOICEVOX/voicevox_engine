@@ -122,7 +122,7 @@ jobs:
           brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
-      - name: <Setup> Install Ubuntu+ORT dependencies
+      - name: <Setup> Install Ubuntu+ONNXRuntime dependencies
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
         run: |
           sudo apt-get update
@@ -273,7 +273,6 @@ jobs:
           key: ${{ steps.zlib-cache-restore.outputs.cache-primary-key }}
           path: download/zlib
 
-      #
       - name: <Setup> Set up Windows dependencies
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
@@ -329,7 +328,7 @@ jobs:
           key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
           path: download/directml
 
-      - name: <Setup> Download DirectML dynamic Library
+      - name: <Setup> Set up DirectML dynamic Library
         if: steps.directml-cache-restore.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
         run: |
           curl -L "${{ matrix.directml_url }}" -o download/directml.zip
@@ -348,7 +347,7 @@ jobs:
           key: ${{ steps.directml-cache-restore.outputs.cache-primary-key }}
           path: download/directml
 
-      # ONNX Runtime (`ORT`)
+      # ONNX Runtime
       - name: <Setup> Export ONNX Runtime url to calc hash
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
@@ -359,7 +358,7 @@ jobs:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
-      - name: <Setup> Download ORT (Windows)
+      - name: <Setup> Download ONNX Runtime (Windows)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
@@ -379,7 +378,7 @@ jobs:
 
           rm download/onnxruntime.zip
 
-      - name: <Setup> Download ORT (Mac/Linux)
+      - name: <Setup> Download ONNX Runtime (Mac/Linux)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
         run: |
           curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
@@ -387,13 +386,13 @@ jobs:
           tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
 
-      - name: <Setup> Save ORT cache
+      - name: <Setup> Save ONNX Runtime cache
         uses: actions/cache/save@v3
         with:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/onnxruntime
 
-      # VOICEVOX RESOURCE (`RESOURCE`)
+      # VOICEVOX RESOURCE
       - name: <Setup> Prepare RESOURCE cache
         uses: actions/cache@v3
         id: voicevox-resource-cache
@@ -414,7 +413,7 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
 
-      # VOICEVOX CORE (`CORE`)
+      # VOICEVOX CORE
       - name: <Setup> Prepare CORE cache
         uses: actions/cache@v3
         id: voicevox-core-cache
@@ -483,7 +482,7 @@ jobs:
         run: |
           set -eux
 
-          # (Windows CUDA)
+          # Windows CUDA
           if [ -f "download/onnxruntime/lib/onnxruntime_providers_cuda.dll" ]; then
 
             # ONNX Runtime providers
@@ -503,14 +502,14 @@ jobs:
             # zlib
             mv download/zlib/zlibwapi.dll dist/run/
 
-            # Clean source directories (already cached)
+            # Clean source directories to reduce disk usage (already cached)
             rm -rf download/onnxruntime
             rm -rf download/cuda
             rm -rf download/cudnn
             rm -rf download/zlib
           fi
 
-          # (Windows DirectML)
+          # Windows DirectML
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
           TARGET=${{ matrix.target }}
           if [[ $TARGET == *-directml ]]; then
@@ -541,7 +540,7 @@ jobs:
           mv download/cudnn/bin/libcudnn.so.* dist/run/
           mv download/cudnn/bin/libcudnn_*_infer.so.* dist/run/
 
-          # Clean source directories (already cached)
+          # Clean source directories to reduce disk usage (already cached)
           rm -rf download/onnxruntime
           rm -rf download/cuda
           rm -rf download/cudnn
@@ -594,7 +593,7 @@ jobs:
             ${{ steps.vars.outputs.package_name }}.7z.*
           commit: ${{ github.sha }}
 
-      - name: <Setup> Clean 7z archives
+      - name: <Setup> Clean 7z archives to reduce disk usage
         run: |
           rm -f ${{ steps.vars.outputs.package_name }}.7z.*
 
