@@ -38,7 +38,7 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
     )
     assert response.status_code == 200
 
-    # FIXME: Linux-MacOS 計算結果不一致問題によりスナップショットテストがコケる
+    # FIXME: LinuxとMacOSで計算結果が一致しないためスナップショットテストがコケる（原因不明）
     # from test.utility import summarize_wav_bytes
     # from syrupy.assertion import SnapshotAssertion
     # # FileResponse 内の .wav から抽出された音声波形が一致する
