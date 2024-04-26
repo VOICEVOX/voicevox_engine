@@ -13,7 +13,7 @@ class EngineManifestLoader:
     def load_manifest(self) -> EngineManifest:
         manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
 
-        manifest = EngineManifest(
+        return EngineManifest(
             manifest_version=manifest["manifest_version"],
             name=manifest["name"],
             brand_name=manifest["brand_name"],
@@ -49,4 +49,3 @@ class EngineManifestLoader:
                 for key, item in manifest["supported_features"].items()
             },
         )
-        return manifest

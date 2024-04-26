@@ -18,7 +18,7 @@ def generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
 ) -> NDArray[np.float32]:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
-    wave = np.sin(2 * np.pi * frequency * x).astype(np.float32)
+    wave: NDArray[np.float32] = np.sin(2 * np.pi * frequency * x).astype(np.float32)
 
     return wave
 
