@@ -286,7 +286,7 @@ def calc_phoneme_lengths(
     return phoneme_durations_array
 
 
-def score_to_key_and_phoneme(
+def notes_to_keys_and_phonemes(
     notes: list[Note],
 ) -> tuple[
     NDArray[np.int64],
@@ -546,7 +546,7 @@ class TTSEngine:
             note_vowels_array,
             phonemes_array,
             phoneme_keys_array,
-        ) = score_to_key_and_phoneme(
+        ) = notes_to_keys_and_phonemes(
             notes
         )
 
@@ -599,7 +599,7 @@ class TTSEngine:
             _,
             phonemes_array_from_notes,
             phoneme_keys_array,
-        ) = score_to_key_and_phoneme(
+        ) = notes_to_keys_and_phonemes(
             notes
         )
 
