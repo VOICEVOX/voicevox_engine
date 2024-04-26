@@ -295,7 +295,26 @@ def notes_to_keys_and_phonemes(
     NDArray[np.int64],
     NDArray[np.int64],
 ]:
-    """ノート単位のデータ、音素単位のデータを作成する"""
+    """"""
+    """
+    ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
+    Parameters
+    ----------
+    notes : list[Note]
+        ノート列
+    Returns
+    -------
+    note_lengths : NDArray[np.int64]
+        ノートの長さ列
+    note_consonants : NDArray[np.int64]
+        ノートの子音ID列
+    note_vowels : NDArray[np.int64]
+        ノートの母音ID列
+    phonemes : NDArray[np.int64]
+        音素列
+    phoneme_keys : NDArray[np.int64]
+        音素ごとのキー列
+    """
 
     note_lengths: list[int] = []
     note_consonants: list[int] = []
