@@ -348,6 +348,23 @@ def generate_router(
         )
 
     @router.post(
+        "/sing_frame_volume",
+        response_model=list[float],
+        tags=["クエリ編集"],
+        summary="スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
+    )
+    def sing_frame_volume(
+        score: Score,
+        frame_audio_query: FrameAudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        core_version: str | None = None,
+    ) -> list[float]:
+        engine = get_engine(core_version)
+        return engine.create_sing_volume_from_phoneme_and_f0(
+            score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
+        )
+
+    @router.post(
         "/frame_synthesis",
         response_class=FileResponse,
         responses={

@@ -155,6 +155,22 @@
         "title": "Body_setting_post_setting_post",
         "type": "object"
       },
+      "Body_sing_frame_volume_sing_frame_volume_post": {
+        "properties": {
+          "frame_audio_query": {
+            "$ref": "#/components/schemas/FrameAudioQuery"
+          },
+          "score": {
+            "$ref": "#/components/schemas/Score"
+          }
+        },
+        "required": [
+          "score",
+          "frame_audio_query"
+        ],
+        "title": "Body_sing_frame_volume_sing_frame_volume_post",
+        "type": "object"
+      },
       "CorsPolicyMode": {
         "description": "CORSの許可モード",
         "enum": [
@@ -2328,6 +2344,71 @@
         "summary": "歌唱音声合成用のクエリを作成する",
         "tags": [
           "クエリ作成"
+        ]
+      }
+    },
+    "/sing_frame_volume": {
+      "post": {
+        "operationId": "sing_frame_volume_sing_frame_volume_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_sing_frame_volume_sing_frame_volume_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "title": "Response Sing Frame Volume Sing Frame Volume Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
+        "tags": [
+          "クエリ編集"
         ]
       }
     },
