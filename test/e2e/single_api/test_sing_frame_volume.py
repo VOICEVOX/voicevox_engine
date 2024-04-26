@@ -13,11 +13,11 @@ def test_post_sing_frame_volume_200(
 ) -> None:
     score = {
         "notes": [
-            { "key": None, "frame_length": 15, "lyric": "" },
-            { "key": 60, "frame_length": 45, "lyric": "ド" },
-            { "key": 62, "frame_length": 45, "lyric": "レ" },
-            { "key": 64, "frame_length": 45, "lyric": "ミ" },
-            { "key": None, "frame_length": 15, "lyric": "" }
+            {"key": None, "frame_length": 15, "lyric": ""},
+            {"key": 60, "frame_length": 45, "lyric": "ド"},
+            {"key": 62, "frame_length": 45, "lyric": "レ"},
+            {"key": 64, "frame_length": 45, "lyric": "ミ"},
+            {"key": None, "frame_length": 15, "lyric": ""},
         ]
     }
 
@@ -187,7 +187,7 @@ def test_post_sing_frame_volume_200(
             355.1257019042969,
             355.2730712890625,
             355.0054931640625,
-            354.0846252441406
+            354.0846252441406,
         ],
         "volume": [
             0.0004787147045135498,
@@ -354,48 +354,28 @@ def test_post_sing_frame_volume_200(
             0.00037220120429992676,
             -8.973479270935059e-05,
             0.0009073689579963684,
-            -0.001959472894668579
+            -0.001959472894668579,
         ],
         "phonemes": [
-            {
-                "phoneme": "pau",
-                "frame_length": 13
-            },
-            {
-                "phoneme": "d",
-                "frame_length": 2
-            },
-            {
-                "phoneme": "o",
-                "frame_length": 41
-            },
-            {
-                "phoneme": "r",
-                "frame_length": 4
-            },
-            {
-                "phoneme": "e",
-                "frame_length": 40
-            },
-            {
-                "phoneme": "m",
-                "frame_length": 5
-            },
-            {
-                "phoneme": "i",
-                "frame_length": 45
-            },
-            {
-                "phoneme": "pau",
-                "frame_length": 15
-            }
+            {"phoneme": "pau", "frame_length": 13},
+            {"phoneme": "d", "frame_length": 2},
+            {"phoneme": "o", "frame_length": 41},
+            {"phoneme": "r", "frame_length": 4},
+            {"phoneme": "e", "frame_length": 40},
+            {"phoneme": "m", "frame_length": 5},
+            {"phoneme": "i", "frame_length": 45},
+            {"phoneme": "pau", "frame_length": 15},
         ],
         "volumeScale": 1.0,
         "outputSamplingRate": 24000,
-        "outputStereo": False
+        "outputStereo": False,
     }
 
-    response = client.post("/sing_frame_volume", params={"speaker": 0}, json={"score": score, "frame_audio_query": frame_audio_query})
+    response = client.post(
+        "/sing_frame_volume",
+        params={"speaker": 0},
+        json={"score": score, "frame_audio_query": frame_audio_query},
+    )
     print(response.text)
     assert response.status_code == 200
     assert snapshot_json == round_floats(response.json(), 2)
