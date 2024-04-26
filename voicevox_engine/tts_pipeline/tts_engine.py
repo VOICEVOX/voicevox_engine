@@ -9,7 +9,15 @@ from soxr import resample
 from ..core.core_adapter import CoreAdapter
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score, Note
+from ..model import (
+    AccentPhrase,
+    AudioQuery,
+    FrameAudioQuery,
+    FramePhoneme,
+    Mora,
+    Note,
+    Score,
+)
 from .kana_converter import parse_kana
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
@@ -376,7 +384,14 @@ def notes_to_keys_and_phonemes(
     phonemes_array = np.array(phonemes, dtype=np.int64)
     phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
 
-    return note_lengths_array, note_consonants_array, note_vowels_array, phonemes_array, phoneme_keys_array
+    return (
+        note_lengths_array,
+        note_consonants_array,
+        note_vowels_array,
+        phonemes_array,
+        phoneme_keys_array,
+    )
+
 
 def frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
@@ -565,9 +580,7 @@ class TTSEngine:
             note_vowels_array,
             phonemes_array,
             phoneme_keys_array,
-        ) = notes_to_keys_and_phonemes(
-            notes
-        )
+        ) = notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
         consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
@@ -618,11 +631,11 @@ class TTSEngine:
             _,
             phonemes_array_from_notes,
             phoneme_keys_array,
-        ) = notes_to_keys_and_phonemes(
-            notes
-        )
+        ) = notes_to_keys_and_phonemes(notes)
 
-        phonemes_array = np.array([Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64)
+        phonemes_array = np.array(
+            [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
+        )
         phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
         f0s = np.array(f0s, dtype=np.float32)
 

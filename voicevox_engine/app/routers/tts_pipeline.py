@@ -359,10 +359,7 @@ def generate_router(
     ) -> list[AccentPhrase]:
         engine = get_engine(core_version)
         return engine.create_sing_volume_from_phoneme_and_f0(
-            score,
-            frame_audio_query.phonemes,
-            frame_audio_query.f0,
-            style_id
+            score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
         )
 
     @router.post(
