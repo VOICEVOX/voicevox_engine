@@ -30,6 +30,18 @@
   "update_infos": [
     {
       "contributors": [
+        "sabonerune",
+        "tarepan",
+        "y-chan"
+      ],
+      "descriptions": [
+        "ソング：音量取得APIを追加",
+        "開発環境の向上"
+      ],
+      "version": "0.19.0"
+    },
+    {
+      "contributors": [
         "Hiroshiba",
         "qryxip"
       ],
