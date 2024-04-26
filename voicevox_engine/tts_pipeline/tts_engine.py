@@ -303,7 +303,6 @@ def notes_to_keys_and_phonemes(
     NDArray[np.int64],
     NDArray[np.int64],
 ]:
-    """"""
     """
     ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
     Parameters
@@ -637,7 +636,7 @@ class TTSEngine:
             [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
         )
         phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
-        f0s = np.array(f0s, dtype=np.float32)
+        f0_array = np.array(f0s, dtype=np.float32)
 
         # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
         # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
@@ -659,7 +658,7 @@ class TTSEngine:
 
         # コアを用いて音量を生成する
         volumes = self._core.safe_predict_sing_volume_forward(
-            frame_phonemes, frame_keys, f0s, style_id
+            frame_phonemes, frame_keys, f0_array, style_id
         )
 
         return volumes.tolist()
