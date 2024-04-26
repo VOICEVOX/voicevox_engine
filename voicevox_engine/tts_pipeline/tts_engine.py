@@ -583,6 +583,55 @@ class TTSEngine:
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
 
+    def create_sing_volume_from_phoneme_and_f0(
+        self,
+        score: Score,
+        phonemes: list[FramePhoneme],
+        f0s: list[float],
+        style_id: StyleId,
+    ) -> list[float]:
+        """歌声合成用の音素・音高・スタイルIDに基づいて音量を生成する"""
+        notes = score.notes
+
+        (
+            _,
+            _,
+            _,
+            phonemes_array_from_notes,
+            phoneme_keys_array,
+        ) = score_to_key_and_phoneme(
+            notes
+        )
+
+        phonemes_array = np.array([Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64)
+        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+        f0s = np.array(f0s, dtype=np.float32)
+
+        # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
+        # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
+        try:
+            all_equals = np.all(phonemes_array == phonemes_array_from_notes)
+        except ValueError:
+            # 長さが異なる場合はValueErrorが発生するので、Falseとする
+            all_equals = False
+
+        if not all_equals:
+            raise HTTPException(
+                status_code=400,
+                detail="Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。",
+            )
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音量を生成する
+        volumes = self._core.safe_predict_sing_volume_forward(
+            frame_phonemes, frame_keys, f0s, style_id
+        )
+
+        return volumes.tolist()
+
     def frame_synthsize_wave(
         self,
         query: FrameAudioQuery,
