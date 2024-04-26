@@ -644,7 +644,8 @@ class TTSEngine:
             all_equals = np.all(phonemes_array == phonemes_array_from_notes)
         except ValueError:
             # 長さが異なる場合はValueErrorが発生するので、Falseとする
-            all_equals = False
+            # mypyを通すためにnp.bool_でラップする
+            all_equals = np.bool_(False)
 
         if not all_equals:
             raise HTTPException(
@@ -661,7 +662,10 @@ class TTSEngine:
             frame_phonemes, frame_keys, f0_array, style_id
         )
 
-        return volumes.tolist()
+        # mypyの型チェックを通すために明示的に形を付ける
+        volume_list: list[float] = volumes.tolist()
+
+        return volume_list
 
     def frame_synthsize_wave(
         self,

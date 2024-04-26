@@ -356,7 +356,7 @@ def generate_router(
         frame_audio_query: FrameAudioQuery,
         style_id: StyleId = Query(alias="speaker"),  # noqa: B008
         core_version: str | None = None,
-    ) -> list[AccentPhrase]:
+    ) -> list[float]:
         engine = get_engine(core_version)
         return engine.create_sing_volume_from_phoneme_and_f0(
             score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
