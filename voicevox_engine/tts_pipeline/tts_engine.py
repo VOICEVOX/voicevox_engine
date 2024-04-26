@@ -662,7 +662,7 @@ class TTSEngine:
             frame_phonemes, frame_keys, f0_array, style_id
         )
 
-        # mypyの型チェックを通すために明示的に形を付ける
+        # mypyの型チェックを通すために明示的に型を付ける
         volume_list: list[float] = volumes.tolist()
 
         return volume_list
