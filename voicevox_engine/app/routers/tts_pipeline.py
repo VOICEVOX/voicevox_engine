@@ -349,7 +349,7 @@ def generate_router(
         "/sing_frame_volume",
         response_model=list[float],
         tags=["クエリ編集"],
-        summary="スコア・歌唱音声合成用のクエリから、新しいフレーム毎音量を得る",
+        summary="スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
     )
     def sing_frame_volume(
         score: Score,
