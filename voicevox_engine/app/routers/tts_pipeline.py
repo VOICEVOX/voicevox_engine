@@ -354,7 +354,7 @@ def generate_router(
     def sing_frame_volume(
         score: Score,
         frame_audio_query: FrameAudioQuery,
-        style_id: StyleId = Query(alias="speaker"),  # noqa: B008
+        style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[float]:
         engine = get_engine(core_version)
