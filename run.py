@@ -756,22 +756,22 @@ def main() -> None:
         "VV_DISABLE_MUTABLE_API"
     )
 
-    uvicorn.run(
-        generate_app(
-            tts_engines,
-            cores,
-            latest_core_version,
-            setting_loader,
-            preset_manager=preset_manager,
-            cancellable_engine=cancellable_engine,
-            root_dir=root_dir,
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-            disable_mutable_api=disable_mutable_api,
-        ),
-        host=args.host,
-        port=args.port,
+    # ASGI に準拠したアプリケーションを生成する
+    app = generate_app(
+        tts_engines,
+        cores,
+        latest_core_version,
+        setting_loader,
+        preset_manager,
+        cancellable_engine,
+        root_dir,
+        cors_policy_mode,
+        allow_origin,
+        disable_mutable_api=disable_mutable_api,
     )
+
+    # ASGI に準拠したサーバを立ち上げる
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
