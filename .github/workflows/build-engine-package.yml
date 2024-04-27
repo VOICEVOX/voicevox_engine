@@ -2,7 +2,8 @@ name: build
 on:
   push:
     branches:
-      - master
+      - main
+      - master # TODO-main: main branch 切り替え後に削除
   release:
     types:
       - created

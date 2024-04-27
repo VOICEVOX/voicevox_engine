@@ -5,7 +5,8 @@ name: upload-docs
 on:
   push:
     branches:
-      - "master"
+      - "main"
+      - "master" # TODO-main: main branch 切り替え後に削除
 
 env:
   PYTHON_VERSION: "3.11.3"
