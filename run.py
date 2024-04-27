@@ -11,7 +11,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 
 import soundfile
 import uvicorn
@@ -19,7 +19,6 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
@@ -38,6 +37,7 @@ from voicevox_engine.app.routers import (
     tts_pipeline,
     user_dict,
 )
+from voicevox_engine.app.schema import configure_openapi_schema
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -48,13 +48,11 @@ from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AudioQuery,
-    BaseLibraryInfo,
     DownloadableLibraryInfo,
     InstalledLibraryInfo,
     MorphableTargetInfo,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
-    VvlibManifest,
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -502,36 +500,7 @@ def generate_app(
         )
     )
 
-    # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
-    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi() -> Any:
-        if app.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"][
-            "VvlibManifest"
-        ] = VvlibManifest.schema()
-        # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-        base_library_info = BaseLibraryInfo.schema(
-            ref_template="#/components/schemas/{model}"
-        )
-        # definitionsは既存のモデルを重複して定義するため、不要なので削除
-        del base_library_info["definitions"]
-        openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
-        app.openapi_schema = openapi_schema
-        return openapi_schema
-
-    app.openapi = custom_openapi  # type: ignore[method-assign]
+    app = configure_openapi_schema(app)
 
     return app
 
