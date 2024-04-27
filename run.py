@@ -448,36 +448,6 @@ def generate_app(
             library_manager.uninstall_library(library_uuid)
             return Response(status_code=204)
 
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        skip_reinit: Annotated[
-            bool,
-            Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
-            ),
-        ] = False,
-        core_version: str | None = None,
-    ) -> Response:
-        """
-        指定されたスタイルを初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
-        """
-        core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
-
-    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
-        core = get_core(core_version)
-        return core.is_initialized_style_id_synthesis(style_id)
-
     app.include_router(user_dict.generate_router())
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
