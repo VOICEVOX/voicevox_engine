@@ -11,7 +11,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 import soundfile
 import uvicorn
@@ -116,11 +116,12 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Optional[Path] = None,
+    root_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
-    allow_origin: Optional[list[str]] = None,
+    allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
+    """ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する。"""
     if root_dir is None:
         root_dir = engine_root()
 
@@ -227,14 +228,14 @@ def generate_app(
     #         loop = asyncio.get_event_loop()
     #         _ = loop.create_task(cancellable_engine.catch_disconnection())
 
-    def get_engine(core_version: Optional[str]) -> TTSEngine:
+    def get_engine(core_version: str | None) -> TTSEngine:
         if core_version is None:
             return tts_engines[latest_core_version]
         if core_version in tts_engines:
             return tts_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-    def get_core(core_version: Optional[str]) -> CoreAdapter:
+    def get_core(core_version: str | None) -> CoreAdapter:
         """指定したバージョンのコアを取得する"""
         if core_version is None:
             return cores[latest_core_version]
@@ -716,47 +717,38 @@ def main() -> None:
             enable_mock=enable_mock,
         )
 
-    root_dir: Path | None = voicevox_dir
-    if root_dir is None:
-        root_dir = engine_root()
+    # ルートディレクトリのパス。優先度は「引数 > デフォルト」
+    root_dir = voicevox_dir or engine_root()
 
     setting_loader = SettingHandler(args.setting_file)
 
     settings = setting_loader.load()
 
-    cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
-    if cors_policy_mode is None:
-        cors_policy_mode = settings.cors_policy_mode
+    # CORSの許可モード。優先度は「引数 > 設定ファイル」
+    cors_policy_mode = args.cors_policy_mode or settings.cors_policy_mode
 
-    allow_origin = None
-    if args.allow_origin is not None:
-        allow_origin = args.allow_origin
-    elif settings.allow_origin is not None:
-        allow_origin = settings.allow_origin.split(" ")
+    # 許可するオリジン。優先度は「引数 > 設定ファイル > デフォルト」
+    setting_allow_origin = None
+    if settings.allow_origin:
+        setting_allow_origin = settings.allow_origin.split(" ")
+    allow_origin = args.allow_origin or setting_allow_origin or None
 
-    # Preset Manager
-    # preset_pathの優先順: 引数、環境変数、voicevox_dir、実行ファイルのディレクトリ
+    # プリセットマネージャー。設定ファイルパスの優先度は「引数 > 環境変数 > ルート」
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
-    preset_path: Path | None = args.preset_file
-    if preset_path is None:
-        # 引数 --preset_file の指定がない場合
-        env_preset_path = os.getenv("VV_PRESET_FILE")
-        if env_preset_path is not None and len(env_preset_path) != 0:
-            # 環境変数 VV_PRESET_FILE の指定がある場合
-            preset_path = Path(env_preset_path)
-        else:
-            # 環境変数 VV_PRESET_FILE の指定がない場合
-            preset_path = root_dir / "presets.yaml"
+    env_preset_path_str = os.getenv("VV_PRESET_FILE")
+    if env_preset_path_str and len(env_preset_path_str) != 0:
+        env_preset_path = Path(env_preset_path_str)
+    else:
+        env_preset_path = None
+    root_preset_path = root_dir / "presets.yaml"
+    preset_path = args.preset_file or env_preset_path or root_preset_path
+    preset_manager = PresetManager(preset_path)
 
-    preset_manager = PresetManager(
-        preset_path=preset_path,
-    )
+    # ミュータブル API の無効化。優先度は「引数 > 環境変数 > デフォルト（False）」
+    env_disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
+    disable_mutable_api = args.disable_mutable_api or env_disable_mutable_api
 
-    disable_mutable_api: bool = args.disable_mutable_api | decide_boolean_from_env(
-        "VV_DISABLE_MUTABLE_API"
-    )
-
-    # ASGI に準拠したアプリケーションを生成する
+    # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
         cores,
