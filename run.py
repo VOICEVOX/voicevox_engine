@@ -3,9 +3,8 @@ import asyncio
 import json
 import multiprocessing
 import os
-import re
 import sys
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
@@ -18,12 +17,9 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
-from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -31,6 +27,7 @@ from voicevox_engine.app.dependencies import (
     check_disabled_mutable_api,
     deprecated_mutable_api,
 )
+from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.routers import (
     preset,
     setting,
@@ -135,64 +132,7 @@ def generate_app(
         version=__version__,
         lifespan=lifespan,
     )
-
-    # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
-    # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
-    async def global_execution_handler(request: Request, exc: Exception) -> Response:
-        return JSONResponse(
-            status_code=500,
-            content="Internal Server Error",
-        )
-
-    app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
-
-    # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
-    compiled_localhost_regex = re.compile(localhost_regex)
-    allowed_origins = ["*"]
-    if cors_policy_mode == "localapps":
-        allowed_origins = ["app://."]
-        if allow_origin is not None:
-            allowed_origins += allow_origin
-            if "*" in allow_origin:
-                print(
-                    'WARNING: Deprecated use of argument "*" in allow_origin. '
-                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
-                    file=sys.stderr,
-                )
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
-        allow_origin_regex=localhost_regex,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # 許可されていないOriginを遮断するミドルウェア
-    @app.middleware("http")
-    async def block_origin_middleware(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response | JSONResponse:
-        isValidOrigin: bool = False
-        if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
-            isValidOrigin = True
-        elif "*" in allowed_origins:  # すべてを許可する設定の場合
-            isValidOrigin = True
-        elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
-            isValidOrigin = True
-        elif compiled_localhost_regex.fullmatch(
-            request.headers["Origin"]
-        ):  # localhostの場合
-            isValidOrigin = True
-
-        if isValidOrigin:
-            return await call_next(request)
-        else:
-            return JSONResponse(
-                status_code=403, content={"detail": "Origin not allowed"}
-            )
+    app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
