@@ -121,7 +121,7 @@ def generate_app(
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
-    """ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する。"""
+    """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
     if root_dir is None:
         root_dir = engine_root()
 
@@ -762,7 +762,7 @@ def main() -> None:
         disable_mutable_api=disable_mutable_api,
     )
 
-    # ASGI に準拠したサーバを立ち上げる
+    # ASGI に準拠した VOICEVOX ENGINE HTTP/1.1 サーバを立ち上げる
     uvicorn.run(app, host=args.host, port=args.port)
 
 
