@@ -30,7 +30,9 @@ def generate_router(
             media_type="application/json",
         )
 
-    @router.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
+    @router.get(
+        "/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"]
+    )
     def supported_devices(
         core_version: str | None = None,
     ) -> Response:
