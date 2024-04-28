@@ -1,31 +1,28 @@
 """モーフィング機能を提供する API Router"""
 
-from typing import Annotated, Callable
 from functools import lru_cache
 from tempfile import NamedTemporaryFile
+from typing import Annotated, Callable
 
+import soundfile
 from fastapi import APIRouter, HTTPException, Query
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
-import soundfile
 
+from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
-from voicevox_engine.utility.path_utility import delete_file
-from voicevox_engine.model import (
-    AudioQuery,
-    MorphableTargetInfo,
-    StyleIdNotFoundError,
-)
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from voicevox_engine.morphing import (
     get_morphable_targets,
     is_synthesis_morphing_permitted,
     synthesis_morphing,
+)
+from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.utility.path_utility import delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
