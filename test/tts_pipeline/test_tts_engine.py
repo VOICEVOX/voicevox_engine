@@ -381,6 +381,26 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     assert snapshot_json == round_floats(result.tolist(), round_value=2)
 
 
+def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
+    snapshot_json: SnapshotAssertion,
+) -> None:
+    """
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である
+    """
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    doremi_srore = _gen_doremi_score()
+    phonemes, f0s, _ = tts_engine.create_sing_phoneme_and_f0_and_volume(
+        doremi_srore, StyleId(1)
+    )
+    # Outputs
+    result_volume = tts_engine.create_sing_volume_from_phoneme_and_f0(
+        doremi_srore, phonemes, f0s, StyleId(1)
+    )
+    # Tests
+    assert snapshot_json == round_floats(result_volume, round_value=2)
+
+
 def test_mocked_synthesize_wave_from_score_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
