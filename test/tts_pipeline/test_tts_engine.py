@@ -394,11 +394,11 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
         doremi_srore, StyleId(1)
     )
     # Outputs
-    result_volume = tts_engine.create_sing_volume_from_phoneme_and_f0(
+    result = tts_engine.create_sing_volume_from_phoneme_and_f0(
         doremi_srore, phonemes, f0s, StyleId(1)
     )
     # Tests
-    assert snapshot_json == round_floats(result_volume, round_value=2)
+    assert snapshot_json == round_floats(result, round_value=2)
 
 
 def test_mocked_synthesize_wave_from_score_output(
