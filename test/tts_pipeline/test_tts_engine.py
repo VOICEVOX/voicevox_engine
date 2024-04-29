@@ -386,6 +386,7 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
 ) -> None:
     """
     モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である
+    NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
     """
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
