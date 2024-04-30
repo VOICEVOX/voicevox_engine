@@ -28,7 +28,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 まずリポジトリをフォークします。  
-次に以下の手順でローカル環境を構築します：  
+次に以下の手順でローカル環境を構築します。  
 
 ```bash
 # レポジトリのクローン
@@ -61,10 +61,10 @@ OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを含ん�
 
 ### 製品版 VOICEVOX CORE を用いた音声ライブラリの導入
 製品版 VOICEVOX CORE を導入することで音声ライブラリを利用できます。  
-以下のコマンドにより必要なファイルが準備されます：  
+以下のコマンドにより必要なファイルが準備されます。  
 
 ```bash
-# CORE のバリエーション指定変数を定義する（例: x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）
+# CORE のバリエーション指定変数を定義する（例として x64 Linux マシン向け VOICEVOX CORE v0.15.0 CPU版）
 VERSION="0.15.0"; OS="linux"; ARCHITECTURE="x64"; PROCESSOR="cpu";
 
 # CORE をダウンロード・展開する
@@ -73,9 +73,9 @@ curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${VERSION}/
 unzip "${CORENAME}.zip"
 ```
 
-CORE のバリエーション指定変数は以下の値を受け入れます：  
+CORE のバリエーション指定変数は以下の値を受け入れます。  
 
-* `VERSION`: voicevox_core のバージョン (例: `0.15.0`)
+* `VERSION`: voicevox_core のバージョン (例として `0.15.0`)
 * `OS`: OS 種別 (`windows` | `osx` | `linux`)
 * `ARCHITECTURE`: CPU アーキテクチャ (`x86` | `x64` | `arm64`)
 * `PROCESSOR`: プロセッサ種別 (`cpu` | `gpu` | `cuda` | `directml`)
@@ -188,7 +188,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ### 依存関係
 
-[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます:
+[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます。
 
 パッケージを追加する場合
 ```bash
