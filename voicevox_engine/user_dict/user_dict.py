@@ -16,7 +16,7 @@ from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 
 
 class UserDictInputError(Exception):
-    """クライアントのリクエスト値に起因するエラー"""
+    """受け入れ不可能な入力値に起因するエラー"""
 
     pass
 
