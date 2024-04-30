@@ -73,6 +73,32 @@ curl -s \
 
 `speaker` に指定する値は `/speakers` エンドポイントで得られる `style_id` です。互換性のために `speaker` という名前になっています。
 
+### 音声を調整するサンプルコード
+
+`/audio_query` で得られる音声合成用のクエリのパラメータを編集することで、音声を調整できます。
+
+例えば、話速を 1.5 倍速にしてみます。
+
+```bash
+echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
+
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# sed を使用して speedScale の値を 1.5 に変更
+sed -i -r 's/"speedScale":[0-9.]+/"speedScale":1.5/' query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio_fast.wav
+```
+
 ### 読み方を AquesTalk 風記法で取得・修正
 
 #### AquesTalk 風記法
