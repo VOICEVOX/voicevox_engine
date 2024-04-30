@@ -57,28 +57,12 @@ jobs:
       - run: pysen run lint
 
       - name: Run pytest and get coverage
-        run: |
-          coverage run --omit=test/* -m pytest
-
+        run: coverage run --omit=test/* -m pytest
       - name: Submit coverage to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create coverage result
-        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-        run: |
-          mkdir report
-          coverage report > report/report.txt
-          echo ${{ github.event.number }} > report/pr_num.txt
-
-      - name: Upload coverage result
-        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v3
-        with:
-          name: report
-          path: report/
 
       - name: Check licenses
         shell: bash
