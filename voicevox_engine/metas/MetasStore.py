@@ -3,8 +3,9 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
 
+from pydantic import BaseModel, Field
+
 from voicevox_engine.metas.Metas import (
-    CoreSpeaker,
     EngineSpeaker,
     Speaker,
     SpeakerStyle,
@@ -14,6 +15,17 @@ from voicevox_engine.metas.Metas import (
 
 if TYPE_CHECKING:
     from voicevox_engine.core.core_adapter import CoreAdapter
+
+
+class CoreSpeaker(BaseModel):
+    """
+    コアに含まれる話者情報
+    """
+
+    name: str = Field(title="名前")
+    speaker_uuid: str = Field(title="話者のUUID")
+    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
+    version: str = Field("話者のバージョン")
 
 
 class MetasStore:
@@ -56,7 +68,10 @@ class MetasStore:
         return [
             Speaker(
                 **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
-                **speaker_meta.dict(),
+                name=speaker_meta.name,
+                speaker_uuid=speaker_meta.speaker_uuid,
+                styles=speaker_meta.styles,
+                version=speaker_meta.version,
             )
             for speaker_meta in core_metas
         ]

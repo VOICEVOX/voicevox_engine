@@ -49,17 +49,6 @@ class SpeakerSupportedFeatures(BaseModel):
     )
 
 
-class CoreSpeaker(BaseModel):
-    """
-    コアに含まれる話者情報
-    """
-
-    name: str = Field(title="名前")
-    speaker_uuid: str = Field(title="話者のUUID")
-    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
-    version: str = Field("話者のバージョン")
-
-
 class EngineSpeaker(BaseModel):
     """
     エンジンに含まれる話者情報
@@ -70,12 +59,15 @@ class EngineSpeaker(BaseModel):
     )
 
 
-class Speaker(CoreSpeaker, EngineSpeaker):
+class Speaker(EngineSpeaker):
     """
     話者情報
     """
 
-    pass
+    name: str = Field(title="名前")
+    speaker_uuid: str = Field(title="話者のUUID")
+    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
+    version: str = Field("話者のバージョン")
 
 
 class StyleInfo(BaseModel):
