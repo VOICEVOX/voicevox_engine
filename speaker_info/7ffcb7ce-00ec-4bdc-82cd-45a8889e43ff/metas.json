@@ -1,1 +1,17 @@
-{}
+{
+    "supported_features": {
+        "permitted_synthesis_morphing": "SELF_ONLY"
+    },
+    "range": [
+        {
+            "style_id": 2,
+            "low": 5.16,
+            "high": 6.2
+        },
+        {
+            "style_id": 0,
+            "low": 5.21,
+            "high": 6.13
+        }
+    ]
+}
