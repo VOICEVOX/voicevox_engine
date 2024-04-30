@@ -73,28 +73,29 @@ curl -s \
 
 `speaker` に指定する値は `/speakers` エンドポイントで得られる `style_id` です。互換性のために `speaker` という名前になっています。
 
-### 音声合成用のクエリを編集し出力音声を調整
-`POST /audio_query` で得られた音声合成用のクエリはパラメータを有しています。これを変更することで出力音声を調整できます。   
+### 音声を調整するサンプルコード
+`/audio_query` で得られる音声合成用のクエリのパラメータを編集することで、音声を調整できます。   
 
-例: 話速を 1.5 倍速に変更する（[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）  
+例えば、話速を 1.5 倍速にしてみます。
 
 ```bash
 echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
-    -X POST \
-    "127.0.0.1:50021/audio_query?speaker=1"\
-    --get --data-urlencode text@text.txt \
-    > query.json
+  -X POST \
+  "127.0.0.1:50021/audio_query?speaker=1" \
+  --get --data-urlencode text@text.txt \
+  >query.json
 
-cat "query.json" | jq -c ".speedScale|=1.5" > query_fast.json
+# sed を使用して speedScale の値を 1.5 に変更
+sed -i -r 's/"speedScale":[0-9.]+/"speedScale":1.5/' query.json
 
 curl -s \
-    -H "Content-Type: application/json" \
-    -X POST \
-    -d @query_fast.json \
-    "127.0.0.1:50021/synthesis?speaker=1" \
-    > audio_fast.wav
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d @query.json \
+  "127.0.0.1:50021/synthesis?speaker=1" \
+  >audio_fast.wav
 ```
 
 ### 読み方を AquesTalk 風記法で取得・修正
