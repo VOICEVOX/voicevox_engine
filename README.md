@@ -83,20 +83,20 @@ curl -s \
 echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
 
 curl -s \
-  -X POST \
-  "127.0.0.1:50021/audio_query?speaker=1" \
-  --get --data-urlencode text@text.txt \
-  >query.json
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
 
 # sed を使用して speedScale の値を 1.5 に変更
 sed -i -r 's/"speedScale":[0-9.]+/"speedScale":1.5/' query.json
 
 curl -s \
-  -H "Content-Type: application/json" \
-  -X POST \
-  -d @query.json \
-  "127.0.0.1:50021/synthesis?speaker=1" \
-  >audio_fast.wav
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio_fast.wav
 ```
 
 ### 読み方を AquesTalk 風記法で取得・修正
