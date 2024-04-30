@@ -246,15 +246,15 @@ stateDiagram-v2
       設計       --> 実装者募集
       実装者募集 --> 実装 : 着手宣言
     }
-    active      --> not_planned : NoGo 判断
-    not_planned --> [*]         : issue close
-    実装        --> resolved    : PR merge
-    resolved    --> [*]         : issue close
-    pending     --> active
-    実装        --> pending     : 停滞 180日 
-    実装者募集   --> pending     : 停滞 180日 
-    設計         --> pending    : 停滞 180日
-    必要性議論   --> pending     : 停滞 30日
+    active      --> not_planned  : NoGo 判断
+    not_planned --> [*]          : issue close
+    実装        --> resolved     : PR merge
+    resolved    --> [*]          : issue close
+    ロードマップ --> active
+    実装        --> ロードマップ  : 停滞 180日 
+    実装者募集   --> ロードマップ  : 停滞 180日 
+    設計         --> ロードマップ : 停滞 180日
+    必要性議論   --> ロードマップ  : 停滞 30日
 ```
 
 ## ライセンス
