@@ -2,10 +2,11 @@ import argparse
 import multiprocessing
 import os
 import sys
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from io import TextIOWrapper
 from pathlib import Path
-from typing import AsyncIterator, Optional
+from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
