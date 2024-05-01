@@ -1,32 +1,24 @@
 import argparse
-import json
 import multiprocessing
 import os
-import re
 import sys
-from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from functools import lru_cache
 from io import TextIOWrapper
 from pathlib import Path
-from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Optional
+from typing import AsyncIterator, Optional
 
-import soundfile
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException
 from fastapi.templating import Jinja2Templates
-from starlette.background import BackgroundTask
-from starlette.middleware.errors import ServerErrorMiddleware
-from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
+from voicevox_engine.app.middlewares import configure_middlewares
+from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
+    engine_info,
     library,
+    morphing,
     preset,
     setting,
     speaker,
@@ -36,27 +28,9 @@ from voicevox_engine.app.routers import (
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
-from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
-from voicevox_engine.model import (
-    AudioQuery,
-    BaseLibraryInfo,
-    MorphableTargetInfo,
-    StyleIdNotFoundError,
-    SupportedDevicesInfo,
-    VvlibManifest,
-)
-from voicevox_engine.morphing import (
-    get_morphable_targets,
-    is_synthesis_morphing_permitted,
-    synthesis_morphing,
-)
-from voicevox_engine.morphing import (
-    synthesis_morphing_parameter as _synthesis_morphing_parameter,
-)
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
@@ -66,7 +40,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 from voicevox_engine.user_dict.user_dict import update_dict
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
-from voicevox_engine.utility.path_utility import delete_file, engine_root, get_save_dir
+from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
 
@@ -128,64 +102,7 @@ def generate_app(
         version=__version__,
         lifespan=lifespan,
     )
-
-    # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
-    # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
-    async def global_execution_handler(request: Request, exc: Exception) -> Response:
-        return JSONResponse(
-            status_code=500,
-            content="Internal Server Error",
-        )
-
-    app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
-
-    # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
-    compiled_localhost_regex = re.compile(localhost_regex)
-    allowed_origins = ["*"]
-    if cors_policy_mode == "localapps":
-        allowed_origins = ["app://."]
-        if allow_origin is not None:
-            allowed_origins += allow_origin
-            if "*" in allow_origin:
-                print(
-                    'WARNING: Deprecated use of argument "*" in allow_origin. '
-                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
-                    file=sys.stderr,
-                )
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
-        allow_origin_regex=localhost_regex,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # 許可されていないOriginを遮断するミドルウェア
-    @app.middleware("http")
-    async def block_origin_middleware(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response | JSONResponse:
-        isValidOrigin: bool = False
-        if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
-            isValidOrigin = True
-        elif "*" in allowed_origins:  # すべてを許可する設定の場合
-            isValidOrigin = True
-        elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
-            isValidOrigin = True
-        elif compiled_localhost_regex.fullmatch(
-            request.headers["Origin"]
-        ):  # localhostの場合
-            isValidOrigin = True
-
-        if isValidOrigin:
-            return await call_next(request)
-        else:
-            return JSONResponse(
-                status_code=403, content={"detail": "Origin not allowed"}
-            )
+    app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
@@ -208,11 +125,6 @@ def generate_app(
         variable_start_string="<JINJA_PRE>",
         variable_end_string="<JINJA_POST>",
     )
-
-    # キャッシュを有効化
-    # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
-    # TODO: キャッシュを管理するモジュール側API・HTTP側APIを用意する
-    synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_parameter)
 
     # @app.on_event("startup")
     # async def start_catch_disconnection():
@@ -241,125 +153,8 @@ def generate_app(
         )
     )
 
-    @app.post(
-        "/morphable_targets",
-        response_model=list[dict[str, MorphableTargetInfo]],
-        tags=["音声合成"],
-        summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
-    )
-    def morphable_targets(
-        base_style_ids: list[StyleId], core_version: str | None = None
-    ) -> list[dict[str, MorphableTargetInfo]]:
-        """
-        指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
-        モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
-        プロパティが存在しない場合は、モーフィングが許可されているとみなします。
-        返り値のスタイルIDはstring型なので注意。
-        """
-        core = get_core(core_version)
-
-        try:
-            speakers = metas_store.load_combined_metas(core=core)
-            morphable_targets = get_morphable_targets(
-                speakers=speakers, base_style_ids=base_style_ids
-            )
-            # jsonはint型のキーを持てないので、string型に変換する
-            return [
-                {str(k): v for k, v in morphable_target.items()}
-                for morphable_target in morphable_targets
-            ]
-        except StyleIdNotFoundError as e:
-            raise HTTPException(
-                status_code=404,
-                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
-            )
-
-    @app.post(
-        "/synthesis_morphing",
-        response_class=FileResponse,
-        responses={
-            200: {
-                "content": {
-                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
-                },
-            }
-        },
-        tags=["音声合成"],
-        summary="2種類のスタイルでモーフィングした音声を合成する",
-    )
-    def _synthesis_morphing(
-        query: AudioQuery,
-        base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
-        target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
-        morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
-        core_version: str | None = None,
-    ) -> FileResponse:
-        """
-        指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
-        モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
-        """
-        engine = get_engine(core_version)
-        core = get_core(core_version)
-
-        try:
-            speakers = metas_store.load_combined_metas(core=core)
-            speaker_lookup = construct_lookup(speakers=speakers)
-            is_permitted = is_synthesis_morphing_permitted(
-                speaker_lookup, base_style_id, target_style_id
-            )
-            if not is_permitted:
-                raise HTTPException(
-                    status_code=400,
-                    detail="指定されたスタイルペアでのモーフィングはできません",
-                )
-        except StyleIdNotFoundError as e:
-            raise HTTPException(
-                status_code=404,
-                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
-            )
-
-        # 生成したパラメータはキャッシュされる
-        morph_param = synthesis_morphing_parameter(
-            engine=engine,
-            core=core,
-            query=query,
-            base_style_id=base_style_id,
-            target_style_id=target_style_id,
-        )
-
-        morph_wave = synthesis_morphing(
-            morph_param=morph_param,
-            morph_rate=morph_rate,
-            output_fs=query.outputSamplingRate,
-            output_stereo=query.outputStereo,
-        )
-
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f,
-                data=morph_wave,
-                samplerate=query.outputSamplingRate,
-                format="WAV",
-            )
-
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
-        )
-
+    app.include_router(morphing.generate_router(get_engine, get_core, metas_store))
     app.include_router(preset.generate_router(preset_manager))
-
-    @app.get("/version", tags=["その他"])
-    async def version() -> str:
-        return __version__
-
-    @app.get("/core_versions", response_model=list[str], tags=["その他"])
-    async def core_versions() -> Response:
-        return Response(
-            content=json.dumps(list(cores.keys())),
-            media_type="application/json",
-        )
 
     app.include_router(speaker.generate_router(get_core, metas_store, root_dir))
 
@@ -368,53 +163,11 @@ def generate_app(
             library.generate_router(engine_manifest_data, library_manager)
         )
 
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        skip_reinit: Annotated[
-            bool,
-            Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
-            ),
-        ] = False,
-        core_version: str | None = None,
-    ) -> Response:
-        """
-        指定されたスタイルを初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
-        """
-        core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
-
-    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
-        core = get_core(core_version)
-        return core.is_initialized_style_id_synthesis(style_id)
-
     app.include_router(user_dict.generate_router())
 
-    @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
-    def supported_devices(
-        core_version: str | None = None,
-    ) -> Response:
-        supported_devices = get_core(core_version).supported_devices
-        if supported_devices is None:
-            raise HTTPException(status_code=422, detail="非対応の機能です。")
-        return Response(
-            content=supported_devices,
-            media_type="application/json",
-        )
-
-    @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    async def engine_manifest() -> EngineManifest:
-        return engine_manifest_data
+    app.include_router(
+        engine_info.generate_router(get_core, cores, engine_manifest_data)
+    )
 
     app.include_router(
         setting.generate_router(
@@ -422,36 +175,7 @@ def generate_app(
         )
     )
 
-    # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
-    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi() -> Any:
-        if app.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"][
-            "VvlibManifest"
-        ] = VvlibManifest.schema()
-        # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-        base_library_info = BaseLibraryInfo.schema(
-            ref_template="#/components/schemas/{model}"
-        )
-        # definitionsは既存のモデルを重複して定義するため、不要なので削除
-        del base_library_info["definitions"]
-        openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
-        app.openapi_schema = openapi_schema
-        return openapi_schema
-
-    app.openapi = custom_openapi  # type: ignore[method-assign]
+    app = configure_openapi_schema(app)
 
     return app
 
