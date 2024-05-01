@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, NewType, Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +17,34 @@ if TYPE_CHECKING:
     from voicevox_engine.core.core_adapter import CoreAdapter
 
 
+CoreStyleId = NewType("CoreStyleId", int)
+CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+
+
+class CoreSpeakerStyle(BaseModel):
+    """
+    話者のスタイル情報
+    """
+
+    name: str = Field(title="スタイル名")
+    id: CoreStyleId = Field(title="スタイルID")
+    type: Optional[CoreStyleType] = Field(
+        default="talk",
+        title=(
+            "スタイルの種類。"
+            "talk:音声合成クエリの作成と音声合成が可能。"
+            "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
+            "frame_decode:歌唱音声合成が可能。"
+            "sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
+        ),
+    )
+
+
+def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
+    """コアから取得したスタイル情報をエンジン形式へキャストする。"""
+    return [SpeakerStyle(name=core.name, id=core.id, type=core.type) for core in cores]
+
+
 class CoreSpeaker(BaseModel):
     """
     コアに含まれる話者情報
@@ -24,7 +52,7 @@ class CoreSpeaker(BaseModel):
 
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="話者のUUID")
-    styles: List[SpeakerStyle] = Field(title="スタイルの一覧")
+    styles: List[CoreSpeakerStyle] = Field(title="スタイルの一覧")
     version: str = Field("話者のバージョン")
 
 
@@ -70,7 +98,7 @@ class MetasStore:
                 **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
                 name=speaker_meta.name,
                 speaker_uuid=speaker_meta.speaker_uuid,
-                styles=speaker_meta.styles,
+                styles=cast_styles(speaker_meta.styles),
                 version=speaker_meta.version,
             )
             for speaker_meta in core_metas
