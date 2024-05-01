@@ -742,7 +742,9 @@ def main() -> None:
         )
 
     # ルートディレクトリのパス。優先度は「引数 > デフォルト」
-    root_dir = voicevox_dir or engine_root()
+    root_dir = voicevox_dir
+    if root_dir is None:
+        root_dir = engine_root()
 
     setting_loader = SettingHandler(args.setting_file)
 
@@ -753,14 +755,14 @@ def main() -> None:
 
     # 許可するオリジン。優先度は「引数 > 設定ファイル > デフォルト」
     setting_allow_origin = None
-    if settings.allow_origin:
+    if settings.allow_origin is not None:
         setting_allow_origin = settings.allow_origin.split(" ")
     allow_origin = select_first_not_none_or_none([arg_allow_origin, setting_allow_origin])
 
     # プリセットマネージャー。設定ファイルパスの優先度は「引数 > 環境変数 > ルート」
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
     env_preset_path_str = os.getenv("VV_PRESET_FILE")
-    if env_preset_path_str and len(env_preset_path_str) != 0:
+    if env_preset_path_str is not None and len(env_preset_path_str) != 0:
         env_preset_path = Path(env_preset_path_str)
     else:
         env_preset_path = None
