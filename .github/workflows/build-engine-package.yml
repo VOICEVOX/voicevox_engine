@@ -116,13 +116,13 @@ jobs:
       # NOTE: The default 'sed' and 'split' of macOS is BSD 'sed' and 'split'.
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
       #       so you need to install GNU 'sed' and 'split'.
-      - name: <Setup> Install macOS dependencies
+      - name: <Setup> Install dependencies (macOS)
         if: startsWith(matrix.os, 'macos-')
         run: |
           brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
-      - name: <Setup> Install Ubuntu+ONNXRuntime dependencies
+      - name: <Setup> Install ONNX Runtime dependencies (Linux)
         if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
         run: |
           sudo apt-get update
@@ -273,7 +273,7 @@ jobs:
           key: ${{ steps.zlib-cache-restore.outputs.cache-primary-key }}
           path: download/zlib
 
-      - name: <Setup> Set up Windows dependencies
+      - name: <Setup> Set up MSVC
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
 

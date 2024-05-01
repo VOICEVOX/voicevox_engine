@@ -68,7 +68,7 @@ jobs:
           python-version: "3.11.3"
           cache: pip
 
-      - name: <Setup> Download ENGINE application package
+      - name: <Setup> Download ENGINE package
         run: |
           mkdir -p download
           curl -L -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
@@ -84,5 +84,5 @@ jobs:
         run: |
           pip install -r requirements-test.txt
 
-      - name: <Test> Test ENGINE application package
+      - name: <Test> Test ENGINE package
         run: python build_util/check_release_build.py --dist_dir dist/
