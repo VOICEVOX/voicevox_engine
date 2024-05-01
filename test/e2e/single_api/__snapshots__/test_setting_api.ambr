@@ -1,5 +1,5 @@
 # serializer version: 1
-# name: test_setting画面が取得できる
+# name: test_get_setting_200
   '''
   <!DOCTYPE html>
   
