@@ -77,7 +77,7 @@ jobs:
             zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
             target: windows-nvidia
           # Mac CPU (x64 arch only)
-          - os: macos-11
+          - os: macos-12
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
