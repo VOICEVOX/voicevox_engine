@@ -745,21 +745,17 @@ def main() -> None:
             enable_mock=enable_mock,
         )
 
-    # ルートディレクトリのパス。優先度は「引数 > デフォルト」
-    root_dir = voicevox_dir
-    if root_dir is None:
-        root_dir = engine_root()
-
     setting_loader = SettingHandler(args.setting_file)
-
     settings = setting_loader.load()
 
-    # CORSの許可モード。優先度は「引数 > 設定ファイル」
+    # 複数方式で指定可能な場合、優先度は「引数 > 環境変数 > 設定ファイル > デフォルト値」
+
+    root_dir = select_first_not_none([voicevox_dir, engine_root()])
+
     cors_policy_mode = select_first_not_none(
         [arg_cors_policy_mode, settings.cors_policy_mode]
     )
 
-    # 許可するオリジン。優先度は「引数 > 設定ファイル > デフォルト」
     setting_allow_origin = None
     if settings.allow_origin is not None:
         setting_allow_origin = settings.allow_origin.split(" ")
@@ -767,8 +763,6 @@ def main() -> None:
         [arg_allow_origin, setting_allow_origin]
     )
 
-    # プリセットマネージャー。設定ファイルパスの優先度は「引数 > 環境変数 > ルート」
-    # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
     env_preset_path_str = os.getenv("VV_PRESET_FILE")
     if env_preset_path_str is not None and len(env_preset_path_str) != 0:
         env_preset_path = Path(env_preset_path_str)
@@ -778,9 +772,9 @@ def main() -> None:
     preset_path = select_first_not_none(
         [arg_preset_path, env_preset_path, root_preset_path]
     )
+    # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
     preset_manager = PresetManager(preset_path)
 
-    # ミュータブル API の無効化。優先度は「引数 > 環境変数 > デフォルト（False）」
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
