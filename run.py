@@ -538,6 +538,8 @@ def generate_app(
 
 
 T = TypeVar("T")
+
+
 def select_first_not_none(candidates: list[T | None]) -> T:
     """None でない最初の値を取り出す。全ての None の場合はエラーを上げる。"""
     for candidate in candidates:
@@ -547,6 +549,8 @@ def select_first_not_none(candidates: list[T | None]) -> T:
 
 
 S = TypeVar("S")
+
+
 def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
     """None でない最初の値を取り出そうとし、全ての None の場合は None を返す。"""
     for candidate in candidates:
@@ -751,13 +755,17 @@ def main() -> None:
     settings = setting_loader.load()
 
     # CORSの許可モード。優先度は「引数 > 設定ファイル」
-    cors_policy_mode = select_first_not_none([arg_cors_policy_mode, settings.cors_policy_mode])
+    cors_policy_mode = select_first_not_none(
+        [arg_cors_policy_mode, settings.cors_policy_mode]
+    )
 
     # 許可するオリジン。優先度は「引数 > 設定ファイル > デフォルト」
     setting_allow_origin = None
     if settings.allow_origin is not None:
         setting_allow_origin = settings.allow_origin.split(" ")
-    allow_origin = select_first_not_none_or_none([arg_allow_origin, setting_allow_origin])
+    allow_origin = select_first_not_none_or_none(
+        [arg_allow_origin, setting_allow_origin]
+    )
 
     # プリセットマネージャー。設定ファイルパスの優先度は「引数 > 環境変数 > ルート」
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
@@ -767,7 +775,9 @@ def main() -> None:
     else:
         env_preset_path = None
     root_preset_path = root_dir / "presets.yaml"
-    preset_path = select_first_not_none([arg_preset_path, env_preset_path, root_preset_path])
+    preset_path = select_first_not_none(
+        [arg_preset_path, env_preset_path, root_preset_path]
+    )
     preset_manager = PresetManager(preset_path)
 
     # ミュータブル API の無効化。優先度は「引数 > 環境変数 > デフォルト（False）」
