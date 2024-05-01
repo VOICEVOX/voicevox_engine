@@ -3,6 +3,7 @@ import io
 import json
 from typing import Any
 
+import numpy as np
 import soundfile as sf
 from pydantic.json import pydantic_encoder
 
