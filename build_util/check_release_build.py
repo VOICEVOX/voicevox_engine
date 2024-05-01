@@ -27,8 +27,8 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
         process = Popen([run_file.absolute()], cwd=dist_dir)
 
     # 起動待機
-    for i in range(10):
-        print(f"エンジン起動待機中... {i}")
+    for i in range(30):
+        print(f"Waiting for the engine to start... {i}")
         time.sleep(15)
         try:
             req = Request(base_url + "version")
@@ -38,7 +38,8 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
         except Exception:
             continue
     else:
-        raise RuntimeError("エンジンが起動しませんでした")
+        print("Failed to start the engine.")
+        exit(1)
 
     # テキスト -> クエリ
     text = "こんにちは、音声合成の世界へようこそ"
