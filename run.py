@@ -2,27 +2,22 @@ import argparse
 import asyncio
 import multiprocessing
 import os
-import re
 import sys
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 
 import soundfile
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
-from starlette.middleware.errors import ServerErrorMiddleware
 from starlette.responses import FileResponse
 
 from voicevox_engine import __version__
@@ -30,6 +25,8 @@ from voicevox_engine.app.dependencies import (
     check_disabled_mutable_api,
     deprecated_mutable_api,
 )
+from voicevox_engine.app.middlewares import configure_middlewares
+from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
     engine_info,
     preset,
@@ -47,12 +44,10 @@ from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AudioQuery,
-    BaseLibraryInfo,
     DownloadableLibraryInfo,
     InstalledLibraryInfo,
     MorphableTargetInfo,
     StyleIdNotFoundError,
-    VvlibManifest,
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -133,64 +128,7 @@ def generate_app(
         version=__version__,
         lifespan=lifespan,
     )
-
-    # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
-    # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
-    async def global_execution_handler(request: Request, exc: Exception) -> Response:
-        return JSONResponse(
-            status_code=500,
-            content="Internal Server Error",
-        )
-
-    app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
-
-    # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
-    compiled_localhost_regex = re.compile(localhost_regex)
-    allowed_origins = ["*"]
-    if cors_policy_mode == "localapps":
-        allowed_origins = ["app://."]
-        if allow_origin is not None:
-            allowed_origins += allow_origin
-            if "*" in allow_origin:
-                print(
-                    'WARNING: Deprecated use of argument "*" in allow_origin. '
-                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
-                    file=sys.stderr,
-                )
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
-        allow_origin_regex=localhost_regex,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # 許可されていないOriginを遮断するミドルウェア
-    @app.middleware("http")
-    async def block_origin_middleware(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response | JSONResponse:
-        isValidOrigin: bool = False
-        if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
-            isValidOrigin = True
-        elif "*" in allowed_origins:  # すべてを許可する設定の場合
-            isValidOrigin = True
-        elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
-            isValidOrigin = True
-        elif compiled_localhost_regex.fullmatch(
-            request.headers["Origin"]
-        ):  # localhostの場合
-            isValidOrigin = True
-
-        if isValidOrigin:
-            return await call_next(request)
-        else:
-            return JSONResponse(
-                status_code=403, content={"detail": "Origin not allowed"}
-            )
+    app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
@@ -435,39 +373,11 @@ def generate_app(
             library_manager.uninstall_library(library_uuid)
             return Response(status_code=204)
 
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        skip_reinit: Annotated[
-            bool,
-            Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
-            ),
-        ] = False,
-        core_version: str | None = None,
-    ) -> Response:
-        """
-        指定されたスタイルを初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
-        """
-        core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
-
-    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
-        core = get_core(core_version)
-        return core.is_initialized_style_id_synthesis(style_id)
-
     app.include_router(user_dict.generate_router())
 
-    app.include_router(engine_info.generate_router(get_core, cores, engine_manifest_data))
+    app.include_router(
+        engine_info.generate_router(get_core, cores, engine_manifest_data)
+    )
 
     app.include_router(
         setting.generate_router(
@@ -475,36 +385,7 @@ def generate_app(
         )
     )
 
-    # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
-    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi() -> Any:
-        if app.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"][
-            "VvlibManifest"
-        ] = VvlibManifest.schema()
-        # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-        base_library_info = BaseLibraryInfo.schema(
-            ref_template="#/components/schemas/{model}"
-        )
-        # definitionsは既存のモデルを重複して定義するため、不要なので削除
-        del base_library_info["definitions"]
-        openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
-        app.openapi_schema = openapi_schema
-        return openapi_schema
-
-    app.openapi = custom_openapi  # type: ignore[method-assign]
+    app = configure_openapi_schema(app)
 
     return app
 
