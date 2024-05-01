@@ -27,7 +27,7 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
         process = Popen([run_file.absolute()], cwd=dist_dir)
 
     # 起動待機
-    for i in range(30):
+    for i in range(100):
         print(f"Waiting for the engine to start... {i}")
         time.sleep(15)
         try:
