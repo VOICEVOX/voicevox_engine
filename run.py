@@ -30,6 +30,7 @@ from voicevox_engine.app.dependencies import (
     check_disabled_mutable_api,
     deprecated_mutable_api,
 )
+from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
     preset,
     setting,
@@ -37,7 +38,6 @@ from voicevox_engine.app.routers import (
     tts_pipeline,
     user_dict,
 )
-from voicevox_engine.app.schema import configure_openapi_schema
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
