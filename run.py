@@ -148,7 +148,7 @@ def generate_app(
     app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
 
     # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1|\\[::1\\])(:[0-9]+)?$"
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
     if cors_policy_mode == "localapps":

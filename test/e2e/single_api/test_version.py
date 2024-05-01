@@ -3,11 +3,10 @@
 """
 
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
-from voicevox_engine import __version__
 
-
-def test_get_version_200(client: TestClient) -> None:
+def test_get_version_200(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     response = client.get("/version", params={})
     assert response.status_code == 200
-    assert response.json() == __version__
+    assert snapshot_json == response.json()
