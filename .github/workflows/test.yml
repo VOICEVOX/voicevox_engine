@@ -20,31 +20,32 @@ jobs:
         python: ["3.11.3"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python }}
+      - name: <Setup> Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
           cache: pip
 
-      - name: Install dependencies
+      - name: <Setup> Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements-test.txt
 
-      - name: Validate poetry.lock
+      - name: <Test> Validate poetry.lock
         run: |
           poetry lock --no-update
           git diff --exit-code
 
-      - name: Run poetry and check
+      - name: <Test> Check dependency lists
         run: |
           poetry export --without-hashes -o requirements.txt.check
           poetry export --without-hashes --with dev -o requirements-dev.txt.check
           poetry export --without-hashes --with test -o requirements-test.txt.check
           poetry export --without-hashes --with license -o requirements-license.txt.check
-          
+
           diff -q requirements.txt requirements.txt.check || \
           diff -q requirements-dev.txt requirements-dev.txt.check || \
           diff -q requirements-test.txt requirements-test.txt.check || \
@@ -54,11 +55,12 @@ jobs:
             exit 1
           fi
 
-      - run: pysen run lint
+      - name: <Test> Check format
+        run: pysen run lint
 
-      - name: Run pytest and get coverage
+      - name: <Test> Test codes and coverage
         run: coverage run --omit=test/* -m pytest
-      - name: Submit coverage to Coveralls
+      - name: <Deploy> Submit coverage results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
