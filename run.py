@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import json
 import multiprocessing
 import os
 import sys
@@ -29,6 +28,7 @@ from voicevox_engine.app.dependencies import (
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
+    engine_info,
     preset,
     setting,
     speaker,
@@ -38,7 +38,6 @@ from voicevox_engine.app.routers import (
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.Metas import StyleId
@@ -49,7 +48,6 @@ from voicevox_engine.model import (
     InstalledLibraryInfo,
     MorphableTargetInfo,
     StyleIdNotFoundError,
-    SupportedDevicesInfo,
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -295,17 +293,6 @@ def generate_app(
 
     app.include_router(preset.generate_router(preset_manager))
 
-    @app.get("/version", tags=["その他"])
-    async def version() -> str:
-        return __version__
-
-    @app.get("/core_versions", response_model=list[str], tags=["その他"])
-    async def core_versions() -> Response:
-        return Response(
-            content=json.dumps(list(cores.keys())),
-            media_type="application/json",
-        )
-
     app.include_router(speaker.generate_router(get_core, metas_store, root_dir))
 
     if engine_manifest_data.supported_features.manage_library:
@@ -388,21 +375,9 @@ def generate_app(
 
     app.include_router(user_dict.generate_router())
 
-    @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
-    def supported_devices(
-        core_version: str | None = None,
-    ) -> Response:
-        supported_devices = get_core(core_version).supported_devices
-        if supported_devices is None:
-            raise HTTPException(status_code=422, detail="非対応の機能です。")
-        return Response(
-            content=supported_devices,
-            media_type="application/json",
-        )
-
-    @app.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
-    async def engine_manifest() -> EngineManifest:
-        return engine_manifest_data
+    app.include_router(
+        engine_info.generate_router(get_core, cores, engine_manifest_data)
+    )
 
     app.include_router(
         setting.generate_router(
