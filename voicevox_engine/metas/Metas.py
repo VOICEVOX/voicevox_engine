@@ -49,21 +49,14 @@ class SpeakerSupportedFeatures(BaseModel):
     )
 
 
-class EngineSpeaker(BaseModel):
+class Speaker(BaseModel):
     """
-    エンジンに含まれる話者情報
+    話者情報
     """
 
     supported_features: SpeakerSupportedFeatures = Field(
         title="話者の対応機能", default_factory=SpeakerSupportedFeatures
     )
-
-
-class Speaker(EngineSpeaker):
-    """
-    話者情報
-    """
-
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="話者のUUID")
     styles: List[SpeakerStyle] = Field(title="スタイルの一覧")

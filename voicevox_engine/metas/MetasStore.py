@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Dict, List, Literal, NewType, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from voicevox_engine.metas.Metas import (
-    EngineSpeaker,
     Speaker,
     SpeakerStyle,
+    SpeakerSupportedFeatures,
     StyleId,
     StyleType,
 )
@@ -56,6 +56,16 @@ class CoreSpeaker(BaseModel):
     version: str = Field("話者のバージョン")
 
 
+class EngineSpeaker(BaseModel):
+    """
+    エンジンに含まれる話者情報
+    """
+
+    supported_features: SpeakerSupportedFeatures = Field(
+        title="話者の対応機能", default_factory=SpeakerSupportedFeatures
+    )
+
+
 class MetasStore:
     """
     話者やスタイルのメタ情報を管理する
@@ -95,7 +105,9 @@ class MetasStore:
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
-                **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
+                supported_features=self._loaded_metas[
+                    speaker_meta.speaker_uuid
+                ].supported_features,
                 name=speaker_meta.name,
                 speaker_uuid=speaker_meta.speaker_uuid,
                 styles=cast_styles(speaker_meta.styles),
