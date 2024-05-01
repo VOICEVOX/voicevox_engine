@@ -45,6 +45,4 @@ def hash_wave_floats_from_wav_bytes(wav_bytes: bytes) -> str:
     wave = sf.read(io.BytesIO(wav_bytes))[0].tolist()
     # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
     wave = round_floats(wave, 2)
-    wave_str = " ".join(map(lambda point: str(point), wave))
-    summary: str = hash_long_string(wave_str)
-    return summary
+    return "MD5:" + hashlib.md5(np.array(wave).tobytes()).hexdigest()
