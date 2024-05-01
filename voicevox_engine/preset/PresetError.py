@@ -8,6 +8,6 @@ class PresetInputError(Exception):
 
 
 class PresetInternalError(Exception):
-    """サーバー/ENGINE に起因するエラー"""
+    """ENGINE 内部に起因するエラー"""
 
     pass
