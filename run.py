@@ -1,29 +1,24 @@
 import argparse
-import asyncio
 import multiprocessing
 import os
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from io import BytesIO, TextIOWrapper
+from io import TextIOWrapper
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Optional
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
-from fastapi import Path as FAPath
-from fastapi import Request, Response
+from fastapi import FastAPI, HTTPException
 from fastapi.templating import Jinja2Templates
 
 from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import (
-    check_disabled_mutable_api,
-    deprecated_mutable_api,
-)
+from voicevox_engine.app.dependencies import deprecated_mutable_api
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
     engine_info,
+    library,
     morphing,
     preset,
     setting,
@@ -37,7 +32,6 @@ from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.model import DownloadableLibraryInfo, InstalledLibraryInfo
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
@@ -166,82 +160,9 @@ def generate_app(
     app.include_router(speaker.generate_router(get_core, metas_store, root_dir))
 
     if engine_manifest_data.supported_features.manage_library:
-
-        @app.get(
-            "/downloadable_libraries",
-            response_model=list[DownloadableLibraryInfo],
-            response_description="ダウンロード可能な音声ライブラリの情報リスト",
-            tags=["音声ライブラリ管理"],
+        app.include_router(
+            library.generate_router(engine_manifest_data, library_manager)
         )
-        def downloadable_libraries() -> list[DownloadableLibraryInfo]:
-            """
-            ダウンロード可能な音声ライブラリの情報を返します。
-            """
-            if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(
-                    status_code=404, detail="この機能は実装されていません"
-                )
-            return library_manager.downloadable_libraries()
-
-        @app.get(
-            "/installed_libraries",
-            response_model=dict[str, InstalledLibraryInfo],
-            response_description="インストールした音声ライブラリの情報",
-            tags=["音声ライブラリ管理"],
-        )
-        def installed_libraries() -> dict[str, InstalledLibraryInfo]:
-            """
-            インストールした音声ライブラリの情報を返します。
-            """
-            if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(
-                    status_code=404, detail="この機能は実装されていません"
-                )
-            return library_manager.installed_libraries()
-
-        @app.post(
-            "/install_library/{library_uuid}",
-            status_code=204,
-            tags=["音声ライブラリ管理"],
-            dependencies=[Depends(check_disabled_mutable_api)],
-        )
-        async def install_library(
-            library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")],
-            request: Request,
-        ) -> Response:
-            """
-            音声ライブラリをインストールします。
-            音声ライブラリのZIPファイルをリクエストボディとして送信してください。
-            """
-            if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(
-                    status_code=404, detail="この機能は実装されていません"
-                )
-            archive = BytesIO(await request.body())
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(
-                None, library_manager.install_library, library_uuid, archive
-            )
-            return Response(status_code=204)
-
-        @app.post(
-            "/uninstall_library/{library_uuid}",
-            status_code=204,
-            tags=["音声ライブラリ管理"],
-            dependencies=[Depends(check_disabled_mutable_api)],
-        )
-        def uninstall_library(
-            library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")]
-        ) -> Response:
-            """
-            音声ライブラリをアンインストールします。
-            """
-            if not engine_manifest_data.supported_features.manage_library:
-                raise HTTPException(
-                    status_code=404, detail="この機能は実装されていません"
-                )
-            library_manager.uninstall_library(library_uuid)
-            return Response(status_code=204)
 
     app.include_router(user_dict.generate_router())
 
