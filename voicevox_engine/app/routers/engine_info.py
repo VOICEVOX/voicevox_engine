@@ -1,4 +1,4 @@
-"""情報機能を提供する API Router"""
+"""エンジンの情報機能を提供する API Router"""
 
 import json
 from typing import Callable
@@ -16,7 +16,7 @@ def generate_router(
     cores: dict[str, CoreAdapter],
     engine_manifest_data: EngineManifest,
 ) -> APIRouter:
-    """情報 API Router を生成する"""
+    """エンジン情報 API Router を生成する"""
     router = APIRouter()
 
     @router.get("/version", tags=["その他"])

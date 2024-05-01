@@ -31,7 +31,7 @@ from voicevox_engine.app.dependencies import (
     deprecated_mutable_api,
 )
 from voicevox_engine.app.routers import (
-    info,
+    engine_info,
     preset,
     setting,
     speaker,
@@ -467,7 +467,7 @@ def generate_app(
 
     app.include_router(user_dict.generate_router())
 
-    app.include_router(info.generate_router(get_core, cores, engine_manifest_data))
+    app.include_router(engine_info.generate_router(get_core, cores, engine_manifest_data))
 
     app.include_router(
         setting.generate_router(
