@@ -10,14 +10,13 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any, Optional
+from typing import Annotated, Optional
 
 import soundfile
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Path as FAPath
 from fastapi import Query, Request, Response
-from fastapi.openapi.utils import get_openapi
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
@@ -28,6 +27,7 @@ from voicevox_engine.app.dependencies import (
     deprecated_mutable_api,
 )
 from voicevox_engine.app.middlewares import configure_middlewares
+from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers import (
     preset,
     setting,
@@ -45,13 +45,11 @@ from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import (
     AudioQuery,
-    BaseLibraryInfo,
     DownloadableLibraryInfo,
     InstalledLibraryInfo,
     MorphableTargetInfo,
     StyleIdNotFoundError,
     SupportedDevicesInfo,
-    VvlibManifest,
 )
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -388,36 +386,6 @@ def generate_app(
             library_manager.uninstall_library(library_uuid)
             return Response(status_code=204)
 
-    @app.post("/initialize_speaker", status_code=204, tags=["その他"])
-    def initialize_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        skip_reinit: Annotated[
-            bool,
-            Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
-            ),
-        ] = False,
-        core_version: str | None = None,
-    ) -> Response:
-        """
-        指定されたスタイルを初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
-        """
-        core = get_core(core_version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
-
-    @app.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
-    def is_initialized_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
-        core = get_core(core_version)
-        return core.is_initialized_style_id_synthesis(style_id)
-
     app.include_router(user_dict.generate_router())
 
     @app.get("/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"])
@@ -442,36 +410,7 @@ def generate_app(
         )
     )
 
-    # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
-    # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
-    def custom_openapi() -> Any:
-        if app.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-        )
-        openapi_schema["components"]["schemas"][
-            "VvlibManifest"
-        ] = VvlibManifest.schema()
-        # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-        base_library_info = BaseLibraryInfo.schema(
-            ref_template="#/components/schemas/{model}"
-        )
-        # definitionsは既存のモデルを重複して定義するため、不要なので削除
-        del base_library_info["definitions"]
-        openapi_schema["components"]["schemas"]["BaseLibraryInfo"] = base_library_info
-        app.openapi_schema = openapi_schema
-        return openapi_schema
-
-    app.openapi = custom_openapi  # type: ignore[method-assign]
+    app = configure_openapi_schema(app)
 
     return app
 
