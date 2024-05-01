@@ -45,7 +45,7 @@ jobs:
           poetry export --without-hashes --with dev -o requirements-dev.txt.check
           poetry export --without-hashes --with test -o requirements-test.txt.check
           poetry export --without-hashes --with license -o requirements-license.txt.check
-          
+
           diff -q requirements.txt requirements.txt.check || \
           diff -q requirements-dev.txt requirements-dev.txt.check || \
           diff -q requirements-test.txt requirements-test.txt.check || \
@@ -59,28 +59,12 @@ jobs:
         run: pysen run lint
 
       - name: <Test> Test codes and coverage
-        run: |
-          coverage run --omit=test/* -m pytest
-
+        run: coverage run --omit=test/* -m pytest
       - name: <Deploy> Submit coverage results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: <Deploy> Create coverage report
-        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-        run: |
-          mkdir report
-          coverage report > report/report.txt
-          echo ${{ github.event.number }} > report/pr_num.txt
-
-      - name: <Deploy> Upload coverage report to GitHub
-        if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-        uses: actions/upload-artifact@v3
-        with:
-          name: report
-          path: report/
 
       - name: Check licenses
         shell: bash

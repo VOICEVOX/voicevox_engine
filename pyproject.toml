@@ -59,7 +59,7 @@ starlette = "^0.36.3"
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^5.13"
 pre-commit = "^2.16.0"
-poetry = "1.8.1"
+poetry = "1.8.2"
 poetry-plugin-export = "^1.6.0"
 safety = "^3.1.0"
 
@@ -72,7 +72,7 @@ isort = "^5.13.0"
 mypy = "^1.8.0"
 pytest = "^8.0.0"
 coveralls = "^3.2.0"
-poetry = "1.8.1"
+poetry = "1.8.2"
 poetry-plugin-export = "^1.6.0"
 httpx = "^0.25.0" # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
