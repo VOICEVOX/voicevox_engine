@@ -2,7 +2,7 @@
 
 
 class PresetInputError(Exception):
-    """クライアントのリクエスト値に起因するエラー"""
+    """受け入れ不可能な入力値に起因するエラー"""
 
     pass
 
