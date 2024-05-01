@@ -11,7 +11,7 @@ from functools import lru_cache
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Any
+from typing import Annotated, Any, TypeVar
 
 import soundfile
 import uvicorn
@@ -537,6 +537,24 @@ def generate_app(
     return app
 
 
+T = TypeVar("T")
+def select_first_not_none(candidates: list[T | None]) -> T:
+    """None でない最初の値を取り出す。全ての None の場合はエラーを上げる。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    raise RuntimeError("すべての候補値が None です")
+
+
+S = TypeVar("S")
+def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
+    """None でない最初の値を取り出そうとし、全ての None の場合は None を返す。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    return None
+
+
 def main() -> None:
     multiprocessing.freeze_support()
 
@@ -676,6 +694,12 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    # NOTE: 型検査のため Any 値に対して明示的に型を付ける
+    arg_cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
+    arg_allow_origin: list[str] | None = args.allow_origin
+    arg_preset_path: Path | None = args.preset_file
+    arg_disable_mutable_api: bool = args.disable_mutable_api
+
     if args.output_log_utf8:
         set_output_log_utf8()
 
@@ -725,13 +749,13 @@ def main() -> None:
     settings = setting_loader.load()
 
     # CORSの許可モード。優先度は「引数 > 設定ファイル」
-    cors_policy_mode = args.cors_policy_mode or settings.cors_policy_mode
+    cors_policy_mode = select_first_not_none([arg_cors_policy_mode, settings.cors_policy_mode])
 
     # 許可するオリジン。優先度は「引数 > 設定ファイル > デフォルト」
     setting_allow_origin = None
     if settings.allow_origin:
         setting_allow_origin = settings.allow_origin.split(" ")
-    allow_origin = args.allow_origin or setting_allow_origin or None
+    allow_origin = select_first_not_none_or_none([arg_allow_origin, setting_allow_origin])
 
     # プリセットマネージャー。設定ファイルパスの優先度は「引数 > 環境変数 > ルート」
     # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
@@ -741,12 +765,14 @@ def main() -> None:
     else:
         env_preset_path = None
     root_preset_path = root_dir / "presets.yaml"
-    preset_path = args.preset_file or env_preset_path or root_preset_path
+    preset_path = select_first_not_none([arg_preset_path, env_preset_path, root_preset_path])
     preset_manager = PresetManager(preset_path)
 
     # ミュータブル API の無効化。優先度は「引数 > 環境変数 > デフォルト（False）」
-    env_disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
-    disable_mutable_api = args.disable_mutable_api or env_disable_mutable_api
+    if arg_disable_mutable_api:
+        disable_mutable_api = True
+    else:
+        disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
