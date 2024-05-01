@@ -1,13 +1,13 @@
 # VOICEVOX ENGINE
 
-[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
+[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml)
 [![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
 [![discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
 
 [![test](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
 
-[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
+[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-container.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-container.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
 [VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
@@ -72,6 +72,32 @@ curl -s \
 生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
 
 `speaker` に指定する値は `/speakers` エンドポイントで得られる `style_id` です。互換性のために `speaker` という名前になっています。
+
+### 音声を調整するサンプルコード
+
+`/audio_query` で得られる音声合成用のクエリのパラメータを編集することで、音声を調整できます。
+
+例えば、話速を 1.5 倍速にしてみます。
+
+```bash
+echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
+
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# sed を使用して speedScale の値を 1.5 に変更
+sed -i -r 's/"speedScale":[0-9.]+/"speedScale":1.5/' query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio_fast.wav
+```
 
 ### 読み方を AquesTalk 風記法で取得・修正
 
@@ -509,7 +535,7 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voi
 ##### 音声ライブラリを直接指定する
 
 [VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
-また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime) (共有ライブラリ) のディレクトリを`--runtime_dir`引数で指定します。  
 ただし、システムの探索パス上に libtorch、onnxruntime がある場合、`--runtime_dir`引数の指定は不要です。  
 `--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。  
 API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
@@ -560,7 +586,7 @@ pyinstaller --noconfirm run.spec
 
 #### Github Actions でビルド
 
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build.yml`を起動すればビルドできます。
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 
 ### コードフォーマット
