@@ -32,3 +32,16 @@ jobs:
 
       - name: <Test> Check Python dependency security
         run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
+
+      - name: Notify Discord of security testing result
+        run: |
+          curl -H "Content-Type: application/json" -X POST -d '{
+          "username": "GitHub",
+          "embeds": [            
+          {          
+            "title": "脆弱性診断結果",
+            "description": "脆弱性診断結果",
+            "url": "ここにgithubURLを書く"
+          }]                               
+          } ' "ここにDiscordのWebhookURLを書く" 
+
