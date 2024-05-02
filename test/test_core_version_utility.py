@@ -5,7 +5,7 @@
 from voicevox_engine.utility.core_version_utility import get_latest_version
 
 
-def test_get_latest_version_same_preview_normal(self) -> None:
+def test_get_latest_version_same_preview_normal() -> None:
     """`get_latest_version()` は同一バージョンの preview 版より正規版を優先する。"""
 
     # Inputs
@@ -29,7 +29,7 @@ def test_get_latest_version_same_preview_normal(self) -> None:
     assert true_latest == latest
 
 
-def test_get_latest_version_newer_preview(self) -> None:
+def test_get_latest_version_newer_preview() -> None:
     """`get_latest_version()` は旧バージョンの正規版より新バージョンの preview 版を優先する。"""
 
     # Inputs
