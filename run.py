@@ -40,7 +40,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     make_tts_engines_from_cores,
 )
 from voicevox_engine.user_dict.user_dict import update_dict
-from voicevox_engine.utility.core_version_utility import get_latest_core_version
+from voicevox_engine.utility.core_version_utility import get_latest_version
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
@@ -343,7 +343,7 @@ def main() -> None:
     )
     tts_engines = make_tts_engines_from_cores(cores)
     assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(list(tts_engines.keys()))
+    latest_core_version = get_latest_version(list(tts_engines.keys()))
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
