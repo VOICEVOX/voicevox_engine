@@ -12,7 +12,7 @@ from voicevox_engine.setting.SettingLoader import SettingHandler
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_router(
+def generate_setting_router(
     setting_loader: SettingHandler,
     engine_manifest_data: EngineManifest,
     setting_ui_template: Jinja2Templates,
