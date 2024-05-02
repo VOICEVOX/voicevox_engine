@@ -255,6 +255,7 @@ def generate_licenses() -> list[License]:
             text="https://raw.githubusercontent.com/xiph/vorbis/v1.3.7/COPYING",
             license_text_type="remote_address",
         ),
+        # libflac
         License(
             name="FLAC",
             version="1.4.2",
@@ -262,6 +263,7 @@ def generate_licenses() -> list[License]:
             text="https://raw.githubusercontent.com/xiph/flac/1.4.2/COPYING.Xiph",
             license_text_type="remote_address",
         ),
+        # libopus
         License(
             name="Opus",
             version="1.3.1",
@@ -277,6 +279,7 @@ def generate_licenses() -> list[License]:
             text="docs/licenses/mpg123/COPYING",
             license_text_type="local_address",
         ),
+        # liblame
         # https://sourceforge.net/projects/lame/files/lame/3.100/
         License(
             name="lame",
