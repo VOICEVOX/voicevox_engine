@@ -34,14 +34,10 @@ jobs:
         run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
 
       - name: Notify Discord of security testing result
-        run: |
-          curl -H "Content-Type: application/json" -X POST -d '{
-          "username": "GitHub",
-          "embeds": [            
-          {          
-            "title": "脆弱性診断結果",
-            "description": "脆弱性診断結果",
-            "url": "ここにgithubURLを書く"
-          }]                               
-          } ' "ここにDiscordのWebhookURLを書く" 
-
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: GitHub Actions
+          title: "依存パッケージ脆弱性診断の結果"
+          url: "https://github.com/***"
