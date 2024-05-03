@@ -37,3 +37,10 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
         json=queries,
     )
     assert response.status_code == 200
+
+    # FIXME: LinuxとMacOSで計算結果が一致しないためスナップショットテストがコケる（原因不明）
+    # from test.utility import summarize_wav_bytes
+    # from syrupy.assertion import SnapshotAssertion
+    # # FileResponse 内の .wav から抽出された音声波形が一致する
+    # assert response.headers["content-type"] == "audio/wav"
+    # assert snapshot == summarize_wav_bytes(response.read())
