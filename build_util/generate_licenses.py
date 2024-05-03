@@ -41,83 +41,6 @@ class License:
 def generate_licenses() -> list[License]:
     licenses: list[License] = []
 
-    licenses += [
-        # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
-        License(
-            name="Open JTalk",
-            version="1.11",
-            license="Modified BSD license",
-            text="docs/licenses/open_jtalk/COPYING",
-            license_text_type="local_address",
-        ),
-        License(
-            name="MeCab",
-            version=None,
-            license="Modified BSD license",
-            text="docs/licenses/open_jtalk/mecab/COPYING",
-            license_text_type="local_address",
-        ),
-        License(
-            name="NAIST Japanese Dictionary",
-            version=None,
-            license="Modified BSD license",
-            text="docs/licenses//open_jtalk/mecab-naist-jdic/COPYING",
-            license_text_type="local_address",
-        ),
-        License(
-            name='HTS Voice "Mei"',
-            version=None,
-            license="Creative Commons Attribution 3.0 license",
-            text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",  # noqa: B950
-            license_text_type="remote_address",
-        ),
-        License(
-            name="VOICEVOX CORE",
-            version=None,
-            license="MIT license",
-            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE",
-            license_text_type="remote_address",
-        ),
-        License(
-            name="VOICEVOX ENGINE",
-            version=None,
-            license="LGPL license",
-            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE",
-            license_text_type="remote_address",
-        ),
-        License(
-            name="world",
-            version=None,
-            license="Modified BSD license",
-            text="https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt",
-            license_text_type="remote_address",
-        ),
-        License(
-            name="PyTorch",
-            version="1.9.0",
-            license="BSD-style license",
-            text="https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE",
-            license_text_type="remote_address",
-        ),
-        License(
-            name="ONNX Runtime",
-            version="1.13.1",
-            license="MIT license",
-            text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
-            license_text_type="remote_address",
-        ),
-    ]
-    python_version = "3.11.3"
-    licenses += [
-        License(
-            name="Python",
-            version=python_version,
-            license="Python Software Foundation License",
-            text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
-            license_text_type="remote_address",
-        )
-    ]
-
     # pip
     try:
         pip_licenses_output = subprocess.run(
@@ -225,8 +148,81 @@ def generate_licenses() -> list[License]:
 
         licenses.append(license)
 
-    # OpenBLAS
+    python_version = "3.11.3"
+
     licenses += [
+        # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
+        License(
+            name="Open JTalk",
+            version="1.11",
+            license="Modified BSD license",
+            text="docs/licenses/open_jtalk/COPYING",
+            license_text_type="local_address",
+        ),
+        License(
+            name="MeCab",
+            version=None,
+            license="Modified BSD license",
+            text="docs/licenses/open_jtalk/mecab/COPYING",
+            license_text_type="local_address",
+        ),
+        License(
+            name="NAIST Japanese Dictionary",
+            version=None,
+            license="Modified BSD license",
+            text="docs/licenses//open_jtalk/mecab-naist-jdic/COPYING",
+            license_text_type="local_address",
+        ),
+        License(
+            name='HTS Voice "Mei"',
+            version=None,
+            license="Creative Commons Attribution 3.0 license",
+            text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",  # noqa: B950
+            license_text_type="remote_address",
+        ),
+        License(
+            name="VOICEVOX CORE",
+            version=None,
+            license="MIT license",
+            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_core/main/LICENSE",
+            license_text_type="remote_address",
+        ),
+        License(
+            name="VOICEVOX ENGINE",
+            version=None,
+            license="LGPL license",
+            text="https://raw.githubusercontent.com/VOICEVOX/voicevox_engine/master/LGPL_LICENSE",
+            license_text_type="remote_address",
+        ),
+        License(
+            name="world",
+            version=None,
+            license="Modified BSD license",
+            text="https://raw.githubusercontent.com/mmorise/World/master/LICENSE.txt",
+            license_text_type="remote_address",
+        ),
+        License(
+            name="PyTorch",
+            version="1.9.0",
+            license="BSD-style license",
+            text="https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE",
+            license_text_type="remote_address",
+        ),
+        License(
+            name="ONNX Runtime",
+            version="1.13.1",
+            license="MIT license",
+            text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
+            license_text_type="remote_address",
+        ),
+        License(
+            name="Python",
+            version=python_version,
+            license="Python Software Foundation License",
+            text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
+            license_text_type="remote_address",
+        ),
+        # OpenBLAS
         License(
             name="OpenBLAS",
             version=None,
