@@ -11,7 +11,7 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_router(preset_manager: PresetManager) -> APIRouter:
+def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     """プリセット API Router を生成する"""
     router = APIRouter()
 

@@ -18,7 +18,7 @@ def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
-def generate_router(
+def generate_speaker_router(
     get_core: Callable[[str | None], CoreAdapter],
     metas_store: MetasStore,
     root_dir: Path,
