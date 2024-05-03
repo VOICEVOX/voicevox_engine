@@ -42,7 +42,10 @@ class _CoreSpeakerStyle(BaseModel):
 
 def cast_styles(cores: list[_CoreSpeakerStyle]) -> list[SpeakerStyle]:
     """コアから取得したスタイル情報をエンジン形式へキャストする。"""
-    return [SpeakerStyle(name=core.name, id=core.id, type=core.type) for core in cores]
+    return [
+        SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
+        for core in cores
+    ]
 
 
 class _CoreSpeaker(BaseModel):
