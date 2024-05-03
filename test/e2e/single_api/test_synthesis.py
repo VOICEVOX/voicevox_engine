@@ -3,11 +3,13 @@
 """
 
 from test.e2e.single_api.utils import gen_mora
+from test.utility import hash_wave_floats_from_wav_bytes
 
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_synthesis_200(client: TestClient) -> None:
+def test_post_synthesis_200(client: TestClient, snapshot: SnapshotAssertion) -> None:
     query = {
         "accent_phrases": [
             {
@@ -33,3 +35,7 @@ def test_post_synthesis_200(client: TestClient) -> None:
     }
     response = client.post("/synthesis", params={"speaker": 0}, json=query)
     assert response.status_code == 200
+
+    # 音声波形が一致する
+    assert response.headers["content-type"] == "audio/wav"
+    assert snapshot == hash_wave_floats_from_wav_bytes(response.read())

@@ -19,7 +19,7 @@ _setting_ui_template = Jinja2Templates(
 )
 
 
-def generate_router(
+def generate_setting_router(
     setting_loader: SettingHandler,
     engine_manifest_data: EngineManifest,
 ) -> APIRouter:

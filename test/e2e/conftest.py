@@ -11,14 +11,14 @@ from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.utility.core_version_utility import get_latest_core_version
+from voicevox_engine.utility.core_version_utility import get_latest_version
 
 
 @pytest.fixture()
 def app_params(tmp_path: Path) -> dict[str, Any]:
     cores = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(cores)
-    latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
+    latest_core_version = get_latest_version(list(tts_engines.keys()))
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
     # 隔離されたプリセットの生成
