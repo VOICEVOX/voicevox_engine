@@ -197,7 +197,7 @@ S = TypeVar("S")
 
 
 def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
-    """None でない最初の値を取り出そうとし、全ての None の場合は None を返す。"""
+    """None でない最初の値を取り出そうとし、全て None の場合は None を返す。"""
     for candidate in candidates:
         if candidate is not None:
             return candidate
