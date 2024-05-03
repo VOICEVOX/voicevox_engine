@@ -1,7 +1,7 @@
 import uuid
 from unittest import TestCase
 
-from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleType, StyleId
+from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleId, StyleType
 from voicevox_engine.metas.MetasStore import filter_speakers_and_styles
 
 
