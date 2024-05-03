@@ -182,8 +182,6 @@ def generate_app(
         """ポータルページを返します。"""
         engine_name = engine_manifest_data.name
 
-        code_licence_url = "https://github.com/VOICEVOX/voicevox_engine?tab=readme-ov-file#%E3%83%A9%E3%82%A4%E3%82%BB%E3%83%B3%E3%82%B9-1"  # noqa B950
-        software_licence_url = "https://github.com/VOICEVOX/voicevox_resource/tree/main/engine"  # noqa B950
         return f"""
         <html>
             <head>
@@ -195,11 +193,7 @@ def generate_app(
                 <ul>
                     <li><a href='/setting'>設定</a></li>
                     <li><a href='/docs'>API ドキュメント & API 呼び出し</a></li>
-                    <li>ライセンス
-                        <ul>
-                            <li><a href='{code_licence_url}'>コード</a></li>
-                            <li><a href='{software_licence_url}'>製品版ソフトウェア</a></li>
-        </ul></li></ul></body></html>
+        </ul></body></html>
         """
 
     app = configure_openapi_schema(app)
