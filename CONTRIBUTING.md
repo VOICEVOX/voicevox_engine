@@ -73,7 +73,7 @@ curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${VERSION}/
 unzip "${CORENAME}.zip"
 ```
 
-CORE のバリエーション指定変数は以下の値を受け入れます。  
+CORE のバリエーション変数は以下の値を指定できます。
 
 * `VERSION`: voicevox_core のバージョン (例として `0.15.0`)
 * `OS`: OS 種別 (`windows` | `osx` | `linux`)
