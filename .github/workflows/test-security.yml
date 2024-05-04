@@ -41,5 +41,6 @@ jobs:
           username: GitHub Actions
           title: "依存パッケージ脆弱性診断の結果"
           status: ${{ job.status }}
-          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           color: ${{ job.status == 'success' && 0x00FF00 || 0xFF0000 }} 
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
