@@ -125,12 +125,6 @@ def generate_app(
         variable_end_string="<JINJA_POST>",
     )
 
-    # @app.on_event("startup")
-    # async def start_catch_disconnection():
-    #     if cancellable_engine is not None:
-    #         loop = asyncio.get_event_loop()
-    #         _ = loop.create_task(cancellable_engine.catch_disconnection())
-
     def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
             return tts_engines[latest_core_version]
