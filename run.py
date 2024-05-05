@@ -192,7 +192,7 @@ def generate_app(
                 {engine_name} へようこそ！
                 <ul>
                     <li><a href='/setting'>設定</a></li>
-                    <li><a href='/docs'>API ドキュメント & API 呼び出し</a></li>
+                    <li><a href='/docs'>API ドキュメント</a></li>
         </ul></body></html>
         """
 
