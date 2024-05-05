@@ -10,6 +10,7 @@ from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -118,12 +119,6 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    # @app.on_event("startup")
-    # async def start_catch_disconnection():
-    #     if cancellable_engine is not None:
-    #         loop = asyncio.get_event_loop()
-    #         _ = loop.create_task(cancellable_engine.catch_disconnection())
-
     def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
             return tts_engines[latest_core_version]
@@ -156,6 +151,25 @@ def generate_app(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
+
+    @app.get("/", response_class=HTMLResponse, tags=["その他"])
+    async def get_portal() -> str:
+        """ポータルページを返します。"""
+        engine_name = engine_manifest_data.name
+
+        return f"""
+        <html>
+            <head>
+                <title>{engine_name}</title>
+            </head>
+            <body>
+                <h1>{engine_name}</h1>
+                {engine_name} へようこそ！
+                <ul>
+                    <li><a href='/setting'>設定</a></li>
+                    <li><a href='/docs'>API ドキュメント</a></li>
+        </ul></body></html>
+        """
 
     app = configure_openapi_schema(app)
 
