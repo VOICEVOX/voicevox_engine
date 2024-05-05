@@ -11,7 +11,6 @@ from typing import Optional
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -120,12 +119,6 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    setting_ui_template = Jinja2Templates(
-        directory=engine_root() / "ui_template",
-        variable_start_string="<JINJA_PRE>",
-        variable_end_string="<JINJA_POST>",
-    )
-
     def get_engine(core_version: Optional[str]) -> TTSEngine:
         if core_version is None:
             return tts_engines[latest_core_version]
@@ -157,11 +150,7 @@ def generate_app(
     app.include_router(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
-    app.include_router(
-        generate_setting_router(
-            setting_loader, engine_manifest_data, setting_ui_template
-        )
-    )
+    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
 
     @app.get("/", response_class=HTMLResponse, tags=["その他"])
     async def get_portal() -> str:
