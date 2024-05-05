@@ -5,15 +5,14 @@ TODO: 重複部分を省く
 ## 目次
 
 - [環境構築](#環境構築)
-- [スクリプトの使い方](#スクリプトの使い方)
-  - [実行](#実行)
-  - [テスト](#テスト)
-  - [ビルド](#ビルド)
-  - [コードフォーマット](#コードフォーマット)
-  - [タイポチェック](#タイポチェック)
-  - [API ドキュメントの確認](#APIドキュメントの確認)
-  - [依存関係](#依存関係)
-  - [ユーザー辞書の更新について](#ユーザー辞書の更新について)
+- [実行](#実行)
+- [テスト](#テスト)
+- [ビルド](#ビルド)
+- [コードフォーマット](#コードフォーマット)
+- [タイポチェック](#タイポチェック)
+- [API ドキュメントの確認](#APIドキュメントの確認)
+- [依存関係](#依存関係)
+- [ユーザー辞書の更新について](#ユーザー辞書の更新について)
 - [Issue](#issue)
 
 ## 貢献者の方へ
@@ -86,9 +85,7 @@ CORE のバリエーション変数は以下の値を指定できます。
 最新のリリースは以下にあります。
 https://github.com/VOICEVOX/voicevox_core/releases/latest
 
-## スクリプトの使い方
-
-### 実行
+## 実行
 
 VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がります。  
 コマンドライン引数の詳細は以下のコマンドで確認してください。
@@ -97,27 +94,27 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 python run.py --help
 ```
 
-#### 音声ライブラリに製品版 VOICEVOX を利用して実行
+### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
-#### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
+### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
 python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
-#### 音声ライブラリ無しで実行
+### 音声ライブラリ無しで実行
 
 ```bash
 python run.py --enable_mock
 ```
 
-#### ログを UTF8 に変更
+### ログを UTF8 に変更
 
 ```bash
 python run.py --output_log_utf8
@@ -125,19 +122,19 @@ python run.py --output_log_utf8
 VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
-### テスト
+## テスト
 
 ```bash
 python -m pytest
 ```
 
-#### スナップショットの更新
+### スナップショットの更新
 
 ```bash
 python -m pytest --snapshot-update
 ```
 
-### ビルド
+## ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
 
@@ -155,12 +152,12 @@ LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
 
-#### Github Actions でビルド
+### Github Actions でビルド
 
 fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 
-### コードフォーマット
+## コードフォーマット
 
 このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。 利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。 プルリクエストを作成する際は、利用することを推奨します。
 
@@ -174,7 +171,7 @@ pre-commit install -t pre-push
 pysen run format lint
 ```
 
-### タイポチェック
+## タイポチェック
 
 [typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。 [typos をインストール](https://github.com/crate-ci/typos#install) した後
 
@@ -184,7 +181,7 @@ typos
 
 でタイポチェックを行えます。 もし誤判定やチェックから除外すべきファイルがあれば [設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
 
-### API ドキュメントの確認
+## API ドキュメントの確認
 
 API ドキュメント（実体は docs/api/index.html）は自動で更新されます。
 次のコマンドで API ドキュメントを手動で作成することができます。
@@ -193,7 +190,7 @@ API ドキュメント（実体は docs/api/index.html）は自動で更新さ�
 PYTHONPATH=. python build_util/make_docs.py
 ```
 
-### 依存関係
+## 依存関係
 
 [Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます。
 
@@ -221,7 +218,7 @@ poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
-#### ライセンス
+### ライセンス
 
 依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
@@ -230,7 +227,7 @@ poetry export --without-hashes --with license -o requirements-license.txt
 - LGPL: OK （コアと動的分離されているため）
 - GPL: NG （全関連コードの公開が必要なため）
 
-#### 脆弱性診断
+### 脆弱性診断
 `safety` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
 以下のコマンドにより脆弱性を診断できます：  
 
@@ -238,7 +235,7 @@ poetry export --without-hashes --with license -o requirements-license.txt
 safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
 ```
 
-### API ドキュメントの確認
+## API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
 次のコマンドで API ドキュメントを手動で作成することができます。
@@ -247,15 +244,15 @@ safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.tx
 PYTHONPATH=. python build_util/make_docs.py
 ```
 
-### GitHub Actions
+## GitHub Actions
 
-#### Variables
+## Variables
 
 | name               | description         |
 | :----------------- | :------------------ |
 | DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
 
-#### Secrets
+### Secrets
 
 | name            | description                                                             |
 | :-------------- | :---------------------------------------------------------------------- |
