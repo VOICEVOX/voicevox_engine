@@ -146,7 +146,7 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 なお、ドキュメント自動整形は現段階では採用していません。メンテナが定期的にフォーマッタをかけています。
 
 ## タイポ検査
-タイポ検査を採用しています。 
+タイポ検査を採用しています。  
 目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `_typos.toml` を編集してください。
 
 ### タイポを検査する
