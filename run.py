@@ -10,6 +10,7 @@ from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from voicevox_engine import __version__
@@ -161,6 +162,25 @@ def generate_app(
             setting_loader, engine_manifest_data, setting_ui_template
         )
     )
+
+    @app.get("/", response_class=HTMLResponse, tags=["その他"])
+    async def get_portal() -> str:
+        """ポータルページを返します。"""
+        engine_name = engine_manifest_data.name
+
+        return f"""
+        <html>
+            <head>
+                <title>{engine_name}</title>
+            </head>
+            <body>
+                <h1>{engine_name}</h1>
+                {engine_name} へようこそ！
+                <ul>
+                    <li><a href='/setting'>設定</a></li>
+                    <li><a href='/docs'>API ドキュメント</a></li>
+        </ul></body></html>
+        """
 
     app = configure_openapi_schema(app)
 
