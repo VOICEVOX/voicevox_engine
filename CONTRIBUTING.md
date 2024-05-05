@@ -1,43 +1,126 @@
-**このガイドラインは現在工事中です。**
+# 貢献者ガイド
+**このガイドラインは現在工事中です。**  
 
-TODO: 重複部分を省く
+VOICEVOX ENGINE はオープンソースプロジェクトです。本プロジェクトは活発に開発されており、その成果は製品版 VOICEVOX へも反映されています。VOICEVOX ENGINE はコミュニティの皆さんからのコントリビューションを歓迎しています。  
+本ガイドは開発方針・環境構築手順・レビュープロセスなど、コントリビュータの皆さんの一助となる情報を提供します。  
 
 ## 目次
+VOICEVOX ENGINE の方針に関するガイドは以下から確認できます。  
 
+<!-- no toc -->
+- [開発ガバナンス](#開発ガバナンス)
+- [バージョニング](#バージョニング)
+- [ブランチ戦略](#ブランチ戦略)
+- [プルリクエスト](#プルリクエスト)
+- [レビュー](#レビュー)
+- [バグ](#バグ)
+- [機能向上](#機能向上)
+- [静的解析](#静的解析)
+- [テスト](#テスト)
+- [ライセンス](#ライセンス)
+
+コントリビュータの目的に応じたガイドは以下から確認できます。  
+
+<!-- no toc -->
+- [プルリクエストを送る](#プルリクエストを送る)
+- バグ
+  - [バグを探す](#バグを探す)
+  - [バグを報告する](#バグを報告する)
+  - [バグを直す](#バグを直す)
+- 機能向上
+  - [機能向上を探す](#機能向上を探す)
+  - [機能向上を要望する](#機能向上を要望する)
+  - [機能向上を実装する](#機能向上を実装する)
 - [環境構築](#環境構築)
 - [実行](#実行)
-- [テスト](#テスト)
-- [ビルド](#ビルド)
-- [コードフォーマット](#コードフォーマット)
-- [タイポチェック](#タイポチェック)
-- [API ドキュメントの確認](#APIドキュメントの確認)
-- [依存関係](#依存関係)
-- [ユーザー辞書の更新について](#ユーザー辞書の更新について)
-- [Issue](#issue)
 
-## 貢献者の方へ
+開発にあたって頻繁に利用されるコマンドは以下から確認できます。  
 
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+<!-- no toc -->
+- [依存ライブラリをインストールする](#依存ライブラリをインストールする)
+- [音声ライブラリ無しで実行](#音声ライブラリ無しで実行)
+- 依存関係
+  - [パッケージを追加する](#パッケージを追加する)
+  - [パッケージを更新する](#パッケージを更新する)
+  - [パッケージ情報を反映する](#パッケージ情報を反映する)
+- 静的解析
+  - [タイポを検査する](#タイポを検査する)
+  - [静的解析を一括実行する](#静的解析を一括実行する)
+- テスト
+  - [コードをテストする](#コードをテストする)
+  - [スナップショットを更新する](#スナップショットを更新する)
+  - [脆弱性を診断する](#脆弱性を診断する)
 
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+## 開発ガバナンス
+VOICEVOX ENGINE は GitHub ベースのオープンな開発をおこなっています。  
+コミュニティの皆さんからの機能要望・バグ報告・質問を GitHub Issues で受け付けています。またプルリクエストも歓迎しています。Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成することを推奨しています。  
+
+より気軽な開発を可能にする目的で、[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて開発の議論や雑談を行っています。気軽にご参加ください。
+
+## バージョニング
+セマンティックバージョニングを採用していません。  
+後方互換性に配慮したうえで、大きな機能追加ではマイナーバージョンを、バグ修正やキャラクター追加ではパッチバージョンを更新しています。
+
+変更内容の概要は各バージョンの [Releases](https://github.com/VOICEVOX/voicevox_engine/releases) にて確認できます。  
+
+## ブランチ戦略
+ブランチ戦略としてリリースブランチ付き GitHub Flow を採用しています。  
+プルリクエストは基本的に `master` ブランチへマージされます。例外として製品版 VOICEVOX の更新時期にはリリースブランチ `release-X.Y` が用意され、一時的に `master` から分岐します。リリースに必要なコミットが `release-X.Y` へおこなわれ、このブランチからリリースがおこなわれます。リリース直後の hotfix 等は `release-X.Y` に対してまずマージされ、リリースの後にブランチごと `master` へマージされます。
+
+## プルリクエスト
+全てのコード変更はプルリクエストを介しておこなわれます。  
+プルリクエストは [GitHub Pull requests](https://github.com/VOICEVOX/voicevox_engine/pulls) で一括管理され、[レビュー](#レビュー)を経てマージされます。VOICEVOX ENGINE はコミュニティの皆さんからのプルリクエストを歓迎しています。  
+
+### プルリクエストを送る
+以下の手順でプルリクエストを作成できます。  
+
+- [開発環境](#環境構築)を用意する
+- このレポジトリをフォークし、`master` ブランチからプルリクエスト用ブランチを作る
+- [依存ライブラリをインストールする](#依存ライブラリをインストールする)
+- （任意）[音声ライブラリを導入する](#音声ライブラリを導入する)
+- [コードを編集する](#コードを編集する)
+- [静的解析を一括実行する](#静的解析を一括実行する)（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）
+- [コードをテストする](#コードをテストする)
+- ブランチをリモートへプッシュし、このレポジトリに対してプルリクエストを作成する
+<!-- - [タイポを検査する](#タイポを検査する) -->
+
+## レビュー
+全てのプルリクエストはレビューを経てマージされます。  
+レビューは [GitHub Pull requests](https://github.com/VOICEVOX/voicevox_engine/pulls) 上でオープンにおこなわれ、コミュニティの誰でもコメント等の形で参加可能です。レビューを経たのちに `master` (あるいは `release-X.Y`) ブランチへマージされます。マージには VOICEVOX チームによる approve が必須です。  
+
+## バグ
+GitHub Issues を用いてバグを一元管理しています。  
+
+### バグを探す
+[`バグ` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3A%E3%83%90%E3%82%B0)により既知バグの一覧にアクセスできます。バグの修正状況は各バグの issue にて確認できます。  
+
+### バグを報告する
+既知バグの一覧にないバグ（新規バグ）を見つけた場合、GitHub Issues で報告が可能です。VOICEVOX ENGINE は新規バグの報告を歓迎しています。  
+
+### バグを直す
+バグの修正は Issue 上で議論され、プルリクエストを用いて修正されます。プルリクエストを作成する手順は "[プルリクエストを送る](#プルリクエストを送る)" でガイドされています。VOICEVOX ENGINE はバグを修正するプルリクエストを歓迎しています。  
+
+## 機能向上
+GitHub Issues を用いて機能向上を一元管理しています。  
+
+### 機能向上を探す
+[`機能向上` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3A%E6%A9%9F%E8%83%BD%E5%90%91%E4%B8%8A)により新規機能追加や仕様変更の一覧にアクセスできます。機能向上の実装状況は各機能向上の issue にて確認できます。  
+
+### 機能向上を要望する
+既存提案一覧にない機能向上案がある場合、GitHub Issues で提案が可能です。VOICEVOX ENGINE は機能向上の提案を歓迎しています。  
+
+### 機能向上を実装する
+機能向上は Issue 上で議論され、プルリクエストを用いて実装されます。プルリクエストを作成する手順は "[プルリクエストを送る](#プルリクエストを送る)" でガイドされています。VOICEVOX ENGINE は機能向上を実装するプルリクエストを歓迎しています。  
 
 ## 環境構築
 
 `Python 3.11.3` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
-まずリポジトリをフォークします。  
-次に以下の手順でローカル環境を構築します。
+### 依存ライブラリをインストールする
+シェルで以下のコマンドを実行することで依存ライブラリがインストールされます。
 
 ```bash
-# レポジトリのクローン
-git clone "https://github.com/<your_user_name>/voicevox_engine.git"
-cd ./voicevox_engine
-
-# プルリクエスト用ブランチの作成
-git switch -c "<your_branch_name>"
-
 # 実行・開発・テスト環境のインストール
 python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 
@@ -45,25 +128,18 @@ python -m pip install -r requirements.txt -r requirements-dev.txt -r requirement
 pre-commit install -t pre-push
 ```
 
-<!-- このプロジェクトでは
-* `Python 3.11.3`
-* 依存ライブラリ
-  * cmake
-  * libsndfile1
-* (実際に動かす時のみ)製品版 VOICEVOX
-を使います。 -->
+## 音声ライブラリ
+OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを同梱していないため、音声合成が機能制限版となっています。  
 
-次に音声ライブラリを準備します。  
-OSS 版 VOICEVOX ENGINE は製品版 VOICEVOX の音声ライブラリを含んでいません。  
-これら音声ライブラリは、利用規約を遵守の上、以下のいずれかの手順で導入できます。これにより「ずんだもん」等の製品版キャラクター音声を合成できます。  
-なお、OSS 版 VOICEVOX ENGINE 単体でもモック利用により機能制限版の音声合成が可能です。その場合、音声ライブラリの導入は不要です。
+製品版 VOICEVOX の音声ライブラリは、利用規約を遵守の上、以下のいずれかの手順で導入できます。これにより「ずんだもん」等の製品版キャラクター音声を合成できます。  
 
-### 製品版 VOICEVOX を用いた音声ライブラリの導入
+### 音声ライブラリを導入する
+#### 製品版 VOICEVOX を用いた音声ライブラリの導入
 
 製品版 VOICEVOX を導入することで音声ライブラリを利用できます。  
 [VOICEVOX 公式ホームページ](https://voicevox.hiroshiba.jp/)に従いソフトウェアを導入してください。
 
-### 製品版 VOICEVOX CORE を用いた音声ライブラリの導入
+#### 製品版 VOICEVOX CORE を用いた音声ライブラリの導入
 
 製品版 VOICEVOX CORE を導入することで音声ライブラリを利用できます。  
 以下のコマンドにより必要なファイルが準備されます。
@@ -97,6 +173,12 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 python run.py --help
 ```
 
+### 音声ライブラリ無しで実行
+音声ライブラリを導入しなかった場合あるいは軽量の機能制限版音声合成を利用したい場合、シェルで以下のコマンドを実行することでエンジンが実行されます。
+```bash
+python run.py --enable_mock
+```
+
 ### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
@@ -111,12 +193,6 @@ VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品
 python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
-### 音声ライブラリ無しで実行
-
-```bash
-python run.py --enable_mock
-```
-
 ### ログを UTF8 に変更
 
 ```bash
@@ -125,19 +201,53 @@ python run.py --output_log_utf8
 VV_OUTPUT_LOG_UTF8=1 python run.py
 ```
 
-## 型検査
+## コードを編集する
+### 依存関係
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
+
+- MIT/Apache/BSD-3: OK
+- LGPL: OK （コアと動的分離されているため）
+- GPL: NG （全関連コードの公開が必要なため）
+
+#### パッケージを追加する
+
+```bash
+poetry add `パッケージ名`
+poetry add --group dev `パッケージ名` # 開発依存の追加
+poetry add --group test `パッケージ名` # テスト依存の追加
+```
+
+#### パッケージを更新する
+
+```bash
+poetry update `パッケージ名`
+poetry update # 全部更新
+```
+
+#### パッケージ情報を反映する
+
+```bash
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
+poetry export --without-hashes --with dev -o requirements-dev.txt
+poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with license -o requirements-license.txt
+```
+
+## 静的解析
+### 型検査
 型検査を採用しています。  
 目的は安全性の向上であり、チェッカーには `mypy` を採用しています。  
 
 型検査の実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。  
 
-## リント
+### リント
 自動リントを採用しています。  
 目的は安全性の向上であり、リンタには `flake8` と `isort` を採用しています。  
 
 リンタの実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。  
 
-## 整形
+### 整形
 コード自動整形を採用しています。  
 目的は可読性の向上であり、フォーマッタには `black` を採用しています。  
 
@@ -145,18 +255,19 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 
 なお、ドキュメント自動整形は現段階では採用していません。メンテナが定期的にフォーマッタをかけています。
 
-## タイポ検査
+### タイポ検査
 タイポ検査を採用しています。  
-目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `_typos.toml` を編集してください。
+目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `_typos.toml` を編集してください。  
+`typos` 導入は各自の環境に合わせて公式ドキュメントを参照してください。  
 
-### タイポを検査する
+#### タイポを検査する
 シェルで以下のコマンドを実行することでタイポが検査されます。  
 
 ```bash
 typos
 ```
 
-## 静的解析を一括実行する
+### 静的解析を一括実行する
 シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）が一括実行されます。  
 この際、可能な範囲で自動修正がおこなわれます。  
 
@@ -183,6 +294,14 @@ python -m pytest
 python -m pytest --snapshot-update
 ```
 
+### 脆弱性を診断する
+`safety` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
+シェルで以下のコマンドを実行することで脆弱性が診断されます。  
+
+```bash
+safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
+```
+
 ## ビルド
 
 この方法でビルドしたものは、リリースで公開されているものとは異なります。 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
@@ -206,61 +325,7 @@ pyinstaller --noconfirm run.spec
 fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 
-## API ドキュメントの確認
-
-API ドキュメント（実体は docs/api/index.html）は自動で更新されます。
-次のコマンドで API ドキュメントを手動で作成することができます。
-
-```bash
-PYTHONPATH=. python build_util/make_docs.py
-```
-
-## 依存関係
-
-[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。 以下のコマンドで操作できます。
-
-パッケージを追加する場合
-
-```bash
-poetry add `パッケージ名`
-poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group test `パッケージ名` # テスト依存の追加
-```
-
-パッケージをアップデートする場合
-
-```bash
-poetry update `パッケージ名`
-poetry update # 全部更新
-```
-
-requirements.txt の更新
-
-```bash
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with test -o requirements-test.txt
-poetry export --without-hashes --with license -o requirements-license.txt
-```
-
-### ライセンス
-
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。
-
-- MIT/Apache/BSD-3: OK
-- LGPL: OK （コアと動的分離されているため）
-- GPL: NG （全関連コードの公開が必要なため）
-
-### 脆弱性診断
-`safety` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
-以下のコマンドにより脆弱性を診断できます：  
-
-```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
-```
-
-## API ドキュメントの確認
+### API ドキュメントの確認
 
 [API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
 次のコマンドで API ドキュメントを手動で作成することができます。
