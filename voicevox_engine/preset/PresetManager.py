@@ -5,7 +5,7 @@ import yaml
 from pydantic import ValidationError, parse_obj_as
 
 from .Preset import Preset
-from .PresetError import PresetError
+from .PresetError import PresetInputError, PresetInternalError
 
 
 class PresetManager:
@@ -32,23 +32,23 @@ class PresetManager:
                 # 更新無し
                 return
         except OSError:
-            raise PresetError("プリセットの設定ファイルが見つかりません")
+            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
         # データベースの読み込み
         with open(self.preset_path, mode="r", encoding="utf-8") as f:
             obj = yaml.safe_load(f)
             if obj is None:
-                raise PresetError("プリセットの設定ファイルが空の内容です")
+                raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
             _presets = parse_obj_as(List[Preset], obj)
         except ValidationError:
-            raise PresetError("プリセットの設定ファイルにミスがあります")
+            raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 
         # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(
             {preset.id for preset in _presets}
         ):
-            raise PresetError("プリセットのidに重複があります")
+            raise PresetInternalError("プリセットのidに重複があります")
 
         # キャッシュを更新する
         self.presets = _presets
@@ -72,7 +72,7 @@ class PresetManager:
         except Exception as err:
             self.presets.pop()
             if isinstance(err, FileNotFoundError):
-                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
             else:
                 raise err
 
@@ -100,7 +100,7 @@ class PresetManager:
                 self.presets[i] = preset
                 break
         else:
-            raise PresetError("更新先のプリセットが存在しません")
+            raise PresetInputError("更新先のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:
@@ -108,7 +108,7 @@ class PresetManager:
         except Exception as err:
             self.presets[prev_preset[0]] = prev_preset[1]
             if isinstance(err, FileNotFoundError):
-                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
             else:
                 raise err
 
@@ -129,14 +129,14 @@ class PresetManager:
                 buf_index = i
                 break
         else:
-            raise PresetError("削除対象のプリセットが存在しません")
+            raise PresetInputError("削除対象のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
         except FileNotFoundError:
             self.presets.insert(buf_index, buf)
-            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
         return id
 
