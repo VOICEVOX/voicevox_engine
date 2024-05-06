@@ -1,19 +1,63 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
+from typing import TYPE_CHECKING, Dict, List, Literal, NewType, Tuple
+
+from pydantic import BaseModel, Field
 
 from voicevox_engine.metas.Metas import (
-    CoreSpeaker,
-    EngineSpeaker,
     Speaker,
     SpeakerStyle,
+    SpeakerSupportedFeatures,
     StyleId,
     StyleType,
 )
 
 if TYPE_CHECKING:
     from voicevox_engine.core.core_adapter import CoreAdapter
+
+
+_CoreStyleId = NewType("_CoreStyleId", int)
+_CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+
+
+class _CoreSpeakerStyle(BaseModel):
+    """
+    話者のスタイル情報
+    """
+
+    name: str
+    id: _CoreStyleId
+    type: _CoreStyleType | None = Field(default="talk")
+
+
+def cast_styles(cores: list[_CoreSpeakerStyle]) -> list[SpeakerStyle]:
+    """コアから取得したスタイル情報をエンジン形式へキャストする。"""
+    return [
+        SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
+        for core in cores
+    ]
+
+
+class _CoreSpeaker(BaseModel):
+    """
+    コアに含まれる話者情報
+    """
+
+    name: str
+    speaker_uuid: str
+    styles: List[_CoreSpeakerStyle]
+    version: str = Field("話者のバージョン")
+
+
+class _EngineSpeaker(BaseModel):
+    """
+    エンジンに含まれる話者情報
+    """
+
+    supported_features: SpeakerSupportedFeatures = Field(
+        default_factory=SpeakerSupportedFeatures
+    )
 
 
 class MetasStore:
@@ -29,8 +73,8 @@ class MetasStore:
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
         # エンジンに含まれる各話者のメタ情報
-        self._loaded_metas: Dict[str, EngineSpeaker] = {
-            folder.name: EngineSpeaker(
+        self._loaded_metas: Dict[str, _EngineSpeaker] = {
+            folder.name: _EngineSpeaker(
                 **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
             )
             for folder in engine_speakers_path.iterdir()
@@ -51,12 +95,17 @@ class MetasStore:
             エンジンとコアに含まれる話者メタ情報
         """
         # コアに含まれる話者メタ情報の収集
-        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
+        core_metas = [_CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
-                **self._loaded_metas[speaker_meta.speaker_uuid].dict(),
-                **speaker_meta.dict(),
+                supported_features=self._loaded_metas[
+                    speaker_meta.speaker_uuid
+                ].supported_features,
+                name=speaker_meta.name,
+                speaker_uuid=speaker_meta.speaker_uuid,
+                styles=cast_styles(speaker_meta.styles),
+                version=speaker_meta.version,
             )
             for speaker_meta in core_metas
         ]
