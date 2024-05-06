@@ -352,6 +352,30 @@ PYTHONPATH=. python build_util/make_docs.py
 
 不具合の報告、機能要望、改善提案、質問は<a href="https://github.com/VOICEVOX/voicevox_engine/issues/new">Issue</a>の方に報告してください。
 
+### Issue の状態
+VOICEVOX ENGINE では issue の状態遷移を以下のように整理しています。  
+各状態は GitHub の `状態：〇〇` ラベルと対応しています（例： [`状態：実装者募集`](https://github.com/VOICEVOX/voicevox_engine/labels/%E7%8A%B6%E6%85%8B%EF%BC%9A%E5%AE%9F%E8%A3%85%E8%80%85%E5%8B%9F%E9%9B%86)）。  
+
+```mermaid
+---
+title: issue 状態遷移図 v1.0
+---
+stateDiagram-v2
+    [*]     --> 必要性議論 : issue open
+    state opened {
+      必要性議論 --> 設計
+      設計       --> 実装者募集
+      実装者募集 --> 実装 : 着手宣言
+    }
+    opened      --> not_planned  : NoGo 判断
+    not_planned --> [*]          : issue close
+    実装        --> resolved     : Pull request merge
+    resolved    --> [*]          : issue close
+    opened      --> ロードマップ : 停滞
+    ロードマップ --> opened
+```
+NOTE: ロードマップ化すべきかの棚卸し判定は、issue が `必要性議論` で 30 日、`設計`・`実装者募集`・`実装` で 180 日停滞した場合におこなう。`実装` の停滞時にはサポートも検討する。
+
 ## ライセンス
 
 LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
