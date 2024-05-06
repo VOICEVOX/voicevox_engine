@@ -26,18 +26,9 @@ class _CoreSpeakerStyle(BaseModel):
     話者のスタイル情報
     """
 
-    name: str = Field(title="スタイル名")
-    id: _CoreStyleId = Field(title="スタイルID")
-    type: Optional[_CoreStyleType] = Field(
-        default="talk",
-        title=(
-            "スタイルの種類。"
-            "talk:音声合成クエリの作成と音声合成が可能。"
-            "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
-            "frame_decode:歌唱音声合成が可能。"
-            "sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
-        ),
-    )
+    name: str
+    id: _CoreStyleId
+    type: _CoreStyleType | None = Field(default="talk")
 
 
 def cast_styles(cores: list[_CoreSpeakerStyle]) -> list[SpeakerStyle]:
@@ -53,9 +44,9 @@ class _CoreSpeaker(BaseModel):
     コアに含まれる話者情報
     """
 
-    name: str = Field(title="名前")
-    speaker_uuid: str = Field(title="話者のUUID")
-    styles: List[_CoreSpeakerStyle] = Field(title="スタイルの一覧")
+    name: str
+    speaker_uuid: str
+    styles: List[_CoreSpeakerStyle]
     version: str = Field("話者のバージョン")
 
 
@@ -65,7 +56,7 @@ class _EngineSpeaker(BaseModel):
     """
 
     supported_features: SpeakerSupportedFeatures = Field(
-        title="話者の対応機能", default_factory=SpeakerSupportedFeatures
+        default_factory=SpeakerSupportedFeatures
     )
 
 
