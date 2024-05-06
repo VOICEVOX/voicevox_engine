@@ -94,7 +94,7 @@ class LibraryManager:
         インストール済み音声ライブラリの情報を取得
         Returns
         -------
-        library : Dict[str, InstalledLibraryInfo]
+        library : dict[str, InstalledLibraryInfo]
             インストール済みライブラリの情報
         """
         library: dict[str, InstalledLibraryInfo] = {}

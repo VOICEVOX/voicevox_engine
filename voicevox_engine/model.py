@@ -1,6 +1,6 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field, StrictStr, validator
 
@@ -147,7 +147,7 @@ class ParseKanaBadRequest(BaseModel):
             ]
         ),
     )
-    error_args: Dict[str, str] = Field(title="エラーを起こした箇所")
+    error_args: dict[str, str] = Field(title="エラーを起こした箇所")
 
     def __init__(self, err: ParseKanaError):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)

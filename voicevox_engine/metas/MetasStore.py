@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Literal, NewType
+from typing import TYPE_CHECKING, Literal, NewType
 
 from pydantic import BaseModel, Field
 
@@ -73,7 +73,7 @@ class MetasStore:
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
         # エンジンに含まれる各話者のメタ情報
-        self._loaded_metas: Dict[str, _EngineSpeaker] = {
+        self._loaded_metas: dict[str, _EngineSpeaker] = {
             folder.name: _EngineSpeaker(
                 **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
             )
@@ -113,7 +113,7 @@ class MetasStore:
 
 def construct_lookup(
     speakers: list[Speaker],
-) -> Dict[StyleId, tuple[Speaker, SpeakerStyle]]:
+) -> dict[StyleId, tuple[Speaker, SpeakerStyle]]:
     """
     スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
     Parameters
@@ -122,7 +122,7 @@ def construct_lookup(
         話者メタ情報
     Returns
     -------
-    ret : Dict[StyleId, tuple[Speaker, SpeakerStyle]]
+    ret : dict[StyleId, tuple[Speaker, SpeakerStyle]]
         スタイルID に話者メタ情報・スタイルメタ情報が紐付いた対応表
     """
     lookup_table: dict[StyleId, tuple[Speaker, SpeakerStyle]] = dict()
