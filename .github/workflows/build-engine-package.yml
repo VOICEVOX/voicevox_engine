@@ -296,7 +296,7 @@ jobs:
 
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
-          for i in $(seq 5); do
+          for _ in $(seq 5); do
             EXIT_CODE=0
             python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
 
