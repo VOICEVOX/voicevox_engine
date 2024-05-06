@@ -439,7 +439,8 @@ def main() -> None:
         disable_mutable_api=disable_mutable_api,
     )
 
-    # ASGI に準拠した VOICEVOX ENGINE HTTP/1.1 サーバを立ち上げる
+    # VOICEVOX ENGINE サーバーを起動
+    # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
     uvicorn.run(app, host=args.host, port=args.port)
 
 
