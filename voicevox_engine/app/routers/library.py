@@ -15,7 +15,7 @@ from voicevox_engine.model import DownloadableLibraryInfo, InstalledLibraryInfo
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_router(
+def generate_library_router(
     engine_manifest_data: EngineManifest, library_manager: LibraryManager
 ) -> APIRouter:
     """音声ライブラリ API Router を生成する"""

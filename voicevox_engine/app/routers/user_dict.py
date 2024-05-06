@@ -22,7 +22,7 @@ from voicevox_engine.user_dict.user_dict import (
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_router() -> APIRouter:
+def generate_user_dict_router() -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
     router = APIRouter()
 

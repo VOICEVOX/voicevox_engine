@@ -11,7 +11,7 @@ from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.model import SupportedDevicesInfo
 
 
-def generate_router(
+def generate_engine_info_router(
     get_core: Callable[[str | None], CoreAdapter],
     cores: dict[str, CoreAdapter],
     engine_manifest_data: EngineManifest,

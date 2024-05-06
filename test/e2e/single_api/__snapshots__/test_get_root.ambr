@@ -1,0 +1,18 @@
+# serializer version: 1
+# name: test_get_root_200
+  '''
+  
+          <html>
+              <head>
+                  <title>DUMMY Engine</title>
+              </head>
+              <body>
+                  <h1>DUMMY Engine</h1>
+                  DUMMY Engine へようこそ！
+                  <ul>
+                      <li><a href='/setting'>設定</a></li>
+                      <li><a href='/docs'>API ドキュメント</a></li>
+          </ul></body></html>
+          
+  '''
+# ---

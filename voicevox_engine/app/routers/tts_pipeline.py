@@ -20,7 +20,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Score,
 )
-from voicevox_engine.preset.PresetError import PresetError
+from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
@@ -31,7 +31,7 @@ from voicevox_engine.utility.connect_base64_waves import (
 from voicevox_engine.utility.path_utility import delete_file
 
 
-def generate_router(
+def generate_tts_pipeline_router(
     get_engine: Callable[[str | None], TTSEngine],
     get_core: Callable[[str | None], CoreAdapter],
     preset_manager: PresetManager,
@@ -88,8 +88,10 @@ def generate_router(
         core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset

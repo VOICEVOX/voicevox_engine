@@ -8,14 +8,20 @@ from fastapi.templating import Jinja2Templates
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
 from voicevox_engine.setting.SettingLoader import SettingHandler
+from voicevox_engine.utility.path_utility import engine_root
 
 from ..dependencies import check_disabled_mutable_api
 
+_setting_ui_template = Jinja2Templates(
+    directory=engine_root() / "ui_template",
+    variable_start_string="<JINJA_PRE>",
+    variable_end_string="<JINJA_POST>",
+)
 
-def generate_router(
+
+def generate_setting_router(
     setting_loader: SettingHandler,
     engine_manifest_data: EngineManifest,
-    setting_ui_template: Jinja2Templates,
 ) -> APIRouter:
     """設定 API Router を生成する"""
     router = APIRouter()
@@ -34,7 +40,7 @@ def generate_router(
         if allow_origin is None:
             allow_origin = ""
 
-        return setting_ui_template.TemplateResponse(
+        return _setting_ui_template.TemplateResponse(
             "ui.html",
             {
                 "request": request,
