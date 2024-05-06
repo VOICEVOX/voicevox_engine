@@ -14,8 +14,6 @@
 NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
 """
 
-from typing import Optional
-
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_mapping import mora_kana_to_mora_phonemes
 from .phoneme import Vowel
@@ -70,12 +68,12 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     # NOTE: ポーズと疑問形はこの関数内で処理しない
 
-    accent_index: Optional[int] = None
+    accent_index: int | None = None
     moras: list[Mora] = []
 
     base_index = 0  # パース開始位置。ここから右の文字列をstackに詰めていく。
     stack = ""  # 保留中の文字列
-    matched_text: Optional[str] = None  # 保留中の文字列内で最後にマッチした仮名
+    matched_text: str | None = None  # 保留中の文字列内で最後にマッチした仮名
 
     outer_loop = 0
     while base_index < len(phrase):

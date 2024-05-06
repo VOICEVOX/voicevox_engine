@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, NewType, Optional
+from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,7 @@ class SpeakerStyle(BaseModel):
 
     name: str = Field(title="スタイル名")
     id: StyleId = Field(title="スタイルID")
-    type: Optional[StyleType] = Field(
+    type: StyleType | None = Field(
         default="talk",
         title=(
             "スタイルの種類。"
@@ -70,7 +70,7 @@ class StyleInfo(BaseModel):
 
     id: StyleId = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
-    portrait: Optional[str] = Field(
+    portrait: str | None = Field(
         title="当該スタイルのportrait.pngをbase64エンコードしたもの"
     )
     voice_samples: list[str] = Field(

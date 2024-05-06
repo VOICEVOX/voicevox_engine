@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -193,8 +193,8 @@ def _create_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
 ) -> UserDictWord:
     """
     単語オブジェクトの生成
@@ -206,9 +206,9 @@ def _create_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     Returns
     -------
@@ -247,8 +247,8 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
@@ -262,9 +262,9 @@ def apply_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     user_dict_path : Path
         ユーザー辞書ファイルのパス
@@ -299,8 +299,8 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> None:
@@ -316,9 +316,9 @@ def rewrite_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     user_dict_path : Path
         ユーザー辞書ファイルのパス
