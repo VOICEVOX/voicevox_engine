@@ -21,7 +21,7 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
         base64エンコードされたwavデータのリスト
     Returns
     -------
-    waves_nparray_sr: list[Tuple[NDArray[np.float64], int]]
+    waves_nparray_sr: list[tuple[NDArray[np.float64], int]]
         (NumPy配列の音声波形データ, サンプリングレート) 形式のタプルのリスト
     """
     if len(waves) == 0:

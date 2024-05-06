@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Literal, NewType, Tuple
+from typing import TYPE_CHECKING, Dict, Literal, NewType
 
 from pydantic import BaseModel, Field
 
@@ -113,7 +113,7 @@ class MetasStore:
 
 def construct_lookup(
     speakers: list[Speaker],
-) -> Dict[StyleId, Tuple[Speaker, SpeakerStyle]]:
+) -> Dict[StyleId, tuple[Speaker, SpeakerStyle]]:
     """
     スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
     Parameters
@@ -122,7 +122,7 @@ def construct_lookup(
         話者メタ情報
     Returns
     -------
-    ret : Dict[StyleId, Tuple[Speaker, SpeakerStyle]]
+    ret : Dict[StyleId, tuple[Speaker, SpeakerStyle]]
         スタイルID に話者メタ情報・スタイルメタ情報が紐付いた対応表
     """
     lookup_table: dict[StyleId, tuple[Speaker, SpeakerStyle]] = dict()
