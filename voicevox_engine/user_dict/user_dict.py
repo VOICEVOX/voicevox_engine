@@ -3,7 +3,6 @@ import sys
 import threading
 import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -38,12 +37,12 @@ mutex_openjtalk_dict = threading.Lock()
 
 
 @mutex_wrapper(mutex_user_dict)
-def _write_to_json(user_dict: Dict[str, UserDictWord], user_dict_path: Path) -> None:
+def _write_to_json(user_dict: dict[str, UserDictWord], user_dict_path: Path) -> None:
     """
     ユーザー辞書ファイルへのユーザー辞書データ書き込み
     Parameters
     ----------
-    user_dict : Dict[str, UserDictWord]
+    user_dict : dict[str, UserDictWord]
         ユーザー辞書データ
     user_dict_path : Path
         ユーザー辞書ファイルのパス
@@ -156,7 +155,7 @@ def update_dict(
 
 
 @mutex_wrapper(mutex_user_dict)
-def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
+def read_dict(user_dict_path: Path = user_dict_path) -> dict[str, UserDictWord]:
     """
     ユーザー辞書の読み出し
     Parameters
@@ -165,7 +164,7 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
         ユーザー辞書ファイルのパス
     Returns
     -------
-    result : Dict[str, UserDictWord]
+    result : dict[str, UserDictWord]
         ユーザー辞書
     """
     # 指定ユーザー辞書が存在しない場合、空辞書を返す
@@ -173,7 +172,7 @@ def read_dict(user_dict_path: Path = user_dict_path) -> Dict[str, UserDictWord]:
         return {}
 
     with user_dict_path.open(encoding="utf-8") as f:
-        result: Dict[str, UserDictWord] = {}
+        result: dict[str, UserDictWord] = {}
         for word_uuid, word in json.load(f).items():
             # cost2priorityで変換を行う際にcontext_idが必要となるが、
             # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
@@ -193,8 +192,8 @@ def _create_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
 ) -> UserDictWord:
     """
     単語オブジェクトの生成
@@ -206,9 +205,9 @@ def _create_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     Returns
     -------
@@ -247,8 +246,8 @@ def apply_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> str:
@@ -262,9 +261,9 @@ def apply_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     user_dict_path : Path
         ユーザー辞書ファイルのパス
@@ -299,8 +298,8 @@ def rewrite_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
-    word_type: Optional[WordTypes] = None,
-    priority: Optional[int] = None,
+    word_type: WordTypes | None = None,
+    priority: int | None = None,
     user_dict_path: Path = user_dict_path,
     compiled_dict_path: Path = compiled_dict_path,
 ) -> None:
@@ -316,9 +315,9 @@ def rewrite_word(
         単語情報
     accent_type : int
         単語情報
-    word_type : Optional[WordTypes]
+    word_type : WordTypes | None
         品詞
-    priority : Optional[int]
+    priority : int | None
         優先度
     user_dict_path : Path
         ユーザー辞書ファイルのパス
@@ -372,7 +371,7 @@ def delete_word(
 
 
 def import_user_dict(
-    dict_data: Dict[str, UserDictWord],
+    dict_data: dict[str, UserDictWord],
     override: bool = False,
     user_dict_path: Path = user_dict_path,
     default_dict_path: Path = default_dict_path,
@@ -382,7 +381,7 @@ def import_user_dict(
     ユーザー辞書のインポート
     Parameters
     ----------
-    dict_data : Dict[str, UserDictWord]
+    dict_data : dict[str, UserDictWord]
         インポートするユーザー辞書のデータ
     override : bool
         重複したエントリがあった場合、上書きするかどうか
@@ -436,7 +435,7 @@ def import_user_dict(
     )
 
 
-def _search_cost_candidates(context_id: int) -> List[int]:
+def _search_cost_candidates(context_id: int) -> list[int]:
     for value in part_of_speech_data.values():
         if value.context_id == context_id:
             return value.cost_candidates

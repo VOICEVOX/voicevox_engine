@@ -3,8 +3,6 @@
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
 # 変更する際は、Optionalにする必要があることに留意しなければならない。
 
-from typing import List, Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -14,8 +12,8 @@ class UpdateInfo(BaseModel):
     """
 
     version: str = Field(title="エンジンのバージョン名")
-    descriptions: List[str] = Field(title="アップデートの詳細についての説明")
-    contributors: Optional[List[str]] = Field(title="貢献者名")
+    descriptions: list[str] = Field(title="アップデートの詳細についての説明")
+    contributors: list[str] | None = Field(title="貢献者名")
 
 
 class LicenseInfo(BaseModel):
@@ -24,8 +22,8 @@ class LicenseInfo(BaseModel):
     """
 
     name: str = Field(title="依存ライブラリ名")
-    version: Optional[str] = Field(title="依存ライブラリのバージョン")
-    license: Optional[str] = Field(title="依存ライブラリのライセンス名")
+    version: str | None = Field(title="依存ライブラリのバージョン")
+    license: str | None = Field(title="依存ライブラリのライセンス名")
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
@@ -44,8 +42,8 @@ class SupportedFeatures(BaseModel):
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: Optional[bool] = Field(title="歌唱音声合成")
-    manage_library: Optional[bool] = Field(
+    sing: bool | None = Field(title="歌唱音声合成")
+    manage_library: bool | None = Field(
         title="音声ライブラリのインストール・アンインストール"
     )
 
@@ -64,9 +62,9 @@ class EngineManifest(BaseModel):
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
     frame_rate: float = Field(title="エンジンのフレームレート")
     terms_of_service: str = Field(title="エンジンの利用規約")
-    update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
-    dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    supported_vvlib_manifest_version: Optional[str] = Field(
+    update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
+    dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
+    supported_vvlib_manifest_version: str | None = Field(
         title="エンジンが対応するvvlibのバージョン"
     )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")

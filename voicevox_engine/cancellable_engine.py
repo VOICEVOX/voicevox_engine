@@ -36,7 +36,7 @@ class CancellableEngine:
     ----------
     watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
-        クライアントから接続があるとListにTupleが追加される
+        クライアントから接続があるとlistにtupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
     procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList

@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -19,4 +18,4 @@ class Setting(BaseModel):
     """
 
     cors_policy_mode: CorsPolicyMode = Field(title="リソース共有ポリシー")
-    allow_origin: Optional[str] = Field(title="許可するオリジン")
+    allow_origin: str | None = Field(title="許可するオリジン")
