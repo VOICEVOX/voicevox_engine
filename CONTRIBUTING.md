@@ -241,21 +241,19 @@ title: issue 状態遷移図 v1.0
 ---
 stateDiagram-v2
     [*]     --> 必要性議論 : issue open
-    state active {
+    state opened {
       必要性議論 --> 設計
       設計       --> 実装者募集
       実装者募集 --> 実装 : 着手宣言
     }
-    active      --> not_planned  : NoGo 判断
+    opened      --> not_planned  : NoGo 判断
     not_planned --> [*]          : issue close
-    実装        --> resolved     : PR merge
+    実装        --> resolved     : Pull request merge
     resolved    --> [*]          : issue close
-    ロードマップ --> active
-    実装        --> ロードマップ  : 停滞 180日 
-    実装者募集   --> ロードマップ  : 停滞 180日 
-    設計         --> ロードマップ : 停滞 180日
-    必要性議論   --> ロードマップ  : 停滞 30日
+    opened      --> ロードマップ : 停滞
+    ロードマップ --> opened
 ```
+NOTE: ロードマップ化すべきかの棚卸し判定は、issue が `必要性議論` で 30 日、`設計`・`実装者募集`・`実装` で 180 日停滞した場合におこなう。`実装` の停滞時にはサポートも検討する。
 
 ## ライセンス
 
