@@ -86,7 +86,7 @@ class LibraryManager:
                     )
                     for i in range(1, 4)
                 ]
-            return list(map(DownloadableLibraryInfo.parse_obj, libraries))
+            return list(map(DownloadableLibraryInfo.model_validate, libraries))
 
     def installed_libraries(self) -> dict[str, InstalledLibraryInfo]:
         """インストール済み音声ライブラリ情報の一覧を取得する。"""
@@ -117,7 +117,7 @@ class LibraryManager:
         """
         for downloadable_library in self.downloadable_libraries():
             if downloadable_library.uuid == library_id:
-                library_info = downloadable_library.dict()
+                library_info = downloadable_library.model_dump_json()
                 break
         else:
             msg = f"音声ライブラリ {library_id} が見つかりません。"
@@ -129,7 +129,7 @@ class LibraryManager:
 
         # metas.jsonを生成する
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
-            json.dump(library_info, f, indent=4, ensure_ascii=False)
+            f.write(library_info)
 
         # ZIP 形式ではないファイルはライブラリでないためインストールを拒否する
         if not zipfile.is_zipfile(file):
@@ -158,7 +158,7 @@ class LibraryManager:
 
             # 不正な形式のマニフェストファイルをもつライブラリはインストールを拒否する
             try:
-                VvlibManifest.validate(vvlib_manifest)
+                VvlibManifest.model_validate(vvlib_manifest)
             except ValidationError:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonが不正な形式です。"
                 raise HTTPException(status_code=422, detail=msg)

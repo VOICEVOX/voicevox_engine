@@ -6,7 +6,7 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Mora(BaseModel):
@@ -14,9 +14,11 @@ class Mora(BaseModel):
     モーラ（子音＋母音）ごとの情報
     """
 
+    model_config = ConfigDict(validate_assignment=True)
+
     text: str = Field(title="文字")
-    consonant: str | None = Field(title="子音の音素")
-    consonant_length: float | None = Field(title="子音の音長")
+    consonant: str | None = Field(default=None, title="子音の音素")
+    consonant_length: float | None = Field(default=None, title="子音の音長")
     vowel: str = Field(title="母音の音素")
     vowel_length: float = Field(title="母音の音長")
     pitch: float = Field(
@@ -30,9 +32,6 @@ class Mora(BaseModel):
         ]
         return hash(tuple(sorted(items)))
 
-    class Config:
-        validate_assignment = True
-
 
 class AccentPhrase(BaseModel):
     """
@@ -41,7 +40,7 @@ class AccentPhrase(BaseModel):
 
     moras: list[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
-    pause_mora: Mora | None = Field(title="後ろに無音を付けるかどうか")
+    pause_mora: Mora | None = Field(default=None, title="後ろに無音を付けるかどうか")
     is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
     def __hash__(self) -> int:
@@ -57,7 +56,7 @@ class Note(BaseModel):
     音符ごとの情報
     """
 
-    key: int | None = Field(title="音階")
+    key: int | None = Field(default=None, title="音階")
     frame_length: int = Field(title="音符のフレーム長")
     lyric: str = Field(title="音符の歌詞")
 

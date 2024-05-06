@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
+from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
@@ -47,17 +48,18 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
             int, Query(description="アクセント型（音が下がる場所を指す）")
         ],
         word_type: Annotated[
-            WordTypes | None,
+            WordTypes | SkipJsonSchema[None],
             Query(
                 description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             ),
         ] = None,
         priority: Annotated[
-            int | None,
+            int | SkipJsonSchema[None],
             Query(
                 ge=MIN_PRIORITY,
                 le=MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+                json_schema_extra={"maximum": MAX_PRIORITY, "minimum": MIN_PRIORITY},
             ),
         ] = None,
     ) -> str:
@@ -99,17 +101,18 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         ],
         word_uuid: Annotated[str, Path(description="更新する言葉のUUID")],
         word_type: Annotated[
-            WordTypes | None,
+            WordTypes | SkipJsonSchema[None],
             Query(
                 description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             ),
         ] = None,
         priority: Annotated[
-            int | None,
+            int | SkipJsonSchema[None],
             Query(
                 ge=MIN_PRIORITY,
                 le=MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
+                json_schema_extra={"maximum": MAX_PRIORITY, "minimum": MIN_PRIORITY},
             ),
         ] = None,
     ) -> None:

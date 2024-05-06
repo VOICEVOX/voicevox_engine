@@ -6,9 +6,9 @@
 
 from enum import Enum
 from re import findall, fullmatch
-from typing import Any
+from typing import Self
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class WordTypes(str, Enum):
@@ -30,6 +30,8 @@ class UserDictWord(BaseModel):
     辞書のコンパイルに使われる情報
     """
 
+    model_config = ConfigDict(validate_assignment=True)
+
     surface: str = Field(title="表層形")
     priority: int = Field(
         title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
@@ -45,13 +47,11 @@ class UserDictWord(BaseModel):
     yomi: str = Field(title="読み")
     pronunciation: str = Field(title="発音")
     accent_type: int = Field(title="アクセント型")
-    mora_count: int | None = Field(title="モーラ数")
+    mora_count: int | None = Field(default=None, title="モーラ数")
     accent_associative_rule: str = Field(title="アクセント結合規則")
 
-    class Config:
-        validate_assignment = True
-
-    @validator("surface")
+    @field_validator("surface")
+    @classmethod
     def convert_to_zenkaku(cls, surface: str) -> str:
         return surface.translate(
             str.maketrans(
@@ -60,7 +60,8 @@ class UserDictWord(BaseModel):
             )
         )
 
-    @validator("pronunciation", pre=True)
+    @field_validator("pronunciation", mode="before")
+    @classmethod
     def check_is_katakana(cls, pronunciation: str) -> str:
         if not fullmatch(r"[ァ-ヴー]+", pronunciation):
             raise ValueError("発音は有効なカタカナでなくてはいけません。")
@@ -84,32 +85,26 @@ class UserDictWord(BaseModel):
                     )
         return pronunciation
 
-    @validator("mora_count", pre=True, always=True)
-    def check_mora_count_and_accent_type(
-        cls, mora_count: int | None, values: Any
-    ) -> int | None:
-        if "pronunciation" not in values or "accent_type" not in values:
-            # 適切な場所でエラーを出すようにする
-            return mora_count
-
-        if mora_count is None:
+    @model_validator(mode="after")
+    def check_mora_count_and_accent_type(self) -> Self:
+        if self.mora_count is None:
             rule_others = (
                 "[イ][ェ]|[ヴ][ャュョ]|[トド][ゥ]|[テデ][ィャュョ]|[デ][ェ]|[クグ][ヮ]"
             )
             rule_line_i = "[キシチニヒミリギジビピ][ェャュョ]"
             rule_line_u = "[ツフヴ][ァ]|[ウスツフヴズ][ィ]|[ウツフヴ][ェォ]"
             rule_one_mora = "[ァ-ヴー]"
-            mora_count = len(
+            self.mora_count = len(
                 findall(
                     f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
-                    values["pronunciation"],
+                    self.pronunciation,
                 )
             )
 
-        if not 0 <= values["accent_type"] <= mora_count:
+        if not 0 <= self.accent_type <= self.mora_count:
             raise ValueError(
                 "誤ったアクセント型です({})。 expect: 0 <= accent_type <= {}".format(
-                    values["accent_type"], mora_count
+                    self.accent_type, self.mora_count
                 )
             )
-        return mora_count
+        return self

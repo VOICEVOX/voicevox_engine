@@ -21,9 +21,12 @@
             "type": "array"
           },
           "pause_mora": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Mora"
+              },
+              {
+                "type": "null"
               }
             ],
             "title": "後ろに無音を付けるかどうか"
@@ -51,8 +54,15 @@
             "type": "number"
           },
           "kana": {
-            "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される"
           },
           "outputSamplingRate": {
             "title": "音声データの出力サンプリングレート",
@@ -265,8 +275,15 @@
             "title": "エンジンが持つ機能"
           },
           "supported_vvlib_manifest_version": {
-            "title": "エンジンが対応するvvlibのバージョン",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "エンジンが対応するvvlibのバージョン"
           },
           "terms_of_service": {
             "title": "エンジンの利用規約",
@@ -463,8 +480,15 @@
         "description": "依存ライブラリのライセンス情報",
         "properties": {
           "license": {
-            "title": "依存ライブラリのライセンス名",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "依存ライブラリのライセンス名"
           },
           "name": {
             "title": "依存ライブラリ名",
@@ -475,8 +499,15 @@
             "type": "string"
           },
           "version": {
-            "title": "依存ライブラリのバージョン",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "依存ライブラリのバージョン"
           }
         },
         "required": [
@@ -490,12 +521,26 @@
         "description": "モーラ（子音＋母音）ごとの情報",
         "properties": {
           "consonant": {
-            "title": "子音の音素",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "子音の音素"
           },
           "consonant_length": {
-            "title": "子音の音長",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "子音の音長"
           },
           "pitch": {
             "title": "音高",
@@ -544,8 +589,15 @@
             "type": "integer"
           },
           "key": {
-            "title": "音階",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "音階"
           },
           "lyric": {
             "title": "音符の歌詞",
@@ -741,15 +793,22 @@
             "type": "string"
           },
           "type": {
-            "default": "talk",
-            "enum": [
-              "talk",
-              "singing_teacher",
-              "frame_decode",
-              "sing"
+            "anyOf": [
+              {
+                "enum": [
+                  "talk",
+                  "singing_teacher",
+                  "frame_decode",
+                  "sing"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
-            "type": "string"
+            "default": "talk",
+            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
           }
         },
         "required": [
@@ -760,7 +819,6 @@
         "type": "object"
       },
       "SpeakerSupportPermittedSynthesisMorphing": {
-        "description": "An enumeration.",
         "enum": [
           "ALL",
           "SELF_ONLY",
@@ -797,8 +855,15 @@
             "type": "integer"
           },
           "portrait": {
-            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの"
           },
           "voice_samples": {
             "items": {
@@ -872,12 +937,26 @@
             "type": "boolean"
           },
           "manage_library": {
-            "title": "音声ライブラリのインストール・アンインストール",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "音声ライブラリのインストール・アンインストール"
           },
           "sing": {
-            "title": "歌唱音声合成",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "歌唱音声合成"
           },
           "synthesis_morphing": {
             "title": "2種類のスタイルでモーフィングした音声を合成",
@@ -901,11 +980,18 @@
         "description": "エンジンのアップデート情報",
         "properties": {
           "contributors": {
-            "items": {
-              "type": "string"
-            },
-            "title": "貢献者名",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "貢献者名"
           },
           "descriptions": {
             "items": {
@@ -951,8 +1037,15 @@
             "type": "string"
           },
           "mora_count": {
-            "title": "モーラ数",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "モーラ数"
           },
           "part_of_speech": {
             "title": "品詞",
@@ -2996,7 +3089,8 @@
                   "$ref": "#/components/schemas/WordTypes"
                 }
               ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+              "title": "Word Type"
             }
           },
           {
@@ -3006,8 +3100,8 @@
             "required": false,
             "schema": {
               "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "title": "Priority",
               "type": "integer"
             }
@@ -3138,7 +3232,8 @@
                   "$ref": "#/components/schemas/WordTypes"
                 }
               ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+              "title": "Word Type"
             }
           },
           {
@@ -3148,8 +3243,8 @@
             "required": false,
             "schema": {
               "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "title": "Priority",
               "type": "integer"
             }
