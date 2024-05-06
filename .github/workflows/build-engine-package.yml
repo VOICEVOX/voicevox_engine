@@ -608,7 +608,7 @@ jobs:
           done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
-          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
             mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
