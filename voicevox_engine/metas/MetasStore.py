@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, NewType, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Literal, NewType, Tuple
 
 from pydantic import BaseModel, Field
 
