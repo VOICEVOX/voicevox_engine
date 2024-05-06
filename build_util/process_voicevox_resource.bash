@@ -22,6 +22,8 @@ python build_util/merge_update_infos.py \
     "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest_assets/update_infos.json" \
     engine_manifest_assets/update_infos.json
 
-for f in $(ls "${DOWNLOAD_RESOURCE_PATH}"/engine/engine_manifest_assets/* | grep -v update_infos.json); do
-    cp "${f}" ./engine_manifest_assets/
+for f in $(ls "${DOWNLOAD_RESOURCE_PATH}"/engine/engine_manifest_assets/*); do
+    if [ $(basename $f) != "update_infos.json" ]; then
+        cp "${f}" ./engine_manifest_assets/
+    fi
 done
