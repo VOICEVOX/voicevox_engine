@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Optional
+from typing import TypeVar
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -82,11 +82,12 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Optional[Path] = None,
+    root_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
-    allow_origin: Optional[list[str]] = None,
+    allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
+    """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
     if root_dir is None:
         root_dir = engine_root()
 
@@ -119,14 +120,14 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    def get_engine(core_version: Optional[str]) -> TTSEngine:
+    def get_engine(core_version: str | None) -> TTSEngine:
         if core_version is None:
             return tts_engines[latest_core_version]
         if core_version in tts_engines:
             return tts_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-    def get_core(core_version: Optional[str]) -> CoreAdapter:
+    def get_core(core_version: str | None) -> CoreAdapter:
         """指定したバージョンのコアを取得する"""
         if core_version is None:
             return cores[latest_core_version]
@@ -174,6 +175,28 @@ def generate_app(
     app = configure_openapi_schema(app)
 
     return app
+
+
+T = TypeVar("T")
+
+
+def select_first_not_none(candidates: list[T | None]) -> T:
+    """None でない最初の値を取り出す。全て None の場合はエラーを送出する。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    raise RuntimeError("すべての候補値が None です")
+
+
+S = TypeVar("S")
+
+
+def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
+    """None でない最初の値を取り出そうとし、全て None の場合は None を返す。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    return None
 
 
 def main() -> None:
@@ -315,6 +338,12 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    # NOTE: 型検査のため Any 値に対して明示的に型を付ける
+    arg_cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
+    arg_allow_origin: list[str] | None = args.allow_origin
+    arg_preset_path: Path | None = args.preset_file
+    arg_disable_mutable_api: bool = args.disable_mutable_api
+
     if args.output_log_utf8:
         set_output_log_utf8()
 
@@ -356,62 +385,58 @@ def main() -> None:
             enable_mock=enable_mock,
         )
 
-    root_dir: Path | None = voicevox_dir
-    if root_dir is None:
-        root_dir = engine_root()
-
     setting_loader = SettingHandler(args.setting_file)
-
     settings = setting_loader.load()
 
-    cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
-    if cors_policy_mode is None:
-        cors_policy_mode = settings.cors_policy_mode
+    # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
-    allow_origin = None
-    if args.allow_origin is not None:
-        allow_origin = args.allow_origin
-    elif settings.allow_origin is not None:
-        allow_origin = settings.allow_origin.split(" ")
+    root_dir = select_first_not_none([voicevox_dir, engine_root()])
 
-    # Preset Manager
-    # preset_pathの優先順: 引数、環境変数、voicevox_dir、実行ファイルのディレクトリ
-    # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
-    preset_path: Path | None = args.preset_file
-    if preset_path is None:
-        # 引数 --preset_file の指定がない場合
-        env_preset_path = os.getenv("VV_PRESET_FILE")
-        if env_preset_path is not None and len(env_preset_path) != 0:
-            # 環境変数 VV_PRESET_FILE の指定がある場合
-            preset_path = Path(env_preset_path)
-        else:
-            # 環境変数 VV_PRESET_FILE の指定がない場合
-            preset_path = root_dir / "presets.yaml"
-
-    preset_manager = PresetManager(
-        preset_path=preset_path,
+    cors_policy_mode = select_first_not_none(
+        [arg_cors_policy_mode, settings.cors_policy_mode]
     )
 
-    disable_mutable_api: bool = args.disable_mutable_api | decide_boolean_from_env(
-        "VV_DISABLE_MUTABLE_API"
+    setting_allow_origin = None
+    if settings.allow_origin is not None:
+        setting_allow_origin = settings.allow_origin.split(" ")
+    allow_origin = select_first_not_none_or_none(
+        [arg_allow_origin, setting_allow_origin]
     )
 
-    uvicorn.run(
-        generate_app(
-            tts_engines,
-            cores,
-            latest_core_version,
-            setting_loader,
-            preset_manager=preset_manager,
-            cancellable_engine=cancellable_engine,
-            root_dir=root_dir,
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-            disable_mutable_api=disable_mutable_api,
-        ),
-        host=args.host,
-        port=args.port,
+    env_preset_path_str = os.getenv("VV_PRESET_FILE")
+    if env_preset_path_str is not None and len(env_preset_path_str) != 0:
+        env_preset_path = Path(env_preset_path_str)
+    else:
+        env_preset_path = None
+    root_preset_path = root_dir / "presets.yaml"
+    preset_path = select_first_not_none(
+        [arg_preset_path, env_preset_path, root_preset_path]
     )
+    # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
+    preset_manager = PresetManager(preset_path)
+
+    if arg_disable_mutable_api:
+        disable_mutable_api = True
+    else:
+        disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
+
+    # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
+    app = generate_app(
+        tts_engines,
+        cores,
+        latest_core_version,
+        setting_loader,
+        preset_manager,
+        cancellable_engine,
+        root_dir,
+        cors_policy_mode,
+        allow_origin,
+        disable_mutable_api=disable_mutable_api,
+    )
+
+    # VOICEVOX ENGINE サーバーを起動
+    # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
