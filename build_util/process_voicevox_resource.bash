@@ -19,11 +19,8 @@ jq -s '.[0] * .[1]' engine_manifest.json "${DOWNLOAD_RESOURCE_PATH}/engine/engin
     > engine_manifest.json.tmp
 mv engine_manifest.json.tmp engine_manifest.json
 
-# エンジンのアップデート情報へリソースのアップデート情報を追加する
-python build_util/merge_update_infos.py \
-    engine_manifest_assets/update_infos.json \
-    "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest_assets/update_infos.json" \
-    engine_manifest_assets/update_infos.json
+# アップデート情報を整形する。TODO: `merge_update_info.py` のファイル名変更
+python build_util/merge_update_infos.py engine_manifest_assets/update_infos.json
 
 # エンジンのディレクトリへリソースのマニフェストアセットを複製する
 for f in $(ls "${DOWNLOAD_RESOURCE_PATH}"/engine/engine_manifest_assets/* | grep -v update_infos.json); do
