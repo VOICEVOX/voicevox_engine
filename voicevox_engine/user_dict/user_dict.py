@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -436,7 +436,7 @@ def import_user_dict(
     )
 
 
-def _search_cost_candidates(context_id: int) -> List[int]:
+def _search_cost_candidates(context_id: int) -> list[int]:
     for value in part_of_speech_data.values():
         if value.context_id == context_id:
             return value.cost_candidates

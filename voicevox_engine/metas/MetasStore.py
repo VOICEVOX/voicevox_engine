@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, NewType, Tuple
+from typing import TYPE_CHECKING, Dict, Literal, NewType, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -46,7 +46,7 @@ class _CoreSpeaker(BaseModel):
 
     name: str
     speaker_uuid: str
-    styles: List[_CoreSpeakerStyle]
+    styles: list[_CoreSpeakerStyle]
     version: str = Field("話者のバージョン")
 
 
@@ -80,9 +80,9 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    # FIXME: engineではなくList[CoreSpeaker]を渡す形にすることで
+    # FIXME: engineではなくlist[CoreSpeaker]を渡す形にすることで
     # TTSEngineによる循環importを修正する
-    def load_combined_metas(self, core: "CoreAdapter") -> List[Speaker]:
+    def load_combined_metas(self, core: "CoreAdapter") -> list[Speaker]:
         """
         コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
         Parameters
@@ -91,7 +91,7 @@ class MetasStore:
             話者メタ情報をもったコア
         Returns
         -------
-        ret : List[Speaker]
+        ret : list[Speaker]
             エンジンとコアに含まれる話者メタ情報
         """
         # コアに含まれる話者メタ情報の収集
@@ -112,13 +112,13 @@ class MetasStore:
 
 
 def construct_lookup(
-    speakers: List[Speaker],
+    speakers: list[Speaker],
 ) -> Dict[StyleId, Tuple[Speaker, SpeakerStyle]]:
     """
     スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
     Parameters
     ----------
-    speakers : List[Speaker]
+    speakers : list[Speaker]
         話者メタ情報
     Returns
     -------

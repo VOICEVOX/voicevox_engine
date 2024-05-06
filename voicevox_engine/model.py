@@ -1,6 +1,6 @@
 from enum import Enum
 from re import findall, fullmatch
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, StrictStr, validator
 
@@ -23,7 +23,7 @@ class Mora(BaseModel):
 
     def __hash__(self) -> int:
         items = [
-            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
@@ -37,14 +37,14 @@ class AccentPhrase(BaseModel):
     アクセント句ごとの情報
     """
 
-    moras: List[Mora] = Field(title="モーラのリスト")
+    moras: list[Mora] = Field(title="モーラのリスト")
     accent: int = Field(title="アクセント箇所")
     pause_mora: Optional[Mora] = Field(title="後ろに無音を付けるかどうか")
     is_interrogative: bool = Field(default=False, title="疑問系かどうか")
 
     def __hash__(self) -> int:
         items = [
-            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
@@ -55,7 +55,7 @@ class AudioQuery(BaseModel):
     音声合成用のクエリ
     """
 
-    accent_phrases: List[AccentPhrase] = Field(title="アクセント句のリスト")
+    accent_phrases: list[AccentPhrase] = Field(title="アクセント句のリスト")
     speedScale: float = Field(title="全体の話速")
     pitchScale: float = Field(title="全体の音高")
     intonationScale: float = Field(title="全体の抑揚")
@@ -70,7 +70,7 @@ class AudioQuery(BaseModel):
 
     def __hash__(self) -> int:
         items = [
-            (k, tuple(v)) if isinstance(v, List) else (k, v)
+            (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
@@ -91,7 +91,7 @@ class Score(BaseModel):
     楽譜情報
     """
 
-    notes: List[Note] = Field(title="音符のリスト")
+    notes: list[Note] = Field(title="音符のリスト")
 
 
 class FramePhoneme(BaseModel):
@@ -108,9 +108,9 @@ class FrameAudioQuery(BaseModel):
     フレームごとの音声合成用のクエリ
     """
 
-    f0: List[float] = Field(title="フレームごとの基本周波数")
-    volume: List[float] = Field(title="フレームごとの音量")
-    phonemes: List[FramePhoneme] = Field(title="音素のリスト")
+    f0: list[float] = Field(title="フレームごとの基本周波数")
+    volume: list[float] = Field(title="フレームごとの音量")
+    phonemes: list[FramePhoneme] = Field(title="音素のリスト")
     volumeScale: float = Field(title="全体の音量")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
@@ -184,7 +184,7 @@ class BaseLibraryInfo(BaseModel):
     version: str = Field(title="音声ライブラリのバージョン")
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
-    speakers: List[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
+    speakers: list[LibrarySpeaker] = Field(title="音声ライブラリに含まれる話者のリスト")
 
 
 # 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている
@@ -310,8 +310,8 @@ class PartOfSpeechDetail(BaseModel):
     # context_idは辞書の左・右文脈IDのこと
     # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
     context_id: int = Field(title="文脈ID")
-    cost_candidates: List[int] = Field(title="コストのパーセンタイル")
-    accent_associative_rules: List[str] = Field(title="アクセント結合規則の一覧")
+    cost_candidates: list[int] = Field(title="コストのパーセンタイル")
+    accent_associative_rules: list[str] = Field(title="アクセント結合規則の一覧")
 
 
 class WordTypes(str, Enum):

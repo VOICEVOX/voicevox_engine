@@ -3,7 +3,7 @@
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
 # 変更する際は、Optionalにする必要があることに留意しなければならない。
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,8 +14,8 @@ class UpdateInfo(BaseModel):
     """
 
     version: str = Field(title="エンジンのバージョン名")
-    descriptions: List[str] = Field(title="アップデートの詳細についての説明")
-    contributors: Optional[List[str]] = Field(title="貢献者名")
+    descriptions: list[str] = Field(title="アップデートの詳細についての説明")
+    contributors: Optional[list[str]] = Field(title="貢献者名")
 
 
 class LicenseInfo(BaseModel):
@@ -64,8 +64,8 @@ class EngineManifest(BaseModel):
     default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
     frame_rate: float = Field(title="エンジンのフレームレート")
     terms_of_service: str = Field(title="エンジンの利用規約")
-    update_infos: List[UpdateInfo] = Field(title="エンジンのアップデート情報")
-    dependency_licenses: List[LicenseInfo] = Field(title="依存関係のライセンス情報")
+    update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
+    dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
     supported_vvlib_manifest_version: Optional[str] = Field(
         title="エンジンが対応するvvlibのバージョン"
     )

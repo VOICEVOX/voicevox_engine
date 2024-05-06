@@ -14,7 +14,7 @@
 NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
 """
 
-from typing import List, Optional
+from typing import Optional
 
 from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
 from .mora_mapping import mora_kana_to_mora_phonemes
@@ -71,7 +71,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     # NOTE: ポーズと疑問形はこの関数内で処理しない
 
     accent_index: Optional[int] = None
-    moras: List[Mora] = []
+    moras: list[Mora] = []
 
     base_index = 0  # パース開始位置。ここから右の文字列をstackに詰めていく。
     stack = ""  # 保留中の文字列
@@ -119,7 +119,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
+def parse_kana(text: str) -> list[AccentPhrase]:
     """
     AquesTalk 風記法テキストからアクセント句系列を生成
     Parameters
@@ -128,11 +128,11 @@ def parse_kana(text: str) -> List[AccentPhrase]:
         AquesTalk 風記法テキスト
     Returns
     -------
-    parsed_results : List[AccentPhrase]
+    parsed_results : list[AccentPhrase]
         アクセント句（音素・モーラ音高 0初期化）系列を生成
     """
 
-    parsed_results: List[AccentPhrase] = []
+    parsed_results: list[AccentPhrase] = []
     phrase_base = 0
     if len(text) == 0:
         raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
@@ -177,12 +177,12 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     return parsed_results
 
 
-def create_kana(accent_phrases: List[AccentPhrase]) -> str:
+def create_kana(accent_phrases: list[AccentPhrase]) -> str:
     """
     アクセント句系列からAquesTalk 風記法テキストを生成
     Parameters
     ----------
-    accent_phrases : List[AccentPhrase]
+    accent_phrases : list[AccentPhrase]
         アクセント句系列
     Returns
     -------
