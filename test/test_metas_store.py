@@ -1,7 +1,7 @@
 import uuid
 from unittest import TestCase
 
-from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleType
+from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleId, StyleType
 from voicevox_engine.metas.MetasStore import filter_speakers_and_styles
 
 
@@ -12,7 +12,7 @@ def _gen_speaker(style_types: list[StyleType]) -> Speaker:
         styles=[
             SpeakerStyle(
                 name="",
-                id=0,
+                id=StyleId(0),
                 type=style_type,
             )
             for style_type in style_types

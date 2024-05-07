@@ -15,8 +15,8 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   PYTHON_VERSION: "3.11.3"
-  VOICEVOX_RESOURCE_VERSION: "0.18.0"
-  VOICEVOX_CORE_VERSION: "0.15.2"
+  VOICEVOX_RESOURCE_VERSION: "0.19.0"
+  VOICEVOX_CORE_VERSION: "0.15.3"
 
 defaults:
   run:
@@ -81,30 +81,30 @@ jobs:
             platforms: linux/amd64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
 
-      - name: Setup QEMU
+      - name: <Setup> Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Setup Docker Buildx
+      - name: <Setup> Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to DockerHub
+      - name: <Setup> Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Download VOICEVOX RESOURCE
-      - name: Prepare VOICEVOX RESOURCE cache
+      - name: <Setup> Prepare VOICEVOX RESOURCE cache
         uses: actions/cache@v3
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
-      - name: Checkout VOICEVOX RESOURCE
+      - name: <Setup> Check out the VOICEVOX RESOURCE repository
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
@@ -112,13 +112,12 @@ jobs:
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
-      # Merge VOICEVOX RESOURCE
-      - name: Merge VOICEVOX RESOURCE
+      - name: <Build> Merge VOICEVOX RESOURCE
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash build_util/process_voicevox_resource.bash
 
-      - name: Build and Deploy Docker image
+      - name: <Build/Deploy> Build and Deploy Docker image
         uses: docker/build-push-action@v3
         env:
           IMAGE_TAG:

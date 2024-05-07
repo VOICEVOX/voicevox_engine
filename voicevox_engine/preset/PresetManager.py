@@ -1,11 +1,10 @@
 from pathlib import Path
-from typing import List
 
 import yaml
 from pydantic import ValidationError, parse_obj_as
 
 from .Preset import Preset
-from .PresetError import PresetError
+from .PresetError import PresetInputError, PresetInternalError
 
 
 class PresetManager:
@@ -17,70 +16,48 @@ class PresetManager:
     """
 
     def __init__(self, preset_path: Path):
-        """
-        Parameters
-        ----------
-        preset_path : Path
-            プリセット情報を一元管理するYAMLファイルへのパス
-        """
-        self.presets: list[Preset] = []
+        """プリセットの設定ファイルへのパスからプリセットマネージャーを生成する"""
+        self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
 
-    def load_presets(self) -> list[Preset]:
-        """
-        既存プリセットの読み込み
-        Returns
-        -------
-        ret: list[Preset]
-            読み込まれたプリセットのリスト
-        """
+    def _refresh_cache(self) -> None:
+        """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
 
         # データベース更新の確認（タイムスタンプベース）
         try:
             _last_modified_time = self.preset_path.stat().st_mtime
             if _last_modified_time == self.last_modified_time:
-                # 更新無し、キャッシュを返す
-                return self.presets
+                # 更新無し
+                return
         except OSError:
-            raise PresetError("プリセットの設定ファイルが見つかりません")
+            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
         # データベースの読み込み
         with open(self.preset_path, mode="r", encoding="utf-8") as f:
             obj = yaml.safe_load(f)
             if obj is None:
-                raise PresetError("プリセットの設定ファイルが空の内容です")
+                raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
-            _presets = parse_obj_as(List[Preset], obj)
+            _presets = parse_obj_as(list[Preset], obj)
         except ValidationError:
-            raise PresetError("プリセットの設定ファイルにミスがあります")
+            raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 
         # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(
             {preset.id for preset in _presets}
         ):
-            raise PresetError("プリセットのidに重複があります")
+            raise PresetInternalError("プリセットのidに重複があります")
 
+        # キャッシュを更新する
         self.presets = _presets
         self.last_modified_time = _last_modified_time
 
-        return self.presets
-
     def add_preset(self, preset: Preset) -> int:
-        """
-        新規プリセットの追加
-        Parameters
-        ----------
-        preset : Preset
-            新規プリセット
-        Returns
-        -------
-        ret: int
-            追加されたプリセットのID
-        """
+        """新規プリセットを追加し、その ID を取得する。"""
 
         # データベース更新の反映
-        self.load_presets()
+        self._refresh_cache()
 
         # 新規プリセットID の発行。IDが0未満、または存在するIDなら新規IDを発行
         if preset.id < 0 or preset.id in {preset.id for preset in self.presets}:
@@ -94,27 +71,25 @@ class PresetManager:
         except Exception as err:
             self.presets.pop()
             if isinstance(err, FileNotFoundError):
-                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
             else:
                 raise err
 
         return preset.id
 
-    def update_preset(self, preset: Preset) -> int:
-        """
-        既存プリセットの更新
-        Parameters
-        ----------
-        preset : Preset
-            新しい既存プリセット
-        Returns
-        -------
-        ret: int
-            更新されたプリセットのID
-        """
+    def load_presets(self) -> list[Preset]:
+        """全てのプリセットを取得する"""
 
         # データベース更新の反映
-        self.load_presets()
+        self._refresh_cache()
+
+        return self.presets
+
+    def update_preset(self, preset: Preset) -> int:
+        """指定されたプリセットを更新し、その ID を取得する。"""
+
+        # データベース更新の反映
+        self._refresh_cache()
 
         # 対象プリセットの検索
         prev_preset: tuple[int, Preset | None] = (-1, None)
@@ -124,7 +99,7 @@ class PresetManager:
                 self.presets[i] = preset
                 break
         else:
-            raise PresetError("更新先のプリセットが存在しません")
+            raise PresetInputError("更新先のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:
@@ -132,27 +107,17 @@ class PresetManager:
         except Exception as err:
             self.presets[prev_preset[0]] = prev_preset[1]
             if isinstance(err, FileNotFoundError):
-                raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
             else:
                 raise err
 
         return preset.id
 
     def delete_preset(self, id: int) -> int:
-        """
-        指定したIDのプリセットの削除
-        Parameters
-        ----------
-        id: int
-            削除対象プリセットのID
-        Returns
-        -------
-        ret: int
-            削除されたプリセットのID
-        """
+        """ID で指定されたプリセットを削除し、その ID を取得する。"""
 
         # データベース更新の反映
-        self.load_presets()
+        self._refresh_cache()
 
         # 対象プリセットの検索
         buf = None
@@ -163,14 +128,14 @@ class PresetManager:
                 buf_index = i
                 break
         else:
-            raise PresetError("削除対象のプリセットが存在しません")
+            raise PresetInputError("削除対象のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
         except FileNotFoundError:
             self.presets.insert(buf_index, buf)
-            raise PresetError("プリセットの設定ファイルに書き込み失敗しました")
+            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
         return id
 

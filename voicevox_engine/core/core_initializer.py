@@ -1,7 +1,6 @@
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 from ..tts_pipeline.tts_engine import CoreAdapter
 from ..utility.core_utility import get_half_logical_cores
@@ -13,10 +12,10 @@ MOCK_VER = "0.0.0"
 
 def initialize_cores(
     use_gpu: bool,
-    voicelib_dirs: Optional[List[Path]] = None,
-    voicevox_dir: Optional[Path] = None,
-    runtime_dirs: Optional[List[Path]] = None,
-    cpu_num_threads: Optional[int] = None,
+    voicelib_dirs: list[Path] | None = None,
+    voicevox_dir: Path | None = None,
+    runtime_dirs: list[Path] | None = None,
+    cpu_num_threads: int | None = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
 ) -> dict[str, CoreAdapter]:
@@ -27,19 +26,19 @@ def initialize_cores(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
-    voicelib_dirs: List[Path], optional, default=None
+    voicelib_dirs:
         音声ライブラリ自体があるディレクトリのリスト
-    voicevox_dir: Path, optional, default=None
+    voicevox_dir:
         コンパイル済みのvoicevox、またはvoicevox_engineがあるディレクトリ
-    runtime_dirs: List[Path], optional, default=None
+    runtime_dirs:
         コアで使用するライブラリのあるディレクトリのリスト
         None のとき、voicevox_dir、カレントディレクトリになる
-    cpu_num_threads: int, optional, default=None
+    cpu_num_threads:
         音声ライブラリが、推論に用いるCPUスレッド数を設定する
         Noneのとき、論理コア数の半分が指定される
-    enable_mock: bool, optional, default=True
+    enable_mock:
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
-    load_all_models: bool, optional, default=False
+    load_all_models:
         起動時に全てのモデルを読み込むかどうか
     """
     if cpu_num_threads == 0 or cpu_num_threads is None:
@@ -50,33 +49,24 @@ def initialize_cores(
         )
         cpu_num_threads = get_half_logical_cores()
 
-    # ディレクトリを設定する
-    # 引数による指定を反映する
-    if voicevox_dir is not None:
-        if voicelib_dirs is not None:
-            voicelib_dirs.append(voicevox_dir)
-        else:
-            voicelib_dirs = [voicevox_dir]
-        if runtime_dirs is not None:
-            runtime_dirs.append(voicevox_dir)
-        else:
-            runtime_dirs = [voicevox_dir]
-    else:
-        root_dir = engine_root()
-        if voicelib_dirs is None:
-            voicelib_dirs = [root_dir]
-        if runtime_dirs is None:
-            runtime_dirs = [root_dir]
+    root_dir = engine_root()
 
-    # `~`をホームディレクトリのパスに置き換える
-    voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
+    # 引数による指定を反映し、無ければ `root_dir` とする
+    runtime_dirs = runtime_dirs or []
+    runtime_dirs += [voicevox_dir] if voicevox_dir else []
+    runtime_dirs = runtime_dirs or [root_dir]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
-
     # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
     # コアをロードし `cores` へ登録する
     cores: dict[str, CoreAdapter] = {}
+
+    # 引数による指定を反映し、無ければ `root_dir` とする
+    voicelib_dirs = voicelib_dirs or []
+    voicelib_dirs += [voicevox_dir] if voicevox_dir else []
+    voicelib_dirs = voicelib_dirs or [root_dir]
+    voicelib_dirs = [p.expanduser() for p in voicelib_dirs]
 
     if not enable_mock:
 
