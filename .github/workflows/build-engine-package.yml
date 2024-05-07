@@ -523,6 +523,8 @@ jobs:
           # Move DLL dependencies (cache already saved)
 
           # ONNX Runtime providers (PyInstaller does not copy dynamic loaded libraries)
+          # NOTE: `$ORIGIN` は RPATH の特殊トークンであるため、bash 変数扱いされないために適切なエスケープが必要。
+          # shellcheck disable=SC2016
           patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
           mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
 
