@@ -150,6 +150,9 @@ jobs:
         run: |
           set -eux
 
+          # CUDA Toolkit へのパスを OS 非依存へ整形する
+          # NOTE: ダブルクォートでバックスラッシュを囲むと tr が可搬性関連の warning を出す
+          # shellcheck disable=SC1003
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
