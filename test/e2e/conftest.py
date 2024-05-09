@@ -5,8 +5,8 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from run import generate_app
 
+from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import SettingHandler
