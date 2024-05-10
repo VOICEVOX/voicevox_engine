@@ -336,7 +336,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ## GitHub Actions
 
-## Variables
+### Variables
 
 | name               | description         |
 | :----------------- | :------------------ |
