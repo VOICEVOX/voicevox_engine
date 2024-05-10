@@ -100,7 +100,7 @@ GitHub Issues を用いてバグを一元管理しています。
 GitHub Issues を用いて機能向上を一元管理しています。  
 
 ### 機能向上を探す
-[`機能向上` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3A%E6%A9%9F%E8%83%BD%E5%90%91%E4%B8%8A)により新規機能追加や仕様変更の一覧にアクセスできます。機能向上の実装状況は各機能向上の issue にて確認できます。  
+[`機能向上` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3A機能向上)により新規機能追加や仕様変更の一覧にアクセスできます。機能向上の実装状況は各機能向上の issue にて確認できます。  
 
 ### 機能向上を要望する
 既存提案一覧にない機能向上案がある場合、GitHub Issues で提案が可能です。VOICEVOX ENGINE は機能向上の提案を歓迎しています。  
