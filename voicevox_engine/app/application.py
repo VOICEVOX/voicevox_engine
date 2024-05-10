@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -12,6 +11,7 @@ from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
+from voicevox_engine.app.routers.portal import generate_portal_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.speaker import generate_speaker_router
@@ -62,15 +62,15 @@ def generate_app(
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
 
-    engine_manifest_data = EngineManifestLoader(
+    engine_manifest = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
     ).load_manifest()
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest_data.supported_vvlib_manifest_version,
-        engine_manifest_data.brand_name,
-        engine_manifest_data.name,
-        engine_manifest_data.uuid,
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
     )
 
     metas_store = MetasStore(root_dir / "speaker_info")
@@ -98,34 +98,12 @@ def generate_app(
     app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
     app.include_router(generate_preset_router(preset_manager))
     app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
+    if engine_manifest.supported_features.manage_library:
+        app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router())
-    app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
-    )
-    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-
-    @app.get("/", response_class=HTMLResponse, tags=["その他"])
-    async def get_portal() -> str:
-        """ポータルページを返します。"""
-        engine_name = engine_manifest_data.name
-
-        return f"""
-        <html>
-            <head>
-                <title>{engine_name}</title>
-            </head>
-            <body>
-                <h1>{engine_name}</h1>
-                {engine_name} へようこそ！
-                <ul>
-                    <li><a href='/setting'>設定</a></li>
-                    <li><a href='/docs'>API ドキュメント</a></li>
-        </ul></body></html>
-        """
+    app.include_router(generate_engine_info_router(get_core, cores, engine_manifest))
+    app.include_router(generate_setting_router(setting_loader, engine_manifest))
+    app.include_router(generate_portal_router(engine_manifest))
 
     app = configure_openapi_schema(app)
 
