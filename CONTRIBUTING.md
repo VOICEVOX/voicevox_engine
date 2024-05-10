@@ -120,7 +120,7 @@ GitHub Issues を用いて機能向上を一元管理しています。
 # 実行・開発・テスト環境のインストール
 python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 
-# タスクランナーのインストール
+# git hook のインストール
 pre-commit install -t pre-push
 ```
 
