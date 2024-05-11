@@ -23,7 +23,7 @@ from voicevox_engine.model import (
 from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngines
 from voicevox_engine.utility.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
@@ -32,7 +32,7 @@ from voicevox_engine.utility.path_utility import delete_file
 
 
 def generate_tts_pipeline_router(
-    get_engine: Callable[[str | None], TTSEngine],
+    tts_engines: TTSEngines,
     get_core: Callable[[str | None], CoreAdapter],
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
@@ -54,7 +54,7 @@ def generate_tts_pipeline_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         core = get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
@@ -84,7 +84,7 @@ def generate_tts_pipeline_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         core = get_core(core_version)
         try:
             presets = preset_manager.load_presets()
@@ -142,7 +142,7 @@ def generate_tts_pipeline_router(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         if is_kana:
             try:
                 return engine.create_accent_phrases_from_kana(text, style_id)
@@ -164,7 +164,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -178,7 +178,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
 
     @router.post(
@@ -192,7 +192,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -219,7 +219,7 @@ def generate_tts_pipeline_router(
         ] = True,
         core_version: str | None = None,
     ) -> FileResponse:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
@@ -291,7 +291,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FileResponse:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -334,7 +334,7 @@ def generate_tts_pipeline_router(
         """
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         core = get_core(core_version)
         phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
             score, style_id
@@ -361,7 +361,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[float]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.create_sing_volume_from_phoneme_and_f0(
             score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
         )
@@ -386,7 +386,7 @@ def generate_tts_pipeline_router(
         """
         歌唱音声合成を行います。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         wave = engine.frame_synthsize_wave(query, style_id)
 
         with NamedTemporaryFile(delete=False) as f:

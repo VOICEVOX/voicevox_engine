@@ -6,7 +6,7 @@ from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
+from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter, TTSEngines
 from voicevox_engine.utility.path_utility import engine_root
 
 
@@ -35,9 +35,11 @@ def generate_api_docs_html(schema: str) -> str:
 
 if __name__ == "__main__":
     mock_core = MockCoreWrapper()
+    tts_engines = TTSEngines()
+    tts_engines.register_engine(MockTTSEngine(), "mock")
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
-        tts_engines={"mock": MockTTSEngine()},
+        tts_engines=tts_engines,
         cores={"mock": CoreAdapter(mock_core)},
         latest_core_version="mock",
         setting_loader=SettingHandler(USER_SETTING_PATH),

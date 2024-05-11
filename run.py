@@ -17,7 +17,6 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.utility.core_version_utility import get_latest_version
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
@@ -245,8 +244,8 @@ def main() -> None:
         load_all_models=load_all_models,
     )
     tts_engines = make_tts_engines_from_cores(cores)
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    assert len(tts_engines.versions) != 0, "音声合成エンジンがありません。"
+    latest_core_version = tts_engines.latest_version
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
