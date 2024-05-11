@@ -37,14 +37,12 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path | None = None,
+    root_dir: Path = engine_root(),
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if root_dir is None:
-        root_dir = engine_root()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
