@@ -91,7 +91,7 @@ def test_cores_get_core_missing() -> None:
     cores.register_core(core2, "0.0.2")
 
     # Test
-    with pytest.raises(HTTPException) as e:
+    with pytest.raises(HTTPException) as _:
         cores.get_core("0.0.3")
 
 
