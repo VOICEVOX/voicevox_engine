@@ -1,5 +1,3 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -46,16 +44,12 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        update_dict()
-        yield
+    update_dict()
 
     app = FastAPI(
         title="VOICEVOX Engine",
         description="VOICEVOXの音声合成エンジンです。",
         version=__version__,
-        lifespan=lifespan,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
