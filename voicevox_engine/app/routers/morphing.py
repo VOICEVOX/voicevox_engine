@@ -36,12 +36,11 @@ def generate_morphing_router(
     metas_store: MetasStore,
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["音声合成"])
 
     @router.post(
         "/morphable_targets",
         response_model=list[dict[str, MorphableTargetInfo]],
-        tags=["音声合成"],
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
@@ -81,7 +80,6 @@ def generate_morphing_router(
                 },
             }
         },
-        tags=["音声合成"],
         summary="2種類のスタイルでモーフィングした音声を合成する",
     )
     def _synthesis_morphing(

@@ -24,9 +24,9 @@ def generate_setting_router(
     engine_manifest_data: EngineManifest,
 ) -> APIRouter:
     """設定 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["設定"])
 
-    @router.get("/setting", response_class=Response, tags=["設定"])
+    @router.get("/setting", response_class=Response)
     def setting_get(request: Request) -> Response:
         """
         設定ページを返します。
@@ -53,7 +53,6 @@ def generate_setting_router(
     @router.post(
         "/setting",
         response_class=Response,
-        tags=["設定"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(

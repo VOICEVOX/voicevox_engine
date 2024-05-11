@@ -13,13 +13,12 @@ from ..dependencies import check_disabled_mutable_api
 
 def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     """プリセット API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
     @router.get(
         "/presets",
         response_model=list[Preset],
         response_description="プリセットのリスト",
-        tags=["その他"],
     )
     def get_presets() -> list[Preset]:
         """
@@ -37,7 +36,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
         "/add_preset",
         response_model=int,
         response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_preset(
@@ -63,7 +61,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
         "/update_preset",
         response_model=int,
         response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def update_preset(
@@ -88,7 +85,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/delete_preset",
         status_code=204,
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_preset(

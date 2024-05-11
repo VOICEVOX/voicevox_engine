@@ -17,25 +17,21 @@ def generate_engine_info_router(
     engine_manifest_data: EngineManifest,
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
-    @router.get("/version", tags=["その他"])
+    @router.get("/version")
     async def version() -> str:
         return __version__
 
-    @router.get("/core_versions", response_model=list[str], tags=["その他"])
+    @router.get("/core_versions", response_model=list[str])
     async def core_versions() -> Response:
         return Response(
             content=json.dumps(list(cores.keys())),
             media_type="application/json",
         )
 
-    @router.get(
-        "/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"]
-    )
-    def supported_devices(
-        core_version: str | None = None,
-    ) -> Response:
+    @router.get("/supported_devices", response_model=SupportedDevicesInfo)
+    def supported_devices(core_version: str | None = None) -> Response:
         supported_devices = get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
@@ -44,7 +40,7 @@ def generate_engine_info_router(
             media_type="application/json",
         )
 
-    @router.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
+    @router.get("/engine_manifest", response_model=EngineManifest)
     async def engine_manifest() -> EngineManifest:
         return engine_manifest_data
 

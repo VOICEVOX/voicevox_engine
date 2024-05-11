@@ -24,13 +24,12 @@ from ..dependencies import check_disabled_mutable_api
 
 def generate_user_dict_router() -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["ユーザー辞書"])
 
     @router.get(
         "/user_dict",
         response_model=dict[str, UserDictWord],
         response_description="単語のUUIDとその詳細",
-        tags=["ユーザー辞書"],
     )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
@@ -50,7 +49,6 @@ def generate_user_dict_router() -> APIRouter:
     @router.post(
         "/user_dict_word",
         response_model=str,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_user_dict_word(
@@ -101,7 +99,6 @@ def generate_user_dict_router() -> APIRouter:
     @router.put(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def rewrite_user_dict_word(
@@ -154,7 +151,6 @@ def generate_user_dict_router() -> APIRouter:
     @router.delete(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_user_dict_word(
@@ -177,7 +173,6 @@ def generate_user_dict_router() -> APIRouter:
     @router.post(
         "/import_user_dict",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def import_user_dict_words(
