@@ -4,10 +4,10 @@ import argparse
 import multiprocessing
 import os
 import sys
+import warnings
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TypeVar
-import warnings
 
 import uvicorn
 
