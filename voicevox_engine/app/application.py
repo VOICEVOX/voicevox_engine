@@ -29,6 +29,8 @@ from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
 from voicevox_engine.user_dict.user_dict import update_dict
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
+_DEFAULT_ROOT_DIR = engine_root()
+
 
 def generate_app(
     tts_engines: dict[str, TTSEngine],
@@ -37,7 +39,7 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path = engine_root(),
+    root_dir: Path = _DEFAULT_ROOT_DIR,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
