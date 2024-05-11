@@ -15,6 +15,7 @@ MOCK_VER = "0.0.0"
 
 class Cores:
     """コアの集まり"""
+
     def __init__(self) -> None:
         self._cores: dict[str, CoreAdapter] = {}
 

@@ -1,7 +1,8 @@
 """ `core_initializer.py` のテスト"""
 
-from fastapi import HTTPException
 import pytest
+from fastapi import HTTPException
+
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import Cores
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -92,7 +93,6 @@ def test_cores_get_core_missing() -> None:
     # Test
     with pytest.raises(HTTPException) as e:
         cores.get_core("0.0.3")
-
 
 
 def test_cores_has_core_true() -> None:
