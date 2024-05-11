@@ -1,13 +1,20 @@
 import json
+import os
 import sys
 from pathlib import Path
 
 from ..tts_pipeline.tts_engine import CoreAdapter
-from ..utility.core_utility import get_half_logical_cores
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
 MOCK_VER = "0.0.0"
+
+
+def get_half_logical_cores() -> int:
+    logical_cores = os.cpu_count()
+    if logical_cores is None:
+        return 0
+    return logical_cores // 2
 
 
 def initialize_cores(
