@@ -2,11 +2,12 @@ import json
 from pathlib import Path
 
 from voicevox_engine.app.application import generate_app
+from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import Cores
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
 from voicevox_engine.utility.path_utility import engine_root
 
 
@@ -34,11 +35,12 @@ def generate_api_docs_html(schema: str) -> str:
 
 
 if __name__ == "__main__":
-    mock_core = MockCoreWrapper()
+    cores = Cores()
+    cores.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
         tts_engines={"mock": MockTTSEngine()},
-        cores={"mock": CoreAdapter(mock_core)},
+        cores=cores,
         latest_core_version="mock",
         setting_loader=SettingHandler(USER_SETTING_PATH),
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager

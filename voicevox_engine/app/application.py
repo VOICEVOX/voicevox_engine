@@ -18,7 +18,7 @@ from voicevox_engine.app.routers.speaker import generate_speaker_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import Cores
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
@@ -32,7 +32,7 @@ from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 def generate_app(
     tts_engines: dict[str, TTSEngine],
-    cores: dict[str, CoreAdapter],
+    cores: Cores,
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
@@ -82,30 +82,20 @@ def generate_app(
             return tts_engines[core_version]
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-    def get_core(core_version: str | None) -> CoreAdapter:
-        """指定したバージョンのコアを取得する"""
-        if core_version is None:
-            return cores[latest_core_version]
-        if core_version in cores:
-            return cores[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
     app.include_router(
         generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
+            get_engine, cores, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
+    app.include_router(generate_morphing_router(get_engine, cores, metas_store))
     app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
+    app.include_router(generate_speaker_router(cores, metas_store, root_dir))
     if engine_manifest_data.supported_features.manage_library:
         app.include_router(
             generate_library_router(engine_manifest_data, library_manager)
         )
     app.include_router(generate_user_dict_router())
-    app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
-    )
+    app.include_router(generate_engine_info_router(cores, engine_manifest_data))
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
 
     @app.get("/", response_class=HTMLResponse, tags=["その他"])

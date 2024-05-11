@@ -1,20 +1,17 @@
 """エンジンの情報機能を提供する API Router"""
 
 import json
-from typing import Callable
 
 from fastapi import APIRouter, HTTPException, Response
 
 from voicevox_engine import __version__
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import Cores
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.model import SupportedDevicesInfo
 
 
 def generate_engine_info_router(
-    get_core: Callable[[str | None], CoreAdapter],
-    cores: dict[str, CoreAdapter],
-    engine_manifest_data: EngineManifest,
+    cores: Cores, engine_manifest_data: EngineManifest
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter()
@@ -26,7 +23,7 @@ def generate_engine_info_router(
     @router.get("/core_versions", response_model=list[str], tags=["その他"])
     async def core_versions() -> Response:
         return Response(
-            content=json.dumps(list(cores.keys())),
+            content=json.dumps(cores.versions),
             media_type="application/json",
         )
 
@@ -36,7 +33,7 @@ def generate_engine_info_router(
     def supported_devices(
         core_version: str | None = None,
     ) -> Response:
-        supported_devices = get_core(core_version).supported_devices
+        supported_devices = cores.get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return Response(

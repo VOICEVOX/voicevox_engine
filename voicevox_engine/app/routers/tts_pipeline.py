@@ -10,7 +10,7 @@ from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import Cores
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import (
     AccentPhrase,
@@ -33,7 +33,7 @@ from voicevox_engine.utility.path_utility import delete_file
 
 def generate_tts_pipeline_router(
     get_engine: Callable[[str | None], TTSEngine],
-    get_core: Callable[[str | None], CoreAdapter],
+    cores: Cores,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:
@@ -55,7 +55,7 @@ def generate_tts_pipeline_router(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        core = get_core(core_version)
+        core = cores.get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -85,7 +85,7 @@ def generate_tts_pipeline_router(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        core = get_core(core_version)
+        core = cores.get_core(core_version)
         try:
             presets = preset_manager.load_presets()
         except PresetInputError as err:
@@ -335,7 +335,7 @@ def generate_tts_pipeline_router(
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         engine = get_engine(core_version)
-        core = get_core(core_version)
+        core = cores.get_core(core_version)
         phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
             score, style_id
         )
