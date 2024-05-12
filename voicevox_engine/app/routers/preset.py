@@ -93,16 +93,16 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     )
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
+    ) -> None:
         """
         既存のプリセットを削除します
         """
         try:
             preset_manager.delete_preset(id)
+            return
         except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except PresetInternalError as err:
             raise HTTPException(status_code=500, detail=str(err))
-        return Response(status_code=204)
 
     return router

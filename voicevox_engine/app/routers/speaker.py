@@ -175,14 +175,14 @@ def generate_speaker_router(
             ),
         ] = False,
         core_version: str | None = None,
-    ) -> Response:
+    ) -> None:
         """
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
+        return
 
     @router.get("/is_initialized_speaker", response_model=bool, tags=["その他"])
     def is_initialized_speaker(

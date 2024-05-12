@@ -58,7 +58,7 @@ def generate_library_router(
     async def install_library(
         library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")],
         request: Request,
-    ) -> Response:
+    ) -> None:
         """
         音声ライブラリをインストールします。
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
@@ -70,7 +70,7 @@ def generate_library_router(
         await loop.run_in_executor(
             None, library_manager.install_library, library_uuid, archive
         )
-        return Response(status_code=204)
+        return
 
     @router.post(
         "/uninstall_library/{library_uuid}",
@@ -80,13 +80,13 @@ def generate_library_router(
     )
     def uninstall_library(
         library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")]
-    ) -> Response:
+    ) -> None:
         """
         音声ライブラリをアンインストールします。
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         library_manager.uninstall_library(library_uuid)
-        return Response(status_code=204)
+        return
 
     return router
