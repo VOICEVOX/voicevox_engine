@@ -76,7 +76,7 @@ jobs:
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         uses: crate-ci/typos@v1.12.12
 
-  lint:
+  shellcheck:
     runs-on: ubuntu-20.04
     steps:
       - name: <Setup> Check out the repository
