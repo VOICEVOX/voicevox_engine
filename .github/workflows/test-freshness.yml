@@ -18,7 +18,6 @@ jobs:
           # on.schedule で起動した場合は `inputs.dryrun == null` であるため `debug-only: false` となる
           debug-only: ${{ inputs.dryrun == 'true' }}
           any-of-labels: '状態：必要性議論'
-          exempt-issue-labels: 'バグ'
           days-before-stale: 30
           days-before-close: -1
           stale-issue-message: '本 Issue は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
@@ -30,7 +29,6 @@ jobs:
           # on.schedule で起動した場合は `inputs.dryrun == null` であるため `debug-only: false` となる
           debug-only: ${{ inputs.dryrun == 'true' }}
           any-of-labels: '状態：設計,状態：実装者募集,状態：実装'
-          exempt-issue-labels: 'バグ'
           days-before-stale: 180
           days-before-close: -1
           stale-issue-message: '本 Issue は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
