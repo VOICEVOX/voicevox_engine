@@ -16,7 +16,7 @@ jobs:
         uses: actions/stale@v9
         with:
           # on.schedule で起動した場合は `inputs.dryrun == null` であるため `debug-only: false` となる
-          debug-only: ${{ contains(inputs.dryrun, 'true') }}
+          debug-only: ${{ inputs.dryrun == 'true' }}
           any-of-labels: '状態：必要性議論'
           exempt-issue-labels: 'バグ'
           days-before-stale: 30
