@@ -22,9 +22,7 @@ jobs:
           days-before-stale: 30
           days-before-close: -1
           stale-issue-message: '本 Issue は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
-          stale-pr-message: '本 Pull request は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
           stale-issue-label: '非アクティブ'
-          stale-pr-label: '非アクティブ'
 
       - name: <Test> Notify inactive 設計/実装者募集/実装 issues
         uses: actions/stale@v9
@@ -36,6 +34,4 @@ jobs:
           days-before-stale: 180
           days-before-close: -1
           stale-issue-message: '本 Issue は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
-          stale-pr-message: '本 Pull request は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
           stale-issue-label: '非アクティブ'
-          stale-pr-label: '非アクティブ'
