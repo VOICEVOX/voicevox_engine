@@ -3,9 +3,7 @@
 import traceback
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi import Path as FAPath
-from fastapi import Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
 from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
@@ -110,7 +108,7 @@ def generate_user_dict_router() -> APIRouter:
         accent_type: Annotated[
             int, Query(description="アクセント型（音が下がる場所を指す）")
         ],
-        word_uuid: Annotated[str, FAPath(description="更新する言葉のUUID")],
+        word_uuid: Annotated[str, Path(description="更新する言葉のUUID")],
         word_type: Annotated[
             WordTypes | None,
             Query(
@@ -158,7 +156,7 @@ def generate_user_dict_router() -> APIRouter:
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_user_dict_word(
-        word_uuid: Annotated[str, FAPath(description="削除する言葉のUUID")]
+        word_uuid: Annotated[str, Path(description="削除する言葉のUUID")]
     ) -> Response:
         """
         ユーザー辞書に登録されている言葉を削除します。
