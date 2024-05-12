@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Path as FAPath
-from fastapi import Request, Response
+from fastapi import Request
 
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager

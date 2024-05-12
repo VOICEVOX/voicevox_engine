@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Annotated, Callable, Literal
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_adapter import CoreAdapter
