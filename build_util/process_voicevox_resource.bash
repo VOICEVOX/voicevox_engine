@@ -5,7 +5,7 @@ if [ ! -v DOWNLOAD_RESOURCE_PATH ]; then
     exit 1
 fi
 
-# ダミーのキャラクター情報を製品版のキャラクター情報で置き換える
+# ダミーのキャラクター情報を、環境引数で指定されたディレクトリ下のキャラクター情報で置き換える
 rm -r speaker_info
 cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" speaker_info
 
@@ -13,7 +13,7 @@ cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" speaker_info
 python "${DOWNLOAD_RESOURCE_PATH}/scripts/clean_character_info.py" \
     --character_info_dir speaker_info/
 
-# エンジンマニフェストに含まれるダミーの情報を製品版の情報で上書きする
+# エンジンマニフェストに含まれるダミーの情報を、環境引数で指定されたディレクトリ下の情報で上書きする
 jq -s '.[0] * .[1]' engine_manifest.json "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest.json" \
     > engine_manifest.json.tmp
 mv engine_manifest.json.tmp engine_manifest.json
