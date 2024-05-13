@@ -33,7 +33,7 @@ jobs:
       - name: <Test> Check Python dependency security
         run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
 
-      - name: Notify Discord of security testing result
+      - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
@@ -41,6 +41,6 @@ jobs:
           username: GitHub Actions
           title: "依存パッケージ脆弱性診断の結果"
           status: ${{ job.status }}
-          color: ${{ job.status == 'success' && 0x00FF00 || 0xFF0000 }} 
+          color: ${{ job.status == 'success' && '0x00FF00' || '0xFF0000' }} 
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
