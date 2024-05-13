@@ -12,12 +12,15 @@ def benchmark_request(use_localhost: bool = False) -> float:
     `use_localhost` が ON の場合は別プロセスの localhost へ、 OFF の場合は疑似サーバーへアクセスする。
     """
 
-    client = generate_engine_fake_server() if not use_localhost else httpx
-    client_prefix = "" if not use_localhost else "http://localhost:50021"
+    client = (
+        generate_engine_fake_server()
+        if not use_localhost
+        else httpx.Client(base_url="http://localhost:50021")
+    )
 
     def execute() -> None:
         """計測対象となる処理を実行する"""
-        client.get(f"{client_prefix}/", params={})  # type: ignore
+        client.get("/", params={})
 
     average_time = benchmark_time(execute, n_repeat=10)
     return average_time
