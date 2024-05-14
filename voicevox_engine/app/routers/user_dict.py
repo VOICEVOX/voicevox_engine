@@ -21,7 +21,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
 
     @router.get(
         "/user_dict",
-        response_model=dict[str, UserDictWord],
         response_description="単語のUUIDとその詳細",
     )
     def get_user_dict_words() -> dict[str, UserDictWord]:
@@ -39,11 +38,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 status_code=500, detail="辞書の読み込みに失敗しました。"
             )
 
-    @router.post(
-        "/user_dict_word",
-        response_model=str,
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
+    @router.post("/user_dict_word", dependencies=[Depends(check_disabled_mutable_api)])
     def add_user_dict_word(
         surface: Annotated[str, Query(description="言葉の表層形")],
         pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
@@ -64,7 +59,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
             ),
         ] = None,
-    ) -> Response:
+    ) -> str:
         """
         ユーザー辞書に言葉を追加します。
         """
@@ -76,7 +71,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 word_type=word_type,
                 priority=priority,
             )
-            return Response(content=word_uuid)
+            return word_uuid
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)

@@ -23,7 +23,6 @@ def generate_library_router(
 
     @router.get(
         "/downloadable_libraries",
-        response_model=list[DownloadableLibraryInfo],
         response_description="ダウンロード可能な音声ライブラリの情報リスト",
     )
     def downloadable_libraries() -> list[DownloadableLibraryInfo]:
@@ -36,7 +35,6 @@ def generate_library_router(
 
     @router.get(
         "/installed_libraries",
-        response_model=dict[str, InstalledLibraryInfo],
         response_description="インストールした音声ライブラリの情報",
     )
     def installed_libraries() -> dict[str, InstalledLibraryInfo]:

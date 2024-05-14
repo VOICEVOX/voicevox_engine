@@ -26,12 +26,12 @@ def generate_speaker_router(
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
-    @router.get("/speakers", response_model=list[Speaker])
+    @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
-    @router.get("/speaker_info", response_model=SpeakerInfo)
+    @router.get("/speaker_info")
     def speaker_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
@@ -138,12 +138,12 @@ def generate_speaker_router(
         )
         return ret_data
 
-    @router.get("/singers", response_model=list[Speaker])
+    @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
         singers = metas_store.load_combined_metas(get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
-    @router.get("/singer_info", response_model=SpeakerInfo)
+    @router.get("/singer_info")
     def singer_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
         指定されたspeaker_uuidに関する情報をjson形式で返します。
@@ -174,7 +174,7 @@ def generate_speaker_router(
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
         return Response(status_code=204)
 
-    @router.get("/is_initialized_speaker", response_model=bool)
+    @router.get("/is_initialized_speaker")
     def is_initialized_speaker(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
