@@ -11,10 +11,10 @@ VENV_PATH="licenses_venv"
 
 python -m venv $VENV_PATH
 if [ -d "$VENV_PATH/Scripts" ]; then
-    # shellcheck disable=SC1091
+    # shellcheck disable=SC1091,SC1090
     source $VENV_PATH/Scripts/activate
 else
-    # shellcheck disable=SC1091
+    # shellcheck disable=SC1091,SC1090
     source $VENV_PATH/bin/activate
 fi
 
