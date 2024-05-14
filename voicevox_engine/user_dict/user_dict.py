@@ -240,64 +240,6 @@ def _create_word(
     )
 
 
-def _apply_word(
-    surface: str,
-    pronunciation: str,
-    accent_type: int,
-    word_type: WordTypes | None,
-    priority: int | None,
-    default_dict_path: Path,
-    user_dict_path: Path,
-    compiled_dict_path: Path,
-) -> str:
-    """
-    新規単語の追加
-    Parameters
-    ----------
-    surface : str
-        単語情報
-    pronunciation : str
-        単語情報
-    accent_type : int
-        単語情報
-    word_type : WordTypes | None
-        品詞
-    priority : int | None
-        優先度
-    default_dict_path: Path
-        デフォルト辞書ファイルのパス
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    compiled_dict_path : Path
-        コンパイル済み辞書ファイルのパス
-    Returns
-    -------
-    word_uuid : UserDictWord
-        追加された単語に発行されたUUID
-    """
-    # 新規単語の追加による辞書データの更新
-    word = _create_word(
-        surface=surface,
-        pronunciation=pronunciation,
-        accent_type=accent_type,
-        word_type=word_type,
-        priority=priority,
-    )
-    user_dict = _read_dict(user_dict_path=user_dict_path)
-    word_uuid = str(uuid4())
-    user_dict[word_uuid] = word
-
-    # 更新された辞書データの保存と適用
-    _write_to_json(user_dict, user_dict_path)
-    _update_dict(
-        default_dict_path=default_dict_path,
-        user_dict_path=user_dict_path,
-        compiled_dict_path=compiled_dict_path,
-    )
-
-    return word_uuid
-
-
 def _rewrite_word(
     word_uuid: str,
     surface: str,
@@ -558,16 +500,27 @@ class UserDictionary:
         word_uuid : UserDictWord
             追加された単語に発行されたUUID
         """
-        return _apply_word(
+        # 新規単語の追加による辞書データの更新
+        word = _create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,
             word_type=word_type,
             priority=priority,
+        )
+        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        word_uuid = str(uuid4())
+        user_dict[word_uuid] = word
+
+        # 更新された辞書データの保存と適用
+        _write_to_json(user_dict, self._user_dict_path)
+        _update_dict(
             default_dict_path=self._default_dict_path,
             user_dict_path=self._user_dict_path,
             compiled_dict_path=self._compiled_dict_path,
         )
+
+        return word_uuid
 
     def rewrite_word(
         self,
