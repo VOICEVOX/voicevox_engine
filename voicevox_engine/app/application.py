@@ -24,7 +24,7 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
-from voicevox_engine.user_dict.user_dict import update_dict
+from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
@@ -34,6 +34,7 @@ def generate_app(
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
+    user_dict: UserDictionary,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -44,7 +45,7 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
-    update_dict()
+    user_dict.update_dict()
 
     app = FastAPI(
         title="VOICEVOX Engine",
@@ -96,7 +97,7 @@ def generate_app(
         app.include_router(
             generate_library_router(engine_manifest_data, library_manager)
         )
-    app.include_router(generate_user_dict_router())
+    app.include_router(generate_user_dict_router(user_dict))
     app.include_router(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
