@@ -8,6 +8,7 @@ from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 
 
@@ -46,6 +47,7 @@ if __name__ == "__main__":
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager
             preset_path=engine_root() / "presets.yaml",
         ),
+        user_dict=UserDictionary(),
     )
     api_schema = json.dumps(app.openapi())
 
