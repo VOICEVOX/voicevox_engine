@@ -22,12 +22,12 @@ from voicevox_engine.model import (
 )
 from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
-from voicevox_engine.utility.connect_base64_waves import (
+from voicevox_engine.tts_pipeline.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
 )
+from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
 from voicevox_engine.utility.path_utility import delete_file
 
 

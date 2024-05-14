@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 
-from voicevox_engine.utility.core_utility import get_half_logical_cores
+from voicevox_engine.core.core_initializer import get_half_logical_cores
 
 
 class TestHalfLogicalCores(TestCase):
