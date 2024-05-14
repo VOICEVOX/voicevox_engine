@@ -2,17 +2,33 @@ import json
 import sys
 import threading
 import traceback
+from collections.abc import Callable
 from pathlib import Path
-from typing import Final
+from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
 import numpy as np
 import pyopenjtalk
 
 from ..model import UserDictWord, WordTypes
-from ..utility.mutex_utility import mutex_wrapper
 from ..utility.path_utility import engine_root, get_save_dir
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
+
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
+    def wrap(f: F) -> F:
+        def func(*args: Any, **kw: Any) -> Any:
+            lock.acquire()
+            try:
+                return f(*args, **kw)
+            finally:
+                lock.release()
+
+        return func  # type: ignore
+
+    return wrap
 
 
 class UserDictInputError(Exception):
