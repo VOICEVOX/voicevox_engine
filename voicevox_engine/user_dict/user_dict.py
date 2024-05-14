@@ -240,40 +240,6 @@ def _create_word(
     )
 
 
-def _delete_word(
-    word_uuid: str,
-    default_dict_path: Path,
-    user_dict_path: Path,
-    compiled_dict_path: Path,
-) -> None:
-    """
-    単語の削除
-    Parameters
-    ----------
-    word_uuid : str
-        単語UUID
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    compiled_dict_path : Path
-        コンパイル済み辞書ファイルのパス
-    """
-    # 既存単語の削除による辞書データの更新
-    user_dict = _read_dict(user_dict_path=user_dict_path)
-    if word_uuid not in user_dict:
-        raise UserDictInputError("IDに該当するワードが見つかりませんでした")
-    del user_dict[word_uuid]
-
-    # 更新された辞書データの保存と適用
-    _write_to_json(user_dict, user_dict_path)
-    _update_dict(
-        default_dict_path=default_dict_path,
-        user_dict_path=user_dict_path,
-        compiled_dict_path=compiled_dict_path,
-    )
-
-
 def _import_user_dict(
     dict_data: dict[str, UserDictWord],
     override: bool,
@@ -515,8 +481,15 @@ class UserDictionary:
 
     def delete_word(self, word_uuid: str) -> None:
         """単語UUIDで指定された単語を削除する。"""
-        _delete_word(
-            word_uuid=word_uuid,
+        # 既存単語の削除による辞書データの更新
+        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        if word_uuid not in user_dict:
+            raise UserDictInputError("IDに該当するワードが見つかりませんでした")
+        del user_dict[word_uuid]
+
+        # 更新された辞書データの保存と適用
+        _write_to_json(user_dict, self._user_dict_path)
+        _update_dict(
             default_dict_path=self._default_dict_path,
             user_dict_path=self._user_dict_path,
             compiled_dict_path=self._compiled_dict_path,
