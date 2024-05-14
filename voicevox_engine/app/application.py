@@ -63,15 +63,15 @@ def generate_app(
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
 
-    engine_manifest = EngineManifestLoader(
+    engine_manifest_data = EngineManifestLoader(
         engine_root() / "engine_manifest.json", engine_root()
     ).load_manifest()
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest.supported_vvlib_manifest_version,
-        engine_manifest.brand_name,
-        engine_manifest.name,
-        engine_manifest.uuid,
+        engine_manifest_data.supported_vvlib_manifest_version,
+        engine_manifest_data.brand_name,
+        engine_manifest_data.name,
+        engine_manifest_data.uuid,
     )
 
     metas_store = MetasStore(root_dir / "speaker_info")
@@ -99,12 +99,16 @@ def generate_app(
     app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
     app.include_router(generate_preset_router(preset_manager))
     app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest.supported_features.manage_library:
-        app.include_router(generate_library_router(engine_manifest, library_manager))
+    if engine_manifest_data.supported_features.manage_library:
+        app.include_router(
+            generate_library_router(engine_manifest_data, library_manager)
+        )
     app.include_router(generate_user_dict_router(user_dict))
-    app.include_router(generate_engine_info_router(get_core, cores, engine_manifest))
-    app.include_router(generate_setting_router(setting_loader, engine_manifest))
-    app.include_router(generate_portal_router(engine_manifest))
+    app.include_router(
+        generate_engine_info_router(get_core, cores, engine_manifest_data)
+    )
+    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
+    app.include_router(generate_portal_router(engine_manifest_data))
 
     app = configure_openapi_schema(app)
 
