@@ -21,12 +21,13 @@ class UserDictInputError(Exception):
 
 
 root_dir = engine_root()
+resource_dir = root_dir / "resources"
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
-_DEFAULT_DICT_PATH = root_dir / "default.csv"  # VOICEVOXデフォルト辞書ファイルのパス
+_DEFAULT_DICT_PATH = resource_dir / "default.csv"  # VOICEVOXデフォルト辞書ファイルのパス
 _USER_DICT_PATH = save_dir / "user_dict.json"  # ユーザー辞書ファイルのパス
 _COMPILED_DICT_PATH = save_dir / "user.dic"  # コンパイル済み辞書ファイルのパス
 
