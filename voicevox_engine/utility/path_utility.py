@@ -21,7 +21,7 @@ def engine_root() -> Path:
 
 def _is_development() -> bool:
     """
-    動作中のエンジンが開発版であるか否かを返す。
+    動作環境が開発版であるか否かを返す。
     Nuitka/Pyinstallerでコンパイルされていない場合は開発環境とする。
     """
     # nuitkaビルドをした際はグローバルに__compiled__が含まれる
