@@ -1103,8 +1103,8 @@
     }
   },
   "info": {
-    "description": "VOICEVOXの音声合成エンジンです。",
-    "title": "VOICEVOX Engine",
+    "description": "DUMMY の音声合成エンジンです。",
+    "title": "DUMMY Engine",
     "version": "latest"
   },
   "openapi": "3.1.0",
