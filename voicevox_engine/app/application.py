@@ -11,7 +11,7 @@ from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
-from voicevox_engine.app.routers.portal import generate_portal_router
+from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.speaker import generate_speaker_router
@@ -108,7 +108,7 @@ def generate_app(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-    app.include_router(generate_portal_router(engine_manifest_data))
+    app.include_router(generate_portal_page_router(engine_manifest_data))
 
     app = configure_openapi_schema(app)
 
