@@ -40,7 +40,6 @@ def generate_morphing_router(
 
     @router.post(
         "/morphable_targets",
-        response_model=list[dict[str, MorphableTargetInfo]],
         tags=["音声合成"],
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )

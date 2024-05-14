@@ -4,6 +4,7 @@ import argparse
 import multiprocessing
 import os
 import sys
+import warnings
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TypeVar
@@ -19,7 +20,27 @@ from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHand
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
-from voicevox_engine.utility.run_utility import decide_boolean_from_env
+
+
+def decide_boolean_from_env(env_name: str) -> bool:
+    """
+    環境変数からbool値を返す。
+
+    * 環境変数が"1"ならTrueを返す
+    * 環境変数が"0"か空白か存在しないならFalseを返す
+    * それ以外はwarningを出してFalseを返す
+    """
+    env = os.getenv(env_name, default="")
+    if env == "1":
+        return True
+    elif env == "" or env == "0":
+        return False
+    else:
+        warnings.warn(
+            f"Invalid environment variable value: {env_name}={env}",
+            stacklevel=1,
+        )
+        return False
 
 
 def set_output_log_utf8() -> None:
