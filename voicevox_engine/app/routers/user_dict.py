@@ -10,25 +10,17 @@ from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.user_dict.user_dict import (
-    UserDictInputError,
-    apply_word,
-    delete_word,
-    import_user_dict,
-    read_dict,
-    rewrite_word,
-)
+from voicevox_engine.user_dict.user_dict import UserDictInputError, UserDictionary
 
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_user_dict_router() -> APIRouter:
+def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
     router = APIRouter()
 
     @router.get(
         "/user_dict",
-        response_model=dict[str, UserDictWord],
         response_description="単語のUUIDとその詳細",
         tags=["ユーザー辞書"],
     )
@@ -38,7 +30,7 @@ def generate_user_dict_router() -> APIRouter:
         単語の表層形(surface)は正規化済みの物を返します。
         """
         try:
-            return read_dict()
+            return user_dict.read_dict()
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
@@ -49,7 +41,6 @@ def generate_user_dict_router() -> APIRouter:
 
     @router.post(
         "/user_dict_word",
-        response_model=str,
         tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
@@ -73,19 +64,19 @@ def generate_user_dict_router() -> APIRouter:
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
             ),
         ] = None,
-    ) -> Response:
+    ) -> str:
         """
         ユーザー辞書に言葉を追加します。
         """
         try:
-            word_uuid = apply_word(
+            word_uuid = user_dict.apply_word(
                 surface=surface,
                 pronunciation=pronunciation,
                 accent_type=accent_type,
                 word_type=word_type,
                 priority=priority,
             )
-            return Response(content=word_uuid)
+            return word_uuid
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
@@ -130,7 +121,7 @@ def generate_user_dict_router() -> APIRouter:
         ユーザー辞書に登録されている言葉を更新します。
         """
         try:
-            rewrite_word(
+            user_dict.rewrite_word(
                 surface=surface,
                 pronunciation=pronunciation,
                 accent_type=accent_type,
@@ -164,7 +155,7 @@ def generate_user_dict_router() -> APIRouter:
         ユーザー辞書に登録されている言葉を削除します。
         """
         try:
-            delete_word(word_uuid=word_uuid)
+            user_dict.delete_word(word_uuid=word_uuid)
             return Response(status_code=204)
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
@@ -193,7 +184,7 @@ def generate_user_dict_router() -> APIRouter:
         他のユーザー辞書をインポートします。
         """
         try:
-            import_user_dict(dict_data=import_dict_data, override=override)
+            user_dict.import_user_dict(dict_data=import_dict_data, override=override)
             return Response(status_code=204)
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))

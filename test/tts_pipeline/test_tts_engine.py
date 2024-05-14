@@ -1,3 +1,4 @@
+import json
 from test.utility import pydantic_to_native_type, round_floats
 from unittest import TestCase
 from unittest.mock import Mock
@@ -97,7 +98,7 @@ class MockCore:
         return ""
 
     def supported_devices(self) -> str:
-        return ""
+        return json.dumps({"cpu": True, "cuda": False, "dml": False})
 
     def is_model_loaded(self, style_id: str) -> bool:
         return True

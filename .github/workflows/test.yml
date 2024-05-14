@@ -76,11 +76,19 @@ jobs:
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         uses: crate-ci/typos@v1.12.12
 
-  actionlint:
+  lint-builders:
     runs-on: ubuntu-20.04
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
+
+      - name: <Setup> Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: <Test> Check shell files
+        run: git ls-files | grep -E '\.(ba)?sh' | xargs shellcheck
 
       - name: <Test> Check workflow files
         run: |
