@@ -240,71 +240,6 @@ def _create_word(
     )
 
 
-def _import_user_dict(
-    dict_data: dict[str, UserDictWord],
-    override: bool,
-    user_dict_path: Path,
-    default_dict_path: Path,
-    compiled_dict_path: Path,
-) -> None:
-    """
-    ユーザー辞書のインポート
-    Parameters
-    ----------
-    dict_data : dict[str, UserDictWord]
-        インポートするユーザー辞書のデータ
-    override : bool
-        重複したエントリがあった場合、上書きするかどうか
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
-    compiled_dict_path : Path
-        コンパイル済み辞書ファイルのパス
-    """
-    # インポートする辞書データのバリデーション
-    for word_uuid, word in dict_data.items():
-        UUID(word_uuid)
-        assert isinstance(word, UserDictWord)
-        for pos_detail in part_of_speech_data.values():
-            if word.context_id == pos_detail.context_id:
-                assert word.part_of_speech == pos_detail.part_of_speech
-                assert (
-                    word.part_of_speech_detail_1 == pos_detail.part_of_speech_detail_1
-                )
-                assert (
-                    word.part_of_speech_detail_2 == pos_detail.part_of_speech_detail_2
-                )
-                assert (
-                    word.part_of_speech_detail_3 == pos_detail.part_of_speech_detail_3
-                )
-                assert (
-                    word.accent_associative_rule in pos_detail.accent_associative_rules
-                )
-                break
-        else:
-            raise ValueError("対応していない品詞です")
-
-    # 既存辞書の読み出し
-    old_dict = _read_dict(user_dict_path=user_dict_path)
-
-    # 辞書データの更新
-    # 重複エントリの上書き
-    if override:
-        new_dict = {**old_dict, **dict_data}
-    # 重複エントリの保持
-    else:
-        new_dict = {**dict_data, **old_dict}
-
-    # 更新された辞書データの保存と適用
-    _write_to_json(user_dict=new_dict, user_dict_path=user_dict_path)
-    _update_dict(
-        default_dict_path=default_dict_path,
-        user_dict_path=user_dict_path,
-        compiled_dict_path=compiled_dict_path,
-    )
-
-
 def _search_cost_candidates(context_id: int) -> list[int]:
     for value in part_of_speech_data.values():
         if value.context_id == context_id:
@@ -374,11 +309,49 @@ class UserDictionary:
         override : bool
             重複したエントリがあった場合、上書きするかどうか
         """
-        _import_user_dict(
-            dict_data=dict_data,
-            override=override,
-            user_dict_path=self._user_dict_path,
+        # インポートする辞書データのバリデーション
+        for word_uuid, word in dict_data.items():
+            UUID(word_uuid)
+            assert isinstance(word, UserDictWord)
+            for pos_detail in part_of_speech_data.values():
+                if word.context_id == pos_detail.context_id:
+                    assert word.part_of_speech == pos_detail.part_of_speech
+                    assert (
+                        word.part_of_speech_detail_1
+                        == pos_detail.part_of_speech_detail_1
+                    )
+                    assert (
+                        word.part_of_speech_detail_2
+                        == pos_detail.part_of_speech_detail_2
+                    )
+                    assert (
+                        word.part_of_speech_detail_3
+                        == pos_detail.part_of_speech_detail_3
+                    )
+                    assert (
+                        word.accent_associative_rule
+                        in pos_detail.accent_associative_rules
+                    )
+                    break
+            else:
+                raise ValueError("対応していない品詞です")
+
+        # 既存辞書の読み出し
+        old_dict = _read_dict(user_dict_path=self._user_dict_path)
+
+        # 辞書データの更新
+        # 重複エントリの上書き
+        if override:
+            new_dict = {**old_dict, **dict_data}
+        # 重複エントリの保持
+        else:
+            new_dict = {**dict_data, **old_dict}
+
+        # 更新された辞書データの保存と適用
+        _write_to_json(user_dict=new_dict, user_dict_path=self._user_dict_path)
+        _update_dict(
             default_dict_path=self._default_dict_path,
+            user_dict_path=self._user_dict_path,
             compiled_dict_path=self._compiled_dict_path,
         )
 
