@@ -11,6 +11,7 @@ from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
+from voicevox_engine.user_dict.user_dict import UserDictionary
 
 
 @pytest.fixture()
@@ -25,6 +26,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     preset_path = tmp_path / "presets.yaml"
     shutil.copyfile(original_preset_path, preset_path)
     preset_manager = PresetManager(preset_path)
+    user_dict = UserDictionary()
 
     return {
         "tts_engines": tts_engines,
@@ -32,6 +34,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
         "latest_core_version": latest_core_version,
         "setting_loader": setting_loader,
         "preset_manager": preset_manager,
+        "user_dict": user_dict,
     }
 
 

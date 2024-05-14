@@ -17,6 +17,7 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
+from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.run_utility import decide_boolean_from_env
 
@@ -293,6 +294,8 @@ def main() -> None:
     # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
     preset_manager = PresetManager(preset_path)
 
+    use_dict = UserDictionary()
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
@@ -305,6 +308,7 @@ def main() -> None:
         latest_core_version,
         setting_loader,
         preset_manager,
+        use_dict,
         cancellable_engine,
         root_dir,
         cors_policy_mode,
