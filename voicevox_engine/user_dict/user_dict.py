@@ -240,63 +240,6 @@ def _create_word(
     )
 
 
-def _rewrite_word(
-    word_uuid: str,
-    surface: str,
-    pronunciation: str,
-    accent_type: int,
-    word_type: WordTypes | None,
-    priority: int | None,
-    default_dict_path: Path,
-    user_dict_path: Path,
-    compiled_dict_path: Path,
-) -> None:
-    """
-    既存単語の上書き更新
-    Parameters
-    ----------
-    word_uuid : str
-        単語UUID
-    surface : str
-        単語情報
-    pronunciation : str
-        単語情報
-    accent_type : int
-        単語情報
-    word_type : WordTypes | None
-        品詞
-    priority : int | None
-        優先度
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    compiled_dict_path : Path
-        コンパイル済み辞書ファイルのパス
-    """
-    word = _create_word(
-        surface=surface,
-        pronunciation=pronunciation,
-        accent_type=accent_type,
-        word_type=word_type,
-        priority=priority,
-    )
-
-    # 既存単語の上書きによる辞書データの更新
-    user_dict = _read_dict(user_dict_path=user_dict_path)
-    if word_uuid not in user_dict:
-        raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
-    user_dict[word_uuid] = word
-
-    # 更新された辞書データの保存と適用
-    _write_to_json(user_dict, user_dict_path)
-    _update_dict(
-        default_dict_path=default_dict_path,
-        user_dict_path=user_dict_path,
-        compiled_dict_path=compiled_dict_path,
-    )
-
-
 def _delete_word(
     word_uuid: str,
     default_dict_path: Path,
@@ -548,13 +491,23 @@ class UserDictionary:
         priority : int | None
             優先度
         """
-        _rewrite_word(
-            word_uuid=word_uuid,
+        word = _create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,
             word_type=word_type,
             priority=priority,
+        )
+
+        # 既存単語の上書きによる辞書データの更新
+        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        if word_uuid not in user_dict:
+            raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
+        user_dict[word_uuid] = word
+
+        # 更新された辞書データの保存と適用
+        _write_to_json(user_dict, self._user_dict_path)
+        _update_dict(
             default_dict_path=self._default_dict_path,
             user_dict_path=self._user_dict_path,
             compiled_dict_path=self._compiled_dict_path,
