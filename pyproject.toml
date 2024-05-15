@@ -54,7 +54,7 @@ semver = "^3.0.0"
 platformdirs = "^4.2.0"
 soxr = "^0.3.6"
 pydantic = "<2"
-starlette = "^0.36.3"
+starlette = "^0.37.0"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^5.13"
