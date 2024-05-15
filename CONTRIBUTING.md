@@ -255,7 +255,7 @@ poetry export --without-hashes --with license -o requirements-license.txt
 ### タイポ検査
 タイポ検査を採用しています。  
 目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `_typos.toml` を編集してください。  
-ローカルへの `typos` 導入は各自の環境に合わせて公式ドキュメントを参照してください。ローカルへの導入が難しい場合、プルリクエスト時の CI にて実行される `typos` の結果を参照してください。
+ローカルへの `typos` 導入は各自の環境に合わせて公式ドキュメントを参照してください。ローカルへの導入が難しい場合、プルリクエスト時に GitHub Actions で自動実行される `typos` の結果を参照してください。
 
 #### タイポを検査する
 シェルで以下のコマンドを実行することでタイポが検査されます。  
