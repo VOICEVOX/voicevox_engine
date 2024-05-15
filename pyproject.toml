@@ -1,5 +1,5 @@
 [tool.pysen]
-version = "0.10.5"
+version = "0.11.0"
 
 [tool.pysen.lint]
 enable_black = true
@@ -64,7 +64,7 @@ poetry-plugin-export = "^1.6.0"
 safety = "^3.1.0"
 
 [tool.poetry.group.test.dependencies]
-pysen = "~0.10.5"
+pysen = "^0.11.0"
 black = "^24.2.0"
 flake8-bugbear = "^24.2.6"
 flake8 = "^7.0.0"
