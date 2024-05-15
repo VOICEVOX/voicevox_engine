@@ -1428,13 +1428,13 @@ ptyprocess = ">=0.5"
 
 [[package]]
 name = "pip-licenses"
-version = "4.3.4"
+version = "4.4.0"
 description = "Dump the software license list of Python packages installed with pip."
 optional = false
 python-versions = "~=3.8"
 files = [
-    {file = "pip-licenses-4.3.4.tar.gz", hash = "sha256:9c6c9c3252b976d08735bdffb0eb4c5eaa50dfd46f5e075532c0248ffe94fed1"},
-    {file = "pip_licenses-4.3.4-py3-none-any.whl", hash = "sha256:85706ec30781076eb611fed3934f27a1f18437d3211f747567cd3c4e943fce1b"},
+    {file = "pip-licenses-4.4.0.tar.gz", hash = "sha256:996817118375445243a34faafe23c06f6b2d250247c4046571b5a6722d45be69"},
+    {file = "pip_licenses-4.4.0-py3-none-any.whl", hash = "sha256:dbad2ac5a25f574cabe2716f2f031a0c5fa359bed9b3ef615301f4e546893b46"},
 ]
 
 [package.dependencies]
@@ -2647,4 +2647,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "aed6a57f52f97a589f24a2ab7f3563742f789e64b1d0de34b11702909f9fb723"
+content-hash = "78fd1ccf39024e278d9b57a0be287b9e11ff7eeb594c9570a6f2e91b0b3ef815"
