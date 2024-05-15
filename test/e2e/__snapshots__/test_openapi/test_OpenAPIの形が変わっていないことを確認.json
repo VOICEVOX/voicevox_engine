@@ -875,6 +875,10 @@
             "title": "音声ライブラリのインストール・アンインストール",
             "type": "boolean"
           },
+          "resource_url": {
+            "title": "speaker_info・singer_infoのリソースをURLで返す",
+            "type": "boolean"
+          },
           "sing": {
             "title": "歌唱音声合成",
             "type": "boolean"
@@ -2452,6 +2456,16 @@
           },
           {
             "in": "query",
+            "name": "resource_url",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Resource Url",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
             "name": "core_version",
             "required": false,
             "schema": {
@@ -2546,6 +2560,16 @@
             "schema": {
               "title": "Speaker Uuid",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "resource_url",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Resource Url",
+              "type": "boolean"
             }
           },
           {

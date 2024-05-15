@@ -22,6 +22,7 @@
     "adjust_volume_scale": true,
     "interrogative_upspeak": true,
     "manage_library": true,
+    "resource_url": true,
     "sing": true,
     "synthesis_morphing": true
   },

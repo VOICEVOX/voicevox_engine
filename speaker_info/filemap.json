@@ -1,0 +1,60 @@
+{
+  "35b2c544-660e-401e-b503-0e14c635303a": {
+    "portrait.png": "bd6cf66dcc652f56892b14b423f6f37c",
+    "icons/8.png": "1fe576e75458c752cfeecc1e93a29886",
+    "portraits/8.png": "56b2cfc4a9118c40a999e151c0ac647e",
+    "voice_samples/8_001.wav": "62cce06e564276499df6014e7182368d",
+    "voice_samples/8_002.wav": "2164af6fc692d5b2117dfd845c880f81",
+    "voice_samples/8_003.wav": "4e81220a91745cf2ab7b632cd528ffbd"
+  },
+  "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9": {
+    "portrait.png": "27777cb0883c98cd9870707005bf1faf",
+    "icons/1.png": "becb1cc2aaf82623a13a1250a39d7393",
+    "icons/3.png": "9a3690c368cd9a4ecb1940ff9eb2c955",
+    "icons/5.png": "517ba089e0b03f8868af2ce956f7699d",
+    "icons/7.png": "562ad0f61ca6dd81e89a4479f97dcd9f",
+    "portraits/3.png": "0308b1a8e7a849e8be5ea699706f5097",
+    "voice_samples/1_001.wav": "a9bf75355816d858213cb116942fe499",
+    "voice_samples/1_002.wav": "0dc81612c1f305b6210ef325a4518e53",
+    "voice_samples/1_003.wav": "ba5694044d8e7e0bffa9578d22ba2ba8",
+    "voice_samples/3_001.wav": "0fd8a039030ea31560c84e91f955e4cd",
+    "voice_samples/3_002.wav": "c249264fa985fd4ab5e940c7e813db3e",
+    "voice_samples/3_003.wav": "6a0bc8b54543fe816f37cb286795ad07",
+    "voice_samples/5_001.wav": "d368ea4f7af3fba9f9f7fa862e50590f",
+    "voice_samples/5_002.wav": "a844eb96e25efd52dfee76d023eda0c8",
+    "voice_samples/5_003.wav": "4cd9a6ff5ac76ea1c267c99b2cfe925f",
+    "voice_samples/7_001.wav": "f214d07c3fb5332e429abb17921eecb5",
+    "voice_samples/7_002.wav": "46296628b586d968054cc43ad733dd4a",
+    "voice_samples/7_003.wav": "919e8e440b31b13fb0d2aae03061661f"
+  },
+  "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff": {
+    "portrait.png": "78228648fe527ee23597b66db59a4f94",
+    "icons/0.png": "1f1da5f25968c638a783bf6ba9df9420",
+    "icons/2.png": "0b158046338f60a53e9afdb7797c5864",
+    "icons/4.png": "c6a8ddea789d8115372db31b4a76d2aa",
+    "icons/6.png": "d2c7c85a9919372ef62ad49786bd7fc4",
+    "portraits/0.png": "1724b3741e58978f5b9db25eb6575d9b",
+    "portraits/2.png": "593c75329b6531e5ae0266a708e5ebc0",
+    "portraits/4.png": "2b339e97d7ae0b6b215de842ff12515e",
+    "portraits/6.png": "6f7cd8ecb9d2d8de0ed410e05350ac72",
+    "voice_samples/0_001.wav": "79d52a44a8dc8548616c300e49b37a94",
+    "voice_samples/0_002.wav": "d31e59cf938a46d156add0da486fe5e2",
+    "voice_samples/0_003.wav": "73d7e1f311263ab7e1b468318cb8575a",
+    "voice_samples/2_001.wav": "8e917c07fe5d444eddd4b451b7dc8d83",
+    "voice_samples/2_002.wav": "0cf95e313bc5c3314be6a71e5021fad2",
+    "voice_samples/2_003.wav": "43f9f43e4607015e7ab3bd016bee5509",
+    "voice_samples/4_001.wav": "5333edce35b3806f1818c407cd74b66b",
+    "voice_samples/4_002.wav": "720ab16616e8e3e8e15535c9f6fd1f03",
+    "voice_samples/4_003.wav": "444dd9f019828f3773192cca7d1099df",
+    "voice_samples/6_001.wav": "4add3a1cf25c4b6ce6d35aaa1f760071",
+    "voice_samples/6_002.wav": "42d20380d8d6fc95916037e4da990aaa",
+    "voice_samples/6_003.wav": "af22bcd03f4959dc8f0e4ac1d04854e0"
+  },
+  "b1a81618-b27b-40d2-b0ea-27a9ad408c4b": {
+    "portrait.png": "381ba07cbcad95f1c99109f5f6d096a8",
+    "icons/9.png": "1e3d0a6e88264b1b99839aeb7c7cbe1f",
+    "voice_samples/9_001.wav": "e8626456ba706690676639e61ad43b73",
+    "voice_samples/9_002.wav": "93e3d5c44bbad3ddfc43953f5c751670",
+    "voice_samples/9_003.wav": "765ff637563e64182ace61fb5ca7daf4"
+  }
+}
