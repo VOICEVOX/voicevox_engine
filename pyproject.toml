@@ -41,10 +41,10 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.11"
-numpy = "^1.20.0"
+numpy = "^1.26.0"
 fastapi = "^0.110.0"
-python-multipart = "^0.0.5" # NOTE: required by fastapi
-uvicorn = "^0.15.0"
+python-multipart = "^0.0.9" # NOTE: required by fastapi
+uvicorn = "^0.29.0"
 soundfile = "^0.12.1"
 pyyaml = "^6.0"
 pyworld = "^0.3.0"
