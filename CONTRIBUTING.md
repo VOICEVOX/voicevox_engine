@@ -88,7 +88,7 @@ VOICEVOX ENGINE は GitHub ベースのオープンな開発をおこなって�
 GitHub Issues を用いてバグを一元管理しています。  
 
 ### バグを探す
-[`バグ` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3A%E3%83%90%E3%82%B0)により既知バグの一覧にアクセスできます。バグの修正状況は各バグの issue にて確認できます。  
+[`バグ` ラベルでのフィルタリング](https://github.com/VOICEVOX/voicevox_engine/issues?q=is%3Aissue+is%3Aopen+label%3Aバグ)により既知バグの一覧にアクセスできます。バグの修正状況は各バグの issue にて確認できます。  
 
 ### バグを報告する
 既知バグの一覧にないバグ（新規バグ）を見つけた場合、GitHub Issues で報告が可能です。VOICEVOX ENGINE は新規バグの報告を歓迎しています。  
@@ -157,8 +157,7 @@ CORE のバリエーション変数は以下の値を指定できます。
 - `ARCHITECTURE`: CPU アーキテクチャ (`x86` | `x64` | `arm64`)
 - `PROCESSOR`: プロセッサ種別 (`cpu` | `gpu` | `cuda` | `directml`)
 
-最新のリリースは以下にあります。
-https://github.com/VOICEVOX/voicevox_core/releases/latest
+最新のリリースは[こちら](https://github.com/VOICEVOX/voicevox_core/releases/latest)にあります。
 
 ## コード実行
 
@@ -351,7 +350,7 @@ PYTHONPATH=. python build_util/make_docs.py
 
 ### Issue の状態
 VOICEVOX ENGINE では issue の状態遷移を以下のように整理しています。  
-各状態は GitHub の `状態：〇〇` ラベルと対応しています（例： [`状態：実装者募集`](https://github.com/VOICEVOX/voicevox_engine/labels/%E7%8A%B6%E6%85%8B%EF%BC%9A%E5%AE%9F%E8%A3%85%E8%80%85%E5%8B%9F%E9%9B%86)）。  
+各状態は GitHub の `状態：〇〇` ラベルと対応しています（例： [`状態：実装者募集`](https://github.com/VOICEVOX/voicevox_engine/labels/状態：実装者募集)）。  
 
 ```mermaid
 ---
