@@ -1537,18 +1537,18 @@ files = [
 
 [[package]]
 name = "poetry-plugin-export"
-version = "1.6.0"
+version = "1.8.0"
 description = "Poetry plugin to export the dependencies to various formats"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "poetry_plugin_export-1.6.0-py3-none-any.whl", hash = "sha256:2dce6204c9318f1f6509a11a03921fb3f461b201840b59f1c237b6ab454dabcf"},
-    {file = "poetry_plugin_export-1.6.0.tar.gz", hash = "sha256:091939434984267a91abf2f916a26b00cff4eee8da63ec2a24ba4b17cf969a59"},
+    {file = "poetry_plugin_export-1.8.0-py3-none-any.whl", hash = "sha256:adbe232cfa0cc04991ea3680c865cf748bff27593b9abcb1f35fb50ed7ba2c22"},
+    {file = "poetry_plugin_export-1.8.0.tar.gz", hash = "sha256:1fa6168a85d59395d835ca564bc19862a7c76061e60c3e7dfaec70d50937fc61"},
 ]
 
 [package.dependencies]
-poetry = ">=1.6.0,<2.0.0"
-poetry-core = ">=1.7.0,<2.0.0"
+poetry = ">=1.8.0,<3.0.0"
+poetry-core = ">=1.7.0,<3.0.0"
 
 [[package]]
 name = "pre-commit"
@@ -2648,4 +2648,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "f2dd11acda0abcc129135339e12a045f7a816e589655b893434076568221d167"
+content-hash = "a4cfe42e819d4c2cff33c601a24a9a6adff38f73b3c1fb6a1e28842d04a40f2f"
