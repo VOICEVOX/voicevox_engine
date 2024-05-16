@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Literal
 
+import httpx
 from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
@@ -29,3 +31,18 @@ def generate_engine_fake_server() -> TestClient:
         root_dir=root_dir,
     )
     return TestClient(app)
+
+
+# `localhost`: 別プロセスに建てられたローカルの実サーバー
+# `fake`: ネットワークを介さずレスポンスを返す疑似サーバー
+ServerType = Literal["localhost", "fake"]
+
+
+def generate_client(server: ServerType) -> TestClient | httpx.Client:
+    """VOICEVOX ENGINE へアクセス可能なクライアントを生成する。"""
+    if server == "fake":
+        return generate_engine_fake_server()
+    elif server == "localhost":
+        return httpx.Client(base_url="http://localhost:50021")
+    else:
+        raise Exception(f"{server} はサポートされていないサーバータイプです")
