@@ -100,10 +100,7 @@ def generate_app(
     app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
     app.include_router(generate_preset_router(preset_manager))
     app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
+    app.include_router(generate_library_router(engine_manifest_data, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
