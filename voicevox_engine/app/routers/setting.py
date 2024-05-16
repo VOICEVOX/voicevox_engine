@@ -71,6 +71,4 @@ def generate_setting_router(
         # 更新した設定へ上書き
         setting_loader.save(settings)
 
-        return
-
     return router
