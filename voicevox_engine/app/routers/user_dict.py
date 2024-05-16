@@ -127,7 +127,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 word_type=word_type,
                 priority=priority,
             )
-            return
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
@@ -154,7 +153,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             user_dict.delete_word(word_uuid=word_uuid)
-            return
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
@@ -183,7 +181,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             user_dict.import_user_dict(dict_data=import_dict_data, override=override)
-            return
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:

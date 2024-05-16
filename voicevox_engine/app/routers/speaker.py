@@ -182,7 +182,6 @@ def generate_speaker_router(
         """
         core = get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return
 
     @router.get("/is_initialized_speaker", tags=["その他"])
     def is_initialized_speaker(

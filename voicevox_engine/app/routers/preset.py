@@ -96,7 +96,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
         """
         try:
             preset_manager.delete_preset(id)
-            return
         except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except PresetInternalError as err:

@@ -66,7 +66,6 @@ def generate_library_router(
         await loop.run_in_executor(
             None, library_manager.install_library, library_uuid, archive
         )
-        return
 
     @router.post(
         "/uninstall_library/{library_uuid}",
@@ -83,6 +82,5 @@ def generate_library_router(
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         library_manager.uninstall_library(library_uuid)
-        return
 
     return router
