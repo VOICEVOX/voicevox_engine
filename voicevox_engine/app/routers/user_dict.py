@@ -3,9 +3,7 @@
 import traceback
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi import Path as FAPath
-from fastapi import Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
 from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
@@ -21,7 +19,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
 
     @router.get(
         "/user_dict",
-        response_model=dict[str, UserDictWord],
         response_description="単語のUUIDとその詳細",
         tags=["ユーザー辞書"],
     )
@@ -42,7 +39,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
 
     @router.post(
         "/user_dict_word",
-        response_model=str,
         tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
@@ -66,7 +62,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
             ),
         ] = None,
-    ) -> Response:
+    ) -> str:
         """
         ユーザー辞書に言葉を追加します。
         """
@@ -78,7 +74,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 word_type=word_type,
                 priority=priority,
             )
-            return Response(content=word_uuid)
+            return word_uuid
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
@@ -103,7 +99,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         accent_type: Annotated[
             int, Query(description="アクセント型（音が下がる場所を指す）")
         ],
-        word_uuid: Annotated[str, FAPath(description="更新する言葉のUUID")],
+        word_uuid: Annotated[str, Path(description="更新する言葉のUUID")],
         word_type: Annotated[
             WordTypes | None,
             Query(
@@ -151,7 +147,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_user_dict_word(
-        word_uuid: Annotated[str, FAPath(description="削除する言葉のUUID")]
+        word_uuid: Annotated[str, Path(description="削除する言葉のUUID")]
     ) -> None:
         """
         ユーザー辞書に登録されている言葉を削除します。
