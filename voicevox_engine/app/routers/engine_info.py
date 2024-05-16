@@ -1,14 +1,33 @@
 """エンジンの情報機能を提供する API Router"""
 
 import json
-from typing import Callable
+from typing import Callable, Self
 
 from fastapi import APIRouter, HTTPException, Response
+from pydantic import BaseModel, Field
 
 from voicevox_engine import __version__
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_adapter import CoreAdapter, DeviceSupport
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
-from voicevox_engine.model import SupportedDevicesInfo
+
+
+class SupportedDevicesInfo(BaseModel):
+    """
+    対応しているデバイスの情報
+    """
+
+    cpu: bool = Field(title="CPUに対応しているか")
+    cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
+    dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
+
+    @classmethod
+    def generate_from(cls, device_support: DeviceSupport) -> Self:
+        """`DeviceSupport` インスタンスから本インスタンスを生成する。"""
+        return cls(
+            cpu=device_support.cpu,
+            cuda=device_support.cuda,
+            dml=device_support.dml,
+        )
 
 
 def generate_engine_info_router(
@@ -41,7 +60,7 @@ def generate_engine_info_router(
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return Response(
-            content=supported_devices,
+            content=SupportedDevicesInfo.generate_from(supported_devices),
             media_type="application/json",
         )
 
