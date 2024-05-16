@@ -4,9 +4,7 @@ import asyncio
 from io import BytesIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import Path as FAPath
-from fastapi import Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response
 
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
@@ -51,7 +49,7 @@ def generate_library_router(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     async def install_library(
-        library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")],
+        library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
         request: Request,
     ) -> Response:
         """
@@ -73,7 +71,7 @@ def generate_library_router(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def uninstall_library(
-        library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")]
+        library_uuid: Annotated[str, Path(description="音声ライブラリのID")]
     ) -> Response:
         """
         音声ライブラリをアンインストールします。

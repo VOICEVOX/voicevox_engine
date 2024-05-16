@@ -51,14 +51,12 @@ def generate_setting_router(
         )
 
     @router.post(
-        "/setting",
-        response_class=Response,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        "/setting", status_code=204, dependencies=[Depends(check_disabled_mutable_api)]
     )
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | None, Form()] = None,
-    ) -> Response:
+    ) -> None:
         """
         設定を更新します。
         """
@@ -69,7 +67,5 @@ def generate_setting_router(
 
         # 更新した設定へ上書き
         setting_loader.save(settings)
-
-        return Response(status_code=204)
 
     return router
