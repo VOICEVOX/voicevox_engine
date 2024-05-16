@@ -5,13 +5,13 @@ import json
 from fastapi import APIRouter, HTTPException, Response
 
 from voicevox_engine import __version__
-from voicevox_engine.core.core_initializer import Cores
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.model import SupportedDevicesInfo
 
 
 def generate_engine_info_router(
-    cores: Cores, engine_manifest_data: EngineManifest
+    cores: CoreManager, engine_manifest_data: EngineManifest
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter()

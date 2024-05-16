@@ -20,8 +20,8 @@ def get_half_logical_cores() -> int:
     return logical_cores // 2
 
 
-class Cores:
-    """コアの集まり"""
+class CoreManager:
+    """コアの集まりを一括管理するマネージャー"""
 
     def __init__(self) -> None:
         self._cores: dict[str, CoreAdapter] = {}
@@ -66,7 +66,7 @@ def initialize_cores(
     cpu_num_threads: int | None = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> Cores:
+) -> CoreManager:
     """
     音声ライブラリをロードしてコアを生成
 
@@ -108,7 +108,7 @@ def initialize_cores(
     load_runtime_lib(runtime_dirs)
 
     # コアをロードし `cores` へ登録する
-    cores = Cores()
+    cores = CoreManager()
 
     # 引数による指定を反映し、無ければ `root_dir` とする
     voicelib_dirs = voicelib_dirs or []

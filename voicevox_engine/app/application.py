@@ -18,7 +18,7 @@ from voicevox_engine.app.routers.speaker import generate_speaker_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_initializer import Cores
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
@@ -32,7 +32,7 @@ from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 def generate_app(
     tts_engines: dict[str, TTSEngine],
-    cores: Cores,
+    cores: CoreManager,
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,

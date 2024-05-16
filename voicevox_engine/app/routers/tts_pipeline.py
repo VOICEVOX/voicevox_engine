@@ -10,7 +10,7 @@ from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_initializer import Cores
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import (
     AccentPhrase,
@@ -33,7 +33,7 @@ from voicevox_engine.utility.path_utility import delete_file
 
 def generate_tts_pipeline_router(
     get_engine: Callable[[str | None], TTSEngine],
-    cores: Cores,
+    cores: CoreManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:

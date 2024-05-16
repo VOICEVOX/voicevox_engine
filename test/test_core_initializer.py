@@ -7,23 +7,23 @@ import pytest
 from fastapi import HTTPException
 
 from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.core.core_initializer import Cores, get_half_logical_cores
+from voicevox_engine.core.core_initializer import CoreManager, get_half_logical_cores
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 
 
 def test_cores_register_core() -> None:
-    """Cores.register_core() でコアを登録できる。"""
+    """CoreManager.register_core() でコアを登録できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
 
     # Test
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
 
 
 def test_cores_versions() -> None:
-    """Cores.versions でバージョン一覧を取得できる。"""
+    """CoreManager.versions でバージョン一覧を取得できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
@@ -36,9 +36,9 @@ def test_cores_versions() -> None:
 
 
 def test_cores_latest_version() -> None:
-    """Cores.latest_version で最新バージョンを取得できる。"""
+    """CoreManager.latest_version で最新バージョンを取得できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
@@ -51,9 +51,9 @@ def test_cores_latest_version() -> None:
 
 
 def test_cores_get_core_specified() -> None:
-    """Cores.get_core() で登録済みコアをバージョン指定して取得できる。"""
+    """CoreManager.get_core() で登録済みコアをバージョン指定して取得できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     core1 = CoreAdapter(MockCoreWrapper())
     core2 = CoreAdapter(MockCoreWrapper())
     cores.register_core(core1, "0.0.1")
@@ -68,9 +68,9 @@ def test_cores_get_core_specified() -> None:
 
 
 def test_cores_get_core_latest() -> None:
-    """Cores.get_core() で最新版コアをバージョン未指定で取得できる。"""
+    """CoreManager.get_core() で最新版コアをバージョン未指定で取得できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     core1 = CoreAdapter(MockCoreWrapper())
     core2 = CoreAdapter(MockCoreWrapper())
     cores.register_core(core1, "0.0.1")
@@ -85,9 +85,9 @@ def test_cores_get_core_latest() -> None:
 
 
 def test_cores_get_core_missing() -> None:
-    """Cores.get_core() で存在しないコアを取得しようとするとエラーになる。"""
+    """CoreManager.get_core() で存在しないコアを取得しようとするとエラーになる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     core1 = CoreAdapter(MockCoreWrapper())
     core2 = CoreAdapter(MockCoreWrapper())
     cores.register_core(core1, "0.0.1")
@@ -99,9 +99,9 @@ def test_cores_get_core_missing() -> None:
 
 
 def test_cores_has_core_true() -> None:
-    """Cores.has_core() でコアが登録されていることを確認できる。"""
+    """CoreManager.has_core() でコアが登録されていることを確認できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
@@ -114,9 +114,9 @@ def test_cores_has_core_true() -> None:
 
 
 def test_cores_has_core_false() -> None:
-    """Cores.has_core() でコアが登録されていないことを確認できる。"""
+    """CoreManager.has_core() でコアが登録されていないことを確認できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
@@ -129,9 +129,9 @@ def test_cores_has_core_false() -> None:
 
 
 def test_cores_items() -> None:
-    """Cores.items() でコアとバージョンのリストを取得できる。"""
+    """CoreManager.items() でコアとバージョンのリストを取得できる。"""
     # Inputs
-    cores = Cores()
+    cores = CoreManager()
     core1 = CoreAdapter(MockCoreWrapper())
     core2 = CoreAdapter(MockCoreWrapper())
     cores.register_core(core1, "0.0.1")

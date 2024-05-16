@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.core.core_initializer import Cores
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
@@ -31,7 +31,9 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    get_engine: Callable[[str | None], TTSEngine], cores: Cores, metas_store: MetasStore
+    get_engine: Callable[[str | None], TTSEngine],
+    cores: CoreManager,
+    metas_store: MetasStore,
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
     router = APIRouter()

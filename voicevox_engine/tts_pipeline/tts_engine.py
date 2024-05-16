@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
-from ..core.core_initializer import Cores
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import (
@@ -683,7 +683,7 @@ class TTSEngine:
         return wave
 
 
-def make_tts_engines_from_cores(cores: Cores) -> dict[str, TTSEngine]:
+def make_tts_engines_from_cores(cores: CoreManager) -> dict[str, TTSEngine]:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
