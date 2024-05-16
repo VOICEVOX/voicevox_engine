@@ -3,7 +3,7 @@
 import traceback
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
