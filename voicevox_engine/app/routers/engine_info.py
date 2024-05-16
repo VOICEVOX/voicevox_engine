@@ -25,7 +25,7 @@ def generate_engine_info_router(
     async def core_versions() -> Response:
         """利用可能なコアのバージョン一覧を取得します。"""
         return Response(
-            content=json.dumps(cores.versions),
+            content=json.dumps(cores.versions()),
             media_type="application/json",
         )
 

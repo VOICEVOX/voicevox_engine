@@ -21,7 +21,7 @@ def test_cores_register_core() -> None:
 
 
 def test_cores_versions() -> None:
-    """CoreManager.versions でバージョン一覧を取得できる。"""
+    """CoreManager.versions() でバージョン一覧を取得できる。"""
     # Inputs
     cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
@@ -29,14 +29,14 @@ def test_cores_versions() -> None:
     # Expects
     true_versions = ["0.0.1", "0.0.2"]
     # Outputs
-    versions = cores.versions
+    versions = cores.versions()
 
     # Test
     assert true_versions == versions
 
 
 def test_cores_latest_version() -> None:
-    """CoreManager.latest_version で最新バージョンを取得できる。"""
+    """CoreManager.latest_version() で最新バージョンを取得できる。"""
     # Inputs
     cores = CoreManager()
     cores.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
@@ -44,7 +44,7 @@ def test_cores_latest_version() -> None:
     # Expects
     true_latest_version = "0.0.2"
     # Outputs
-    latest_version = cores.latest_version
+    latest_version = cores.latest_version()
 
     # Test
     assert true_latest_version == latest_version
