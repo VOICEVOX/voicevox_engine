@@ -1,7 +1,7 @@
 """話者に関係したリクエストにかかる時間の測定"""
 
 from test.benchmark.setup import ServerType, generate_client
-from test.benchmark.speed.utils import benchmark_time
+from test.benchmark.speed.utility import benchmark_time
 
 
 def benchmark_get_speakers(server: ServerType) -> float:
