@@ -683,12 +683,12 @@ class TTSEngine:
         return wave
 
 
-def make_tts_engines_from_cores(cores: CoreManager) -> dict[str, TTSEngine]:
+def make_tts_engines_from_cores(core_manager: CoreManager) -> dict[str, TTSEngine]:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
     tts_engines: dict[str, TTSEngine] = {}
-    for ver, core in cores.items():
+    for ver, core in core_manager.items():
         if ver == MOCK_VER:
             from ..dev.tts_engine.mock import MockTTSEngine
 

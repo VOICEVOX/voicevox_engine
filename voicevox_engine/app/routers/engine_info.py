@@ -11,7 +11,7 @@ from voicevox_engine.model import SupportedDevicesInfo
 
 
 def generate_engine_info_router(
-    cores: CoreManager, engine_manifest_data: EngineManifest
+    core_manager: CoreManager, engine_manifest_data: EngineManifest
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter()
@@ -25,7 +25,7 @@ def generate_engine_info_router(
     async def core_versions() -> Response:
         """利用可能なコアのバージョン一覧を取得します。"""
         return Response(
-            content=json.dumps(cores.versions()),
+            content=json.dumps(core_manager.versions()),
             media_type="application/json",
         )
 
@@ -34,7 +34,7 @@ def generate_engine_info_router(
     )
     def supported_devices(core_version: str | None = None) -> Response:
         """対応デバイスの一覧を取得します。"""
-        supported_devices = cores.get_core(core_version).supported_devices
+        supported_devices = core_manager.get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return Response(

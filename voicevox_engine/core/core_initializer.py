@@ -105,8 +105,8 @@ def initialize_cores(
     # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
-    # コアをロードし `cores` へ登録する
-    cores = CoreManager()
+    # コアをロードし `core_manager` へ登録する
+    core_manager = CoreManager()
 
     # 引数による指定を反映し、無ければ `root_dir` とする
     voicelib_dirs = voicelib_dirs or []
@@ -118,7 +118,7 @@ def initialize_cores(
 
         def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
-            指定されたコアをロードし `cores` へ登録する。
+            指定されたコアをロードし `core_manager` へ登録する。
             Parameters
             ----------
             core_dir : Path
@@ -134,13 +134,13 @@ def initialize_cores(
                 metas = json.loads(core.metas())
                 core_version: str = metas[0]["version"]
                 print(f"Info: Loading core {core_version}.")
-                if cores.has_core(core_version):
+                if core_manager.has_core(core_version):
                     print(
                         "Warning: Core loading is skipped because of version duplication.",
                         file=sys.stderr,
                     )
                 else:
-                    cores.register_core(CoreAdapter(core), core_version)
+                    core_manager.register_core(CoreAdapter(core), core_version)
             except Exception:
                 # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
@@ -168,9 +168,9 @@ def initialize_cores(
         # モック追加
         from ..dev.core.mock import MockCoreWrapper
 
-        if not cores.has_core(MOCK_VER):
+        if not core_manager.has_core(MOCK_VER):
             print("Info: Loading mock.")
             core = MockCoreWrapper()
-            cores.register_core(CoreAdapter(core), MOCK_VER)
+            core_manager.register_core(CoreAdapter(core), MOCK_VER)
 
-    return cores
+    return core_manager

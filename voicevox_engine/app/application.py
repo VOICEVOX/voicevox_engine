@@ -32,7 +32,7 @@ from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 def generate_app(
     tts_engines: dict[str, TTSEngine],
-    cores: CoreManager,
+    core_manager: CoreManager,
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
@@ -86,18 +86,18 @@ def generate_app(
 
     app.include_router(
         generate_tts_pipeline_router(
-            get_engine, cores, preset_manager, cancellable_engine
+            get_engine, core_manager, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(get_engine, cores, metas_store))
+    app.include_router(generate_morphing_router(get_engine, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(cores, metas_store, root_dir))
+    app.include_router(generate_speaker_router(core_manager, metas_store, root_dir))
     if engine_manifest_data.supported_features.manage_library:
         app.include_router(
             generate_library_router(engine_manifest_data, library_manager)
         )
     app.include_router(generate_user_dict_router(user_dict))
-    app.include_router(generate_engine_info_router(cores, engine_manifest_data))
+    app.include_router(generate_engine_info_router(core_manager, engine_manifest_data))
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
 
     @app.get("/", response_class=HTMLResponse, tags=["その他"])

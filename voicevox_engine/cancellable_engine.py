@@ -228,7 +228,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -236,7 +236,7 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
 
     assert len(tts_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_version(list(tts_engines.keys()))

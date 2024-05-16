@@ -257,7 +257,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -266,7 +266,7 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines) != 0, "音声合成エンジンがありません。"
     latest_core_version = get_latest_version(list(tts_engines.keys()))
 
@@ -326,7 +326,7 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
+        core_manager,
         latest_core_version,
         setting_loader,
         preset_manager,

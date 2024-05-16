@@ -32,7 +32,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 def generate_morphing_router(
     get_engine: Callable[[str | None], TTSEngine],
-    cores: CoreManager,
+    core_manager: CoreManager,
     metas_store: MetasStore,
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
@@ -52,7 +52,7 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = cores.get_core(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
@@ -95,7 +95,7 @@ def generate_morphing_router(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         engine = get_engine(core_version)
-        core = cores.get_core(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)

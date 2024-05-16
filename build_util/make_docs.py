@@ -36,12 +36,12 @@ def generate_api_docs_html(schema: str) -> str:
 
 
 if __name__ == "__main__":
-    cores = CoreManager()
-    cores.register_core(CoreAdapter(MockCoreWrapper()), "mock")
+    core_manager = CoreManager()
+    core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
         tts_engines={"mock": MockTTSEngine()},
-        cores=cores,
+        core_manager=core_manager,
         latest_core_version="mock",
         setting_loader=SettingHandler(USER_SETTING_PATH),
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager
