@@ -54,15 +54,12 @@ def generate_engine_info_router(
     @router.get(
         "/supported_devices", response_model=SupportedDevicesInfo, tags=["その他"]
     )
-    def supported_devices(core_version: str | None = None) -> Response:
+    def supported_devices(core_version: str | None = None) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
         supported_devices = get_core(core_version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
-        return Response(
-            content=SupportedDevicesInfo.generate_from(supported_devices),
-            media_type="application/json",
-        )
+        return SupportedDevicesInfo.generate_from(supported_devices)
 
     @router.get("/engine_manifest", response_model=EngineManifest, tags=["その他"])
     async def engine_manifest() -> EngineManifest:
