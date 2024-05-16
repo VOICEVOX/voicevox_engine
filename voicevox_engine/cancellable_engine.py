@@ -237,7 +237,7 @@ def start_synthesis_subprocess(
     )
     tts_engines = make_tts_engines_from_cores(cores)
 
-    assert len(tts_engines.versions) != 0, "音声合成エンジンがありません。"
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     while True:
         try:
             query, style_id, core_version = sub_proc_con.recv()

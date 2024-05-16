@@ -25,14 +25,14 @@ def test_tts_engines_versions() -> None:
     # Expects
     true_versions = ["0.0.1", "0.0.2"]
     # Outputs
-    versions = tts_engines.versions
+    versions = tts_engines.versions()
 
     # Test
     assert true_versions == versions
 
 
 def test_tts_engines_latest_version() -> None:
-    """TTSEngineManager.latest_version で最新バージョンを取得できる。"""
+    """TTSEngineManager.latest_version() で最新バージョンを取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
@@ -40,7 +40,7 @@ def test_tts_engines_latest_version() -> None:
     # Expects
     true_latest_version = "0.0.2"
     # Outputs
-    latest_version = tts_engines.latest_version
+    latest_version = tts_engines.latest_version()
 
     # Test
     assert true_latest_version == latest_version
