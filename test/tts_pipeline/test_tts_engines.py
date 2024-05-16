@@ -1,4 +1,4 @@
-""" `TTSEngines` クラスのテスト"""
+""" `TTSEngineManager` クラスのテスト"""
 
 import pytest
 from fastapi import HTTPException
@@ -8,7 +8,7 @@ from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 
 
 def test_tts_engines_register_engine() -> None:
-    """TTSEngines.register_engine() で TTS エンジンを登録できる。"""
+    """TTSEngineManager.register_engine() で TTS エンジンを登録できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
 
@@ -17,7 +17,7 @@ def test_tts_engines_register_engine() -> None:
 
 
 def test_tts_engines_versions() -> None:
-    """TTSEngines.versions でバージョン一覧を取得できる。"""
+    """TTSEngineManager.versions() でバージョン一覧を取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
@@ -32,7 +32,7 @@ def test_tts_engines_versions() -> None:
 
 
 def test_tts_engines_latest_version() -> None:
-    """TTSEngines.latest_version で最新バージョンを取得できる。"""
+    """TTSEngineManager.latest_version で最新バージョンを取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
@@ -47,7 +47,7 @@ def test_tts_engines_latest_version() -> None:
 
 
 def test_tts_engines_get_engine_specified() -> None:
-    """TTSEngines.get_engine() で登録済み TTS エンジンをバージョン指定して取得できる。"""
+    """TTSEngineManager.get_engine() で登録済み TTS エンジンをバージョン指定して取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engine1 = MockTTSEngine()
@@ -64,7 +64,7 @@ def test_tts_engines_get_engine_specified() -> None:
 
 
 def test_tts_engines_get_engine_latest() -> None:
-    """TTSEngines.get_engine() で最新版 TTS エンジンをバージョン未指定で取得できる。"""
+    """TTSEngineManager.get_engine() で最新版 TTS エンジンをバージョン未指定で取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engine1 = MockTTSEngine()
@@ -81,7 +81,7 @@ def test_tts_engines_get_engine_latest() -> None:
 
 
 def test_tts_engines_get_engine_missing() -> None:
-    """TTSEngines.get_engine() で存在しない TTS エンジンを取得しようとするとエラーになる。"""
+    """TTSEngineManager.get_engine() で存在しない TTS エンジンを取得しようとするとエラーになる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engine1 = MockTTSEngine()
@@ -95,7 +95,7 @@ def test_tts_engines_get_engine_missing() -> None:
 
 
 def test_tts_engines_has_engine_true() -> None:
-    """TTSEngines.has_engine() で TTS エンジンが登録されていることを確認できる。"""
+    """TTSEngineManager.has_engine() で TTS エンジンが登録されていることを確認できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
@@ -110,7 +110,7 @@ def test_tts_engines_has_engine_true() -> None:
 
 
 def test_tts_engines_has_engine_false() -> None:
-    """TTSEngines.has_engine() で TTS エンジンが登録されていないことを確認できる。"""
+    """TTSEngineManager.has_engine() で TTS エンジンが登録されていないことを確認できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
