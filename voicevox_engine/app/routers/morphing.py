@@ -21,7 +21,7 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngines
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
 # キャッシュを有効化
@@ -31,7 +31,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    tts_engines: TTSEngines,
+    tts_engines: TTSEngineManager,
     get_core: Callable[[str | None], CoreAdapter],
     metas_store: MetasStore,
 ) -> APIRouter:

@@ -683,8 +683,8 @@ class TTSEngine:
         return wave
 
 
-class TTSEngines:
-    """TTS エンジンの集まり"""
+class TTSEngineManager:
+    """TTS エンジンの集まりを一括管理するマネージャー"""
 
     def __init__(self) -> None:
         self._engines: dict[str, TTSEngine] = {}
@@ -717,11 +717,11 @@ class TTSEngines:
         return version in self._engines
 
 
-def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> TTSEngines:
+def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
-    tts_engines = TTSEngines()
+    tts_engines = TTSEngineManager()
     for ver, core in cores.items():
         if ver == MOCK_VER:
             from ..dev.tts_engine.mock import MockTTSEngine

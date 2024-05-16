@@ -27,12 +27,12 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
     connect_base64_waves,
 )
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngines
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
 
 def generate_tts_pipeline_router(
-    tts_engines: TTSEngines,
+    tts_engines: TTSEngineManager,
     get_core: Callable[[str | None], CoreAdapter],
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
