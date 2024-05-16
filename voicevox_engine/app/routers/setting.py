@@ -13,7 +13,7 @@ from voicevox_engine.utility.path_utility import engine_root
 from ..dependencies import check_disabled_mutable_api
 
 _setting_ui_template = Jinja2Templates(
-    directory=engine_root() / "ui_template",
+    directory=engine_root() / "resources" / "ui_template",
     variable_start_string="<JINJA_PRE>",
     variable_end_string="<JINJA_POST>",
 )
