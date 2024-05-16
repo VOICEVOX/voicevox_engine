@@ -10,6 +10,7 @@ from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
+from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.core_version_utility import get_latest_version
 
 
@@ -19,6 +20,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
     latest_core_version = get_latest_version(list(tts_engines.keys()))
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
     preset_manager = PresetManager(Path("./presets.yaml"))
+    user_dict = UserDictionary()
 
     app = generate_app(
         tts_engines=tts_engines,
@@ -27,6 +29,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
         setting_loader=setting_loader,
         preset_manager=preset_manager,
         root_dir=root_dir,
+        user_dict=user_dict,
     )
     return TestClient(app)
 
