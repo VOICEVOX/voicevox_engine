@@ -41,10 +41,13 @@ def benchmark_get_speaker_info_all(
     return average_time
 
 
-def benchmark_request_all_speakers(
+def benchmark_request_time_for_all_speakers(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
-    """全話者分のエンジンリクエストにかかる時間を `GET /` をプロキシとして測定する。"""
+    """
+    全話者数と同じ回数の `GET /` にかかる時間を測定する。
+    `GET /` はエンジン内部処理が最小であるため、全話者分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
+    """
 
     client = generate_client(server, root_dir)
 
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     print(f"全話者 `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec")
     print(f"全話者 `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
 
-    result_request_all_fakeserve = benchmark_request_all_speakers("fake", root_dir)
-    result_request_all_localhost = benchmark_request_all_speakers("localhost", root_dir)
-    print("全話者 `GET /` fakeserve: {:.3f} sec".format(result_request_all_fakeserve))
-    print("全話者 `GET /` localhost: {:.3f} sec".format(result_request_all_localhost))
+    req_time_all_fake = benchmark_request_time_for_all_speakers("fake", root_dir)
+    req_time_all_local = benchmark_request_time_for_all_speakers("localhost", root_dir)
+    print("全話者 `GET /` fakeserve: {:.3f} sec".format(req_time_all_fake))
+    print("全話者 `GET /` localhost: {:.3f} sec".format(req_time_all_local))
