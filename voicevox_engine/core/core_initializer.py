@@ -45,6 +45,7 @@ class CoreManager:
         elif version in self._cores:
             return self._cores[version]
 
+        # FIXME: ドメインがずれているのでこのエラーは routers へ持っていく
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
     def has_core(self, version: str) -> bool:
