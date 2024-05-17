@@ -340,7 +340,11 @@ def main() -> None:
 
     # VOICEVOX ENGINE サーバーを起動
     # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
-    uvicorn.run(app, host=args.host, port=args.port)
+    try:
+        uvicorn.run(app, host=args.host, port=args.port)
+    except KeyboardInterrupt:
+        print("`KeyboardInterrupt` の検出によりエンジンを停止しました。")
+        pass
 
 
 if __name__ == "__main__":
