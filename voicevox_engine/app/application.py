@@ -17,7 +17,7 @@ from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_route
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
+from voicevox_engine.engine_manifest.EngineManifest import load_manifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
