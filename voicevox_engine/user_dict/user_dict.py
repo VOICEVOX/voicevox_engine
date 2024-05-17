@@ -11,7 +11,7 @@ import numpy as np
 import pyopenjtalk
 
 from ..model import UserDictWord, WordTypes
-from ..utility.path_utility import engine_root, get_save_dir
+from ..utility.path_utility import get_save_dir, resource_root
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -37,8 +37,7 @@ class UserDictInputError(Exception):
     pass
 
 
-root_dir = engine_root()
-resource_dir = root_dir / "resources"
+resource_dir = resource_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
