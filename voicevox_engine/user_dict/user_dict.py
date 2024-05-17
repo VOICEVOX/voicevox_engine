@@ -301,6 +301,7 @@ class UserDictionary:
         self._default_dict_path = default_dict_path
         self._user_dict_path = user_dict_path
         self._compiled_dict_path = compiled_dict_path
+        self.update_dict()
 
     def update_dict(self) -> None:
         """辞書を更新する。"""
