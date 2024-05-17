@@ -1,5 +1,3 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -51,16 +49,12 @@ def generate_app(
         engine_root() / "engine_manifest.json", engine_root()
     ).load_manifest()
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        user_dict.update_dict()
-        yield
+    user_dict.update_dict()
 
     app = FastAPI(
         title=engine_manifest_data.name,
         description=f"{engine_manifest_data.brand_name} の音声合成エンジンです。",
         version=__version__,
-        lifespan=lifespan,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
