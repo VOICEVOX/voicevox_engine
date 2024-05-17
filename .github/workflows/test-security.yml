@@ -5,7 +5,7 @@ name: test-security
 
 on:
   schedule:
-    - cron: '00 04 15 * *' # 毎月15日 13:00 JST
+    - cron: "00 04 15 * *" # 毎月15日 13:00 JST
 
 env:
   PYTHON_VERSION: "3.11.3"
@@ -13,12 +13,12 @@ env:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   test-security:
     runs-on: ubuntu-20.04
     steps:
-      - name: <Setup> Check out the repository 
+      - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
       - name: <Setup> Set up Python
