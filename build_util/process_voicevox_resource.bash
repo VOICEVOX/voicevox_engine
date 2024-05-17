@@ -24,7 +24,7 @@ python build_util/merge_update_infos.py \
     "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest_assets/update_infos.json" \
     engine_manifest_assets/update_infos.json
 
-# エンジンのディレクトリへリソースのマニフェストアセットを複製する
+# リソースのマニフェストアセットをエンジンのディレクトリへ複製する
 for f in "${DOWNLOAD_RESOURCE_PATH}"/engine/engine_manifest_assets/*; do
     if [ "$(basename "${f}")" != "update_infos.json" ]; then
         cp "${f}" ./engine_manifest_assets/
