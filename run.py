@@ -14,6 +14,7 @@ import uvicorn
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
+from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
@@ -318,6 +319,8 @@ def main() -> None:
 
     use_dict = UserDictionary()
 
+    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
@@ -331,6 +334,7 @@ def main() -> None:
         setting_loader,
         preset_manager,
         use_dict,
+        engine_manifest,
         cancellable_engine,
         root_dir,
         cors_policy_mode,

@@ -4,6 +4,7 @@ from pathlib import Path
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
+from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import CoreAdapter
@@ -46,6 +47,7 @@ if __name__ == "__main__":
             preset_path=engine_root() / "presets.yaml",
         ),
         user_dict=UserDictionary(),
+        engine_manifest=load_manifest(engine_root() / "engine_manifest.json"),
     )
     api_schema = json.dumps(app.openapi())
 
