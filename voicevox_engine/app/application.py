@@ -1,9 +1,6 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -12,6 +9,7 @@ from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
+from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.speaker import generate_speaker_router
@@ -19,7 +17,7 @@ from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_route
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
+from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
@@ -47,20 +45,14 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
-    engine_manifest_data = EngineManifestLoader(
-        engine_root() / "engine_manifest.json", engine_root()
-    ).load_manifest()
+    engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        user_dict.update_dict()
-        yield
+    user_dict.update_dict()
 
     app = FastAPI(
         title=engine_manifest_data.name,
         description=f"{engine_manifest_data.brand_name} の音声合成エンジンです。",
         version=__version__,
-        lifespan=lifespan,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
 
@@ -106,25 +98,7 @@ def generate_app(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-
-    @app.get("/", response_class=HTMLResponse, tags=["その他"])
-    async def get_portal() -> str:
-        """ポータルページを返します。"""
-        engine_name = engine_manifest_data.name
-
-        return f"""
-        <html>
-            <head>
-                <title>{engine_name}</title>
-            </head>
-            <body>
-                <h1>{engine_name}</h1>
-                {engine_name} へようこそ！
-                <ul>
-                    <li><a href='/setting'>設定</a></li>
-                    <li><a href='/docs'>API ドキュメント</a></li>
-        </ul></body></html>
-        """
+    app.include_router(generate_portal_page_router(engine_manifest_data))
 
     app = configure_openapi_schema(app)
 

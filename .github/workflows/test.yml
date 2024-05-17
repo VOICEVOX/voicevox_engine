@@ -76,7 +76,7 @@ jobs:
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         uses: crate-ci/typos@v1.12.12
 
-  shellcheck:
+  lint-builders:
     runs-on: ubuntu-20.04
     steps:
       - name: <Setup> Check out the repository
@@ -89,3 +89,9 @@ jobs:
 
       - name: <Test> Check shell files
         run: git ls-files | grep -E '\.(ba)?sh' | xargs shellcheck
+
+      - name: <Test> Check workflow files
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint
+        shell: bash
