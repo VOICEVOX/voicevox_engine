@@ -1,7 +1,9 @@
-name: 'Test issue freshness'
+# Github Issue が停滞状態になっていないか確認する
+
+name: "Test issue freshness"
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
   workflow_dispatch:
     inputs:
       dryrun:
@@ -17,19 +19,19 @@ jobs:
         with:
           # on.schedule で起動した場合は `inputs.dryrun == null` であるため `debug-only: false` となる
           debug-only: ${{ inputs.dryrun == 'true' }}
-          any-of-labels: '状態：必要性議論'
+          any-of-labels: "状態：必要性議論"
           days-before-stale: 30
           days-before-close: -1
-          stale-issue-message: '本 Issue は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
-          stale-issue-label: '非アクティブ'
+          stale-issue-message: "本 Issue は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。"
+          stale-issue-label: "非アクティブ"
 
       - name: <Test> Notify inactive 設計/実装者募集/実装 issues
         uses: actions/stale@v9
         with:
           # on.schedule で起動した場合は `inputs.dryrun == null` であるため `debug-only: false` となる
           debug-only: ${{ inputs.dryrun == 'true' }}
-          any-of-labels: '状態：設計,状態：実装者募集,状態：実装'
+          any-of-labels: "状態：設計,状態：実装者募集,状態：実装"
           days-before-stale: 180
           days-before-close: -1
-          stale-issue-message: '本 Issue は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。'
-          stale-issue-label: '非アクティブ'
+          stale-issue-message: "本 Issue は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。"
+          stale-issue-label: "非アクティブ"
