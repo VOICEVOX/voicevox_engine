@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -10,6 +9,7 @@ from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
+from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.speaker import generate_speaker_router
@@ -101,25 +101,7 @@ def generate_app(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-
-    @app.get("/", response_class=HTMLResponse, tags=["その他"])
-    async def get_portal() -> str:
-        """ポータルページを返します。"""
-        engine_name = engine_manifest_data.name
-
-        return f"""
-        <html>
-            <head>
-                <title>{engine_name}</title>
-            </head>
-            <body>
-                <h1>{engine_name}</h1>
-                {engine_name} へようこそ！
-                <ul>
-                    <li><a href='/setting'>設定</a></li>
-                    <li><a href='/docs'>API ドキュメント</a></li>
-        </ul></body></html>
-        """
+    app.include_router(generate_portal_page_router(engine_manifest_data))
 
     app = configure_openapi_schema(app)
 
