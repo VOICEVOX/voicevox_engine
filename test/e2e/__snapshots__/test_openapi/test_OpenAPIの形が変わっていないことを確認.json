@@ -2438,7 +2438,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidのsingerに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2490,6 +2490,7 @@
     },
     "/singers": {
       "get": {
+        "description": "singer情報の一覧を取得します",
         "operationId": "singers_singers_get",
         "parameters": [
           {
@@ -2536,7 +2537,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidのspeakerに関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {
@@ -2588,6 +2589,7 @@
     },
     "/speakers": {
       "get": {
+        "description": "speaker情報の一覧を取得します。",
         "operationId": "speakers_speakers_get",
         "parameters": [
           {
