@@ -24,7 +24,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_2(self) -> None:
         setting_loader = SettingHandler(
-            setting_file_path=Path("test/setting/setting-test-load-1.yaml")
+            setting_file_path=Path("test/unit/setting/setting-test-load-1.yaml")
         )
         settings = setting_loader.load()
 
@@ -35,7 +35,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_3(self) -> None:
         setting_loader = SettingHandler(
-            setting_file_path=Path("test/setting/setting-test-load-2.yaml")
+            setting_file_path=Path("test/unit/setting/setting-test-load-2.yaml")
         )
         settings = setting_loader.load()
 
@@ -46,7 +46,7 @@ class TestSettingLoader(TestCase):
 
     def test_loading_4(self) -> None:
         setting_loader = SettingHandler(
-            setting_file_path=Path("test/setting/setting-test-load-3.yaml")
+            setting_file_path=Path("test/unit/setting/setting-test-load-3.yaml")
         )
         settings = setting_loader.load()
 
@@ -73,7 +73,7 @@ class TestSettingLoader(TestCase):
 
     def test_cors_policy_mode_type(self) -> None:
         setting_loader = SettingHandler(
-            setting_file_path=Path("test/setting/setting-test-load-1.yaml")
+            setting_file_path=Path("test/unit/setting/setting-test-load-1.yaml")
         )
         settings = setting_loader.load()
 

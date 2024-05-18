@@ -8,10 +8,10 @@ from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 
-presets_test_1_yaml_path = Path("test/preset/presets-test-1.yaml")
-presets_test_2_yaml_path = Path("test/preset/presets-test-2.yaml")
-presets_test_3_yaml_path = Path("test/preset/presets-test-3.yaml")
-presets_test_4_yaml_path = Path("test/preset/presets-test-4.yaml")
+presets_test_1_yaml_path = Path("test/unit/preset/presets-test-1.yaml")
+presets_test_2_yaml_path = Path("test/unit/preset/presets-test-2.yaml")
+presets_test_3_yaml_path = Path("test/unit/preset/presets-test-3.yaml")
+presets_test_4_yaml_path = Path("test/unit/preset/presets-test-4.yaml")
 
 
 class TestPresetManager(TestCase):

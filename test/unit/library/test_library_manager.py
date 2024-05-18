@@ -30,7 +30,7 @@ class TestLibraryManager(TestCase):
             "c7b58856-bd56-4aa1-afb7-b8415f824b06",
         )
         self.library_filename = Path("test/test.vvlib")
-        with open("test/vvlib_manifest.json") as f:
+        with open("test/unit/library/vvlib_manifest.json") as f:
             self.vvlib_manifest = json.loads(f.read())
             self.library_uuid = self.vvlib_manifest["uuid"]
         with ZipFile(self.library_filename, "w") as zf:
