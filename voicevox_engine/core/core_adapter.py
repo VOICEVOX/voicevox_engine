@@ -1,3 +1,4 @@
+import json
 import threading
 from typing import Literal, NewType
 
@@ -49,9 +50,10 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        return self.core.metas()
+    def speakers(self) -> list[CoreSpeaker]:
+        """話者情報"""
+        metas = self.core.metas()
+        return [CoreSpeaker(**speaker) for speaker in json.loads(metas)]
 
     @property
     def supported_devices(self) -> str | None:

@@ -1,7 +1,6 @@
 """話者情報機能を提供する API Router"""
 
 import base64
-import json
 from pathlib import Path
 from typing import Annotated, Callable, Literal
 
@@ -78,9 +77,7 @@ def generate_speaker_router(
         #           ...
 
         # 該当話者の検索
-        speakers = parse_obj_as(
-            list[Speaker], json.loads(get_core(core_version).speakers)
-        )
+        speakers = parse_obj_as(list[Speaker], get_core(core_version).speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         for i in range(len(speakers)):
             if speakers[i].speaker_uuid == speaker_uuid:
