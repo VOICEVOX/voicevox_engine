@@ -3,6 +3,8 @@
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
 # 変更する際は、Optionalにする必要があることに留意しなければならない。
 
+from typing import TypeAlias
+
 from pydantic import BaseModel, Field
 
 
@@ -48,14 +50,18 @@ class SupportedFeatures(BaseModel):
     )
 
 
+EngineName: TypeAlias = str
+BrandName: TypeAlias = str
+
+
 class EngineManifest(BaseModel):
     """
     エンジン自体に関する情報
     """
 
     manifest_version: str = Field(title="マニフェストのバージョン")
-    name: str = Field(title="エンジン名")
-    brand_name: str = Field(title="ブランド名")
+    name: EngineName = Field(title="エンジン名")
+    brand_name: BrandName = Field(title="ブランド名")
     uuid: str = Field(title="エンジンのUUID")
     url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")

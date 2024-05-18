@@ -46,6 +46,8 @@ def generate_app(
         root_dir = engine_root()
 
     engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
+    engine_name = engine_manifest_data.name
+    brand_name = engine_manifest_data.brand_name
 
     user_dict.update_dict()
 
@@ -100,8 +102,8 @@ def generate_app(
     app.include_router(
         generate_engine_info_router(get_core, cores, engine_manifest_data)
     )
-    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-    app.include_router(generate_portal_page_router(engine_manifest_data))
+    app.include_router(generate_setting_router(setting_loader, brand_name))
+    app.include_router(generate_portal_page_router(engine_name))
 
     app = configure_openapi_schema(app)
 
