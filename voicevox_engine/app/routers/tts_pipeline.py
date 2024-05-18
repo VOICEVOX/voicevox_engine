@@ -20,8 +20,11 @@ from voicevox_engine.model import (
     ParseKanaError,
     Score,
 )
-from voicevox_engine.preset.Preset import PresetInputError, PresetInternalError
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import (
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
 from voicevox_engine.tts_pipeline.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,

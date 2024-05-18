@@ -20,7 +20,7 @@ from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngine

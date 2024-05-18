@@ -14,7 +14,7 @@ import uvicorn
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
