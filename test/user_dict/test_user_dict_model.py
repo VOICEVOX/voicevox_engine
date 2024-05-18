@@ -45,10 +45,7 @@ def generate_model() -> TestModel:
 
 def test_valid_word() -> None:
     test_value = generate_model()
-    try:
-        UserDictWord(**test_value)
-    except ValidationError as e:
-        assert False, f"Unexpected Validation Error\n{str(e)}"
+    UserDictWord(**test_value)
 
 
 def test_convert_to_zenkaku() -> None:
