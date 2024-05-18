@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
@@ -18,30 +16,30 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-def _gen_accent_phrases() -> AccentPhrase:
+def _gen_accent_phrases() -> list[AccentPhrase]:
     return [
-            AccentPhrase(
-                moras=[
-                    _gen_mora("コ", "k", "o"),
-                    _gen_mora("ン", None, "N"),
-                    _gen_mora("ニ", "n", "i"),
-                    _gen_mora("チ", "ch", "i"),
-                    _gen_mora("ワ", "w", "a"),
-                ],
-                accent=5,
-                pause_mora=_gen_mora("、", None, "pau"),
-            ),
-            AccentPhrase(
-                moras=[
-                    _gen_mora("ヒ", "h", "i"),
-                    _gen_mora("ホ", "h", "o"),
-                    _gen_mora("デ", "d", "e"),
-                    _gen_mora("ス", "s", "U"),
-                ],
-                accent=1,
-                pause_mora=None,
-            ),
-        ]
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", "o"),
+                _gen_mora("ン", None, "N"),
+                _gen_mora("ニ", "n", "i"),
+                _gen_mora("チ", "ch", "i"),
+                _gen_mora("ワ", "w", "a"),
+            ],
+            accent=5,
+            pause_mora=_gen_mora("、", None, "pau"),
+        ),
+        AccentPhrase(
+            moras=[
+                _gen_mora("ヒ", "h", "i"),
+                _gen_mora("ホ", "h", "o"),
+                _gen_mora("デ", "d", "e"),
+                _gen_mora("ス", "s", "U"),
+            ],
+            accent=1,
+            pause_mora=None,
+        ),
+    ]
 
 
 def test_update_length() -> None:
