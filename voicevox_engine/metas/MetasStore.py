@@ -1,10 +1,11 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, NewType
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, Field
 
+from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
@@ -17,37 +18,12 @@ if TYPE_CHECKING:
     from voicevox_engine.core.core_adapter import CoreAdapter
 
 
-_CoreStyleId = NewType("_CoreStyleId", int)
-_CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
-
-
-class _CoreSpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
-
-    name: str
-    id: _CoreStyleId
-    type: _CoreStyleType | None = Field(default="talk")
-
-
-def cast_styles(cores: list[_CoreSpeakerStyle]) -> list[SpeakerStyle]:
+def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
     """コアから取得したスタイル情報をエンジン形式へキャストする。"""
     return [
         SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
         for core in cores
     ]
-
-
-class _CoreSpeaker(BaseModel):
-    """
-    コアに含まれる話者情報
-    """
-
-    name: str
-    speaker_uuid: str
-    styles: list[_CoreSpeakerStyle]
-    version: str = Field("話者のバージョン")
 
 
 class _EngineSpeaker(BaseModel):
@@ -95,7 +71,7 @@ class MetasStore:
             エンジンとコアに含まれる話者メタ情報
         """
         # コアに含まれる話者メタ情報の収集
-        core_metas = [_CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
+        core_metas = [CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
