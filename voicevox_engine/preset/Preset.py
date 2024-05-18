@@ -1,3 +1,5 @@
+"""プリセットのモデルとエラー"""
+
 from pydantic import BaseModel, Field
 
 from voicevox_engine.metas.Metas import StyleId
@@ -18,3 +20,15 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+
+
+class PresetInputError(Exception):
+    """受け入れ不可能な入力値に起因するエラー"""
+
+    pass
+
+
+class PresetInternalError(Exception):
+    """プリセットマネージャーに起因するエラー"""
+
+    pass

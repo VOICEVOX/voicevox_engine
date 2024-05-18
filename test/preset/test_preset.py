@@ -4,8 +4,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
+from voicevox_engine.preset.Preset import Preset, PresetInputError, PresetInternalError
 from voicevox_engine.preset.PresetManager import PresetManager
 
 presets_test_1_yaml_path = Path("test/preset/presets-test-1.yaml")

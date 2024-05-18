@@ -3,8 +3,7 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError, parse_obj_as
 
-from .Preset import Preset
-from .PresetError import PresetInputError, PresetInternalError
+from .Preset import Preset, PresetInputError, PresetInternalError
 
 
 class PresetManager:
