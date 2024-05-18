@@ -159,21 +159,21 @@ def generate_licenses() -> list[License]:
             package_name="Open JTalk",
             package_version="1.11",
             license_name="Modified BSD license",
-            license_text="docs/licenses/open_jtalk/COPYING",
+            license_text="resources/licenses/open_jtalk/COPYING",
             license_text_type="local_address",
         ),
         License(
             package_name="MeCab",
             package_version=None,
             license_name="Modified BSD license",
-            license_text="docs/licenses/open_jtalk/mecab/COPYING",
+            license_text="resources/licenses/open_jtalk/mecab/COPYING",
             license_text_type="local_address",
         ),
         License(
             package_name="NAIST Japanese Dictionary",
             package_version=None,
             license_name="Modified BSD license",
-            license_text="docs/licenses//open_jtalk/mecab-naist-jdic/COPYING",
+            license_text="resources/licenses//open_jtalk/mecab-naist-jdic/COPYING",
             license_text_type="local_address",
         ),
         License(
@@ -275,7 +275,7 @@ def generate_licenses() -> list[License]:
             package_name="mpg123",
             package_version="1.30.2",
             license_name="LGPL-2.1 license",
-            license_text="docs/licenses/mpg123/COPYING",
+            license_text="resources/licenses/mpg123/COPYING",
             license_text_type="local_address",
         ),
         # liblame
@@ -295,7 +295,7 @@ def generate_licenses() -> list[License]:
             package_name="CUDA Toolkit",
             package_version="11.8.0",
             license_name=None,
-            license_text="docs/licenses/cuda/EULA.txt",
+            license_text="resources/licenses/cuda/EULA.txt",
             license_text_type="local_address",
         ),
         # license text from cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows # noqa: B950
@@ -306,7 +306,7 @@ def generate_licenses() -> list[License]:
             package_name="cuDNN",
             package_version="8.9.2",
             license_name=None,
-            license_text="docs/licenses/cudnn/LICENSE",
+            license_text="resources/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
     ]
