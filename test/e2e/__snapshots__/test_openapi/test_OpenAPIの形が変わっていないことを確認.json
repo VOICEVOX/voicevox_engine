@@ -1112,7 +1112,7 @@
     "/": {
       "get": {
         "description": "ポータルページを返します。",
-        "operationId": "get_portal__get",
+        "operationId": "get_portal_page__get",
         "responses": {
           "200": {
             "content": {
@@ -1125,7 +1125,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get Portal",
+        "summary": "Get Portal Page",
         "tags": [
           "その他"
         ]
@@ -2289,7 +2289,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": "Successful Response"
           },
           "422": {
