@@ -18,11 +18,8 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-class TestMockTTSEngine(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.accent_phrases_hello_hiho = [
+def _gen_accent_phrases() -> AccentPhrase:
+    return [
             AccentPhrase(
                 moras=[
                     _gen_mora("コ", "k", "o"),
@@ -45,30 +42,35 @@ class TestMockTTSEngine(TestCase):
                 pause_mora=None,
             ),
         ]
-        self.engine = MockTTSEngine()
 
-    def test_update_length(self) -> None:
-        """`.update_length()` がエラー無く生成をおこなう"""
-        self.engine.update_length(self.accent_phrases_hello_hiho, StyleId(0))
 
-    def test_update_pitch(self) -> None:
-        """`.update_pitch()` がエラー無く生成をおこなう"""
-        self.engine.update_pitch(self.accent_phrases_hello_hiho, StyleId(0))
+def test_update_length() -> None:
+    """`.update_length()` がエラー無く生成をおこなう"""
+    engine = MockTTSEngine()
+    engine.update_length(_gen_accent_phrases(), StyleId(0))
 
-    def test_synthesize_wave(self) -> None:
-        """`.synthesize_wave()` がエラー無く生成をおこなう"""
-        self.engine.synthesize_wave(
-            AudioQuery(
-                accent_phrases=self.accent_phrases_hello_hiho,
-                speedScale=1,
-                pitchScale=0,
-                intonationScale=1,
-                volumeScale=1,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-                outputSamplingRate=24000,
-                outputStereo=False,
-                kana=create_kana(self.accent_phrases_hello_hiho),
-            ),
-            StyleId(0),
-        )
+
+def test_update_pitch() -> None:
+    """`.update_pitch()` がエラー無く生成をおこなう"""
+    engine = MockTTSEngine()
+    engine.update_pitch(_gen_accent_phrases(), StyleId(0))
+
+
+def test_synthesize_wave() -> None:
+    """`.synthesize_wave()` がエラー無く生成をおこなう"""
+    engine = MockTTSEngine()
+    engine.synthesize_wave(
+        AudioQuery(
+            accent_phrases=_gen_accent_phrases(),
+            speedScale=1,
+            pitchScale=0,
+            intonationScale=1,
+            volumeScale=1,
+            prePhonemeLength=0.1,
+            postPhonemeLength=0.1,
+            outputSamplingRate=24000,
+            outputStereo=False,
+            kana=create_kana(_gen_accent_phrases()),
+        ),
+        StyleId(0),
+    )
