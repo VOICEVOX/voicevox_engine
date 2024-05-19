@@ -203,15 +203,12 @@ class TestLibraryManager(TestCase):
 
     def test_install(self) -> None:
         # 正しいライブラリをインストールして問題が起きないか
-        invalid_vvlib_name = "test/invalid.vvlib"
         library_path = self.library_manger.install_library(
             self.library_uuid, self.library_file
         )
         self.assertEqual(self.tmp_dir_path / self.library_uuid, library_path)
 
         self.library_manger.uninstall_library(self.library_uuid)
-
-        os.remove(invalid_vvlib_name)
 
     def test_uninstall_library(self) -> None:
         # TODO: アンインストール出来ないライブラリをテストできるようにしたい
