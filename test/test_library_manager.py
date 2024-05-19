@@ -1,7 +1,6 @@
 import copy
 import glob
 import json
-import os
 from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
