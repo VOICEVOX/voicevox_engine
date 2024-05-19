@@ -1,3 +1,5 @@
+"""パスに関する utility"""
+
 import os
 import sys
 import traceback

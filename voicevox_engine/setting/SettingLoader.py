@@ -1,3 +1,5 @@
+"""設定の管理"""
+
 from enum import Enum
 from pathlib import Path
 

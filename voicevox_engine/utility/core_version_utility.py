@@ -1,3 +1,5 @@
+"""バージョンに関する utility"""
+
 from semver.version import Version
 
 

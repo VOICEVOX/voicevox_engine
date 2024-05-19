@@ -1,3 +1,5 @@
+"""プリセットのモデル"""
+
 from pydantic import BaseModel, Field
 
 from voicevox_engine.metas.Metas import StyleId

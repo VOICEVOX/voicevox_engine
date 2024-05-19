@@ -1,3 +1,5 @@
+"""VOICEVOX ENGINE アプリケーション"""
+
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException

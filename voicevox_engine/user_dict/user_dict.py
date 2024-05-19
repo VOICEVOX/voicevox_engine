@@ -1,3 +1,5 @@
+"""ユーザー辞書の管理"""
+
 import json
 import sys
 import threading

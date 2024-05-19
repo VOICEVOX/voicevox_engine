@@ -1,3 +1,5 @@
+"""VOICEVOX CORE を ENGINE に適合させるアダプター"""
+
 import threading
 
 import numpy as np

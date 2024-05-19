@@ -1,3 +1,5 @@
+"""音素"""
+
 from typing import Literal
 
 import numpy as np

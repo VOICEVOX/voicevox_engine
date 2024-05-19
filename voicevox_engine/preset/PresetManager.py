@@ -1,3 +1,5 @@
+"""プリセットの管理"""
+
 from pathlib import Path
 
 import yaml

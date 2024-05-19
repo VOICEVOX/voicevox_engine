@@ -1,3 +1,5 @@
+"""音声データの結合"""
+
 import base64
 import io
 

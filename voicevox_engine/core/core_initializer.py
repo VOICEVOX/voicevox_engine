@@ -1,3 +1,5 @@
+"""VOICEVOX CORE の初期化"""
+
 import json
 import os
 import sys

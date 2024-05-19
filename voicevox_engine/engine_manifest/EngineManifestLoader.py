@@ -1,3 +1,5 @@
+"""エンジンマニフェストの読み込み"""
+
 import json
 from base64 import b64encode
 from pathlib import Path

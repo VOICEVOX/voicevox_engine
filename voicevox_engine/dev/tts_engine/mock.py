@@ -1,3 +1,5 @@
+"""TTSEngine のモック"""
+
 import copy
 from logging import getLogger
 from typing import Any

@@ -1,3 +1,5 @@
+"""単語の対応付け"""
+
 from ..model import (
     USER_DICT_MAX_PRIORITY,
     USER_DICT_MIN_PRIORITY,

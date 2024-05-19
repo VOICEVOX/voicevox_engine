@@ -1,3 +1,5 @@
+"""話者情報と話者メタ情報の管理"""
+
 import json
 from copy import deepcopy
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""CoreWrapper のモック"""
+
 import json
 from pathlib import Path
 

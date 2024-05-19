@@ -1,3 +1,5 @@
+"""モデル"""
+
 from enum import Enum
 from re import findall, fullmatch
 from typing import Any
