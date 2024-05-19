@@ -240,7 +240,7 @@ RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION
 RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
-ADD ./requirements-license.txt /tmp/
+ADD ./requirements.txt /tmp/
 RUN <<EOF
     set -eux
 
@@ -250,7 +250,8 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
+    gosu user /opt/python/bin/pip3 install "pip-licenses==4.4.0"
     gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF

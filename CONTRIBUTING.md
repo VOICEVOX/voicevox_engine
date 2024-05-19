@@ -218,7 +218,6 @@ requirements.txt の更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
-poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
 #### ライセンス
@@ -235,7 +234,7 @@ poetry export --without-hashes --with license -o requirements-license.txt
 以下のコマンドにより脆弱性を診断できます：  
 
 ```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
+safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
 ```
 
 ### API ドキュメントの確認

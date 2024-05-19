@@ -18,7 +18,8 @@ else
     source $VENV_PATH/bin/activate
 fi
 
-pip install -r requirements-license.txt
+pip install -r requirements.txt
+pip install "pip-licenses==4.4.0"
 python build_util/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 deactivate
