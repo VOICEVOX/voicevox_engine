@@ -27,7 +27,7 @@ jobs:
       - name: <Setup> Install Python dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install -r requirements-test.txt
+          pip install -r requirements-test.txt
 
       - name: <Test> Validate poetry.lock
         run: |
