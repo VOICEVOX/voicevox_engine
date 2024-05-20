@@ -60,7 +60,6 @@ def benchmark_request_time_for_all_speakers(
     def execute() -> None:
         """計測対象となる処理を実行する"""
         for _ in speaker_uuids:
-            # `GET /speaker_info` のリクエスト部にかかる時間を `GET /` をプロキシとして測定する
             client.get("/", params={})
 
     average_time = benchmark_time(execute, n_repeat=10)
