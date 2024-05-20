@@ -1,3 +1,5 @@
+"""VOICEVOX ENGINE へアクセス可能なクライアントの生成"""
+
 import warnings
 from pathlib import Path
 from typing import Literal
