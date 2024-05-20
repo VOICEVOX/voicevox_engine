@@ -48,7 +48,7 @@ def generate_client(
 
     if server == "fake":
         if root_dir is None:
-            warn_msg = "暗示的に `VOICEVOX/vv-engine` を `root_dir` に設定します。"
+            warn_msg = "root_dirが未指定であるため、自動的に `VOICEVOX/vv-engine` を `root_dir` に設定します。"
             warnings.warn(warn_msg, stacklevel=2)
             root_dir = Path("VOICEVOX/vv-engine")
         return _generate_engine_fake_server(root_dir)
