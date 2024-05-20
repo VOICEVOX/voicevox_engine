@@ -46,7 +46,6 @@ def generate_client(
 ) -> TestClient | httpx.Client:
     """VOICEVOX ENGINE へアクセス可能なクライアントを生成する。"""
 
-    # 前提条件として、製品版 VOICEVOX の archive 版をレポジトリ直下で解凍する必要がある
     if server == "fake":
         if root_dir is None:
             warn_msg = "暗示的に `VOICEVOX/vv-engine` を `root_dir` に設定します。"
