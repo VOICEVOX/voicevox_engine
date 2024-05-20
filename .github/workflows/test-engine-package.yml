@@ -27,6 +27,7 @@ env:
     ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
+
 defaults:
   run:
     shell: bash
