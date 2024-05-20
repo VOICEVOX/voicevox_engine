@@ -68,8 +68,10 @@ def benchmark_request_time_for_all_speakers(
 
 
 if __name__ == "__main__":
-    # 実行コマンドは `python -m test.benchmark.speed.speaker`
-    # `server="localhost"` の場合は別プロセスで `python run.py --voicevox_dir=VOICEVOX/vv-engine` 等を実行
+    # 実行コマンドは `python -m test.benchmark.speed.speaker` である。
+    # `server="localhost"` の場合、本ベンチマーク実行に先立ってエンジン起動が必要である。
+    # エンジン起動コマンドの一例として以下を示す。
+    # （別プロセスで）`python run.py --voicevox_dir=VOICEVOX/vv-engine`
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--voicevox_dir", type=Path)
