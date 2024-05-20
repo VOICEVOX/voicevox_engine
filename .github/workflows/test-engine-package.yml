@@ -81,8 +81,7 @@ jobs:
         run: chmod +x dist/run
 
       - name: <Setup> Install Python test dependencies
-        run: |
-          pip install -r requirements-test.txt
+        run: pip install -r requirements-test.txt
 
       - name: <Test> Test ENGINE package
         run: python build_util/check_release_build.py --dist_dir dist/

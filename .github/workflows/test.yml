@@ -1,11 +1,6 @@
 name: test
 
-on:
-  push:
-  pull_request:
-    branches:
-      - "**"
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 defaults:
   run:
@@ -60,6 +55,7 @@ jobs:
 
       - name: <Test> Test codes and coverage
         run: coverage run --omit=test/* -m pytest
+
       - name: <Deploy> Submit coverage results to Coveralls
         if: matrix.os == 'ubuntu-20.04'
         run: coveralls --service=github
@@ -67,7 +63,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check licenses
-        shell: bash
         run: |
           OUTPUT_LICENSE_JSON_PATH=/dev/null \
           bash build_util/create_venv_and_generate_licenses.bash
@@ -94,4 +89,3 @@ jobs:
         run: |
           bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           ./actionlint
-        shell: bash
