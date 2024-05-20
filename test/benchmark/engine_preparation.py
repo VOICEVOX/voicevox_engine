@@ -36,15 +36,17 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
     return TestClient(app)
 
 
-# `localhost`: 別プロセスに建てられたローカルの実サーバー
-# `fake`: ネットワークを介さずレスポンスを返す疑似サーバー
 ServerType = Literal["localhost", "fake"]
 
 
 def generate_client(
     server: ServerType, root_dir: Path | None
 ) -> TestClient | httpx.Client:
-    """VOICEVOX ENGINE へアクセス可能なクライアントを生成する。"""
+    """
+    VOICEVOX ENGINE へアクセス可能なクライアントを生成する。
+    `server=localhost` では http://localhost:50021 へのクライアントを生成する。
+    `server=fake` ではネットワークを介さずレスポンスを返す疑似サーバーを生成する。
+    """
 
     if server == "fake":
         if root_dir is None:
