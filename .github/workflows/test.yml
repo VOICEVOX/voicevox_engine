@@ -63,9 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check licenses
-        run: |
-          OUTPUT_LICENSE_JSON_PATH=/dev/null \
-          bash build_util/create_venv_and_generate_licenses.bash
+        run: OUTPUT_LICENSE_JSON_PATH=/dev/null bash build_util/create_venv_and_generate_licenses.bash
 
       - name: Test names by checking typo
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
