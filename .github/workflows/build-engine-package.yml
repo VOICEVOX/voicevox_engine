@@ -291,7 +291,7 @@ jobs:
 
       - name: <Setup> Install Python dependencies
         run: |
-          python -m pip install -r requirements-dev.txt
+          python -m pip install -r requirements-build.txt
 
           if [ "$RUNNER_OS" = Windows ]; then
             # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
