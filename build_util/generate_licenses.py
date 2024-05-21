@@ -30,10 +30,7 @@ class License:
             # ライセンステキストをローカルのライセンスファイルから抽出する
             self.license_text = Path(license_text).read_text(encoding="utf8")
         elif license_text_type == "remote_address":
-            # ライセンステキストをリモートのライセンスファイルから抽出する
-            with urllib.request.urlopen(license_text) as res:
-                _license_text: str = res.read().decode()
-                self.license_text = _license_text
+            replace_license_text(self, license_text)
         else:
             raise Exception("型で保護され実行されないはずのパスが実行されました")
 
