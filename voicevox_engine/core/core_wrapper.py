@@ -364,7 +364,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     # Core<0.12
     model_type = _check_core_type(core_dir)
     if model_type is None:
-        raise RuntimeError("コアが見つかりません", core_name)
+        raise RuntimeError("コアが見つかりません")
     if use_gpu or model_type == "onnxruntime":
         core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
         if core_name:

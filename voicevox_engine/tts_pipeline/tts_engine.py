@@ -564,7 +564,6 @@ class TTSEngine:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        """疑問文処理"""
         query.accent_phrases = apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak
         )
