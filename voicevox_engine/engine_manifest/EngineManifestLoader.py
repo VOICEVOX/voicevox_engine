@@ -9,6 +9,7 @@ from .EngineManifest import EngineManifest, LicenseInfo, UpdateInfo
 
 class FeatureSupportJson(BaseModel):
     """`engine_manifest.json` の機能サポート状況"""
+
     type: str
     value: bool
     name: str
@@ -16,6 +17,7 @@ class FeatureSupportJson(BaseModel):
 
 class SupportedFeaturesJson(BaseModel):
     """`engine_manifest.json` のサポート機能一覧"""
+
     adjust_mora_pitch: FeatureSupportJson
     adjust_phoneme_length: FeatureSupportJson
     adjust_speed_scale: FeatureSupportJson
@@ -23,13 +25,14 @@ class SupportedFeaturesJson(BaseModel):
     adjust_intonation_scale: FeatureSupportJson
     adjust_volume_scale: FeatureSupportJson
     interrogative_upspeak: FeatureSupportJson
-    synthesis_morphing : FeatureSupportJson
-    sing : FeatureSupportJson
+    synthesis_morphing: FeatureSupportJson
+    sing: FeatureSupportJson
     manage_library: FeatureSupportJson
 
 
 class EngineManifestJson(BaseModel):
     """`engine_manifest.json` のコンテンツ"""
+
     manifest_version: str
     name: str
     brand_name: str
