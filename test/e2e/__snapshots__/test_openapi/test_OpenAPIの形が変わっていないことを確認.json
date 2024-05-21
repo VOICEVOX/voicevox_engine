@@ -70,6 +70,10 @@
             "title": "音声の後の無音時間",
             "type": "number"
           },
+          "pauseLength": {
+            "title": "テキスト内の無音時間",
+            "type": "number"
+          },
           "prePhonemeLength": {
             "title": "音声の前の無音時間",
             "type": "number"
@@ -91,6 +95,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "pauseLength",
           "outputSamplingRate",
           "outputStereo"
         ],
@@ -609,6 +614,10 @@
             "title": "音声の後の無音時間",
             "type": "number"
           },
+          "pauseLength": {
+            "title": "テキスト内の無音時間",
+            "type": "number"
+          }
           "prePhonemeLength": {
             "title": "音声の前の無音時間",
             "type": "number"
@@ -640,7 +649,8 @@
           "intonationScale",
           "volumeScale",
           "prePhonemeLength",
-          "postPhonemeLength"
+          "postPhonemeLength",
+          "pauseLength"
         ],
         "title": "Preset",
         "type": "object"

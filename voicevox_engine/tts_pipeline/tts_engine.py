@@ -171,6 +171,14 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
         mora.pitch *= 2**query.pitchScale
     return moras
 
+def apply_pause_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音スケール（`pauseLength`）を適用する"""
+    #この時点でpause_moraはspeed_scaleによる調整を受けている、けど関係ないか？
+    for mora in moras:
+        if mora.text == '、':
+            mora.vowel_length *= query.pauseLength
+    return moras
+
 
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
@@ -214,6 +222,7 @@ def query_to_decoder_feature(
     query: AudioQuery,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
+    # pause_moraも入ってるけど区別がなくなってる text='、'になってるのがpause_mora
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
@@ -221,6 +230,7 @@ def query_to_decoder_feature(
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
+    moras = apply_pause_scale(moras, query)
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])
@@ -554,6 +564,7 @@ class TTSEngine:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
+        """疑問文処理"""
         query.accent_phrases = apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak
         )

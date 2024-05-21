@@ -76,6 +76,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -104,6 +105,7 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
+                        "pauseLength": 1,
                     }
                 )
             )
@@ -124,6 +126,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -150,6 +153,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -176,6 +180,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         preset_manager.load_presets()
@@ -204,6 +209,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         id = preset_manager.update_preset(preset)
@@ -232,6 +238,7 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
+                        "pauseLength": 1,
                     }
                 )
             )
@@ -252,6 +259,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         with self.assertRaises(PresetError, msg="更新先のプリセットが存在しません"):
@@ -275,6 +283,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "pauseLength": 1,
             }
         )
         preset_manager.load_presets()

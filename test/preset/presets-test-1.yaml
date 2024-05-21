@@ -8,6 +8,7 @@
   volumeScale: 1
   prePhonemeLength: 0.1
   postPhonemeLength: 0.1
+  pauseLength: 1
 
 - id: 2
   name: test2
@@ -19,3 +20,4 @@
   volumeScale: 0.7
   prePhonemeLength: 0.5
   postPhonemeLength: 0.5
+  pauseLength: 1
