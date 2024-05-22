@@ -5,11 +5,11 @@
     "moras": [
       {
         "consonant": "k",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 4.38,
         "text": "コ",
         "vowel": "o",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": null,
@@ -17,31 +17,31 @@
         "pitch": 1.25,
         "text": "ン",
         "vowel": "N",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "n",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 4.06,
         "text": "ニ",
         "vowel": "i",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "ch",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 2.94,
         "text": "チ",
         "vowel": "i",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "w",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 4.19,
         "text": "ワ",
         "vowel": "a",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       }
     ],
     "pause_mora": {
@@ -50,7 +50,7 @@
       "pitch": 0.0,
       "text": "、",
       "vowel": "pau",
-      "vowel_length": 0.0
+      "vowel_length": 0.1
     }
   },
   {
@@ -59,35 +59,35 @@
     "moras": [
       {
         "consonant": "h",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 3.69,
         "text": "ヒ",
         "vowel": "i",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "h",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 4.06,
         "text": "ホ",
         "vowel": "o",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "d",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 2.62,
         "text": "デ",
         "vowel": "e",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       },
       {
         "consonant": "s",
-        "consonant_length": 0.0,
+        "consonant_length": 0.1,
         "pitch": 0.0,
         "text": "ス",
         "vowel": "U",
-        "vowel_length": 0.0
+        "vowel_length": 0.1
       }
     ],
     "pause_mora": null

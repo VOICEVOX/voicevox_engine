@@ -153,21 +153,21 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
-                _gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
-                _gen_mora("ン", None, None, "N", 0.0, 0.0),
-                _gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
-                _gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
+                _gen_mora("コ", "k", 0.1, "o", 0.1, 100.0),
+                _gen_mora("ン", None, None, "N", 0.1, 100.0),
+                _gen_mora("ニ", "n", 0.1, "i", 0.1, 100.0),
+                _gen_mora("チ", "ch", 0.1, "i", 0.1, 100.0),
+                _gen_mora("ワ", "w", 0.1, "a", 0.1, 100.0),
             ],
             accent=5,
-            pause_mora=_gen_mora("、", None, None, "pau", 0.0, 0.0),
+            pause_mora=_gen_mora("、", None, None, "pau", 0.1, 0.0),
         ),
         AccentPhrase(
             moras=[
-                _gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
-                _gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
-                _gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
+                _gen_mora("ヒ", "h", 0.1, "i", 0.1, 0.0),
+                _gen_mora("ホ", "h", 0.1, "o", 0.1, 100.0),
+                _gen_mora("デ", "d", 0.1, "e", 0.1, 100.0),
+                _gen_mora("ス", "s", 0.1, "U", 0.1, 0.0),
             ],
             accent=1,
             pause_mora=None,

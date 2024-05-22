@@ -6,7 +6,7 @@
       {
         "consonant": "k",
         "consonant_length": 2.44,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "コ",
         "vowel": "o",
         "vowel_length": 2.88
@@ -14,7 +14,7 @@
       {
         "consonant": null,
         "consonant_length": null,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "ン",
         "vowel": "N",
         "vowel_length": 1.25
@@ -22,7 +22,7 @@
       {
         "consonant": "n",
         "consonant_length": 2.75,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "ニ",
         "vowel": "i",
         "vowel_length": 2.31
@@ -30,7 +30,7 @@
       {
         "consonant": "ch",
         "consonant_length": 1.62,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "チ",
         "vowel": "i",
         "vowel_length": 2.31
@@ -38,7 +38,7 @@
       {
         "consonant": "w",
         "consonant_length": 3.62,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "ワ",
         "vowel": "a",
         "vowel_length": 1.44
@@ -68,7 +68,7 @@
       {
         "consonant": "h",
         "consonant_length": 2.19,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "ホ",
         "vowel": "o",
         "vowel_length": 2.88
@@ -76,7 +76,7 @@
       {
         "consonant": "d",
         "consonant_length": 1.75,
-        "pitch": 0.0,
+        "pitch": 100.0,
         "text": "デ",
         "vowel": "e",
         "vowel_length": 1.88
