@@ -19,6 +19,11 @@ def engine_root() -> Path:
     return root_dir.resolve(strict=True)
 
 
+def resource_root() -> Path:
+    """リソースのルートディレクトリを指すパスを取得する。"""
+    return engine_root() / "resources"
+
+
 def _is_development() -> bool:
     """
     動作環境が開発版であるか否かを返す。

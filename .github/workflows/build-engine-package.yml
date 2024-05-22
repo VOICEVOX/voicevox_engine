@@ -151,6 +151,9 @@ jobs:
         run: |
           set -eux
 
+          # CUDA Toolkit へのパスを OS 非依存へ整形する
+          # NOTE: ダブルクォートでバックスラッシュを囲むと tr が可搬性関連の warning を出す
+          # shellcheck disable=SC1003
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
@@ -297,7 +300,7 @@ jobs:
 
           # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
-          for i in $(seq 5); do
+          for _ in $(seq 5); do
             EXIT_CODE=0
             python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
 
@@ -442,10 +445,10 @@ jobs:
       # Build
       - name: <Build> Generate licenses.json
         run: |
-          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+          OUTPUT_LICENSE_JSON_PATH=resources/engine_manifest_assets/dependency_licenses.json \
           bash build_util/create_venv_and_generate_licenses.bash
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp engine_manifest_assets/dependency_licenses.json licenses.json
+          cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
@@ -526,6 +529,8 @@ jobs:
           set -eux
 
           # ONNX Runtime providers
+          # NOTE: `$ORIGIN` は RPATH の特殊トークンであるため、bash 変数扱いされないために適切なエスケープが必要。
+          # shellcheck disable=SC2016
           patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
           mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
 
@@ -605,13 +610,13 @@ jobs:
           (cd "${{ matrix.target }}" && 7z -r -v1900M a "../compressed.zip")
 
           # Rename to artifact.001.vvppp, artifact.002.vvppp, ...
-          for FILE in $(ls "compressed.zip."*); do
+          for FILE in compressed.zip.*; do
             NUMBER=${FILE##*.} # 001
             mv "${FILE}" "${{ steps.vars.outputs.package_name }}.${NUMBER}.vvppp"
           done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
-          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp -maxdepth 1 | wc -l)" == 1 ]; then
             mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 

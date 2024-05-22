@@ -3,12 +3,12 @@
 import base64
 import json
 from pathlib import Path
-from typing import Annotated, Callable, Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 from voicevox_engine.model import Speaker, SpeakerInfo
@@ -19,7 +19,7 @@ def b64encode_str(s: bytes) -> str:
 
 
 def generate_speaker_router(
-    get_core: Callable[[str | None], CoreAdapter],
+    core_manager: CoreManager,
     metas_store: MetasStore,
     root_dir: Path,
 ) -> APIRouter:
@@ -28,7 +28,7 @@ def generate_speaker_router(
 
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(get_core(core_version))
+        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
@@ -74,7 +74,7 @@ def generate_speaker_router(
 
         # 該当話者の検索
         speakers = parse_obj_as(
-            list[Speaker], json.loads(get_core(core_version).speakers)
+            list[Speaker], json.loads(core_manager.get_core(core_version).speakers)
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         for i in range(len(speakers)):
@@ -140,7 +140,7 @@ def generate_speaker_router(
 
     @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(get_core(core_version))
+        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
@@ -165,14 +165,13 @@ def generate_speaker_router(
             ),
         ] = False,
         core_version: str | None = None,
-    ) -> Response:
+    ) -> None:
         """
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
 
     @router.get("/is_initialized_speaker")
     def is_initialized_speaker(
@@ -182,7 +181,7 @@ def generate_speaker_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
 
     return router
