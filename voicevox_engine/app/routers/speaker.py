@@ -35,7 +35,7 @@ def generate_speaker_router(
         return metas_store.speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
-            core=get_core(core_version),
+            core=core_manager.get_core(core_version),
         )
 
     @router.get("/singers", tags=["その他"])
@@ -57,7 +57,7 @@ def generate_speaker_router(
         return metas_store.speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
-            core=get_core(core_version),
+            core=core_manager.get_core(core_version),
         )
 
     @router.post("/initialize_speaker", status_code=204, tags=["その他"])
