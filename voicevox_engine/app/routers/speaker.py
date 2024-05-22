@@ -2,7 +2,7 @@
 
 from typing import Annotated, Callable
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Query
 
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.metas.Metas import StyleId
@@ -70,14 +70,13 @@ def generate_speaker_router(
             ),
         ] = False,
         core_version: str | None = None,
-    ) -> Response:
+    ) -> None:
         """
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         core = get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-        return Response(status_code=204)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
     def is_initialized_speaker(
