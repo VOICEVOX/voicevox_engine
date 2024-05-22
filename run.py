@@ -7,7 +7,7 @@ import sys
 import warnings
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TypeVar
+from typing import TextIO, TypeVar
 
 import uvicorn
 
@@ -44,36 +44,37 @@ def decide_boolean_from_env(env_name: str) -> bool:
         return False
 
 
+def prepare_utf8_stdio(stdio: TextIO | None) -> TextIO | None:
+    """UTF-8 ベースの標準入出力インターフェイスを用意する"""
+
+    CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
+    ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
+
+    # Python インタープリタが標準入出力へ接続されていないため設定不要とみなしそのまま返す
+    if stdio is None:
+        return stdio
+    else:
+        # 既定の `TextIOWrapper` 入出力インターフェイスを UTF-8 へ再設定して返す
+        if isinstance(stdio, TextIOWrapper):
+            stdio.reconfigure(encoding=CODEC)
+            return stdio
+        else:
+            # 既定インターフェイスのバッファを全て出力しきった上で UTF-8 設定の `TextIOWrapper` を生成して返す
+            stdio.flush()
+            try:
+                return TextIOWrapper(stdio.buffer, encoding=CODEC, errors=ERR)
+            except AttributeError:
+                # バッファへのアクセスに失敗した場合、設定変更をおこなわず返す
+                return stdio
+
+
 def set_output_log_utf8() -> None:
-    """
-    stdout/stderrのエンコーディングをUTF-8に切り替える関数
-    """
-    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-    if sys.stdout is not None:
-        if isinstance(sys.stdout, TextIOWrapper):
-            sys.stdout.reconfigure(encoding="utf-8")
-        else:
-            # バッファを全て出力する
-            sys.stdout.flush()
-            try:
-                sys.stdout = TextIOWrapper(
-                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stdout.bufferがない場合は無視
-                pass
-    if sys.stderr is not None:
-        if isinstance(sys.stderr, TextIOWrapper):
-            sys.stderr.reconfigure(encoding="utf-8")
-        else:
-            sys.stderr.flush()
-            try:
-                sys.stderr = TextIOWrapper(
-                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stderr.bufferがない場合は無視
-                pass
+    """標準出力と標準エラー出力の出力形式を UTF-8 ベースに切り替える"""
+    # NOTE:
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # しかし `TextIO | None` でなく `TextIO` と間違って型付けされているため、ここでは ignore している
+    sys.stdout = prepare_utf8_stdio(sys.stdout)  # type: ignore[assignment]
+    sys.stderr = prepare_utf8_stdio(sys.stderr)  # type: ignore[assignment]
 
 
 T = TypeVar("T")
