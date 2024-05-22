@@ -2,14 +2,14 @@
 
 from functools import lru_cache
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Callable
+from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
@@ -32,7 +32,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 def generate_morphing_router(
     tts_engines: TTSEngineManager,
-    get_core: Callable[[str | None], CoreAdapter],
+    core_manager: CoreManager,
     metas_store: MetasStore,
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
@@ -52,7 +52,7 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
@@ -95,7 +95,7 @@ def generate_morphing_router(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         engine = tts_engines.get_engine(core_version)
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
