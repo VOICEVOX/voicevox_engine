@@ -38,6 +38,7 @@ class License:
 def get_license_text(text_url: str) -> str:
     """URL が指すテキストを取得する。"""
     with urllib.request.urlopen(text_url) as res:
+        # NOTE: `urlopen` 返り値の型が貧弱なため型チェックを無視する
         return res.read().decode()  # type: ignore
 
 
