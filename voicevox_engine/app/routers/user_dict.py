@@ -3,7 +3,7 @@
 import traceback
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
@@ -114,7 +114,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
             ),
         ] = None,
-    ) -> Response:
+    ) -> None:
         """
         ユーザー辞書に登録されている言葉を更新します。
         """
@@ -127,7 +127,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 word_type=word_type,
                 priority=priority,
             )
-            return Response(status_code=204)
         except ValidationError as e:
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
@@ -148,13 +147,12 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     )
     def delete_user_dict_word(
         word_uuid: Annotated[str, Path(description="削除する言葉のUUID")]
-    ) -> Response:
+    ) -> None:
         """
         ユーザー辞書に登録されている言葉を削除します。
         """
         try:
             user_dict.delete_word(word_uuid=word_uuid)
-            return Response(status_code=204)
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
@@ -177,13 +175,12 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         override: Annotated[
             bool, Query(description="重複したエントリがあった場合、上書きするかどうか")
         ],
-    ) -> Response:
+    ) -> None:
         """
         他のユーザー辞書をインポートします。
         """
         try:
             user_dict.import_user_dict(dict_data=import_dict_data, override=override)
-            return Response(status_code=204)
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
