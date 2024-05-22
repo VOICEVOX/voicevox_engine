@@ -4,7 +4,6 @@
 
 from test.utility import round_floats
 
-import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
