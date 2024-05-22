@@ -1,17 +1,17 @@
 """話者情報機能を提供する API Router"""
 
-from typing import Annotated, Callable
+from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 from voicevox_engine.model import Speaker, SpeakerInfo
 
 
 def generate_speaker_router(
-    get_core: Callable[[str | None], CoreAdapter], metas_store: MetasStore
+    core_manager: CoreManager, metas_store: MetasStore
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter()
@@ -20,7 +20,7 @@ def generate_speaker_router(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(get_core(core_version))
+        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info", tags=["その他"])
@@ -42,7 +42,7 @@ def generate_speaker_router(
     def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(get_core(core_version))
+        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info", tags=["その他"])
@@ -75,7 +75,7 @@ def generate_speaker_router(
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
@@ -86,7 +86,7 @@ def generate_speaker_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
         return core.is_initialized_style_id_synthesis(style_id)
 
     return router
