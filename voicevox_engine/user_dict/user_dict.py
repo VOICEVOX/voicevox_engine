@@ -11,7 +11,7 @@ import numpy as np
 import pyopenjtalk
 
 from ..model import UserDictWord, WordTypes
-from ..utility.path_utility import engine_root, get_save_dir
+from ..utility.path_utility import get_save_dir, resource_root
 from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -37,13 +37,15 @@ class UserDictInputError(Exception):
     pass
 
 
-root_dir = engine_root()
+resource_dir = resource_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
-_DEFAULT_DICT_PATH = root_dir / "default.csv"  # VOICEVOXデフォルト辞書ファイルのパス
+_DEFAULT_DICT_PATH = (
+    resource_dir / "default.csv"
+)  # VOICEVOXデフォルト辞書ファイルのパス
 _USER_DICT_PATH = save_dir / "user_dict.json"  # ユーザー辞書ファイルのパス
 _COMPILED_DICT_PATH = save_dir / "user.dic"  # コンパイル済み辞書ファイルのパス
 
