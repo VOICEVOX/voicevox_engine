@@ -65,7 +65,9 @@ def generate_router(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            pauseLength=1,
+            pauseLength=-1,
+            isPauseLengthFixed=False,
+            pauseLengthScale=1,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
@@ -110,6 +112,8 @@ def generate_router(
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
             pauseLength=selected_preset.pauseLength,
+            isPauseLengthFixed=selected_preset.isPauseLengthFixed,
+            pauseLengthScale=selected_preset.pauseLengthScale,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
@@ -220,8 +224,6 @@ def generate_router(
         core_version: str | None = None,
     ) -> FileResponse:
         engine = get_engine(core_version)
-        #pauseLengthが弾かれてる
-        print(query)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )

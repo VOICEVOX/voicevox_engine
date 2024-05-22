@@ -71,7 +71,15 @@
             "type": "number"
           },
           "pauseLength": {
-            "title": "テキスト内の無音時間",
+            "title": "テキスト内の無音時間(絶対値)",
+            "type": "number"
+          },
+          "isPauseLengthFixed": {
+            "title": "無音時間(絶対値)が話速の影響を受けるか",
+            "type": "boolean"
+          },
+          "pauseLengthScale": {
+            "title": "テキスト内の無音時間(倍率)",
             "type": "number"
           },
           "prePhonemeLength": {
@@ -96,6 +104,8 @@
           "prePhonemeLength",
           "postPhonemeLength",
           "pauseLength",
+          "isPauseLengthFixed",
+          "pauseLengthScale",
           "outputSamplingRate",
           "outputStereo"
         ],
@@ -615,9 +625,17 @@
             "type": "number"
           },
           "pauseLength": {
-            "title": "テキスト内の無音時間",
+            "title": "テキスト内の無音時間(絶対値)",
             "type": "number"
-          }
+          },
+          "isPauseLengthFixed": {
+            "title": "無音時間(絶対値)が話速の影響を受けるか",
+            "type": "boolean"
+          },
+          "pauseLengthScale": {
+            "title": "テキスト内の無音時間(倍率)",
+            "type": "number"
+          },
           "prePhonemeLength": {
             "title": "音声の前の無音時間",
             "type": "number"
@@ -650,7 +668,9 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
-          "pauseLength"
+          "pauseLength",
+          "isPauseLengthFixed",
+          "pauseLengthScale"
         ],
         "title": "Preset",
         "type": "object"

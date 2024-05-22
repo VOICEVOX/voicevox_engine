@@ -54,7 +54,9 @@
   "outputStereo": false,
   "pitchScale": 0.0,
   "postPhonemeLength": 0.1,
-  "pauseLength": 1,
+  "pauseLength": -1,
+  "isPauseLengthFixed": false,
+  "pauseLengthScale": 1,
   "prePhonemeLength": 0.1,
   "speedScale": 1.0,
   "volumeScale": 1.0

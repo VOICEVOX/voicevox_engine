@@ -26,7 +26,9 @@ def _gen_query(
     intonationScale: float = 1.0,
     prePhonemeLength: float = 0.0,
     postPhonemeLength: float = 0.0,
-    pauseLength: float = 1.0,
+    pauseLength: float = -1.0,
+    isPauseLengthFixed: bool = False,
+    pauseLengthScale: float = 1.0,
     volumeScale: float = 1.0,
     outputSamplingRate: int = 24000,
     outputStereo: bool = False,
@@ -41,6 +43,8 @@ def _gen_query(
         prePhonemeLength=prePhonemeLength,
         postPhonemeLength=postPhonemeLength,
         pauseLength=pauseLength,
+        isPauseLengthFixed=isPauseLengthFixed,
+        pauseLengthScale=pauseLengthScale,
         volumeScale=volumeScale,
         outputSamplingRate=outputSamplingRate,
         outputStereo=outputStereo,
@@ -271,7 +275,9 @@ def test_query_to_decoder_feature() -> None:
         intonationScale=0.5,
         prePhonemeLength=2 * 0.01067,
         postPhonemeLength=6 * 0.01067,
-        pauseLength=0,5,
+        pauseLength=-1,
+        isPauseLengthFixed=True,
+        pauseLengthScale=2.0,
     )
 
     # Expects
