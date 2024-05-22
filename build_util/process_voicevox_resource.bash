@@ -20,13 +20,13 @@ mv engine_manifest.json.tmp engine_manifest.json
 
 # エンジンとリソースの更新情報を統合する
 python build_util/merge_update_infos.py \
-    engine_manifest_assets/update_infos.json \
+    resources/engine_manifest_assets/update_infos.json \
     "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest_assets/update_infos.json" \
-    engine_manifest_assets/update_infos.json
+    resources/engine_manifest_assets/update_infos.json
 
 # リソースのマニフェストアセットをエンジンのディレクトリへ複製する
 for f in "${DOWNLOAD_RESOURCE_PATH}"/engine/engine_manifest_assets/*; do
     if [ "$(basename "${f}")" != "update_infos.json" ]; then
-        cp "${f}" ./engine_manifest_assets/
+        cp "${f}" ./resources/engine_manifest_assets/
     fi
 done
