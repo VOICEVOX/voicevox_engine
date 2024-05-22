@@ -21,7 +21,7 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
 # キャッシュを有効化
@@ -31,7 +31,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    get_engine: Callable[[str | None], TTSEngine],
+    tts_engines: TTSEngineManager,
     get_core: Callable[[str | None], CoreAdapter],
     metas_store: MetasStore,
 ) -> APIRouter:
@@ -94,7 +94,7 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         core = get_core(core_version)
 
         try:
