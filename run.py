@@ -14,7 +14,7 @@ import uvicorn
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
+from voicevox_engine.engine_manifest.EngineManifest import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
@@ -257,7 +257,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -266,7 +266,7 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     latest_core_version = tts_engines.latest_version()
 
@@ -328,7 +328,7 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
+        core_manager,
         latest_core_version,
         setting_loader,
         preset_manager,
