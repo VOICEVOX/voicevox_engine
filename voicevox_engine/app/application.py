@@ -23,13 +23,13 @@ from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode
 from voicevox_engine.setting.SettingLoader import SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
 def generate_app(
-    tts_engines: dict[str, TTSEngine],
+    tts_engines: TTSEngineManager,
     cores: dict[str, CoreAdapter],
     latest_core_version: str,
     setting_loader: SettingHandler,
@@ -69,13 +69,6 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    def get_engine(core_version: str | None) -> TTSEngine:
-        if core_version is None:
-            return tts_engines[latest_core_version]
-        if core_version in tts_engines:
-            return tts_engines[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
     def get_core(core_version: str | None) -> CoreAdapter:
         """指定したバージョンのコアを取得する"""
         if core_version is None:
@@ -86,10 +79,10 @@ def generate_app(
 
     app.include_router(
         generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
+            tts_engines, get_core, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
+    app.include_router(generate_morphing_router(tts_engines, get_core, metas_store))
     app.include_router(generate_preset_router(preset_manager))
     app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
     if engine_manifest_data.supported_features.manage_library:
