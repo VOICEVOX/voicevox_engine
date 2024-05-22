@@ -47,8 +47,6 @@ def generate_app(
 
     engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
 
-    user_dict.update_dict()
-
     app = FastAPI(
         title=engine_manifest_data.name,
         description=f"{engine_manifest_data.brand_name} の音声合成エンジンです。",
