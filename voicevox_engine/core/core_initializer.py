@@ -3,8 +3,6 @@ import os
 import sys
 from pathlib import Path
 
-from fastapi import HTTPException
-
 from ..utility.core_version_utility import get_latest_version
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_adapter import CoreAdapter
@@ -18,6 +16,12 @@ def get_half_logical_cores() -> int:
     if logical_cores is None:
         return 0
     return logical_cores // 2
+
+
+class CoreNotFound(Exception):
+    """コアが見つからないエラー"""
+
+    pass
 
 
 class CoreManager:
@@ -44,9 +48,7 @@ class CoreManager:
             return self._cores[self.latest_version()]
         elif version in self._cores:
             return self._cores[version]
-
-        # FIXME: ドメインがずれているのでこのエラーは routers へ持っていく
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+        raise CoreNotFound(f"バージョン {version} のコアが見つかりません")
 
     def has_core(self, version: str) -> bool:
         """指定バージョンのコアが登録されているか否かを返す。"""

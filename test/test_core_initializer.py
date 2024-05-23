@@ -4,10 +4,13 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import pytest
-from fastapi import HTTPException
 
 from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.core.core_initializer import CoreManager, get_half_logical_cores
+from voicevox_engine.core.core_initializer import (
+    CoreManager,
+    CoreNotFound,
+    get_half_logical_cores,
+)
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 
 
@@ -94,7 +97,7 @@ def test_cores_get_core_missing() -> None:
     core_manager.register_core(core2, "0.0.2")
 
     # Test
-    with pytest.raises(HTTPException) as _:
+    with pytest.raises(CoreNotFound, match="バージョン 0.0.3 のコアが見つかりません"):
         core_manager.get_core("0.0.3")
 
 
