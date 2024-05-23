@@ -44,6 +44,7 @@ def test_post_update_preset_422(
         "volumeScale": 404,
         "prePhonemeLength": 404,
         "postPhonemeLength": 404,
+        "isPauseLengthUseScale": 404,
         "pauseLength": 404,
         "isPauseLengthFixed": 404,
         "pauseLengthScale": 404,
