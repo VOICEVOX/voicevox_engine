@@ -9,7 +9,10 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.cancellable_engine import (
+    CancellableEngine,
+    CancellableEngineInternalError,
+)
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import (
@@ -27,7 +30,7 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
     connect_base64_waves,
 )
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import SingInvalidInput, TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
 
@@ -253,9 +256,13 @@ def generate_tts_pipeline_router(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        f_name = cancellable_engine._synthesis_impl(
-            query, style_id, request, core_version=core_version
-        )
+        try:
+            f_name = cancellable_engine._synthesis_impl(
+                query, style_id, request, core_version=core_version
+            )
+        except CancellableEngineInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
@@ -329,9 +336,12 @@ def generate_tts_pipeline_router(
         """
         engine = tts_engines.get_engine(core_version)
         core = core_manager.get_core(core_version)
-        phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
-            score, style_id
-        )
+        try:
+            phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
+                score, style_id
+            )
+        except SingInvalidInput as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         return FrameAudioQuery(
             f0=f0,
@@ -354,9 +364,12 @@ def generate_tts_pipeline_router(
         core_version: str | None = None,
     ) -> list[float]:
         engine = tts_engines.get_engine(core_version)
-        return engine.create_sing_volume_from_phoneme_and_f0(
-            score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
-        )
+        try:
+            return engine.create_sing_volume_from_phoneme_and_f0(
+                score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
+            )
+        except SingInvalidInput as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     @router.post(
         "/frame_synthesis",
@@ -379,7 +392,10 @@ def generate_tts_pipeline_router(
         歌唱音声合成を行います。
         """
         engine = tts_engines.get_engine(core_version)
-        wave = engine.frame_synthsize_wave(query, style_id)
+        try:
+            wave = engine.frame_synthsize_wave(query, style_id)
+        except SingInvalidInput as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
