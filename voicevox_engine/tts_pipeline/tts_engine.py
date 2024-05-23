@@ -684,6 +684,12 @@ class TTSEngine:
         return wave
 
 
+class EngineNotFound(Exception):
+    """エンジンが見つからないエラー"""
+
+    pass
+
+
 class TTSEngineManager:
     """TTS エンジンの集まりを一括管理するマネージャー"""
 
@@ -709,7 +715,7 @@ class TTSEngineManager:
         elif version in self._engines:
             return self._engines[version]
 
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+        raise EngineNotFound(f"バージョン {version} のエンジンが見つかりません")
 
     def has_engine(self, version: str) -> bool:
         """指定バージョンのエンジンが登録されているか否かを返す。"""
