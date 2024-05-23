@@ -307,8 +307,8 @@ def test_query_to_decoder_feature() -> None:
 
     # Outputs
     phoneme, f0 = query_to_decoder_feature(query)
-    print('true_phoneme', true_phoneme)
-    print('phoneme', phoneme)
+    print("true_phoneme", true_phoneme)
+    print("phoneme", phoneme)
     phoneme = true_phoneme
     # 上で何やってるか分からない 一旦スキップ
     # assert np.array_equal(phoneme, true_phoneme)
