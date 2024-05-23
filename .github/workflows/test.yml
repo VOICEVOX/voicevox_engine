@@ -64,13 +64,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check licenses
+      - name: <Test> Check licenses
         shell: bash
         run: |
           OUTPUT_LICENSE_JSON_PATH=/dev/null \
           bash build_util/create_venv_and_generate_licenses.bash
 
-      - name: Test names by checking typo
+      - name: <Test> Test names by checking typo
         if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         uses: crate-ci/typos@v1.12.12
 

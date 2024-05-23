@@ -2,14 +2,14 @@
 
 from functools import lru_cache
 from tempfile import NamedTemporaryFile
-from typing import Annotated, Callable
+from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
 from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
@@ -21,7 +21,7 @@ from voicevox_engine.morphing import (
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
 # キャッシュを有効化
@@ -31,8 +31,8 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    get_engine: Callable[[str | None], TTSEngine],
-    get_core: Callable[[str | None], CoreAdapter],
+    tts_engines: TTSEngineManager,
+    core_manager: CoreManager,
     metas_store: MetasStore,
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
@@ -52,7 +52,7 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = get_core(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
@@ -94,8 +94,8 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = get_engine(core_version)
-        core = get_core(core_version)
+        engine = tts_engines.get_engine(core_version)
+        core = core_manager.get_core(core_version)
 
         try:
             speakers = metas_store.load_combined_metas(core=core)

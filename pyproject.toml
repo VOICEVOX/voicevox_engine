@@ -61,7 +61,6 @@ pyinstaller = "^5.13"
 pre-commit = "^2.16.0"
 poetry = "1.8.2"
 poetry-plugin-export = "^1.8.0"
-safety = "^3.1.0"
 
 [tool.poetry.group.test.dependencies]
 pysen = "^0.11.0"
@@ -77,6 +76,7 @@ poetry-plugin-export = "^1.8.0"
 httpx = "^0.27.0" # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
+safety = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]
