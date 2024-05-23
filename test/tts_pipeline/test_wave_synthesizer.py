@@ -277,6 +277,10 @@ def test_query_to_decoder_feature() -> None:
         intonationScale=0.5,
         prePhonemeLength=2 * 0.01067,
         postPhonemeLength=6 * 0.01067,
+        isPauseLengthUseScale=True,
+        pauseLength=0.3,
+        isPauseLengthFixed=False,
+        pauseLengthScale=1.0,
     )
 
     # Expects
