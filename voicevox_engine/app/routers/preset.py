@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from voicevox_engine.preset.Preset import Preset
 from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
@@ -90,7 +90,7 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     )
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
+    ) -> None:
         """
         既存のプリセットを削除します
         """
@@ -100,6 +100,5 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
             raise HTTPException(status_code=422, detail=str(err))
         except PresetInternalError as err:
             raise HTTPException(status_code=500, detail=str(err))
-        return Response(status_code=204)
 
     return router
