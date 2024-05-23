@@ -7,6 +7,7 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import (
@@ -18,6 +19,7 @@ from ..model import (
     Note,
     Score,
 )
+from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
@@ -682,16 +684,48 @@ class TTSEngine:
         return wave
 
 
-def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngine]:
+class TTSEngineManager:
+    """TTS エンジンの集まりを一括管理するマネージャー"""
+
+    def __init__(self) -> None:
+        self._engines: dict[str, TTSEngine] = {}
+
+    def versions(self) -> list[str]:
+        """登録されたエンジンのバージョン一覧を取得する。"""
+        return list(self._engines.keys())
+
+    def latest_version(self) -> str:
+        """登録された最新版エンジンのバージョンを取得する。"""
+        return get_latest_version(self.versions())
+
+    def register_engine(self, engine: TTSEngine, version: str) -> None:
+        """エンジンを登録する。"""
+        self._engines[version] = engine
+
+    def get_engine(self, version: str | None = None) -> TTSEngine:
+        """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
+        if version is None:
+            return self._engines[self.latest_version()]
+        elif version in self._engines:
+            return self._engines[version]
+
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
+    def has_engine(self, version: str) -> bool:
+        """指定バージョンのエンジンが登録されているか否かを返す。"""
+        return version in self._engines
+
+
+def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
-    tts_engines: dict[str, TTSEngine] = {}
-    for ver, core in cores.items():
+    tts_engines = TTSEngineManager()
+    for ver, core in core_manager.items():
         if ver == MOCK_VER:
             from ..dev.tts_engine.mock import MockTTSEngine
 
-            tts_engines[ver] = MockTTSEngine()
+            tts_engines.register_engine(MockTTSEngine(), ver)
         else:
-            tts_engines[ver] = TTSEngine(core.core)
+            tts_engines.register_engine(TTSEngine(core.core), ver)
     return tts_engines
