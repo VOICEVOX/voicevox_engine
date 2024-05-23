@@ -74,10 +74,12 @@ class EngineManifest(BaseModel):
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
 
 
-def load_manifest(manifest_path: Path) -> EngineManifest:
-    """エンジンマニフェストを指定ファイルから読み込む。"""
+def load_manifest(engine_root: Path) -> EngineManifest:
+    """エンジンルート下にあるエンジンマニフェストを読み込む。"""
 
-    root_dir = manifest_path.parent
+    # NOTE: エンジンマニフェストファイルは必ず `<engine_root>/engine_manifest.json` に存在する
+    manifest_path = engine_root / "engine_manifest.json"
+
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
@@ -87,12 +89,14 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
         url=manifest["url"],
         default_sampling_rate=manifest["default_sampling_rate"],
         frame_rate=manifest["frame_rate"],
-        icon=b64encode((root_dir / manifest["icon"]).read_bytes()).decode("utf-8"),
-        terms_of_service=(root_dir / manifest["terms_of_service"]).read_text("utf-8"),
+        icon=b64encode((engine_root / manifest["icon"]).read_bytes()).decode("utf-8"),
+        terms_of_service=(engine_root / manifest["terms_of_service"]).read_text(
+            "utf-8"
+        ),
         update_infos=[
             UpdateInfo(**update_info)
             for update_info in json.loads(
-                (root_dir / manifest["update_infos"]).read_text("utf-8")
+                (engine_root / manifest["update_infos"]).read_text("utf-8")
             )
         ],
         # supported_vvlib_manifest_versionを持たないengine_manifestのために
@@ -103,7 +107,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
         dependency_licenses=[
             LicenseInfo(**license_info)
             for license_info in json.loads(
-                (root_dir / manifest["dependency_licenses"]).read_text("utf-8")
+                (engine_root / manifest["dependency_licenses"]).read_text("utf-8")
             )
         ],
         supported_features={

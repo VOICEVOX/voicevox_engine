@@ -44,7 +44,7 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
-    engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
+    engine_manifest_data = load_manifest(engine_root())
 
     app = FastAPI(
         title=engine_manifest_data.name,
