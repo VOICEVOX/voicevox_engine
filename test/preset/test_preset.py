@@ -78,6 +78,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -106,6 +110,10 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
+                        "isPauseLengthUseScale": True,
+                        "pauseLength": 0,
+                        "isPauseLengthFixed": False,
+                        "pauseLengthScale": 0,
                     }
                 )
             )
@@ -126,6 +134,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -152,6 +164,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         id = preset_manager.add_preset(preset)
@@ -178,6 +194,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         preset_manager.load_presets()
@@ -206,6 +226,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         id = preset_manager.update_preset(preset)
@@ -234,6 +258,10 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
+                        "isPauseLengthUseScale": True,
+                        "pauseLength": 0,
+                        "isPauseLengthFixed": False,
+                        "pauseLengthScale": 0,
                     }
                 )
             )
@@ -254,6 +282,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         with self.assertRaises(
@@ -279,6 +311,10 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
+                "isPauseLengthFixed": False,
+                "pauseLengthScale": 1.0,
             }
         )
         preset_manager.load_presets()

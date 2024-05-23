@@ -69,7 +69,7 @@ class TestMockTTSEngine(TestCase):
                 isPauseLengthUseScale=True,
                 pauseLength=0.3,
                 isPauseLengthFixed=False,
-                pauseLengthScale=1,
+                pauseLengthScale=1.0,
                 outputSamplingRate=24000,
                 outputStereo=False,
                 kana=create_kana(self.accent_phrases_hello_hiho),
