@@ -70,6 +70,10 @@
             "title": "音声の後の無音時間",
             "type": "number"
           },
+          "isPauseLengthUseScale": {
+            "title": "無音時間の調整に倍率を用いるか",
+            "type": "boolean"
+          },
           "pauseLength": {
             "title": "テキスト内の無音時間(絶対値)",
             "type": "number"
@@ -103,6 +107,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "isPauseLengthUseScale",
           "pauseLength",
           "isPauseLengthFixed",
           "pauseLengthScale",
@@ -624,6 +629,10 @@
             "title": "音声の後の無音時間",
             "type": "number"
           },
+          "isPauseLengthUseScale": {
+            "title": "無音時間の調整に倍率を用いるか",
+            "type": "boolean"
+          },
           "pauseLength": {
             "title": "テキスト内の無音時間(絶対値)",
             "type": "number"
@@ -668,6 +677,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "isPauseLengthUseScale",
           "pauseLength",
           "isPauseLengthFixed",
           "pauseLengthScale"

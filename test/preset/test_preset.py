@@ -76,7 +76,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -107,7 +108,8 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
-                        "pauseLength": -1,
+                        "isPauseLengthUseScale": True,
+                        "pauseLength": 0.3,
                         "isPauseLengthFixed": False,
                         "pauseLengthScale": 1,
                     }
@@ -130,7 +132,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -159,7 +162,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -188,7 +192,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -219,7 +224,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -250,7 +256,8 @@ class TestPresetManager(TestCase):
                         "volumeScale": 0,
                         "prePhonemeLength": 0,
                         "postPhonemeLength": 0,
-                        "pauseLength": -1,
+                        "isPauseLengthUseScale": True,
+                        "pauseLength": 0.3,
                         "isPauseLengthFixed": False,
                         "pauseLengthScale": 1,
                     }
@@ -273,7 +280,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }
@@ -299,7 +307,8 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "isPauseLengthUseScale": True,
+                "pauseLength": 0.3,
                 "isPauseLengthFixed": False,
                 "pauseLengthScale": 1,
             }

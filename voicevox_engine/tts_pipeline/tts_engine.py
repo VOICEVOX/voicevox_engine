@@ -241,15 +241,15 @@ def query_to_decoder_feature(
     # speedScaleの影響を
     moras = apply_pitch_scale(moras, query)  # 受けない
     moras = apply_intonation_scale(moras, query)  # 受けない
-    if query.pauseLength >= 0:
+    if query.isPauseLengthUseScale:
+        moras = apply_pause_length_scale(moras, query)
+    else:
         if query.isPauseLengthFixed:  # Trueなら話速の影響を受ける
             moras = apply_speed_scale(moras, query)
             moras = apply_pause_length(moras, query)  # 受ける
         else:
             moras = apply_pause_length(moras, query)  # 受ける
             moras = apply_speed_scale(moras, query)
-    else:
-        moras = apply_pause_length_scale(moras, query)
     moras = apply_prepost_silence(moras, query)  # 受ける?
 
     # デバッグ

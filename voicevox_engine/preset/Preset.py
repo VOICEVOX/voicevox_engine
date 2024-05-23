@@ -18,6 +18,7 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+    isPauseLengthUseScale: bool = Field(title="無音時間の調整に倍率を用いるか")
     pauseLength: float = Field(title="テキスト内の無音時間")
     isPauseLengthFixed: bool = Field(title="無音時間(絶対値)が話速の影響を受けるか")
     pauseLengthScale: float = Field(title="テキスト内の無音時間(倍率)")

@@ -20,7 +20,8 @@ def test_post_add_preset_200(
         "volumeScale": 1,
         "prePhonemeLength": 10,
         "postPhonemeLength": 10,
-        "pauseLength": -1,
+        "isPauseLengthUseScale": True,
+        "pauseLength": 0.3,
         "isPauseLengthFixed": False,
         "pauseLengthScale": 1,
     }
