@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
@@ -16,21 +16,20 @@ from voicevox_engine.app.routers.speaker import generate_speaker_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
+from voicevox_engine.core.core_initializer import CoreManager
+from voicevox_engine.engine_manifest.EngineManifest import load_manifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
+from voicevox_engine.setting.Setting import CorsPolicyMode, SettingHandler
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
 def generate_app(
-    tts_engines: dict[str, TTSEngine],
-    cores: dict[str, CoreAdapter],
+    tts_engines: TTSEngineManager,
+    core_manager: CoreManager,
     latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
@@ -46,8 +45,6 @@ def generate_app(
         root_dir = engine_root()
 
     engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
-
-    user_dict.update_dict()
 
     app = FastAPI(
         title=engine_manifest_data.name,
@@ -69,37 +66,20 @@ def generate_app(
 
     metas_store = MetasStore(root_dir / "speaker_info")
 
-    def get_engine(core_version: str | None) -> TTSEngine:
-        if core_version is None:
-            return tts_engines[latest_core_version]
-        if core_version in tts_engines:
-            return tts_engines[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def get_core(core_version: str | None) -> CoreAdapter:
-        """指定したバージョンのコアを取得する"""
-        if core_version is None:
-            return cores[latest_core_version]
-        if core_version in cores:
-            return cores[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
     app.include_router(
         generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
+            tts_engines, core_manager, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
+    app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
+    app.include_router(generate_speaker_router(core_manager, metas_store, root_dir))
     if engine_manifest_data.supported_features.manage_library:
         app.include_router(
             generate_library_router(engine_manifest_data, library_manager)
         )
     app.include_router(generate_user_dict_router(user_dict))
-    app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
-    )
+    app.include_router(generate_engine_info_router(core_manager, engine_manifest_data))
     app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
     app.include_router(generate_portal_page_router(engine_manifest_data))
 

@@ -28,7 +28,7 @@ jobs:
           cache: pip
 
       - name: <Setup> Install Python dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements-test.txt
 
       - name: <Test> Check Python dependency security
         run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt -r requirements-license.txt -o bare
