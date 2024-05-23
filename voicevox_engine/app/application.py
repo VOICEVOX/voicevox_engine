@@ -64,7 +64,7 @@ def generate_app(
         engine_manifest_data.uuid,
     )
 
-    metas_store = MetasStore(root_dir / "speaker_info")
+    metas_store = MetasStore(root_dir / "speaker_info", core_manager)
 
     app.include_router(
         generate_tts_pipeline_router(

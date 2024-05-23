@@ -1,10 +1,11 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, NewType
+from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
 
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
@@ -12,10 +13,6 @@ from voicevox_engine.metas.Metas import (
     StyleId,
     StyleType,
 )
-
-if TYPE_CHECKING:
-    from voicevox_engine.core.core_adapter import CoreAdapter
-
 
 _CoreStyleId = NewType("_CoreStyleId", int)
 _CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
@@ -65,7 +62,7 @@ class MetasStore:
     話者やスタイルのメタ情報を管理する
     """
 
-    def __init__(self, engine_speakers_path: Path) -> None:
+    def __init__(self, engine_speakers_path: Path, core_manager: CoreManager) -> None:
         """
         Parameters
         ----------
@@ -79,21 +76,11 @@ class MetasStore:
             )
             for folder in engine_speakers_path.iterdir()
         }
+        self._core_manager = core_manager
 
-    # FIXME: engineではなくlist[CoreSpeaker]を渡す形にすることで
-    # TTSEngineによる循環importを修正する
-    def load_combined_metas(self, core: "CoreAdapter") -> list[Speaker]:
-        """
-        コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
-        Parameters
-        ----------
-        core : CoreAdapter
-            話者メタ情報をもったコア
-        Returns
-        -------
-        ret : list[Speaker]
-            エンジンとコアに含まれる話者メタ情報
-        """
+    def load_combined_metas(self, core_version: str | None) -> list[Speaker]:
+        """指定バージョンのコアとエンジンの話者メタ情報を統合する。"""
+        core = self._core_manager.get_core(core_version)
         # コアに含まれる話者メタ情報の収集
         core_metas = [_CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
         # エンジンに含まれる話者メタ情報との統合

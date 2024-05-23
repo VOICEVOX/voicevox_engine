@@ -30,7 +30,7 @@ def generate_speaker_router(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        speakers = metas_store.load_combined_metas(core_version)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info", tags=["その他"])
@@ -147,7 +147,7 @@ def generate_speaker_router(
     def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        singers = metas_store.load_combined_metas(core_version)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info", tags=["その他"])
