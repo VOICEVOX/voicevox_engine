@@ -694,10 +694,6 @@ class TTSEngineManager:
         """登録されたエンジンのバージョン一覧を取得する。"""
         return list(self._engines.keys())
 
-    def latest_version(self) -> str:
-        """登録された最新版エンジンのバージョンを取得する。"""
-        return get_latest_version(self.versions())
-
     def register_engine(self, engine: TTSEngine, version: str) -> None:
         """エンジンを登録する。"""
         self._engines[version] = engine
@@ -705,7 +701,7 @@ class TTSEngineManager:
     def get_engine(self, version: str | None = None) -> TTSEngine:
         """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
         if version is None:
-            return self._engines[self.latest_version()]
+            return self._engines[get_latest_version(self.versions())]
         elif version in self._engines:
             return self._engines[version]
 

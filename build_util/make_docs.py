@@ -45,7 +45,6 @@ if __name__ == "__main__":
     app = generate_app(
         tts_engines=tts_engines,
         core_manager=core_manager,
-        latest_core_version="mock",
         setting_loader=SettingHandler(USER_SETTING_PATH),
         preset_manager=PresetManager(  # FIXME: impl MockPresetManager
             preset_path=engine_root() / "presets.yaml",

@@ -35,21 +35,6 @@ def test_cores_versions() -> None:
     assert true_versions == versions
 
 
-def test_cores_latest_version() -> None:
-    """CoreManager.latest_version() で最新バージョンを取得できる。"""
-    # Inputs
-    core_manager = CoreManager()
-    core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
-    core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
-    # Expects
-    true_latest_version = "0.0.2"
-    # Outputs
-    latest_version = core_manager.latest_version()
-
-    # Test
-    assert true_latest_version == latest_version
-
-
 def test_cores_get_core_specified() -> None:
     """CoreManager.get_core() で登録済みコアをバージョン指定して取得できる。"""
     # Inputs

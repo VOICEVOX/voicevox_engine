@@ -30,7 +30,6 @@ from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 def generate_app(
     tts_engines: TTSEngineManager,
     core_manager: CoreManager,
-    latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,

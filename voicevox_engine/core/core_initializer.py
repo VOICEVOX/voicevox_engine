@@ -30,10 +30,6 @@ class CoreManager:
         """登録されたコアのバージョン一覧を取得する。"""
         return list(self._cores.keys())
 
-    def latest_version(self) -> str:
-        """登録された最新版コアのバージョンを取得する。"""
-        return get_latest_version(self.versions())
-
     def register_core(self, core: CoreAdapter, version: str) -> None:
         """コアを登録する。"""
         self._cores[version] = core
@@ -41,7 +37,7 @@ class CoreManager:
     def get_core(self, version: str | None = None) -> CoreAdapter:
         """指定バージョンのコアを取得する。指定が無い場合、最新バージョンを返す。"""
         if version is None:
-            return self._cores[self.latest_version()]
+            return self._cores[get_latest_version(self.versions())]
         elif version in self._cores:
             return self._cores[version]
 

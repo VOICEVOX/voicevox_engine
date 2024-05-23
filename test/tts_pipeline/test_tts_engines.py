@@ -31,21 +31,6 @@ def test_tts_engines_versions() -> None:
     assert true_versions == versions
 
 
-def test_tts_engines_latest_version() -> None:
-    """TTSEngineManager.latest_version() で最新バージョンを取得できる。"""
-    # Inputs
-    tts_engines = TTSEngineManager()
-    tts_engines.register_engine(MockTTSEngine(), "0.0.1")
-    tts_engines.register_engine(MockTTSEngine(), "0.0.2")
-    # Expects
-    true_latest_version = "0.0.2"
-    # Outputs
-    latest_version = tts_engines.latest_version()
-
-    # Test
-    assert true_latest_version == latest_version
-
-
 def test_tts_engines_get_engine_specified() -> None:
     """TTSEngineManager.get_engine() で登録済み TTS エンジンをバージョン指定して取得できる。"""
     # Inputs
