@@ -232,7 +232,6 @@ def query_to_decoder_feature(
     query: AudioQuery,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
-    # pause_moraも入ってるけどキーでの区別がなくなってる text='、'になってるのがpause_mora
     moras = to_flatten_moras(query.accent_phrases)
 
     # デバッグ
@@ -240,11 +239,10 @@ def query_to_decoder_feature(
         print(f"pause_mora.vowel_length : {mora.vowel_length}")
 
     # 設定を適用する
-    # speedScaleの影響を
-    moras = apply_pitch_scale(moras, query)  # 受けない
-    moras = apply_intonation_scale(moras, query)  # 受けない
+    moras = apply_prepost_silence(moras, query)
     if query.isPauseLengthUseScale:
         moras = apply_pause_length_scale(moras, query)
+        moras = apply_speed_scale(moras, query)
     else:
         if query.isPauseLengthFixed:  # Trueなら話速の影響を受ける
             moras = apply_speed_scale(moras, query)
@@ -252,7 +250,8 @@ def query_to_decoder_feature(
         else:
             moras = apply_pause_length(moras, query)  # 受ける
             moras = apply_speed_scale(moras, query)
-    moras = apply_prepost_silence(moras, query)  # 受ける?
+    moras = apply_pitch_scale(moras, query)
+    moras = apply_intonation_scale(moras, query)
 
     # デバッグ
     print("調整後")

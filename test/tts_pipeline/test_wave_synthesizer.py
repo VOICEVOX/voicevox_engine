@@ -298,18 +298,18 @@ def test_query_to_decoder_feature() -> None:
     #                   paw ko  N pau hi hO paw
     # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
     #           pau   ko     ko     ko      N      N
-    # true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
+    true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
     #           pau   hi     hi     hi
-    # true2_f0 = [0.0, 400.0, 400.0, 400.0]
+    true2_f0 = [0.0, 400.0, 400.0, 400.0]
     #           hO   hO   hO   paw  paw  paw
-    # true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    # true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
+    true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
 
     # Outputs
     phoneme, f0 = query_to_decoder_feature(query)
     # 上で何やってるか分からない 一旦スキップ
-    # assert np.array_equal(phoneme, true_phoneme)
-    # assert np.array_equal(f0, true_f0)
+    assert np.array_equal(phoneme, true_phoneme)
+    assert np.array_equal(f0, true_f0)
 
 
 def test_raw_wave_to_output_wave_with_resample() -> None:
