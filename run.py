@@ -15,11 +15,13 @@ from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.preset.Preset import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.setting.Setting import (
+    USER_SETTING_PATH,
+    CorsPolicyMode,
+    SettingHandler,
+)
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.core_version_utility import get_latest_version
 from voicevox_engine.utility.path_utility import engine_root
 
 
@@ -257,7 +259,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -266,9 +268,9 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    tts_engines = make_tts_engines_from_cores(core_manager)
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    latest_core_version = tts_engines.latest_version()
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -326,7 +328,7 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
+        core_manager,
         latest_core_version,
         setting_loader,
         preset_manager,
