@@ -4,9 +4,7 @@ import asyncio
 from io import BytesIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import Path as FAPath
-from fastapi import Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
@@ -54,9 +52,9 @@ def generate_library_router(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     async def install_library(
-        library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")],
+        library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
         request: Request,
-    ) -> Response:
+    ) -> None:
         """
         音声ライブラリをインストールします。
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
@@ -68,7 +66,6 @@ def generate_library_router(
         await loop.run_in_executor(
             None, library_manager.install_library, library_uuid, archive
         )
-        return Response(status_code=204)
 
     @router.post(
         "/uninstall_library/{library_uuid}",
@@ -77,14 +74,13 @@ def generate_library_router(
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def uninstall_library(
-        library_uuid: Annotated[str, FAPath(description="音声ライブラリのID")]
-    ) -> Response:
+        library_uuid: Annotated[str, Path(description="音声ライブラリのID")]
+    ) -> None:
         """
         音声ライブラリをアンインストールします。
         """
         if not engine_manifest_data.supported_features.manage_library:
             raise HTTPException(status_code=404, detail="この機能は実装されていません")
         library_manager.uninstall_library(library_uuid)
-        return Response(status_code=204)
 
     return router
