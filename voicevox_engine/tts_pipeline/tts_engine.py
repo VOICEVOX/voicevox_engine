@@ -174,6 +174,22 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
+def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間(絶対値)（`pauseLength`）を適用する"""
+    for mora in moras:
+        if mora.text == "、":
+            mora.vowel_length = query.pauseLength
+    return moras
+
+
+def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間(倍率)（`pauseLengthScale`）を適用する"""
+    for mora in moras:
+        if mora.text == "、":
+            mora.vowel_length *= query.pauseLengthScale
+    return moras
+
+
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
@@ -216,13 +232,32 @@ def query_to_decoder_feature(
     query: AudioQuery,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
+    # pause_moraも入ってるけどキーでの区別がなくなってる text='、'になってるのがpause_mora
     moras = to_flatten_moras(query.accent_phrases)
 
+    # デバッグ
+    for mora in filter(lambda m: m.text == "、", moras):
+        print(f"pause_mora.vowel_length : {mora.vowel_length}")
+
     # 設定を適用する
-    moras = apply_prepost_silence(moras, query)
-    moras = apply_speed_scale(moras, query)
-    moras = apply_pitch_scale(moras, query)
-    moras = apply_intonation_scale(moras, query)
+    # speedScaleの影響を
+    moras = apply_pitch_scale(moras, query)  # 受けない
+    moras = apply_intonation_scale(moras, query)  # 受けない
+    if query.isPauseLengthUseScale:
+        moras = apply_pause_length_scale(moras, query)
+    else:
+        if query.isPauseLengthFixed:  # Trueなら話速の影響を受ける
+            moras = apply_speed_scale(moras, query)
+            moras = apply_pause_length(moras, query)  # 受ける
+        else:
+            moras = apply_pause_length(moras, query)  # 受ける
+            moras = apply_speed_scale(moras, query)
+    moras = apply_prepost_silence(moras, query)  # 受ける?
+
+    # デバッグ
+    print("調整後")
+    for mora in filter(lambda m: m.text == "、", moras):
+        print(f"pause_mora.vowel_length : {mora.vowel_length}")
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])
