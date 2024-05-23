@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Response
 
 from voicevox_engine import __version__
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
+from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.model import SupportedDevicesInfo
 
 
