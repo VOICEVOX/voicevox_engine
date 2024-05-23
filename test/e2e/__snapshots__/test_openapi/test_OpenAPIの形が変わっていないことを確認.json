@@ -50,6 +50,14 @@
             "title": "全体の抑揚",
             "type": "number"
           },
+          "isPauseLengthFixed": {
+            "title": "無音時間(絶対値)が話速の影響を受けるか",
+            "type": "boolean"
+          },
+          "isPauseLengthUseScale": {
+            "title": "無音時間の調整に倍率を用いるか",
+            "type": "boolean"
+          },
           "kana": {
             "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
             "type": "string"
@@ -61,6 +69,14 @@
           "outputStereo": {
             "title": "音声データをステレオ出力するか否か",
             "type": "boolean"
+          },
+          "pauseLength": {
+            "title": "テキスト内の無音時間(絶対値)",
+            "type": "number"
+          },
+          "pauseLengthScale": {
+            "title": "テキスト内の無音時間(倍率)",
+            "type": "number"
           },
           "pitchScale": {
             "title": "全体の音高",
@@ -601,9 +617,25 @@
             "title": "全体の抑揚",
             "type": "number"
           },
+          "isPauseLengthFixed": {
+            "title": "無音時間(絶対値)が話速の影響を受けるか",
+            "type": "boolean"
+          },
+          "isPauseLengthUseScale": {
+            "title": "無音時間の調整に倍率を用いるか",
+            "type": "boolean"
+          },
           "name": {
             "title": "プリセット名",
             "type": "string"
+          },
+          "pauseLength": {
+            "title": "テキスト内の無音時間",
+            "type": "number"
+          },
+          "pauseLengthScale": {
+            "title": "テキスト内の無音時間(倍率)",
+            "type": "number"
           },
           "pitchScale": {
             "title": "全体の音高",
@@ -611,22 +643,6 @@
           },
           "postPhonemeLength": {
             "title": "音声の後の無音時間",
-            "type": "number"
-          },
-          "isPauseLengthUseScale": {
-            "title": "無音時間の調整に倍率を用いるか",
-            "type": "boolean"
-          },
-          "pauseLength": {
-            "title": "テキスト内の無音時間(絶対値)",
-            "type": "number"
-          },
-          "isPauseLengthFixed": {
-            "title": "無音時間(絶対値)が話速の影響を受けるか",
-            "type": "boolean"
-          },
-          "pauseLengthScale": {
-            "title": "テキスト内の無音時間(倍率)",
             "type": "number"
           },
           "prePhonemeLength": {
