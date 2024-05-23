@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from pydantic import ValidationError
 
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
+from voicevox_engine.setting import CorsPolicyMode, Setting, SettingHandler
 
 
 class TestSettingLoader(TestCase):

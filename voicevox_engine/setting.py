@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field
 
-from ..utility.path_utility import get_save_dir
+from .utility.path_utility import get_save_dir
 
 
 class CorsPolicyMode(str, Enum):

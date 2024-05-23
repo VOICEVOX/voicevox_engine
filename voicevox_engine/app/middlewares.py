@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.errors import ServerErrorMiddleware
 
-from voicevox_engine.setting.Setting import CorsPolicyMode
+from voicevox_engine.setting import CorsPolicyMode
 
 
 def configure_middlewares(
