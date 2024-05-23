@@ -11,7 +11,9 @@ def register_global_exception_handlers(app: FastAPI) -> FastAPI:
 
     # エンジンは複数 router 内で呼ばれるためグローバルなハンドラが相応しい
     @app.exception_handler(EngineNotFound)
-    async def enf_exception_handler(request: Request, e: EngineNotFound) -> JSONResponse:
+    async def enf_exception_handler(
+        request: Request, e: EngineNotFound
+    ) -> JSONResponse:
         return JSONResponse(status_code=422, content={"message": f"{str(e)}"})
 
     return app
