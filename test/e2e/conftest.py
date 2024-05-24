@@ -15,7 +15,7 @@ from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import DEFAULT_DICT_PATH, UserDictionary
 
 
-def copy_under_dir(file_path: Path, dir_path: Path) -> Path:
+def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
     """指定ディレクトリ下へファイルをコピーし、生成されたファイルのパスを返す。"""
     copied_file_path = dir_path / file_path.name
     shutil.copyfile(file_path, copied_file_path)
@@ -31,11 +31,11 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
 
     # テスト用に隔離されたプリセットを生成する
     preset_path = Path("./presets.yaml")
-    preset_manager = PresetManager(copy_under_dir(preset_path, tmp_path))
+    preset_manager = PresetManager(_copy_under_dir(preset_path, tmp_path))
 
     # テスト用に隔離されたユーザー辞書を生成する
     user_dict = UserDictionary(
-        default_dict_path=copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
+        default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
         user_dict_path=generate_user_dict(tmp_path),
         compiled_dict_path=tmp_path / "user.dic",
     )
