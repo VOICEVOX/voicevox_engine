@@ -75,7 +75,7 @@ jobs:
           bash build_util/create_venv_and_generate_licenses.bash
 
       - name: <Test> Test names by checking typo
-        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+        if: matrix.os == 'ubuntu-20.04'
         uses: crate-ci/typos@v1.12.12
 
   lint-builders:
