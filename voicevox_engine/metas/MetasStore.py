@@ -1,7 +1,7 @@
 import json
-from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, NewType
+from typing import TYPE_CHECKING, Final, Iterable, Literal, NewType
 
 from pydantic import BaseModel, Field
 
@@ -10,7 +10,6 @@ from voicevox_engine.metas.Metas import (
     SpeakerStyle,
     SpeakerSupportedFeatures,
     StyleId,
-    StyleType,
 )
 
 if TYPE_CHECKING:
@@ -132,24 +131,83 @@ def construct_lookup(
     return lookup_table
 
 
+@dataclass
+class Character:
+    """キャラクター"""
+
+    name: str
+    uuid: str
+    talk_styles: list[SpeakerStyle]
+    sing_styles: list[SpeakerStyle]
+    version: str
+    supported_features: SpeakerSupportedFeatures
+
+
+TALK_STYLE_TYPES: Final = ["talk"]
+SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
+
+
+def cast_as_talk_speakers(talkers: Iterable[Character]) -> list[Speaker]:
+    """talkers を talk 系スタイルからのみなる `Speaker` リストへキャストする。"""
+    talk_speakers = map(
+        lambda talker: Speaker(
+            name=talker.name,
+            speaker_uuid=talker.uuid,
+            styles=talker.talk_styles,
+            version=talker.version,
+            supported_features=talker.supported_features,
+        ),
+        talkers,
+    )
+    return list(talk_speakers)
+
+
+def cast_as_sing_speakers(singers: Iterable[Character]) -> list[Speaker]:
+    """singers を sing 系スタイルからのみなる `Speaker` リストへキャストする。"""
+    sing_speakers = map(
+        lambda singer: Speaker(
+            name=singer.name,
+            speaker_uuid=singer.uuid,
+            styles=singer.sing_styles,
+            version=singer.version,
+            supported_features=singer.supported_features,
+        ),
+        singers,
+    )
+    return list(sing_speakers)
+
+
 def filter_speakers_and_styles(
     speakers: list[Speaker],
     speaker_or_singer: Literal["speaker", "singer"],
 ) -> list[Speaker]:
     """
-    話者・スタイルをフィルタリングする。
-    speakerの場合はトーク系スタイルのみ、singerの場合はソング系スタイルのみを残す。
-    スタイル数が0になった話者は除外する。
+    speakers から talkers あるいは singers を取り出す。
+    talker はスタイル情報が talk 系のみにフィルタリングされている。
+    singer はスタイル情報が sing 系のみにフィルタリングされている。
     """
-    style_types: list[StyleType]
-    if speaker_or_singer == "speaker":
-        style_types = ["talk"]
-    elif speaker_or_singer == "singer":
-        style_types = ["singing_teacher", "frame_decode", "sing"]
 
-    speakers = deepcopy(speakers)
-    for speaker in speakers:
-        speaker.styles = [
-            style for style in speaker.styles if style.type in style_types
-        ]
-    return [speaker for speaker in speakers if len(speaker.styles) > 0]
+    characters = map(
+        lambda speaker: Character(
+            name=speaker.name,
+            uuid=speaker.speaker_uuid,
+            talk_styles=list(
+                filter(lambda style: style.type in TALK_STYLE_TYPES, speaker.styles)
+            ),
+            sing_styles=list(
+                filter(lambda style: style.type in SING_STYLE_TYPES, speaker.styles)
+            ),
+            version=speaker.version,
+            supported_features=speaker.supported_features,
+        ),
+        speakers,
+    )
+
+    if speaker_or_singer == "speaker":
+        talkers = filter(lambda character: len(character.talk_styles) > 0, characters)
+        return cast_as_talk_speakers(talkers)
+    elif speaker_or_singer == "singer":
+        singers = filter(lambda character: len(character.sing_styles) > 0, characters)
+        return cast_as_sing_speakers(singers)
+    else:
+        raise Exception(f"'{speaker_or_singer}' は不正な style_type です")
