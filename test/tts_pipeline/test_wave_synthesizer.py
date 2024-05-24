@@ -281,7 +281,7 @@ def test_query_to_decoder_feature() -> None:
     frame_phoneme_idxs = [0, 0, 23, 30, 30, 4, 4, 0]
     #                       h   i   i   h   h  O Pt Pt Pt Pt Pt Pt
     frame_phoneme_idxs += [19, 21, 21, 19, 19, 5, 0, 0, 0, 0, 0, 0]
-    
+
     true_phoneme = np.zeros([n_frame, TRUE_NUM_PHONEME], dtype=np.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
         true_phoneme[frame_idx, phoneme_idx] = 1.0
