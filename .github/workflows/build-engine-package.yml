@@ -286,19 +286,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.architecture }}
           cache: pip
 
       - name: <Setup> Install Python dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: <Setup> Prepare custom PyInstaller
+        if: startsWith(matrix.os, 'windows-')
+        run: ./build_util/modify_pyinstaller.bash
+
+      - name: <Setup> Download pyopenjtalk dictionary
         run: |
-          python -m pip install -r requirements-dev.txt
-
-          if [ "$RUNNER_OS" = Windows ]; then
-            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
-            ./build_util/modify_pyinstaller.bash
-          fi
-
-          # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for _ in $(seq 5); do
             EXIT_CODE=0
@@ -445,10 +443,10 @@ jobs:
       # Build
       - name: <Build> Generate licenses.json
         run: |
-          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+          OUTPUT_LICENSE_JSON_PATH=resources/engine_manifest_assets/dependency_licenses.json \
           bash build_util/create_venv_and_generate_licenses.bash
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp engine_manifest_assets/dependency_licenses.json licenses.json
+          cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
@@ -653,8 +651,10 @@ jobs:
     needs: [config, build-and-upload]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Deploy> Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
         run: |
           git tag -f ${{ needs.config.outputs.version }}
           git push -f --tag
