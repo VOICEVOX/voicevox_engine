@@ -241,11 +241,6 @@ def query_to_decoder_feature(
     moras = to_flatten_moras(query.accent_phrases)
 
     try:
-        # デバッグ
-        for mora in filter(lambda m: m.vowel == "pau", moras):
-            print(mora)
-            print(f"pause_mora.vowel_length : {mora.vowel_length}".encode('utf-8'))
-
         # 設定を適用する
         moras = apply_prepost_silence(moras, query)
         if query.isPauseLengthUseScale:
@@ -260,11 +255,6 @@ def query_to_decoder_feature(
                 moras = apply_speed_scale(moras, query)
         moras = apply_pitch_scale(moras, query)
         moras = apply_intonation_scale(moras, query)
-
-        # デバッグ
-        print("調整後")
-        for mora in filter(lambda m: m.vowel == "pau", moras):
-            print(f"pause_mora.vowel_length : {mora.vowel_length}".encode('utf-8'))
     except Exception as e:
         print(f"query_to_decoder_feature: {e}")
 
