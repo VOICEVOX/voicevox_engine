@@ -182,6 +182,7 @@ class LibraryManager:
                 raise HTTPException(status_code=422, detail=msg)
 
             # インストールする
+            # NOTE: 当該ライブラリ用のディレクトリ下へ展開してインストールする
             zf.extractall(library_dir)
 
         return library_dir
