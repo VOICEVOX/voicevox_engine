@@ -1,4 +1,5 @@
 name: "Prepare Python"
+description: "Prepare Python interpreter, dependencies and version number"
 
 inputs:
   python:
