@@ -11,13 +11,15 @@ defaults:
   run:
     shell: bash
 
+env:
+  PYTHON_VERSION: "3.11.3"
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-20.04, macos-latest, windows-latest]
-        python: ["3.11.3"]
 
     steps:
       - name: <Setup> Check out the repository
@@ -26,7 +28,7 @@ jobs:
       - name: <Setup> Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
       - name: <Setup> Install Python dependencies
