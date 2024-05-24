@@ -180,9 +180,8 @@ def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
         for mora in moras:
             if mora.text == "、":
                 mora.vowel_length = query.pauseLength
-    except SomeException as e:
-        print("error at apply_pause_length")
-        handle_error(e)
+    except Exception as e:
+        print(f"An error occurred: {e}")
     return moras
 
 
@@ -192,9 +191,8 @@ def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]
         for mora in moras:
             if mora.text == "、":
                 mora.vowel_length *= query.pauseLengthScale
-    except SomeException as e:
-        print("error at apply_pause_length_scale")
-        handle_error(e)
+    except Exception as e:
+        print(f"An error occurred: {e}")
     return moras
 
 
@@ -266,10 +264,8 @@ def query_to_decoder_feature(
         print("調整後")
         for mora in filter(lambda m: m.text == "、", moras):
             print(f"pause_mora.vowel_length : {mora.vowel_length}")
-    except SomeException as e:
-        print("error at query_to_decoder_feature")
-        handle_error(e)
-
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])
