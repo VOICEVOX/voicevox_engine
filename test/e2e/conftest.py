@@ -36,7 +36,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     # テスト用に隔離されたユーザー辞書を生成する
     user_dict = UserDictionary(
         default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
-        user_dict_path=generate_user_dict(tmp_path),
+        user_dict_path=_generate_user_dict(tmp_path),
         compiled_dict_path=tmp_path / "user.dic",
     )
 
@@ -60,8 +60,8 @@ def client(app: FastAPI) -> TestClient:
     return TestClient(app)
 
 
-def generate_user_dict(dir_path: Path) -> Path:
-    """指定されたディレクトリ下にユーザー辞書ファイルを生成する。"""
+def _generate_user_dict(dir_path: Path) -> Path:
+    """指定されたディレクトリ下にユーザー辞書ファイルを生成し、生成されたファイルのパスを返す。"""
     contents = {
         "a89596ad-caa8-4f4e-8eb3-3d2261c798fd": {
             "surface": "ｔｅｓｔ１",
