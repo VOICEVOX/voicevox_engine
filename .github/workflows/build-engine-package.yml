@@ -280,16 +280,10 @@ jobs:
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Python install path of windows: C:/hostedtoolcache/windows/Python
-      - name: <Setup> Set up Python
-        id: setup-python
-        uses: actions/setup-python@v5
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - name: <Setup> Install Python dependencies
-        run: python -m pip install -r requirements-dev.txt
+          requirements-suffix: "-dev"
 
       - name: <Setup> Prepare custom PyInstaller
         if: startsWith(matrix.os, 'windows-')

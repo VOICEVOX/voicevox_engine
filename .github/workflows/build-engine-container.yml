@@ -84,6 +84,12 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
+      - name: <Setup> Prepare Python version
+        id: prepare-python
+        uses: ./.github/actions/prepare_python
+        with:
+          python: false
+
       - name: <Setup> Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -150,7 +156,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            PYTHON_VERSION=${{ steps.prepare-python.outputs.python-version }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}

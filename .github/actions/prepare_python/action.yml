@@ -1,0 +1,35 @@
+name: "Prepare Python"
+
+inputs:
+  python:
+    description: "Whether to setup Python runtime / Python dependencies"
+    required: false
+    default: "true"
+  requirements-suffix:
+    description: "suffix of `rquirements` for Python dependency install"
+    required: false
+    default: ""
+outputs:
+  python-version:
+    description: "Python version"
+    value: ${{ steps.export-python-version.outputs.python-version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: <Setup> Set up Python
+      if: ${{ inputs.python == 'true' }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11.3" # NOTE: 必ず `export-python-version` の echo 値と一致させること
+        cache: pip
+
+    - name: <Setup> Install Python dependencies
+      if: ${{ inputs.python == 'true' }}
+      run: pip install -r requirements${{ inputs.requirements-suffix }}.txt
+      shell: bash
+
+    - name: <Deploy> Export Python version
+      id: export-python-version
+      run: echo "python-version=3.11.3" >> $GITHUB_OUTPUT # NOTE: 必ず `setup-python` の引数と一致させること
+      shell: bash

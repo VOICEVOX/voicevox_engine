@@ -63,11 +63,10 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Set up Python
-        uses: actions/setup-python@v5
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
+          requirements-suffix: "-test"
 
       - name: <Setup> Download ENGINE package
         run: |
@@ -80,10 +79,6 @@ jobs:
       - name: <Setup> Set up permission
         if: startsWith(matrix.target, 'linux') || startsWith(matrix.target, 'macos')
         run: chmod +x dist/run
-
-      - name: <Setup> Install Python test dependencies
-        run: |
-          pip install -r requirements-test.txt
 
       - name: <Test> Test ENGINE package
         run: python build_util/check_release_build.py --dist_dir dist/
