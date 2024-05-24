@@ -16,7 +16,7 @@ from voicevox_engine.user_dict.user_dict import DEFAULT_DICT_PATH, UserDictionar
 
 
 def copy_under_dir(file_path: Path, dir_path: Path) -> Path:
-    """指定ディレクトリ下へファイルをコピーする。"""
+    """指定ディレクトリ下へファイルをコピーし、生成されたファイルのパスを返す。"""
     copied_file_path = dir_path / file_path.name
     shutil.copyfile(file_path, copied_file_path)
     return copied_file_path
