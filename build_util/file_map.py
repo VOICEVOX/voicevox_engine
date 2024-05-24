@@ -54,9 +54,9 @@ def main() -> None:
     target_dir: Path = arg.target
     if not target_dir.is_dir():
         raise Exception()
-    maped = mapping(target_dir)
+    mapped = mapping(target_dir)
     with save_file.open(mode="wt", encoding="utf-8") as f:
-        json.dump(maped, f, ensure_ascii=False)
+        json.dump(mapped, f, ensure_ascii=False)
 
 
 if __name__ == "__main__":

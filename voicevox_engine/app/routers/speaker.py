@@ -173,13 +173,13 @@ def generate_speaker_router(
                         style_portrait = file_url(
                             self_url, speaker_uuid, style_portrait_hash, style_icon_name
                         )
-                    voice_samples_hashs = {
+                    voice_samples_hashes = {
                         speaker_map[f"voice_samples/{name}"]: name
                         for name in voice_samples_names
                     }
                     voice_samples = [
                         file_url(self_url, speaker_uuid, k, v)
-                        for k, v in voice_samples_hashs.items()
+                        for k, v in voice_samples_hashes.items()
                     ]
                 else:
                     style_icon_path = speaker_path / "icons" / style_icon_name
