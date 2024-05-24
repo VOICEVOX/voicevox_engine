@@ -148,7 +148,7 @@ SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
 def cast_as_talk_speakers(talkers: Iterable[Character]) -> list[Speaker]:
-    """talkers を talk 系スタイルからのみなる `Speaker` リストへキャストする。"""
+    """talkers を talk 系スタイルのみからなる `Speaker` リストへキャストする。"""
     talk_speakers = map(
         lambda talker: Speaker(
             name=talker.name,
@@ -163,7 +163,7 @@ def cast_as_talk_speakers(talkers: Iterable[Character]) -> list[Speaker]:
 
 
 def cast_as_sing_speakers(singers: Iterable[Character]) -> list[Speaker]:
-    """singers を sing 系スタイルからのみなる `Speaker` リストへキャストする。"""
+    """singers を sing 系スタイルのみからなる `Speaker` リストへキャストする。"""
     sing_speakers = map(
         lambda singer: Speaker(
             name=singer.name,
