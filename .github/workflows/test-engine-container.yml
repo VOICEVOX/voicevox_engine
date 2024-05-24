@@ -18,6 +18,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
+  PYTHON_VERSION: "3.11.3"
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
@@ -43,7 +44,7 @@ jobs:
       - name: <Setup> Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11.3"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
       - name: <Setup> Install Python dependencies

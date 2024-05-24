@@ -21,6 +21,7 @@ on:
         required: false
 
 env:
+  PYTHON_VERSION: "3.11.3"
   REPO_URL:
     |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
     ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}
@@ -65,7 +66,7 @@ jobs:
       - name: <Setup> Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11.3"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
       - name: <Setup> Download ENGINE package
