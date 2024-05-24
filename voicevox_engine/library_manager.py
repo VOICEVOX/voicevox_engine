@@ -127,7 +127,7 @@ class LibraryManager:
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
 
-        # vvlib は zip ファイル形式である
+        # ZIP 形式要件を満たさないファイルはライブラリでないためインストールを拒否する
         if not zipfile.is_zipfile(file):
             msg = f"音声ライブラリ {library_id} は不正なファイル形式（非 ZIP ファイル）です。"
             raise HTTPException(status_code=422, detail=msg)
@@ -137,12 +137,12 @@ class LibraryManager:
                 msg = f"音声ライブラリ {library_id} は不正なファイルです。"
                 raise HTTPException(status_code=422, detail=msg)
 
-            # `vvlib_manifest.json` が正しい形式で存在する
             vvlib_manifest = None
             try:
                 vvlib_manifest = json.loads(
                     zf.read("vvlib_manifest.json").decode("utf-8")
                 )
+            # マニフェストファイルをもたないライブラリはインストールを拒否する
             except KeyError:
                 msg = (
                     f"音声ライブラリ {library_id} にvvlib_manifest.jsonが存在しません。"
@@ -152,31 +152,29 @@ class LibraryManager:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonは不正です。"
                 raise HTTPException(status_code=422, detail=msg)
 
-            # `vvlib_manifest.json` は正しいマニフェスト形式である
+            # 不正な形式のマニフェストファイルをもつライブラリはインストールを拒否する
             try:
                 VvlibManifest.validate(vvlib_manifest)
             except ValidationError:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonが不正な形式です。"
                 raise HTTPException(status_code=422, detail=msg)
 
-            # `.version` は正しい形式である
+            # 不正な `version` 形式のマニフェストファイルもつライブラリはインストールを拒否する
             if not Version.is_valid(vvlib_manifest["version"]):
                 msg = f"音声ライブラリ {library_id} のversion形式が不正です。"
                 raise HTTPException(status_code=422, detail=msg)
 
-            # `.manifest_version` は正しい形式である
+            # 不正な形式あるいは対応範囲外のマニフェストバージョンをもつライブラリはインストールを拒否する
             try:
                 manifest_version = Version.parse(vvlib_manifest["manifest_version"])
             except ValueError:
                 msg = f"音声ライブラリ {library_id} のmanifest_version形式が不正です。"
                 raise HTTPException(status_code=422, detail=msg)
-
-            # マニフェストはサポート範囲内のバージョンである
             if manifest_version > self.supported_vvlib_version:
                 msg = f"音声ライブラリ {library_id} はエンジンが未対応です。"
                 raise HTTPException(status_code=422, detail=msg)
 
-            # ライブラリはエンジン向けである
+            # このエンジン向けでないライブラリはインストールを拒否する
             if vvlib_manifest["engine_uuid"] != self.engine_uuid:
                 msg = f"音声ライブラリ {library_id} は{self.engine_name}向けではありません。"
                 raise HTTPException(status_code=422, detail=msg)
@@ -190,12 +188,12 @@ class LibraryManager:
     def uninstall_library(self, library_id: str) -> None:
         """ID で指定されたインストール済み音声ライブラリをアンインストールする。"""
 
-        # ライブラリはインストール済みである
+        # 未インストールライブラリのアンインストールは不可能なので拒否する
         if library_id not in self.installed_libraries().keys():
             msg = f"音声ライブラリ {library_id} はインストールされていません。"
             raise HTTPException(status_code=404, detail=msg)
 
-        # ライブラリにアンインストール許可がある
+        # アンインストール不許可ライブラリはアンインストールを拒否する
         if not self.installed_libraries()[library_id].uninstallable:
             msg = f"音声ライブラリ {library_id} はアンインストールが禁止されています。"
             raise HTTPException(status_code=403, detail=msg)
