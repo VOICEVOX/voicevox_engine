@@ -201,6 +201,7 @@ class LibraryManager:
 
         # アンインストールする
         try:
+            # NOTE: 当該ライブラリのディレクトリを削除してアンインストールする
             shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
             msg = f"音声ライブラリ {library_id} ディレクトリの削除に失敗しました。"
