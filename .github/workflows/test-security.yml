@@ -7,9 +7,6 @@ on:
   schedule:
     - cron: "00 04 15 * *" # 毎月15日 13:00 JST
 
-env:
-  PYTHON_VERSION: "3.11.3"
-
 defaults:
   run:
     shell: bash

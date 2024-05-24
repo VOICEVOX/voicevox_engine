@@ -11,9 +11,6 @@ defaults:
   run:
     shell: bash
 
-env:
-  PYTHON_VERSION: "3.11.3"
-
 jobs:
   test:
     runs-on: ${{ matrix.os }}

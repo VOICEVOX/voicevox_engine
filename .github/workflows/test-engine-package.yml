@@ -21,7 +21,6 @@ on:
         required: false
 
 env:
-  PYTHON_VERSION: "3.11.3"
   REPO_URL:
     |- # repo_url指定時はrepo_urlを、それ以外はgithubのリポジトリURLを使用
     ${{ (github.event.inputs || inputs).repo_url || format('{0}/{1}', github.server_url, github.repository) }}

@@ -8,7 +8,6 @@ on:
       - "master"
 
 env:
-  PYTHON_VERSION: "3.11.3"
   PUBLISH_DIR: "./docs/api"
   PUBLISH_BRANCH: "gh-pages"
   DESTINATION_DIR: "api"
