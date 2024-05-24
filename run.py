@@ -272,7 +272,7 @@ def main() -> None:
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
-    latest_core_version = tts_engines.latest_version()
+    latest_core_version = core_manager.latest_version()
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis

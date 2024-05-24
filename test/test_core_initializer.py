@@ -97,23 +97,6 @@ def test_cores_get_core_existing() -> None:
     assert true_acquired_core == acquired_core
 
 
-def test_cores_get_core_latest() -> None:
-    """CoreManager.get_core() で最新版コアをバージョン未指定で取得できる。"""
-    # Inputs
-    core_manager = CoreManager()
-    core1 = CoreAdapter(MockCoreWrapper())
-    core2 = CoreAdapter(MockCoreWrapper())
-    core_manager.register_core(core1, "0.0.1")
-    core_manager.register_core(core2, "0.0.2")
-    # Expects
-    true_acquired_core = core2
-    # Outputs
-    acquired_core = core_manager.get_core()
-
-    # Test
-    assert true_acquired_core == acquired_core
-
-
 def test_cores_get_core_missing() -> None:
     """CoreManager.get_core() で存在しないコアを取得しようとするとエラーになる。"""
     # Inputs

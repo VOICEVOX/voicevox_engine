@@ -55,11 +55,9 @@ class CoreManager:
         """コアを登録する。"""
         self._cores[version] = core
 
-    def get_core(self, version: str | None = None) -> CoreAdapter:
-        """指定バージョンのコアを取得する。指定が無い場合、最新バージョンを返す。"""
-        if version is None:
-            return self._cores[self.latest_version()]
-        elif version in self._cores:
+    def get_core(self, version: str) -> CoreAdapter:
+        """指定バージョンのコアを取得する。"""
+        if version in self._cores:
             return self._cores[version]
 
         # FIXME: ドメインがずれているのでこのエラーは routers へ持っていく

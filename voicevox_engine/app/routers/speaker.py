@@ -30,7 +30,8 @@ def generate_speaker_router(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        version = core_manager.convert_version_format(core_version)
+        speakers = metas_store.load_combined_metas(core_manager.get_core(version))
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info", tags=["その他"])
@@ -77,9 +78,11 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
+        version = core_manager.convert_version_format(core_version)
+
         # 該当話者の検索
         speakers = parse_obj_as(
-            list[Speaker], json.loads(core_manager.get_core(core_version).speakers)
+            list[Speaker], json.loads(core_manager.get_core(version).speakers)
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         for i in range(len(speakers)):
@@ -147,7 +150,8 @@ def generate_speaker_router(
     def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        version = core_manager.convert_version_format(core_version)
+        singers = metas_store.load_combined_metas(core_manager.get_core(version))
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info", tags=["その他"])
@@ -180,7 +184,8 @@ def generate_speaker_router(
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        core = core_manager.get_core(core_version)
+        version = core_manager.convert_version_format(core_version)
+        core = core_manager.get_core(version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
@@ -191,7 +196,8 @@ def generate_speaker_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        core = core_manager.get_core(core_version)
+        version = core_manager.convert_version_format(core_version)
+        core = core_manager.get_core(version)
         return core.is_initialized_style_id_synthesis(style_id)
 
     return router

@@ -143,7 +143,7 @@ class CancellableEngine:
         query: AudioQuery,
         style_id: StyleId,
         request: Request,
-        core_version: str | None,
+        version: str,
     ) -> str:
         """
         音声合成を行う関数
@@ -157,7 +157,7 @@ class CancellableEngine:
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
-        core_version: str
+        version: str
 
         Returns
         -------
@@ -167,7 +167,7 @@ class CancellableEngine:
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
-            sub_proc_con1.send((query, style_id, core_version))
+            sub_proc_con1.send((query, style_id, version))
             f_name = sub_proc_con1.recv()
             if isinstance(f_name, str):
                 audio_file_name = f_name
@@ -240,11 +240,9 @@ def start_synthesis_subprocess(
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     while True:
         try:
-            query, style_id, core_version = sub_proc_con.recv()
-            if core_version is None:
-                _engine = tts_engines.get_engine()
-            elif tts_engines.has_engine(core_version):
-                _engine = tts_engines.get_engine(core_version)
+            query, style_id, version = sub_proc_con.recv()
+            if tts_engines.has_engine(version):
+                _engine = tts_engines.get_engine(version)
             else:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
