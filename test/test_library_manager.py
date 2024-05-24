@@ -180,7 +180,7 @@ class TestLibraryManager(TestCase):
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
             e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} はエンジンが未サポートです。",
+            f"音声ライブラリ {self.library_uuid} はエンジンが未対応です。",
         )
 
     def test_install_non_target_engine_library(self) -> None:

@@ -173,7 +173,7 @@ class LibraryManager:
 
             # マニフェストはサポート範囲内のバージョンである
             if manifest_version > self.supported_vvlib_version:
-                msg = f"音声ライブラリ {library_id} はエンジンが未サポートです。"
+                msg = f"音声ライブラリ {library_id} はエンジンが未対応です。"
                 raise HTTPException(status_code=422, detail=msg)
 
             # ライブラリはエンジン向けである
