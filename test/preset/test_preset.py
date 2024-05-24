@@ -57,9 +57,9 @@ def test_not_exist_file() -> None:
 
 
 def test_add_preset(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 10,
@@ -80,7 +80,7 @@ def test_add_preset(tmp_path: Path) -> None:
     for _preset in preset_manager.presets:
         if _preset.id == id:
             assert _preset == preset
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_add_preset_load_failure() -> None:
@@ -106,9 +106,9 @@ def test_add_preset_load_failure() -> None:
 
 
 def test_add_preset_conflict_id(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 2,
@@ -129,13 +129,13 @@ def test_add_preset_conflict_id(tmp_path: Path) -> None:
     for _preset in preset_manager.presets:
         if _preset.id == id:
             assert _preset == preset
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_add_preset_conflict_id2(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": -1,
@@ -156,13 +156,13 @@ def test_add_preset_conflict_id2(tmp_path: Path) -> None:
     for _preset in preset_manager.presets:
         if _preset.id == id:
             assert _preset == preset
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_add_preset_write_failure(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 10,
@@ -184,13 +184,13 @@ def test_add_preset_write_failure(tmp_path: Path) -> None:
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.add_preset(preset)
     assert len(preset_manager.presets) == 2
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_update_preset(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 1,
@@ -211,7 +211,7 @@ def test_update_preset(tmp_path: Path) -> None:
     for _preset in preset_manager.presets:
         if _preset.id == id:
             assert _preset == preset
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_update_preset_load_failure() -> None:
@@ -237,9 +237,9 @@ def test_update_preset_load_failure() -> None:
 
 
 def test_update_preset_not_found(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 10,
@@ -258,13 +258,13 @@ def test_update_preset_not_found(tmp_path: Path) -> None:
     with pytest.raises(PresetInputError, match=true_msg):
         preset_manager.update_preset(preset)
     assert len(preset_manager.presets) == 2
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_update_preset_write_failure(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset = Preset(
         **{
             "id": 1,
@@ -287,17 +287,17 @@ def test_update_preset_write_failure(tmp_path: Path) -> None:
         preset_manager.update_preset(preset)
     assert len(preset_manager.presets) == 2
     assert preset_manager.presets[0].name == "test"
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_delete_preset(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     id = preset_manager.delete_preset(1)
     assert id == 1
     assert len(preset_manager.presets) == 1
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_delete_preset_load_failure() -> None:
@@ -308,20 +308,20 @@ def test_delete_preset_load_failure() -> None:
 
 
 def test_delete_preset_not_found(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     true_msg = "削除対象のプリセットが存在しません"
     with pytest.raises(PresetInputError, match=true_msg):
         preset_manager.delete_preset(10)
     assert len(preset_manager.presets) == 2
-    remove(temp_path)
+    remove(preset_path)
 
 
 def test_delete_preset_write_failure(tmp_path: Path) -> None:
-    temp_path = tmp_path / "presets-test-temp.yaml"
-    copyfile(presets_test_1_yaml_path, temp_path)
-    preset_manager = PresetManager(preset_path=temp_path)
+    preset_path = tmp_path / "presets.yaml"
+    copyfile(presets_test_1_yaml_path, preset_path)
+    preset_manager = PresetManager(preset_path=preset_path)
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
@@ -329,4 +329,4 @@ def test_delete_preset_write_failure(tmp_path: Path) -> None:
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.delete_preset(1)
     assert len(preset_manager.presets) == 2
-    remove(temp_path)
+    remove(preset_path)
