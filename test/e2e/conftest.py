@@ -29,11 +29,11 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     latest_core_version = tts_engines.latest_version()
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
-    # 隔離されたプリセットの生成
+    # テスト用に隔離されたプリセットを生成する
     preset_path = Path("./presets.yaml")
     preset_manager = PresetManager(copy_under_dir(preset_path, tmp_path))
 
-    # 隔離されたユーザー辞書の生成
+    # テスト用に隔離されたユーザー辞書を生成する
     user_dict = UserDictionary(
         default_dict_path=copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
         user_dict_path=generate_user_dict(tmp_path),
