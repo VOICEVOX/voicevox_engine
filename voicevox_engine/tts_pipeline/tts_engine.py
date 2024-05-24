@@ -178,7 +178,7 @@ def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間(絶対値)（`pauseLength`）を適用する"""
     try:
         for mora in moras:
-            if mora.text == "、":
+            if mora.vowel == "pau":
                 mora.vowel_length = query.pauseLength
     except Exception as e:
         print(f"apply_pause_length: {e}")
@@ -189,7 +189,7 @@ def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]
     """モーラ系列へ音声合成用のクエリがもつ無音時間(倍率)（`pauseLengthScale`）を適用する"""
     try:
         for mora in moras:
-            if mora.text == "、":
+            if mora.vowel == "pau":
                 mora.vowel_length *= query.pauseLengthScale
     except Exception as e:
         print(f"apply_pause_length_scale: {e}")
@@ -242,7 +242,8 @@ def query_to_decoder_feature(
 
     try:
         # デバッグ
-        for mora in filter(lambda m: m.text == "、", moras):
+        for mora in filter(lambda m: m.vowel == "pau", moras):
+            print(mora)
             print(f"pause_mora.vowel_length : {mora.vowel_length}")
 
         # 設定を適用する
@@ -262,7 +263,7 @@ def query_to_decoder_feature(
 
         # デバッグ
         print("調整後")
-        for mora in filter(lambda m: m.text == "、", moras):
+        for mora in filter(lambda m: m.vowel == "pau", moras):
             print(f"pause_mora.vowel_length : {mora.vowel_length}")
     except Exception as e:
         print(f"query_to_decoder_feature: {e}")
