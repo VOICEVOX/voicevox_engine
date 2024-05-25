@@ -23,7 +23,7 @@ class PresetManager:
         self.last_modified_time = 0.0
         self.preset_path = preset_path
 
-        # 設定ファイルが無指定の場合、初期値を生成する
+        # プリセットファイルが無指定の場合、初期値を生成する
         default_path = engine_root() / "presets.yaml"
         preset_not_specified = default_path.resolve() == preset_path.resolve()
         if not self.preset_path.exists() and preset_not_specified:
