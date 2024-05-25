@@ -153,12 +153,6 @@ class ParseKanaBadRequest(BaseModel):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
-class StyleIdNotFoundError(LookupError):
-    def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
-        self.style_id = style_id
-        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
-
-
 class LibrarySpeaker(BaseModel):
     """
     音声ライブラリに含まれる話者の情報

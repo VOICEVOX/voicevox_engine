@@ -15,7 +15,7 @@ from soxr import resample
 
 from .core.core_adapter import CoreAdapter
 from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
-from .model import AudioQuery, StyleIdNotFoundError
+from .model import AudioQuery
 from .tts_pipeline.tts_engine import TTSEngine
 
 
@@ -23,6 +23,12 @@ class MorphableTargetInfo(BaseModel):
     is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
     # FIXME: add reason property
     # reason: str | None = Field(title="is_morphableがfalseである場合、その理由")
+
+
+class StyleIdNotFoundError(LookupError):
+    def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
+        self.style_id = style_id
+        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
 
 
 @dataclass(frozen=True)
