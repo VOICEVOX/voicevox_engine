@@ -20,6 +20,3 @@ class Setting(BaseModel):
 
     cors_policy_mode: CorsPolicyMode = Field(title="リソース共有ポリシー")
     allow_origin: Optional[str] = Field(title="許可するオリジン")
-
-    class Config:
-        use_enum_values = True

@@ -1,0 +1,15 @@
+{
+  "detail": [
+    {
+      "ctx": {
+        "limit_value": 10
+      },
+      "loc": [
+        "query",
+        "priority"
+      ],
+      "msg": "ensure this value is less than or equal to 10",
+      "type": "value_error.number.not_le"
+    }
+  ]
+}

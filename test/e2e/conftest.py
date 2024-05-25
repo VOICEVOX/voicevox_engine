@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -13,15 +14,19 @@ from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.utility.core_version_utility import get_latest_core_version
 
 
-@pytest.fixture(scope="session")
-def app_params() -> dict[str, Any]:
+@pytest.fixture()
+def app_params(tmp_path: Path) -> dict[str, Any]:
     cores = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(cores)
     latest_core_version = get_latest_core_version(versions=list(tts_engines.keys()))
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
-    preset_manager = PresetManager(  # FIXME: impl MockPresetManager
-        preset_path=Path("./presets.yaml"),
-    )
+
+    # 隔離されたプリセットの生成
+    original_preset_path = Path("./presets.yaml")
+    preset_path = tmp_path / "presets.yaml"
+    shutil.copyfile(original_preset_path, preset_path)
+    preset_manager = PresetManager(preset_path)
+
     return {
         "tts_engines": tts_engines,
         "cores": cores,
@@ -31,11 +36,11 @@ def app_params() -> dict[str, Any]:
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def app(app_params: dict) -> FastAPI:
     return generate_app(**app_params)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)

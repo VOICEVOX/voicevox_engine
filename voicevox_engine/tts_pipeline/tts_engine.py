@@ -9,7 +9,15 @@ from soxr import resample
 from ..core.core_adapter import CoreAdapter
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
+from ..model import (
+    AccentPhrase,
+    AudioQuery,
+    FrameAudioQuery,
+    FramePhoneme,
+    Mora,
+    Note,
+    Score,
+)
 from .kana_converter import parse_kana
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
@@ -153,7 +161,8 @@ def count_frame_per_unit(
 def _to_frame(sec: float) -> int:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
-    return np.round(sec * FRAMERATE).astype(np.int32).item()
+    sec_rounded: NDArray[np.float64] = np.round(sec * FRAMERATE)
+    return sec_rounded.astype(np.int32).item()
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -283,6 +292,104 @@ def calc_phoneme_lengths(
 
     phoneme_durations_array = np.array(phoneme_durations, dtype=np.int64)
     return phoneme_durations_array
+
+
+def notes_to_keys_and_phonemes(
+    notes: list[Note],
+) -> tuple[
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+]:
+    """
+    ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
+    Parameters
+    ----------
+    notes : list[Note]
+        ノート列
+    Returns
+    -------
+    note_lengths : NDArray[np.int64]
+        ノートの長さ列
+    note_consonants : NDArray[np.int64]
+        ノートの子音ID列
+    note_vowels : NDArray[np.int64]
+        ノートの母音ID列
+    phonemes : NDArray[np.int64]
+        音素列
+    phoneme_keys : NDArray[np.int64]
+        音素ごとのキー列
+    """
+
+    note_lengths: list[int] = []
+    note_consonants: list[int] = []
+    note_vowels: list[int] = []
+    phonemes: list[int] = []
+    phoneme_keys: list[int] = []
+
+    for note in notes:
+        if note.lyric == "":
+            if note.key is not None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="lyricが空文字列の場合、keyはnullである必要があります。",
+                )
+            note_lengths.append(note.frame_length)
+            note_consonants.append(-1)
+            note_vowels.append(0)  # pau
+            phonemes.append(0)  # pau
+            phoneme_keys.append(-1)
+        else:
+            if note.key is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="keyがnullの場合、lyricは空文字列である必要があります。",
+                )
+
+            # TODO: 1ノートに複数のモーラがある場合の処理
+            mora_phonemes = mora_kana_to_mora_phonemes.get(
+                note.lyric  # type: ignore
+            ) or mora_kana_to_mora_phonemes.get(
+                _hira_to_kana(note.lyric)  # type: ignore
+            )
+            if mora_phonemes is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"lyricが不正です: {note.lyric}",
+                )
+
+            consonant, vowel = mora_phonemes
+            if consonant is None:
+                consonant_id = -1
+            else:
+                consonant_id = Phoneme(consonant).id
+            vowel_id = Phoneme(vowel).id
+
+            note_lengths.append(note.frame_length)
+            note_consonants.append(consonant_id)
+            note_vowels.append(vowel_id)
+            if consonant_id != -1:
+                phonemes.append(consonant_id)
+                phoneme_keys.append(note.key)
+            phonemes.append(vowel_id)
+            phoneme_keys.append(note.key)
+
+    # 各データをnumpy配列に変換する
+    note_lengths_array = np.array(note_lengths, dtype=np.int64)
+    note_consonants_array = np.array(note_consonants, dtype=np.int64)
+    note_vowels_array = np.array(note_vowels, dtype=np.int64)
+    phonemes_array = np.array(phonemes, dtype=np.int64)
+    phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
+
+    return (
+        note_lengths_array,
+        note_consonants_array,
+        note_vowels_array,
+        phonemes_array,
+        phoneme_keys_array,
+    )
 
 
 def frame_query_to_sf_decoder_feature(
@@ -466,66 +573,13 @@ class TTSEngine:
         """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
-        # Scoreを分解し、ノート単位のデータ、音素単位のデータを作成する
-        note_lengths: list[int] = []
-        note_consonants: list[int] = []
-        note_vowels: list[int] = []
-        phonemes: list[int] = []
-        phoneme_keys: list[int] = []
-
-        for note in notes:
-            if note.lyric == "":
-                if note.key is not None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="lyricが空文字列の場合、keyはnullである必要があります。",
-                    )
-                note_lengths.append(note.frame_length)
-                note_consonants.append(-1)
-                note_vowels.append(0)  # pau
-                phonemes.append(0)  # pau
-                phoneme_keys.append(-1)
-            else:
-                if note.key is None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="keyがnullの場合、lyricは空文字列である必要があります。",
-                    )
-
-                # TODO: 1ノートに複数のモーラがある場合の処理
-                mora_phonemes = mora_kana_to_mora_phonemes.get(
-                    note.lyric  # type: ignore
-                ) or mora_kana_to_mora_phonemes.get(
-                    _hira_to_kana(note.lyric)  # type: ignore
-                )
-                if mora_phonemes is None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"lyricが不正です: {note.lyric}",
-                    )
-
-                consonant, vowel = mora_phonemes
-                if consonant is None:
-                    consonant_id = -1
-                else:
-                    consonant_id = Phoneme(consonant).id
-                vowel_id = Phoneme(vowel).id
-
-                note_lengths.append(note.frame_length)
-                note_consonants.append(consonant_id)
-                note_vowels.append(vowel_id)
-                if consonant_id != -1:
-                    phonemes.append(consonant_id)
-                    phoneme_keys.append(note.key)
-                phonemes.append(vowel_id)
-                phoneme_keys.append(note.key)
-
-        # 各データをnumpy配列に変換する
-        note_lengths_array = np.array(note_lengths, dtype=np.int64)
-        note_consonants_array = np.array(note_consonants, dtype=np.int64)
-        note_vowels_array = np.array(note_vowels, dtype=np.int64)
-        phonemes_array = np.array(phonemes, dtype=np.int64)
-        phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
+        (
+            note_lengths_array,
+            note_consonants_array,
+            note_vowels_array,
+            phonemes_array,
+            phoneme_keys_array,
+        ) = notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
         consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
@@ -555,10 +609,63 @@ class TTSEngine:
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
                 frame_length=phoneme_duration,
             )
-            for phoneme_id, phoneme_duration in zip(phonemes, phoneme_lengths)
+            for phoneme_id, phoneme_duration in zip(phonemes_array, phoneme_lengths)
         ]
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
+
+    def create_sing_volume_from_phoneme_and_f0(
+        self,
+        score: Score,
+        phonemes: list[FramePhoneme],
+        f0s: list[float],
+        style_id: StyleId,
+    ) -> list[float]:
+        """歌声合成用の音素・音高・スタイルIDに基づいて音量を生成する"""
+        notes = score.notes
+
+        (
+            _,
+            _,
+            _,
+            phonemes_array_from_notes,
+            phoneme_keys_array,
+        ) = notes_to_keys_and_phonemes(notes)
+
+        phonemes_array = np.array(
+            [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
+        )
+        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+        f0_array = np.array(f0s, dtype=np.float32)
+
+        # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
+        # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
+        try:
+            all_equals = np.all(phonemes_array == phonemes_array_from_notes)
+        except ValueError:
+            # 長さが異なる場合はValueErrorが発生するので、Falseとする
+            # mypyを通すためにnp.bool_でラップする
+            all_equals = np.bool_(False)
+
+        if not all_equals:
+            raise HTTPException(
+                status_code=400,
+                detail="Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。",
+            )
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音量を生成する
+        volumes = self._core.safe_predict_sing_volume_forward(
+            frame_phonemes, frame_keys, f0_array, style_id
+        )
+
+        # mypyの型チェックを通すために明示的に型を付ける
+        volume_list: list[float] = volumes.tolist()
+
+        return volume_list
 
     def frame_synthsize_wave(
         self,

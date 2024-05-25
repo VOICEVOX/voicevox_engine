@@ -19,7 +19,7 @@ class SpeakerStyle(BaseModel):
     type: Optional[StyleType] = Field(
         default="talk",
         title=(
-            "モデルの種類。"
+            "スタイルの種類。"
             "talk:音声合成クエリの作成と音声合成が可能。"
             "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
             "frame_decode:歌唱音声合成が可能。"
