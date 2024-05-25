@@ -9,10 +9,12 @@ from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
+from voicevox_engine.engine_manifest.EngineManifest import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.SettingLoader import SettingHandler
+from voicevox_engine.setting.Setting import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import DEFAULT_DICT_PATH, UserDictionary
+from voicevox_engine.utility.path_utility import engine_root
 
 
 def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
@@ -24,8 +26,8 @@ def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
 
 @pytest.fixture()
 def app_params(tmp_path: Path) -> dict[str, Any]:
-    cores = initialize_cores(use_gpu=False, enable_mock=True)
-    tts_engines = make_tts_engines_from_cores(cores)
+    core_manager = initialize_cores(use_gpu=False, enable_mock=True)
+    tts_engines = make_tts_engines_from_cores(core_manager)
     latest_core_version = tts_engines.latest_version()
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
@@ -40,13 +42,16 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
         compiled_dict_path=tmp_path / "user.dic",
     )
 
+    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+
     return {
         "tts_engines": tts_engines,
-        "cores": cores,
+        "core_manager": core_manager,
         "latest_core_version": latest_core_version,
         "setting_loader": setting_loader,
         "preset_manager": preset_manager,
         "user_dict": user_dict,
+        "engine_manifest": engine_manifest,
     }
 
 

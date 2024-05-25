@@ -7,16 +7,20 @@ import sys
 import warnings
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TypeVar
+from typing import TextIO, TypeVar
 
 import uvicorn
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
+from voicevox_engine.engine_manifest.EngineManifest import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.setting.Setting import (
+    USER_SETTING_PATH,
+    CorsPolicyMode,
+    SettingHandler,
+)
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
@@ -44,35 +48,37 @@ def decide_boolean_from_env(env_name: str) -> bool:
 
 
 def set_output_log_utf8() -> None:
-    """
-    stdout/stderrのエンコーディングをUTF-8に切り替える関数
-    """
-    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-    if sys.stdout is not None:
-        if isinstance(sys.stdout, TextIOWrapper):
-            sys.stdout.reconfigure(encoding="utf-8")
+    """標準出力と標準エラー出力の出力形式を UTF-8 ベースに切り替える"""
+
+    # NOTE: for 文で回せないため関数内関数で実装している
+    def _prepare_utf8_stdio(stdio: TextIO | None) -> TextIO | None:
+        """UTF-8 ベースの標準入出力インターフェイスを用意する"""
+
+        CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
+        ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
+
+        # Python インタープリタが標準入出力へ接続されていないため設定不要とみなしそのまま返す
+        if stdio is None:
+            return stdio
         else:
-            # バッファを全て出力する
-            sys.stdout.flush()
-            try:
-                sys.stdout = TextIOWrapper(
-                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stdout.bufferがない場合は無視
-                pass
-    if sys.stderr is not None:
-        if isinstance(sys.stderr, TextIOWrapper):
-            sys.stderr.reconfigure(encoding="utf-8")
-        else:
-            sys.stderr.flush()
-            try:
-                sys.stderr = TextIOWrapper(
-                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stderr.bufferがない場合は無視
-                pass
+            # 既定の `TextIOWrapper` 入出力インターフェイスを UTF-8 へ再設定して返す
+            if isinstance(stdio, TextIOWrapper):
+                stdio.reconfigure(encoding=CODEC)
+                return stdio
+            else:
+                # 既定インターフェイスのバッファを全て出力しきった上で UTF-8 設定の `TextIOWrapper` を生成して返す
+                stdio.flush()
+                try:
+                    return TextIOWrapper(stdio.buffer, encoding=CODEC, errors=ERR)
+                except AttributeError:
+                    # バッファへのアクセスに失敗した場合、設定変更をおこなわず返す
+                    return stdio
+
+    # NOTE:
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # しかし `TextIO | None` でなく `TextIO` と間違って型付けされているため、ここでは ignore している
+    sys.stdout = _prepare_utf8_stdio(sys.stdout)  # type: ignore[assignment]
+    sys.stderr = _prepare_utf8_stdio(sys.stderr)  # type: ignore[assignment]
 
 
 T = TypeVar("T")
@@ -256,7 +262,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -265,7 +271,7 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     latest_core_version = tts_engines.latest_version()
 
@@ -317,6 +323,8 @@ def main() -> None:
 
     use_dict = UserDictionary()
 
+    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
@@ -325,11 +333,12 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
+        core_manager,
         latest_core_version,
         setting_loader,
         preset_manager,
         use_dict,
+        engine_manifest,
         cancellable_engine,
         root_dir,
         cors_policy_mode,
