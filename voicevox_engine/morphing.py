@@ -42,9 +42,7 @@ def get_morphable_targets(
         for style in chain.from_iterable(speaker.styles for speaker in speakers):
             morphable_targets[style.id] = MorphableTargetInfo(
                 is_morphable=is_synthesis_morphing_permitted(
-                    speakers,
-                    base_style_id=base_style_id,
-                    target_style_id=style.id,
+                    speakers, base_style_id, style.id
                 )
             )
         morphable_targets_arr.append(morphable_targets)
@@ -62,18 +60,18 @@ def construct_lookup(speakers: list[Speaker]) -> dict[StyleId, Speaker]:
 
 
 def is_synthesis_morphing_permitted(
-    speakers: list[Speaker], base_style_id: StyleId, target_style_id: StyleId
+    speakers: list[Speaker], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
-    """base キャラクターと target キャラクターをモーフィング可能か判定する。"""
+    """スタイル ID で指定されたふたりのキャラクターがモーフィング可能か判定する。"""
     speaker_lookup = construct_lookup(speakers)
     try:
-        base = speaker_lookup[base_style_id]
+        base = speaker_lookup[style_id_1]
     except KeyError:
-        raise StyleIdNotFoundError(base_style_id)
+        raise StyleIdNotFoundError(style_id_1)
     try:
-        target = speaker_lookup[target_style_id]
+        target = speaker_lookup[style_id_2]
     except KeyError:
-        raise StyleIdNotFoundError(target_style_id)
+        raise StyleIdNotFoundError(style_id_2)
 
     base_uuid = base.speaker_uuid
     target_uuid = target.speaker_uuid
