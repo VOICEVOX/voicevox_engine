@@ -178,7 +178,11 @@ def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間(絶対値)（`pauseLength`）を適用する"""
     try:
         for mora in moras:
+<<<<<<< HEAD
             if mora.text == "、":
+=======
+            if mora.vowel == "pau":
+>>>>>>> 3454dea6018f0ce8485e179afd0233b53f1bb509
                 mora.vowel_length = query.pauseLength
     except Exception as e:
         print(f"apply_pause_length: {e}")
@@ -189,7 +193,11 @@ def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]
     """モーラ系列へ音声合成用のクエリがもつ無音時間(倍率)（`pauseLengthScale`）を適用する"""
     try:
         for mora in moras:
+<<<<<<< HEAD
             if mora.text == "、":
+=======
+            if mora.vowel == "pau":
+>>>>>>> 3454dea6018f0ce8485e179afd0233b53f1bb509
                 mora.vowel_length *= query.pauseLengthScale
     except Exception as e:
         print(f"apply_pause_length_scale: {e}")
@@ -241,6 +249,7 @@ def query_to_decoder_feature(
     moras = to_flatten_moras(query.accent_phrases)
 
     try:
+<<<<<<< HEAD
         # デバッグ
         for mora in filter(lambda m: m.text == "、", moras):
             print(f"pause_mora.vowel_length : {mora.vowel_length}".encode("utf-8"))
@@ -263,6 +272,22 @@ def query_to_decoder_feature(
         print("調整後")
         for mora in filter(lambda m: m.text == "、", moras):
             print(f"pause_mora.vowel_length : {mora.vowel_length}".encode("utf-8"))
+=======
+        # 設定を適用する
+        moras = apply_prepost_silence(moras, query)
+        if query.isPauseLengthUseScale:
+            moras = apply_pause_length_scale(moras, query)
+            moras = apply_speed_scale(moras, query)
+        else:
+            if query.isPauseLengthFixed:  # Trueなら話速の影響を受けない
+                moras = apply_speed_scale(moras, query)
+                moras = apply_pause_length(moras, query)  # 受ける
+            else:
+                moras = apply_pause_length(moras, query)  # 受ける
+                moras = apply_speed_scale(moras, query)
+        moras = apply_pitch_scale(moras, query)
+        moras = apply_intonation_scale(moras, query)
+>>>>>>> 3454dea6018f0ce8485e179afd0233b53f1bb509
     except Exception as e:
         print(f"query_to_decoder_feature: {e}")
 
