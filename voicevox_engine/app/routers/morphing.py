@@ -17,11 +17,11 @@ from voicevox_engine.morphing import (
     MorphableTargetInfo,
     get_morphable_targets,
     is_morphable,
-    synthesize_morphed_wave,
 )
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
+from voicevox_engine.morphing import synthesize_morphed_wave
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
 
