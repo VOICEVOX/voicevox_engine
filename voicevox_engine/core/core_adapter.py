@@ -1,12 +1,23 @@
 """VOICEVOX CORE を ENGINE に適合させるアダプター"""
 
+import json
 import threading
+from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
+
+
+@dataclass(frozen=True)
+class DeviceSupport:
+    """音声ライブラリのデバイス利用可否"""
+
+    cpu: bool
+    cuda: bool  # CUDA (Nvidia GPU)
+    dml: bool  # DirectML (Nvidia GPU/Radeon GPU等)
 
 
 class CoreAdapter:
@@ -30,13 +41,19 @@ class CoreAdapter:
         return self.core.metas()
 
     @property
-    def supported_devices(self) -> str | None:
+    def supported_devices(self) -> DeviceSupport | None:
         """デバイスサポート情報（None: 情報無し）"""
         try:
-            supported_devices = self.core.supported_devices()
+            supported_devices = json.loads(self.core.supported_devices())
+            assert isinstance(supported_devices, dict)
+            device_support = DeviceSupport(
+                cpu=supported_devices["cpu"],
+                cuda=supported_devices["cuda"],
+                dml=supported_devices["dml"],
+            )
         except OldCoreError:
-            supported_devices = None
-        return supported_devices
+            device_support = None
+        return device_support
 
     def initialize_style_id_synthesis(
         self, style_id: StyleId, skip_reinit: bool

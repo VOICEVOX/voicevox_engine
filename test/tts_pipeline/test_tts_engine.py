@@ -1,6 +1,5 @@
 import json
 from test.utility import pydantic_to_native_type, round_floats
-from unittest import TestCase
 from unittest.mock import Mock
 
 import numpy as np
@@ -205,96 +204,96 @@ def _gen_doremi_score() -> Score:
     )
 
 
-class TestTTSEngine(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        core = MockCore()
-        self.yukarin_s_mock = core.yukarin_s_forward
-        self.yukarin_sa_mock = core.yukarin_sa_forward
-        self.decode_mock = core.decode_forward
-        self.tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+def test_to_flatten_moras() -> None:
+    flatten_moras = to_flatten_moras(_gen_hello_hiho_accent_phrases())
+    true_accent_phrases_hello_hiho = _gen_hello_hiho_accent_phrases()
+    assert (
+        flatten_moras
+        == true_accent_phrases_hello_hiho[0].moras
+        + [true_accent_phrases_hello_hiho[0].pause_mora]
+        + true_accent_phrases_hello_hiho[1].moras
+    )
 
-    def test_to_flatten_moras(self) -> None:
-        flatten_moras = to_flatten_moras(_gen_hello_hiho_accent_phrases())
-        true_accent_phrases_hello_hiho = _gen_hello_hiho_accent_phrases()
-        self.assertEqual(
-            flatten_moras,
-            true_accent_phrases_hello_hiho[0].moras
-            + [true_accent_phrases_hello_hiho[0].pause_mora]
-            + true_accent_phrases_hello_hiho[1].moras,
-        )
 
-    def test_update_length(self) -> None:
-        # Inputs
-        hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Indirect Outputs（yukarin_sに渡される値）
-        self.tts_engine.update_length(hello_hiho, StyleId(1))
-        yukarin_s_args = self.yukarin_s_mock.call_args[1]
-        list_length = yukarin_s_args["length"]
-        phoneme_list = yukarin_s_args["phoneme_list"]
-        style_id = yukarin_s_args["style_id"]
-        # Expects
-        true_list_length = 20
-        true_style_id = 1
-        true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
-        true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
-        true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
+def test_update_length() -> None:
+    core = MockCore()
+    _yukarin_s_mock = core.yukarin_s_forward
+    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+    # Inputs
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Indirect Outputs（yukarin_sに渡される値）
+    tts_engine.update_length(hello_hiho, StyleId(1))
+    yukarin_s_args = _yukarin_s_mock.call_args[1]
+    list_length = yukarin_s_args["length"]
+    phoneme_list = yukarin_s_args["phoneme_list"]
+    style_id = yukarin_s_args["style_id"]
+    # Expects
+    true_list_length = 20
+    true_style_id = 1
+    true_phoneme_list_1 = [0, 23, 30, 4, 28, 21, 10, 21, 42, 7]
+    true_phoneme_list_2 = [0, 19, 21, 19, 30, 12, 14, 35, 6, 0]
+    true_phoneme_list = true_phoneme_list_1 + true_phoneme_list_2
 
-        self.assertEqual(list_length, true_list_length)
-        self.assertEqual(list_length, len(phoneme_list))
-        self.assertEqual(style_id, true_style_id)
-        np.testing.assert_array_equal(
-            phoneme_list,
-            np.array(true_phoneme_list, dtype=np.int64),
-        )
+    assert list_length == true_list_length
+    assert list_length == len(phoneme_list)
+    assert style_id == true_style_id
+    np.testing.assert_array_equal(
+        phoneme_list,
+        np.array(true_phoneme_list, dtype=np.int64),
+    )
 
-    def test_update_pitch(self) -> None:
-        # 空のリストでエラーを吐かないか
-        # Inputs
-        phrases: list = []
-        # Outputs
-        result = self.tts_engine.update_pitch(phrases, StyleId(1))
-        # Expects
-        true_result: list = []
-        # Tests
-        self.assertEqual(result, true_result)
 
-        # Inputs
-        hello_hiho = _gen_hello_hiho_accent_phrases()
-        # Indirect Outputs（yukarin_saに渡される値）
-        self.tts_engine.update_pitch(hello_hiho, StyleId(1))
-        yukarin_sa_args = self.yukarin_sa_mock.call_args[1]
-        list_length = yukarin_sa_args["length"]
-        vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
-        consonant_phoneme_list = yukarin_sa_args["consonant_phoneme_list"][0]
-        start_accent_list = yukarin_sa_args["start_accent_list"][0]
-        end_accent_list = yukarin_sa_args["end_accent_list"][0]
-        start_accent_phrase_list = yukarin_sa_args["start_accent_phrase_list"][0]
-        end_accent_phrase_list = yukarin_sa_args["end_accent_phrase_list"][0]
-        style_id = yukarin_sa_args["style_id"]
-        # Expects
-        true_vowels = np.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0])
-        true_consonants = np.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1])
-        true_accent_starts = np.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        true_accent_ends = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
-        true_phrase_starts = np.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
-        true_phrase_ends = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
+def test_update_pitch() -> None:
+    core = MockCore()
+    _yukarin_sa_mock = core.yukarin_sa_forward
+    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
 
-        # Tests
-        self.assertEqual(list_length, 12)
-        self.assertEqual(list_length, len(vowel_phoneme_list))
-        self.assertEqual(list_length, len(consonant_phoneme_list))
-        self.assertEqual(list_length, len(start_accent_list))
-        self.assertEqual(list_length, len(end_accent_list))
-        self.assertEqual(list_length, len(start_accent_phrase_list))
-        self.assertEqual(list_length, len(end_accent_phrase_list))
-        self.assertEqual(style_id, 1)
-        np.testing.assert_array_equal(vowel_phoneme_list, true_vowels)
-        np.testing.assert_array_equal(consonant_phoneme_list, true_consonants)
-        np.testing.assert_array_equal(start_accent_list, true_accent_starts)
-        np.testing.assert_array_equal(end_accent_list, true_accent_ends)
-        np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
-        np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
+    # 空のリストでエラーを吐かないか
+    # Inputs
+    phrases: list = []
+    # Outputs
+    result = tts_engine.update_pitch(phrases, StyleId(1))
+    # Expects
+    true_result: list = []
+    # Tests
+    assert result == true_result
+
+    # Inputs
+    hello_hiho = _gen_hello_hiho_accent_phrases()
+    # Indirect Outputs（yukarin_saに渡される値）
+    tts_engine.update_pitch(hello_hiho, StyleId(1))
+    yukarin_sa_args = _yukarin_sa_mock.call_args[1]
+    list_length = yukarin_sa_args["length"]
+    vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
+    consonant_phoneme_list = yukarin_sa_args["consonant_phoneme_list"][0]
+    start_accent_list = yukarin_sa_args["start_accent_list"][0]
+    end_accent_list = yukarin_sa_args["end_accent_list"][0]
+    start_accent_phrase_list = yukarin_sa_args["start_accent_phrase_list"][0]
+    end_accent_phrase_list = yukarin_sa_args["end_accent_phrase_list"][0]
+    style_id = yukarin_sa_args["style_id"]
+    # Expects
+    true_vowels = np.array([0, 30, 4, 21, 21, 7, 0, 21, 30, 14, 6, 0])
+    true_consonants = np.array([-1, 23, -1, 28, 10, 42, -1, 19, 19, 12, 35, -1])
+    true_accent_starts = np.array([0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+    true_accent_ends = np.array([0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0])
+    true_phrase_starts = np.array([0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+    true_phrase_ends = np.array([0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0])
+
+    # Tests
+    assert list_length == 12
+    assert list_length == len(vowel_phoneme_list)
+    assert list_length == len(consonant_phoneme_list)
+    assert list_length == len(start_accent_list)
+    assert list_length == len(end_accent_list)
+    assert list_length == len(start_accent_phrase_list)
+    assert list_length == len(end_accent_phrase_list)
+    assert style_id == 1
+    np.testing.assert_array_equal(vowel_phoneme_list, true_vowels)
+    np.testing.assert_array_equal(consonant_phoneme_list, true_consonants)
+    np.testing.assert_array_equal(start_accent_list, true_accent_starts)
+    np.testing.assert_array_equal(end_accent_list, true_accent_ends)
+    np.testing.assert_array_equal(start_accent_phrase_list, true_phrase_starts)
+    np.testing.assert_array_equal(end_accent_phrase_list, true_phrase_ends)
 
 
 def test_create_accent_phrases_toward_unknown() -> None:
@@ -521,225 +520,224 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     ]
 
 
-class TestTTSEngineBase(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.tts_engine = TTSEngine(core=MockCoreWrapper())
+def create_synthesis_test_base(
+    text: str, expected: list[AccentPhrase], enable_interrogative_upspeak: bool
+) -> None:
+    """音声合成時に疑問文モーラ処理を行っているかどうかを検証
+    (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
+    """
+    tts_engine = TTSEngine(core=MockCoreWrapper())
+    inputs = tts_engine.create_accent_phrases(text, StyleId(1))
+    outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
+    assert expected == outputs, f"case(text:{text})"
 
-    def create_synthesis_test_base(
-        self,
-        text: str,
-        expected: list[AccentPhrase],
-        enable_interrogative_upspeak: bool,
-    ) -> None:
-        """音声合成時に疑問文モーラ処理を行っているかどうかを検証
-        (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
-        """
-        inputs = self.tts_engine.create_accent_phrases(text, StyleId(1))
-        outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
-        self.assertEqual(expected, outputs, f"case(text:{text})")
 
-    def test_create_accent_phrases(self) -> None:
-        """accent_phrasesの作成時では疑問文モーラ処理を行わない
-        (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
-        """
-        text = "これはありますか？"
-        expected = koreha_arimasuka_base_expected()
-        expected[-1].is_interrogative = True
-        actual = self.tts_engine.create_accent_phrases(text, StyleId(1))
-        self.assertEqual(expected, actual, f"case(text:{text})")
+def test_create_accent_phrases() -> None:
+    """accent_phrasesの作成時では疑問文モーラ処理を行わない
+    (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
+    """
+    tts_engine = TTSEngine(core=MockCoreWrapper())
+    text = "これはありますか？"
+    expected = koreha_arimasuka_base_expected()
+    expected[-1].is_interrogative = True
+    actual = tts_engine.create_accent_phrases(text, StyleId(1))
+    assert expected == actual, f"case(text:{text})"
 
-    def test_upspeak_voiced_last_mora(self) -> None:
-        # voiced + "？" + flagON -> upspeak
-        expected = koreha_arimasuka_base_expected()
-        expected[-1].is_interrogative = True
-        expected[-1].moras += [
-            Mora(
-                text="ア",
-                consonant=None,
-                consonant_length=None,
-                vowel="a",
-                vowel_length=0.15,
-                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+
+def test_upspeak_voiced_last_mora() -> None:
+    # voiced + "？" + flagON -> upspeak
+    expected = koreha_arimasuka_base_expected()
+    expected[-1].is_interrogative = True
+    expected[-1].moras += [
+        Mora(
+            text="ア",
+            consonant=None,
+            consonant_length=None,
+            vowel="a",
+            vowel_length=0.15,
+            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+        )
+    ]
+    create_synthesis_test_base(
+        text="これはありますか？",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
+
+    # voiced + "？" + flagOFF -> non-upspeak
+    expected = koreha_arimasuka_base_expected()
+    expected[-1].is_interrogative = True
+    create_synthesis_test_base(
+        text="これはありますか？",
+        expected=expected,
+        enable_interrogative_upspeak=False,
+    )
+
+    # voiced + "" + flagON -> non-upspeak
+    expected = koreha_arimasuka_base_expected()
+    create_synthesis_test_base(
+        text="これはありますか",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
+
+
+def test_upspeak_voiced_N_last_mora() -> None:
+    def nn_base_expected() -> list[AccentPhrase]:
+        return [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ン",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="N",
+                        vowel_length=np.float32(1.25),
+                        pitch=np.float32(1.44),
+                    )
+                ],
+                accent=1,
+                pause_mora=None,
+                is_interrogative=False,
             )
         ]
-        self.create_synthesis_test_base(
-            text="これはありますか？",
-            expected=expected,
-            enable_interrogative_upspeak=True,
+
+    # voiced + "" + flagON -> upspeak
+    expected = nn_base_expected()
+    create_synthesis_test_base(
+        text="ん",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
+
+    # voiced + "？" + flagON -> upspeak
+    expected = nn_base_expected()
+    expected[-1].is_interrogative = True
+    expected[-1].moras += [
+        Mora(
+            text="ン",
+            consonant=None,
+            consonant_length=None,
+            vowel="N",
+            vowel_length=0.15,
+            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
         )
+    ]
+    create_synthesis_test_base(
+        text="ん？",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
 
-        # voiced + "？" + flagOFF -> non-upspeak
-        expected = koreha_arimasuka_base_expected()
-        expected[-1].is_interrogative = True
-        self.create_synthesis_test_base(
-            text="これはありますか？",
-            expected=expected,
-            enable_interrogative_upspeak=False,
-        )
+    # voiced + "？" + flagOFF -> non-upspeak
+    expected = nn_base_expected()
+    expected[-1].is_interrogative = True
+    create_synthesis_test_base(
+        text="ん？",
+        expected=expected,
+        enable_interrogative_upspeak=False,
+    )
 
-        # voiced + "" + flagON -> non-upspeak
-        expected = koreha_arimasuka_base_expected()
-        self.create_synthesis_test_base(
-            text="これはありますか",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
 
-    def test_upspeak_voiced_N_last_mora(self) -> None:
-        def nn_base_expected() -> list[AccentPhrase]:
-            return [
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ン",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="N",
-                            vowel_length=np.float32(1.25),
-                            pitch=np.float32(1.44),
-                        )
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                    is_interrogative=False,
-                )
-            ]
-
-        # voiced + "" + flagON -> upspeak
-        expected = nn_base_expected()
-        self.create_synthesis_test_base(
-            text="ん",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
-
-        # voiced + "？" + flagON -> upspeak
-        expected = nn_base_expected()
-        expected[-1].is_interrogative = True
-        expected[-1].moras += [
-            Mora(
-                text="ン",
-                consonant=None,
-                consonant_length=None,
-                vowel="N",
-                vowel_length=0.15,
-                pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+def test_upspeak_unvoiced_last_mora() -> None:
+    def ltu_base_expected() -> list[AccentPhrase]:
+        return [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ッ",
+                        consonant=None,
+                        consonant_length=None,
+                        vowel="cl",
+                        vowel_length=np.float32(1.69),
+                        pitch=np.float32(0.0),
+                    )
+                ],
+                accent=1,
+                pause_mora=None,
+                is_interrogative=False,
             )
         ]
-        self.create_synthesis_test_base(
-            text="ん？",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
 
-        # voiced + "？" + flagOFF -> non-upspeak
-        expected = nn_base_expected()
-        expected[-1].is_interrogative = True
-        self.create_synthesis_test_base(
-            text="ん？",
-            expected=expected,
-            enable_interrogative_upspeak=False,
-        )
+    # unvoiced + "" + flagON -> non-upspeak
+    expected = ltu_base_expected()
+    create_synthesis_test_base(
+        text="っ",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
 
-    def test_upspeak_unvoiced_last_mora(self) -> None:
-        def ltu_base_expected() -> list[AccentPhrase]:
-            return [
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ッ",
-                            consonant=None,
-                            consonant_length=None,
-                            vowel="cl",
-                            vowel_length=np.float32(1.69),
-                            pitch=np.float32(0.0),
-                        )
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                    is_interrogative=False,
-                )
-            ]
+    # unvoiced + "？" + flagON -> non-upspeak
+    expected = ltu_base_expected()
+    expected[-1].is_interrogative = True
+    create_synthesis_test_base(
+        text="っ？",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
 
-        # unvoiced + "" + flagON -> non-upspeak
-        expected = ltu_base_expected()
-        self.create_synthesis_test_base(
-            text="っ",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
+    # unvoiced + "？" + flagOFF -> non-upspeak
+    expected = ltu_base_expected()
+    expected[-1].is_interrogative = True
+    create_synthesis_test_base(
+        text="っ？",
+        expected=expected,
+        enable_interrogative_upspeak=False,
+    )
 
-        # unvoiced + "？" + flagON -> non-upspeak
-        expected = ltu_base_expected()
-        expected[-1].is_interrogative = True
-        self.create_synthesis_test_base(
-            text="っ？",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
 
-        # unvoiced + "？" + flagOFF -> non-upspeak
-        expected = ltu_base_expected()
-        expected[-1].is_interrogative = True
-        self.create_synthesis_test_base(
-            text="っ？",
-            expected=expected,
-            enable_interrogative_upspeak=False,
-        )
-
-    def test_upspeak_voiced_u_last_mora(self) -> None:
-        def su_base_expected() -> list[AccentPhrase]:
-            return [
-                AccentPhrase(
-                    moras=[
-                        Mora(
-                            text="ス",
-                            consonant="s",
-                            consonant_length=np.float32(3.19),
-                            vowel="u",
-                            vowel_length=np.float32(3.5),
-                            pitch=np.float32(5.94),
-                        )
-                    ],
-                    accent=1,
-                    pause_mora=None,
-                    is_interrogative=False,
-                )
-            ]
-
-        # voiced + "" + flagON -> non-upspeak
-        expected = su_base_expected()
-        self.create_synthesis_test_base(
-            text="す",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
-
-        # voiced + "？" + flagON -> upspeak
-        expected = su_base_expected()
-        expected[-1].is_interrogative = True
-        expected[-1].moras += [
-            Mora(
-                text="ウ",
-                consonant=None,
-                consonant_length=None,
-                vowel="u",
-                vowel_length=0.15,
-                pitch=expected[-1].moras[-1].pitch + 0.3,
+def test_upspeak_voiced_u_last_mora() -> None:
+    def su_base_expected() -> list[AccentPhrase]:
+        return [
+            AccentPhrase(
+                moras=[
+                    Mora(
+                        text="ス",
+                        consonant="s",
+                        consonant_length=np.float32(3.19),
+                        vowel="u",
+                        vowel_length=np.float32(3.5),
+                        pitch=np.float32(5.94),
+                    )
+                ],
+                accent=1,
+                pause_mora=None,
+                is_interrogative=False,
             )
         ]
-        self.create_synthesis_test_base(
-            text="す？",
-            expected=expected,
-            enable_interrogative_upspeak=True,
-        )
 
-        # voiced + "？" + flagOFF -> non-upspeak
-        expected = su_base_expected()
-        expected[-1].is_interrogative = True
-        self.create_synthesis_test_base(
-            text="す？",
-            expected=expected,
-            enable_interrogative_upspeak=False,
+    # voiced + "" + flagON -> non-upspeak
+    expected = su_base_expected()
+    create_synthesis_test_base(
+        text="す",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
+
+    # voiced + "？" + flagON -> upspeak
+    expected = su_base_expected()
+    expected[-1].is_interrogative = True
+    expected[-1].moras += [
+        Mora(
+            text="ウ",
+            consonant=None,
+            consonant_length=None,
+            vowel="u",
+            vowel_length=0.15,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
+    ]
+    create_synthesis_test_base(
+        text="す？",
+        expected=expected,
+        enable_interrogative_upspeak=True,
+    )
+
+    # voiced + "？" + flagOFF -> non-upspeak
+    expected = su_base_expected()
+    expected[-1].is_interrogative = True
+    create_synthesis_test_base(
+        text="す？",
+        expected=expected,
+        enable_interrogative_upspeak=False,
+    )

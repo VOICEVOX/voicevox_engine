@@ -328,16 +328,6 @@ class WordTypes(str, Enum):
     SUFFIX = "SUFFIX"
 
 
-class SupportedDevicesInfo(BaseModel):
-    """
-    対応しているデバイスの情報
-    """
-
-    cpu: bool = Field(title="CPUに対応しているか")
-    cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
-    dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
-
-
 class SupportedFeaturesInfo(BaseModel):
     """
     エンジンの機能の情報
