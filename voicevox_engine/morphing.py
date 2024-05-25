@@ -39,14 +39,14 @@ def get_morphable_targets(
     base_style_ids: list[StyleId],
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
-    speakers: 全話者の情報
-    base_speakers: モーフィング可能か判定したいベースのスタイルIDリスト
+    モーフィング可能一覧を生成する。
+    指定されたベースキャラクターそれぞれに対し、引数のキャラクターリスト全体をチェックする。
     """
     speaker_lookup = construct_lookup(speakers)
 
     morphable_targets_arr = []
     for base_style_id in base_style_ids:
-        morphable_targets = dict()
+        morphable_targets: dict[StyleId, MorphableTargetInfo] = {}
         for style in chain.from_iterable(speaker.styles for speaker in speakers):
             morphable_targets[style.id] = MorphableTargetInfo(
                 is_morphable=is_synthesis_morphing_permitted(
