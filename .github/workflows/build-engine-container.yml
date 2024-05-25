@@ -28,7 +28,7 @@ jobs:
     outputs:
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
     steps:
-      - name: declare variables
+      - name: <Setup> Declare variables
         id: vars
         run: |
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
