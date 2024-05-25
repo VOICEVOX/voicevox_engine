@@ -34,30 +34,6 @@ class MorphingParameter:
     target_spectrogram: NDArray[np.float64]
 
 
-def create_morphing_parameter(
-    base_wave: NDArray[np.double],
-    target_wave: NDArray[np.double],
-    fs: int,
-) -> MorphingParameter:
-    frame_period = 1.0
-    base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
-    base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
-    base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
-
-    target_f0, morph_time_axis = pw.harvest(target_wave, fs, frame_period=frame_period)
-    target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
-    target_spectrogram.resize(base_spectrogram.shape)
-
-    return MorphingParameter(
-        fs=fs,
-        frame_period=frame_period,
-        base_f0=base_f0,
-        base_aperiodicity=base_aperiodicity,
-        base_spectrogram=base_spectrogram,
-        target_spectrogram=target_spectrogram,
-    )
-
-
 def get_morphable_targets(
     speakers: list[Speaker],
     base_style_ids: list[StyleId],
@@ -140,10 +116,23 @@ def synthesis_morphing_parameter(
     base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
     target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
 
-    return create_morphing_parameter(
-        base_wave=base_wave,
-        target_wave=target_wave,
-        fs=query.outputSamplingRate,
+    fs = query.outputSamplingRate
+    frame_period = 1.0
+    base_f0, base_time_axis = pw.harvest(base_wave, fs, frame_period=frame_period)
+    base_spectrogram = pw.cheaptrick(base_wave, base_f0, base_time_axis, fs)
+    base_aperiodicity = pw.d4c(base_wave, base_f0, base_time_axis, fs)
+
+    target_f0, morph_time_axis = pw.harvest(target_wave, fs, frame_period=frame_period)
+    target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
+    target_spectrogram.resize(base_spectrogram.shape)
+
+    return MorphingParameter(
+        fs=fs,
+        frame_period=frame_period,
+        base_f0=base_f0,
+        base_aperiodicity=base_aperiodicity,
+        base_spectrogram=base_spectrogram,
+        target_spectrogram=target_spectrogram,
     )
 
 
@@ -159,7 +148,7 @@ def synthesis_morphing(
     Parameters
     ----------
     morph_param : MorphingParameter
-        `synthesis_morphing_parameter`または`create_morphing_parameter`で作成したパラメータ
+        `synthesis_morphing_parameter`で作成したパラメータ
 
     morph_rate : float
         モーフィングの割合
