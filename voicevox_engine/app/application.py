@@ -17,12 +17,11 @@ from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_route
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import SettingHandler
+from voicevox_engine.setting.Setting import CorsPolicyMode, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root, get_save_dir
@@ -35,6 +34,7 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,
+    engine_manifest: EngineManifest,
     cancellable_engine: CancellableEngine | None = None,
     root_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -45,13 +45,9 @@ def generate_app(
     if root_dir is None:
         root_dir = engine_root()
 
-    engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
-
-    user_dict.update_dict()
-
     app = FastAPI(
-        title=engine_manifest_data.name,
-        description=f"{engine_manifest_data.brand_name} の音声合成エンジンです。",
+        title=engine_manifest.name,
+        description=f"{engine_manifest.brand_name} の音声合成エンジンです。",
         version=__version__,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
@@ -61,10 +57,10 @@ def generate_app(
 
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest_data.supported_vvlib_manifest_version,
-        engine_manifest_data.brand_name,
-        engine_manifest_data.name,
-        engine_manifest_data.uuid,
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
     )
 
     metas_store = MetasStore(root_dir / "speaker_info")
@@ -77,14 +73,12 @@ def generate_app(
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
     app.include_router(generate_speaker_router(core_manager, metas_store))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
+    if engine_manifest.supported_features.manage_library:
+        app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
-    app.include_router(generate_engine_info_router(core_manager, engine_manifest_data))
-    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-    app.include_router(generate_portal_page_router(engine_manifest_data))
+    app.include_router(generate_engine_info_router(core_manager, engine_manifest))
+    app.include_router(generate_setting_router(setting_loader, engine_manifest))
+    app.include_router(generate_portal_page_router(engine_manifest))
 
     app = configure_openapi_schema(app)
 
