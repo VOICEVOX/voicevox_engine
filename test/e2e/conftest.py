@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-import yaml
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
@@ -50,22 +50,19 @@ def client(app: FastAPI) -> TestClient:
 
 def _generate_preset(preset_path: Path) -> None:
     """指定パス下にプリセットファイルを生成する。"""
-    contents = [{
-                "id": 1,
-                "name": "サンプルプリセット",
-                "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
-                "style_id": 0,
-                "speedScale": 1,
-                "pitchScale": 0,
-                "intonationScale": 1,
-                "volumeScale": 1,
-                "prePhonemeLength": 0.1,
-                "postPhonemeLength": 0.1,
-    }]
+    contents = [
+        {
+            "id": 1,
+            "name": "サンプルプリセット",
+            "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+            "style_id": 0,
+            "speedScale": 1,
+            "pitchScale": 0,
+            "intonationScale": 1,
+            "volumeScale": 1,
+            "prePhonemeLength": 0.1,
+            "postPhonemeLength": 0.1,
+        }
+    ]
     with open(preset_path, mode="w", encoding="utf-8") as f:
-        yaml.safe_dump(
-            contents,
-            f,
-            allow_unicode=True,
-            sort_keys=False
-        )
+        yaml.safe_dump(contents, f, allow_unicode=True, sort_keys=False)
