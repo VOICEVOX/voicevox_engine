@@ -53,22 +53,17 @@ def generate_morphing_router(
         返り値のスタイルIDはstring型なので注意。
         """
         core = core_manager.get_core(core_version)
-
+        speakers = metas_store.load_combined_metas(core=core)
         try:
-            speakers = metas_store.load_combined_metas(core=core)
-            morphable_targets = get_morphable_targets(
-                speakers=speakers, base_style_ids=base_style_ids
-            )
-            # jsonはint型のキーを持てないので、string型に変換する
-            return [
-                {str(k): v for k, v in morphable_target.items()}
-                for morphable_target in morphable_targets
-            ]
+            morphable_targets = get_morphable_targets(speakers, base_style_ids)
         except StyleIdNotFoundError as e:
-            raise HTTPException(
-                status_code=404,
-                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
-            )
+            msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
+            raise HTTPException(status_code=404, detail=msg)
+        # NOTE: jsonはint型のキーを持てないので、string型に変換する
+        return [
+            {str(k): v for k, v in morphable_target.items()}
+            for morphable_target in morphable_targets
+        ]
 
     @router.post(
         "/synthesis_morphing",
@@ -97,19 +92,16 @@ def generate_morphing_router(
         engine = tts_engines.get_engine(core_version)
         core = core_manager.get_core(core_version)
 
+        # モーフィングが許可されないキャラクターペアを拒否する
+        speakers = metas_store.load_combined_metas(core=core)
         try:
-            speakers = metas_store.load_combined_metas(core=core)
             is_permitted = is_morphable(speakers, base_style_id, target_style_id)
-            if not is_permitted:
-                raise HTTPException(
-                    status_code=400,
-                    detail="指定されたスタイルペアでのモーフィングはできません",
-                )
         except StyleIdNotFoundError as e:
-            raise HTTPException(
-                status_code=404,
-                detail=f"該当するスタイル(style_id={e.style_id})が見つかりません",
-            )
+            msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
+            raise HTTPException(status_code=404, detail=msg)
+        if not is_permitted:
+            msg = "指定されたスタイルペアでのモーフィングはできません"
+            raise HTTPException(status_code=400, detail=msg)
 
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
