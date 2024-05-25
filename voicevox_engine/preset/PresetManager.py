@@ -3,6 +3,8 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError, parse_obj_as
 
+from voicevox_engine.utility.path_utility import engine_root
+
 from .Preset import Preset
 from .PresetError import PresetInputError, PresetInternalError
 
@@ -21,8 +23,10 @@ class PresetManager:
         self.last_modified_time = 0.0
         self.preset_path = preset_path
 
-        # 設定ファイルが存在しない場合、デフォルト設定ファイルを指定のパスへ生成する
-        if not self.preset_path.exists():
+        # 設定ファイルが無指定の場合、初期値を生成する
+        default_path = engine_root() / "presets.yaml"
+        preset_not_specified = default_path.resolve() == preset_path.resolve()
+        if not self.preset_path.exists() and preset_not_specified:
             self.preset_path.write_text("[]")
             default_preset = Preset(
                 id=1,
