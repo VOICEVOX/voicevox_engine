@@ -17,7 +17,7 @@ from voicevox_engine.morphing import (
     MorphableTargetInfo,
     get_morphable_targets,
     is_morphable,
-    synthesis_morphing,
+    synthesize_morphed_wave,
 )
 from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
@@ -113,7 +113,7 @@ def generate_morphing_router(
             target_style_id=target_style_id,
         )
 
-        morph_wave = synthesis_morphing(
+        morph_wave = synthesize_morphed_wave(
             morph_param=morph_param,
             morph_rate=morph_rate,
             output_fs=query.outputSamplingRate,

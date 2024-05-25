@@ -136,7 +136,7 @@ def synthesis_morphing_parameter(
     )
 
 
-def synthesis_morphing(
+def synthesize_morphed_wave(
     morph_param: _MorphingParameter,
     morph_rate: float,
     output_fs: int,
