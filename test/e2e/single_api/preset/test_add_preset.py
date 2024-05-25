@@ -20,10 +20,8 @@ def test_post_add_preset_200(
         "volumeScale": 1,
         "prePhonemeLength": 10,
         "postPhonemeLength": 10,
-        "isPauseLengthUseScale": True,
-        "pauseLength": 0.3,
-        "isPauseLengthFixed": False,
-        "pauseLengthScale": 1.0,
+        "pauseLength": -1,
+        "pauseLengthScale": 1,
     }
     response = client.post("/add_preset", params={}, json=preset)
     assert response.status_code == 200

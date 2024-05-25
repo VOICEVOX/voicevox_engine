@@ -1,20 +1,3 @@
 {
-  "detail": [
-    {
-      "loc": [
-        "body",
-        "isPauseLengthUseScale"
-      ],
-      "msg": "value could not be parsed to a boolean",
-      "type": "type_error.bool"
-    },
-    {
-      "loc": [
-        "body",
-        "isPauseLengthFixed"
-      ],
-      "msg": "value could not be parsed to a boolean",
-      "type": "type_error.bool"
-    }
-  ]
+  "detail": "更新先のプリセットが存在しません"
 }

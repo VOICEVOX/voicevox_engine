@@ -64,9 +64,7 @@ def generate_tts_pipeline_router(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            isPauseLengthUseScale=True,
-            pauseLength=0.3,
-            isPauseLengthFixed=False,
+            pauseLength=-1,
             pauseLengthScale=1,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
@@ -112,9 +110,7 @@ def generate_tts_pipeline_router(
             volumeScale=selected_preset.volumeScale,
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
-            isPauseLengthUseScale=selected_preset.isPauseLengthUseScale,
             pauseLength=selected_preset.pauseLength,
-            isPauseLengthFixed=selected_preset.isPauseLengthFixed,
             pauseLengthScale=selected_preset.pauseLengthScale,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
@@ -225,7 +221,6 @@ def generate_tts_pipeline_router(
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
-
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"

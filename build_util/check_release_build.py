@@ -20,7 +20,7 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
     run_file = dist_dir / "run"
     if not run_file.exists():
         run_file = dist_dir / "run.exe"
-
+    print(f"run_file : {run_file}")
     # 起動
     process = None
     if not skip_run_process:

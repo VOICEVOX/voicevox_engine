@@ -50,14 +50,6 @@
             "title": "全体の抑揚",
             "type": "number"
           },
-          "isPauseLengthFixed": {
-            "title": "無音時間(絶対値)が話速の影響を受けるか",
-            "type": "boolean"
-          },
-          "isPauseLengthUseScale": {
-            "title": "無音時間の調整に倍率を用いるか",
-            "type": "boolean"
-          },
           "kana": {
             "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
             "type": "string"
@@ -107,9 +99,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
-          "isPauseLengthUseScale",
           "pauseLength",
-          "isPauseLengthFixed",
           "pauseLengthScale",
           "outputSamplingRate",
           "outputStereo"
@@ -617,14 +607,6 @@
             "title": "全体の抑揚",
             "type": "number"
           },
-          "isPauseLengthFixed": {
-            "title": "無音時間(絶対値)が話速の影響を受けるか",
-            "type": "boolean"
-          },
-          "isPauseLengthUseScale": {
-            "title": "無音時間の調整に倍率を用いるか",
-            "type": "boolean"
-          },
           "name": {
             "title": "プリセット名",
             "type": "string"
@@ -677,9 +659,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
-          "isPauseLengthUseScale",
           "pauseLength",
-          "isPauseLengthFixed",
           "pauseLengthScale"
         ],
         "title": "Preset",

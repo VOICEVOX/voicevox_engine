@@ -49,12 +49,10 @@
     }
   ],
   "intonationScale": 1.0,
-  "isPauseLengthFixed": false,
-  "isPauseLengthUseScale": true,
   "kana": "テ'_ストデ_ス",
   "outputSamplingRate": 24000,
   "outputStereo": false,
-  "pauseLength": 0.3,
+  "pauseLength": -1.0,
   "pauseLengthScale": 1.0,
   "pitchScale": 0.0,
   "postPhonemeLength": 0.1,

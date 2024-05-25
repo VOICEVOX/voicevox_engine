@@ -176,17 +176,23 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間(絶対値)（`pauseLength`）を適用する"""
-    for mora in moras:
-        if mora.text == "、":
-            mora.vowel_length = query.pauseLength
+    try:
+        for mora in moras:
+            if mora.text == "、":
+                mora.vowel_length = query.pauseLength
+    except Exception as e:
+        print(f"apply_pause_length: {e}")
     return moras
 
 
 def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間(倍率)（`pauseLengthScale`）を適用する"""
-    for mora in moras:
-        if mora.text == "、":
-            mora.vowel_length *= query.pauseLengthScale
+    try:
+        for mora in moras:
+            if mora.text == "、":
+                mora.vowel_length *= query.pauseLengthScale
+    except Exception as e:
+        print(f"apply_pause_length_scale: {e}")
     return moras
 
 
@@ -234,29 +240,31 @@ def query_to_decoder_feature(
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
     moras = to_flatten_moras(query.accent_phrases)
 
-    # デバッグ
-    for mora in filter(lambda m: m.text == "、", moras):
-        print(f"pause_mora.vowel_length : {mora.vowel_length}")
+    try:
+        # デバッグ
+        for mora in filter(lambda m: m.text == "、", moras):
+            print(f"pause_mora.vowel_length : {mora.vowel_length}".encode("utf-8"))
 
-    # 設定を適用する
-    moras = apply_prepost_silence(moras, query)
-    if query.isPauseLengthUseScale:
-        moras = apply_pause_length_scale(moras, query)
-        moras = apply_speed_scale(moras, query)
-    else:
-        if query.isPauseLengthFixed:  # Trueなら話速の影響を受ける
+        # 設定を適用する
+        moras = apply_prepost_silence(moras, query)
+        if query.pauseLength != -1:  # pauseLengthが-1でない場合
+            # 絶対値を適用してから話速を適用
+            moras = apply_pause_length(moras, query)
             moras = apply_speed_scale(moras, query)
-            moras = apply_pause_length(moras, query)  # 受ける
-        else:
-            moras = apply_pause_length(moras, query)  # 受ける
+        elif query.pauseLengthScale != 1:  # pauseLengthScaleが1以外の場合
             moras = apply_speed_scale(moras, query)
-    moras = apply_pitch_scale(moras, query)
-    moras = apply_intonation_scale(moras, query)
+            moras = apply_pause_length(moras, query)
+        else:  # pauseLengthがnull && pauseLengthScaleが1の場合、話速のみ適用
+            moras = apply_speed_scale(moras, query)
+        moras = apply_pitch_scale(moras, query)
+        moras = apply_intonation_scale(moras, query)
 
-    # デバッグ
-    print("調整後")
-    for mora in filter(lambda m: m.text == "、", moras):
-        print(f"pause_mora.vowel_length : {mora.vowel_length}")
+        # デバッグ
+        print("調整後")
+        for mora in filter(lambda m: m.text == "、", moras):
+            print(f"pause_mora.vowel_length : {mora.vowel_length}".encode("utf-8"))
+    except Exception as e:
+        print(f"query_to_decoder_feature: {e}")
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])

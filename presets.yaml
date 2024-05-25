@@ -8,7 +8,5 @@
   volumeScale: 1
   prePhonemeLength: 0.1
   postPhonemeLength: 0.1
-  isPauseLengthUseScale: True
-  pauseLength: 0.3
-  isPauseLengthFixed: False
+  pauseLength: -1
   pauseLengthScale: 1
