@@ -15,11 +15,9 @@ from soxr import resample
 from .core.core_adapter import CoreAdapter
 from .metas.Metas import (
     Speaker,
-    SpeakerStyle,
     SpeakerSupportPermittedSynthesisMorphing,
-    StyleId,
+    StyleId
 )
-from .metas.MetasStore import construct_lookup
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline.tts_engine import TTSEngine
 
@@ -56,6 +54,17 @@ def get_morphable_targets(
         morphable_targets_arr.append(morphable_targets)
 
     return morphable_targets_arr
+
+
+def construct_lookup(
+    speakers: list[Speaker]
+) -> dict[StyleId, Speaker]:
+    """スタイル ID にキャラクターを紐付ける対応表を生成する。"""
+    lookup_table: dict[StyleId, Speaker] = {}
+    for speaker in speakers:
+        for style in speaker.styles:
+            lookup_table[style.id] = speaker
+    return lookup_table
 
 
 def is_synthesis_morphing_permitted(

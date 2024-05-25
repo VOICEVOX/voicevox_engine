@@ -111,17 +111,6 @@ class MetasStore:
         ]
 
 
-def construct_lookup(
-    speakers: list[Speaker]
-) -> dict[StyleId, Speaker]:
-    """スタイル ID にキャラクターを紐付ける対応表を生成する。"""
-    lookup_table: dict[StyleId, Speaker] = {}
-    for speaker in speakers:
-        for style in speaker.styles:
-            lookup_table[style.id] = speaker
-    return lookup_table
-
-
 def filter_speakers_and_styles(
     speakers: list[Speaker],
     speaker_or_singer: Literal["speaker", "singer"],
