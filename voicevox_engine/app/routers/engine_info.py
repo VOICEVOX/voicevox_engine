@@ -23,7 +23,7 @@ class SupportedDevicesInfo(BaseModel):
 
     @classmethod
     def generate_from(cls, device_support: DeviceSupport) -> Self:
-        """`DeviceSupport` インスタンスから本インスタンスを生成する。"""
+        """`DeviceSupport` インスタンスからこのインスタンスを生成する。"""
         return cls(
             cpu=device_support.cpu,
             cuda=device_support.cuda,
