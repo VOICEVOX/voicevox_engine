@@ -242,7 +242,7 @@ def query_to_decoder_feature(
         moras = apply_speed_scale(moras, query)
     elif query.pauseLengthScale != 1:  # pauseLengthScaleが1以外の場合
         moras = apply_speed_scale(moras, query)
-        moras = apply_pause_length(moras, query)
+        moras = apply_pause_length_scale(moras, query)
     else:  # pauseLengthがnull && pauseLengthScaleが1の場合、話速のみ適用
         moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
