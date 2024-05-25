@@ -9,11 +9,12 @@ from fastapi.testclient import TestClient
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
 @pytest.fixture()
@@ -31,6 +32,13 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
 
     user_dict = UserDictionary()
     engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
 
     return {
         "tts_engines": tts_engines,
@@ -40,6 +48,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
         "preset_manager": preset_manager,
         "user_dict": user_dict,
         "engine_manifest": engine_manifest,
+        "library_manager": library_manager,
     }
 
 

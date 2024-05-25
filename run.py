@@ -15,6 +15,7 @@ from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import (
     USER_SETTING_PATH,
@@ -23,7 +24,7 @@ from voicevox_engine.setting.Setting import (
 )
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
 def decide_boolean_from_env(env_name: str) -> bool:
@@ -325,6 +326,14 @@ def main() -> None:
 
     engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
 
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
@@ -339,6 +348,7 @@ def main() -> None:
         preset_manager,
         use_dict,
         engine_manifest,
+        library_manager,
         cancellable_engine,
         root_dir,
         cors_policy_mode,

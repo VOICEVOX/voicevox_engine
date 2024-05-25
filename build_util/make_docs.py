@@ -7,11 +7,12 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 
 
 def generate_api_docs_html(schema: str) -> str:
@@ -42,6 +43,15 @@ if __name__ == "__main__":
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
+    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
+
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
         tts_engines=tts_engines,
@@ -52,7 +62,8 @@ if __name__ == "__main__":
             preset_path=engine_root() / "presets.yaml",
         ),
         user_dict=UserDictionary(),
-        engine_manifest=load_manifest(engine_root() / "engine_manifest.json"),
+        engine_manifest=engine_manifest,
+        library_manager=library_manager,
     )
     api_schema = json.dumps(app.openapi())
 
