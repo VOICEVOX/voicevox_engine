@@ -41,15 +41,14 @@ if __name__ == "__main__":
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
+    preset_path = engine_root() / "presets.yaml"
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
         tts_engines=tts_engines,
         core_manager=core_manager,
         latest_core_version="mock",
         setting_loader=SettingHandler(USER_SETTING_PATH),
-        preset_manager=PresetManager(  # FIXME: impl MockPresetManager
-            preset_path=engine_root() / "presets.yaml",
-        ),
+        preset_manager=PresetManager(preset_path),
         user_dict=UserDictionary(),
     )
     api_schema = json.dumps(app.openapi())

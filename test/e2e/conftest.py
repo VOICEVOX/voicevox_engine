@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -20,12 +19,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     tts_engines = make_tts_engines_from_cores(core_manager)
     latest_core_version = tts_engines.latest_version()
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
-
-    # 隔離されたプリセットの生成
-    original_preset_path = Path("./presets.yaml")
-    preset_path = tmp_path / "presets.yaml"
-    shutil.copyfile(original_preset_path, preset_path)
-    preset_manager = PresetManager(preset_path)
+    preset_manager = PresetManager(tmp_path / "presets.yaml")
     user_dict = UserDictionary()
 
     return {

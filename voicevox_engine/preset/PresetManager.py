@@ -21,6 +21,23 @@ class PresetManager:
         self.last_modified_time = 0.0
         self.preset_path = preset_path
 
+        # 設定ファイルが存在しない場合、デフォルト設定ファイルを指定のパスへ生成する
+        if not self.preset_path.exists():
+            self.preset_path.write_text("[]")
+            default_preset = Preset(
+                id=1,
+                name="サンプルプリセット",
+                speaker_uuid="7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+                style_id=0,
+                speedScale=1,
+                pitchScale=0,
+                intonationScale=1,
+                volumeScale=1,
+                prePhonemeLength=0.1,
+                postPhonemeLength=0.1,
+            )
+            self.add_preset(default_preset)
+
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
 

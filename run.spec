@@ -8,7 +8,6 @@ datas = [
     ('speaker_info', 'speaker_info'),
     ('engine_manifest.json', '.'),
     ('licenses.json', '.'),
-    ('presets.yaml', '.'),
     ('ui_template', 'ui_template'),
 ]
 datas += collect_data_files('pyopenjtalk')
