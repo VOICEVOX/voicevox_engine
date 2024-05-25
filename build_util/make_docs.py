@@ -6,7 +6,7 @@ from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
-from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
