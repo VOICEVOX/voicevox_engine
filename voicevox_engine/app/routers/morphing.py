@@ -15,7 +15,7 @@ from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from voicevox_engine.morphing import (
     get_morphable_targets,
-    is_synthesis_morphing_permitted,
+    is_morphable,
     synthesis_morphing,
 )
 from voicevox_engine.morphing import (
@@ -99,9 +99,7 @@ def generate_morphing_router(
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
-            is_permitted = is_synthesis_morphing_permitted(
-                speakers, base_style_id, target_style_id
-            )
+            is_permitted = is_morphable(speakers, base_style_id, target_style_id)
             if not is_permitted:
                 raise HTTPException(
                     status_code=400,
