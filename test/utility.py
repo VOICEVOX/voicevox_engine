@@ -1,7 +1,10 @@
 import hashlib
+import io
 import json
 from typing import Any
 
+import numpy as np
+import soundfile as sf
 from pydantic.json import pydantic_encoder
 
 
@@ -36,3 +39,11 @@ def hash_long_string(value: Any) -> Any:
         return {k: hash_long_string(v) for k, v in value.items()}
     else:
         return value
+
+
+def hash_wave_floats_from_wav_bytes(wav_bytes: bytes) -> str:
+    """.wavファイルバイト列から音声波形を抽出しハッシュ化する"""
+    wave = sf.read(io.BytesIO(wav_bytes))[0].tolist()
+    # NOTE: Linux-Windows 数値精度問題に対するワークアラウンド
+    wave = round_floats(wave, 2)
+    return "MD5:" + hashlib.md5(np.array(wave).tobytes()).hexdigest()

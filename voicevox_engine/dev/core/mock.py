@@ -230,12 +230,7 @@ class MockCoreWrapper(CoreWrapper):
         return np.array(result, dtype=np.float32)
 
     def supported_devices(self) -> str:
-        return json.dumps(
-            {
-                "cpu": True,
-                "cuda": False,
-            }
-        )
+        return json.dumps({"cpu": True, "cuda": False, "dml": False})
 
     def finalize(self) -> None:
         pass
