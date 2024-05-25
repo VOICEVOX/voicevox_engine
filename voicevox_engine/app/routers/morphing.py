@@ -79,7 +79,7 @@ def generate_morphing_router(
         tags=["音声合成"],
         summary="2種類のスタイルでモーフィングした音声を合成する",
     )
-    def synthesis_morphing(
+    def _synthesis_morphing(
         query: AudioQuery,
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
