@@ -9,9 +9,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
-from voicevox_engine.model import Speaker, SpeakerInfo
 
 
 def b64encode_str(s: bytes) -> str:
