@@ -61,36 +61,36 @@ def is_morphable(
     speakers: list[Speaker], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
     """スタイル ID で指定されたふたりのキャラクターがモーフィング可能か判定する。"""
-    speaker_lookup = construct_lookup(speakers)
+    style_id_to_character = construct_lookup(speakers)
     try:
-        base = speaker_lookup[style_id_1]
+        character_1 = style_id_to_character[style_id_1]
     except KeyError:
         raise StyleIdNotFoundError(style_id_1)
     try:
-        target = speaker_lookup[style_id_2]
+        character_2 = style_id_to_character[style_id_2]
     except KeyError:
         raise StyleIdNotFoundError(style_id_2)
 
-    base_uuid = base.speaker_uuid
-    target_uuid = target.speaker_uuid
-    base_morphable = base.supported_features.permitted_synthesis_morphing
-    target_morphable = target.supported_features.permitted_synthesis_morphing
+    uuid_1 = character_1.speaker_uuid
+    uuid_2 = character_2.speaker_uuid
+    morphable_1 = character_1.supported_features.permitted_synthesis_morphing
+    morphable_2 = character_2.supported_features.permitted_synthesis_morphing
 
     # 禁止されている場合はFalse
-    if base_morphable == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
+    if morphable_1 == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
         return False
-    elif target_morphable == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
+    elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
         return False
     # 同一話者のみの場合は同一話者判定
-    elif base_morphable == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
-        return base_uuid == target_uuid
-    elif target_morphable == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
-        return base_uuid == target_uuid
+    elif morphable_1 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+        return uuid_1 == uuid_2
+    elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+        return uuid_1 == uuid_2
 
     # 念のため許可されているかチェック
     return (
-        base_morphable == SpeakerSupportPermittedSynthesisMorphing.ALL
-        and target_morphable == SpeakerSupportPermittedSynthesisMorphing.ALL
+        morphable_1 == SpeakerSupportPermittedSynthesisMorphing.ALL
+        and morphable_2 == SpeakerSupportPermittedSynthesisMorphing.ALL
     )
 
 
