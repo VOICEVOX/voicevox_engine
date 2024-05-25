@@ -26,7 +26,7 @@ class MorphableTargetInfo(BaseModel):
 
 
 @dataclass(frozen=True)
-class MorphingParameter:
+class _MorphingParameter:
     fs: int
     frame_period: float
     base_f0: NDArray[np.float64]
@@ -104,7 +104,7 @@ def synthesis_morphing_parameter(
     query: AudioQuery,
     base_style_id: StyleId,
     target_style_id: StyleId,
-) -> MorphingParameter:
+) -> _MorphingParameter:
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
@@ -126,7 +126,7 @@ def synthesis_morphing_parameter(
     target_spectrogram = pw.cheaptrick(target_wave, target_f0, morph_time_axis, fs)
     target_spectrogram.resize(base_spectrogram.shape)
 
-    return MorphingParameter(
+    return _MorphingParameter(
         fs=fs,
         frame_period=frame_period,
         base_f0=base_f0,
@@ -137,7 +137,7 @@ def synthesis_morphing_parameter(
 
 
 def synthesis_morphing(
-    morph_param: MorphingParameter,
+    morph_param: _MorphingParameter,
     morph_rate: float,
     output_fs: int,
     output_stereo: bool = False,
