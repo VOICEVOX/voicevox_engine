@@ -13,11 +13,7 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from .core.core_adapter import CoreAdapter
-from .metas.Metas import (
-    Speaker,
-    SpeakerSupportPermittedSynthesisMorphing,
-    StyleId
-)
+from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
 from .model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from .tts_pipeline.tts_engine import TTSEngine
 
@@ -56,9 +52,7 @@ def get_morphable_targets(
     return morphable_targets_arr
 
 
-def construct_lookup(
-    speakers: list[Speaker]
-) -> dict[StyleId, Speaker]:
+def construct_lookup(speakers: list[Speaker]) -> dict[StyleId, Speaker]:
     """スタイル ID にキャラクターを紐付ける対応表を生成する。"""
     lookup_table: dict[StyleId, Speaker] = {}
     for speaker in speakers:
@@ -68,9 +62,7 @@ def construct_lookup(
 
 
 def is_synthesis_morphing_permitted(
-    speakers: Speaker,
-    base_style_id: StyleId,
-    target_style_id: StyleId
+    speakers: list[Speaker], base_style_id: StyleId, target_style_id: StyleId
 ) -> bool:
     """base キャラクターと target キャラクターをモーフィング可能か判定する。"""
     speaker_lookup = construct_lookup(speakers)
