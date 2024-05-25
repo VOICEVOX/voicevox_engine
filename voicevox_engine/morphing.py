@@ -48,20 +48,17 @@ def get_morphable_targets(
     return morphable_targets_arr
 
 
-def construct_lookup(speakers: list[Speaker]) -> dict[StyleId, Speaker]:
-    """スタイル ID にキャラクターを紐付ける対応表を生成する。"""
-    lookup_table: dict[StyleId, Speaker] = {}
-    for speaker in speakers:
-        for style in speaker.styles:
-            lookup_table[style.id] = speaker
-    return lookup_table
-
-
 def is_morphable(
     speakers: list[Speaker], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
     """スタイル ID で指定されたふたりのキャラクターがモーフィング可能か判定する。"""
-    style_id_to_character = construct_lookup(speakers)
+
+    # スタイル ID にキャラクターを紐付ける対応表を生成する。
+    style_id_to_character: dict[StyleId, Speaker] = {}
+    for speaker in speakers:
+        for style in speaker.styles:
+            style_id_to_character[style.id] = speaker
+
     try:
         character_1 = style_id_to_character[style_id_1]
     except KeyError:
