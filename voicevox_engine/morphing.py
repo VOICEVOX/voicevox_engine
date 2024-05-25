@@ -89,51 +89,36 @@ def is_synthesis_morphing_permitted(
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> bool:
-    """
-    指定されたstyle_idがモーフィング可能かどうか返す
-    style_idが見つからない場合はStyleIdNotFoundErrorを送出する
-    """
+    """base キャラクターと target キャラクターをモーフィング可能か判定する。"""
+    try:
+        base = speaker_lookup[base_style_id][0]
+    except KeyError:
+        raise StyleIdNotFoundError(base_style_id)
+    try:
+        target = speaker_lookup[target_style_id][0]
+    except KeyError:
+        raise StyleIdNotFoundError(target_style_id)
 
-    base_speaker_data = speaker_lookup[base_style_id]
-    target_speaker_data = speaker_lookup[target_style_id]
-
-    if base_speaker_data is None or target_speaker_data is None:
-        raise StyleIdNotFoundError(
-            base_style_id if base_speaker_data is None else target_style_id
-        )
-
-    base_speaker_info, _ = base_speaker_data
-    target_speaker_info, _ = target_speaker_data
-
-    base_speaker_uuid = base_speaker_info.speaker_uuid
-    target_speaker_uuid = target_speaker_info.speaker_uuid
-
-    base_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        base_speaker_info.supported_features.permitted_synthesis_morphing
-    )
-
-    target_speaker_morphing_info: SpeakerSupportPermittedSynthesisMorphing = (
-        target_speaker_info.supported_features.permitted_synthesis_morphing
-    )
+    base_uuid = base.speaker_uuid
+    target_uuid = target.speaker_uuid
+    base_morphable = base.supported_features.permitted_synthesis_morphing
+    target_morphable = target.supported_features.permitted_synthesis_morphing
 
     # 禁止されている場合はFalse
-    if (
-        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.NOTHING
-        or target_speaker_morphing_info
-        == SpeakerSupportPermittedSynthesisMorphing.NOTHING
-    ):
+    if base_morphable == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
+        return False
+    elif target_morphable == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
         return False
     # 同一話者のみの場合は同一話者判定
-    if (
-        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY
-        or target_speaker_morphing_info
-        == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY
-    ):
-        return base_speaker_uuid == target_speaker_uuid
+    elif base_morphable == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+        return base_uuid == target_uuid
+    elif target_morphable == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+        return base_uuid == target_uuid
+
     # 念のため許可されているかチェック
     return (
-        base_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.ALL
-        and target_speaker_morphing_info == SpeakerSupportPermittedSynthesisMorphing.ALL
+        base_morphable == SpeakerSupportPermittedSynthesisMorphing.ALL
+        and target_morphable == SpeakerSupportPermittedSynthesisMorphing.ALL
     )
 
 
