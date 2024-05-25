@@ -112,23 +112,13 @@ class MetasStore:
 
 
 def construct_lookup(
-    speakers: list[Speaker],
-) -> dict[StyleId, tuple[Speaker, SpeakerStyle]]:
-    """
-    スタイルID に話者メタ情報・スタイルメタ情報を紐付ける対応表を生成
-    Parameters
-    ----------
-    speakers : list[Speaker]
-        話者メタ情報
-    Returns
-    -------
-    ret : dict[StyleId, tuple[Speaker, SpeakerStyle]]
-        スタイルID に話者メタ情報・スタイルメタ情報が紐付いた対応表
-    """
-    lookup_table: dict[StyleId, tuple[Speaker, SpeakerStyle]] = dict()
+    speakers: list[Speaker]
+) -> dict[StyleId, Speaker]:
+    """スタイル ID にキャラクターを紐付ける対応表を生成する。"""
+    lookup_table: dict[StyleId, Speaker] = {}
     for speaker in speakers:
         for style in speaker.styles:
-            lookup_table[style.id] = (speaker, style)
+            lookup_table[style.id] = speaker
     return lookup_table
 
 

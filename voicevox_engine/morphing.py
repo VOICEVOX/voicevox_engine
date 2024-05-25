@@ -61,17 +61,17 @@ def get_morphable_targets(
 
 
 def is_synthesis_morphing_permitted(
-    speaker_lookup: dict[StyleId, tuple[Speaker, SpeakerStyle]],
+    speaker_lookup: dict[StyleId, Speaker],
     base_style_id: StyleId,
-    target_style_id: StyleId,
+    target_style_id: StyleId
 ) -> bool:
     """base キャラクターと target キャラクターをモーフィング可能か判定する。"""
     try:
-        base = speaker_lookup[base_style_id][0]
+        base = speaker_lookup[base_style_id]
     except KeyError:
         raise StyleIdNotFoundError(base_style_id)
     try:
-        target = speaker_lookup[target_style_id][0]
+        target = speaker_lookup[target_style_id]
     except KeyError:
         raise StyleIdNotFoundError(target_style_id)
 
