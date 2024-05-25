@@ -11,7 +11,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery, MorphableTargetInfo, StyleIdNotFoundError
 from voicevox_engine.morphing import (
     get_morphable_targets,
@@ -99,9 +99,8 @@ def generate_morphing_router(
 
         try:
             speakers = metas_store.load_combined_metas(core=core)
-            speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
-                speaker_lookup, base_style_id, target_style_id
+                speakers, base_style_id, target_style_id
             )
             if not is_permitted:
                 raise HTTPException(
