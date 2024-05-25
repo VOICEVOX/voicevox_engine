@@ -14,7 +14,7 @@ import uvicorn
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifest import load_manifest
+from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import (
     USER_SETTING_PATH,
