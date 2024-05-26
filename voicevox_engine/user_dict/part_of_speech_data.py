@@ -1,9 +1,23 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 
-from ..model import USER_DICT_MAX_PRIORITY, USER_DICT_MIN_PRIORITY, WordTypes
+from ..model import USER_DICT_MAX_PRIORITY, USER_DICT_MIN_PRIORITY
 
 MIN_PRIORITY = USER_DICT_MIN_PRIORITY
 MAX_PRIORITY = USER_DICT_MAX_PRIORITY
+
+
+class WordTypes(str, Enum):
+    """
+    fastapiでword_type引数を検証する時に使用するクラス
+    """
+
+    PROPER_NOUN = "PROPER_NOUN"
+    COMMON_NOUN = "COMMON_NOUN"
+    VERB = "VERB"
+    ADJECTIVE = "ADJECTIVE"
+    SUFFIX = "SUFFIX"
 
 
 class PartOfSpeechDetail(BaseModel):

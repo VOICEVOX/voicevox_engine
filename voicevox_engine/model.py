@@ -298,18 +298,6 @@ class UserDictWord(BaseModel):
         return mora_count
 
 
-class WordTypes(str, Enum):
-    """
-    fastapiでword_type引数を検証する時に使用するクラス
-    """
-
-    PROPER_NOUN = "PROPER_NOUN"
-    COMMON_NOUN = "COMMON_NOUN"
-    VERB = "VERB"
-    ADJECTIVE = "ADJECTIVE"
-    SUFFIX = "SUFFIX"
-
-
 class SupportedFeaturesInfo(BaseModel):
     """
     エンジンの機能の情報

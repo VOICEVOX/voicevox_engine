@@ -10,9 +10,14 @@ from uuid import UUID, uuid4
 import numpy as np
 import pyopenjtalk
 
-from ..model import UserDictWord, WordTypes
+from ..model import UserDictWord
 from ..utility.path_utility import get_save_dir, resource_root
-from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
+from .part_of_speech_data import (
+    MAX_PRIORITY,
+    MIN_PRIORITY,
+    WordTypes,
+    part_of_speech_data,
+)
 
 F = TypeVar("F", bound=Callable[..., Any])
 

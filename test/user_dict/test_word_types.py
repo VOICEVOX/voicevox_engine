@@ -1,5 +1,4 @@
-from voicevox_engine.model import WordTypes
-from voicevox_engine.user_dict.part_of_speech_data import part_of_speech_data
+from voicevox_engine.user_dict.part_of_speech_data import WordTypes, part_of_speech_data
 
 
 def test_word_types() -> None:
