@@ -264,6 +264,60 @@ class UserDictWord(BaseModel):
         return mora_count
 
 
+def _create_word(
+    surface: str,
+    pronunciation: str,
+    accent_type: int,
+    word_type: WordTypes | None,
+    priority: int | None,
+) -> UserDictWord:
+    """
+    単語オブジェクトの生成
+    Parameters
+    ----------
+    surface : str
+        単語情報
+    pronunciation : str
+        単語情報
+    accent_type : int
+        単語情報
+    word_type : WordTypes | None
+        品詞
+    priority : int | None
+        優先度
+    Returns
+    -------
+    : UserDictWord
+        単語オブジェクト
+    """
+    if word_type is None:
+        word_type = WordTypes.PROPER_NOUN
+    if word_type not in part_of_speech_data.keys():
+        raise UserDictInputError("不明な品詞です")
+    if priority is None:
+        priority = 5
+    if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
+        raise UserDictInputError("優先度の値が無効です")
+    pos_detail = part_of_speech_data[word_type]
+    return UserDictWord(
+        surface=surface,
+        context_id=pos_detail.context_id,
+        priority=priority,
+        part_of_speech=pos_detail.part_of_speech,
+        part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
+        part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
+        part_of_speech_detail_3=pos_detail.part_of_speech_detail_3,
+        inflectional_type="*",
+        inflectional_form="*",
+        stem="*",
+        yomi=pronunciation,
+        pronunciation=pronunciation,
+        accent_type=accent_type,
+        mora_count=None,
+        accent_associative_rule="*",
+    )
+
+
 class UserDictInputError(Exception):
     """受け入れ不可能な入力値に起因するエラー"""
 

@@ -10,9 +10,10 @@ from voicevox_engine.user_dict.part_of_speech_data import (
     UserDictInputError,
     UserDictWord,
     WordTypes,
+    _create_word,
     part_of_speech_data,
 )
-from voicevox_engine.user_dict.user_dict import UserDictionary, _create_word
+from voicevox_engine.user_dict.user_dict import UserDictionary
 
 # jsonとして保存される正しい形式の辞書データ
 valid_dict_dict_json = {
