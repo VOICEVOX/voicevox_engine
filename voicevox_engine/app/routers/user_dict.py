@@ -6,10 +6,10 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 
-from voicevox_engine.model import UserDictWord
 from voicevox_engine.user_dict.part_of_speech_data import (
     MAX_PRIORITY,
     MIN_PRIORITY,
+    UserDictWord,
     WordTypes,
 )
 from voicevox_engine.user_dict.user_dict import UserDictInputError, UserDictionary

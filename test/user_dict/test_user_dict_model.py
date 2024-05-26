@@ -3,8 +3,8 @@ from typing import TypedDict
 import pytest
 from pydantic import ValidationError
 
-from voicevox_engine.model import UserDictWord
 from voicevox_engine.tts_pipeline.kana_converter import parse_kana
+from voicevox_engine.user_dict.part_of_speech_data import UserDictWord
 
 
 class TestModel(TypedDict):
