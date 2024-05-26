@@ -5,6 +5,10 @@ from typing import Any
 from pydantic import BaseModel, Field, StrictStr, validator
 
 from .metas.Metas import Speaker, SpeakerInfo
+from .user_dict.part_of_speech_data import (
+    USER_DICT_MAX_PRIORITY,
+    USER_DICT_MIN_PRIORITY,
+)
 
 
 class Mora(BaseModel):
@@ -202,10 +206,6 @@ class InstalledLibraryInfo(BaseLibraryInfo):
     """
 
     uninstallable: bool = Field(title="アンインストール可能かどうか")
-
-
-USER_DICT_MIN_PRIORITY = 0
-USER_DICT_MAX_PRIORITY = 10
 
 
 class UserDictWord(BaseModel):
