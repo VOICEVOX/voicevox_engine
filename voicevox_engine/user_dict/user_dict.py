@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 import numpy as np
 import pyopenjtalk
+from pydantic import BaseModel, parse_obj_as
 
 from ..model import UserDictWord, WordTypes
 from ..utility.path_utility import get_save_dir, resource_root
@@ -55,29 +56,82 @@ mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
 
+class EncodedUserDictWord(BaseModel):
+    """単語の保存形式"""
+
+    surface: str
+    cost: int  # `UserDictWord.priority` と対応
+    context_id: int | None  # v0.12 以前の辞書でのみ `None`
+    part_of_speech: str
+    part_of_speech_detail_1: str
+    part_of_speech_detail_2: str
+    part_of_speech_detail_3: str
+    inflectional_type: str
+    inflectional_form: str
+    stem: str
+    yomi: str
+    pronunciation: str
+    accent_type: int
+    mora_count: int | None
+    accent_associative_rule: str
+
+
+def encode_word(word: UserDictWord) -> EncodedUserDictWord:
+    """単語を保存形式へエンコードする。"""
+    cost = _priority2cost(word.context_id, word.priority)
+    return EncodedUserDictWord(
+        surface=word.surface,
+        cost=cost,
+        context_id=word.context_id,
+        part_of_speech=word.part_of_speech,
+        part_of_speech_detail_1=word.part_of_speech_detail_1,
+        part_of_speech_detail_2=word.part_of_speech_detail_2,
+        part_of_speech_detail_3=word.part_of_speech_detail_3,
+        inflectional_type=word.inflectional_type,
+        inflectional_form=word.inflectional_form,
+        stem=word.stem,
+        yomi=word.yomi,
+        pronunciation=word.pronunciation,
+        accent_type=word.accent_type,
+        mora_count=word.mora_count,
+        accent_associative_rule=word.accent_associative_rule,
+    )
+
+
+def decode_word(word: EncodedUserDictWord) -> UserDictWord:
+    """単語を保存形式からデコードする。"""
+    context_id_p_noun = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
+    # cost2priorityで変換を行う際にcontext_idが必要となるが、
+    # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
+    # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
+    context_id = context_id_p_noun if word.context_id is None else word.context_id
+    priority = _cost2priority(context_id, word.cost)
+    return UserDictWord(
+        surface=word.surface,
+        priority=priority,
+        context_id=context_id,
+        part_of_speech=word.part_of_speech,
+        part_of_speech_detail_1=word.part_of_speech_detail_1,
+        part_of_speech_detail_2=word.part_of_speech_detail_2,
+        part_of_speech_detail_3=word.part_of_speech_detail_3,
+        inflectional_type=word.inflectional_type,
+        inflectional_form=word.inflectional_form,
+        stem=word.stem,
+        yomi=word.yomi,
+        pronunciation=word.pronunciation,
+        accent_type=word.accent_type,
+        mora_count=word.mora_count,
+        accent_associative_rule=word.accent_associative_rule,
+    )
+
+
 @mutex_wrapper(mutex_user_dict)
 def _write_to_json(user_dict: dict[str, UserDictWord], user_dict_path: Path) -> None:
-    """
-    ユーザー辞書ファイルへのユーザー辞書データ書き込み
-    Parameters
-    ----------
-    user_dict : dict[str, UserDictWord]
-        ユーザー辞書データ
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    """
-    converted_user_dict = {}
+    """パスで指定されたユーザー辞書ファイルへユーザー辞書データを書き込む。"""
+    encoded_user_dict: dict[str, dict[str, Any]] = {}
     for word_uuid, word in user_dict.items():
-        word_dict = word.dict()
-        word_dict["cost"] = _priority2cost(
-            word_dict["context_id"], word_dict["priority"]
-        )
-        del word_dict["priority"]
-        converted_user_dict[word_uuid] = word_dict
-    # 予めjsonに変換できることを確かめる
-    user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
-
-    # ユーザー辞書ファイルへの書き込み
+        encoded_user_dict[word_uuid] = encode_word(word).dict()
+    user_dict_json = json.dumps(encoded_user_dict, ensure_ascii=False)
     user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
 
@@ -173,35 +227,16 @@ def _update_dict(
 
 @mutex_wrapper(mutex_user_dict)
 def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
-    """
-    ユーザー辞書の読み出し
-    Parameters
-    ----------
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    Returns
-    -------
-    result : dict[str, UserDictWord]
-        ユーザー辞書
-    """
+    """パスで指定されたユーザー辞書ファイルからユーザー辞書データを読み込む。"""
     # 指定ユーザー辞書が存在しない場合、空辞書を返す
     if not user_dict_path.is_file():
         return {}
 
     with user_dict_path.open(encoding="utf-8") as f:
+        encoded_dict = parse_obj_as(dict[str, EncodedUserDictWord], json.load(f))
         result: dict[str, UserDictWord] = {}
-        for word_uuid, word in json.load(f).items():
-            # cost2priorityで変換を行う際にcontext_idが必要となるが、
-            # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
-            # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
-            if word.get("context_id") is None:
-                word["context_id"] = part_of_speech_data[
-                    WordTypes.PROPER_NOUN
-                ].context_id
-            word["priority"] = _cost2priority(word["context_id"], word["cost"])
-            del word["cost"]
-            result[str(UUID(word_uuid))] = UserDictWord(**word)
-
+        for word_uuid, word in encoded_dict.items():
+            result[str(UUID(word_uuid))] = decode_word(word)
     return result
 
 
