@@ -264,7 +264,7 @@ class UserDictWord(BaseModel):
         return mora_count
 
 
-def _create_word(
+def create_word(
     surface: str,
     pronunciation: str,
     accent_type: int,
@@ -331,7 +331,7 @@ def _search_cost_candidates(context_id: int) -> list[int]:
     raise UserDictInputError("品詞IDが不正です")
 
 
-def _cost2priority(context_id: int, cost: int) -> int:
+def cost2priority(context_id: int, cost: int) -> int:
     assert -32768 <= cost <= 32767
     cost_candidates = _search_cost_candidates(context_id)
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
@@ -340,7 +340,7 @@ def _cost2priority(context_id: int, cost: int) -> int:
     return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost)).item()
 
 
-def _priority2cost(context_id: int, priority: int) -> int:
+def priority2cost(context_id: int, priority: int) -> int:
     assert MIN_PRIORITY <= priority <= MAX_PRIORITY
     cost_candidates = _search_cost_candidates(context_id)
     return cost_candidates[MAX_PRIORITY - priority]

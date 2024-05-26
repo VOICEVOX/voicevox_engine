@@ -10,7 +10,7 @@ from voicevox_engine.user_dict.part_of_speech_data import (
     UserDictInputError,
     UserDictWord,
     WordTypes,
-    _create_word,
+    create_word,
     part_of_speech_data,
 )
 from voicevox_engine.user_dict.user_dict import UserDictionary
@@ -75,7 +75,7 @@ def test_read_not_exist_json(tmp_path: Path) -> None:
 
 def test_create_word() -> None:
     # 将来的に品詞などが追加された時にテストを増やす
-    assert _create_word(
+    assert create_word(
         surface="test",
         pronunciation="テスト",
         accent_type=1,
@@ -211,7 +211,7 @@ def test_priority() -> None:
     for pos in part_of_speech_data:
         for i in range(MAX_PRIORITY + 1):
             assert (
-                _create_word(
+                create_word(
                     surface="test",
                     pronunciation="テスト",
                     accent_type=1,

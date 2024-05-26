@@ -14,10 +14,10 @@ from .part_of_speech_data import (
     UserDictInputError,
     UserDictWord,
     WordTypes,
-    _cost2priority,
-    _create_word,
-    _priority2cost,
+    cost2priority,
+    create_word,
     part_of_speech_data,
+    priority2cost,
 )
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -69,7 +69,7 @@ def _write_to_json(user_dict: dict[str, UserDictWord], user_dict_path: Path) -> 
     converted_user_dict = {}
     for word_uuid, word in user_dict.items():
         word_dict = word.dict()
-        word_dict["cost"] = _priority2cost(
+        word_dict["cost"] = priority2cost(
             word_dict["context_id"], word_dict["priority"]
         )
         del word_dict["priority"]
@@ -130,7 +130,7 @@ def _update_dict(
             ).format(
                 surface=word.surface,
                 context_id=word.context_id,
-                cost=_priority2cost(word.context_id, word.priority),
+                cost=priority2cost(word.context_id, word.priority),
                 part_of_speech=word.part_of_speech,
                 part_of_speech_detail_1=word.part_of_speech_detail_1,
                 part_of_speech_detail_2=word.part_of_speech_detail_2,
@@ -198,7 +198,7 @@ def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
                 word["context_id"] = part_of_speech_data[
                     WordTypes.PROPER_NOUN
                 ].context_id
-            word["priority"] = _cost2priority(word["context_id"], word["cost"])
+            word["priority"] = cost2priority(word["context_id"], word["cost"])
             del word["cost"]
             result[str(UUID(word_uuid))] = UserDictWord(**word)
 
@@ -327,7 +327,7 @@ class UserDictionary:
             追加された単語に発行されたUUID
         """
         # 新規単語の追加による辞書データの更新
-        word = _create_word(
+        word = create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,
@@ -374,7 +374,7 @@ class UserDictionary:
         priority : int | None
             優先度
         """
-        word = _create_word(
+        word = create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,
