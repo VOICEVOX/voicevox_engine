@@ -14,6 +14,7 @@ from ..utility.path_utility import get_save_dir, resource_root
 from .part_of_speech_data import (
     MAX_PRIORITY,
     MIN_PRIORITY,
+    UserDictInputError,
     UserDictWord,
     WordTypes,
     part_of_speech_data,
@@ -34,12 +35,6 @@ def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
         return func  # type: ignore
 
     return wrap
-
-
-class UserDictInputError(Exception):
-    """受け入れ不可能な入力値に起因するエラー"""
-
-    pass
 
 
 resource_dir = resource_root()

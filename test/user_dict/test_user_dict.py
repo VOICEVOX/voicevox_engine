@@ -7,15 +7,12 @@ from pyopenjtalk import g2p, unset_user_dict
 
 from voicevox_engine.user_dict.part_of_speech_data import (
     MAX_PRIORITY,
+    UserDictInputError,
     UserDictWord,
     WordTypes,
     part_of_speech_data,
 )
-from voicevox_engine.user_dict.user_dict import (
-    UserDictInputError,
-    UserDictionary,
-    _create_word,
-)
+from voicevox_engine.user_dict.user_dict import UserDictionary, _create_word
 
 # jsonとして保存される正しい形式の辞書データ
 valid_dict_dict_json = {
