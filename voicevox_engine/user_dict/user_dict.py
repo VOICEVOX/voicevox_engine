@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, TypeVar
 from uuid import UUID, uuid4
 
-import numpy as np
 import pyopenjtalk
 
 from ..utility.path_utility import get_save_dir, resource_root
@@ -17,6 +16,8 @@ from .part_of_speech_data import (
     UserDictInputError,
     UserDictWord,
     WordTypes,
+    _cost2priority,
+    _priority2cost,
     part_of_speech_data,
 )
 
@@ -257,28 +258,6 @@ def _create_word(
         mora_count=None,
         accent_associative_rule="*",
     )
-
-
-def _search_cost_candidates(context_id: int) -> list[int]:
-    for value in part_of_speech_data.values():
-        if value.context_id == context_id:
-            return value.cost_candidates
-    raise UserDictInputError("品詞IDが不正です")
-
-
-def _cost2priority(context_id: int, cost: int) -> int:
-    assert -32768 <= cost <= 32767
-    cost_candidates = _search_cost_candidates(context_id)
-    # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
-    # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
-    # この関数とpriority2cost関数によって、辞書ファイルのcostを操作しても最も近いpriorityのcostに上書きされる
-    return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost)).item()
-
-
-def _priority2cost(context_id: int, priority: int) -> int:
-    assert MIN_PRIORITY <= priority <= MAX_PRIORITY
-    cost_candidates = _search_cost_candidates(context_id)
-    return cost_candidates[MAX_PRIORITY - priority]
 
 
 class UserDictionary:
