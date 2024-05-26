@@ -8,7 +8,11 @@ from pydantic import ValidationError
 
 from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.user_dict.user_dict import UserDictInputError, UserDictionary
+from voicevox_engine.user_dict.user_dict import (
+    SimpleUserDictWord,
+    UserDictInputError,
+    UserDictionary,
+)
 
 from ..dependencies import check_disabled_mutable_api
 
@@ -68,11 +72,13 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             word_uuid = user_dict.apply_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_type=word_type,
-                priority=priority,
+                SimpleUserDictWord(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                )
             )
             return word_uuid
         except ValidationError as e:
@@ -120,12 +126,14 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             user_dict.rewrite_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_uuid=word_uuid,
-                word_type=word_type,
-                priority=priority,
+                word_uuid,
+                SimpleUserDictWord(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                ),
             )
         except ValidationError as e:
             raise HTTPException(

@@ -3,6 +3,7 @@ import sys
 import threading
 import traceback
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, TypeVar
 from uuid import UUID, uuid4
@@ -205,43 +206,32 @@ def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
     return result
 
 
-def _create_word(
-    surface: str,
-    pronunciation: str,
-    accent_type: int,
-    word_type: WordTypes | None,
-    priority: int | None,
-) -> UserDictWord:
-    """
-    単語オブジェクトの生成
-    Parameters
-    ----------
-    surface : str
-        単語情報
-    pronunciation : str
-        単語情報
-    accent_type : int
-        単語情報
-    word_type : WordTypes | None
-        品詞
-    priority : int | None
-        優先度
-    Returns
-    -------
-    : UserDictWord
-        単語オブジェクト
-    """
+@dataclass
+class SimpleUserDictWord:
+    surface: str  # 単語情報
+    pronunciation: str  # 単語情報
+    accent_type: int  # 単語情報
+    word_type: WordTypes | None = None  # 品詞
+    priority: int | None = None  # 優先度
+
+
+def _create_word(word: SimpleUserDictWord) -> UserDictWord:
+    """単語オブジェクトを生成する。"""
+    word_type: WordTypes | None = word.word_type
     if word_type is None:
         word_type = WordTypes.PROPER_NOUN
     if word_type not in part_of_speech_data.keys():
         raise UserDictInputError("不明な品詞です")
+
+    priority: int | None = word.priority
     if priority is None:
         priority = 5
     if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
         raise UserDictInputError("優先度の値が無効です")
+
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
-        surface=surface,
+        surface=word.surface,
         context_id=pos_detail.context_id,
         priority=priority,
         part_of_speech=pos_detail.part_of_speech,
@@ -251,9 +241,9 @@ def _create_word(
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
-        yomi=pronunciation,
-        pronunciation=pronunciation,
-        accent_type=accent_type,
+        yomi=word.pronunciation,
+        pronunciation=word.pronunciation,
+        accent_type=word.accent_type,
         mora_count=None,
         accent_associative_rule="*",
     )
@@ -375,44 +365,12 @@ class UserDictionary:
             compiled_dict_path=self._compiled_dict_path,
         )
 
-    def apply_word(
-        self,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> str:
-        """
-        新規単語を追加する。
-        Parameters
-        ----------
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        Returns
-        -------
-        word_uuid : UserDictWord
-            追加された単語に発行されたUUID
-        """
+    def apply_word(self, word: SimpleUserDictWord) -> str:
+        """新規単語を追加し、その単語に割り当てられた UUID を返す。"""
         # 新規単語の追加による辞書データの更新
-        word = _create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         word_uuid = str(uuid4())
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = _create_word(word)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)
@@ -424,45 +382,13 @@ class UserDictionary:
 
         return word_uuid
 
-    def rewrite_word(
-        self,
-        word_uuid: str,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> None:
-        """
-        既存単語を上書き更新する。
-        Parameters
-        ----------
-        word_uuid : str
-            単語UUID
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        """
-        word = _create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
-
+    def rewrite_word(self, word_uuid: str, word: SimpleUserDictWord) -> None:
+        """単語 UUID で指定された単語を上書き更新する。"""
         # 既存単語の上書きによる辞書データの更新
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         if word_uuid not in user_dict:
             raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = _create_word(word)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)
