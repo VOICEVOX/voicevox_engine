@@ -584,6 +584,8 @@ LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
 
+TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
+
 #### Github Actions でビルド
 
 fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
