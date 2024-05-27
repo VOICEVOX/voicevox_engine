@@ -4,12 +4,13 @@ from typing import TypeAlias
 
 from voicevox_engine.core.core_initializer import CoreManager
 
-
-APICoreVersion: TypeAlias = str | None # `None` は latest を意味する
+APICoreVersion: TypeAlias = str | None  # `None` は latest を意味する
 EngineCoreVersion: TypeAlias = str
 
 
-def convert_version_format(core_version: APICoreVersion, core_manager: CoreManager) -> EngineCoreVersion:
+def convert_version_format(
+    core_version: APICoreVersion, core_manager: CoreManager
+) -> EngineCoreVersion:
     """
     バージョンの形式を API 形式から ENGINE 形式へ変換する。
 
