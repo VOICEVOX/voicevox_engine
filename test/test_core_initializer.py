@@ -104,12 +104,12 @@ def test_cores_has_core_true() -> None:
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
-    true_has = True
+    expected_has = True
     # Outputs
     has = core_manager.has_core("0.0.1")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
 
 
 def test_cores_has_core_false() -> None:
@@ -119,12 +119,12 @@ def test_cores_has_core_false() -> None:
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
-    true_has = False
+    expected_has = False
     # Outputs
     has = core_manager.has_core("0.0.3")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
 
 
 def test_cores_items() -> None:
