@@ -27,8 +27,7 @@ jobs:
         uses: ./.github/actions/prepare_python
 
       - name: <Build> Make documents
-        run: |
-          PYTHONPATH=. python build_util/make_docs.py
+        run: PYTHONPATH=. python build_util/make_docs.py
 
       - name: <Deploy> Deploy documents to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

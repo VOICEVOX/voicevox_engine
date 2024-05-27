@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
+from voicevox_engine.engine_manifest import EngineManifest
 
 
 def generate_portal_page_router(engine_manifest_data: EngineManifest) -> APIRouter:
