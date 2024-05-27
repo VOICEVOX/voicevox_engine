@@ -705,6 +705,10 @@
       "SpeakerInfo": {
         "description": "話者の追加情報",
         "properties": {
+          "icon": {
+            "title": "アイコンをbase64エンコードしたもの",
+            "type": "string"
+          },
           "policy": {
             "title": "policy.md",
             "type": "string"
@@ -723,6 +727,7 @@
         },
         "required": [
           "policy",
+          "icon",
           "portrait",
           "style_infos"
         ],
@@ -809,9 +814,7 @@
           }
         },
         "required": [
-          "id",
-          "icon",
-          "voice_samples"
+          "id"
         ],
         "title": "StyleInfo",
         "type": "object"

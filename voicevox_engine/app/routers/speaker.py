@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.Metas import StyleId, StyleInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 from voicevox_engine.model import Speaker, SpeakerInfo
 
@@ -59,6 +59,7 @@ def generate_speaker_router(
         #   speaker_info/
         #       {speaker_uuid_0}/
         #           policy.md
+        #           icon.png
         #           portrait.png
         #           icons/
         #               {id_0}.png
@@ -95,6 +96,9 @@ def generate_speaker_router(
             # speaker policy
             policy_path = speaker_path / "policy.md"
             policy = policy_path.read_text("utf-8")
+            # speaker icon
+            icon_path = speaker_path / "icon.png"
+            icon = b64encode_str(icon_path.read_bytes())
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
             portrait = b64encode_str(portrait_path.read_bytes())
@@ -104,29 +108,31 @@ def generate_speaker_router(
                 id = style.id
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = b64encode_str(style_icon_path.read_bytes())
+                style_icon = None
+                if style_icon_path.exists():
+                    style_icon = b64encode_str(style_icon_path.read_bytes())
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = b64encode_str(style_portrait_path.read_bytes())
                 # voice samples
-                voice_samples = [
-                    b64encode_str(
-                        (
-                            speaker_path
-                            / "voice_samples/{}_{}.wav".format(id, str(j + 1).zfill(3))
-                        ).read_bytes()
-                    )
+                voice_sample_paths = [
+                    speaker_path / "voice_samples" / f"{id}_{str(j + 1).zfill(3)}.wav"
                     for j in range(3)
                 ]
+                voice_samples = None
+                if all([p.exists() for p in voice_sample_paths]):
+                    voice_samples = [
+                        b64encode_str(p.read_bytes()) for p in voice_sample_paths
+                    ]
                 style_infos.append(
-                    {
-                        "id": id,
-                        "icon": icon,
-                        "portrait": style_portrait,
-                        "voice_samples": voice_samples,
-                    }
+                    StyleInfo(
+                        id=id,
+                        icon=style_icon,
+                        portrait=style_portrait,
+                        voice_samples=voice_samples,
+                    )
                 )
         except FileNotFoundError:
             import traceback
@@ -138,6 +144,7 @@ def generate_speaker_router(
 
         ret_data = SpeakerInfo(
             policy=policy,
+            icon=icon,
             portrait=portrait,
             style_infos=style_infos,
         )

@@ -12,6 +12,11 @@
         "id": 6,
         "name": "style3",
         "type": "frame_decode"
+      },
+      {
+        "id": 6000,
+        "name": "style4",
+        "type": "singing_teacher"
       }
     ],
     "supported_features": {
