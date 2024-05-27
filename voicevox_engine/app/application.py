@@ -36,14 +36,14 @@ def generate_app(
     user_dict: UserDictionary,
     engine_manifest: EngineManifest,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path | None = None,
+    speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if root_dir is None:
-        root_dir = engine_root()
+    if speaker_info_dir is None:
+        speaker_info_dir = engine_root() / "speaker_info"
 
     app = FastAPI(
         title=engine_manifest.name,
@@ -63,7 +63,7 @@ def generate_app(
         engine_manifest.uuid,
     )
 
-    metas_store = MetasStore(root_dir / "speaker_info")
+    metas_store = MetasStore(speaker_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -72,7 +72,9 @@ def generate_app(
     )
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(core_manager, metas_store, root_dir))
+    app.include_router(
+        generate_speaker_router(core_manager, metas_store, speaker_info_dir)
+    )
     if engine_manifest.supported_features.manage_library:
         app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))

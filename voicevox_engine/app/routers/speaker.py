@@ -21,7 +21,7 @@ def b64encode_str(s: bytes) -> str:
 def generate_speaker_router(
     core_manager: CoreManager,
     metas_store: MetasStore,
-    root_dir: Path,
+    speaker_info_dir: Path,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter()
@@ -90,7 +90,7 @@ def generate_speaker_router(
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         try:
-            speaker_path = root_dir / "speaker_info" / speaker_uuid
+            speaker_path = speaker_info_dir / speaker_uuid
             # 話者情報の取得
             # speaker policy
             policy_path = speaker_path / "policy.md"

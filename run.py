@@ -330,6 +330,8 @@ def main() -> None:
     else:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
+    speaker_info_dir = root_dir / "speaker_info"
+
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
@@ -340,7 +342,7 @@ def main() -> None:
         use_dict,
         engine_manifest,
         cancellable_engine,
-        root_dir,
+        speaker_info_dir,
         cors_policy_mode,
         allow_origin,
         disable_mutable_api=disable_mutable_api,
