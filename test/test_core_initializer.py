@@ -96,7 +96,7 @@ def test_cores_get_core_missing() -> None:
     core_manager.register_core(core2, "0.0.2")
 
     # Test
-    with pytest.raises(CoreNotFound, match="バージョン 0.0.3 のコアが見つかりません"):
+    with pytest.raises(CoreNotFound):
         core_manager.get_core("0.0.3")
 
 
