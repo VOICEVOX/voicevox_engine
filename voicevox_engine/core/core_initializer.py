@@ -2,7 +2,6 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import TypeAlias
 
 from fastapi import HTTPException
 
@@ -19,10 +18,6 @@ def get_half_logical_cores() -> int:
     if logical_cores is None:
         return 0
     return logical_cores // 2
-
-
-APICoreVersion: TypeAlias = str | None
-CoreVersion: TypeAlias = str
 
 
 class CoreManager:
