@@ -31,6 +31,7 @@ class SupportedFeaturesJson(BaseModel):
     synthesis_morphing: FeatureSupportJson
     sing: FeatureSupportJson
     manage_library: FeatureSupportJson
+    return_resource_url: FeatureSupportJson
 
 
 class EngineManifestJson(BaseModel):
@@ -93,7 +94,7 @@ class SupportedFeatures(BaseModel):
     manage_library: bool | None = Field(
         title="音声ライブラリのインストール・アンインストール"
     )
-    resource_url: bool | None = Field(
+    return_resource_url: bool | None = Field(
         title="speaker_info・singer_infoのリソースをURLで返す"
     )
 

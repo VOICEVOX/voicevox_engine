@@ -64,7 +64,7 @@
             "value": true,
             "name": "音声ライブラリのインストール・アンインストール"
         },
-        "resource_url":{
+        "return_resource_url":{
             "type":"bool",
             "value":true,
             "name": "speaker_info・singer_infoのリソースをURLで返す"
