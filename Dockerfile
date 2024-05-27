@@ -252,7 +252,7 @@ RUN <<EOF
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
     # requirements-test.txt でバージョン指定されている pip-licenses をインストールする
-    gosu user /opt/python/bin/pip3 install $(grep pip-licenses < /tmp/requirements-test.txt | cut -f 1 -d ';')
+    gosu user /opt/python/bin/pip3 install "$(grep pip-licenses < /tmp/requirements-test.txt | cut -f 1 -d ';')"
     gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF

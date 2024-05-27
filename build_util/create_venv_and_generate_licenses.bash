@@ -20,7 +20,7 @@ fi
 
 pip install -r requirements.txt
 # requirements-test.txt でバージョン指定されている pip-licenses をインストールする
-pip install $(grep pip-licenses < requirements-test.txt | cut -f 1 -d ';')
+pip install "$(grep pip-licenses < requirements-test.txt | cut -f 1 -d ';')"
 python build_util/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 deactivate
