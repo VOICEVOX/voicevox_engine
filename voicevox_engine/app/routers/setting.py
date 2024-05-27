@@ -7,12 +7,12 @@ from fastapi.templating import Jinja2Templates
 
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.path_utility import resource_root
 
 from ..dependencies import check_disabled_mutable_api
 
 _setting_ui_template = Jinja2Templates(
-    directory=engine_root() / "ui_template",
+    directory=resource_root() / "ui_template",
     variable_start_string="<JINJA_PRE>",
     variable_end_string="<JINJA_POST>",
 )
