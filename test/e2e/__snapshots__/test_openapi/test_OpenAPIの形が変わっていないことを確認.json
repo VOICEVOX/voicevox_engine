@@ -875,7 +875,7 @@
             "title": "音声ライブラリのインストール・アンインストール",
             "type": "boolean"
           },
-          "resource_url": {
+          "return_resource_url": {
             "title": "speaker_info・singer_infoのリソースをURLで返す",
             "type": "boolean"
           },
