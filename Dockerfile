@@ -240,6 +240,7 @@ RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_
 
 # Generate licenses.json
 ADD ./requirements.txt /tmp/
+ADD ./requirements-test.txt /tmp/
 RUN <<EOF
     set -eux
 
@@ -250,7 +251,8 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
-    gosu user /opt/python/bin/pip3 install "pip-licenses==4.4.0"
+    # requirements-test.txt でバージョン指定されている pip-licenses をインストールする
+    gosu user /opt/python/bin/pip3 install $(cat /tmp/requirements-test.txt | grep pip-licenses | cut -f 1 -d ';')
     gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF

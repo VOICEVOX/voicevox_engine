@@ -19,7 +19,8 @@ else
 fi
 
 pip install -r requirements.txt
-pip install "pip-licenses==4.4.0"
+# requirements-test.txt でバージョン指定されている pip-licenses をインストールする
+pip install $(cat requirements-test.txt | grep pip-licenses | cut -f 1 -d ';')
 python build_util/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 deactivate
