@@ -1103,8 +1103,8 @@
     }
   },
   "info": {
-    "description": "VOICEVOXの音声合成エンジンです。",
-    "title": "VOICEVOX Engine",
+    "description": "DUMMY の音声合成エンジンです。",
+    "title": "DUMMY Engine",
     "version": "latest"
   },
   "openapi": "3.1.0",
@@ -1112,7 +1112,7 @@
     "/": {
       "get": {
         "description": "ポータルページを返します。",
-        "operationId": "get_portal__get",
+        "operationId": "get_portal_page__get",
         "responses": {
           "200": {
             "content": {
@@ -1125,7 +1125,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get Portal",
+        "summary": "Get Portal Page",
         "tags": [
           "その他"
         ]
@@ -1498,6 +1498,7 @@
     },
     "/core_versions": {
       "get": {
+        "description": "利用可能なコアのバージョン一覧を取得します。",
         "operationId": "core_versions_core_versions_get",
         "responses": {
           "200": {
@@ -1587,6 +1588,7 @@
     },
     "/engine_manifest": {
       "get": {
+        "description": "エンジンマニフェストを取得します。",
         "operationId": "engine_manifest_engine_manifest_get",
         "responses": {
           "200": {
@@ -2287,7 +2289,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": "Successful Response"
           },
           "422": {
@@ -2632,6 +2634,7 @@
     },
     "/supported_devices": {
       "get": {
+        "description": "対応デバイスの一覧を取得します。",
         "operationId": "supported_devices_supported_devices_get",
         "parameters": [
           {
@@ -3229,6 +3232,7 @@
     },
     "/version": {
       "get": {
+        "description": "エンジンのバージョンを取得します。",
         "operationId": "version_version_get",
         "responses": {
           "200": {

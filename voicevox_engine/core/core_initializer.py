@@ -1,13 +1,60 @@
 import json
+import os
 import sys
 from pathlib import Path
 
-from ..tts_pipeline.tts_engine import CoreAdapter
-from ..utility.core_utility import get_half_logical_cores
+from fastapi import HTTPException
+
+from ..utility.core_version_utility import get_latest_version
 from ..utility.path_utility import engine_root, get_save_dir
+from .core_adapter import CoreAdapter
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
 MOCK_VER = "0.0.0"
+
+
+def get_half_logical_cores() -> int:
+    logical_cores = os.cpu_count()
+    if logical_cores is None:
+        return 0
+    return logical_cores // 2
+
+
+class CoreManager:
+    """コアの集まりを一括管理するマネージャー"""
+
+    def __init__(self) -> None:
+        self._cores: dict[str, CoreAdapter] = {}
+
+    def versions(self) -> list[str]:
+        """登録されたコアのバージョン一覧を取得する。"""
+        return list(self._cores.keys())
+
+    def latest_version(self) -> str:
+        """登録された最新版コアのバージョンを取得する。"""
+        return get_latest_version(self.versions())
+
+    def register_core(self, core: CoreAdapter, version: str) -> None:
+        """コアを登録する。"""
+        self._cores[version] = core
+
+    def get_core(self, version: str | None = None) -> CoreAdapter:
+        """指定バージョンのコアを取得する。指定が無い場合、最新バージョンを返す。"""
+        if version is None:
+            return self._cores[self.latest_version()]
+        elif version in self._cores:
+            return self._cores[version]
+
+        # FIXME: ドメインがずれているのでこのエラーは routers へ持っていく
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
+    def has_core(self, version: str) -> bool:
+        """指定バージョンのコアが登録されているか否かを返す。"""
+        return version in self._cores
+
+    def items(self) -> list[tuple[str, CoreAdapter]]:
+        """登録されたコアとそのバージョンのリストを取得する。"""
+        return list(self._cores.items())
 
 
 def initialize_cores(
@@ -18,7 +65,7 @@ def initialize_cores(
     cpu_num_threads: int | None = None,
     enable_mock: bool = True,
     load_all_models: bool = False,
-) -> dict[str, CoreAdapter]:
+) -> CoreManager:
     """
     音声ライブラリをロードしてコアを生成
 
@@ -59,8 +106,8 @@ def initialize_cores(
     # ランタイムをロードする
     load_runtime_lib(runtime_dirs)
 
-    # コアをロードし `cores` へ登録する
-    cores: dict[str, CoreAdapter] = {}
+    # コアをロードし `core_manager` へ登録する
+    core_manager = CoreManager()
 
     # 引数による指定を反映し、無ければ `root_dir` とする
     voicelib_dirs = voicelib_dirs or []
@@ -72,7 +119,7 @@ def initialize_cores(
 
         def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
-            指定されたコアをロードし `cores` へ登録する。
+            指定されたコアをロードし `core_manager` へ登録する。
             Parameters
             ----------
             core_dir : Path
@@ -86,15 +133,15 @@ def initialize_cores(
                 core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
                 # コアを登録する
                 metas = json.loads(core.metas())
-                core_version = metas[0]["version"]
+                core_version: str = metas[0]["version"]
                 print(f"Info: Loading core {core_version}.")
-                if core_version in cores:
+                if core_manager.has_core(core_version):
                     print(
                         "Warning: Core loading is skipped because of version duplication.",
                         file=sys.stderr,
                     )
                 else:
-                    cores[core_version] = CoreAdapter(core)
+                    core_manager.register_core(CoreAdapter(core), core_version)
             except Exception:
                 # コアでなかった場合のエラーを抑制する
                 if not suppress_error:
@@ -122,9 +169,9 @@ def initialize_cores(
         # モック追加
         from ..dev.core.mock import MockCoreWrapper
 
-        if MOCK_VER not in cores:
+        if not core_manager.has_core(MOCK_VER):
             print("Info: Loading mock.")
             core = MockCoreWrapper()
-            cores[MOCK_VER] = CoreAdapter(core)
+            core_manager.register_core(CoreAdapter(core), MOCK_VER)
 
-    return cores
+    return core_manager

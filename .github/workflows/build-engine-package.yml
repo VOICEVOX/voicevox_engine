@@ -107,8 +107,7 @@ jobs:
     steps:
       - name: <Setup> Declare variables
         id: vars
-        run: |
-          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
+        run: echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -118,8 +117,7 @@ jobs:
       #       so you need to install GNU 'sed' and 'split'.
       - name: <Setup> Install dependencies (macOS)
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          brew install gnu-sed coreutils
+        run: brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
@@ -151,6 +149,9 @@ jobs:
         run: |
           set -eux
 
+          # CUDA Toolkit へのパスを OS 非依存へ整形する
+          # NOTE: ダブルクォートでバックスラッシュを囲むと tr が可搬性関連の warning を出す
+          # shellcheck disable=SC1003
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
@@ -279,25 +280,22 @@ jobs:
 
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: <Setup> Set up Python
-        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.architecture }}
           cache: pip
 
       - name: <Setup> Install Python dependencies
+        run: pip install -r requirements-build.txt
+
+      - name: <Setup> Prepare custom PyInstaller
+        if: startsWith(matrix.os, 'windows-')
+        run: ./build_util/modify_pyinstaller.bash
+
+      - name: <Setup> Download pyopenjtalk dictionary
         run: |
-          python -m pip install -r requirements-dev.txt
-
-          if [ "$RUNNER_OS" = Windows ]; then
-            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
-            ./build_util/modify_pyinstaller.bash
-          fi
-
-          # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
-          for i in $(seq 5); do
+          for _ in $(seq 5); do
             EXIT_CODE=0
             python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
 
@@ -442,10 +440,10 @@ jobs:
       # Build
       - name: <Build> Generate licenses.json
         run: |
-          OUTPUT_LICENSE_JSON_PATH=engine_manifest_assets/dependency_licenses.json \
+          OUTPUT_LICENSE_JSON_PATH=resources/engine_manifest_assets/dependency_licenses.json \
           bash build_util/create_venv_and_generate_licenses.bash
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
-          cp engine_manifest_assets/dependency_licenses.json licenses.json
+          cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
@@ -526,6 +524,8 @@ jobs:
           set -eux
 
           # ONNX Runtime providers
+          # NOTE: `$ORIGIN` は RPATH の特殊トークンであるため、bash 変数扱いされないために適切なエスケープが必要。
+          # shellcheck disable=SC2016
           patchelf --set-rpath '$ORIGIN' "$(pwd)/download/onnxruntime/lib"/libonnxruntime_providers_*.so
           mv download/onnxruntime/lib/libonnxruntime_*.so dist/run/
 
@@ -547,21 +547,18 @@ jobs:
 
       - name: <Setup> Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+        run: install_name_tool -add_rpath @executable_path/. dist/run/run
 
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        run: |
-          bash build_util/codesign.bash "dist/run/run.exe"
+        run: bash build_util/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: <Build> Rename artifact directory to archive
-        run: |
-          mv dist/run/ "${{ matrix.target }}/"
+        run: mv dist/run/ "${{ matrix.target }}/"
 
       # 7z archives
       - name: <Build> Create 7z archives
@@ -594,8 +591,7 @@ jobs:
           commit: ${{ github.sha }}
 
       - name: <Setup> Clean 7z archives to reduce disk usage
-        run: |
-          rm -f ${{ steps.vars.outputs.package_name }}.7z.*
+        run: rm -f ${{ steps.vars.outputs.package_name }}.7z.*
 
       # VVPP archives
       - name: <Build> Create VVPP archives
@@ -605,13 +601,13 @@ jobs:
           (cd "${{ matrix.target }}" && 7z -r -v1900M a "../compressed.zip")
 
           # Rename to artifact.001.vvppp, artifact.002.vvppp, ...
-          for FILE in $(ls "compressed.zip."*); do
+          for FILE in compressed.zip.*; do
             NUMBER=${FILE##*.} # 001
             mv "${FILE}" "${{ steps.vars.outputs.package_name }}.${NUMBER}.vvppp"
           done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
-          if [ "$(ls ${{ steps.vars.outputs.package_name }}.*.vvppp | wc -l)" == 1 ]; then
+          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp -maxdepth 1 | wc -l)" == 1 ]; then
             mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
@@ -648,8 +644,10 @@ jobs:
     needs: [config, build-and-upload]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Deploy> Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
         run: |
           git tag -f ${{ needs.config.outputs.version }}
           git push -f --tag

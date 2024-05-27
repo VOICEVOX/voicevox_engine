@@ -20,7 +20,6 @@ from .core.core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import make_tts_engines_from_cores
-from .utility.core_version_utility import get_latest_version
 
 
 class CancellableEngine:
@@ -36,7 +35,7 @@ class CancellableEngine:
     ----------
     watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
-        クライアントから接続があるとListにTupleが追加される
+        クライアントから接続があるとlistにtupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
     procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList
@@ -228,7 +227,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -236,17 +235,16 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
 
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     while True:
         try:
             query, style_id, core_version = sub_proc_con.recv()
             if core_version is None:
-                _engine = tts_engines[latest_core_version]
-            elif core_version in tts_engines:
-                _engine = tts_engines[core_version]
+                _engine = tts_engines.get_engine()
+            elif tts_engines.has_engine(core_version):
+                _engine = tts_engines.get_engine(core_version)
             else:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")

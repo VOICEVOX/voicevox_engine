@@ -1,5 +1,4 @@
 import uuid
-from unittest import TestCase
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleId, StyleType
 from voicevox_engine.metas.MetasStore import filter_speakers_and_styles
@@ -29,79 +28,73 @@ def _equal_speakers(a: list[Speaker], b: list[Speaker]) -> bool:
     return True
 
 
-class TestMetasStore(TestCase):
-    def test_filter_speakers_and_styles_with_speaker(self) -> None:
-        # Inputs
-        speaker_talk_only = _gen_speaker(["talk"])
-        speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
-        speaker_frame_decode_only = _gen_speaker(["frame_decode"])
-        speaker_sing_only = _gen_speaker(["sing"])
-        speaker_allstyle = _gen_speaker(
-            ["talk", "singing_teacher", "frame_decode", "sing"]
-        )
+def test_filter_speakers_and_styles_with_speaker() -> None:
+    # Inputs
+    speaker_talk_only = _gen_speaker(["talk"])
+    speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
+    speaker_frame_decode_only = _gen_speaker(["frame_decode"])
+    speaker_sing_only = _gen_speaker(["sing"])
+    speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
-        # Outputs
-        result = filter_speakers_and_styles(
-            [
-                speaker_talk_only,
-                speaker_singing_teacher_only,
-                speaker_frame_decode_only,
-                speaker_sing_only,
-                speaker_allstyle,
-            ],
-            "speaker",
-        )
+    # Outputs
+    result = filter_speakers_and_styles(
+        [
+            speaker_talk_only,
+            speaker_singing_teacher_only,
+            speaker_frame_decode_only,
+            speaker_sing_only,
+            speaker_allstyle,
+        ],
+        "speaker",
+    )
 
-        # Tests
-        self.assertEqual(len(result), 2)
+    # Tests
+    assert len(result) == 2
 
-        # 話者だけになっている
-        self.assertTrue(_equal_speakers(result, [speaker_talk_only, speaker_allstyle]))
+    # 話者だけになっている
+    assert _equal_speakers(result, [speaker_talk_only, speaker_allstyle])
 
-        # スタイルがフィルタリングされている
-        for speaker in result:
-            for style in speaker.styles:
-                self.assertEqual(style.type, "talk")
+    # スタイルがフィルタリングされている
+    for speaker in result:
+        for style in speaker.styles:
+            assert style.type == "talk"
 
-    def test_filter_speakers_and_styles_with_singer(self) -> None:
-        # Inputs
-        speaker_talk_only = _gen_speaker(["talk"])
-        speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
-        speaker_frame_decode_only = _gen_speaker(["frame_decode"])
-        speaker_sing_only = _gen_speaker(["sing"])
-        speaker_allstyle = _gen_speaker(
-            ["talk", "singing_teacher", "frame_decode", "sing"]
-        )
 
-        # Outputs
-        result = filter_speakers_and_styles(
-            [
-                speaker_talk_only,
-                speaker_singing_teacher_only,
-                speaker_frame_decode_only,
-                speaker_sing_only,
-                speaker_allstyle,
-            ],
-            "singer",
-        )
+def test_filter_speakers_and_styles_with_singer() -> None:
+    # Inputs
+    speaker_talk_only = _gen_speaker(["talk"])
+    speaker_singing_teacher_only = _gen_speaker(["singing_teacher"])
+    speaker_frame_decode_only = _gen_speaker(["frame_decode"])
+    speaker_sing_only = _gen_speaker(["sing"])
+    speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
-        # Tests
-        self.assertEqual(len(result), 4)
+    # Outputs
+    result = filter_speakers_and_styles(
+        [
+            speaker_talk_only,
+            speaker_singing_teacher_only,
+            speaker_frame_decode_only,
+            speaker_sing_only,
+            speaker_allstyle,
+        ],
+        "singer",
+    )
 
-        # 歌手だけになっている
-        self.assertTrue(
-            _equal_speakers(
-                result,
-                [
-                    speaker_singing_teacher_only,
-                    speaker_frame_decode_only,
-                    speaker_sing_only,
-                    speaker_allstyle,
-                ],
-            )
-        )
+    # Tests
+    assert len(result) == 4
 
-        # スタイルがフィルタリングされている
-        for speaker in result:
-            for style in speaker.styles:
-                self.assertIn(style.type, ["singing_teacher", "frame_decode", "sing"])
+    # 歌手だけになっている
+    assert _equal_speakers(
+        result,
+        [
+            speaker_singing_teacher_only,
+            speaker_frame_decode_only,
+            speaker_sing_only,
+            speaker_allstyle,
+        ],
+    )
+
+    # スタイルがフィルタリングされている
+    for speaker in result:
+        for style in speaker.styles:
+            assert style.type in ["singing_teacher", "frame_decode", "sing"]

@@ -5,15 +5,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting
-from voicevox_engine.setting.SettingLoader import SettingHandler
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
+from voicevox_engine.utility.path_utility import resource_root
 
 from ..dependencies import check_disabled_mutable_api
 
 _setting_ui_template = Jinja2Templates(
-    directory=engine_root() / "ui_template",
+    directory=resource_root() / "ui_template",
     variable_start_string="<JINJA_PRE>",
     variable_end_string="<JINJA_POST>",
 )
@@ -52,14 +51,14 @@ def generate_setting_router(
 
     @router.post(
         "/setting",
-        response_class=Response,
+        status_code=204,
         tags=["設定"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | None, Form()] = None,
-    ) -> Response:
+    ) -> None:
         """
         設定を更新します。
         """
@@ -70,7 +69,5 @@ def generate_setting_router(
 
         # 更新した設定へ上書き
         setting_loader.save(settings)
-
-        return Response(status_code=204)
 
     return router

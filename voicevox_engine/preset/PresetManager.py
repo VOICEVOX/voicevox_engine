@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import yaml
 from pydantic import ValidationError, parse_obj_as
@@ -40,7 +39,7 @@ class PresetManager:
             if obj is None:
                 raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
-            _presets = parse_obj_as(List[Preset], obj)
+            _presets = parse_obj_as(list[Preset], obj)
         except ValidationError:
             raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 

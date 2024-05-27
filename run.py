@@ -1,180 +1,84 @@
+"""VOICEVOX ENGINE の実行"""
+
 import argparse
 import multiprocessing
 import os
 import sys
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+import warnings
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TypeVar
+from typing import TextIO, TypeVar
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
 
-from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import deprecated_mutable_api
-from voicevox_engine.app.middlewares import configure_middlewares
-from voicevox_engine.app.openapi_schema import configure_openapi_schema
-from voicevox_engine.app.routers.engine_info import generate_engine_info_router
-from voicevox_engine.app.routers.library import generate_library_router
-from voicevox_engine.app.routers.morphing import generate_morphing_router
-from voicevox_engine.app.routers.preset import generate_preset_router
-from voicevox_engine.app.routers.setting import generate_setting_router
-from voicevox_engine.app.routers.speaker import generate_speaker_router
-from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
-from voicevox_engine.app.routers.user_dict import generate_user_dict_router
+from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
-from voicevox_engine.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import (
-    TTSEngine,
-    make_tts_engines_from_cores,
+from voicevox_engine.setting.Setting import (
+    USER_SETTING_PATH,
+    CorsPolicyMode,
+    SettingHandler,
 )
-from voicevox_engine.user_dict.user_dict import update_dict
-from voicevox_engine.utility.core_version_utility import get_latest_version
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
-from voicevox_engine.utility.run_utility import decide_boolean_from_env
+from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
+from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.utility.path_utility import engine_root
+
+
+def decide_boolean_from_env(env_name: str) -> bool:
+    """
+    環境変数からbool値を返す。
+
+    * 環境変数が"1"ならTrueを返す
+    * 環境変数が"0"か空白か存在しないならFalseを返す
+    * それ以外はwarningを出してFalseを返す
+    """
+    env = os.getenv(env_name, default="")
+    if env == "1":
+        return True
+    elif env == "" or env == "0":
+        return False
+    else:
+        warnings.warn(
+            f"Invalid environment variable value: {env_name}={env}",
+            stacklevel=1,
+        )
+        return False
 
 
 def set_output_log_utf8() -> None:
-    """
-    stdout/stderrのエンコーディングをUTF-8に切り替える関数
-    """
-    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-    if sys.stdout is not None:
-        if isinstance(sys.stdout, TextIOWrapper):
-            sys.stdout.reconfigure(encoding="utf-8")
+    """標準出力と標準エラー出力の出力形式を UTF-8 ベースに切り替える"""
+
+    # NOTE: for 文で回せないため関数内関数で実装している
+    def _prepare_utf8_stdio(stdio: TextIO | None) -> TextIO | None:
+        """UTF-8 ベースの標準入出力インターフェイスを用意する"""
+
+        CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
+        ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
+
+        # Python インタープリタが標準入出力へ接続されていないため設定不要とみなしそのまま返す
+        if stdio is None:
+            return stdio
         else:
-            # バッファを全て出力する
-            sys.stdout.flush()
-            try:
-                sys.stdout = TextIOWrapper(
-                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stdout.bufferがない場合は無視
-                pass
-    if sys.stderr is not None:
-        if isinstance(sys.stderr, TextIOWrapper):
-            sys.stderr.reconfigure(encoding="utf-8")
-        else:
-            sys.stderr.flush()
-            try:
-                sys.stderr = TextIOWrapper(
-                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stderr.bufferがない場合は無視
-                pass
+            # 既定の `TextIOWrapper` 入出力インターフェイスを UTF-8 へ再設定して返す
+            if isinstance(stdio, TextIOWrapper):
+                stdio.reconfigure(encoding=CODEC)
+                return stdio
+            else:
+                # 既定インターフェイスのバッファを全て出力しきった上で UTF-8 設定の `TextIOWrapper` を生成して返す
+                stdio.flush()
+                try:
+                    return TextIOWrapper(stdio.buffer, encoding=CODEC, errors=ERR)
+                except AttributeError:
+                    # バッファへのアクセスに失敗した場合、設定変更をおこなわず返す
+                    return stdio
 
-
-def generate_app(
-    tts_engines: dict[str, TTSEngine],
-    cores: dict[str, CoreAdapter],
-    latest_core_version: str,
-    setting_loader: SettingHandler,
-    preset_manager: PresetManager,
-    cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path | None = None,
-    cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
-    allow_origin: list[str] | None = None,
-    disable_mutable_api: bool = False,
-) -> FastAPI:
-    """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if root_dir is None:
-        root_dir = engine_root()
-
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        update_dict()
-        yield
-
-    app = FastAPI(
-        title="VOICEVOX Engine",
-        description="VOICEVOXの音声合成エンジンです。",
-        version=__version__,
-        lifespan=lifespan,
-    )
-    app = configure_middlewares(app, cors_policy_mode, allow_origin)
-
-    if disable_mutable_api:
-        deprecated_mutable_api.enable = False
-
-    engine_manifest_data = EngineManifestLoader(
-        engine_root() / "engine_manifest.json", engine_root()
-    ).load_manifest()
-    library_manager = LibraryManager(
-        get_save_dir() / "installed_libraries",
-        engine_manifest_data.supported_vvlib_manifest_version,
-        engine_manifest_data.brand_name,
-        engine_manifest_data.name,
-        engine_manifest_data.uuid,
-    )
-
-    metas_store = MetasStore(root_dir / "speaker_info")
-
-    def get_engine(core_version: str | None) -> TTSEngine:
-        if core_version is None:
-            return tts_engines[latest_core_version]
-        if core_version in tts_engines:
-            return tts_engines[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def get_core(core_version: str | None) -> CoreAdapter:
-        """指定したバージョンのコアを取得する"""
-        if core_version is None:
-            return cores[latest_core_version]
-        if core_version in cores:
-            return cores[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    app.include_router(
-        generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
-        )
-    )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
-    app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
-    app.include_router(generate_user_dict_router())
-    app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
-    )
-    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-
-    @app.get("/", response_class=HTMLResponse, tags=["その他"])
-    async def get_portal() -> str:
-        """ポータルページを返します。"""
-        engine_name = engine_manifest_data.name
-
-        return f"""
-        <html>
-            <head>
-                <title>{engine_name}</title>
-            </head>
-            <body>
-                <h1>{engine_name}</h1>
-                {engine_name} へようこそ！
-                <ul>
-                    <li><a href='/setting'>設定</a></li>
-                    <li><a href='/docs'>API ドキュメント</a></li>
-        </ul></body></html>
-        """
-
-    app = configure_openapi_schema(app)
-
-    return app
+    # NOTE:
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # しかし `TextIO | None` でなく `TextIO` と間違って型付けされているため、ここでは ignore している
+    sys.stdout = _prepare_utf8_stdio(sys.stdout)  # type: ignore[assignment]
+    sys.stderr = _prepare_utf8_stdio(sys.stderr)  # type: ignore[assignment]
 
 
 T = TypeVar("T")
@@ -200,6 +104,8 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
 
 
 def main() -> None:
+    """VOICEVOX ENGINE を実行する"""
+
     multiprocessing.freeze_support()
 
     output_log_utf8 = decide_boolean_from_env("VV_OUTPUT_LOG_UTF8")
@@ -356,7 +262,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -365,9 +271,9 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    tts_engines = make_tts_engines_from_cores(core_manager)
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    latest_core_version = tts_engines.latest_version()
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -415,6 +321,10 @@ def main() -> None:
     # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
     preset_manager = PresetManager(preset_path)
 
+    use_dict = UserDictionary()
+
+    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
@@ -423,10 +333,12 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
+        core_manager,
         latest_core_version,
         setting_loader,
         preset_manager,
+        use_dict,
+        engine_manifest,
         cancellable_engine,
         root_dir,
         cors_policy_mode,
@@ -436,7 +348,11 @@ def main() -> None:
 
     # VOICEVOX ENGINE サーバーを起動
     # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
-    uvicorn.run(app, host=args.host, port=args.port)
+    try:
+        uvicorn.run(app, host=args.host, port=args.port)
+    except KeyboardInterrupt:
+        print("`KeyboardInterrupt` の検出によりエンジンを停止しました。")
+        pass
 
 
 if __name__ == "__main__":

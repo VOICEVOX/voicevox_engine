@@ -5,7 +5,7 @@ name: test-security
 
 on:
   schedule:
-    - cron: '00 04 15 * *' # 毎月15日 13:00 JST
+    - cron: "00 04 15 * *" # 毎月15日 13:00 JST
 
 env:
   PYTHON_VERSION: "3.11.3"
@@ -13,12 +13,12 @@ env:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   test-security:
     runs-on: ubuntu-20.04
     steps:
-      - name: <Setup> Check out the repository 
+      - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
       - name: <Setup> Set up Python
@@ -28,7 +28,19 @@ jobs:
           cache: pip
 
       - name: <Setup> Install Python dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements-test.txt
 
       - name: <Test> Check Python dependency security
-        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
+        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt -r requirements-license.txt -o bare
+
+      - name: <Deploy> Notify Discord of security testing result
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: GitHub Actions
+          title: "依存パッケージ脆弱性診断の結果"
+          status: ${{ job.status }}
+          color: ${{ job.status == 'success' && '0x00FF00' || '0xFF0000' }} 
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+

@@ -1,5 +1,3 @@
-from typing import Dict
-
 from ..model import (
     USER_DICT_MAX_PRIORITY,
     USER_DICT_MIN_PRIORITY,
@@ -10,7 +8,7 @@ from ..model import (
 MIN_PRIORITY = USER_DICT_MIN_PRIORITY
 MAX_PRIORITY = USER_DICT_MAX_PRIORITY
 
-part_of_speech_data: Dict[WordTypes, PartOfSpeechDetail] = {
+part_of_speech_data: dict[WordTypes, PartOfSpeechDetail] = {
     WordTypes.PROPER_NOUN: PartOfSpeechDetail(
         part_of_speech="名詞",
         part_of_speech_detail_1="固有名詞",

@@ -118,7 +118,7 @@ GitHub Issues を用いて機能向上を一元管理しています。
 
 ```bash
 # 実行・開発・テスト環境のインストール
-python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt
+python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt
 
 # git hook のインストール
 pre-commit install -t pre-push
@@ -212,6 +212,7 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
 poetry add --group test `パッケージ名` # テスト依存の追加
+poetry add --group build `パッケージ名` # テスト依存の追加
 ```
 
 #### パッケージを更新する
@@ -227,6 +228,7 @@ poetry update # 全部更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with build -o requirements-build.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
@@ -295,7 +297,7 @@ python -m pytest --snapshot-update
 シェルで以下のコマンドを実行することで脆弱性が診断されます。  
 
 ```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt
+safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt -r requirements-license.txt
 ```
 
 ## ビルド
