@@ -10,6 +10,49 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 
+class FeatureSupportJson(BaseModel):
+    """`engine_manifest.json` の機能サポート状況"""
+
+    type: str
+    value: bool
+    name: str
+
+
+class SupportedFeaturesJson(BaseModel):
+    """`engine_manifest.json` のサポート機能一覧"""
+
+    adjust_mora_pitch: FeatureSupportJson
+    adjust_phoneme_length: FeatureSupportJson
+    adjust_speed_scale: FeatureSupportJson
+    adjust_pitch_scale: FeatureSupportJson
+    adjust_intonation_scale: FeatureSupportJson
+    adjust_volume_scale: FeatureSupportJson
+    interrogative_upspeak: FeatureSupportJson
+    synthesis_morphing: FeatureSupportJson
+    sing: FeatureSupportJson
+    manage_library: FeatureSupportJson
+
+
+class EngineManifestJson(BaseModel):
+    """`engine_manifest.json` のコンテンツ"""
+
+    manifest_version: str
+    name: str
+    brand_name: str
+    uuid: str
+    version: str
+    url: str
+    command: str
+    port: int
+    icon: str
+    default_sampling_rate: int
+    frame_rate: float
+    terms_of_service: str
+    update_infos: str
+    dependency_licenses: str
+    supported_features: SupportedFeaturesJson
+
+
 class UpdateInfo(BaseModel):
     """
     エンジンのアップデート情報
@@ -81,7 +124,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = EngineManifestJson.parse_file(manifest_path).dict()
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
         name=manifest["name"],
