@@ -1,3 +1,4 @@
+altgraph==0.17.4 ; python_version >= "3.11" and python_version < "3.12"
 anyio==4.3.0 ; python_version >= "3.11" and python_version < "3.12"
 cffi==1.16.0 ; python_version >= "3.11" and python_version < "3.12"
 click==8.1.7 ; python_version >= "3.11" and python_version < "3.12"
@@ -15,6 +16,8 @@ pefile==2023.2.7 ; python_version >= "3.11" and python_version < "3.12" and sys_
 platformdirs==4.2.2 ; python_version >= "3.11" and python_version < "3.12"
 pycparser==2.22 ; python_version >= "3.11" and python_version < "3.12"
 pydantic==1.10.15 ; python_version >= "3.11" and python_version < "3.12"
+pyinstaller-hooks-contrib==2024.6 ; python_version >= "3.11" and python_version < "3.12"
+pyinstaller==5.13.2 ; python_version >= "3.11" and python_version < "3.12"
 pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@b35fc89fe42948a28e33aed886ea145a51113f88 ; python_version >= "3.11" and python_version < "3.12"
 python-multipart==0.0.9 ; python_version >= "3.11" and python_version < "3.12"
 pywin32-ctypes==0.2.2 ; python_version >= "3.11" and python_version < "3.12" and sys_platform == "win32"

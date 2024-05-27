@@ -107,8 +107,7 @@ jobs:
     steps:
       - name: <Setup> Declare variables
         id: vars
-        run: |
-          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
+        run: echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -118,8 +117,7 @@ jobs:
       #       so you need to install GNU 'sed' and 'split'.
       - name: <Setup> Install dependencies (macOS)
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          brew install gnu-sed coreutils
+        run: brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
@@ -282,23 +280,20 @@ jobs:
 
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: <Setup> Set up Python
-        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.architecture }}
           cache: pip
 
       - name: <Setup> Install Python dependencies
+        run: pip install -r requirements-build.txt
+
+      - name: <Setup> Prepare custom PyInstaller
+        if: startsWith(matrix.os, 'windows-')
+        run: ./build_util/modify_pyinstaller.bash
+
+      - name: <Setup> Download pyopenjtalk dictionary
         run: |
-          python -m pip install -r requirements-dev.txt
-
-          if [ "$RUNNER_OS" = Windows ]; then
-            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
-            ./build_util/modify_pyinstaller.bash
-          fi
-
-          # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for _ in $(seq 5); do
             EXIT_CODE=0
@@ -552,21 +547,18 @@ jobs:
 
       - name: <Setup> Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+        run: install_name_tool -add_rpath @executable_path/. dist/run/run
 
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        run: |
-          bash build_util/codesign.bash "dist/run/run.exe"
+        run: bash build_util/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: <Build> Rename artifact directory to archive
-        run: |
-          mv dist/run/ "${{ matrix.target }}/"
+        run: mv dist/run/ "${{ matrix.target }}/"
 
       # 7z archives
       - name: <Build> Create 7z archives
@@ -599,8 +591,7 @@ jobs:
           commit: ${{ github.sha }}
 
       - name: <Setup> Clean 7z archives to reduce disk usage
-        run: |
-          rm -f ${{ steps.vars.outputs.package_name }}.7z.*
+        run: rm -f ${{ steps.vars.outputs.package_name }}.7z.*
 
       # VVPP archives
       - name: <Build> Create VVPP archives
