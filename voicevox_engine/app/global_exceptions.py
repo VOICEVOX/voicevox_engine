@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 from voicevox_engine.core.core_initializer import CoreNotFound
 
 
-def register_global_exception_handlers(app: FastAPI) -> FastAPI:
-    """グローバルな例外ハンドラを app へ登録する。"""
+def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
+    """グローバルな例外ハンドラを app へ設定する。"""
 
     # 指定されたコアが見つからないエラー
     @app.exception_handler(CoreNotFound)
