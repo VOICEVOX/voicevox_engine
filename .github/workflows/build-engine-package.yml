@@ -286,7 +286,7 @@ jobs:
           cache: pip
 
       - name: <Setup> Install Python dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements-build.txt
 
       - name: <Setup> Prepare custom PyInstaller
         if: startsWith(matrix.os, 'windows-')
