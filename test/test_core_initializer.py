@@ -1,6 +1,5 @@
 """ `core_initializer.py` のテスト"""
 
-from unittest import TestCase
 from unittest.mock import patch
 
 import pytest
@@ -88,12 +87,12 @@ def test_cores_has_core_true() -> None:
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
-    true_has = True
+    expected_has = True
     # Outputs
     has = core_manager.has_core("0.0.1")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
 
 
 def test_cores_has_core_false() -> None:
@@ -103,12 +102,12 @@ def test_cores_has_core_false() -> None:
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
     # Expects
-    true_has = False
+    expected_has = False
     # Outputs
     has = core_manager.has_core("0.0.3")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
 
 
 def test_cores_items() -> None:
@@ -128,15 +127,16 @@ def test_cores_items() -> None:
     assert true_items == items
 
 
-class TestHalfLogicalCores(TestCase):
-    @patch("os.cpu_count", return_value=8)
-    def test_half_logical_cores_even(self, mock_cpu_count: int) -> None:
-        self.assertEqual(get_half_logical_cores(), 4)
+@patch("os.cpu_count", return_value=8)
+def test_half_logical_cores_even(mock_cpu_count: int) -> None:
+    assert get_half_logical_cores() == 4
 
-    @patch("os.cpu_count", return_value=9)
-    def test_half_logical_cores_odd(self, mock_cpu_count: int) -> None:
-        self.assertEqual(get_half_logical_cores(), 4)
 
-    @patch("os.cpu_count", return_value=None)
-    def test_half_logical_cores_none(self, mock_cpu_count: int) -> None:
-        self.assertEqual(get_half_logical_cores(), 0)
+@patch("os.cpu_count", return_value=9)
+def test_half_logical_cores_odd(mock_cpu_count: int) -> None:
+    assert get_half_logical_cores() == 4
+
+
+@patch("os.cpu_count", return_value=None)
+def test_half_logical_cores_none(mock_cpu_count: int) -> None:
+    assert get_half_logical_cores() == 0
