@@ -39,18 +39,6 @@ class CoreManager:
         """登録された最新版コアのバージョンを取得する。"""
         return get_latest_version(self.versions())
 
-    def convert_version_format(self, version: APICoreVersion) -> CoreVersion:
-        """
-        バージョンの形式を API 形式から ENGINE 形式へ変換する。
-
-        API 形式は latest を指定でき、それは `None` で表現される。
-        ENGINE 形式は latest を指定できず、ゆえに `None` を持たない。
-        """
-        if version is None:
-            return self.latest_version()
-        else:
-            return version
-
     def register_core(self, core: CoreAdapter, version: str) -> None:
         """コアを登録する。"""
         self._cores[version] = core

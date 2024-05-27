@@ -50,36 +50,6 @@ def test_cores_latest_version() -> None:
     assert true_latest_version == latest_version
 
 
-def test_cores_convert_version_format_non_latest() -> None:
-    """CoreManager.convert_version_format() で明示的バージョンが維持される。"""
-    # Inputs
-    core_manager = CoreManager()
-    api_format_version = "0.0.2"
-    # Expects
-    true_version = "0.0.2"
-    # Outputs
-    version = core_manager.convert_version_format(api_format_version)
-
-    # Test
-    assert true_version == version
-
-
-def test_cores_convert_version_format_latest() -> None:
-    """CoreManager.convert_version_format() で latest 表現が変換される。"""
-    # Inputs
-    core_manager = CoreManager()
-    core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.1")
-    core_manager.register_core(CoreAdapter(MockCoreWrapper()), "0.0.2")
-    api_format_version = None
-    # Expects
-    true_version = "0.0.2"
-    # Outputs
-    version = core_manager.convert_version_format(api_format_version)
-
-    # Test
-    assert true_version == version
-
-
 def test_cores_get_core_existing() -> None:
     """CoreManager.get_core() で登録済みコアを取得できる。"""
     # Inputs

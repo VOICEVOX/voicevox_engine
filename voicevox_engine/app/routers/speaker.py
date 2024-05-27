@@ -8,6 +8,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
+from voicevox_engine.app.routers.commons import convert_version_format
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
@@ -30,7 +31,7 @@ def generate_speaker_router(
     def speakers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        version = core_manager.convert_version_format(core_version)
+        version = convert_version_format(core_version, core_manager)
         speakers = metas_store.load_combined_metas(core_manager.get_core(version))
         return filter_speakers_and_styles(speakers, "speaker")
 
@@ -78,7 +79,7 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
-        version = core_manager.convert_version_format(core_version)
+        version = convert_version_format(core_version, core_manager)
 
         # 該当話者の検索
         speakers = parse_obj_as(
@@ -150,7 +151,7 @@ def generate_speaker_router(
     def singers(
         core_version: str | None = None,
     ) -> list[Speaker]:
-        version = core_manager.convert_version_format(core_version)
+        version = convert_version_format(core_version, core_manager)
         singers = metas_store.load_combined_metas(core_manager.get_core(version))
         return filter_speakers_and_styles(singers, "singer")
 
@@ -184,7 +185,7 @@ def generate_speaker_router(
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        version = core_manager.convert_version_format(core_version)
+        version = convert_version_format(core_version, core_manager)
         core = core_manager.get_core(version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
@@ -196,7 +197,7 @@ def generate_speaker_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        version = core_manager.convert_version_format(core_version)
+        version = convert_version_format(core_version, core_manager)
         core = core_manager.get_core(version)
         return core.is_initialized_style_id_synthesis(style_id)
 
