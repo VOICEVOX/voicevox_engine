@@ -30,7 +30,10 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
     connect_base64_waves,
 )
 from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import SingInvalidInput, TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import (
+    TalkSingInvalidInputError,
+    TTSEngineManager,
+)
 from voicevox_engine.utility.path_utility import delete_file
 
 
@@ -340,7 +343,7 @@ def generate_tts_pipeline_router(
             phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
                 score, style_id
             )
-        except SingInvalidInput as e:
+        except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
         return FrameAudioQuery(
@@ -368,7 +371,7 @@ def generate_tts_pipeline_router(
             return engine.create_sing_volume_from_phoneme_and_f0(
                 score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
             )
-        except SingInvalidInput as e:
+        except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
     @router.post(
@@ -394,7 +397,7 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_engine(core_version)
         try:
             wave = engine.frame_synthsize_wave(query, style_id)
-        except SingInvalidInput as e:
+        except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
         with NamedTemporaryFile(delete=False) as f:

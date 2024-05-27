@@ -31,8 +31,8 @@ UPSPEAK_PITCH_ADD = 0.3
 UPSPEAK_PITCH_MAX = 6.5
 
 
-class SingInvalidInput(Exception):
-    """Sing の不正な入力エラー"""
+class TalkSingInvalidInputError(Exception):
+    """Talk と Sing の不正な入力エラー"""
 
     pass
 
@@ -272,7 +272,7 @@ def calc_phoneme_lengths(
             # 最初のノートは子音長が0の、pauである必要がある
             if i == 0 and consonant_lengths[i] != 0:
                 msg = f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}"
-                raise SingInvalidInput(msg)
+                raise TalkSingInvalidInputError(msg)
 
             next_consonant_length = consonant_lengths[i + 1]
             note_duration = note_durations[i]
@@ -339,7 +339,7 @@ def notes_to_keys_and_phonemes(
         if note.lyric == "":
             if note.key is not None:
                 msg = "lyricが空文字列の場合、keyはnullである必要があります。"
-                raise SingInvalidInput(msg)
+                raise TalkSingInvalidInputError(msg)
             note_lengths.append(note.frame_length)
             note_consonants.append(-1)
             note_vowels.append(0)  # pau
@@ -348,7 +348,7 @@ def notes_to_keys_and_phonemes(
         else:
             if note.key is None:
                 msg = "keyがnullの場合、lyricは空文字列である必要があります。"
-                raise SingInvalidInput(msg)
+                raise TalkSingInvalidInputError(msg)
 
             # TODO: 1ノートに複数のモーラがある場合の処理
             mora_phonemes = mora_kana_to_mora_phonemes.get(
@@ -358,7 +358,7 @@ def notes_to_keys_and_phonemes(
             )
             if mora_phonemes is None:
                 msg = f"lyricが不正です: {note.lyric}"
-                raise SingInvalidInput(msg)
+                raise TalkSingInvalidInputError(msg)
 
             consonant, vowel = mora_phonemes
             if consonant is None:
@@ -404,7 +404,7 @@ def frame_query_to_sf_decoder_feature(
     for phoneme in query.phonemes:
         if phoneme.phoneme not in Phoneme._PHONEME_LIST:
             msg = f"phoneme {phoneme.phoneme} is not valid"
-            raise SingInvalidInput(msg)
+            raise TalkSingInvalidInputError(msg)
 
         phonemes.append(Phoneme(phoneme.phoneme).id)
         phoneme_lengths.append(phoneme.frame_length)
@@ -647,7 +647,7 @@ class TTSEngine:
 
         if not all_equals:
             msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
-            raise SingInvalidInput(msg)
+            raise TalkSingInvalidInputError(msg)
 
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
