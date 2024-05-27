@@ -28,14 +28,14 @@ def generate_speaker_router(
 
     @router.get("/speakers", tags=["その他"])
     def speakers(core_version: str | None = None) -> list[Speaker]:
-        """speaker情報の一覧を取得します。"""
+        """話者情報の一覧を取得します。"""
         speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info", tags=["その他"])
     def speaker_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidのspeakerに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -141,14 +141,14 @@ def generate_speaker_router(
 
     @router.get("/singers", tags=["その他"])
     def singers(core_version: str | None = None) -> list[Speaker]:
-        """singer情報の一覧を取得します"""
+        """歌手情報の一覧を取得します"""
         singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info", tags=["その他"])
     def singer_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidのsingerに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
