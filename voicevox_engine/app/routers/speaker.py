@@ -246,6 +246,7 @@ def generate_speaker_router(
 
     resource_id_mapping = gen_hash_to_resource_id_mapping(mapfile)
 
+    # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(
         "/character_resources/{speaker_uuid}/{resource_name}", include_in_schema=False
     )
