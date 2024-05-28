@@ -1,0 +1,53 @@
+{
+  "a11196ad-caa8-4f4e-8eb3-3d2261c798fd": {
+    "accent_associative_rule": "*",
+    "accent_type": 1,
+    "context_id": 1348,
+    "inflectional_form": "*",
+    "inflectional_type": "*",
+    "mora_count": 3,
+    "part_of_speech": "名詞",
+    "part_of_speech_detail_1": "固有名詞",
+    "part_of_speech_detail_2": "一般",
+    "part_of_speech_detail_3": "*",
+    "priority": 4,
+    "pronunciation": "テストサン",
+    "stem": "*",
+    "surface": "ｔｅｓｔ３",
+    "yomi": "テストサン"
+  },
+  "a89596ad-caa8-4f4e-8eb3-3d2261c798fd": {
+    "accent_associative_rule": "*",
+    "accent_type": 1,
+    "context_id": 1348,
+    "inflectional_form": "*",
+    "inflectional_type": "*",
+    "mora_count": 3,
+    "part_of_speech": "名詞",
+    "part_of_speech_detail_1": "固有名詞",
+    "part_of_speech_detail_2": "一般",
+    "part_of_speech_detail_3": "*",
+    "priority": 5,
+    "pronunciation": "テストイチ",
+    "stem": "*",
+    "surface": "ｔｅｓｔ１",
+    "yomi": "テストイチ"
+  },
+  "c89596ad-caa8-4f4e-8eb3-3d2261c798fd": {
+    "accent_associative_rule": "*",
+    "accent_type": 1,
+    "context_id": 1348,
+    "inflectional_form": "*",
+    "inflectional_type": "*",
+    "mora_count": 2,
+    "part_of_speech": "名詞",
+    "part_of_speech_detail_1": "固有名詞",
+    "part_of_speech_detail_2": "一般",
+    "part_of_speech_detail_3": "*",
+    "priority": 5,
+    "pronunciation": "テストニ",
+    "stem": "*",
+    "surface": "ｔｅｓｔ２",
+    "yomi": "テストニ"
+  }
+}
