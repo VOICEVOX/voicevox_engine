@@ -10,17 +10,10 @@ from ..core.core_adapter import CoreAdapter
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import (
-    AccentPhrase,
-    AudioQuery,
-    FrameAudioQuery,
-    FramePhoneme,
-    Mora,
-    Note,
-    Score,
-)
+from ..model import AudioQuery
 from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
+from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases

@@ -14,7 +14,9 @@
 NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
 """
 
-from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from typing import Any
+
+from .model import AccentPhrase, Mora, ParseKanaErrorCode
 from .mora_mapping import mora_kana_to_mora_phonemes
 from .phoneme import Vowel
 
@@ -51,6 +53,15 @@ for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
             vowel_length=0,
             pitch=0,
         )
+
+
+class ParseKanaError(Exception):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
+        self.errcode = errcode
+        self.errname = errcode.name
+        self.kwargs = kwargs
+        err_fmt: str = errcode.value
+        self.text = err_fmt.format(**kwargs)
 
 
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:

@@ -6,20 +6,14 @@ from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
+from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import (
-    AccentPhrase,
-    AudioQuery,
-    FrameAudioQuery,
-    ParseKanaBadRequest,
-    ParseKanaError,
-    Score,
-)
+from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.Preset import (
     PresetInputError,
     PresetInternalError,
@@ -29,9 +23,37 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
 )
-from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.kana_converter import (
+    ParseKanaError,
+    create_kana,
+    parse_kana,
+)
+from voicevox_engine.tts_pipeline.model import (
+    AccentPhrase,
+    FrameAudioQuery,
+    ParseKanaErrorCode,
+    Score,
+)
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.utility.path_utility import delete_file
+
+
+class ParseKanaBadRequest(BaseModel):
+    text: str = Field(title="エラーメッセージ")
+    error_name: str = Field(
+        title="エラー名",
+        description="|name|description|\n|---|---|\n"
+        + "\n".join(
+            [
+                "| {} | {} |".format(err.name, err.value)
+                for err in list(ParseKanaErrorCode)
+            ]
+        ),
+    )
+    error_args: dict[str, str] = Field(title="エラーを起こした箇所")
+
+    def __init__(self, err: ParseKanaError):
+        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 def generate_tts_pipeline_router(

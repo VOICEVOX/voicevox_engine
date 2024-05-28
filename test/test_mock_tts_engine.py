@@ -1,7 +1,8 @@
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import AccentPhrase, AudioQuery, Mora
+from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.kana_converter import create_kana
+from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 
 
 def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
