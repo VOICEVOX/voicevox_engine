@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 
-from voicevox_engine.engine_manifest import BrandName
+from voicevox_engine.engine_manifest.engine_manifest import BrandName
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
 from voicevox_engine.utility.path_utility import resource_root
 
