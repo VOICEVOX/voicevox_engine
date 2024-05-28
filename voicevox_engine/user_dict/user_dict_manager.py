@@ -1,3 +1,5 @@
+"ユーザー辞書関連の処理"
+
 import json
 import sys
 import threading
