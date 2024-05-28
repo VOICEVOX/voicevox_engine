@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
-from voicevox_engine.library_manager import BaseLibraryInfo, VvlibManifest
+from voicevox_engine.library.model import BaseLibraryInfo, VvlibManifest
 
 
 def configure_openapi_schema(app: FastAPI) -> FastAPI:
