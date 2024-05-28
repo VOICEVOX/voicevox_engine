@@ -1,6 +1,6 @@
 import base64
-import traceback
 import json
+import traceback
 from copy import deepcopy
 from pathlib import Path
 from typing import Literal, NewType
@@ -207,6 +207,7 @@ class MetasStore:
             policy=policy, portrait=portrait, style_infos=style_infos
         )
         return spk_info
+
 
 def construct_lookup(
     speakers: list[Speaker],
