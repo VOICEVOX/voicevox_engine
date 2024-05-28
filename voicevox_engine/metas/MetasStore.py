@@ -1,4 +1,5 @@
 import base64
+import traceback
 import json
 from copy import deepcopy
 from pathlib import Path
@@ -144,48 +145,50 @@ class MetasStore:
         #       {speaker_uuid_1}/
         #           ...
 
-        # 該当話者の検索
+        # 該当話者を検索する
         speakers = parse_obj_as(list[Speaker], json.loads(core.speakers))
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
-        for i in range(len(speakers)):
-            if speakers[i].speaker_uuid == speaker_uuid:
-                speaker = speakers[i]
-                break
-        else:
+        speaker = next(
+            filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
+        )
+        if speaker is None:
             # FIXME: ドメインを合わせる
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
+        # 話者情報を取得する
         try:
             speaker_path = self._speakers_path / speaker_uuid
-            # 話者情報の取得
+
             # speaker policy
             policy_path = speaker_path / "policy.md"
             policy = policy_path.read_text("utf-8")
+
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
             portrait = b64encode_str(portrait_path.read_bytes())
-            # スタイル情報の取得
+
+            # スタイル情報を取得する
             style_infos = []
             for style in speaker.styles:
                 id = style.id
+
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
                 icon = b64encode_str(style_icon_path.read_bytes())
+
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = b64encode_str(style_portrait_path.read_bytes())
+
                 # voice samples
-                voice_samples = [
-                    b64encode_str(
-                        (
-                            speaker_path
-                            / "voice_samples/{}_{}.wav".format(id, str(j + 1).zfill(3))
-                        ).read_bytes()
-                    )
-                    for j in range(3)
-                ]
+                voice_samples: list[str] = []
+                for j in range(3):
+                    num = str(j + 1).zfill(3)
+                    voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_samples.append(b64encode_str(voice_path.read_bytes()))
+
                 style_infos.append(
                     {
                         "id": id,
@@ -195,21 +198,15 @@ class MetasStore:
                     }
                 )
         except FileNotFoundError:
-            import traceback
-
             traceback.print_exc()
             # FIXME: ドメインを合わせる
-            raise HTTPException(
-                status_code=500, detail="追加情報が見つかりませんでした"
-            )
+            msg = "追加情報が見つかりませんでした"
+            raise HTTPException(status_code=500, detail=msg)
 
-        ret_data = SpeakerInfo(
-            policy=policy,
-            portrait=portrait,
-            style_infos=style_infos,
+        spk_info = SpeakerInfo(
+            policy=policy, portrait=portrait, style_infos=style_infos
         )
-        return ret_data
-
+        return spk_info
 
 def construct_lookup(
     speakers: list[Speaker],
