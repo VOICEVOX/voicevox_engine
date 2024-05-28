@@ -20,7 +20,7 @@ from voicevox_engine.model import (
     ParseKanaError,
     Score,
 )
-from voicevox_engine.preset.Preset import (
+from voicevox_engine.preset.preset_manager import (
     PresetInputError,
     PresetInternalError,
     PresetManager,

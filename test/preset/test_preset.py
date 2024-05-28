@@ -4,8 +4,8 @@ from shutil import copyfile
 
 import pytest
 
-from voicevox_engine.preset.Preset import (
-    Preset,
+from voicevox_engine.preset.model import Preset
+from voicevox_engine.preset.preset_manager import (
     PresetInputError,
     PresetInternalError,
     PresetManager,
