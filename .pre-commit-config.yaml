@@ -34,6 +34,12 @@ repos:
         language: python
         stages: [push]
         pass_filenames: false
+      - id: poetry-export-build
+        name: poetry-export-build
+        entry: poetry export --without-hashes --with build -o requirements-build.txt
+        language: python
+        stages: [push]
+        pass_filenames: false
       - id: poetry-export-license
         name: poetry-export-license
         entry: poetry export --without-hashes --with license -o requirements-license.txt

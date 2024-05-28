@@ -12,7 +12,11 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
+from voicevox_engine.utility.path_utility import (
+    engine_manifest_path,
+    engine_root,
+    get_save_dir,
+)
 
 
 def generate_api_docs_html(schema: str) -> str:
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
-    engine_manifest = load_manifest(engine_root() / "engine_manifest.json")
+    engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
         engine_manifest.supported_vvlib_manifest_version,
