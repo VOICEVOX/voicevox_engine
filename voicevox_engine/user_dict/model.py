@@ -4,11 +4,10 @@
 """
 
 from enum import Enum
-
-
-from pydantic import BaseModel, Field, validator
 from re import findall, fullmatch
 from typing import Any
+
+from pydantic import BaseModel, Field, validator
 
 
 class WordTypes(str, Enum):
