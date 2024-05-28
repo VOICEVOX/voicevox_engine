@@ -10,19 +10,14 @@ from itertools import chain
 import numpy as np
 import pyworld as pw
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field
 from soxr import resample
+
+from voicevox_engine.morphing.model import MorphableTargetInfo
 
 from ..core.core_adapter import CoreAdapter
 from ..metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
-
-
-class MorphableTargetInfo(BaseModel):
-    is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
-    # FIXME: add reason property
-    # reason: str | None = Field(title="is_morphableがfalseである場合、その理由")
 
 
 class StyleIdNotFoundError(LookupError):

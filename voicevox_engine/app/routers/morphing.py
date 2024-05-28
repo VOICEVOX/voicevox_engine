@@ -13,8 +13,8 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery
+from voicevox_engine.morphing.model import MorphableTargetInfo
 from voicevox_engine.morphing.morphing import (
-    MorphableTargetInfo,
     StyleIdNotFoundError,
     get_morphable_targets,
     is_morphable,
