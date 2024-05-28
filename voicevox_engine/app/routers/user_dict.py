@@ -7,12 +7,12 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
     MAX_PRIORITY,
     MIN_PRIORITY,
     UserDictInputError,
 )
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 
 from ..dependencies import check_disabled_mutable_api
 
