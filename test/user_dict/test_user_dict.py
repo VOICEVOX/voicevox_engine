@@ -5,11 +5,10 @@ from pathlib import Path
 import pytest
 from pyopenjtalk import g2p, unset_user_dict
 
+from voicevox_engine.user_dict.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.part_of_speech_data import (
     MAX_PRIORITY,
     UserDictInputError,
-    UserDictWord,
-    WordTypes,
     create_word,
     part_of_speech_data,
 )

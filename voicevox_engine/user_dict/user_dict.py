@@ -10,10 +10,9 @@ from uuid import UUID, uuid4
 import pyopenjtalk
 
 from ..utility.path_utility import get_save_dir, resource_root
+from .model import UserDictWord, WordTypes
 from .part_of_speech_data import (
     UserDictInputError,
-    UserDictWord,
-    WordTypes,
     cost2priority,
     create_word,
     part_of_speech_data,
