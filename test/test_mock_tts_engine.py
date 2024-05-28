@@ -66,7 +66,7 @@ class TestMockTTSEngine(TestCase):
                 volumeScale=1,
                 prePhonemeLength=0.1,
                 postPhonemeLength=0.1,
-                pauseLength=-1,
+                pauseLength=None,
                 pauseLengthScale=1.0,
                 outputSamplingRate=24000,
                 outputStereo=False,

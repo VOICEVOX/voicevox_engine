@@ -20,7 +20,7 @@ def test_post_add_preset_200(
         "volumeScale": 1,
         "prePhonemeLength": 10,
         "postPhonemeLength": 10,
-        "pauseLength": -1,
+        "pauseLength": None,
         "pauseLengthScale": 1,
     }
     response = client.post("/add_preset", params={}, json=preset)

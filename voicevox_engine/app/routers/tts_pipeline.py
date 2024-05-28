@@ -64,7 +64,7 @@ def generate_tts_pipeline_router(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
-            pauseLength=-1,
+            pauseLength=None,
             pauseLengthScale=1,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,

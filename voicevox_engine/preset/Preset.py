@@ -18,5 +18,5 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
-    pauseLength: float = Field(title="テキスト内の無音時間")
+    pauseLength: float | None = Field(title="テキスト内の無音時間")
     pauseLengthScale: float = Field(title="テキスト内の無音時間(倍率)")

@@ -176,9 +176,10 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間(絶対値)（`pauseLength`）を適用する"""
-    for mora in moras:
-        if mora.text == "、":
-            mora.vowel_length = query.pauseLength
+    if query.pauseLength is not None:
+        for mora in moras:
+            if mora.text == "、":
+                mora.vowel_length = query.pauseLength
     return moras
 
 
@@ -236,7 +237,9 @@ def query_to_decoder_feature(
 
     # 設定を適用する
     moras = apply_prepost_silence(moras, query)
-    if query.pauseLength != -1:  # pauseLengthが-1でない場合
+    if (
+        query.pauseLength is not None and query.pauseLength > 0
+    ):  # pauseLengthが-1でない場合
         # 絶対値を適用してから話速を適用
         moras = apply_pause_length(moras, query)
         moras = apply_speed_scale(moras, query)

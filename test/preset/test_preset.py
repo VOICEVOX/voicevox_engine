@@ -78,7 +78,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -130,7 +130,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -158,7 +158,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -186,7 +186,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -216,7 +216,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -268,7 +268,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )
@@ -295,7 +295,7 @@ class TestPresetManager(TestCase):
                 "volumeScale": 1,
                 "prePhonemeLength": 0.1,
                 "postPhonemeLength": 0.1,
-                "pauseLength": -1,
+                "pauseLength": None,
                 "pauseLengthScale": 1.0,
             }
         )

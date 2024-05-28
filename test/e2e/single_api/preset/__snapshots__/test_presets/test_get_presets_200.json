@@ -3,7 +3,7 @@
     "id": 1,
     "intonationScale": 1.0,
     "name": "サンプルプリセット",
-    "pauseLength": -1.0,
+    "pauseLength": null,
     "pauseLengthScale": 1.0,
     "pitchScale": 0.0,
     "postPhonemeLength": 0.1,
