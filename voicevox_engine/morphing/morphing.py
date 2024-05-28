@@ -13,10 +13,10 @@ from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 from soxr import resample
 
-from .core.core_adapter import CoreAdapter
-from .metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
-from .model import AudioQuery
-from .tts_pipeline.tts_engine import TTSEngine
+from ..core.core_adapter import CoreAdapter
+from ..metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
+from ..model import AudioQuery
+from ..tts_pipeline.tts_engine import TTSEngine
 
 
 class MorphableTargetInfo(BaseModel):
