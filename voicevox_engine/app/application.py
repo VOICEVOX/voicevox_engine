@@ -22,7 +22,7 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
@@ -79,8 +79,10 @@ def generate_app(
         app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
-    app.include_router(generate_setting_router(setting_loader, engine_manifest))
-    app.include_router(generate_portal_page_router(engine_manifest))
+    app.include_router(
+        generate_setting_router(setting_loader, engine_manifest.brand_name)
+    )
+    app.include_router(generate_portal_page_router(engine_manifest.name))
 
     app = configure_openapi_schema(app)
 
