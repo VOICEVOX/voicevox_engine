@@ -238,7 +238,7 @@ def query_to_decoder_feature(
     # 設定を適用する
     moras = apply_prepost_silence(moras, query)
     if (
-        query.pauseLength is not None and query.pauseLength > 0
+        query.pauseLength is not None and query.pauseLength >= 0
     ):  # pauseLengthが-1でない場合
         # 絶対値を適用してから話速を適用
         moras = apply_pause_length(moras, query)
