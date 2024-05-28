@@ -127,9 +127,9 @@ class LibraryManager:
         with open(library_dir / INFO_FILE, "w", encoding="utf-8") as f:
             json.dump(library_info, f, indent=4, ensure_ascii=False)
 
-        # ZIP 形式要件を満たさないファイルはライブラリでないためインストールを拒否する
+        # ZIP 形式ではないファイルはライブラリでないためインストールを拒否する
         if not zipfile.is_zipfile(file):
-            msg = f"音声ライブラリ {library_id} は不正なファイル形式（非 ZIP ファイル）です。"
+            msg = f"音声ライブラリ {library_id} は不正なファイル形式です。"
             raise HTTPException(status_code=422, detail=msg)
 
         with zipfile.ZipFile(file) as zf:
@@ -171,7 +171,7 @@ class LibraryManager:
                 msg = f"音声ライブラリ {library_id} のmanifest_version形式が不正です。"
                 raise HTTPException(status_code=422, detail=msg)
             if manifest_version > self.supported_vvlib_version:
-                msg = f"音声ライブラリ {library_id} はエンジンが未対応です。"
+                msg = f"音声ライブラリ {library_id} は未対応です。"
                 raise HTTPException(status_code=422, detail=msg)
 
             # このエンジン向けでないライブラリはインストールを拒否する
@@ -203,5 +203,5 @@ class LibraryManager:
             # NOTE: 当該ライブラリのディレクトリを削除してアンインストールする
             shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
-            msg = f"音声ライブラリ {library_id} ディレクトリの削除に失敗しました。"
+            msg = f"音声ライブラリ {library_id} の削除に失敗しました。"
             raise HTTPException(status_code=500, detail=msg)

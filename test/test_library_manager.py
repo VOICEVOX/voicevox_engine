@@ -89,7 +89,7 @@ class TestLibraryManager(TestCase):
             self.library_manger.install_library(self.library_uuid, BytesIO())
         self.assertEqual(
             e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} は不正なファイル形式（非 ZIP ファイル）です。",
+            f"音声ライブラリ {self.library_uuid} は不正なファイル形式です。",
         )
 
     def test_install_manifest_less_library(self) -> None:
@@ -180,7 +180,7 @@ class TestLibraryManager(TestCase):
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
             e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} はエンジンが未対応です。",
+            f"音声ライブラリ {self.library_uuid} は未対応です。",
         )
 
     def test_install_non_target_engine_library(self) -> None:
