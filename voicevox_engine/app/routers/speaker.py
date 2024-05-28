@@ -2,6 +2,7 @@
 
 import base64
 import json
+import traceback
 from os.path import basename
 from pathlib import Path
 from typing import Annotated, Literal
@@ -57,18 +58,16 @@ def generate_speaker_router(
     root_dir: Path,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
     speaker_info_dir = root_dir / "speaker_info"
 
-    @router.get("/speakers", tags=["その他"])
-    def speakers(
-        core_version: str | None = None,
-    ) -> list[Speaker]:
+    @router.get("/speakers")
+    def speakers(core_version: str | None = None) -> list[Speaker]:
         speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
-    @router.get("/speaker_info", tags=["その他"])
+    @router.get("/speaker_info")
     def speaker_info(
         self_url: Annotated[str, Depends(get_character_resource_baseurl)],
         speaker_uuid: str,
@@ -120,24 +119,25 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
-        # 該当話者の検索
+        # 該当話者を検索する
         speakers = parse_obj_as(
             list[Speaker], json.loads(core_manager.get_core(core_version).speakers)
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
-        for i in range(len(speakers)):
-            if speakers[i].speaker_uuid == speaker_uuid:
-                speaker = speakers[i]
-                break
-        else:
+        speaker = next(
+            filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
+        )
+        if speaker is None:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
+        # 話者情報を取得する
         try:
             speaker_path = root_dir / "speaker_info" / speaker_uuid
-            # 話者情報の取得
+
             # speaker policy
             policy_path = speaker_path / "policy.md"
             policy = policy_path.read_text("utf-8")
+
             # speaker portrait
             if resource_url:
                 speaker_map = mapfile[speaker_uuid]
@@ -150,15 +150,19 @@ def generate_speaker_router(
             else:
                 portrait_path = speaker_path / "portrait.png"
                 portrait = b64encode_str(portrait_path.read_bytes())
-            # スタイル情報の取得
+
+            # スタイル情報を取得する
             style_infos = []
             for style in speaker.styles:
                 id = style.id
+
                 # style icon
                 style_icon_name = f"{id}.png"
+
                 # style portrait
                 style_portrait_name = f"{id}.png"
                 style_portrait = None
+
                 # voice samples
                 voice_samples_names = [
                     "{}_{}.wav".format(id, str(j + 1).zfill(3)) for j in range(3)
@@ -204,28 +208,21 @@ def generate_speaker_router(
                     }
                 )
         except FileNotFoundError:
-            import traceback
-
             traceback.print_exc()
-            raise HTTPException(
-                status_code=500, detail="追加情報が見つかりませんでした"
-            )
+            msg = "追加情報が見つかりませんでした"
+            raise HTTPException(status_code=500, detail=msg)
 
-        ret_data = SpeakerInfo(
-            policy=policy,
-            portrait=portrait,
-            style_infos=style_infos,
+        spk_info = SpeakerInfo(
+            policy=policy, portrait=portrait, style_infos=style_infos
         )
-        return ret_data
+        return spk_info
 
-    @router.get("/singers", tags=["その他"])
-    def singers(
-        core_version: str | None = None,
-    ) -> list[Speaker]:
+    @router.get("/singers")
+    def singers(core_version: str | None = None) -> list[Speaker]:
         singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
-    @router.get("/singer_info", tags=["その他"])
+    @router.get("/singer_info")
     def singer_info(
         self_url: Annotated[str, Depends(get_character_resource_baseurl)],
         speaker_uuid: str,
@@ -265,7 +262,7 @@ def generate_speaker_router(
         )
         return response
 
-    @router.post("/initialize_speaker", status_code=204, tags=["その他"])
+    @router.post("/initialize_speaker", status_code=204)
     def initialize_speaker(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         skip_reinit: Annotated[
@@ -283,7 +280,7 @@ def generate_speaker_router(
         core = core_manager.get_core(core_version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
-    @router.get("/is_initialized_speaker", tags=["その他"])
+    @router.get("/is_initialized_speaker")
     def is_initialized_speaker(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
