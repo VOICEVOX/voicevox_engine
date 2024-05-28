@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Final, Iterable, Literal, NewType
+from typing import TYPE_CHECKING, Final, Literal, NewType
 
 from pydantic import BaseModel, Field
 
@@ -171,7 +171,9 @@ def filter_speakers_and_styles(
 
     if speaker_or_singer == "speaker":
         # talk 系スタイルを持たないキャラクターを除外する
-        talk_characters = filter(lambda character: len(character.talk_styles) > 0, characters)
+        talk_characters = filter(
+            lambda character: len(character.talk_styles) > 0, characters
+        )
         # キャラクター内のスタイルを talk 系のみにしたうえでキャストする
         talk_speakers = map(
             lambda talker: Speaker(
@@ -186,7 +188,9 @@ def filter_speakers_and_styles(
         return list(talk_speakers)
     elif speaker_or_singer == "singer":
         # sing 系スタイルを持たないキャラクターを除外する
-        sing_characters = filter(lambda character: len(character.sing_styles) > 0, characters)
+        sing_characters = filter(
+            lambda character: len(character.sing_styles) > 0, characters
+        )
         # キャラクター内のスタイルを sing 系のみにしたうえでキャストする
         sing_speakers = map(
             lambda singer: Speaker(
