@@ -11,7 +11,7 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, engine_manifest_path
+from voicevox_engine.utility.path_utility import engine_manifest_path, engine_root
 
 
 def generate_api_docs_html(schema: str) -> str:

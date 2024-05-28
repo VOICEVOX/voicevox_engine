@@ -23,7 +23,7 @@ from voicevox_engine.setting.Setting import (
 )
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, engine_manifest_path
+from voicevox_engine.utility.path_utility import engine_manifest_path, engine_root
 
 
 def decide_boolean_from_env(env_name: str) -> bool:
