@@ -1,4 +1,4 @@
-"""VOICEVOX CORE を ENGINE に適合させるアダプター"""
+"""VOICEVOX CORE のアダプター"""
 
 import json
 import threading
