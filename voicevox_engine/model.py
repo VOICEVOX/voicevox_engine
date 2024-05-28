@@ -1,4 +1,4 @@
-"""モデル"""
+"""サーバーとユーザーでやり取りされるデータ構造"""
 
 from enum import Enum
 from re import findall, fullmatch

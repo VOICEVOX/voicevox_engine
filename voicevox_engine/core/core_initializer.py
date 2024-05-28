@@ -1,4 +1,4 @@
-"""VOICEVOX CORE の初期化"""
+"""VOICEVOX CORE インスタンスの生成"""
 
 import json
 import os

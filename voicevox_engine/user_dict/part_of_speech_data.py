@@ -1,4 +1,4 @@
-"""単語の対応付け"""
+"""品詞と辞書属性の対応付け"""
 
 from ..model import (
     USER_DICT_MAX_PRIORITY,

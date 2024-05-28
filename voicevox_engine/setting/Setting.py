@@ -1,4 +1,4 @@
-"""設定のモデルと管理"""
+"""エンジン設定関連の処理"""
 
 from enum import Enum
 from pathlib import Path
