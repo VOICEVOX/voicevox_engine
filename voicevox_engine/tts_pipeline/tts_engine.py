@@ -1,4 +1,4 @@
-"""Text-to-Speech"""
+"""音声合成エンジン"""
 
 import copy
 import math
