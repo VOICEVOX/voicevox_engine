@@ -8,7 +8,7 @@ from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library_manager import LibraryManager
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
