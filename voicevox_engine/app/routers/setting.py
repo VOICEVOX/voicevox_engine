@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
 
-from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.engine_manifest import BrandName
 from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
 from voicevox_engine.utility.path_utility import resource_root
 
@@ -19,20 +19,18 @@ _setting_ui_template = Jinja2Templates(
 
 
 def generate_setting_router(
-    setting_loader: SettingHandler,
-    engine_manifest_data: EngineManifest,
+    setting_loader: SettingHandler, brand_name: BrandName
 ) -> APIRouter:
     """設定 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["設定"])
 
-    @router.get("/setting", response_class=Response, tags=["設定"])
+    @router.get("/setting", response_class=Response)
     def setting_get(request: Request) -> Response:
         """
         設定ページを返します。
         """
         settings = setting_loader.load()
 
-        brand_name = engine_manifest_data.brand_name
         cors_policy_mode = settings.cors_policy_mode
         allow_origin = settings.allow_origin
 
@@ -50,10 +48,7 @@ def generate_setting_router(
         )
 
     @router.post(
-        "/setting",
-        status_code=204,
-        tags=["設定"],
-        dependencies=[Depends(check_disabled_mutable_api)],
+        "/setting", status_code=204, dependencies=[Depends(check_disabled_mutable_api)]
     )
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
