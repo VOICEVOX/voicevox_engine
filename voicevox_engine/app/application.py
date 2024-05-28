@@ -77,8 +77,10 @@ def generate_app(
         app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
-    app.include_router(generate_setting_router(setting_loader, engine_manifest))
-    app.include_router(generate_portal_page_router(engine_manifest))
+    app.include_router(
+        generate_setting_router(setting_loader, engine_manifest.brand_name)
+    )
+    app.include_router(generate_portal_page_router(engine_manifest.name))
 
     app = configure_openapi_schema(app)
 
