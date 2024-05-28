@@ -5,15 +5,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from ..utility.path_utility import get_save_dir
-
-
-class CorsPolicyMode(str, Enum):
-    """
-    CORSの許可モード
-    """
-
-    all = "all"  # 全てのオリジンからのリクエストを許可
-    localapps = "localapps"  # ローカルアプリケーションからのリクエストを許可
+from .model import CorsPolicyMode
 
 
 class Setting(BaseModel):
