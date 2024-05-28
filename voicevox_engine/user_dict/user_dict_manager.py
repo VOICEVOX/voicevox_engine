@@ -11,7 +11,7 @@ import pyopenjtalk
 
 from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord, WordTypes
-from .part_of_speech_data import (
+from .user_dict_word import (
     UserDictInputError,
     cost2priority,
     create_word,

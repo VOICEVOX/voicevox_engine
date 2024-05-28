@@ -22,7 +22,7 @@ from voicevox_engine.setting.Setting import (
     SettingHandler,
 )
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 
 
