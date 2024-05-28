@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from voicevox_engine import __version__
 from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.engine_manifest.engine_manifest import EngineManifest
+from voicevox_engine.engine_manifest.model import EngineManifest
 
 
 class SupportedDevicesInfo(BaseModel):
