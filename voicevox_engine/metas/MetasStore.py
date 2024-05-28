@@ -181,11 +181,7 @@ def filter_speakers_and_styles(
     speakers: list[Speaker],
     speaker_or_singer: Literal["speaker", "singer"],
 ) -> list[Speaker]:
-    """
-    speakers から talkers あるいは singers を取り出す。
-    talker はスタイル情報が talk 系のみにフィルタリングされている。
-    singer はスタイル情報が sing 系のみにフィルタリングされている。
-    """
+    """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
 
     characters = map(
         lambda speaker: Character(
