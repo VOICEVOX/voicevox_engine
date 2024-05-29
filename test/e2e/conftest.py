@@ -1,3 +1,4 @@
+import json
 import shutil
 from pathlib import Path
 from typing import Any
@@ -13,8 +14,15 @@ from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.user_dict.user_dict import DEFAULT_DICT_PATH, UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
+
+
+def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
+    """指定ディレクトリ下へファイルをコピーし、生成されたファイルのパスを返す。"""
+    copied_file_path = dir_path / file_path.name
+    shutil.copyfile(file_path, copied_file_path)
+    return copied_file_path
 
 
 @pytest.fixture()
@@ -24,13 +32,17 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     latest_core_version = tts_engines.latest_version()
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
-    # 隔離されたプリセットの生成
-    original_preset_path = Path("./presets.yaml")
-    preset_path = tmp_path / "presets.yaml"
-    shutil.copyfile(original_preset_path, preset_path)
-    preset_manager = PresetManager(preset_path)
+    # テスト用に隔離されたプリセットを生成する
+    preset_path = Path("./presets.yaml")
+    preset_manager = PresetManager(_copy_under_dir(preset_path, tmp_path))
 
-    user_dict = UserDictionary()
+    # テスト用に隔離されたユーザー辞書を生成する
+    user_dict = UserDictionary(
+        default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
+        user_dict_path=_generate_user_dict(tmp_path),
+        compiled_dict_path=tmp_path / "user.dic",
+    )
+
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
@@ -60,3 +72,49 @@ def app(app_params: dict) -> FastAPI:
 @pytest.fixture()
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
+
+
+def _generate_user_dict(dir_path: Path) -> Path:
+    """指定されたディレクトリ下にユーザー辞書ファイルを生成し、生成されたファイルのパスを返す。"""
+    contents = {
+        "a89596ad-caa8-4f4e-8eb3-3d2261c798fd": {
+            "surface": "ｔｅｓｔ１",
+            "context_id": 1348,
+            "part_of_speech": "名詞",
+            "part_of_speech_detail_1": "固有名詞",
+            "part_of_speech_detail_2": "一般",
+            "part_of_speech_detail_3": "*",
+            "inflectional_type": "*",
+            "inflectional_form": "*",
+            "stem": "*",
+            "yomi": "テストイチ",
+            "pronunciation": "テストイチ",
+            "accent_type": 1,
+            "mora_count": 3,
+            "accent_associative_rule": "*",
+            "cost": 8609,
+        },
+        "c89596ad-caa8-4f4e-8eb3-3d2261c798fd": {
+            "surface": "ｔｅｓｔ２",
+            "context_id": 1348,
+            "part_of_speech": "名詞",
+            "part_of_speech_detail_1": "固有名詞",
+            "part_of_speech_detail_2": "一般",
+            "part_of_speech_detail_3": "*",
+            "inflectional_type": "*",
+            "inflectional_form": "*",
+            "stem": "*",
+            "yomi": "テストニ",
+            "pronunciation": "テストニ",
+            "accent_type": 1,
+            "mora_count": 2,
+            "accent_associative_rule": "*",
+            "cost": 8608,
+        },
+    }
+    contents_json = json.dumps(contents, ensure_ascii=False)
+
+    file_path = dir_path / "user_dict_for_test.json"
+    file_path.write_text(contents_json, encoding="utf-8")
+
+    return file_path
