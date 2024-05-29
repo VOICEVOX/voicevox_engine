@@ -78,9 +78,7 @@ def generate_speaker_router(
         version = convert_version_format(core_version, core_manager)
 
         # 該当話者を検索する
-        speakers = parse_obj_as(
-            list[Speaker], core_manager.get_core(version).speakers
-        )
+        speakers = parse_obj_as(list[Speaker], core_manager.get_core(version).speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
