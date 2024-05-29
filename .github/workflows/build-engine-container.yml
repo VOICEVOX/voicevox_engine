@@ -87,7 +87,7 @@ jobs:
         id: prepare-python
         uses: ./.github/actions/prepare_python
         with:
-          python: false
+          only-export-python-version: true
 
       - name: <Setup> Set up QEMU
         uses: docker/setup-qemu-action@v3

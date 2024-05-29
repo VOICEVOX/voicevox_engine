@@ -2,10 +2,10 @@ name: "Prepare Python"
 description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを外部へ提供をする"
 
 inputs:
-  python:
-    description: "Python ランタイムと依存パッケージをインストールするか否か"
+  only-export-python-version:
+    description: "Python バージョンの取得のみをおこなうか否か"
     required: false
-    default: "true"
+    default: "false"
   requirements-suffix:
     description: "依存パッケージインストール時に `rquirements` へ付ける接尾語"
     required: false
@@ -23,14 +23,14 @@ runs:
   using: "composite"
   steps:
     - name: <Setup> Set up Python
-      if: ${{ inputs.python == 'true' }}
+      if: ${{ inputs.only-export-python-version == 'false' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
         cache: pip
 
     - name: <Setup> Install Python dependencies
-      if: ${{ inputs.python == 'true' }}
+      if: ${{ inputs.only-export-python-version == 'false' }}
       run: pip install -r requirements${{ inputs.requirements-suffix }}.txt
       shell: bash
 
