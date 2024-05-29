@@ -8,7 +8,7 @@ from typing import Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field, parse_obj_as
 
-from voicevox_engine.core.core_adapter import CoreAdapter, CoreSpeakerStyle
+from voicevox_engine.core.core_adapter import CoreAdapter, CoreSpeaker, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerInfo,
@@ -96,7 +96,7 @@ class MetasStore:
         self,
         speaker_uuid: str,
         speaker_or_singer: Literal["speaker", "singer"],
-        core: CoreAdapter,
+        core_speakers: list[CoreSpeaker],
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
@@ -122,7 +122,7 @@ class MetasStore:
         #           ...
 
         # 該当話者を検索する
-        speakers = parse_obj_as(list[Speaker], core.speakers)
+        speakers = parse_obj_as(list[Speaker], core_speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
