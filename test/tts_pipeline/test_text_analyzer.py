@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from voicevox_engine.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
@@ -39,97 +37,92 @@ def features(ojt_container: OjtContainer) -> list[str]:
     return [contexts_to_feature(p.contexts) for p in ojt_container.labels]
 
 
-class TestBaseLabels(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        # pyopenjtalk.extract_fullcontext("こんにちは、ヒホです。")の結果
-        # 出来る限りテスト内で他のライブラリに依存しないため、
-        # またテスト内容を透明化するために、テストケースを生成している
-        self.test_case_hello_hiho = [
-            # sil (無音)
-            "xx^xx-sil+k=o/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:1_5/K:2+2-9",
-            # k
-            "xx^sil-k+o=N/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # o
-            "sil^k-o+N=n/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # N (ん)
-            "k^o-N+n=i/A:-3+2+4/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # n
-            "o^N-n+i=ch/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # i
-            "N^n-i+ch=i/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # ch
-            "n^i-ch+i=w/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # i
-            "i^ch-i+w=a/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # w
-            "ch^i-w+a=pau/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # a
-            "i^w-a+pau=h/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
-            + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
-            + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
-            # pau (読点)
-            "w^a-pau+h=i/A:xx+xx+xx/B:09-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:5_5!0_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:4_1%0_xx_xx/H:1_5/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:1_4/K:2+2-9",
-            # h
-            "a^pau-h+i=h/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # i
-            "pau^h-i+h=o/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # h
-            "h^i-h+o=d/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # o
-            "i^h-o+d=e/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # d
-            "h^o-d+e=s/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # e
-            "o^d-e+s=U/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # s
-            "d^e-s+U=sil/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # U (無声母音)
-            "e^s-U+sil=xx/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
-            + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
-            + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
-            # sil (無音)
-            "s^U-sil+xx=xx/A:xx+xx+xx/B:10-7_2/C:xx_xx+xx/D:xx+xx_xx/E:4_1!0_xx-xx"
-            + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_4/I:xx-xx"
-            + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:2+2-9",
-        ]
-        self.labels_hello_hiho = [
-            Label.from_feature(feature) for feature in self.test_case_hello_hiho
-        ]
+# pyopenjtalk.extract_fullcontext("こんにちは、ヒホです。")の結果
+# 出来る限りテスト内で他のライブラリに依存しないため、
+# またテスト内容を透明化するために、テストケースを生成している
+test_case_hello_hiho = [
+    # sil (無音)
+    "xx^xx-sil+k=o/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
+    + "@xx+xx&xx-xx|xx+xx/J:1_5/K:2+2-9",
+    # k
+    "xx^sil-k+o=N/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # o
+    "sil^k-o+N=n/A:-4+1+5/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # N (ん)
+    "k^o-N+n=i/A:-3+2+4/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # n
+    "o^N-n+i=ch/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # i
+    "N^n-i+ch=i/A:-2+3+3/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # ch
+    "n^i-ch+i=w/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # i
+    "i^ch-i+w=a/A:-1+4+2/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # w
+    "ch^i-w+a=pau/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # a
+    "i^w-a+pau=h/A:0+5+1/B:xx-xx_xx/C:09_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+    + "/F:5_5#0_xx@1_1|1_5/G:4_1%0_xx_0/H:xx_xx/I:1-5"
+    + "@1+2&1-2|1+9/J:1_4/K:2+2-9",
+    # pau (読点)
+    "w^a-pau+h=i/A:xx+xx+xx/B:09-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:5_5!0_xx-xx"
+    + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:4_1%0_xx_xx/H:1_5/I:xx-xx"
+    + "@xx+xx&xx-xx|xx+xx/J:1_4/K:2+2-9",
+    # h
+    "a^pau-h+i=h/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # i
+    "pau^h-i+h=o/A:0+1+4/B:09-xx_xx/C:09_xx+xx/D:22+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # h
+    "h^i-h+o=d/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # o
+    "i^h-o+d=e/A:1+2+3/B:09-xx_xx/C:22_xx+xx/D:10+7_2/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # d
+    "h^o-d+e=s/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # e
+    "o^d-e+s=U/A:2+3+2/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # s
+    "d^e-s+U=sil/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # U (無声母音)
+    "e^s-U+sil=xx/A:3+4+1/B:22-xx_xx/C:10_7+2/D:xx+xx_xx/E:5_5!0_xx-0"
+    + "/F:4_1#0_xx@1_1|1_4/G:xx_xx%xx_xx_xx/H:1_5/I:1-4"
+    + "@2+1&2-1|6+4/J:xx_xx/K:2+2-9",
+    # sil (無音)
+    "s^U-sil+xx=xx/A:xx+xx+xx/B:10-7_2/C:xx_xx+xx/D:xx+xx_xx/E:4_1!0_xx-xx"
+    + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_4/I:xx-xx"
+    + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:2+2-9",
+]
+labels_hello_hiho = [Label.from_feature(feature) for feature in test_case_hello_hiho]
 
 
 def jointed_phonemes(ojt_container: OjtContainer) -> str:
@@ -142,208 +135,179 @@ def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
     return " ".join([label.phoneme for label in ojt_container.labels])
 
 
-class TestLabel(TestBaseLabels):
-    def test_phoneme(self) -> None:
-        """Label に含まれる音素をテスト"""
-        self.assertEqual(
-            " ".join([label.phoneme for label in self.labels_hello_hiho]),
-            "sil k o N n i ch i w a pau h i h o d e s U sil",
-        )
-
-    def test_is_pause(self) -> None:
-        """Label のポーズ判定をテスト"""
-        self.assertEqual(
-            [label.is_pause() for label in self.labels_hello_hiho],
-            [
-                True,  # sil
-                False,  # k
-                False,  # o
-                False,  # N
-                False,  # n
-                False,  # i
-                False,  # ch
-                False,  # i
-                False,  # w
-                False,  # a
-                True,  # pau
-                False,  # h
-                False,  # i
-                False,  # h
-                False,  # o
-                False,  # d
-                False,  # e
-                False,  # s
-                False,  # u
-                True,  # sil
-            ],
-        )
-
-    def test_feature(self) -> None:
-        """Label に含まれる features をテスト"""
-        self.assertEqual(
-            [contexts_to_feature(label.contexts) for label in self.labels_hello_hiho],
-            self.test_case_hello_hiho,
-        )
+def test_label_phoneme() -> None:
+    """Label に含まれる音素をテスト"""
+    assert (
+        " ".join([label.phoneme for label in labels_hello_hiho])
+        == "sil k o N n i ch i w a pau h i h o d e s U sil"
+    )
 
 
-class TestMoraLabel(TestBaseLabels):
-    def setUp(self) -> None:
-        super().setUp()
-        # contexts["a2"] == "1" ko
-        self.mora_hello_1 = MoraLabel(
-            consonant=self.labels_hello_hiho[1], vowel=self.labels_hello_hiho[2]
-        )
-        # contexts["a2"] == "2" N
-        self.mora_hello_2 = MoraLabel(consonant=None, vowel=self.labels_hello_hiho[3])
-        # contexts["a2"] == "3" ni
-        self.mora_hello_3 = MoraLabel(
-            consonant=self.labels_hello_hiho[4], vowel=self.labels_hello_hiho[5]
-        )
-        # contexts["a2"] == "4" chi
-        self.mora_hello_4 = MoraLabel(
-            consonant=self.labels_hello_hiho[6], vowel=self.labels_hello_hiho[7]
-        )
-        # contexts["a2"] == "5" wa
-        self.mora_hello_5 = MoraLabel(
-            consonant=self.labels_hello_hiho[8], vowel=self.labels_hello_hiho[9]
-        )
-        # contexts["a2"] == "1" hi
-        self.mora_hiho_1 = MoraLabel(
-            consonant=self.labels_hello_hiho[11], vowel=self.labels_hello_hiho[12]
-        )
-        # contexts["a2"] == "2" ho
-        self.mora_hiho_2 = MoraLabel(
-            consonant=self.labels_hello_hiho[13], vowel=self.labels_hello_hiho[14]
-        )
-        # contexts["a2"] == "3" de
-        self.mora_hiho_3 = MoraLabel(
-            consonant=self.labels_hello_hiho[15], vowel=self.labels_hello_hiho[16]
-        )
-        # contexts["a2"] == "1" sU
-        self.mora_hiho_4 = MoraLabel(
-            consonant=self.labels_hello_hiho[17], vowel=self.labels_hello_hiho[18]
-        )
-
-    def test_phonemes(self) -> None:
-        """MoraLabel に含まれる音素系列をテスト"""
-        self.assertEqual(jointed_phonemes(self.mora_hello_1), "ko")
-        self.assertEqual(jointed_phonemes(self.mora_hello_2), "N")
-        self.assertEqual(jointed_phonemes(self.mora_hello_3), "ni")
-        self.assertEqual(jointed_phonemes(self.mora_hello_4), "chi")
-        self.assertEqual(jointed_phonemes(self.mora_hello_5), "wa")
-        self.assertEqual(jointed_phonemes(self.mora_hiho_1), "hi")
-        self.assertEqual(jointed_phonemes(self.mora_hiho_2), "ho")
-        self.assertEqual(jointed_phonemes(self.mora_hiho_3), "de")
-        self.assertEqual(jointed_phonemes(self.mora_hiho_4), "sU")
-
-    def test_features(self) -> None:
-        """MoraLabel に含まれる features をテスト"""
-        expects = self.test_case_hello_hiho
-        self.assertEqual(features(self.mora_hello_1), expects[1:3])
-        self.assertEqual(features(self.mora_hello_2), expects[3:4])
-        self.assertEqual(features(self.mora_hello_3), expects[4:6])
-        self.assertEqual(features(self.mora_hello_4), expects[6:8])
-        self.assertEqual(features(self.mora_hello_5), expects[8:10])
-        self.assertEqual(features(self.mora_hiho_1), expects[11:13])
-        self.assertEqual(features(self.mora_hiho_2), expects[13:15])
-        self.assertEqual(features(self.mora_hiho_3), expects[15:17])
-        self.assertEqual(features(self.mora_hiho_4), expects[17:19])
+def test_label_is_pause() -> None:
+    """Label のポーズ判定をテスト"""
+    assert [label.is_pause() for label in labels_hello_hiho] == [
+        True,  # sil
+        False,  # k
+        False,  # o
+        False,  # N
+        False,  # n
+        False,  # i
+        False,  # ch
+        False,  # i
+        False,  # w
+        False,  # a
+        True,  # pau
+        False,  # h
+        False,  # i
+        False,  # h
+        False,  # o
+        False,  # d
+        False,  # e
+        False,  # s
+        False,  # u
+        True,  # sil
+    ]
 
 
-class TestAccentPhraseLabel(TestBaseLabels):
-    def setUp(self) -> None:
-        super().setUp()
-        # TODO: ValueErrorを吐く作為的ではない自然な例の模索
-        # 存在しないなら放置でよい
-        self.accent_phrase_hello = AccentPhraseLabel.from_labels(
-            self.labels_hello_hiho[1:10]
-        )
-        self.accent_phrase_hiho = AccentPhraseLabel.from_labels(
-            self.labels_hello_hiho[11:19]
-        )
-
-    def test_accent(self) -> None:
-        """AccentPhraseLabel に含まれるアクセント位置をテスト"""
-        self.assertEqual(self.accent_phrase_hello.accent, 5)
-        self.assertEqual(self.accent_phrase_hiho.accent, 1)
-
-    def test_phonemes(self) -> None:
-        """AccentPhraseLabel に含まれる音素系列をテスト"""
-        outputs_hello = space_jointed_phonemes(self.accent_phrase_hello)
-        outputs_hiho = space_jointed_phonemes(self.accent_phrase_hiho)
-        self.assertEqual(outputs_hello, "k o N n i ch i w a")
-        self.assertEqual(outputs_hiho, "h i h o d e s U")
-
-    def test_features(self) -> None:
-        """AccentPhraseLabel に含まれる features をテスト"""
-        expects = self.test_case_hello_hiho
-        self.assertEqual(features(self.accent_phrase_hello), expects[1:10])
-        self.assertEqual(features(self.accent_phrase_hiho), expects[11:19])
+def test_label_feature() -> None:
+    """Label に含まれる features をテスト"""
+    assert [
+        contexts_to_feature(label.contexts) for label in labels_hello_hiho
+    ] == test_case_hello_hiho
 
 
-class TestBreathGroupLabel(TestBaseLabels):
-    def setUp(self) -> None:
-        super().setUp()
-        self.breath_group_hello = BreathGroupLabel.from_labels(
-            self.labels_hello_hiho[1:10]
-        )
-        self.breath_group_hiho = BreathGroupLabel.from_labels(
-            self.labels_hello_hiho[11:19]
-        )
-
-    def test_phonemes(self) -> None:
-        """BreathGroupLabel に含まれる音素系列をテスト"""
-        outputs_hello = space_jointed_phonemes(self.breath_group_hello)
-        outputs_hiho = space_jointed_phonemes(self.breath_group_hiho)
-        self.assertEqual(outputs_hello, "k o N n i ch i w a")
-        self.assertEqual(outputs_hiho, "h i h o d e s U")
-
-    def test_features(self) -> None:
-        """BreathGroupLabel に含まれる features をテスト"""
-        expects = self.test_case_hello_hiho
-        self.assertEqual(features(self.breath_group_hello), expects[1:10])
-        self.assertEqual(features(self.breath_group_hiho), expects[11:19])
+# contexts["a2"] == "1" ko
+mora_hello_1 = MoraLabel(consonant=labels_hello_hiho[1], vowel=labels_hello_hiho[2])
+# contexts["a2"] == "2" N
+mora_hello_2 = MoraLabel(consonant=None, vowel=labels_hello_hiho[3])
+# contexts["a2"] == "3" ni
+mora_hello_3 = MoraLabel(consonant=labels_hello_hiho[4], vowel=labels_hello_hiho[5])
+# contexts["a2"] == "4" chi
+mora_hello_4 = MoraLabel(consonant=labels_hello_hiho[6], vowel=labels_hello_hiho[7])
+# contexts["a2"] == "5" wa
+mora_hello_5 = MoraLabel(consonant=labels_hello_hiho[8], vowel=labels_hello_hiho[9])
+# contexts["a2"] == "1" hi
+mora_hiho_1 = MoraLabel(consonant=labels_hello_hiho[11], vowel=labels_hello_hiho[12])
+# contexts["a2"] == "2" ho
+mora_hiho_2 = MoraLabel(consonant=labels_hello_hiho[13], vowel=labels_hello_hiho[14])
+# contexts["a2"] == "3" de
+mora_hiho_3 = MoraLabel(consonant=labels_hello_hiho[15], vowel=labels_hello_hiho[16])
+# contexts["a2"] == "1" sU
+mora_hiho_4 = MoraLabel(consonant=labels_hello_hiho[17], vowel=labels_hello_hiho[18])
 
 
-class TestUtteranceLabel(TestBaseLabels):
-    def setUp(self) -> None:
-        super().setUp()
-        self.utterance_hello_hiho = UtteranceLabel.from_labels(self.labels_hello_hiho)
-
-    def test_phonemes(self) -> None:
-        """UtteranceLabel に含まれる音素系列をテスト"""
-        outputs_hello_hiho = space_jointed_phonemes(self.utterance_hello_hiho)
-        expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-        self.assertEqual(outputs_hello_hiho, expects_hello_hiho)
-
-    def test_features(self) -> None:
-        """UtteranceLabel に含まれる features をテスト"""
-        self.assertEqual(features(self.utterance_hello_hiho), self.test_case_hello_hiho)
+def test_mora_label_phonemes() -> None:
+    """MoraLabel に含まれる音素系列をテスト"""
+    assert jointed_phonemes(mora_hello_1) == "ko"
+    assert jointed_phonemes(mora_hello_2) == "N"
+    assert jointed_phonemes(mora_hello_3) == "ni"
+    assert jointed_phonemes(mora_hello_4) == "chi"
+    assert jointed_phonemes(mora_hello_5) == "wa"
+    assert jointed_phonemes(mora_hiho_1) == "hi"
+    assert jointed_phonemes(mora_hiho_2) == "ho"
+    assert jointed_phonemes(mora_hiho_3) == "de"
+    assert jointed_phonemes(mora_hiho_4) == "sU"
 
 
-class TestMoraToText(TestCase):
-    def test_voice(self) -> None:
-        self.assertEqual(mora_to_text("a"), "ア")
-        self.assertEqual(mora_to_text("i"), "イ")
-        self.assertEqual(mora_to_text("ka"), "カ")
-        self.assertEqual(mora_to_text("N"), "ン")
-        self.assertEqual(mora_to_text("cl"), "ッ")
-        self.assertEqual(mora_to_text("gye"), "ギェ")
-        self.assertEqual(mora_to_text("ye"), "イェ")
-        self.assertEqual(mora_to_text("wo"), "ウォ")
+def test_mora_label_features() -> None:
+    """MoraLabel に含まれる features をテスト"""
+    expects = test_case_hello_hiho
+    assert features(mora_hello_1) == expects[1:3]
+    assert features(mora_hello_2) == expects[3:4]
+    assert features(mora_hello_3) == expects[4:6]
+    assert features(mora_hello_4) == expects[6:8]
+    assert features(mora_hello_5) == expects[8:10]
+    assert features(mora_hiho_1) == expects[11:13]
+    assert features(mora_hiho_2) == expects[13:15]
+    assert features(mora_hiho_3) == expects[15:17]
+    assert features(mora_hiho_4) == expects[17:19]
 
-    def test_unvoice(self) -> None:
-        self.assertEqual(mora_to_text("A"), "ア")
-        self.assertEqual(mora_to_text("I"), "イ")
-        self.assertEqual(mora_to_text("kA"), "カ")
-        self.assertEqual(mora_to_text("gyE"), "ギェ")
-        self.assertEqual(mora_to_text("yE"), "イェ")
-        self.assertEqual(mora_to_text("wO"), "ウォ")
 
-    def test_invalid_mora(self) -> None:
-        """変なモーラが来ても例外を投げない"""
-        self.assertEqual(mora_to_text("x"), "x")
-        self.assertEqual(mora_to_text(""), "")
+# TODO: ValueErrorを吐く作為的ではない自然な例の模索
+# 存在しないなら放置でよい
+accent_phrase_hello = AccentPhraseLabel.from_labels(labels_hello_hiho[1:10])
+accent_phrase_hiho = AccentPhraseLabel.from_labels(labels_hello_hiho[11:19])
+
+
+def test_accent_phrase_accent() -> None:
+    """AccentPhraseLabel に含まれるアクセント位置をテスト"""
+    assert accent_phrase_hello.accent == 5
+    assert accent_phrase_hiho.accent == 1
+
+
+def test_accent_phrase_phonemes() -> None:
+    """AccentPhraseLabel に含まれる音素系列をテスト"""
+    outputs_hello = space_jointed_phonemes(accent_phrase_hello)
+    outputs_hiho = space_jointed_phonemes(accent_phrase_hiho)
+    assert outputs_hello == "k o N n i ch i w a"
+    assert outputs_hiho == "h i h o d e s U"
+
+
+def test_accent_phrase_features() -> None:
+    """AccentPhraseLabel に含まれる features をテスト"""
+    expects = test_case_hello_hiho
+    assert features(accent_phrase_hello) == expects[1:10]
+    assert features(accent_phrase_hiho) == expects[11:19]
+
+
+breath_group_hello = BreathGroupLabel.from_labels(labels_hello_hiho[1:10])
+breath_group_hiho = BreathGroupLabel.from_labels(labels_hello_hiho[11:19])
+
+
+def test_breath_group_phonemes() -> None:
+    """BreathGroupLabel に含まれる音素系列をテスト"""
+    outputs_hello = space_jointed_phonemes(breath_group_hello)
+    outputs_hiho = space_jointed_phonemes(breath_group_hiho)
+    assert outputs_hello == "k o N n i ch i w a"
+    assert outputs_hiho == "h i h o d e s U"
+
+
+def test_breath_group_features() -> None:
+    """BreathGroupLabel に含まれる features をテスト"""
+    expects = test_case_hello_hiho
+    assert features(breath_group_hello) == expects[1:10]
+    assert features(breath_group_hiho) == expects[11:19]
+
+
+utterance_hello_hiho = UtteranceLabel.from_labels(labels_hello_hiho)
+
+
+def test_utterance_phonemes() -> None:
+    """UtteranceLabel に含まれる音素系列をテスト"""
+    outputs_hello_hiho = space_jointed_phonemes(utterance_hello_hiho)
+    expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+    assert outputs_hello_hiho == expects_hello_hiho
+
+
+def test_utterance_features() -> None:
+    """UtteranceLabel に含まれる features をテスト"""
+    assert features(utterance_hello_hiho) == test_case_hello_hiho
+
+
+def test_voice() -> None:
+    assert mora_to_text("a") == "ア"
+    assert mora_to_text("i") == "イ"
+    assert mora_to_text("ka") == "カ"
+    assert mora_to_text("N") == "ン"
+    assert mora_to_text("cl") == "ッ"
+    assert mora_to_text("gye") == "ギェ"
+    assert mora_to_text("ye") == "イェ"
+    assert mora_to_text("wo") == "ウォ"
+
+
+def test_unvoice() -> None:
+    assert mora_to_text("A") == "ア"
+    assert mora_to_text("I") == "イ"
+    assert mora_to_text("kA") == "カ"
+    assert mora_to_text("gyE") == "ギェ"
+    assert mora_to_text("yE") == "イェ"
+    assert mora_to_text("wO") == "ウォ"
+
+
+def test_invalid_mora() -> None:
+    """変なモーラが来ても例外を投げない"""
+    assert mora_to_text("x") == "x"
+    assert mora_to_text("") == ""
 
 
 def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:

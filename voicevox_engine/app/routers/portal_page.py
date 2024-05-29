@@ -3,18 +3,16 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from voicevox_engine.engine_manifest.EngineManifest import EngineManifest
+from voicevox_engine.engine_manifest import EngineName
 
 
-def generate_portal_page_router(engine_manifest_data: EngineManifest) -> APIRouter:
+def generate_portal_page_router(engine_name: EngineName) -> APIRouter:
     """ポータルページ API Router を生成する"""
     router = APIRouter()
 
     @router.get("/", response_class=HTMLResponse, tags=["その他"])
     async def get_portal_page() -> str:
         """ポータルページを返します。"""
-        engine_name = engine_manifest_data.name
-
         return f"""
         <html>
             <head>

@@ -3,11 +3,17 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from voicevox_engine.core.core_initializer import CoreNotFound
 from voicevox_engine.tts_pipeline.tts_engine import EngineNotFound
 
 
-def register_global_exception_handlers(app: FastAPI) -> FastAPI:
-    """グローバルな例外ハンドラを app へ登録する。"""
+def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
+    """グローバルな例外ハンドラを app へ設定する。"""
+
+    # 指定されたコアが見つからないエラー
+    @app.exception_handler(CoreNotFound)
+    async def cnf_exception_handler(request: Request, e: CoreNotFound) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"message": f"{str(e)}"})
 
     # エンジンは複数 router 内で呼ばれるためグローバルなハンドラが相応しい
     @app.exception_handler(EngineNotFound)

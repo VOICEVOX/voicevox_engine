@@ -107,8 +107,7 @@ jobs:
     steps:
       - name: <Setup> Declare variables
         id: vars
-        run: |
-          echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
+        run: echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -118,8 +117,7 @@ jobs:
       #       so you need to install GNU 'sed' and 'split'.
       - name: <Setup> Install dependencies (macOS)
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          brew install gnu-sed coreutils
+        run: brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
@@ -131,7 +129,7 @@ jobs:
       # CUDA
       - name: <Setup> Restore cached CUDA
         if: matrix.cuda_version != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cuda-dll-cache-restore
         with:
           # update this key when ONNX Runtime CUDA dependency changed
@@ -140,7 +138,7 @@ jobs:
 
       - name: <Setup> Set up CUDA toolkit
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.10
+        uses: Jimver/cuda-toolkit@v0.2.15
         id: cuda-toolkit
         with:
           method: network
@@ -185,7 +183,7 @@ jobs:
 
       - name: <Setup> Save CUDA cache
         if: matrix.cuda_version != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.cuda-dll-cache-restore.outputs.cache-primary-key }}
           path: download/cuda
@@ -197,7 +195,7 @@ jobs:
 
       - name: <Setup> Restore cached cuDNN
         if: matrix.cudnn_url != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cudnn-dll-cache-restore
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
@@ -239,7 +237,7 @@ jobs:
 
       - name: <Setup> Save cuDNN cache
         if: matrix.cudnn_url != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.cudnn-dll-cache-restore.outputs.cache-primary-key }}
           path: download/cudnn
@@ -251,7 +249,7 @@ jobs:
 
       - name: <Setup> Restore cached zlib
         if: matrix.zlib_url != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: zlib-cache-restore
         with:
           key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
@@ -271,7 +269,7 @@ jobs:
 
       - name: <Setup> Save zlib cache
         if: matrix.zlib_url != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.zlib-cache-restore.outputs.cache-primary-key }}
           path: download/zlib
@@ -282,23 +280,20 @@ jobs:
 
       # Python install path of windows: C:/hostedtoolcache/windows/Python
       - name: <Setup> Set up Python
-        id: setup-python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ matrix.architecture }}
           cache: pip
 
       - name: <Setup> Install Python dependencies
+        run: pip install -r requirements-build.txt
+
+      - name: <Setup> Prepare custom PyInstaller
+        if: startsWith(matrix.os, 'windows-')
+        run: ./build_util/modify_pyinstaller.bash
+
+      - name: <Setup> Download pyopenjtalk dictionary
         run: |
-          python -m pip install -r requirements-dev.txt
-
-          if [ "$RUNNER_OS" = Windows ]; then
-            # Modify PyInstaller to enable NvOptimusEnablement and AmdPowerXpressRequestHighPerformance
-            ./build_util/modify_pyinstaller.bash
-          fi
-
-          # Download pyopenjtalk dictionary
           # try 5 times, sleep 5 seconds before retry
           for _ in $(seq 5); do
             EXIT_CODE=0
@@ -325,7 +320,7 @@ jobs:
 
       - name: <Setup> Restore cached DirectML
         if: endswith(matrix.target, '-directml')
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: directml-cache-restore
         with:
           key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
@@ -345,7 +340,7 @@ jobs:
 
       - name: <Setup> Save DirectML cache
         if: endswith(matrix.target, '-directml')
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.directml-cache-restore.outputs.cache-primary-key }}
           path: download/directml
@@ -355,7 +350,7 @@ jobs:
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
       - name: <Setup> Restore cached ONNX Runtime
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: onnxruntime-cache-restore
         with:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
@@ -390,14 +385,14 @@ jobs:
           rm download/onnxruntime.tgz
 
       - name: <Setup> Save ONNX Runtime cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/onnxruntime
 
       # VOICEVOX RESOURCE
       - name: <Setup> Prepare RESOURCE cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -418,7 +413,7 @@ jobs:
 
       # VOICEVOX CORE
       - name: <Setup> Prepare CORE cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
@@ -552,21 +547,18 @@ jobs:
 
       - name: <Setup> Set @rpath to @executable_path
         if: startsWith(matrix.os, 'macos-')
-        run: |
-          install_name_tool -add_rpath @executable_path/. dist/run/run
+        run: install_name_tool -add_rpath @executable_path/. dist/run/run
 
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        run: |
-          bash build_util/codesign.bash "dist/run/run.exe"
+        run: bash build_util/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
       - name: <Build> Rename artifact directory to archive
-        run: |
-          mv dist/run/ "${{ matrix.target }}/"
+        run: mv dist/run/ "${{ matrix.target }}/"
 
       # 7z archives
       - name: <Build> Create 7z archives
@@ -599,8 +591,7 @@ jobs:
           commit: ${{ github.sha }}
 
       - name: <Setup> Clean 7z archives to reduce disk usage
-        run: |
-          rm -f ${{ steps.vars.outputs.package_name }}.7z.*
+        run: rm -f ${{ steps.vars.outputs.package_name }}.7z.*
 
       # VVPP archives
       - name: <Build> Create VVPP archives
@@ -653,8 +644,10 @@ jobs:
     needs: [config, build-and-upload]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Deploy> Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
         run: |
           git tag -f ${{ needs.config.outputs.version }}
           git push -f --tag

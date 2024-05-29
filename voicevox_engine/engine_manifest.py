@@ -6,8 +6,52 @@
 import json
 from base64 import b64encode
 from pathlib import Path
+from typing import TypeAlias
 
 from pydantic import BaseModel, Field
+
+
+class FeatureSupportJson(BaseModel):
+    """`engine_manifest.json` の機能サポート状況"""
+
+    type: str
+    value: bool
+    name: str
+
+
+class SupportedFeaturesJson(BaseModel):
+    """`engine_manifest.json` のサポート機能一覧"""
+
+    adjust_mora_pitch: FeatureSupportJson
+    adjust_phoneme_length: FeatureSupportJson
+    adjust_speed_scale: FeatureSupportJson
+    adjust_pitch_scale: FeatureSupportJson
+    adjust_intonation_scale: FeatureSupportJson
+    adjust_volume_scale: FeatureSupportJson
+    interrogative_upspeak: FeatureSupportJson
+    synthesis_morphing: FeatureSupportJson
+    sing: FeatureSupportJson
+    manage_library: FeatureSupportJson
+
+
+class EngineManifestJson(BaseModel):
+    """`engine_manifest.json` のコンテンツ"""
+
+    manifest_version: str
+    name: str
+    brand_name: str
+    uuid: str
+    version: str
+    url: str
+    command: str
+    port: int
+    icon: str
+    default_sampling_rate: int
+    frame_rate: float
+    terms_of_service: str
+    update_infos: str
+    dependency_licenses: str
+    supported_features: SupportedFeaturesJson
 
 
 class UpdateInfo(BaseModel):
@@ -52,14 +96,18 @@ class SupportedFeatures(BaseModel):
     )
 
 
+EngineName: TypeAlias = str
+BrandName: TypeAlias = str
+
+
 class EngineManifest(BaseModel):
     """
     エンジン自体に関する情報
     """
 
     manifest_version: str = Field(title="マニフェストのバージョン")
-    name: str = Field(title="エンジン名")
-    brand_name: str = Field(title="ブランド名")
+    name: EngineName = Field(title="エンジン名")
+    brand_name: BrandName = Field(title="ブランド名")
     uuid: str = Field(title="エンジンのUUID")
     url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
@@ -78,7 +126,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = EngineManifestJson.parse_file(manifest_path).dict()
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
         name=manifest["name"],
