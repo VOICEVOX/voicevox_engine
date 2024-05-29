@@ -230,8 +230,8 @@ ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
+ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
 ADD ./speaker_info /opt/voicevox_engine/speaker_info
-ADD ./ui_template /opt/voicevox_engine/ui_template
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest

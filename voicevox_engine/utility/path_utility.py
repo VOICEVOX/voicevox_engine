@@ -24,6 +24,12 @@ def resource_root() -> Path:
     return engine_root() / "resources"
 
 
+def engine_manifest_path() -> Path:
+    """エンジンマニフェストのパスを取得する。"""
+    # NOTE: VOICEVOX API の規定によりエンジンマニフェストファイルは必ず `<engine_root>/engine_manifest.json` に存在する
+    return engine_root() / "engine_manifest.json"
+
+
 def _is_development() -> bool:
     """
     動作環境が開発版であるか否かを返す。
