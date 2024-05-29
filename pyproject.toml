@@ -56,11 +56,6 @@ soxr = "^0.3.6"
 pydantic = "^1.10.15"
 starlette = "^0.37.0"
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^2.16.0"
-poetry = "1.8.2"
-poetry-plugin-export = "^1.8.0"
-
 [tool.poetry.group.test.dependencies]
 pysen = "^0.11.0"
 black = "^24.4.0"
@@ -77,6 +72,7 @@ syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
 safety = "^3.1.0"
 pip-licenses = "4.4.0" # NOTE: must be specified exactly (c.f. #1281)
+pre-commit = "^2.16.0"
 
 [tool.poetry.group.build.dependencies]
 pyinstaller = "^5.13"

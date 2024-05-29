@@ -17,12 +17,11 @@ def generate_library_router(
     engine_manifest_data: EngineManifest, library_manager: LibraryManager
 ) -> APIRouter:
     """音声ライブラリ API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["音声ライブラリ管理"])
 
     @router.get(
         "/downloadable_libraries",
         response_description="ダウンロード可能な音声ライブラリの情報リスト",
-        tags=["音声ライブラリ管理"],
     )
     def downloadable_libraries() -> list[DownloadableLibraryInfo]:
         """
@@ -35,7 +34,6 @@ def generate_library_router(
     @router.get(
         "/installed_libraries",
         response_description="インストールした音声ライブラリの情報",
-        tags=["音声ライブラリ管理"],
     )
     def installed_libraries() -> dict[str, InstalledLibraryInfo]:
         """
@@ -48,7 +46,6 @@ def generate_library_router(
     @router.post(
         "/install_library/{library_uuid}",
         status_code=204,
-        tags=["音声ライブラリ管理"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     async def install_library(
@@ -70,7 +67,6 @@ def generate_library_router(
     @router.post(
         "/uninstall_library/{library_uuid}",
         status_code=204,
-        tags=["音声ライブラリ管理"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def uninstall_library(

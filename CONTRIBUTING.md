@@ -40,7 +40,7 @@ cd ./voicevox_engine
 git switch -c "<your_branch_name>"
 
 # 実行・開発・テスト環境のインストール
-python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt
+python -m pip install -r requirements.txt -r requirements-test.txt -r requirements-build.txt
 ```
 
 <!-- このプロジェクトでは
@@ -217,7 +217,6 @@ requirements.txt の更新
 
 ```bash
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
 poetry export --without-hashes --with build -o requirements-build.txt
 ```
@@ -236,7 +235,7 @@ poetry export --without-hashes --with build -o requirements-build.txt
 以下のコマンドにより脆弱性を診断できます：  
 
 ```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-build.txt
+safety check -r requirements.txt -r requirements-test.txt -r requirements-build.txt
 ```
 
 ### API ドキュメントの確認
