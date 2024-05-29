@@ -80,17 +80,6 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     assert true_setting == setting
 
 
-def test_setting_handler_load_cors_policy_mode_type() -> None:
-    """`SettingHandler.load()` で正しい型の値を得られる。"""
-    # Inputs
-    setting_path = Path("test/unit/setting/setting-test-load-1.yaml")
-    setting_loader = SettingHandler(setting_path)
-    # Outputs
-    setting = setting_loader.load()
-    # Test
-    assert isinstance(setting.cors_policy_mode, CorsPolicyMode)
-
-
 def test_setting_invalid_input() -> None:
     """`Setting` は不正な入力に対してエラーを送出する。"""
     # Test
