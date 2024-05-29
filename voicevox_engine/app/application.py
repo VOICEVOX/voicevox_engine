@@ -44,7 +44,7 @@ def generate_app(
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
     if speaker_info_dir is None:
-        speaker_info_dir = engine_root() / "speaker_info"
+        speaker_info_dir = engine_root() / "resources" / "character_info"
 
     app = FastAPI(
         title=engine_manifest.name,

@@ -35,7 +35,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
         latest_core_version=latest_core_version,
         setting_loader=setting_loader,
         preset_manager=preset_manager,
-        speaker_info_dir=root_dir / "speaker_info",
+        speaker_info_dir=root_dir / "resources" / "character_info",
         user_dict=user_dict,
         engine_manifest=engine_manifest,
     )
