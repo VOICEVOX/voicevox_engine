@@ -229,13 +229,13 @@ accent_phrase_hello = AccentPhraseLabel.from_labels(labels_hello_hiho[1:10])
 accent_phrase_hiho = AccentPhraseLabel.from_labels(labels_hello_hiho[11:19])
 
 
-def test_accentphrase_accent() -> None:
+def test_accent_phrase_accent() -> None:
     """AccentPhraseLabel に含まれるアクセント位置をテスト"""
     assert accent_phrase_hello.accent == 5
     assert accent_phrase_hiho.accent == 1
 
 
-def test_accentphrase_phonemes() -> None:
+def test_accent_phrase_phonemes() -> None:
     """AccentPhraseLabel に含まれる音素系列をテスト"""
     outputs_hello = space_jointed_phonemes(accent_phrase_hello)
     outputs_hiho = space_jointed_phonemes(accent_phrase_hiho)
@@ -243,7 +243,7 @@ def test_accentphrase_phonemes() -> None:
     assert outputs_hiho == "h i h o d e s U"
 
 
-def test_accentphrase_features() -> None:
+def test_accent_phrase_features() -> None:
     """AccentPhraseLabel に含まれる features をテスト"""
     expects = test_case_hello_hiho
     assert features(accent_phrase_hello) == expects[1:10]
@@ -254,7 +254,7 @@ breath_group_hello = BreathGroupLabel.from_labels(labels_hello_hiho[1:10])
 breath_group_hiho = BreathGroupLabel.from_labels(labels_hello_hiho[11:19])
 
 
-def test_breathgroup_phonemes() -> None:
+def test_breath_group_phonemes() -> None:
     """BreathGroupLabel に含まれる音素系列をテスト"""
     outputs_hello = space_jointed_phonemes(breath_group_hello)
     outputs_hiho = space_jointed_phonemes(breath_group_hiho)
@@ -262,7 +262,7 @@ def test_breathgroup_phonemes() -> None:
     assert outputs_hiho == "h i h o d e s U"
 
 
-def test_breathgroup_features() -> None:
+def test_breath_group_features() -> None:
     """BreathGroupLabel に含まれる features をテスト"""
     expects = test_case_hello_hiho
     assert features(breath_group_hello) == expects[1:10]

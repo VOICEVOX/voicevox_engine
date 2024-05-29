@@ -22,12 +22,6 @@ repos:
         language: python
         stages: [push]
         pass_filenames: false
-      - id: poetry-export-dev
-        name: poetry-export-dev
-        entry: poetry export --without-hashes --with dev -o requirements-dev.txt
-        language: python
-        stages: [push]
-        pass_filenames: false
       - id: poetry-export-test
         name: poetry-export-test
         entry: poetry export --without-hashes --with test -o requirements-test.txt
