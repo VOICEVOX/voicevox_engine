@@ -10,7 +10,7 @@ def test_round_floats_raw_float() -> None:
     # Tests
     assert round_floats(target, -2) == 100
     assert round_floats(target, -1) == 110
-    assert round_floats(target,  0) == 111
+    assert round_floats(target, 0) == 111
     assert round_floats(target, +1) == 111.1
     assert round_floats(target, +2) == 111.11
 
@@ -26,7 +26,7 @@ def test_round_floats_list() -> None:
 def test_round_floats_dict() -> None:
     """`round_floats()` は辞書内の値を丸める。"""
     # Inputs
-    target = {"hello": 1.111 }
+    target = {"hello": 1.111}
     # Tests
     assert round_floats(target, 2) == {"hello": 1.11}
 
@@ -34,9 +34,9 @@ def test_round_floats_dict() -> None:
 def test_round_floats_nested() -> None:
     """`round_floats()` はネストしたオブジェクト内の値を丸める。"""
     # Inputs
-    target = [1.111, {"hello": 1.111, "world": [1.111] }]
+    target = [1.111, {"hello": 1.111, "world": [1.111]}]
     # Expects
-    true_rounded = [1.11, {"hello": 1.11, "world": [1.11] }]
+    true_rounded = [1.11, {"hello": 1.11, "world": [1.11]}]
     # Outputs
     rounded = round_floats(target, 2)
     # Tests
