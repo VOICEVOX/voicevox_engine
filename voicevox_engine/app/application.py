@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
+from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
@@ -51,6 +52,7 @@ def generate_app(
         version=__version__,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
+    app = configure_global_exception_handlers(app)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
