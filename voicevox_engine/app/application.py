@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
+from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
@@ -20,7 +21,7 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import PresetManager
 from voicevox_engine.setting.Setting import CorsPolicyMode, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict import UserDictionary
@@ -36,14 +37,14 @@ def generate_app(
     user_dict: UserDictionary,
     engine_manifest: EngineManifest,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path | None = None,
+    speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if root_dir is None:
-        root_dir = engine_root()
+    if speaker_info_dir is None:
+        speaker_info_dir = engine_root() / "speaker_info"
 
     app = FastAPI(
         title=engine_manifest.name,
@@ -51,6 +52,7 @@ def generate_app(
         version=__version__,
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
+    app = configure_global_exception_handlers(app)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
@@ -63,7 +65,7 @@ def generate_app(
         engine_manifest.uuid,
     )
 
-    metas_store = MetasStore(root_dir / "speaker_info")
+    metas_store = MetasStore(speaker_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -77,8 +79,10 @@ def generate_app(
         app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
-    app.include_router(generate_setting_router(setting_loader, engine_manifest))
-    app.include_router(generate_portal_page_router(engine_manifest))
+    app.include_router(
+        generate_setting_router(setting_loader, engine_manifest.brand_name)
+    )
+    app.include_router(generate_portal_page_router(engine_manifest.name))
 
     app = configure_openapi_schema(app)
 

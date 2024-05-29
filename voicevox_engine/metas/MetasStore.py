@@ -3,12 +3,12 @@ import json
 import traceback
 from copy import deepcopy
 from pathlib import Path
-from typing import Literal, NewType
+from typing import Literal
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field, parse_obj_as
 
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.core.core_adapter import CoreAdapter, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerInfo,
@@ -18,37 +18,13 @@ from voicevox_engine.metas.Metas import (
     StyleType,
 )
 
-_CoreStyleId = NewType("_CoreStyleId", int)
-_CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
-
-class _CoreSpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
-
-    name: str
-    id: _CoreStyleId
-    type: _CoreStyleType | None = Field(default="talk")
-
-
-def cast_styles(cores: list[_CoreSpeakerStyle]) -> list[SpeakerStyle]:
+def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
     """コアから取得したスタイル情報をエンジン形式へキャストする。"""
     return [
         SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
         for core in cores
     ]
-
-
-class _CoreSpeaker(BaseModel):
-    """
-    コアに含まれる話者情報
-    """
-
-    name: str
-    speaker_uuid: str
-    styles: list[_CoreSpeakerStyle]
-    version: str = Field("話者のバージョン")
 
 
 class _EngineSpeaker(BaseModel):
@@ -88,7 +64,7 @@ class MetasStore:
 
     # FIXME: engineではなくlist[CoreSpeaker]を渡す形にすることで
     # TTSEngineによる循環importを修正する
-    def load_combined_metas(self, core: "CoreAdapter") -> list[Speaker]:
+    def load_combined_metas(self, core: CoreAdapter) -> list[Speaker]:
         """
         コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
         Parameters
@@ -101,7 +77,7 @@ class MetasStore:
             エンジンとコアに含まれる話者メタ情報
         """
         # コアに含まれる話者メタ情報の収集
-        core_metas = [_CoreSpeaker(**speaker) for speaker in json.loads(core.speakers)]
+        core_metas = core.speakers
         # エンジンに含まれる話者メタ情報との統合
         return [
             Speaker(
@@ -146,7 +122,7 @@ class MetasStore:
         #           ...
 
         # 該当話者を検索する
-        speakers = parse_obj_as(list[Speaker], json.loads(core.speakers))
+        speakers = parse_obj_as(list[Speaker], core.speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None

@@ -1,12 +1,38 @@
 import json
 import threading
 from dataclasses import dataclass
+from typing import Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
+from pydantic import BaseModel, Field
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
+
+CoreStyleId = NewType("CoreStyleId", int)
+CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+
+
+class CoreSpeakerStyle(BaseModel):
+    """
+    話者のスタイル情報
+    """
+
+    name: str
+    id: CoreStyleId
+    type: CoreStyleType | None = Field(default="talk")
+
+
+class CoreSpeaker(BaseModel):
+    """
+    コアに含まれる話者情報
+    """
+
+    name: str
+    speaker_uuid: str
+    styles: list[CoreSpeakerStyle]
+    version: str = Field("話者のバージョン")
 
 
 @dataclass(frozen=True)
@@ -34,9 +60,10 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        return self.core.metas()
+    def speakers(self) -> list[CoreSpeaker]:
+        """話者情報"""
+        metas = self.core.metas()
+        return [CoreSpeaker(**speaker) for speaker in json.loads(metas)]
 
     @property
     def supported_devices(self) -> DeviceSupport | None:
