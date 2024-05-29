@@ -6,7 +6,7 @@
 import json
 from base64 import b64encode
 from pathlib import Path
-from typing import TypeAlias
+from typing import Self, TypeAlias
 
 from pydantic import BaseModel, Field
 
@@ -52,6 +52,17 @@ class EngineManifestJson(BaseModel):
     update_infos: str
     dependency_licenses: str
     supported_features: SupportedFeaturesJson
+
+
+class ManifestContainer(EngineManifestJson):
+    root: Path  # エンジンマニフェストに記述された相対パスのルート
+
+    @classmethod
+    def from_file(cls, manifest_path: Path) -> Self:
+        """指定ファイルからインスタンスを生成する。"""
+        manifest = EngineManifestJson.parse_file(manifest_path)
+        manifest_root = manifest_path.parent
+        return cls(root=manifest_root, **manifest.dict())
 
 
 class UpdateInfo(BaseModel):
@@ -122,11 +133,16 @@ class EngineManifest(BaseModel):
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
 
 
-def load_manifest(manifest_path: Path) -> EngineManifest:
+def load_manifest(manifest_path: Path) -> ManifestContainer:
     """エンジンマニフェストを指定ファイルから読み込む。"""
+    return ManifestContainer.from_file(manifest_path)
 
-    root_dir = manifest_path.parent
-    manifest = EngineManifestJson.parse_file(manifest_path).dict()
+
+def generate_api_manifest(manifest_container: ManifestContainer) -> EngineManifest:
+    """API 向けのエンジンマニフェストを生成する。"""
+    root_dir = manifest_container.root
+    manifest = manifest_container.dict()
+
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
         name=manifest["name"],

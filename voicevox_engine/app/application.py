@@ -18,7 +18,7 @@ from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_route
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.engine_manifest import ManifestContainer
 from voicevox_engine.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.Preset import PresetManager
@@ -35,7 +35,7 @@ def generate_app(
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,
-    engine_manifest: EngineManifest,
+    engine_manifest: ManifestContainer,
     cancellable_engine: CancellableEngine | None = None,
     speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -59,7 +59,7 @@ def generate_app(
 
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest.supported_vvlib_manifest_version,
+        None,
         engine_manifest.brand_name,
         engine_manifest.name,
         engine_manifest.uuid,
@@ -77,7 +77,7 @@ def generate_app(
     app.include_router(
         generate_speaker_router(core_manager, metas_store, speaker_info_dir)
     )
-    if engine_manifest.supported_features.manage_library:
+    if engine_manifest.supported_features.manage_library.value:
         app.include_router(generate_library_router(engine_manifest, library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))

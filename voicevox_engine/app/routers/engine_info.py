@@ -9,7 +9,11 @@ from pydantic import BaseModel, Field
 from voicevox_engine import __version__
 from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.engine_manifest import (
+    EngineManifest,
+    ManifestContainer,
+    generate_api_manifest,
+)
 
 
 class SupportedDevicesInfo(BaseModel):
@@ -32,7 +36,7 @@ class SupportedDevicesInfo(BaseModel):
 
 
 def generate_engine_info_router(
-    core_manager: CoreManager, engine_manifest_data: EngineManifest
+    core_manager: CoreManager, engine_manifest_data: ManifestContainer
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -61,6 +65,6 @@ def generate_engine_info_router(
     @router.get("/engine_manifest", response_model=EngineManifest)
     async def engine_manifest() -> EngineManifest:
         """エンジンマニフェストを取得します。"""
-        return engine_manifest_data
+        return generate_api_manifest(engine_manifest_data)
 
     return router
