@@ -12,7 +12,7 @@ from voicevox_engine.utility.path_utility import resource_root
 from ..dependencies import check_disabled_mutable_api
 
 _setting_ui_template = Jinja2Templates(
-    directory=resource_root() / "ui_template",
+    directory=resource_root(),
     variable_start_string="<JINJA_PRE>",
     variable_end_string="<JINJA_POST>",
 )
@@ -38,7 +38,7 @@ def generate_setting_router(
             allow_origin = ""
 
         return _setting_ui_template.TemplateResponse(
-            "ui.html",
+            "setting_ui_template.html",
             {
                 "request": request,
                 "brand_name": brand_name,
