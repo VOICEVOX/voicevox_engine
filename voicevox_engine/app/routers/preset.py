@@ -4,9 +4,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import (
+    Preset,
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
 
 from ..dependencies import check_disabled_mutable_api
 

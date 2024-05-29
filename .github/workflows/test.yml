@@ -40,13 +40,11 @@ jobs:
       - name: <Test> Check dependency lists
         run: |
           poetry export --without-hashes -o requirements.txt.check
-          poetry export --without-hashes --with dev -o requirements-dev.txt.check
           poetry export --without-hashes --with test -o requirements-test.txt.check
           poetry export --without-hashes --with build -o requirements-build.txt.check
           poetry export --without-hashes --with license -o requirements-license.txt.check
 
           diff -q requirements.txt requirements.txt.check || \
-          diff -q requirements-dev.txt requirements-dev.txt.check || \
           diff -q requirements-test.txt requirements-test.txt.check || \
           diff -q requirements-build.txt requirements-build.txt.check || \
           diff -q requirements-license.txt requirements-license.txt.check > /dev/null
@@ -72,7 +70,7 @@ jobs:
 
       - name: <Test> Test names by checking typo
         if: matrix.os == 'ubuntu-20.04'
-        uses: crate-ci/typos@v1.12.12
+        uses: crate-ci/typos@v1.21.0
 
   lint-builders:
     runs-on: ubuntu-20.04

@@ -12,14 +12,18 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import soundfile
-
-# FIXME: remove FastAPI dependency
-from fastapi import HTTPException, Request
+from fastapi import Request
 
 from .core.core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import make_tts_engines_from_cores
+
+
+class CancellableEngineInternalError(Exception):
+    """キャンセル可能エンジンの内部エラー"""
+
+    pass
 
 
 class CancellableEngine:
@@ -173,11 +177,9 @@ class CancellableEngine:
                 audio_file_name = f_name
             else:
                 # ここには来ないはず
-                raise HTTPException(status_code=500, detail="不正な値が生成されました")
+                raise CancellableEngineInternalError("不正な値が生成されました")
         except EOFError:
-            raise HTTPException(
-                status_code=500, detail="既にサブプロセスは終了されています"
-            )
+            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
         except Exception:
             self.finalize_con(request, proc, sub_proc_con1)
             raise
