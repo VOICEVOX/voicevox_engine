@@ -1,6 +1,5 @@
 """エンジンの情報機能を提供する API Router"""
 
-import json
 from typing import Self
 
 from fastapi import APIRouter, HTTPException, Response
@@ -42,15 +41,12 @@ def generate_engine_info_router(
         """エンジンのバージョンを取得します。"""
         return __version__
 
-    @router.get("/core_versions", response_model=list[str])
-    async def core_versions() -> Response:
+    @router.get("/core_versions")
+    async def core_versions() -> list[str]:
         """利用可能なコアのバージョン一覧を取得します。"""
-        return Response(
-            content=json.dumps(core_manager.versions()),
-            media_type="application/json",
-        )
+        return core_manager.versions()
 
-    @router.get("/supported_devices", response_model=SupportedDevicesInfo)
+    @router.get("/supported_devices")
     def supported_devices(core_version: str | None = None) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
         supported_devices = core_manager.get_core(core_version).supported_devices
@@ -58,7 +54,7 @@ def generate_engine_info_router(
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return SupportedDevicesInfo.generate_from(supported_devices)
 
-    @router.get("/engine_manifest", response_model=EngineManifest)
+    @router.get("/engine_manifest")
     async def engine_manifest() -> EngineManifest:
         """エンジンマニフェストを取得します。"""
         return engine_manifest_data
