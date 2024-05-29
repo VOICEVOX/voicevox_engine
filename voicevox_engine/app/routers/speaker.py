@@ -21,20 +21,21 @@ def b64encode_str(s: bytes) -> str:
 def generate_speaker_router(
     core_manager: CoreManager,
     metas_store: MetasStore,
-    root_dir: Path,
+    speaker_info_dir: Path,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
+        """話者情報の一覧を取得します。"""
         speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -85,7 +86,7 @@ def generate_speaker_router(
 
         # 話者情報を取得する
         try:
-            speaker_path = root_dir / "speaker_info" / speaker_uuid
+            speaker_path = speaker_info_dir / speaker_uuid
 
             # speaker policy
             policy_path = speaker_path / "policy.md"
@@ -137,13 +138,14 @@ def generate_speaker_router(
 
     @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
+        """歌手情報の一覧を取得します"""
         singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
     def singer_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -158,7 +160,7 @@ def generate_speaker_router(
         skip_reinit: Annotated[
             bool,
             Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
+                description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
             ),
         ] = False,
         core_version: str | None = None,
