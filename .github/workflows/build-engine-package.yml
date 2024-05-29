@@ -129,7 +129,7 @@ jobs:
       # CUDA
       - name: <Setup> Restore cached CUDA
         if: matrix.cuda_version != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cuda-dll-cache-restore
         with:
           # update this key when ONNX Runtime CUDA dependency changed
@@ -138,7 +138,7 @@ jobs:
 
       - name: <Setup> Set up CUDA toolkit
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
-        uses: Jimver/cuda-toolkit@v0.2.10
+        uses: Jimver/cuda-toolkit@v0.2.15
         id: cuda-toolkit
         with:
           method: network
@@ -183,7 +183,7 @@ jobs:
 
       - name: <Setup> Save CUDA cache
         if: matrix.cuda_version != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.cuda-dll-cache-restore.outputs.cache-primary-key }}
           path: download/cuda
@@ -195,7 +195,7 @@ jobs:
 
       - name: <Setup> Restore cached cuDNN
         if: matrix.cudnn_url != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cudnn-dll-cache-restore
         with:
           # update this key when ONNX Runtime cuDNN dependency changed
@@ -237,7 +237,7 @@ jobs:
 
       - name: <Setup> Save cuDNN cache
         if: matrix.cudnn_url != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.cudnn-dll-cache-restore.outputs.cache-primary-key }}
           path: download/cudnn
@@ -249,7 +249,7 @@ jobs:
 
       - name: <Setup> Restore cached zlib
         if: matrix.zlib_url != ''
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: zlib-cache-restore
         with:
           key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
@@ -269,7 +269,7 @@ jobs:
 
       - name: <Setup> Save zlib cache
         if: matrix.zlib_url != ''
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.zlib-cache-restore.outputs.cache-primary-key }}
           path: download/zlib
@@ -320,7 +320,7 @@ jobs:
 
       - name: <Setup> Restore cached DirectML
         if: endswith(matrix.target, '-directml')
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: directml-cache-restore
         with:
           key: directml-cache-v1-${{ hashFiles('download/directml_url.txt') }}
@@ -340,7 +340,7 @@ jobs:
 
       - name: <Setup> Save DirectML cache
         if: endswith(matrix.target, '-directml')
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.directml-cache-restore.outputs.cache-primary-key }}
           path: download/directml
@@ -350,7 +350,7 @@ jobs:
         run: echo "${{ matrix.onnxruntime_url }}" > download/onnxruntime_url.txt
 
       - name: <Setup> Restore cached ONNX Runtime
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: onnxruntime-cache-restore
         with:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
@@ -385,14 +385,14 @@ jobs:
           rm download/onnxruntime.tgz
 
       - name: <Setup> Save ONNX Runtime cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/onnxruntime
 
       # VOICEVOX RESOURCE
       - name: <Setup> Prepare RESOURCE cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -413,7 +413,7 @@ jobs:
 
       # VOICEVOX CORE
       - name: <Setup> Prepare CORE cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: voicevox-core-cache
         with:
           key: ${{ matrix.os }}-voicevox-core-${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
