@@ -4,7 +4,7 @@ import threading
 import traceback
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -43,11 +43,10 @@ save_dir = get_save_dir()
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
-_DEFAULT_DICT_PATH = (
-    resource_dir / "default.csv"
-)  # VOICEVOXデフォルト辞書ファイルのパス
-_USER_DICT_PATH = save_dir / "user_dict.json"  # ユーザー辞書ファイルのパス
-_COMPILED_DICT_PATH = save_dir / "user.dic"  # コンパイル済み辞書ファイルのパス
+# デフォルトのファイルパス
+DEFAULT_DICT_PATH: Final = resource_dir / "default.csv"  # VOICEVOXデフォルト辞書
+_USER_DICT_PATH: Final = save_dir / "user_dict.json"  # ユーザー辞書
+_COMPILED_DICT_PATH: Final = save_dir / "user.dic"  # コンパイル済み辞書
 
 
 # 同時書き込みの制御
@@ -286,7 +285,7 @@ class UserDictionary:
 
     def __init__(
         self,
-        default_dict_path: Path = _DEFAULT_DICT_PATH,
+        default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
         compiled_dict_path: Path = _COMPILED_DICT_PATH,
     ) -> None:
@@ -332,7 +331,6 @@ class UserDictionary:
         # インポートする辞書データのバリデーション
         for word_uuid, word in dict_data.items():
             UUID(word_uuid)
-            assert isinstance(word, UserDictWord)
             for pos_detail in part_of_speech_data.values():
                 if word.context_id == pos_detail.context_id:
                     assert word.part_of_speech == pos_detail.part_of_speech

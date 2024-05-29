@@ -101,12 +101,12 @@ def test_tts_engines_has_engine_true() -> None:
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
     tts_engines.register_engine(MockTTSEngine(), "0.0.2")
     # Expects
-    true_has = True
+    expected_has = True
     # Outputs
     has = tts_engines.has_engine("0.0.1")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
 
 
 def test_tts_engines_has_engine_false() -> None:
@@ -116,9 +116,9 @@ def test_tts_engines_has_engine_false() -> None:
     tts_engines.register_engine(MockTTSEngine(), "0.0.1")
     tts_engines.register_engine(MockTTSEngine(), "0.0.2")
     # Expects
-    true_has = False
+    expected_has = False
     # Outputs
     has = tts_engines.has_engine("0.0.3")
 
     # Test
-    assert true_has == has
+    assert expected_has == has
