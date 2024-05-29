@@ -1,6 +1,5 @@
 """ユーザー辞書機能を提供する API Router"""
 
-import traceback
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query

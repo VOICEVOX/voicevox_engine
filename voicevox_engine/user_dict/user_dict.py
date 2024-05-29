@@ -1,7 +1,6 @@
 import json
 import sys
 import threading
-import traceback
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
