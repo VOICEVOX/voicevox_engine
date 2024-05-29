@@ -56,12 +56,6 @@ soxr = "^0.3.6"
 pydantic = "^1.10.15"
 starlette = "^0.37.0"
 
-[tool.poetry.group.dev.dependencies]
-pyinstaller = "^5.13"
-pre-commit = "^2.16.0"
-poetry = "1.8.2"
-poetry-plugin-export = "^1.8.0"
-
 [tool.poetry.group.test.dependencies]
 pysen = "^0.11.0"
 black = "^24.4.0"
@@ -77,6 +71,10 @@ httpx = "^0.27.0" # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
 safety = "^3.1.0"
+pre-commit = "^2.16.0"
+
+[tool.poetry.group.build.dependencies]
+pyinstaller = "^5.13"
 
 [tool.poetry.group.license.dependencies]
 pip-licenses = "^4.4.0"

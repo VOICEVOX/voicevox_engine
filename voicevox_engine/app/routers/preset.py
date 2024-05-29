@@ -4,21 +4,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetInputError, PresetInternalError
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import (
+    Preset,
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
 
 from ..dependencies import check_disabled_mutable_api
 
 
 def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     """プリセット API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
     @router.get(
         "/presets",
         response_description="プリセットのリスト",
-        tags=["その他"],
     )
     def get_presets() -> list[Preset]:
         """
@@ -35,7 +37,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/add_preset",
         response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_preset(
@@ -60,7 +61,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/update_preset",
         response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def update_preset(
@@ -85,7 +85,6 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/delete_preset",
         status_code=204,
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_preset(

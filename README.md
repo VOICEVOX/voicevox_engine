@@ -460,8 +460,8 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 # 実行環境のインストール
 python -m pip install -r requirements.txt
 
-# 開発環境・テスト環境のインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
+# 開発環境・テスト環境・ビルド環境のインストール
+python -m pip install -r requirements-test.txt -r requirements-build.txt
 ```
 
 ### 実行
@@ -569,7 +569,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements-build.txt
 
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
@@ -642,6 +642,7 @@ typos
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
 poetry add --group test `パッケージ名` # テスト依存の追加
+poetry add --group build `パッケージ名` # ビルド依存の追加
 
 # パッケージをアップデートする場合
 poetry update `パッケージ名`
@@ -649,8 +650,8 @@ poetry update # 全部更新
 
 # requirements.txtの更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with build -o requirements-build.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
