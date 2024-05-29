@@ -16,6 +16,8 @@ def round_floats(value: Any, round_value: int) -> Any:
         return [round_floats(v, round_value) for v in value]
     elif isinstance(value, dict):
         return {k: round_floats(v, round_value) for k, v in value.items()}
+    elif isinstance(value, np.ndarray):
+        return np.round(value, round_value)
     else:
         return value
 
