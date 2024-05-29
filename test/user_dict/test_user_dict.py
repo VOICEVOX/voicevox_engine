@@ -11,9 +11,9 @@ from voicevox_engine.user_dict.part_of_speech_data import (
     part_of_speech_data,
 )
 from voicevox_engine.user_dict.user_dict import (
-    WordProperty,
     UserDictInputError,
     UserDictionary,
+    WordProperty,
     _create_word,
 )
 
@@ -150,9 +150,7 @@ def test_rewrite_word_invalid_id(tmp_path: Path) -> None:
     with pytest.raises(UserDictInputError):
         user_dict.rewrite_word(
             "c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
-            WordProperty(
-                surface="test2", pronunciation="テストツー", accent_type=2
-            ),
+            WordProperty(surface="test2", pronunciation="テストツー", accent_type=2),
         )
 
 

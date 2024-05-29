@@ -208,6 +208,7 @@ def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
 @dataclass
 class WordProperty:
     """単語属性のあつまり（ENGINE 内部向け）"""
+
     surface: str  # 単語情報
     pronunciation: str  # 単語情報
     accent_type: int  # 単語情報
