@@ -22,7 +22,7 @@ def b64encode_str(s: bytes) -> str:
 def generate_speaker_router(
     core_manager: CoreManager,
     metas_store: MetasStore,
-    root_dir: Path,
+    speaker_info_dir: Path,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -87,7 +87,7 @@ def generate_speaker_router(
 
         # 話者情報を取得する
         try:
-            speaker_path = root_dir / "speaker_info" / speaker_uuid
+            speaker_path = speaker_info_dir / speaker_uuid
 
             # speaker policy
             policy_path = speaker_path / "policy.md"
