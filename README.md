@@ -461,7 +461,7 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 python -m pip install -r requirements.txt
 
 # 開発環境・テスト環境・ビルド環境のインストール
-python -m pip install -r requirements-test.txt -r requirements-build.txt
+python -m pip install -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ### 実行
@@ -641,7 +641,6 @@ typos
 # パッケージを追加する場合
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group test `パッケージ名` # テスト依存の追加
 poetry add --group build `パッケージ名` # ビルド依存の追加
 
 # パッケージをアップデートする場合
@@ -650,7 +649,7 @@ poetry update # 全部更新
 
 # requirements.txtの更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with test -o requirements-test.txt
+poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with build -o requirements-build.txt
 poetry export --without-hashes --with license -o requirements-license.txt
 ```
