@@ -1,7 +1,6 @@
 """話者情報機能を提供する API Router"""
 
 import base64
-import json
 import traceback
 from pathlib import Path
 from typing import Annotated, Literal
@@ -76,7 +75,7 @@ def generate_speaker_router(
 
         # 該当話者を検索する
         speakers = parse_obj_as(
-            list[Speaker], json.loads(core_manager.get_core(core_version).speakers)
+            list[Speaker], core_manager.get_core(core_version).speakers
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
