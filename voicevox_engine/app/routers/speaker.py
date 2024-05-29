@@ -2,7 +2,6 @@
 
 import base64
 import json
-import traceback
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -127,7 +126,6 @@ def generate_speaker_router(
                     }
                 )
         except FileNotFoundError:
-            traceback.print_exc()
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
