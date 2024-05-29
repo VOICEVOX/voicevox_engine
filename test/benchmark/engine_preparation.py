@@ -14,7 +14,6 @@ from voicevox_engine.preset.PresetManager import PresetManager
 from voicevox_engine.setting.Setting import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.core_version_utility import get_latest_version
 from voicevox_engine.utility.path_utility import engine_manifest_path
 
 
