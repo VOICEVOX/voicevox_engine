@@ -1,13 +1,13 @@
 name: "Prepare Python"
-description: "Prepare Python interpreter, dependencies and version number"
+description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを外部へ提供をする"
 
 inputs:
   python:
-    description: "Whether to setup Python runtime / Python dependencies"
+    description: "Python ランタイムと依存パッケージをインストールするか否か"
     required: false
     default: "true"
   requirements-suffix:
-    description: "suffix of `rquirements` for Python dependency install"
+    description: "依存パッケージインストール時に `rquirements` へ付ける接尾語"
     required: false
     default: ""
   python-version:
