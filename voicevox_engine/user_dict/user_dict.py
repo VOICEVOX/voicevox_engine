@@ -206,7 +206,7 @@ def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
 
 
 @dataclass
-class SimpleUserDictWord:
+class WordProperty:
     """単語属性のあつまり（ENGINE 内部向け）"""
     surface: str  # 単語情報
     pronunciation: str  # 単語情報
@@ -215,15 +215,15 @@ class SimpleUserDictWord:
     priority: int | None = None  # 優先度
 
 
-def _create_word(word: SimpleUserDictWord) -> UserDictWord:
+def _create_word(word_property: WordProperty) -> UserDictWord:
     """単語オブジェクトを生成する。"""
-    word_type: WordTypes | None = word.word_type
+    word_type: WordTypes | None = word_property.word_type
     if word_type is None:
         word_type = WordTypes.PROPER_NOUN
     if word_type not in part_of_speech_data.keys():
         raise UserDictInputError("不明な品詞です")
 
-    priority: int | None = word.priority
+    priority: int | None = word_property.priority
     if priority is None:
         priority = 5
     if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
@@ -231,7 +231,7 @@ def _create_word(word: SimpleUserDictWord) -> UserDictWord:
 
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
-        surface=word.surface,
+        surface=word_property.surface,
         context_id=pos_detail.context_id,
         priority=priority,
         part_of_speech=pos_detail.part_of_speech,
@@ -241,9 +241,9 @@ def _create_word(word: SimpleUserDictWord) -> UserDictWord:
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
-        yomi=word.pronunciation,
-        pronunciation=word.pronunciation,
-        accent_type=word.accent_type,
+        yomi=word_property.pronunciation,
+        pronunciation=word_property.pronunciation,
+        accent_type=word_property.accent_type,
         mora_count=None,
         accent_associative_rule="*",
     )
@@ -364,12 +364,12 @@ class UserDictionary:
             compiled_dict_path=self._compiled_dict_path,
         )
 
-    def apply_word(self, word: SimpleUserDictWord) -> str:
+    def apply_word(self, word_property: WordProperty) -> str:
         """新規単語を追加し、その単語に割り当てられた UUID を返す。"""
         # 新規単語の追加による辞書データの更新
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         word_uuid = str(uuid4())
-        user_dict[word_uuid] = _create_word(word)
+        user_dict[word_uuid] = _create_word(word_property)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)
@@ -381,13 +381,13 @@ class UserDictionary:
 
         return word_uuid
 
-    def rewrite_word(self, word_uuid: str, word: SimpleUserDictWord) -> None:
+    def rewrite_word(self, word_uuid: str, word_property: WordProperty) -> None:
         """単語 UUID で指定された単語を上書き更新する。"""
         # 既存単語の上書きによる辞書データの更新
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         if word_uuid not in user_dict:
             raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
-        user_dict[word_uuid] = _create_word(word)
+        user_dict[word_uuid] = _create_word(word_property)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)

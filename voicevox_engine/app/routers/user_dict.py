@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from voicevox_engine.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
 from voicevox_engine.user_dict.user_dict import (
-    SimpleUserDictWord,
+    WordProperty,
     UserDictInputError,
     UserDictionary,
 )
@@ -67,7 +67,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             word_uuid = user_dict.apply_word(
-                SimpleUserDictWord(
+                WordProperty(
                     surface=surface,
                     pronunciation=pronunciation,
                     accent_type=accent_type,
@@ -121,7 +121,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         try:
             user_dict.rewrite_word(
                 word_uuid,
-                SimpleUserDictWord(
+                WordProperty(
                     surface=surface,
                     pronunciation=pronunciation,
                     accent_type=accent_type,
