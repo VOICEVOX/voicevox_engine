@@ -43,6 +43,22 @@ def hash_long_string(value: Any) -> Any:
         return value
 
 
+def hash_big_ndarray(value: Any) -> Any:
+    """要素数が100を超える NDArray はハッシュ化する"""
+
+    def to_hash(value: np.ndarray) -> str:
+        return "MD5:" + hashlib.md5(value.tobytes()).hexdigest()
+
+    if isinstance(value, np.ndarray):
+        return value if value.size <= 100 else to_hash(value)
+    elif isinstance(value, list):
+        return [hash_big_ndarray(v) for v in value]
+    elif isinstance(value, dict):
+        return {k: hash_big_ndarray(v) for k, v in value.items()}
+    else:
+        return value
+
+
 def hash_wave_floats_from_wav_bytes(wav_bytes: bytes) -> str:
     """.wavファイルバイト列から音声波形を抽出しハッシュ化する"""
     wave = sf.read(io.BytesIO(wav_bytes))[0].tolist()
