@@ -1,6 +1,7 @@
 """話者情報機能を提供する API Router"""
 
 import base64
+import json
 import traceback
 from os.path import basename
 from pathlib import Path
@@ -58,8 +59,6 @@ def generate_speaker_router(
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
-
-    speaker_info_dir = root_dir / "speaker_info"
 
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
