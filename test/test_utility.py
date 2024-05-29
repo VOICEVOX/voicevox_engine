@@ -38,7 +38,7 @@ def test_hash_big_ndarray_raw_small_array() -> None:
     assert hash_big_ndarray(target) == np.array([111.111])
 
 
-def test_hash_big_ndarray_raw_small_array() -> None:
+def test_hash_big_ndarray_raw_big_array() -> None:
     """`hash_big_ndarray()` は大きい NumPy 配列をハッシュ化する。"""
     # Inputs
     target = np.ones([10, 10, 10])
