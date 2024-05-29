@@ -2,7 +2,7 @@
 
 from typing import Self
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from voicevox_engine import __version__
