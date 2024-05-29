@@ -98,28 +98,27 @@ class MetasStore:
         speaker_or_singer: Literal["speaker", "singer"],
         core_speakers: list[CoreSpeaker],
     ) -> SpeakerInfo:
-        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
-        # {root_dir}/
-        #   speaker_info/
-        #       {speaker_uuid_0}/
-        #           policy.md
-        #           portrait.png
-        #           icons/
-        #               {id_0}.png
-        #               {id_1}.png
-        #               ...
-        #           portraits/
-        #               {id_0}.png
-        #               {id_1}.png
-        #               ...
-        #           voice_samples/
-        #               {id_0}_001.wav
-        #               {id_0}_002.wav
-        #               {id_0}_003.wav
-        #               {id_1}_001.wav
-        #               ...
-        #       {speaker_uuid_1}/
-        #           ...
+        # キャラクター情報は以下のディレクトリ構造に従わなければならない。
+        # {speaker_info}/
+        #     {speaker_uuid_0}/
+        #         policy.md
+        #         portrait.png
+        #         icons/
+        #             {id_0}.png
+        #             {id_1}.png
+        #             ...
+        #         portraits/
+        #             {id_0}.png
+        #             {id_1}.png
+        #             ...
+        #         voice_samples/
+        #             {id_0}_001.wav
+        #             {id_0}_002.wav
+        #             {id_0}_003.wav
+        #             {id_1}_001.wav
+        #             ...
+        #     {speaker_uuid_1}/
+        #         ...
 
         # 該当話者を検索する
         speakers = parse_obj_as(list[Speaker], core_speakers)
