@@ -37,7 +37,7 @@ multi_line_output = 3
 use_parentheses = true
 
 [tool.typos.default.extend-words]
-datas = "datas" # PyInstallerの引数
+datas = "datas" # PyInstaller's argument
 
 [tool.poetry]
 package-mode = false
