@@ -2,7 +2,7 @@ import json
 import os
 from argparse import ArgumentParser
 from collections.abc import Generator
-from hashlib import md5
+from hashlib import sha256
 from pathlib import Path, PurePosixPath
 
 SPEAKER_INFO_DIR = (Path(__file__).parents[1] / "speaker_info").resolve()
@@ -14,7 +14,7 @@ def to_posix_str_path(path: Path) -> str:
 
 
 def make_hash(file: Path) -> str:
-    digest = md5(file.read_bytes()).digest()
+    digest = sha256(file.read_bytes()).digest()
     return digest.hex()
 
 
@@ -31,27 +31,21 @@ def walk_character_files(
             yield (relative, filehash)
 
 
-def mapping(target: Path) -> dict[str, dict[str, str]]:
+def mapping(target: Path) -> dict[str, str]:
     return {
-        character_dir.name: {
-            to_posix_str_path(filepath): filehash
-            for filepath, filehash in walk_character_files(
-                character_dir, ("wav", "png")
-            )
-        }
-        for character_dir in target.iterdir()
-        if character_dir.is_dir()
+        to_posix_str_path(filepath): filehash
+        for filepath, filehash in walk_character_files(target, ("wav", "png"))
     }
 
 
 def main() -> None:
     parser = ArgumentParser()
-    parser.add_argument("--save", default=None, type=Path)
+    parser.add_argument("--save", type=Path)
     parser.add_argument("--target", default=SPEAKER_INFO_DIR, type=Path)
     arg = parser.parse_args()
-    save: Path = arg.target if arg.save is None else arg.save
-    save_file: Path = save if not save.is_dir() else save / DEFAULT_FILENAME
     target_dir: Path = arg.target
+    save: Path = target_dir.parent if arg.save is None else arg.save
+    save_file: Path = save if not save.is_dir() else save / DEFAULT_FILENAME
     if not target_dir.is_dir():
         raise Exception()
     mapped = mapping(target_dir)

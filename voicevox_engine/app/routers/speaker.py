@@ -3,12 +3,12 @@
 import base64
 import json
 import traceback
-from os.path import basename
+from hashlib import sha256
 from pathlib import Path
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import FileResponse, Response
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
@@ -16,40 +16,41 @@ from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 from voicevox_engine.model import Speaker, SpeakerInfo
 
+RESOURCE_ENDPOINT = "resources"
+
 
 async def get_character_resource_baseurl(request: Request) -> str:
-    return f"{request.url.scheme}://{request.url.netloc}/character_resources"
+    return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
 def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
-def read_mapfile(speaker_info_dir: Path) -> dict[str, dict[str, str]]:
-    filemap_path = speaker_info_dir / "filemap.json"
-    with filemap_path.open(mode="rb") as f:
-        filemap: dict[str, dict[str, str]] = json.load(f)
-    return filemap
+class SpeakerResourceManager:
+    def __init__(self, speaker_info_dir: Path, is_development: bool) -> None:
+        try:
+            with (speaker_info_dir.parent / "filemap.json").open(mode="rb") as f:
+                data: dict[str, str] = json.load(f)
+            self.filemap = {speaker_info_dir / k: v for k, v in data.items()}
+        except FileNotFoundError as e:
+            if is_development:
+                self.filemap = {
+                    i: sha256(i.read_bytes()).digest().hex()
+                    for i in speaker_info_dir.glob("**/*")
+                    if i.is_file()
+                }
+            else:
+                raise e
+        self.hashmap = {v: k for k, v in self.filemap.items()}
 
+    def resource_str(self, resource_path: Path, base_url: str, return_url: bool) -> str:
+        if not return_url:
+            return b64encode_str(resource_path.read_bytes())
+        return f"{base_url}/{self.filemap[resource_path]}"
 
-def gen_file_name(filehash: str, filename: str) -> str:
-    return f"{filehash}_{filename}"
-
-
-def file_url(base_url: str, speaker_id: str, filehash: str, filename: str) -> str:
-    return f"{base_url}/{speaker_id}/" + gen_file_name(filehash, filename)
-
-
-def gen_hash_to_resource_id_mapping(
-    filemap: dict[str, dict[str, str]]
-) -> dict[str, dict[str, str]]:
-    return {
-        speaker_uuid: {
-            f"{filehash}_{basename(filepath)}": filepath
-            for filepath, filehash in ph.items()
-        }
-        for speaker_uuid, ph in filemap.items()
-    }
+    def resource_path(self, filehash: str) -> Path:
+        return self.hashmap[filehash]
 
 
 def generate_speaker_router(
@@ -85,7 +86,7 @@ def generate_speaker_router(
             resource_url=resource_url,
         )
 
-    mapfile = read_mapfile(speaker_info_dir)
+    manager = SpeakerResourceManager(speaker_info_dir, True)
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
@@ -138,17 +139,8 @@ def generate_speaker_router(
             policy = policy_path.read_text("utf-8")
 
             # speaker portrait
-            if resource_url:
-                speaker_map = mapfile[speaker_uuid]
-                portrait = file_url(
-                    self_url,
-                    speaker_uuid,
-                    speaker_map["portrait.png"],
-                    "portrait.png",
-                )
-            else:
-                portrait_path = speaker_path / "portrait.png"
-                portrait = b64encode_str(portrait_path.read_bytes())
+            portrait_path = speaker_path / "portrait.png"
+            portrait = manager.resource_str(portrait_path, self_url, resource_url)
 
             # スタイル情報を取得する
             style_infos = []
@@ -156,48 +148,26 @@ def generate_speaker_router(
                 id = style.id
 
                 # style icon
-                style_icon_name = f"{id}.png"
+                style_icon_path = speaker_path / "icons" / f"{id}.png"
+                icon = manager.resource_str(style_icon_path, self_url, resource_url)
 
                 # style portrait
-                style_portrait_name = f"{id}.png"
+                style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
+                if style_portrait_path.exists():
+                    style_portrait = manager.resource_str(
+                        style_portrait_path, self_url, resource_url
+                    )
 
                 # voice samples
-                voice_samples_names = [
-                    "{}_{}.wav".format(id, str(j + 1).zfill(3)) for j in range(3)
-                ]
-                if resource_url:
-                    icon_hash = speaker_map[f"icons/{style_icon_name}"]
-                    icon = file_url(self_url, speaker_uuid, icon_hash, style_icon_name)
-                    style_portrait_hash = speaker_map.get(
-                        f"portraits/{style_portrait_name}"
+                voice_samples: list[str] = []
+                for j in range(3):
+                    num = str(j + 1).zfill(3)
+                    voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_samples.append(
+                        manager.resource_str(voice_path, self_url, resource_url)
                     )
-                    if style_portrait_hash is not None:
-                        style_portrait = file_url(
-                            self_url, speaker_uuid, style_portrait_hash, style_icon_name
-                        )
-                    voice_samples_hashes = {
-                        speaker_map[f"voice_samples/{name}"]: name
-                        for name in voice_samples_names
-                    }
-                    voice_samples = [
-                        file_url(self_url, speaker_uuid, k, v)
-                        for k, v in voice_samples_hashes.items()
-                    ]
-                else:
-                    style_icon_path = speaker_path / "icons" / style_icon_name
-                    icon = b64encode_str(style_icon_path.read_bytes())
-                    style_portrait_path = (
-                        speaker_path / "portraits" / style_portrait_name
-                    )
-                    if style_portrait_path.exists():
-                        style_portrait = b64encode_str(style_portrait_path.read_bytes())
-                    voice_samples = [
-                        b64encode_str(
-                            (speaker_path / "voice_samples" / name).read_bytes()
-                        )
-                        for name in voice_samples_names
-                    ]
+
                 style_infos.append(
                     {
                         "id": id,
@@ -241,25 +211,14 @@ def generate_speaker_router(
             resource_url=resource_url,
         )
 
-    resource_id_mapping = gen_hash_to_resource_id_mapping(mapfile)
-
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
-    @router.get(
-        "/character_resources/{speaker_uuid}/{resource_name}", include_in_schema=False
-    )
-    async def static(
-        request: Request, speaker_uuid: str, resource_name: str
-    ) -> Response:
-        try:
-            resource = resource_id_mapping[speaker_uuid][resource_name]
-        except KeyError:
-            raise HTTPException(status_code=404)
+    @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
+    async def resources(request: Request, resource_name: str) -> Response:
         headers = {
             "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate"
         }
-        response = FileResponse(
-            speaker_info_dir / speaker_uuid / resource, headers=headers
-        )
+        resource_path = manager.resource_path(resource_name)
+        response = FileResponse(resource_path, headers=headers)
         return response
 
     @router.post("/initialize_speaker", status_code=204)
