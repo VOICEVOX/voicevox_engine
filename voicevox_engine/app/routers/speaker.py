@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
@@ -74,9 +73,7 @@ def generate_speaker_router(
         #           ...
 
         # 該当話者を検索する
-        speakers = parse_obj_as(
-            list[Speaker], core_manager.get_core(core_version).speakers
-        )
+        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
