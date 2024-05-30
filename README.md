@@ -596,7 +596,7 @@ fork したリポジトリで Actions を ON にし、workflow_dispatch で`buil
 プルリクエストを作成する際は、利用することを推奨します。
 
 ```bash
-pre-commit install -t pre-push
+pre-commit install -t pre-push --config build_util/.pre-commit-config.yaml
 ```
 
 エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
