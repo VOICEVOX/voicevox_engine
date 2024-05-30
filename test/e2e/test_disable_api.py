@@ -5,7 +5,8 @@ APIを無効化するテスト
 from typing import Literal
 
 from fastapi.testclient import TestClient
-from run import generate_app
+
+from voicevox_engine.app.application import generate_app
 
 
 # clientとschemaとパスを受け取ってリクエストを送信し、レスポンスが403であることを確認する

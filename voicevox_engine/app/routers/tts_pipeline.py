@@ -2,15 +2,18 @@
 
 import zipfile
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated, Callable
+from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
+from voicevox_engine.cancellable_engine import (
+    CancellableEngine,
+    CancellableEngineInternalError,
+)
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import (
     AccentPhrase,
@@ -20,20 +23,26 @@ from voicevox_engine.model import (
     ParseKanaError,
     Score,
 )
-from voicevox_engine.preset.PresetError import PresetError
-from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
-from voicevox_engine.utility.connect_base64_waves import (
+from voicevox_engine.preset.Preset import (
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
+from voicevox_engine.tts_pipeline.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
+)
+from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.tts_engine import (
+    TalkSingInvalidInputError,
+    TTSEngineManager,
 )
 from voicevox_engine.utility.path_utility import delete_file
 
 
-def generate_router(
-    get_engine: Callable[[str | None], TTSEngine],
-    get_core: Callable[[str | None], CoreAdapter],
+def generate_tts_pipeline_router(
+    tts_engines: TTSEngineManager,
+    core_manager: CoreManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:
@@ -42,7 +51,6 @@ def generate_router(
 
     @router.post(
         "/audio_query",
-        response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="音声合成用のクエリを作成する",
     )
@@ -54,8 +62,8 @@ def generate_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
-        core = get_core(core_version)
+        engine = tts_engines.get_engine(core_version)
+        core = core_manager.get_core(core_version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -72,7 +80,6 @@ def generate_router(
 
     @router.post(
         "/audio_query_from_preset",
-        response_model=AudioQuery,
         tags=["クエリ作成"],
         summary="音声合成用のクエリをプリセットを用いて作成する",
     )
@@ -84,12 +91,14 @@ def generate_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
-        core = get_core(core_version)
+        engine = tts_engines.get_engine(core_version)
+        core = core_manager.get_core(core_version)
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -115,7 +124,6 @@ def generate_router(
 
     @router.post(
         "/accent_phrases",
-        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="テキストからアクセント句を得る",
         responses={
@@ -140,7 +148,7 @@ def generate_router(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         if is_kana:
             try:
                 return engine.create_accent_phrases_from_kana(text, style_id)
@@ -153,7 +161,6 @@ def generate_router(
 
     @router.post(
         "/mora_data",
-        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音高・音素長を得る",
     )
@@ -162,12 +169,11 @@ def generate_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @router.post(
         "/mora_length",
-        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音素長を得る",
     )
@@ -176,12 +182,11 @@ def generate_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
 
     @router.post(
         "/mora_pitch",
-        response_model=list[AccentPhrase],
         tags=["クエリ編集"],
         summary="アクセント句から音高を得る",
     )
@@ -190,7 +195,7 @@ def generate_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -217,7 +222,7 @@ def generate_router(
         ] = True,
         core_version: str | None = None,
     ) -> FileResponse:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
@@ -257,9 +262,13 @@ def generate_router(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        f_name = cancellable_engine._synthesis_impl(
-            query, style_id, request, core_version=core_version
-        )
+        try:
+            f_name = cancellable_engine._synthesis_impl(
+                query, style_id, request, core_version=core_version
+            )
+        except CancellableEngineInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
@@ -289,7 +298,7 @@ def generate_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> FileResponse:
-        engine = get_engine(core_version)
+        engine = tts_engines.get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -320,7 +329,6 @@ def generate_router(
 
     @router.post(
         "/sing_frame_audio_query",
-        response_model=FrameAudioQuery,
         tags=["クエリ作成"],
         summary="歌唱音声合成用のクエリを作成する",
     )
@@ -332,11 +340,14 @@ def generate_router(
         """
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = get_engine(core_version)
-        core = get_core(core_version)
-        phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
-            score, style_id
-        )
+        engine = tts_engines.get_engine(core_version)
+        core = core_manager.get_core(core_version)
+        try:
+            phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
+                score, style_id
+            )
+        except TalkSingInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         return FrameAudioQuery(
             f0=f0,
@@ -349,7 +360,6 @@ def generate_router(
 
     @router.post(
         "/sing_frame_volume",
-        response_model=list[float],
         tags=["クエリ編集"],
         summary="スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
     )
@@ -359,10 +369,13 @@ def generate_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | None = None,
     ) -> list[float]:
-        engine = get_engine(core_version)
-        return engine.create_sing_volume_from_phoneme_and_f0(
-            score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
-        )
+        engine = tts_engines.get_engine(core_version)
+        try:
+            return engine.create_sing_volume_from_phoneme_and_f0(
+                score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
+            )
+        except TalkSingInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     @router.post(
         "/frame_synthesis",
@@ -384,8 +397,11 @@ def generate_router(
         """
         歌唱音声合成を行います。
         """
-        engine = get_engine(core_version)
-        wave = engine.frame_synthsize_wave(query, style_id)
+        engine = tts_engines.get_engine(core_version)
+        try:
+            wave = engine.frame_synthsize_wave(query, style_id)
+        except TalkSingInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -436,7 +452,6 @@ def generate_router(
 
     @router.post(
         "/validate_kana",
-        response_model=bool,
         tags=["その他"],
         summary="テキストがAquesTalk 風記法に従っているか判定する",
         responses={

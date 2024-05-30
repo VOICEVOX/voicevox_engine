@@ -1,10 +1,47 @@
+import json
 import threading
+from dataclasses import dataclass
+from typing import Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
+from pydantic import BaseModel, Field
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
+
+CoreStyleId = NewType("CoreStyleId", int)
+CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+
+
+class CoreSpeakerStyle(BaseModel):
+    """
+    話者のスタイル情報
+    """
+
+    name: str
+    id: CoreStyleId
+    type: CoreStyleType | None = Field(default="talk")
+
+
+class CoreSpeaker(BaseModel):
+    """
+    コアに含まれる話者情報
+    """
+
+    name: str
+    speaker_uuid: str
+    styles: list[CoreSpeakerStyle]
+    version: str = Field("話者のバージョン")
+
+
+@dataclass(frozen=True)
+class DeviceSupport:
+    """音声ライブラリのデバイス利用可否"""
+
+    cpu: bool
+    cuda: bool  # CUDA (Nvidia GPU)
+    dml: bool  # DirectML (Nvidia GPU/Radeon GPU等)
 
 
 class CoreAdapter:
@@ -23,18 +60,25 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
-    def speakers(self) -> str:
-        """話者情報（json文字列）"""
-        return self.core.metas()
+    def speakers(self) -> list[CoreSpeaker]:
+        """話者情報"""
+        metas = self.core.metas()
+        return [CoreSpeaker(**speaker) for speaker in json.loads(metas)]
 
     @property
-    def supported_devices(self) -> str | None:
+    def supported_devices(self) -> DeviceSupport | None:
         """デバイスサポート情報（None: 情報無し）"""
         try:
-            supported_devices = self.core.supported_devices()
+            supported_devices = json.loads(self.core.supported_devices())
+            assert isinstance(supported_devices, dict)
+            device_support = DeviceSupport(
+                cpu=supported_devices["cpu"],
+                cuda=supported_devices["cuda"],
+                dml=supported_devices["dml"],
+            )
         except OldCoreError:
-            supported_devices = None
-        return supported_devices
+            device_support = None
+        return device_support
 
     def initialize_style_id_synthesis(
         self, style_id: StyleId, skip_reinit: bool

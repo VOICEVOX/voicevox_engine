@@ -1,11 +1,5 @@
-# Files for typos
-# Instruction:  https://github.com/marketplace/actions/typos-action#getting-started
-
-[default.extend-identifiers]
+# typos の設定ファイル
+# 書式は以下の公式ドキュメントを参照: https://github.com/crate-ci/typos#false-positives
 
 [default.extend-words]
-ba="ba" # 7zコマンドの-baオプション
 datas="datas" # PyInstallerの引数
-
-[files]
-extend-exclude = ["package-lock.json", "src/store/project.ts", "*.svg"]

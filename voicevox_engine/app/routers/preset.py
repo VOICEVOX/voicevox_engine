@@ -2,24 +2,25 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetError
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.Preset import (
+    Preset,
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
 
 from ..dependencies import check_disabled_mutable_api
 
 
-def generate_router(preset_manager: PresetManager) -> APIRouter:
+def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     """プリセット API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
     @router.get(
         "/presets",
-        response_model=list[Preset],
         response_description="プリセットのリスト",
-        tags=["その他"],
     )
     def get_presets() -> list[Preset]:
         """
@@ -27,15 +28,15 @@ def generate_router(preset_manager: PresetManager) -> APIRouter:
         """
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return presets
 
     @router.post(
         "/add_preset",
-        response_model=int,
         response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def add_preset(
@@ -51,15 +52,15 @@ def generate_router(preset_manager: PresetManager) -> APIRouter:
         """
         try:
             id = preset_manager.add_preset(preset)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return id
 
     @router.post(
         "/update_preset",
-        response_model=int,
         response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def update_preset(
@@ -75,26 +76,28 @@ def generate_router(preset_manager: PresetManager) -> APIRouter:
         """
         try:
             id = preset_manager.update_preset(preset)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
         return id
 
     @router.post(
         "/delete_preset",
         status_code=204,
-        tags=["その他"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
+    ) -> None:
         """
         既存のプリセットを削除します
         """
         try:
             preset_manager.delete_preset(id)
-        except PresetError as err:
+        except PresetInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
-        return Response(status_code=204)
+        except PresetInternalError as err:
+            raise HTTPException(status_code=500, detail=str(err))
 
     return router

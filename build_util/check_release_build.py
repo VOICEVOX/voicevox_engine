@@ -25,12 +25,21 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
     process = None
     if not skip_run_process:
         process = Popen([run_file.absolute()], cwd=dist_dir)
-        time.sleep(60)  # 待機
 
-    # バージョン取得テスト
-    req = Request(base_url + "version")
-    with urlopen(req) as res:
-        assert len(res.read()) > 0
+    # 起動待機
+    for i in range(10):
+        print(f"Waiting for the engine to start... {i}")
+        time.sleep(15)
+        try:
+            req = Request(base_url + "version")
+            with urlopen(req) as res:
+                if len(res.read()) > 0:
+                    break
+        except Exception:
+            continue
+    else:
+        print("Failed to start the engine.")
+        exit(1)
 
     # テキスト -> クエリ
     text = "こんにちは、音声合成の世界へようこそ"
