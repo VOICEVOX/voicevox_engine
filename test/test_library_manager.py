@@ -2,6 +2,7 @@ import copy
 import glob
 import json
 from io import BytesIO
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -102,6 +103,8 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} にvvlib_manifest.jsonが存在しません。",
         )
+        # TODO: tmp ファイルを用いた自動削除、あるいは、共通 teardown による削除へ実装し直す
+        os.remove(invalid_vvlib_name)
 
     def test_install_broken_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
@@ -119,6 +122,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} のvvlib_manifest.jsonは不正です。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install_invalid_type_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
@@ -135,6 +139,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} のvvlib_manifest.jsonが不正な形式です。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install_invalid_version_manifest_library(self) -> None:
         # vvlib_manifestの不正なversionのテスト
@@ -150,6 +155,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} のversion形式が不正です。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install_invalid_manifest_version_library(self) -> None:
         # vvlib_manifestの不正なmanifest_versionのテスト
@@ -165,6 +171,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} のmanifest_version形式が不正です。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install_invalid_manifest_version_library_2(self) -> None:
         # vvlib_manifestの未対応のmanifest_versionのテスト
@@ -182,6 +189,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} は未対応です。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install_non_target_engine_library(self) -> None:
         # vvlib_manifestのインストール先エンジンの検証のテスト
@@ -199,6 +207,7 @@ class TestLibraryManager(TestCase):
             e.exception.detail,
             f"音声ライブラリ {self.library_uuid} は{self.engine_name}向けではありません。",
         )
+        os.remove(invalid_vvlib_name)
 
     def test_install(self) -> None:
         # 正しいライブラリをインストールして問題が起きないか
