@@ -1,8 +1,8 @@
 import copy
 import glob
 import json
-from io import BytesIO
 import os
+from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
