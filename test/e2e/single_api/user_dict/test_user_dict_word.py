@@ -35,7 +35,9 @@ def test_post_user_dict_word_422(
     assert snapshot_json == response.json()
 
 
-def test_put_user_dict_word_204(client: TestClient) -> None:
+def test_put_user_dict_word_204(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
     params: dict[str, str | int] = {
         "surface": "test",
@@ -47,7 +49,7 @@ def test_put_user_dict_word_204(client: TestClient) -> None:
     }
     response = client.put(f"/user_dict_word/{word_uuid}", params=params)
     assert response.status_code == 204
-    # '204 No Content' につきスナップショットテストは不要
+    assert snapshot == response.content
 
 
 def test_put_user_dict_word_contents(
@@ -87,11 +89,13 @@ def test_put_user_dict_word_422(
     assert snapshot_json == response.json()
 
 
-def test_delete_user_dict_word_204(client: TestClient) -> None:
+def test_delete_user_dict_word_204(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
     response = client.delete(f"/user_dict_word/{word_uuid}", params={})
     assert response.status_code == 204
-    # '204 No Content' につきスナップショットテストは不要
+    assert snapshot == response.content
 
 
 def test_delete_user_dict_word_contents(
