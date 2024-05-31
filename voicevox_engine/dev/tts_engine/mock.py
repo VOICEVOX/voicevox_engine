@@ -1,5 +1,4 @@
 import copy
-from logging import getLogger
 from typing import Any
 
 import numpy as np
@@ -65,9 +64,7 @@ class MockTTSEngine(TTSEngine):
         # resampleの説明
         非モック実装（decode_forward）と合わせるために、出力を24kHz、32bit浮動小数に変換した。
         """
-        logger = getLogger("uvicorn")  # FastAPI / Uvicorn 内からの利用のため
-        logger.info("[Mock] input text: %s" % text)
-        wave, sr = tts(text)
+        wave, _ = tts(text)
         wave /= 2**15
         wave_resampled: NDArray[np.float64] = resample(wave, 48000, 24000)
         return wave_resampled.astype(np.float32)
