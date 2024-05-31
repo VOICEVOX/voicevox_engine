@@ -6,7 +6,6 @@ import zipfile
 from pathlib import Path
 from typing import BinaryIO
 
-from fastapi import HTTPException
 from pydantic import ValidationError
 from semver.version import Version
 
@@ -19,6 +18,26 @@ from voicevox_engine.model import (
 __all__ = ["LibraryManager"]
 
 INFO_FILE = "metas.json"
+
+
+class LibraryNotFoundError(Exception):
+    pass
+
+
+class LibraryFormatInvalidError(Exception):
+    pass
+
+
+class LibraryUnsupportedError(Exception):
+    pass
+
+
+class LibraryOperationUnauthorizedError(Exception):
+    pass
+
+
+class LibraryInternalError(Exception):
+    pass
 
 
 class LibraryManager:
@@ -117,7 +136,7 @@ class LibraryManager:
                 break
         else:
             msg = f"音声ライブラリ {library_id} が見つかりません。"
-            raise HTTPException(status_code=404, detail=msg)
+            raise LibraryNotFoundError(msg)
 
         # ライブラリディレクトリを生成する
         library_dir = self.library_root_dir / library_id
@@ -130,12 +149,12 @@ class LibraryManager:
         # ZIP 形式ではないファイルはライブラリでないためインストールを拒否する
         if not zipfile.is_zipfile(file):
             msg = f"音声ライブラリ {library_id} は不正なファイル形式です。"
-            raise HTTPException(status_code=422, detail=msg)
+            raise LibraryFormatInvalidError(msg)
 
         with zipfile.ZipFile(file) as zf:
             if zf.testzip() is not None:
                 msg = f"音声ライブラリ {library_id} は不正なファイルです。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
 
             vvlib_manifest = None
             try:
@@ -147,37 +166,37 @@ class LibraryManager:
                 msg = (
                     f"音声ライブラリ {library_id} にvvlib_manifest.jsonが存在しません。"
                 )
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
             except Exception:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonは不正です。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
 
             # 不正な形式のマニフェストファイルをもつライブラリはインストールを拒否する
             try:
                 VvlibManifest.validate(vvlib_manifest)
             except ValidationError:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonが不正な形式です。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
 
             # 不正な `version` 形式のマニフェストファイルもつライブラリはインストールを拒否する
             if not Version.is_valid(vvlib_manifest["version"]):
                 msg = f"音声ライブラリ {library_id} のversion形式が不正です。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
 
             # 不正な形式あるいは対応範囲外のマニフェストバージョンをもつライブラリはインストールを拒否する
             try:
                 manifest_version = Version.parse(vvlib_manifest["manifest_version"])
             except ValueError:
                 msg = f"音声ライブラリ {library_id} のmanifest_version形式が不正です。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryFormatInvalidError(msg)
             if manifest_version > self.supported_vvlib_version:
                 msg = f"音声ライブラリ {library_id} は未対応です。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryUnsupportedError(msg)
 
             # このエンジン向けでないライブラリはインストールを拒否する
             if vvlib_manifest["engine_uuid"] != self.engine_uuid:
                 msg = f"音声ライブラリ {library_id} は{self.engine_name}向けではありません。"
-                raise HTTPException(status_code=422, detail=msg)
+                raise LibraryUnsupportedError(msg)
 
             # インストールする
             # NOTE: 当該ライブラリ用のディレクトリ下へ展開してインストールする
@@ -191,12 +210,12 @@ class LibraryManager:
         # 未インストールライブラリのアンインストールは不可能なので拒否する
         if library_id not in self.installed_libraries().keys():
             msg = f"音声ライブラリ {library_id} はインストールされていません。"
-            raise HTTPException(status_code=404, detail=msg)
+            raise LibraryNotFoundError(msg)
 
         # アンインストール不許可ライブラリはアンインストールを拒否する
         if not self.installed_libraries()[library_id].uninstallable:
             msg = f"音声ライブラリ {library_id} はアンインストールが禁止されています。"
-            raise HTTPException(status_code=403, detail=msg)
+            raise LibraryOperationUnauthorizedError(msg)
 
         # アンインストールする
         try:
@@ -204,4 +223,4 @@ class LibraryManager:
             shutil.rmtree(self.library_root_dir / library_id)
         except Exception:
             msg = f"音声ライブラリ {library_id} の削除に失敗しました。"
-            raise HTTPException(status_code=500, detail=msg)
+            raise LibraryInternalError(msg)
