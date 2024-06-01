@@ -227,7 +227,7 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
@@ -295,8 +295,8 @@ exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "-m", "voicevox_engine", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "/opt/python/bin/python3", "-m", "voicevox_engine", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]

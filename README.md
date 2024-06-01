@@ -398,11 +398,11 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
 
 ```bash
-$ python run.py -h
+$ python -m voicevox_engine -h
 
-usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
-              [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
-              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE]
+usage: __main__.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
+                   [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
+                   [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE]
 
 VOICEVOX のエンジンです。
 
@@ -469,32 +469,32 @@ python -m pip install -r requirements-test.txt -r requirements-build.txt
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+python -m voicevox_engine --help
 ```
 
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR
 ```
 
 <!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
 ```bash
 # 音声ライブラリを差し替える
 VOICELIB_DIR="C:/path/to/your/tts-model"
-python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 ```
 -->
 
 ```bash
 # モックでサーバー起動
-python run.py --enable_mock
+python -m voicevox_engine --enable_mock
 ```
 
 ```bash
 # ログをUTF8に変更
-python run.py --output_log_utf8
-# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
+python -m voicevox_engine --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 python -m voicevox_engine
 ```
 
 #### CPU スレッド数を指定する
@@ -505,12 +505,12 @@ CPU スレッド数が未指定の場合は、論理コア数の半分が使わ�
 
 - 実行時引数で指定する
   ```bash
-  python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+  python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
   ```
 - 環境変数で指定する
   ```bash
   export VV_CPU_NUM_THREADS=4
-  python run.py --voicevox_dir=$VOICEVOX_DIR
+  python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR
   ```
 
 #### 過去のバージョンのコアを使う
@@ -523,13 +523,13 @@ Mac での libtorch 版コアのサポートはしていません。
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
 ```bash
-python run.py --voicevox_dir="/path/to/voicevox"
+python -m voicevox_engine --voicevox_dir="/path/to/voicevox"
 ```
 
 Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+DYLD_LIBRARY_PATH="/path/to/voicevox" python -m voicevox_engine --voicevox_dir="/path/to/voicevox"
 ```
 
 ##### 音声ライブラリを直接指定する
@@ -541,13 +541,13 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voi
 API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 
 ```bash
-python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+python -m voicevox_engine --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
 ```
 
 Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
+DYLD_LIBRARY_PATH="/path/to/onnx" python -m voicevox_engine --voicelib_dir="/path/to/voicevox_core"
 ```
 
 ##### ユーザーディレクトリに配置する
@@ -575,13 +575,13 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
-pyinstaller --noconfirm run.spec
+pyinstaller --noconfirm voicevox_engine/run.spec
 
 # 製品版でビルドする場合
 CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
+pyinstaller --noconfirm voicevox_engine/run.spec
 ```
 
 #### Github Actions でビルド

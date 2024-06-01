@@ -94,35 +94,35 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+python -m voicevox_engine --help
 ```
 
 #### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
 VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR
 ```
 
 #### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
-python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
+python -m voicevox_engine --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
 #### 音声ライブラリ無しで実行
 
 ```bash
-python run.py --enable_mock
+python -m voicevox_engine --enable_mock
 ```
 
 #### ログを UTF8 に変更
 
 ```bash
-python run.py --output_log_utf8
+python -m voicevox_engine --output_log_utf8
 # もしくは
-VV_OUTPUT_LOG_UTF8=1 python run.py
+VV_OUTPUT_LOG_UTF8=1 python -m voicevox_engine
 ```
 
 ### テスト
@@ -146,13 +146,13 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
-pyinstaller --noconfirm run.spec
+pyinstaller --noconfirm voicevox_engine/run.spec
 
 # 製品版でビルドする場合
 CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
+pyinstaller --noconfirm voicevox_engine/run.spec
 ```
 
 #### Github Actions でビルド

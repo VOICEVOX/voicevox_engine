@@ -4,11 +4,11 @@ from PyInstaller.utils.hooks import collect_data_files
 import os
 
 datas = [
-    ('resources', 'resources'),
-    ('speaker_info', 'speaker_info'),
-    ('engine_manifest.json', '.'),
-    ('licenses.json', '.'),
-    ('presets.yaml', '.'),
+    ('../resources', 'resources'),
+    ('../speaker_info', 'speaker_info'),
+    ('../engine_manifest.json', '.'),
+    ('../licenses.json', '.'),
+    ('../presets.yaml', '.'),
 ]
 datas += collect_data_files('pyopenjtalk')
 
