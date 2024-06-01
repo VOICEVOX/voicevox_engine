@@ -11,8 +11,6 @@ def engine_root() -> Path:
     if _is_development():
         # git レポジトリのルートを指している
         root_dir = Path(__file__).parents[2]
-
-    # Nuitka/Pyinstallerでビルドされている場合
     else:
         root_dir = Path(sys.argv[0]).parent
 
