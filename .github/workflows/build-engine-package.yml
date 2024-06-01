@@ -551,10 +551,6 @@ jobs:
           rm -rf download/cuda
           rm -rf download/cudnn
 
-      - name: <Setup> Set @rpath to @executable_path
-        if: startsWith(matrix.os, 'macos-')
-        run: install_name_tool -add_rpath @executable_path/. dist/run/run
-
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
         run: bash build_util/codesign.bash "dist/run/run.exe"
