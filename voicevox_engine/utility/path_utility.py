@@ -31,19 +31,9 @@ def engine_manifest_path() -> Path:
 
 
 def _is_development() -> bool:
-    """
-    動作環境が開発版であるか否かを返す。
-    Nuitka/Pyinstallerでコンパイルされていない場合は開発環境とする。
-    """
-    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
-    if "__compiled__" in globals():
-        return False
-
+    """動作環境が開発版（Pyinstallerでコンパイルされていない場合）であるか否かを返す。"""
     # pyinstallerでビルドをした際はsys.frozenが設定される
-    elif getattr(sys, "frozen", False):
-        return False
-
-    return True
+    return False if getattr(sys, "frozen", False) else True
 
 
 def get_save_dir() -> Path:
