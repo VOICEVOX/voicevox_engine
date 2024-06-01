@@ -22,7 +22,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.utility.path_utility import delete_file
+from voicevox_engine.utility.file_utility import delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
