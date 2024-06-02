@@ -7,10 +7,13 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import AccentPhrase, AudioQuery, FrameAudioQuery, FramePhoneme, Mora, Score
+from ..model import AudioQuery
+from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
+from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
@@ -19,6 +22,12 @@ from .text_analyzer import text_to_accent_phrases
 UPSPEAK_LENGTH = 0.15
 UPSPEAK_PITCH_ADD = 0.3
 UPSPEAK_PITCH_MAX = 6.5
+
+
+class TalkSingInvalidInputError(Exception):
+    """Talk と Sing の不正な入力エラー"""
+
+    pass
 
 
 # TODO: move mora utility to mora module
@@ -153,7 +162,8 @@ def count_frame_per_unit(
 def _to_frame(sec: float) -> int:
     FRAMERATE = 93.75  # 24000 / 256 [frame/sec]
     # NOTE: `round` は偶数丸め。移植時に取扱い注意。詳細は voicevox_engine#552
-    return np.round(sec * FRAMERATE).astype(np.int32).item()
+    sec_rounded: NDArray[np.float64] = np.round(sec * FRAMERATE)
+    return sec_rounded.astype(np.int32).item()
 
 
 def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
@@ -254,10 +264,8 @@ def calc_phoneme_lengths(
         if i < len(consonant_lengths) - 1:
             # 最初のノートは子音長が0の、pauである必要がある
             if i == 0 and consonant_lengths[i] != 0:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}",
-                )
+                msg = f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}"
+                raise TalkSingInvalidInputError(msg)
 
             next_consonant_length = consonant_lengths[i + 1]
             note_duration = note_durations[i]
@@ -285,6 +293,98 @@ def calc_phoneme_lengths(
     return phoneme_durations_array
 
 
+def notes_to_keys_and_phonemes(
+    notes: list[Note],
+) -> tuple[
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+    NDArray[np.int64],
+]:
+    """
+    ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
+    Parameters
+    ----------
+    notes : list[Note]
+        ノート列
+    Returns
+    -------
+    note_lengths : NDArray[np.int64]
+        ノートの長さ列
+    note_consonants : NDArray[np.int64]
+        ノートの子音ID列
+    note_vowels : NDArray[np.int64]
+        ノートの母音ID列
+    phonemes : NDArray[np.int64]
+        音素列
+    phoneme_keys : NDArray[np.int64]
+        音素ごとのキー列
+    """
+
+    note_lengths: list[int] = []
+    note_consonants: list[int] = []
+    note_vowels: list[int] = []
+    phonemes: list[int] = []
+    phoneme_keys: list[int] = []
+
+    for note in notes:
+        if note.lyric == "":
+            if note.key is not None:
+                msg = "lyricが空文字列の場合、keyはnullである必要があります。"
+                raise TalkSingInvalidInputError(msg)
+            note_lengths.append(note.frame_length)
+            note_consonants.append(-1)
+            note_vowels.append(0)  # pau
+            phonemes.append(0)  # pau
+            phoneme_keys.append(-1)
+        else:
+            if note.key is None:
+                msg = "keyがnullの場合、lyricは空文字列である必要があります。"
+                raise TalkSingInvalidInputError(msg)
+
+            # TODO: 1ノートに複数のモーラがある場合の処理
+            mora_phonemes = mora_kana_to_mora_phonemes.get(
+                note.lyric  # type: ignore
+            ) or mora_kana_to_mora_phonemes.get(
+                _hira_to_kana(note.lyric)  # type: ignore
+            )
+            if mora_phonemes is None:
+                msg = f"lyricが不正です: {note.lyric}"
+                raise TalkSingInvalidInputError(msg)
+
+            consonant, vowel = mora_phonemes
+            if consonant is None:
+                consonant_id = -1
+            else:
+                consonant_id = Phoneme(consonant).id
+            vowel_id = Phoneme(vowel).id
+
+            note_lengths.append(note.frame_length)
+            note_consonants.append(consonant_id)
+            note_vowels.append(vowel_id)
+            if consonant_id != -1:
+                phonemes.append(consonant_id)
+                phoneme_keys.append(note.key)
+            phonemes.append(vowel_id)
+            phoneme_keys.append(note.key)
+
+    # 各データをnumpy配列に変換する
+    note_lengths_array = np.array(note_lengths, dtype=np.int64)
+    note_consonants_array = np.array(note_consonants, dtype=np.int64)
+    note_vowels_array = np.array(note_vowels, dtype=np.int64)
+    phonemes_array = np.array(phonemes, dtype=np.int64)
+    phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
+
+    return (
+        note_lengths_array,
+        note_consonants_array,
+        note_vowels_array,
+        phonemes_array,
+        phoneme_keys_array,
+    )
+
+
 def frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
 ) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
@@ -296,10 +396,8 @@ def frame_query_to_sf_decoder_feature(
 
     for phoneme in query.phonemes:
         if phoneme.phoneme not in Phoneme._PHONEME_LIST:
-            raise HTTPException(
-                status_code=400,
-                detail=f"phoneme {phoneme.phoneme} is not valid",
-            )
+            msg = f"phoneme {phoneme.phoneme} is not valid"
+            raise TalkSingInvalidInputError(msg)
 
         phonemes.append(Phoneme(phoneme.phoneme).id)
         phoneme_lengths.append(phoneme.frame_length)
@@ -466,66 +564,13 @@ class TTSEngine:
         """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
-        # Scoreを分解し、ノート単位のデータ、音素単位のデータを作成する
-        note_lengths: list[int] = []
-        note_consonants: list[int] = []
-        note_vowels: list[int] = []
-        phonemes: list[int] = []
-        phoneme_keys: list[int] = []
-
-        for note in notes:
-            if note.lyric == "":
-                if note.key is not None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="lyricが空文字列の場合、keyはnullである必要があります。",
-                    )
-                note_lengths.append(note.frame_length)
-                note_consonants.append(-1)
-                note_vowels.append(0)  # pau
-                phonemes.append(0)  # pau
-                phoneme_keys.append(-1)
-            else:
-                if note.key is None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="keyがnullの場合、lyricは空文字列である必要があります。",
-                    )
-
-                # TODO: 1ノートに複数のモーラがある場合の処理
-                mora_phonemes = mora_kana_to_mora_phonemes.get(
-                    note.lyric  # type: ignore
-                ) or mora_kana_to_mora_phonemes.get(
-                    _hira_to_kana(note.lyric)  # type: ignore
-                )
-                if mora_phonemes is None:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"lyricが不正です: {note.lyric}",
-                    )
-
-                consonant, vowel = mora_phonemes
-                if consonant is None:
-                    consonant_id = -1
-                else:
-                    consonant_id = Phoneme(consonant).id
-                vowel_id = Phoneme(vowel).id
-
-                note_lengths.append(note.frame_length)
-                note_consonants.append(consonant_id)
-                note_vowels.append(vowel_id)
-                if consonant_id != -1:
-                    phonemes.append(consonant_id)
-                    phoneme_keys.append(note.key)
-                phonemes.append(vowel_id)
-                phoneme_keys.append(note.key)
-
-        # 各データをnumpy配列に変換する
-        note_lengths_array = np.array(note_lengths, dtype=np.int64)
-        note_consonants_array = np.array(note_consonants, dtype=np.int64)
-        note_vowels_array = np.array(note_vowels, dtype=np.int64)
-        phonemes_array = np.array(phonemes, dtype=np.int64)
-        phoneme_keys_array = np.array(phoneme_keys, dtype=np.int64)
+        (
+            note_lengths_array,
+            note_consonants_array,
+            note_vowels_array,
+            phonemes_array,
+            phoneme_keys_array,
+        ) = notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
         consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
@@ -555,10 +600,61 @@ class TTSEngine:
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
                 frame_length=phoneme_duration,
             )
-            for phoneme_id, phoneme_duration in zip(phonemes, phoneme_lengths)
+            for phoneme_id, phoneme_duration in zip(phonemes_array, phoneme_lengths)
         ]
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
+
+    def create_sing_volume_from_phoneme_and_f0(
+        self,
+        score: Score,
+        phonemes: list[FramePhoneme],
+        f0s: list[float],
+        style_id: StyleId,
+    ) -> list[float]:
+        """歌声合成用の音素・音高・スタイルIDに基づいて音量を生成する"""
+        notes = score.notes
+
+        (
+            _,
+            _,
+            _,
+            phonemes_array_from_notes,
+            phoneme_keys_array,
+        ) = notes_to_keys_and_phonemes(notes)
+
+        phonemes_array = np.array(
+            [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
+        )
+        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+        f0_array = np.array(f0s, dtype=np.float32)
+
+        # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
+        # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
+        try:
+            all_equals = np.all(phonemes_array == phonemes_array_from_notes)
+        except ValueError:
+            # 長さが異なる場合はValueErrorが発生するので、Falseとする
+            # mypyを通すためにnp.bool_でラップする
+            all_equals = np.bool_(False)
+
+        if not all_equals:
+            msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
+            raise TalkSingInvalidInputError(msg)
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音量を生成する
+        volumes = self._core.safe_predict_sing_volume_forward(
+            frame_phonemes, frame_keys, f0_array, style_id
+        )
+
+        # mypyの型チェックを通すために明示的に型を付ける
+        volume_list: list[float] = volumes.tolist()
+
+        return volume_list
 
     def frame_synthsize_wave(
         self,
@@ -575,16 +671,48 @@ class TTSEngine:
         return wave
 
 
-def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngine]:
+class TTSEngineManager:
+    """TTS エンジンの集まりを一括管理するマネージャー"""
+
+    def __init__(self) -> None:
+        self._engines: dict[str, TTSEngine] = {}
+
+    def versions(self) -> list[str]:
+        """登録されたエンジンのバージョン一覧を取得する。"""
+        return list(self._engines.keys())
+
+    def latest_version(self) -> str:
+        """登録された最新版エンジンのバージョンを取得する。"""
+        return get_latest_version(self.versions())
+
+    def register_engine(self, engine: TTSEngine, version: str) -> None:
+        """エンジンを登録する。"""
+        self._engines[version] = engine
+
+    def get_engine(self, version: str | None = None) -> TTSEngine:
+        """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
+        if version is None:
+            return self._engines[self.latest_version()]
+        elif version in self._engines:
+            return self._engines[version]
+
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
+    def has_engine(self, version: str) -> bool:
+        """指定バージョンのエンジンが登録されているか否かを返す。"""
+        return version in self._engines
+
+
+def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
-    tts_engines: dict[str, TTSEngine] = {}
-    for ver, core in cores.items():
+    tts_engines = TTSEngineManager()
+    for ver, core in core_manager.items():
         if ver == MOCK_VER:
             from ..dev.tts_engine.mock import MockTTSEngine
 
-            tts_engines[ver] = MockTTSEngine()
+            tts_engines.register_engine(MockTTSEngine(), ver)
         else:
-            tts_engines[ver] = TTSEngine(core.core)
+            tts_engines.register_engine(TTSEngine(core.core), ver)
     return tts_engines

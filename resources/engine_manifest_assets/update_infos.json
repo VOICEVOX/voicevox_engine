@@ -1,0 +1,187 @@
+[
+  {
+    "version": "0.19.1",
+    "descriptions": ["キャラクター「後鬼」のスタイルを追加"],
+    "contributors": []
+  },
+  {
+    "version": "0.19.0",
+    "descriptions": ["ソング：音量取得APIを追加", "開発環境の向上"],
+    "contributors": ["sabonerune", "tarepan", "y-chan"]
+  },
+  {
+    "version": "0.18.1",
+    "descriptions": [
+      "キャラクター「†聖騎士 紅桜†」「雀松朱司」「麒ヶ島宗麟」「春歌ナナ」「猫使アル」「猫使ビィ」「中国うさぎ」のハミングを追加",
+      "キャラクター「栗田まろん」「あいえるたん」「満別花丸」「琴詠ニア」のハミングを追加",
+      "起動に必要なメモリ量を大幅に削減"
+    ],
+    "contributors": ["Hiroshiba", "qryxip"]
+  },
+  {
+    "version": "0.18.0",
+    "descriptions": [
+      "キャラクター「WhiteCUL」「後鬼」「No.7」のハミングを追加",
+      "キャラクター「ちび式じい」「櫻歌ミコ」「小夜/SAYO」「ナースロボ＿タイプＴ」のハミングを追加",
+      "キャラクター「四国めたん」「ずんだもん」「波音リツ」のハミングスタイルを追加",
+      "デフォルトで全てのCPUを使うことがあるバグを修正",
+      "デフォルトで127.0.0.1と::1を待ち受けるように変更",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "Hiroshiba",
+      "sabonerune",
+      "siketyan",
+      "tarepan",
+      "tomoish"
+    ]
+  },
+  {
+    "version": "0.17.1",
+    "descriptions": [
+      "キャラクター「玄野武宏」「白上虎太郎」「青山龍星」「冥鳴ひまり」「九州そら」のハミングを追加",
+      "キャラクター「もち子さん」「剣崎雌雄」のハミングを追加",
+      "バグ修正"
+    ],
+    "contributors": ["PickledChair"]
+  },
+  {
+    "version": "0.17.0",
+    "descriptions": ["開発環境の向上"],
+    "contributors": ["Hiroshiba", "misogihagi", "tarepan", "tuna2134"]
+  },
+  {
+    "version": "0.16.0",
+    "descriptions": [
+      "ソングAPIを追加",
+      "キャラクター「四国めたん」「ずんだもん」「春日部つむぎ」「雨晴はう」「波音リツ」のハミングを追加",
+      "キャラクター「波音リツ」のソングを追加"
+    ],
+    "contributors": ["Hiroshiba", "y-chan"]
+  },
+  {
+    "version": "0.15.1",
+    "descriptions": ["ビルド成果物のディレクトリ構造を元に戻した"],
+    "contributors": []
+  },
+  {
+    "version": "0.15.0",
+    "descriptions": [
+      "/validate_kana APIを追加",
+      "起動時のエンジン設定項目追加",
+      "ユーザー辞書のインポート・エクスポート機能追加",
+      "ビルド成果物のディレクトリ構造を変更",
+      "書き込み系APIを一括で無効化可能に",
+      "開発環境の向上",
+      "バグ修正"
+    ],
+    "contributors": [
+      "aoirint",
+      "FujisakiEx",
+      "Hiroshiba",
+      "K-shir0",
+      "My-MC",
+      "nagi-miaow",
+      "okaits",
+      "raa0121",
+      "sabonerune",
+      "sevenc-nanashi",
+      "siketyan",
+      "stmtk1",
+      "takana-v",
+      "tarepan",
+      "tomoish",
+      "tuna2134",
+      "weweweok",
+      "whiteball",
+      "y-chan"
+    ]
+  },
+  {
+    "version": "0.14.7",
+    "descriptions": [
+      "キャラクター「小夜」「ずんだもん」「もち子さん」「青山龍星」のスタイルを追加・更新"
+    ],
+    "contributors": []
+  },
+  {
+    "version": "0.14.6",
+    "descriptions": [
+      "キャラクター「栗田まろん」「あいえるたん」「満別花丸」「琴詠ニア」を追加"
+    ],
+    "contributors": []
+  },
+  {
+    "version": "0.14.5",
+    "descriptions": [
+      "キャラクター「中国うさぎ」を追加",
+      "キャラクター「波音リツ」「もち子さん」のスタイルを追加"
+    ],
+    "contributors": []
+  },
+  {
+    "version": "0.14.4",
+    "descriptions": [
+      "キャラクター「春歌ナナ」「猫使アル」「猫使ビィ」を追加",
+      "バグ修正"
+    ],
+    "contributors": ["Hiroshiba"]
+  },
+  {
+    "version": "0.14.3",
+    "descriptions": [
+      "キャラクター「†聖騎士 紅桜†」「雀松朱司」「麒ヶ島宗麟」を追加",
+      "同時書き込みで辞書が破損する問題を修正"
+    ],
+    "contributors": ["Hiroshiba"]
+  },
+  {
+    "version": "0.14.2",
+    "descriptions": ["DirectML版の生成が遅い問題を修正"],
+    "contributors": []
+  },
+  {
+    "version": "0.14.1",
+    "descriptions": ["AquesTalkライクな記法で生成した音声のバグを修正"],
+    "contributors": []
+  },
+  {
+    "version": "0.14.0",
+    "descriptions": [
+      "コアをRust言語に移行",
+      "セキュリティアップデート",
+      "スタイルごとに異なる立ち絵の提供を可能に",
+      "VVPPファイルの提供",
+      "設定GUIの提供",
+      "プリセットの保存",
+      "モーフィングAPIの仕様変更",
+      "DirectML利用時に適したGPUを自動選択",
+      "開発環境の向上",
+      "バグ修正"
+    ],
+    "contributors": [
+      "aoirint",
+      "Appletigerv",
+      "haru3me",
+      "Hiroshiba",
+      "ksk001100",
+      "masinc",
+      "misogihagi",
+      "My-MC",
+      "nebocco",
+      "PickledChair",
+      "qryxip",
+      "qwerty2501",
+      "sabonerune",
+      "sarisia",
+      "Segu-g",
+      "sevenc-nanashi",
+      "shigobu",
+      "smly",
+      "takana-v",
+      "ts-klassen",
+      "whiteball",
+      "y-chan"
+    ]
+  }
+]

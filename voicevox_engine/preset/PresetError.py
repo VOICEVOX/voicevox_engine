@@ -1,2 +1,0 @@
-class PresetError(Exception):
-    pass

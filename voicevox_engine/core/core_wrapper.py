@@ -21,6 +21,14 @@ class CoreError(Exception):
 
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
+    """
+    コアの実行に必要な依存 DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
+
+    Args:
+        runtime_dirs - 直下に DLL が存在するディレクトリの一覧
+    """
+    # `lib_file_names`は「ENGINE が利用可能な DLL のファイル名一覧」である
+    # `lib_names` は「ENGINE が利用可能な DLL のライブラリ名一覧」である（ライブラリ名は `libtorch.so.1.0` の `torch` 部分）
     if platform.system() == "Windows":
         # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
         # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
@@ -40,12 +48,16 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
         lib_names = ["onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
-    for lib_path in runtime_dirs:
-        for file_name in lib_file_names:
+
+    # 引数指定ディレクトリ直下の DLL をロードする
+    for runtime_dir in runtime_dirs:
+        for lib_file_name in lib_file_names:
             try:
-                CDLL(str((lib_path / file_name).resolve(strict=True)))
+                CDLL(str((runtime_dir / lib_file_name).resolve(strict=True)))
             except OSError:
                 pass
+
+    # システム検索ディレクトリ直下の DLL をロードする
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
@@ -583,7 +595,8 @@ class CoreWrapper:
             os.chdir(cwd)
 
     def metas(self) -> str:
-        return self.core.metas().decode("utf-8")
+        metas_bytes: bytes = self.core.metas()
+        return metas_bytes.decode("utf-8")
 
     def yukarin_s_forward(
         self,
@@ -885,7 +898,8 @@ class CoreWrapper:
         coreから取得した対応デバイスに関するjsonデータの文字列
         """
         if self.api_exists["supported_devices"]:
-            return self.core.supported_devices().decode("utf-8")
+            supported_devices_byte: bytes = self.core.supported_devices()
+            return supported_devices_byte.decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
@@ -901,7 +915,8 @@ class CoreWrapper:
 
     def is_model_loaded(self, style_id: int) -> bool:
         if self.api_exists["is_model_loaded"]:
-            return self.core.is_model_loaded(c_long(style_id))
+            loaded_bool: bool = self.core.is_model_loaded(c_long(style_id))
+            return loaded_bool
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:

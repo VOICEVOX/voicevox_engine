@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# TODO: build-arg と target のドキュメントをこのファイルに書く
+
 ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
@@ -23,7 +25,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.1
+ARG VOICEVOX_CORE_VERSION=0.15.4
 
 RUN <<EOF
     set -eux
@@ -227,11 +229,10 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./presets.yaml ./default.csv ./engine_manifest.json /opt/voicevox_engine/
+ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./resources /opt/voicevox_engine/resources
 ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
-ADD ./speaker_info /opt/voicevox_engine/speaker_info
-ADD ./ui_template /opt/voicevox_engine/ui_template
-ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
+ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -250,8 +251,8 @@ RUN <<EOF
     export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
-    gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
-    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
+    cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
 # Keep this layer separated to use layer cache on download failed in local build
@@ -275,7 +276,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.17.1
+ARG VOICEVOX_RESOURCE_VERSION=0.19.1
 RUN <<EOF
     set -eux
 

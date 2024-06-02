@@ -69,5 +69,5 @@ class MockTTSEngine(TTSEngine):
         logger.info("[Mock] input text: %s" % text)
         wave, sr = tts(text)
         wave /= 2**15
-        wave = resample(wave, 48000, 24000)
-        return wave.astype(np.float32)
+        wave_resampled: NDArray[np.float64] = resample(wave, 48000, 24000)
+        return wave_resampled.astype(np.float32)

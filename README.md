@@ -1,13 +1,13 @@
 # VOICEVOX ENGINE
 
-[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build.yml)
+[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml)
 [![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
 [![discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
 
 [![test](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/VOICEVOX/voicevox_engine/badge.svg)](https://coveralls.io/github/VOICEVOX/voicevox_engine)
 
-[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-docker.yml)
+[![build-docker](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-container.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-container.yml)
 [![docker](https://img.shields.io/docker/pulls/voicevox/voicevox_engine)](https://hub.docker.com/r/voicevox/voicevox_engine)
 
 [VOICEVOX](https://voicevox.hiroshiba.jp/) のエンジンです。  
@@ -72,6 +72,32 @@ curl -s \
 生成される音声はサンプリングレートが 24000Hz と少し特殊なため、音声プレーヤーによっては再生できない場合があります。
 
 `speaker` に指定する値は `/speakers` エンドポイントで得られる `style_id` です。互換性のために `speaker` という名前になっています。
+
+### 音声を調整するサンプルコード
+
+`/audio_query` で得られる音声合成用のクエリのパラメータを編集することで、音声を調整できます。
+
+例えば、話速を 1.5 倍速にしてみます。
+
+```bash
+echo -n "こんにちは、音声合成の世界へようこそ" >text.txt
+
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+# sed を使用して speedScale の値を 1.5 に変更
+sed -i -r 's/"speedScale":[0-9.]+/"speedScale":1.5/' query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio_fast.wav
+```
 
 ### 読み方を AquesTalk 風記法で取得・修正
 
@@ -307,6 +333,45 @@ curl -s -X GET "127.0.0.1:50021/speaker_info?speaker_uuid=7ffcb7ce-00ec-4bdc-82c
 この API は実験的機能であり、エンジン起動時に引数で`--enable_cancellable_synthesis`を指定しないと有効化されません。  
 音声合成に必要なパラメータは`/synthesis`と同様です。
 
+### HTTP リクエストで歌声合成するサンプルコード
+
+```bash
+echo -n '{
+  "notes": [
+    { "key": null, "frame_length": 15, "lyric": "" },
+    { "key": 60, "frame_length": 45, "lyric": "ド" },
+    { "key": 62, "frame_length": 45, "lyric": "レ" },
+    { "key": 64, "frame_length": 45, "lyric": "ミ" },
+    { "key": null, "frame_length": 15, "lyric": "" }
+  ]
+}' > score.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @score.json \
+    "127.0.0.1:50021/sing_frame_audio_query?speaker=6000" \
+    > query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/frame_synthesis?speaker=3001" \
+    > audio.wav
+```
+
+スコアの`key`は MIDI 番号です。  
+`lyric`は歌詞で、任意の文字列を指定できますが、エンジンによってはひらがな・カタカナ１モーラ以外の文字列はエラーになることがあります。  
+フレームレートはデフォルトが 93.75Hz で、エンジンマニフェストの`frame_rate`で取得できます。  
+１つ目のノートは無音である必要があります。
+
+`/sing_frame_audio_query`で指定できる`speaker`は、`/singers`で取得できるスタイルの内、種類が`sing`か`singing_teacher`なスタイルの`style_id`です。  
+`/frame_synthesis`で指定できる`speaker`は、`/singers`で取得できるスタイルの内、種類が`frame_decode`の`style_id`です。  
+引数が `speaker` という名前になっているのは、他の API と一貫性をもたせるためです。
+
+`/sing_frame_audio_query`と`/frame_synthesis`に異なるスタイルを指定することも可能です。
+
 ### CORS 設定
 
 VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
@@ -388,8 +453,8 @@ options:
 # 実行環境のインストール
 python -m pip install -r requirements.txt
 
-# 開発環境・テスト環境のインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
+# 開発環境・テスト環境・ビルド環境のインストール
+python -m pip install -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ### 実行
@@ -463,7 +528,7 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voi
 ##### 音声ライブラリを直接指定する
 
 [VOICEVOX Core の zip ファイル](https://github.com/VOICEVOX/voicevox_core/releases)を解凍したディレクトリを`--voicelib_dir`引数で指定します。  
-また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime)のディレクトリを`--runtime_dir`引数で指定します。  
+また、コアのバージョンに合わせて、[libtorch](https://pytorch.org/)や[onnxruntime](https://github.com/microsoft/onnxruntime) (共有ライブラリ) のディレクトリを`--runtime_dir`引数で指定します。  
 ただし、システムの探索パス上に libtorch、onnxruntime がある場合、`--runtime_dir`引数の指定は不要です。  
 `--voicelib_dir`引数、`--runtime_dir`引数は複数回使用可能です。  
 API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
@@ -491,6 +556,44 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 - macOS: `/Users/<username>/Library/Application\ Support/`
 - Linux: `/home/<username>/.local/share/`
 
+### ビルド
+
+この方法でビルドしたものは、リリースで公開されているものとは異なります。
+また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
+
+```bash
+python -m pip install -r requirements-build.txt
+
+OUTPUT_LICENSE_JSON_PATH=licenses.json \
+bash build_util/create_venv_and_generate_licenses.bash
+
+# モックでビルドする場合
+pyinstaller --noconfirm run.spec
+
+# 製品版でビルドする場合
+CORE_MODEL_DIR_PATH="/path/to/core_model" \
+LIBCORE_PATH="/path/to/libcore" \
+LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
+pyinstaller --noconfirm run.spec
+```
+
+TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
+
+#### Github Actions でビルド
+
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
+成果物は Release にアップロードされます。
+
+### 依存関係
+
+#### ライセンス
+
+依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
+主要ライセンスの可否は以下の通りです。
+
+- MIT/Apache/BSD-3: OK
+- LGPL: OK （コアと動的分離されているため）
+- GPL: NG （全関連コードの公開が必要なため）
 
 ### マルチエンジン機能に関して
 
@@ -518,7 +621,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
 
-キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
+キャラクター情報は`resources/character_info`ディレクトリ内のファイルで管理されています。
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
 音声合成は`voicevox_engine/tts_pipeline/tts_engine.py`で行われています。

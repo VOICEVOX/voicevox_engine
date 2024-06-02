@@ -1,0 +1,16 @@
+{
+  "policy": "dummy4 policy\n\nhttps://voicevox.hiroshiba.jp/\n",
+  "portrait": "MD5:70cb4a361935084f00f6956a4e8e4f32",
+  "style_infos": [
+    {
+      "icon": "MD5:e1e2fab676912fc0796a5b23320a0b67",
+      "id": 9,
+      "portrait": null,
+      "voice_samples": [
+        "MD5:fa1230e97dec17b814ec05da1709be19",
+        "MD5:714f4c4f2d3c51a1d9597a6960b8367c",
+        "MD5:bc47fd0d1ea9083c2f4621461ae072b8"
+      ]
+    }
+  ]
+}

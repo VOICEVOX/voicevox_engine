@@ -19,7 +19,6 @@ cost_candidatesの値の詳細は以下の通りです。
 import argparse
 import statistics
 from pathlib import Path
-from typing import List
 
 import numpy as np
 
@@ -30,7 +29,7 @@ def get_candidates(
     pos_detail_1: str,
     pos_detail_2: str,
     pos_detail_3: str,
-) -> List[int]:
+) -> list[int]:
     costs = []
     with naist_jdic_path.open(encoding="utf-8") as f:
         for line in f:
