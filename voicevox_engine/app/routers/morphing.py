@@ -54,7 +54,7 @@ def generate_morphing_router(
         core = core_manager.get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(core=core)
+            speakers = metas_store.load_combined_metas(core.speakers)
             morphable_targets = get_morphable_targets(
                 speakers=speakers, base_style_ids=base_style_ids
             )
@@ -96,7 +96,7 @@ def generate_morphing_router(
         core = core_manager.get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(core=core)
+            speakers = metas_store.load_combined_metas(core.speakers)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
                 speaker_lookup, base_style_id, target_style_id
