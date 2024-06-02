@@ -691,7 +691,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
 
-キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
+キャラクター情報は`resources/character_info`ディレクトリ内のファイルで管理されています。
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
 音声合成は`voicevox_engine/tts_pipeline/tts_engine.py`で行われています。
