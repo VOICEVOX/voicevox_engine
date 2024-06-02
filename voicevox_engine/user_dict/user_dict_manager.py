@@ -3,7 +3,6 @@
 import json
 import sys
 import threading
-import traceback
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
@@ -168,7 +167,6 @@ class UserDictionary:
 
         except Exception as e:
             print("Error: Failed to update dictionary.", file=sys.stderr)
-            traceback.print_exc(file=sys.stderr)
             raise e
 
         finally:
