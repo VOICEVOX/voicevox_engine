@@ -1,3 +1,5 @@
+"""ASGI application の生成"""
+
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -78,7 +80,7 @@ def generate_app(
         generate_speaker_router(core_manager, metas_store, speaker_info_dir)
     )
     if engine_manifest.supported_features.manage_library:
-        app.include_router(generate_library_router(engine_manifest, library_manager))
+        app.include_router(generate_library_router(library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
     app.include_router(
