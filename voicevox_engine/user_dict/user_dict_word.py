@@ -168,7 +168,7 @@ part_of_speech_data: dict[WordTypes, PartOfSpeechDetail] = {
 
 @dataclass
 class WordProperty:
-    """単語属性のあつまり（ENGINE 内部向け）"""
+    """単語属性のあつまり"""
 
     surface: str  # 単語情報
     pronunciation: str  # 単語情報
