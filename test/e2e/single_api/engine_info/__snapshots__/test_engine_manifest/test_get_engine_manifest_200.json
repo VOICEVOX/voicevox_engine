@@ -29,6 +29,13 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「後鬼」のスタイルを追加"
+      ],
+      "version": "0.19.1"
+    },
+    {
       "contributors": [
         "sabonerune",
         "tarepan",
