@@ -54,7 +54,7 @@ def generate_morphing_router(
         返り値のスタイルIDはstring型なので注意。
         """
         core = core_manager.get_core(core_version)
-        speakers = metas_store.load_combined_metas(core=core)
+        speakers = metas_store.load_combined_metas(core.speakers)
         try:
             morphable_targets = get_morphable_targets(speakers, base_style_ids)
         except StyleIdNotFoundError as e:
@@ -93,7 +93,7 @@ def generate_morphing_router(
         core = core_manager.get_core(core_version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
-        speakers = metas_store.load_combined_metas(core=core)
+        speakers = metas_store.load_combined_metas(core.speakers)
         try:
             morphable = is_morphable(speakers, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
