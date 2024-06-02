@@ -17,7 +17,7 @@ from voicevox_engine.cancellable_engine import (
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AudioQuery
-from voicevox_engine.preset.Preset import (
+from voicevox_engine.preset.preset_manager import (
     PresetInputError,
     PresetInternalError,
     PresetManager,
