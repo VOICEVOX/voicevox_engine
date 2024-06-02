@@ -41,7 +41,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TalkSingInvalidInputError,
     TTSEngineManager,
 )
-from voicevox_engine.utility.path_utility import delete_file
+from voicevox_engine.utility.file_utility import delete_file
 
 
 class ParseKanaBadRequest(BaseModel):

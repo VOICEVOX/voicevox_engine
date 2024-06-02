@@ -1,9 +1,4 @@
 # VOICEVOX specifics
-## Artifacts of nuitka
-*.dist
-*.build
-/build
-/cache
 ## Artifact of generating licenses
 /licenses.json
 licenses_venv/

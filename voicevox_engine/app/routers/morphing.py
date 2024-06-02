@@ -22,7 +22,7 @@ from voicevox_engine.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.utility.path_utility import delete_file
+from voicevox_engine.utility.file_utility import delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -54,7 +54,7 @@ def generate_morphing_router(
         core = core_manager.get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(core=core)
+            speakers = metas_store.load_combined_metas(core.speakers)
             morphable_targets = get_morphable_targets(
                 speakers=speakers, base_style_ids=base_style_ids
             )
@@ -96,7 +96,7 @@ def generate_morphing_router(
         core = core_manager.get_core(core_version)
 
         try:
-            speakers = metas_store.load_combined_metas(core=core)
+            speakers = metas_store.load_combined_metas(core.speakers)
             speaker_lookup = construct_lookup(speakers=speakers)
             is_permitted = is_synthesis_morphing_permitted(
                 speaker_lookup, base_style_id, target_style_id
