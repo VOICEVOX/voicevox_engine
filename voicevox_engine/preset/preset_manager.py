@@ -41,19 +41,6 @@ class PresetManager:
         preset_not_specified = default_path.resolve() == preset_path.resolve()
         if not self.preset_path.exists() and preset_not_specified:
             self.preset_path.write_text("[]")
-            default_preset = Preset(
-                id=1,
-                name="サンプルプリセット",
-                speaker_uuid="7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
-                style_id=0,
-                speedScale=1,
-                pitchScale=0,
-                intonationScale=1,
-                volumeScale=1,
-                prePhonemeLength=0.1,
-                postPhonemeLength=0.1,
-            )
-            self.add_preset(default_preset)
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
