@@ -122,8 +122,9 @@ class TestLibraryManager(TestCase):
 
         # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
+        invalid_vvlib_manifest = "test"
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        append_any_as_manifest_to_vvlib("test", invalid_vvlib_name)
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
