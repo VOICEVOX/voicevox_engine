@@ -51,7 +51,7 @@ def generate_speaker_router(
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
-        #   speaker_info/
+        #   character_info/
         #       {speaker_uuid_0}/
         #           policy.md
         #           portrait.png

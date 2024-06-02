@@ -33,7 +33,7 @@ class TestLibraryManager(TestCase):
             self.vvlib_manifest = json.loads(f.read())
             self.library_uuid = self.vvlib_manifest["uuid"]
         with ZipFile(self.library_filename, "w") as zf:
-            speaker_infos = glob.glob("speaker_info/**", recursive=True)
+            speaker_infos = glob.glob("resources/character_info/**", recursive=True)
             for info in speaker_infos:
                 zf.write(info)
             zf.writestr(vvlib_manifest_name, json.dumps(self.vvlib_manifest))
