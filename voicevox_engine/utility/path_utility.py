@@ -1,6 +1,4 @@
-import os
 import sys
-import traceback
 from pathlib import Path
 
 from platformdirs import user_data_dir
@@ -57,11 +55,3 @@ def get_save_dir() -> Path:
     else:
         app_name = "voicevox-engine"
     return Path(user_data_dir(app_name))
-
-
-def delete_file(file_path: str) -> None:
-    """指定されたファイルを削除する。"""
-    try:
-        os.remove(file_path)
-    except OSError:
-        traceback.print_exc()
