@@ -97,11 +97,11 @@ def generate_morphing_router(
         # モーフィングが許可されないキャラクターペアを拒否する
         speakers = metas_store.load_combined_metas(core=core)
         try:
-            is_permitted = is_morphable(speakers, base_style_id, target_style_id)
+            morphable = is_morphable(speakers, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
             raise HTTPException(status_code=404, detail=msg)
-        if not is_permitted:
+        if not morphable:
             msg = "指定されたスタイルペアでのモーフィングはできません"
             raise HTTPException(status_code=400, detail=msg)
 
