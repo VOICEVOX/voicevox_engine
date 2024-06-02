@@ -1,9 +1,9 @@
 name: "Prepare Python"
-description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを外部へ提供をする"
+description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを出力する"
 
 inputs:
   only-export-python-version:
-    description: "Python バージョンの取得のみをおこなうか否か"
+    description: "Python バージョンの出力のみをおこなうか否か"
     required: false
     default: "false"
   requirements-suffix:
