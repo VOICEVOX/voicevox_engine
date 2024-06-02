@@ -9,7 +9,7 @@ from typing import BinaryIO
 from pydantic import ValidationError
 from semver.version import Version
 
-from voicevox_engine.model import (
+from voicevox_engine.library.model import (
     DownloadableLibraryInfo,
     InstalledLibraryInfo,
     VvlibManifest,

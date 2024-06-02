@@ -8,7 +8,7 @@ from typing import Any
 from unittest import TestCase
 from zipfile import ZipFile
 
-from voicevox_engine.library_manager import (
+from voicevox_engine.library.library_manager import (
     LibraryFormatInvalidError,
     LibraryManager,
     LibraryNotFoundError,

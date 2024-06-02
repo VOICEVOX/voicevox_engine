@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 from voicevox_engine.engine_manifest import EngineManifest
-from voicevox_engine.library_manager import (
+from voicevox_engine.library.library_manager import (
     LibraryFormatInvalidError,
     LibraryInternalError,
     LibraryManager,
@@ -15,7 +15,7 @@ from voicevox_engine.library_manager import (
     LibraryOperationUnauthorizedError,
     LibraryUnsupportedError,
 )
-from voicevox_engine.model import DownloadableLibraryInfo, InstalledLibraryInfo
+from voicevox_engine.library.model import DownloadableLibraryInfo, InstalledLibraryInfo
 
 from ..dependencies import check_disabled_mutable_api
 
