@@ -15,14 +15,11 @@ from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest import load_manifest
-from voicevox_engine.preset.Preset import PresetManager
-from voicevox_engine.setting.Setting import (
-    USER_SETTING_PATH,
-    CorsPolicyMode,
-    SettingHandler,
-)
+from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, engine_root
 
 
@@ -277,7 +274,6 @@ def main() -> None:
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
-    latest_core_version = tts_engines.latest_version()
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -334,13 +330,15 @@ def main() -> None:
     else:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
-    speaker_info_dir = root_dir / "speaker_info"
+    speaker_info_dir = root_dir / "resources" / "character_info"
+    # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
+    if not speaker_info_dir.exists():
+        speaker_info_dir = root_dir / "speaker_info"
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
         core_manager,
-        latest_core_version,
         setting_loader,
         preset_manager,
         use_dict,
