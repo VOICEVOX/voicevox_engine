@@ -1,4 +1,4 @@
-from voicevox_engine.model import AccentPhrase, Mora
+from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
