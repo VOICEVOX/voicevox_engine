@@ -31,7 +31,6 @@ def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
 def app_params(tmp_path: Path) -> dict[str, Any]:
     core_manager = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(core_manager)
-    latest_core_version = tts_engines.latest_version()
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
 
     # テスト用に隔離されたプリセットを生成する
@@ -50,7 +49,6 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     return {
         "tts_engines": tts_engines,
         "core_manager": core_manager,
-        "latest_core_version": latest_core_version,
         "setting_loader": setting_loader,
         "preset_manager": preset_manager,
         "user_dict": user_dict,
