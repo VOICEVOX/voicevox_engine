@@ -20,6 +20,9 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
     async def enf_exception_handler(
         request: Request, e: EngineNotFound
     ) -> JSONResponse:
-        return JSONResponse(status_code=422, content={"message": f"{str(e)}"})
+        # NOTE: EngineNotFound は CoreNotFound 以外でも起きうる。
+        #       しかしコアが無いケースが大半であるため、ユーザーの問題解決を助ける観点から情報を付与している。
+        msg = f"{str(e)}。当該バージョンのコアが存在しない可能性があります。"
+        return JSONResponse(status_code=422, content={"message": msg})
 
     return app
