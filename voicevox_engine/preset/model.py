@@ -1,5 +1,5 @@
 """
-プリセット設定機能に関して API と ENGINE 内部実装が共有するモデル
+プリセット機能に関して API と ENGINE 内部実装が共有するモデル
 「API と ENGINE 内部実装が共有するモデル」については `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
