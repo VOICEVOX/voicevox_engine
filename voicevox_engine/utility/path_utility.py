@@ -1,3 +1,5 @@
+"""パスに関する utility"""
+
 import sys
 from pathlib import Path
 

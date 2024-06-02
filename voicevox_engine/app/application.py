@@ -1,3 +1,5 @@
+"""ASGI application の生成"""
+
 from pathlib import Path
 
 from fastapi import FastAPI

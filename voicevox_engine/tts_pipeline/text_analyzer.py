@@ -1,3 +1,5 @@
+"""テキスト解析"""
+
 import re
 from dataclasses import dataclass
 from itertools import chain

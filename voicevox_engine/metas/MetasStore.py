@@ -1,3 +1,5 @@
+"""話者情報と話者メタ情報の管理"""
+
 import json
 from dataclasses import dataclass
 from pathlib import Path

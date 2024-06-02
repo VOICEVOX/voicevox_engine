@@ -1,3 +1,12 @@
+"""
+API と ENGINE 内部実装が共有するモデル
+
+このモジュールで定義されるモデル（データ構造）は API と ENGINE の 2 箇所から使われる。そのため
+- モデルの変更は API 変更となるため慎重に検討する。
+- モデルの docstring や Field は API スキーマとして使われるため、ユーザー向けに丁寧に書く。
+- モデルクラスは FastAPI の制約から `BaseModel` を継承しなければならない。
+"""
+
 from pydantic import BaseModel, Field
 
 from voicevox_engine.tts_pipeline.model import AccentPhrase
