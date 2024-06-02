@@ -1,18 +1,25 @@
+"ユーザー辞書関連の処理"
+
 import json
 import sys
 import threading
 import traceback
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
-import numpy as np
 import pyopenjtalk
 
-from ..model import UserDictWord, WordTypes
 from ..utility.path_utility import get_save_dir, resource_root
-from .part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY, part_of_speech_data
+from .model import UserDictWord, WordTypes
+from .user_dict_word import (
+    UserDictInputError,
+    cost2priority,
+    create_word,
+    part_of_speech_data,
+    priority2cost,
+)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -31,23 +38,16 @@ def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
     return wrap
 
 
-class UserDictInputError(Exception):
-    """受け入れ不可能な入力値に起因するエラー"""
-
-    pass
-
-
 resource_dir = resource_root()
 save_dir = get_save_dir()
 
 if not save_dir.is_dir():
     save_dir.mkdir(parents=True)
 
-_DEFAULT_DICT_PATH = (
-    resource_dir / "default.csv"
-)  # VOICEVOXデフォルト辞書ファイルのパス
-_USER_DICT_PATH = save_dir / "user_dict.json"  # ユーザー辞書ファイルのパス
-_COMPILED_DICT_PATH = save_dir / "user.dic"  # コンパイル済み辞書ファイルのパス
+# デフォルトのファイルパス
+DEFAULT_DICT_PATH: Final = resource_dir / "default.csv"  # VOICEVOXデフォルト辞書
+_USER_DICT_PATH: Final = save_dir / "user_dict.json"  # ユーザー辞書
+_COMPILED_DICT_PATH: Final = save_dir / "user.dic"  # コンパイル済み辞書
 
 
 # 同時書き込みの制御
@@ -69,7 +69,7 @@ def _write_to_json(user_dict: dict[str, UserDictWord], user_dict_path: Path) -> 
     converted_user_dict = {}
     for word_uuid, word in user_dict.items():
         word_dict = word.dict()
-        word_dict["cost"] = _priority2cost(
+        word_dict["cost"] = priority2cost(
             word_dict["context_id"], word_dict["priority"]
         )
         del word_dict["priority"]
@@ -130,7 +130,7 @@ def _update_dict(
             ).format(
                 surface=word.surface,
                 context_id=word.context_id,
-                cost=_priority2cost(word.context_id, word.priority),
+                cost=priority2cost(word.context_id, word.priority),
                 part_of_speech=word.part_of_speech,
                 part_of_speech_detail_1=word.part_of_speech_detail_1,
                 part_of_speech_detail_2=word.part_of_speech_detail_2,
@@ -198,87 +198,11 @@ def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
                 word["context_id"] = part_of_speech_data[
                     WordTypes.PROPER_NOUN
                 ].context_id
-            word["priority"] = _cost2priority(word["context_id"], word["cost"])
+            word["priority"] = cost2priority(word["context_id"], word["cost"])
             del word["cost"]
             result[str(UUID(word_uuid))] = UserDictWord(**word)
 
     return result
-
-
-def _create_word(
-    surface: str,
-    pronunciation: str,
-    accent_type: int,
-    word_type: WordTypes | None,
-    priority: int | None,
-) -> UserDictWord:
-    """
-    単語オブジェクトの生成
-    Parameters
-    ----------
-    surface : str
-        単語情報
-    pronunciation : str
-        単語情報
-    accent_type : int
-        単語情報
-    word_type : WordTypes | None
-        品詞
-    priority : int | None
-        優先度
-    Returns
-    -------
-    : UserDictWord
-        単語オブジェクト
-    """
-    if word_type is None:
-        word_type = WordTypes.PROPER_NOUN
-    if word_type not in part_of_speech_data.keys():
-        raise UserDictInputError("不明な品詞です")
-    if priority is None:
-        priority = 5
-    if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
-        raise UserDictInputError("優先度の値が無効です")
-    pos_detail = part_of_speech_data[word_type]
-    return UserDictWord(
-        surface=surface,
-        context_id=pos_detail.context_id,
-        priority=priority,
-        part_of_speech=pos_detail.part_of_speech,
-        part_of_speech_detail_1=pos_detail.part_of_speech_detail_1,
-        part_of_speech_detail_2=pos_detail.part_of_speech_detail_2,
-        part_of_speech_detail_3=pos_detail.part_of_speech_detail_3,
-        inflectional_type="*",
-        inflectional_form="*",
-        stem="*",
-        yomi=pronunciation,
-        pronunciation=pronunciation,
-        accent_type=accent_type,
-        mora_count=None,
-        accent_associative_rule="*",
-    )
-
-
-def _search_cost_candidates(context_id: int) -> list[int]:
-    for value in part_of_speech_data.values():
-        if value.context_id == context_id:
-            return value.cost_candidates
-    raise UserDictInputError("品詞IDが不正です")
-
-
-def _cost2priority(context_id: int, cost: int) -> int:
-    assert -32768 <= cost <= 32767
-    cost_candidates = _search_cost_candidates(context_id)
-    # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
-    # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
-    # この関数とpriority2cost関数によって、辞書ファイルのcostを操作しても最も近いpriorityのcostに上書きされる
-    return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost)).item()
-
-
-def _priority2cost(context_id: int, priority: int) -> int:
-    assert MIN_PRIORITY <= priority <= MAX_PRIORITY
-    cost_candidates = _search_cost_candidates(context_id)
-    return cost_candidates[MAX_PRIORITY - priority]
 
 
 class UserDictionary:
@@ -286,7 +210,7 @@ class UserDictionary:
 
     def __init__(
         self,
-        default_dict_path: Path = _DEFAULT_DICT_PATH,
+        default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
         compiled_dict_path: Path = _COMPILED_DICT_PATH,
     ) -> None:
@@ -332,7 +256,6 @@ class UserDictionary:
         # インポートする辞書データのバリデーション
         for word_uuid, word in dict_data.items():
             UUID(word_uuid)
-            assert isinstance(word, UserDictWord)
             for pos_detail in part_of_speech_data.values():
                 if word.context_id == pos_detail.context_id:
                     assert word.part_of_speech == pos_detail.part_of_speech
@@ -403,7 +326,7 @@ class UserDictionary:
             追加された単語に発行されたUUID
         """
         # 新規単語の追加による辞書データの更新
-        word = _create_word(
+        word = create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,
@@ -450,7 +373,7 @@ class UserDictionary:
         priority : int | None
             優先度
         """
-        word = _create_word(
+        word = create_word(
             surface=surface,
             pronunciation=pronunciation,
             accent_type=accent_type,

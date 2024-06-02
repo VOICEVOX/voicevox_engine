@@ -2,17 +2,26 @@
 /import_user_dict APIのテスト
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-@pytest.mark.skip(reason="辞書の更新が他のテストに干渉するから")
-def test_post_import_user_dict_204(
+def test_post_import_user_dict_204(client: TestClient) -> None:
+    user_dict: dict[str, dict[str, str | int]] = {}
+    response = client.post(
+        "/import_user_dict", json=user_dict, params={"override": True}
+    )
+    assert response.status_code == 204
+    # '204 No Content' につきスナップショットテストは不要
+
+
+def test_post_import_user_dict_contents(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
+    """辞書インポートは内容が正しく反映されている。"""
+
     user_dict: dict[str, dict[str, str | int]] = {
-        "this-is-test-word-1": {
+        "a11196ad-caa8-4f4e-8eb3-3d2261c798fd": {
             "accent_associative_rule": "*",
             "accent_type": 1,
             "context_id": 1348,
@@ -23,13 +32,14 @@ def test_post_import_user_dict_204(
             "part_of_speech_detail_1": "固有名詞",
             "part_of_speech_detail_2": "一般",
             "part_of_speech_detail_3": "*",
-            "priority": 5,
-            "pronunciation": "テストイチ",
+            "priority": 4,
+            "pronunciation": "テストサン",
             "stem": "*",
-            "surface": "ｔｅｓｔ１",
-            "yomi": "テストイチ",
+            "surface": "ｔｅｓｔ３",
+            "yomi": "テストサン",
         },
     }
-    response = client.post("/import_user_dict", json=user_dict)
-    assert response.status_code == 204
+    client.post("/import_user_dict", json=user_dict, params={"override": True})
+    # NOTE: 'GET /user_dict' が正しく機能することを前提とする
+    response = client.get("/user_dict", params={})
     assert snapshot_json == response.json()
