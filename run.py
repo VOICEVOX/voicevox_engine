@@ -22,7 +22,7 @@ from voicevox_engine.setting.Setting import (
     SettingHandler,
 )
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, engine_root
 
 
@@ -334,6 +334,8 @@ def main() -> None:
     else:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
+    speaker_info_dir = root_dir / "speaker_info"
+
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
@@ -344,7 +346,7 @@ def main() -> None:
         use_dict,
         engine_manifest,
         cancellable_engine,
-        root_dir,
+        speaker_info_dir,
         cors_policy_mode,
         allow_origin,
         disable_mutable_api=disable_mutable_api,
