@@ -1,5 +1,7 @@
 """ユーザー辞書を構成する言葉（単語）関連の処理"""
 
+from dataclasses import dataclass
+
 import numpy as np
 from pydantic import BaseModel, Field
 
@@ -164,43 +166,34 @@ part_of_speech_data: dict[WordTypes, PartOfSpeechDetail] = {
 }
 
 
-def create_word(
-    surface: str,
-    pronunciation: str,
-    accent_type: int,
-    word_type: WordTypes | None,
-    priority: int | None,
-) -> UserDictWord:
-    """
-    単語オブジェクトの生成
-    Parameters
-    ----------
-    surface : str
-        単語情報
-    pronunciation : str
-        単語情報
-    accent_type : int
-        単語情報
-    word_type : WordTypes | None
-        品詞
-    priority : int | None
-        優先度
-    Returns
-    -------
-    : UserDictWord
-        単語オブジェクト
-    """
+@dataclass
+class WordProperty:
+    """単語属性のあつまり"""
+
+    surface: str  # 単語情報
+    pronunciation: str  # 単語情報
+    accent_type: int  # 単語情報
+    word_type: WordTypes | None = None  # 品詞
+    priority: int | None = None  # 優先度
+
+
+def create_word(word_property: WordProperty) -> UserDictWord:
+    """単語オブジェクトを生成する。"""
+    word_type: WordTypes | None = word_property.word_type
     if word_type is None:
         word_type = WordTypes.PROPER_NOUN
     if word_type not in part_of_speech_data.keys():
         raise UserDictInputError("不明な品詞です")
+
+    priority: int | None = word_property.priority
     if priority is None:
         priority = 5
     if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
         raise UserDictInputError("優先度の値が無効です")
+
     pos_detail = part_of_speech_data[word_type]
     return UserDictWord(
-        surface=surface,
+        surface=word_property.surface,
         context_id=pos_detail.context_id,
         priority=priority,
         part_of_speech=pos_detail.part_of_speech,
@@ -210,9 +203,9 @@ def create_word(
         inflectional_type="*",
         inflectional_form="*",
         stem="*",
-        yomi=pronunciation,
-        pronunciation=pronunciation,
-        accent_type=accent_type,
+        yomi=word_property.pronunciation,
+        pronunciation=word_property.pronunciation,
+        accent_type=word_property.accent_type,
         mora_count=None,
         accent_associative_rule="*",
     )

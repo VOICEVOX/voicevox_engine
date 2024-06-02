@@ -14,6 +14,7 @@ from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord, WordTypes
 from .user_dict_word import (
     UserDictInputError,
+    WordProperty,
     cost2priority,
     create_word,
     part_of_speech_data,
@@ -296,44 +297,12 @@ class UserDictionary:
             compiled_dict_path=self._compiled_dict_path,
         )
 
-    def apply_word(
-        self,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> str:
-        """
-        新規単語を追加する。
-        Parameters
-        ----------
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        Returns
-        -------
-        word_uuid : UserDictWord
-            追加された単語に発行されたUUID
-        """
+    def apply_word(self, word_property: WordProperty) -> str:
+        """新規単語を追加し、その単語に割り当てられた UUID を返す。"""
         # 新規単語の追加による辞書データの更新
-        word = create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         word_uuid = str(uuid4())
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = create_word(word_property)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)
@@ -345,45 +314,13 @@ class UserDictionary:
 
         return word_uuid
 
-    def rewrite_word(
-        self,
-        word_uuid: str,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> None:
-        """
-        既存単語を上書き更新する。
-        Parameters
-        ----------
-        word_uuid : str
-            単語UUID
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        """
-        word = create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
-
+    def rewrite_word(self, word_uuid: str, word_property: WordProperty) -> None:
+        """単語 UUID で指定された単語を上書き更新する。"""
         # 既存単語の上書きによる辞書データの更新
         user_dict = _read_dict(user_dict_path=self._user_dict_path)
         if word_uuid not in user_dict:
             raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = create_word(word_property)
 
         # 更新された辞書データの保存と適用
         _write_to_json(user_dict, self._user_dict_path)
