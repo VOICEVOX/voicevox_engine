@@ -1,6 +1,5 @@
 """ユーザー辞書機能を提供する API Router"""
 
-import traceback
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
@@ -35,7 +34,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="辞書の読み込みに失敗しました。"
             )
@@ -81,7 +79,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書への追加に失敗しました。"
             )
@@ -132,7 +129,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -153,7 +149,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -180,7 +175,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書のインポートに失敗しました。"
             )

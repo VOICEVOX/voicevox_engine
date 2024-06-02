@@ -1,7 +1,6 @@
 """話者情報機能を提供する API Router"""
 
 import base64
-import traceback
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -30,7 +29,8 @@ def generate_speaker_router(
     def speakers(core_version: str | None = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
         version = convert_version_format(core_version, core_manager)
-        speakers = metas_store.load_combined_metas(core_manager.get_core(version))
+        core = core_manager.get_core(version)
+        speakers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
@@ -128,7 +128,6 @@ def generate_speaker_router(
                     }
                 )
         except FileNotFoundError:
-            traceback.print_exc()
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
@@ -141,7 +140,8 @@ def generate_speaker_router(
     def singers(core_version: str | None = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
         version = convert_version_format(core_version, core_manager)
-        singers = metas_store.load_combined_metas(core_manager.get_core(version))
+        core = core_manager.get_core(version)
+        singers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
