@@ -179,7 +179,7 @@ python run.py --enable_mock
 ### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
-VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
