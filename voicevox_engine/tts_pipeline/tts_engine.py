@@ -2,7 +2,6 @@ import copy
 import math
 
 import numpy as np
-from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
