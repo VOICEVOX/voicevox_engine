@@ -12,7 +12,7 @@ from fastapi import HTTPException
 
 from voicevox_engine.library_manager import LibraryManager
 
-vvlib_manifest_name = "vvlib_manifest.json"
+VVLIB_MANIFEST_NAME = "vvlib_manifest.json"
 
 
 def create_vvlib_without_manifest(
@@ -25,7 +25,7 @@ def create_vvlib_without_manifest(
     ):
         for file_template in zf_template.infolist():
             buffer = zf_template.read(file_template.filename)
-            if file_template.filename != vvlib_manifest_name:
+            if file_template.filename != VVLIB_MANIFEST_NAME:
                 zf_new.writestr(file_template, buffer)
 
 
@@ -36,7 +36,7 @@ def append_any_as_manifest_to_vvlib(obj: Any, vvlib_path: str) -> None:
             obj_str = obj
         else:
             obj_str = json.dumps(obj)
-        zf.writestr(vvlib_manifest_name, obj_str)
+        zf.writestr(VVLIB_MANIFEST_NAME, obj_str)
 
 
 class TestLibraryManager(TestCase):
@@ -60,7 +60,7 @@ class TestLibraryManager(TestCase):
             speaker_infos = glob.glob("speaker_info/**", recursive=True)
             for info in speaker_infos:
                 zf.write(info)
-            zf.writestr(vvlib_manifest_name, json.dumps(self.vvlib_manifest))
+            zf.writestr(VVLIB_MANIFEST_NAME, json.dumps(self.vvlib_manifest))
         self.library_file = open(self.library_filename, "br")
 
     def tearDown(self) -> None:
