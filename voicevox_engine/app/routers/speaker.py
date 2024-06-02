@@ -1,8 +1,6 @@
 """話者情報機能を提供する API Router"""
 
 import base64
-import json
-import traceback
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -10,9 +8,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
-from voicevox_engine.model import Speaker, SpeakerInfo
 
 
 def b64encode_str(s: bytes) -> str:
@@ -22,20 +19,22 @@ def b64encode_str(s: bytes) -> str:
 def generate_speaker_router(
     core_manager: CoreManager,
     metas_store: MetasStore,
-    root_dir: Path,
+    speaker_info_dir: Path,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
-        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        """話者情報の一覧を取得します。"""
+        core = core_manager.get_core(core_version)
+        speakers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -75,7 +74,7 @@ def generate_speaker_router(
 
         # 該当話者を検索する
         speakers = parse_obj_as(
-            list[Speaker], json.loads(core_manager.get_core(core_version).speakers)
+            list[Speaker], core_manager.get_core(core_version).speakers
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
@@ -86,7 +85,7 @@ def generate_speaker_router(
 
         # 話者情報を取得する
         try:
-            speaker_path = root_dir / "speaker_info" / speaker_uuid
+            speaker_path = speaker_info_dir / speaker_uuid
 
             # speaker policy
             policy_path = speaker_path / "policy.md"
@@ -127,7 +126,6 @@ def generate_speaker_router(
                     }
                 )
         except FileNotFoundError:
-            traceback.print_exc()
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
@@ -138,13 +136,15 @@ def generate_speaker_router(
 
     @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
-        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        """歌手情報の一覧を取得します"""
+        core = core_manager.get_core(core_version)
+        singers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
     def singer_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidに関する情報をjson形式で返します。
+        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -159,7 +159,7 @@ def generate_speaker_router(
         skip_reinit: Annotated[
             bool,
             Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか",
+                description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
             ),
         ] = False,
         core_version: str | None = None,
