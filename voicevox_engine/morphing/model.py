@@ -1,3 +1,9 @@
+"""
+モーフィング機能に関して API と ENGINE 内部実装が共有するモデル（データ構造）
+
+モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
+"""
+
 from pydantic import BaseModel, Field
 
 
