@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 
 
 def test_setting_handler_load_not_exist_file() -> None:

@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from semver.version import Version
 
-from voicevox_engine.model import (
+from voicevox_engine.library.model import (
     DownloadableLibraryInfo,
     InstalledLibraryInfo,
     VvlibManifest,
