@@ -9,9 +9,9 @@ from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import (
+from voicevox_engine.model import AudioQuery
+from voicevox_engine.tts_pipeline.model import (
     AccentPhrase,
-    AudioQuery,
     FrameAudioQuery,
     Mora,
     Note,
