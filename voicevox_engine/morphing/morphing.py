@@ -41,7 +41,7 @@ def get_morphable_targets(
     base_style_ids: list[StyleId],
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
-    モーフィング可能一覧を生成する。
+    キャラクターごとにモーフィングできるスタイルの一覧を生成する。
     指定されたベースキャラクターそれぞれに対し、引数のキャラクターリスト全体をチェックする。
     """
     morphable_targets_arr = []
