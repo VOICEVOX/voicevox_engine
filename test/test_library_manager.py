@@ -21,18 +21,16 @@ def create_vvlib_manifest(template_vvlib: Any, **kwargs: Any) -> dict[str, Any]:
     return {**vvlib_manifest, **kwargs}
 
 
-def create_vvlib_without_manifest(
-    new_vvlib_path: str, template_vvlib_path: Path
-) -> None:
+def create_vvlib_without_manifest(filename: str, template_vvlib_path: Path) -> None:
     """テンプレートの vvlib からマニフェストファイルを削除した、新たな vvlib ファイルを指定パスに生成する。"""
     with (
-        ZipFile(new_vvlib_path, "w") as zf_new,
-        ZipFile(template_vvlib_path, "r") as zf_template,
+        ZipFile(filename, "w") as zf_out,
+        ZipFile(template_vvlib_path, "r") as zf_in,
     ):
-        for file_template in zf_template.infolist():
-            buffer = zf_template.read(file_template.filename)
-            if file_template.filename != VVLIB_MANIFEST_NAME:
-                zf_new.writestr(file_template, buffer)
+        for file in zf_in.infolist():
+            buffer = zf_in.read(file.filename)
+            if file.filename != VVLIB_MANIFEST_NAME:
+                zf_out.writestr(file, buffer)
 
 
 def append_any_as_manifest_to_vvlib(obj: Any, vvlib_path: str) -> None:
