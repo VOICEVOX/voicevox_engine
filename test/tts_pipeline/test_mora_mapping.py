@@ -13,6 +13,6 @@ def test_mora2text() -> None:
 
 def test_mora2text_injective() -> None:
     """異なるモーラが同じ読みがなに対応しないか確認する"""
-    values = list(mora_phonemes_to_mora_kana.values())
-    uniq_values = list(set(values))
-    assert sorted(values) == sorted(uniq_values)
+    mora_kanas = list(mora_phonemes_to_mora_kana.values())
+    # NOTE: 同じ読みがなが複数回登場すると set で非重複化して全長が短くなる
+    assert len(mora_kanas) == len(set(mora_kanas))

@@ -10,17 +10,10 @@ from ..core.core_adapter import CoreAdapter
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import (
-    AccentPhrase,
-    AudioQuery,
-    FrameAudioQuery,
-    FramePhoneme,
-    Mora,
-    Note,
-    Score,
-)
+from ..model import AudioQuery
 from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
+from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
@@ -29,6 +22,12 @@ from .text_analyzer import text_to_accent_phrases
 UPSPEAK_LENGTH = 0.15
 UPSPEAK_PITCH_ADD = 0.3
 UPSPEAK_PITCH_MAX = 6.5
+
+
+class TalkSingInvalidInputError(Exception):
+    """Talk と Sing の不正な入力エラー"""
+
+    pass
 
 
 # TODO: move mora utility to mora module
@@ -265,10 +264,8 @@ def calc_phoneme_lengths(
         if i < len(consonant_lengths) - 1:
             # 最初のノートは子音長が0の、pauである必要がある
             if i == 0 and consonant_lengths[i] != 0:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}",
-                )
+                msg = f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}"
+                raise TalkSingInvalidInputError(msg)
 
             next_consonant_length = consonant_lengths[i + 1]
             note_duration = note_durations[i]
@@ -334,10 +331,8 @@ def notes_to_keys_and_phonemes(
     for note in notes:
         if note.lyric == "":
             if note.key is not None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="lyricが空文字列の場合、keyはnullである必要があります。",
-                )
+                msg = "lyricが空文字列の場合、keyはnullである必要があります。"
+                raise TalkSingInvalidInputError(msg)
             note_lengths.append(note.frame_length)
             note_consonants.append(-1)
             note_vowels.append(0)  # pau
@@ -345,10 +340,8 @@ def notes_to_keys_and_phonemes(
             phoneme_keys.append(-1)
         else:
             if note.key is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="keyがnullの場合、lyricは空文字列である必要があります。",
-                )
+                msg = "keyがnullの場合、lyricは空文字列である必要があります。"
+                raise TalkSingInvalidInputError(msg)
 
             # TODO: 1ノートに複数のモーラがある場合の処理
             mora_phonemes = mora_kana_to_mora_phonemes.get(
@@ -357,10 +350,8 @@ def notes_to_keys_and_phonemes(
                 _hira_to_kana(note.lyric)  # type: ignore
             )
             if mora_phonemes is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"lyricが不正です: {note.lyric}",
-                )
+                msg = f"lyricが不正です: {note.lyric}"
+                raise TalkSingInvalidInputError(msg)
 
             consonant, vowel = mora_phonemes
             if consonant is None:
@@ -405,10 +396,8 @@ def frame_query_to_sf_decoder_feature(
 
     for phoneme in query.phonemes:
         if phoneme.phoneme not in Phoneme._PHONEME_LIST:
-            raise HTTPException(
-                status_code=400,
-                detail=f"phoneme {phoneme.phoneme} is not valid",
-            )
+            msg = f"phoneme {phoneme.phoneme} is not valid"
+            raise TalkSingInvalidInputError(msg)
 
         phonemes.append(Phoneme(phoneme.phoneme).id)
         phoneme_lengths.append(phoneme.frame_length)
@@ -650,10 +639,8 @@ class TTSEngine:
             all_equals = np.bool_(False)
 
         if not all_equals:
-            raise HTTPException(
-                status_code=400,
-                detail="Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。",
-            )
+            msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
+            raise TalkSingInvalidInputError(msg)
 
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
