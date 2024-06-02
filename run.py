@@ -332,7 +332,7 @@ def main() -> None:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
     speaker_info_dir = root_dir / "resources" / "character_info"
-    # NOTE: ENGINE v0.19.0 以前向けに後方互換性を確保する
+    # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
     if not speaker_info_dir.exists():
         speaker_info_dir = root_dir / "speaker_info"
 
