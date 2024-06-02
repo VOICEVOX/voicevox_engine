@@ -2,12 +2,10 @@
 ユーザー辞書の言葉のAPIのテスト
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-@pytest.mark.skip(reason="辞書の更新が他のテストに干渉するから")
 def test_post_user_dict_word_200(client: TestClient) -> None:
     params: dict[str, str | int] = {
         "surface": "test",
@@ -18,6 +16,7 @@ def test_post_user_dict_word_200(client: TestClient) -> None:
     }
     response = client.post("/user_dict_word", params=params)
     assert response.status_code == 200
+    # UUID はランダム付与のためスナップショット不可
 
 
 def test_post_user_dict_word_422(
@@ -36,11 +35,8 @@ def test_post_user_dict_word_422(
     assert snapshot_json == response.json()
 
 
-@pytest.mark.skip(reason="辞書の更新が他のテストに干渉するから")
-def test_put_user_dict_word_204(
-    client: TestClient, snapshot_json: SnapshotAssertion
-) -> None:
-    word_uuid = "40400000"
+def test_put_user_dict_word_204(client: TestClient) -> None:
+    word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
     params: dict[str, str | int] = {
         "surface": "test",
         "pronunciation": "テスト",
@@ -51,6 +47,25 @@ def test_put_user_dict_word_204(
     }
     response = client.put(f"/user_dict_word/{word_uuid}", params=params)
     assert response.status_code == 204
+    # '204 No Content' につきスナップショットテストは不要
+
+
+def test_put_user_dict_word_contents(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    """単語更新は内容が正しく反映されている。"""
+    word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
+    params: dict[str, str | int] = {
+        "surface": "test",
+        "pronunciation": "テスト",
+        "accent_type": 1,
+        "word_uuid": word_uuid,
+        "word_type": "PROPER_NOUN",
+        "priority": 1,
+    }
+    client.put(f"/user_dict_word/{word_uuid}", params=params)
+    # NOTE: 'GET /user_dict' が正しく機能することを前提とする
+    response = client.get("/user_dict", params={})
     assert snapshot_json == response.json()
 
 
@@ -72,13 +87,20 @@ def test_put_user_dict_word_422(
     assert snapshot_json == response.json()
 
 
-@pytest.mark.skip(reason="辞書の更新が他のテストに干渉するから")
-def test_delete_user_dict_word_204(
-    client: TestClient, snapshot_json: SnapshotAssertion
-) -> None:
-    word_uuid = "1"
+def test_delete_user_dict_word_204(client: TestClient) -> None:
+    word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
     response = client.delete(f"/user_dict_word/{word_uuid}", params={})
     assert response.status_code == 204
+    # '204 No Content' につきスナップショットテストは不要
+
+
+def test_delete_user_dict_word_contents(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    word_uuid = "a89596ad-caa8-4f4e-8eb3-3d2261c798fd"
+    client.delete(f"/user_dict_word/{word_uuid}", params={})
+    # NOTE: 'GET /user_dict' が正しく機能することを前提とする
+    response = client.get("/user_dict", params={})
     assert snapshot_json == response.json()
 
 
