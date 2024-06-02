@@ -5,9 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
-from voicevox_engine.model import Speaker, SpeakerInfo
 
 
 def generate_speaker_router(
@@ -19,7 +18,8 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        speakers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        core = core_manager.get_core(core_version)
+        speakers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
@@ -37,7 +37,8 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        singers = metas_store.load_combined_metas(core_manager.get_core(core_version))
+        core = core_manager.get_core(core_version)
+        singers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")

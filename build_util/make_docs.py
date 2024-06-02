@@ -7,10 +7,10 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.engine_manifest import load_manifest
-from voicevox_engine.preset.Preset import PresetManager
-from voicevox_engine.setting.Setting import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.user_dict.user_dict import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, engine_root
 
 

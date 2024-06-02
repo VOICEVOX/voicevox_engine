@@ -1,6 +1,5 @@
 import base64
 import json
-import traceback
 from copy import deepcopy
 from pathlib import Path
 from typing import Literal
@@ -8,7 +7,7 @@ from typing import Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field, parse_obj_as
 
-from voicevox_engine.core.core_adapter import CoreAdapter, CoreSpeaker, CoreSpeakerStyle
+from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerInfo,
@@ -62,23 +61,8 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    # FIXME: engineではなくlist[CoreSpeaker]を渡す形にすることで
-    # TTSEngineによる循環importを修正する
-    def load_combined_metas(self, core: CoreAdapter) -> list[Speaker]:
-        """
-        コアに含まれる話者メタ情報とエンジンに含まれる話者メタ情報を統合
-        Parameters
-        ----------
-        core : CoreAdapter
-            話者メタ情報をもったコア
-        Returns
-        -------
-        ret : list[Speaker]
-            エンジンとコアに含まれる話者メタ情報
-        """
-        # コアに含まれる話者メタ情報の収集
-        core_metas = core.speakers
-        # エンジンに含まれる話者メタ情報との統合
+    def load_combined_metas(self, core_metas: list[CoreSpeaker]) -> list[Speaker]:
+        """コアとエンジンのメタ情報を統合する。"""
         return [
             Speaker(
                 supported_features=self._loaded_metas[
@@ -173,7 +157,6 @@ class MetasStore:
                     }
                 )
         except FileNotFoundError:
-            traceback.print_exc()
             # FIXME: ドメインを合わせる
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
