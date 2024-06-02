@@ -59,7 +59,7 @@ def get_morphable_targets(
 def is_morphable(
     speakers: list[Speaker], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
-    """スタイル ID で指定されたふたりのキャラクターがモーフィング可能か判定する。"""
+    """指定された２つのスタイル ID がモーフィング可能か判定する。"""
 
     # スタイル ID にキャラクターを紐付ける対応表を生成する。
     style_id_to_character: dict[StyleId, Speaker] = {}
