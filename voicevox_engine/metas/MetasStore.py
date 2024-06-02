@@ -22,6 +22,56 @@ def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
     ]
 
 
+@dataclass
+class Character:
+    """キャラクター"""
+
+    name: str
+    uuid: str
+    talk_styles: list[SpeakerStyle]
+    sing_styles: list[SpeakerStyle]
+    version: str
+    supported_features: SpeakerSupportedFeatures
+
+
+TALK_STYLE_TYPES: Final = ["talk"]
+SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
+
+
+def speakers_to_characters(speakers: list[Speaker]) -> list[Character]:
+    """Speaker 配列をキャラクター配列へキャストする。"""
+    characters: list[Character] = []
+    for speaker in speakers:
+        styles = speaker.styles
+        talk_styles = filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
+        sing_styles = filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+        characters.append(
+            Character(
+                name=speaker.name,
+                uuid=speaker.speaker_uuid,
+                talk_styles=list(talk_styles),
+                sing_styles=list(sing_styles),
+                version=speaker.version,
+                supported_features=speaker.supported_features,
+            )
+        )
+    return characters
+
+
+def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
+    """キャラクター配列を Speaker 配列へキャストする。"""
+    return [
+        Speaker(
+            name=character.name,
+            speaker_uuid=character.uuid,
+            styles=character.talk_styles + character.sing_styles,
+            version=character.version,
+            supported_features=character.supported_features,
+        )
+        for character in characters
+    ]
+
+
 class _EngineSpeaker(BaseModel):
     """
     エンジンに含まれる話者情報
@@ -52,20 +102,26 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_metas: list[CoreSpeaker]) -> list[Speaker]:
+    def load_combined_metas(self, core_speakers: list[CoreSpeaker]) -> list[Character]:
         """コアとエンジンのメタ情報を統合する。"""
-        return [
-            Speaker(
-                supported_features=self._loaded_metas[
-                    speaker_meta.speaker_uuid
-                ].supported_features,
-                name=speaker_meta.name,
-                speaker_uuid=speaker_meta.speaker_uuid,
-                styles=cast_styles(speaker_meta.styles),
-                version=speaker_meta.version,
+        characters: list[Character] = []
+        for core_speaker in core_speakers:
+            speaker_uuid = core_speaker.speaker_uuid
+            engine_speaker = self._loaded_metas[speaker_uuid]
+            styles = cast_styles(core_speaker.styles)
+            talk_styles = filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
+            sing_styles = filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+            characters.append(
+                Character(
+                    name=core_speaker.name,
+                    uuid=core_speaker.speaker_uuid,
+                    talk_styles=list(talk_styles),
+                    sing_styles=list(sing_styles),
+                    version=core_speaker.version,
+                    supported_features=engine_speaker.supported_features,
+                )
             )
-            for speaker_meta in core_metas
-        ]
+        return characters
 
 
 def construct_lookup(
@@ -89,44 +145,11 @@ def construct_lookup(
     return lookup_table
 
 
-@dataclass
-class Character:
-    """キャラクター"""
-
-    name: str
-    uuid: str
-    talk_styles: list[SpeakerStyle]
-    sing_styles: list[SpeakerStyle]
-    version: str
-    supported_features: SpeakerSupportedFeatures
-
-
-TALK_STYLE_TYPES: Final = ["talk"]
-SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
-
-
 def filter_speakers_and_styles(
-    speakers: list[Speaker],
+    characters: list[Character],
     speaker_or_singer: Literal["speaker", "singer"],
 ) -> list[Speaker]:
     """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
-
-    characters = map(
-        lambda speaker: Character(
-            name=speaker.name,
-            uuid=speaker.speaker_uuid,
-            talk_styles=list(
-                filter(lambda style: style.type in TALK_STYLE_TYPES, speaker.styles)
-            ),
-            sing_styles=list(
-                filter(lambda style: style.type in SING_STYLE_TYPES, speaker.styles)
-            ),
-            version=speaker.version,
-            supported_features=speaker.supported_features,
-        ),
-        speakers,
-    )
-
     if speaker_or_singer == "speaker":
         # talk 系スタイルを持たないキャラクターを除外する
         talk_characters = filter(

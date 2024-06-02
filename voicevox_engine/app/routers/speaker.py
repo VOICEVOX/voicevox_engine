@@ -9,7 +9,11 @@ from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
+from voicevox_engine.metas.MetasStore import (
+    MetasStore,
+    filter_speakers_and_styles,
+    speakers_to_characters,
+)
 
 
 def b64encode_str(s: bytes) -> str:
@@ -76,7 +80,8 @@ def generate_speaker_router(
         speakers = parse_obj_as(
             list[Speaker], core_manager.get_core(core_version).speakers
         )
-        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
+        characters = speakers_to_characters(speakers)
+        speakers = filter_speakers_and_styles(characters, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
