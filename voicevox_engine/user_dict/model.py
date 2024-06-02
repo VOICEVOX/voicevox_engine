@@ -11,9 +11,7 @@ from pydantic import BaseModel, Field, validator
 
 
 class WordTypes(str, Enum):
-    """
-    fastapiでword_type引数を検証する時に使用するクラス
-    """
+    """品詞"""
 
     PROPER_NOUN = "PROPER_NOUN"
     COMMON_NOUN = "COMMON_NOUN"
