@@ -1,4 +1,4 @@
-"""ユーザー辞書を構成する言葉（単語）関連の処理"""
+"""ユーザー辞書を構成する単語関連の処理"""
 
 import numpy as np
 from pydantic import BaseModel, Field
