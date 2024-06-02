@@ -1,4 +1,4 @@
-"""VOICEVOX ENGINE アプリケーション"""
+"""ASGI application の生成"""
 
 from pathlib import Path
 
