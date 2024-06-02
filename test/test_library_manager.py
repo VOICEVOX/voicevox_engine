@@ -15,6 +15,18 @@ from voicevox_engine.library_manager import LibraryManager
 vvlib_manifest_name = "vvlib_manifest.json"
 
 
+def create_vvlib_without_manifest(new_vvlib_path: str, template_vvlib_path: Path) -> None:
+    """テンプレートの vvlib からマニフェストファイルを削除した、新たな vvlib ファイルを指定パスに生成する。"""
+    with (
+        ZipFile(new_vvlib_path, "w") as zf_new,
+        ZipFile(template_vvlib_path, "r") as zf_template,
+    ):
+        for file_template in zf_template.infolist():
+            buffer = zf_template.read(file_template.filename)
+            if file_template.filename != vvlib_manifest_name:
+                zf_new.writestr(file_template, buffer)
+
+
 class TestLibraryManager(TestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -43,16 +55,6 @@ class TestLibraryManager(TestCase):
         self.tmp_dir.cleanup()
         self.library_file.close()
         self.library_filename.unlink()
-
-    def create_vvlib_without_manifest(self, filename: str) -> None:
-        with (
-            ZipFile(filename, "w") as zf_out,
-            ZipFile(self.library_filename, "r") as zf_in,
-        ):
-            for file in zf_in.infolist():
-                buffer = zf_in.read(file.filename)
-                if file.filename != vvlib_manifest_name:
-                    zf_out.writestr(file, buffer)
 
     def create_vvlib_manifest(self, **kwargs: Any) -> dict[str, Any]:
         vvlib_manifest = copy.deepcopy(self.vvlib_manifest)
@@ -95,7 +97,7 @@ class TestLibraryManager(TestCase):
     def test_install_manifest_less_library(self) -> None:
         """マニフェストの無い ZIP ファイルは音声ライブラリとしてインストールできない。"""
         invalid_vvlib_name = "test/invalid.vvlib"
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -109,7 +111,7 @@ class TestLibraryManager(TestCase):
         # vvlib_manifestのパースのテスト
         # Duplicate name: 'vvlib_manifest.json'とWarningを吐かれるので、毎回作り直す
         invalid_vvlib_name = "test/invalid.vvlib"
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, "test")
 
@@ -125,7 +127,7 @@ class TestLibraryManager(TestCase):
         # vvlib_manifestのパースのテスト
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(version=10)
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
@@ -140,7 +142,7 @@ class TestLibraryManager(TestCase):
         # vvlib_manifestの不正なversionのテスト
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(version="10")
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
@@ -155,7 +157,7 @@ class TestLibraryManager(TestCase):
         # vvlib_manifestの不正なmanifest_versionのテスト
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(manifest_version="10")
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
@@ -172,7 +174,7 @@ class TestLibraryManager(TestCase):
         invalid_vvlib_manifest = self.create_vvlib_manifest(
             manifest_version="999.999.999"
         )
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
@@ -189,7 +191,7 @@ class TestLibraryManager(TestCase):
         invalid_vvlib_manifest = self.create_vvlib_manifest(
             engine_uuid="26f7823b-20c6-40c5-bf86-6dd5d9d45c18"
         )
-        self.create_vvlib_without_manifest(invalid_vvlib_name)
+        create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with ZipFile(invalid_vvlib_name, "a") as zf:
             zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
 
