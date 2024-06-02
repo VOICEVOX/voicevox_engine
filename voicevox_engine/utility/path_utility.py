@@ -9,8 +9,6 @@ def engine_root() -> Path:
     if _is_development():
         # git レポジトリのルートを指している
         root_dir = Path(__file__).parents[2]
-
-    # Nuitka/Pyinstallerでビルドされている場合
     else:
         root_dir = Path(sys.argv[0]).parent
 
@@ -31,17 +29,10 @@ def engine_manifest_path() -> Path:
 def _is_development() -> bool:
     """
     動作環境が開発版であるか否かを返す。
-    Nuitka/Pyinstallerでコンパイルされていない場合は開発環境とする。
+    Pyinstallerでコンパイルされていない場合は開発環境とする。
     """
-    # nuitkaビルドをした際はグローバルに__compiled__が含まれる
-    if "__compiled__" in globals():
-        return False
-
     # pyinstallerでビルドをした際はsys.frozenが設定される
-    elif getattr(sys, "frozen", False):
-        return False
-
-    return True
+    return False if getattr(sys, "frozen", False) else True
 
 
 def get_save_dir() -> Path:
