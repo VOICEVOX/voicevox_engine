@@ -114,7 +114,7 @@ class MetasStore:
             characters.append(
                 Character(
                     name=core_speaker.name,
-                    uuid=core_speaker.speaker_uuid,
+                    uuid=speaker_uuid,
                     talk_styles=list(talk_styles),
                     sing_styles=list(sing_styles),
                     version=core_speaker.version,
