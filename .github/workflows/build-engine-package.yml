@@ -76,12 +76,18 @@ jobs:
             cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip
             zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
             target: windows-nvidia
-          # Mac CPU (x64 arch only)
+          # Mac CPU (x64 arch)
           - os: macos-12
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
             target: macos-x64
+          # Mac CPU (arm64 arch)
+          - os: macos-14
+            architecture: "arm64"
+            voicevox_core_asset_prefix: voicevox_core-osx-arm64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-arm64-1.13.1.tgz
+            target: macos-arm64
           # Linux CPU
           - os: ubuntu-20.04
             architecture: "x64"
@@ -544,10 +550,6 @@ jobs:
           rm -rf download/onnxruntime
           rm -rf download/cuda
           rm -rf download/cudnn
-
-      - name: <Setup> Set @rpath to @executable_path
-        if: startsWith(matrix.os, 'macos-')
-        run: install_name_tool -add_rpath @executable_path/. dist/run/run
 
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
