@@ -21,10 +21,10 @@ jobs:
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-test"
+          requirements-suffix: "-dev"
 
       - name: <Test> Check Python dependency security
-        run: safety check -r requirements.txt -r requirements-test.txt -r requirements-build.txt -r requirements-license.txt -o bare
+        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt -r requirements-license.txt -o bare
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1
