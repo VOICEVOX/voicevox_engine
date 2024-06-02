@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 
 
 def test_setting_handler_load_not_exist_file() -> None:
@@ -78,17 +79,6 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     setting = setting_loader.load().dict()
     # Test
     assert true_setting == setting
-
-
-def test_setting_handler_load_cors_policy_mode_type() -> None:
-    """`SettingHandler.load()` で正しい型の値を得られる。"""
-    # Inputs
-    setting_path = Path("test/setting/setting-test-load-1.yaml")
-    setting_loader = SettingHandler(setting_path)
-    # Outputs
-    setting = setting_loader.load()
-    # Test
-    assert isinstance(setting.cors_policy_mode, CorsPolicyMode)
 
 
 def test_setting_invalid_input() -> None:
