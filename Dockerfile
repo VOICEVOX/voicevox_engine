@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# TODO: build-arg と target のドキュメントをこのファイルに書く
+
 ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 

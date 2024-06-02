@@ -5,7 +5,7 @@ from typing import Callable, Literal, Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora
+from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
 
 OjtVowel = Literal[
