@@ -15,7 +15,9 @@ from voicevox_engine.library_manager import LibraryManager
 vvlib_manifest_name = "vvlib_manifest.json"
 
 
-def create_vvlib_without_manifest(new_vvlib_path: str, template_vvlib_path: Path) -> None:
+def create_vvlib_without_manifest(
+    new_vvlib_path: str, template_vvlib_path: Path
+) -> None:
     """テンプレートの vvlib からマニフェストファイルを削除した、新たな vvlib ファイルを指定パスに生成する。"""
     with (
         ZipFile(new_vvlib_path, "w") as zf_new,
@@ -25,6 +27,16 @@ def create_vvlib_without_manifest(new_vvlib_path: str, template_vvlib_path: Path
             buffer = zf_template.read(file_template.filename)
             if file_template.filename != vvlib_manifest_name:
                 zf_new.writestr(file_template, buffer)
+
+
+def append_any_as_manifest_to_vvlib(obj: Any, vvlib_path: str) -> None:
+    """指定 vvlib へ任意の Python オブジェクトをマニフェストファイルとして追加する。"""
+    with ZipFile(vvlib_path, "a") as zf:
+        if isinstance(obj, str):
+            obj_str = obj
+        else:
+            obj_str = json.dumps(obj)
+        zf.writestr(vvlib_manifest_name, obj_str)
 
 
 class TestLibraryManager(TestCase):
@@ -108,13 +120,12 @@ class TestLibraryManager(TestCase):
     def test_install_broken_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
 
-        # vvlib_manifestのパースのテスト
-        # Duplicate name: 'vvlib_manifest.json'とWarningを吐かれるので、毎回作り直す
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, "test")
+        append_any_as_manifest_to_vvlib("test", invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -124,13 +135,14 @@ class TestLibraryManager(TestCase):
 
     def test_install_invalid_type_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
-        # vvlib_manifestのパースのテスト
+
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(version=10)
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -140,12 +152,14 @@ class TestLibraryManager(TestCase):
 
     def test_install_invalid_version_manifest_library(self) -> None:
         # vvlib_manifestの不正なversionのテスト
+
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(version="10")
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -155,12 +169,14 @@ class TestLibraryManager(TestCase):
 
     def test_install_invalid_manifest_version_library(self) -> None:
         # vvlib_manifestの不正なmanifest_versionのテスト
+
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(manifest_version="10")
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -170,14 +186,16 @@ class TestLibraryManager(TestCase):
 
     def test_install_invalid_manifest_version_library_2(self) -> None:
         # vvlib_manifestの未対応のmanifest_versionのテスト
+
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(
             manifest_version="999.999.999"
         )
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
@@ -187,14 +205,16 @@ class TestLibraryManager(TestCase):
 
     def test_install_non_target_engine_library(self) -> None:
         # vvlib_manifestのインストール先エンジンの検証のテスト
+
+        # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = self.create_vvlib_manifest(
             engine_uuid="26f7823b-20c6-40c5-bf86-6dd5d9d45c18"
         )
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with ZipFile(invalid_vvlib_name, "a") as zf:
-            zf.writestr(vvlib_manifest_name, json.dumps(invalid_vvlib_manifest))
+        append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
+        # Tests
         with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
             self.library_manger.install_library(self.library_uuid, f)
         self.assertEqual(
