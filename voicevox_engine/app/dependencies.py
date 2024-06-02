@@ -1,3 +1,5 @@
+"""FastAPI dependencies"""
+
 from dataclasses import dataclass
 
 from fastapi import HTTPException

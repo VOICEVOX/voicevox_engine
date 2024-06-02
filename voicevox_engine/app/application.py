@@ -1,3 +1,5 @@
+"""ASGI application の生成"""
+
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -32,7 +34,6 @@ from voicevox_engine.utility.path_utility import engine_root, get_save_dir
 def generate_app(
     tts_engines: TTSEngineManager,
     core_manager: CoreManager,
-    latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,
@@ -45,7 +46,7 @@ def generate_app(
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
     if speaker_info_dir is None:
-        speaker_info_dir = engine_root() / "speaker_info"
+        speaker_info_dir = engine_root() / "resources" / "character_info"
 
     app = FastAPI(
         title=engine_manifest.name,
@@ -79,7 +80,7 @@ def generate_app(
         generate_speaker_router(core_manager, metas_store, speaker_info_dir)
     )
     if engine_manifest.supported_features.manage_library:
-        app.include_router(generate_library_router(engine_manifest, library_manager))
+        app.include_router(generate_library_router(library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
     app.include_router(
