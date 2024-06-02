@@ -7,8 +7,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 from voicevox_engine.engine_manifest import ManifestContainer
-from voicevox_engine.library_manager import LibraryManager
-from voicevox_engine.model import DownloadableLibraryInfo, InstalledLibraryInfo
+from voicevox_engine.library.library_manager import LibraryManager
+from voicevox_engine.library.model import DownloadableLibraryInfo, InstalledLibraryInfo
 
 from ..dependencies import check_disabled_mutable_api
 
