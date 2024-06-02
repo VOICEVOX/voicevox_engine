@@ -6,10 +6,11 @@ import pytest
 from pyopenjtalk import g2p, unset_user_dict
 
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary, WordProperty
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
     MAX_PRIORITY,
     UserDictInputError,
+    WordProperty,
     create_word,
     part_of_speech_data,
 )
