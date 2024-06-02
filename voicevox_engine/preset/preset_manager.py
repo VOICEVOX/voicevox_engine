@@ -3,26 +3,9 @@
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, parse_obj_as
+from pydantic import ValidationError, parse_obj_as
 
-from voicevox_engine.metas.Metas import StyleId
-
-
-class Preset(BaseModel):
-    """
-    プリセット情報
-    """
-
-    id: int = Field(title="プリセットID")
-    name: str = Field(title="プリセット名")
-    speaker_uuid: str = Field(title="話者のUUID")
-    style_id: StyleId = Field(title="スタイルID")
-    speedScale: float = Field(title="全体の話速")
-    pitchScale: float = Field(title="全体の音高")
-    intonationScale: float = Field(title="全体の抑揚")
-    volumeScale: float = Field(title="全体の音量")
-    prePhonemeLength: float = Field(title="音声の前の無音時間")
-    postPhonemeLength: float = Field(title="音声の後の無音時間")
+from .model import Preset
 
 
 class PresetInputError(Exception):
