@@ -332,7 +332,7 @@ def main() -> None:
 
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        engine_manifest.supported_vvlib_manifest_version,
+        None,
         engine_manifest.brand_name,
         engine_manifest.name,
         engine_manifest.uuid,
