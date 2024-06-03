@@ -28,7 +28,7 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
+from voicevox_engine.utility.path_utility import engine_root
 
 
 def generate_app(
@@ -38,6 +38,7 @@ def generate_app(
     preset_manager: PresetManager,
     user_dict: UserDictionary,
     engine_manifest: EngineManifest,
+    library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
     speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -58,14 +59,6 @@ def generate_app(
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
-
-    library_manager = LibraryManager(
-        get_save_dir() / "installed_libraries",
-        engine_manifest.supported_vvlib_manifest_version,
-        engine_manifest.brand_name,
-        engine_manifest.name,
-        engine_manifest.uuid,
-    )
 
     metas_store = MetasStore(speaker_info_dir)
 
