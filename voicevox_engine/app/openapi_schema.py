@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 
-from voicevox_engine.library.model import BaseLibraryInfo, LibrarySpeaker, VvlibManifest
+from voicevox_engine.library.model import BaseLibraryInfo, VvlibManifest
 
 
 def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastAPI:
@@ -28,18 +28,18 @@ def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastA
             contact=app.contact,
             license_info=app.license_info,
         )
-        additional_models: list[type[BaseModel]] = [
-            VvlibManifest,
-        ]
-        if not manage_library:
-            additional_models += [BaseLibraryInfo, LibrarySpeaker]
-        for model in additional_models:
-            # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-            schema = model.schema(ref_template="#/components/schemas/{model}")
-            # definitionsは既存のモデルを重複して定義するため、不要なので削除
-            if "definitions" in schema:
-                del schema["definitions"]
-            openapi_schema["components"]["schemas"][schema["title"]] = schema
+        if manage_library:
+            additional_models: list[type[BaseModel]] = [
+                BaseLibraryInfo,
+                VvlibManifest,
+            ]
+            for model in additional_models:
+                # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
+                schema = model.schema(ref_template="#/components/schemas/{model}")
+                # definitionsは既存のモデルを重複して定義するため、不要なので削除
+                if "definitions" in schema:
+                    del schema["definitions"]
+                openapi_schema["components"]["schemas"][schema["title"]] = schema
         app.openapi_schema = openapi_schema
         return openapi_schema
 
