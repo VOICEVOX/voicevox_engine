@@ -85,4 +85,4 @@ jobs:
           exit 1
 
       - name: <Test> Test ENGINE application docker container
-        run: python build_util/check_release_build.py --skip_run_process --dist_dir dist/
+        run: python scripts/check_release_build.py --skip_run_process --dist_dir dist/

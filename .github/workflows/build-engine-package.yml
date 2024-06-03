@@ -290,7 +290,7 @@ jobs:
 
       - name: <Setup> Prepare custom PyInstaller
         if: startsWith(matrix.os, 'windows-')
-        run: ./build_util/modify_pyinstaller.bash
+        run: ./scripts/modify_pyinstaller.bash
 
       - name: <Setup> Download pyopenjtalk dictionary
         run: |
@@ -409,7 +409,7 @@ jobs:
       - name: <Build> Merge RESOURCE
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash build_util/process_voicevox_resource.bash
+        run: bash scripts/process_voicevox_resource.bash
 
       # VOICEVOX CORE
       - name: <Setup> Prepare CORE cache
@@ -441,7 +441,7 @@ jobs:
       - name: <Build> Generate licenses.json
         run: |
           OUTPUT_LICENSE_JSON_PATH=resources/engine_manifest_assets/dependency_licenses.json \
-          bash build_util/create_venv_and_generate_licenses.bash
+          bash scripts/create_venv_and_generate_licenses.bash
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
@@ -547,7 +547,7 @@ jobs:
 
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
-        run: bash build_util/codesign.bash "dist/run/run.exe"
+        run: bash scripts/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}

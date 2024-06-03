@@ -572,7 +572,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 python -m pip install -r requirements-build.txt
 
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
+bash scripts/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
 pyinstaller --noconfirm run.spec
@@ -718,7 +718,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-PYTHONPATH=. python build_util/make_docs.py
+PYTHONPATH=. python scripts/make_docs.py
 ```
 
 ### GitHub Actions
