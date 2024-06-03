@@ -1,3 +1,5 @@
+"""音声ライブラリの管理"""
+
 import base64
 import json
 import os

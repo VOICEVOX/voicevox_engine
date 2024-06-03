@@ -1,3 +1,5 @@
+"""VOICEVOX CORE インスタンスの生成"""
+
 import json
 import os
 import sys
