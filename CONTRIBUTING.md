@@ -309,13 +309,13 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
-pyinstaller --noconfirm voicevox_engine/run.spec
+pyinstaller --noconfirm build_util/run.spec
 
 # 製品版でビルドする場合
 CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm voicevox_engine/run.spec
+pyinstaller --noconfirm build_util/run.spec
 ```
 
 ### Github Actions でビルド

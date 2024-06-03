@@ -40,7 +40,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['run.py'],
+    ['../voicevox_engine/run.py'],
     pathex=[],
     binaries=[],
     datas=datas,
