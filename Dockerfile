@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# TODO: build-arg と target のドキュメントをこのファイルに書く
+
 ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
@@ -23,7 +25,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.3
+ARG VOICEVOX_CORE_VERSION=0.15.4
 
 RUN <<EOF
     set -eux
@@ -231,7 +233,6 @@ ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
-ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -275,7 +276,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.19.0
+ARG VOICEVOX_RESOURCE_VERSION=0.19.1
 RUN <<EOF
     set -eux
 
