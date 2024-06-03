@@ -141,7 +141,7 @@ def load_manifest(manifest_path: Path) -> ManifestContainer:
     return ManifestContainer.from_file(manifest_path)
 
 
-def generate_api_manifest(manifest_container: ManifestContainer) -> EngineManifest:
+def generate_engine_manifest(manifest_container: ManifestContainer) -> EngineManifest:
     """API 向けのエンジンマニフェストを生成する。"""
     root_dir = manifest_container.root
     manifest = manifest_container.dict()

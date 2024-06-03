@@ -11,7 +11,7 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import (
     EngineManifest,
     ManifestContainer,
-    generate_api_manifest,
+    generate_engine_manifest,
 )
 
 
@@ -61,6 +61,6 @@ def generate_engine_info_router(
     @router.get("/engine_manifest")
     async def engine_manifest() -> EngineManifest:
         """エンジンマニフェストを取得します。"""
-        return generate_api_manifest(engine_manifest_data)
+        return generate_engine_manifest(engine_manifest_data)
 
     return router
