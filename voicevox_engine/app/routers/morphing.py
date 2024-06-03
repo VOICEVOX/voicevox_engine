@@ -9,7 +9,6 @@ from fastapi import APIRouter, HTTPException, Query
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.app.routers.commons import convert_version_format
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, construct_lookup
@@ -52,7 +51,7 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
 
         try:
@@ -94,7 +93,7 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         engine = tts_engines.get_engine(version)
         core = core_manager.get_core(version)
 

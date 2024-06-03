@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from voicevox_engine import __version__
-from voicevox_engine.app.routers.commons import convert_version_format
 from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
@@ -50,7 +49,7 @@ def generate_engine_info_router(
     @router.get("/supported_devices")
     def supported_devices(core_version: str | None = None) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         supported_devices = core_manager.get_core(version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")

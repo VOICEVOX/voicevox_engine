@@ -7,7 +7,6 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import parse_obj_as
 
-from voicevox_engine.app.routers.commons import convert_version_format
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
@@ -28,7 +27,7 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | None = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         speakers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(speakers, "speaker")
@@ -74,7 +73,7 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
 
         # 該当話者を検索する
         speakers = parse_obj_as(list[Speaker], core_manager.get_core(version).speakers)
@@ -139,7 +138,7 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | None = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         singers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(singers, "singer")
@@ -171,7 +170,7 @@ def generate_speaker_router(
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
@@ -183,7 +182,7 @@ def generate_speaker_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        version = convert_version_format(core_version, core_manager)
+        version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         return core.is_initialized_style_id_synthesis(style_id)
 
