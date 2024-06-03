@@ -1,3 +1,5 @@
+"""ASGI application の生成"""
+
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -26,17 +28,17 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
+from voicevox_engine.utility.path_utility import engine_root
 
 
 def generate_app(
     tts_engines: TTSEngineManager,
     core_manager: CoreManager,
-    latest_core_version: str,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,
     engine_manifest: ManifestContainer,
+    library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
     speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
@@ -45,7 +47,7 @@ def generate_app(
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
     if speaker_info_dir is None:
-        speaker_info_dir = engine_root() / "speaker_info"
+        speaker_info_dir = engine_root() / "resources" / "character_info"
 
     app = FastAPI(
         title=engine_manifest.name,
@@ -57,14 +59,6 @@ def generate_app(
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
-
-    library_manager = LibraryManager(
-        get_save_dir() / "installed_libraries",
-        None,
-        engine_manifest.brand_name,
-        engine_manifest.name,
-        engine_manifest.uuid,
-    )
 
     metas_store = MetasStore(speaker_info_dir)
 
@@ -79,7 +73,7 @@ def generate_app(
         generate_speaker_router(core_manager, metas_store, speaker_info_dir)
     )
     if engine_manifest.supported_features.manage_library.value:
-        app.include_router(generate_library_router(engine_manifest, library_manager))
+        app.include_router(generate_library_router(library_manager))
     app.include_router(generate_user_dict_router(user_dict))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
     app.include_router(
