@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest import load_manifest
+from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
@@ -17,7 +18,7 @@ from voicevox_engine.user_dict.user_dict_manager import (
     DEFAULT_DICT_PATH,
     UserDictionary,
 )
-from voicevox_engine.utility.path_utility import engine_manifest_path
+from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
 
 def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
@@ -31,7 +32,7 @@ def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
 def app_params(tmp_path: Path) -> dict[str, Any]:
     core_manager = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(core_manager)
-    setting_loader = SettingHandler(Path("./not_exist.yaml"))
+    setting_loader = SettingHandler(tmp_path / "not_exist.yaml")
 
     # テスト用に隔離されたプリセットを生成する
     preset_path = Path("./presets.yaml")
@@ -45,6 +46,13 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     )
 
     engine_manifest = load_manifest(engine_manifest_path())
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
 
     return {
         "tts_engines": tts_engines,
@@ -53,6 +61,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
         "preset_manager": preset_manager,
         "user_dict": user_dict,
         "engine_manifest": engine_manifest,
+        "library_manager": library_manager,
     }
 
 
