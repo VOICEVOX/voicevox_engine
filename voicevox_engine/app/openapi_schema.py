@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from voicevox_engine.model import BaseLibraryInfo, LibrarySpeaker, VvlibManifest
 
 
-def configure_openapi_schema(app: FastAPI) -> FastAPI:
+def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastAPI:
     """自動生成された OpenAPI schema へカスタム属性を追加する。"""
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
@@ -29,10 +29,10 @@ def configure_openapi_schema(app: FastAPI) -> FastAPI:
             license_info=app.license_info,
         )
         additional_models: list[type[BaseModel]] = [
-            BaseLibraryInfo,
-            LibrarySpeaker,
             VvlibManifest,
         ]
+        if not manage_library:
+            additional_models += [BaseLibraryInfo, LibrarySpeaker]
         for model in additional_models:
             # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
             schema = model.schema(ref_template="#/components/schemas/{model}")
