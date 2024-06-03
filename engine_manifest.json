@@ -67,7 +67,7 @@
         "return_resource_url":{
             "type":"bool",
             "value":true,
-            "name": "speaker_info・singer_infoのリソースをURLで返す"
+            "name": "speaker_info・singer_infoのリソースをURLで返送"
         }
     }
 }
