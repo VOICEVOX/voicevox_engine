@@ -42,8 +42,13 @@ class SpeakerResourceManager:
                 raise e
         self.hashmap = {v: k for k, v in self.filemap.items()}
 
-    def resource_str(self, resource_path: Path, base_url: str, return_url: bool) -> str:
-        if not return_url:
+    def resource_str(
+        self,
+        resource_path: Path,
+        base_url: str,
+        resource_format: Literal["base64", "url"],
+    ) -> str:
+        if resource_format == "base64":
             return b64encode_str(resource_path.read_bytes())
         return f"{base_url}/{self.filemap[resource_path]}"
 
@@ -70,7 +75,7 @@ def generate_speaker_router(
     def speaker_info(
         self_url: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
-        resource_url: bool = False,
+        resource_format: Literal["base64", "url"] = "base64",
         core_version: str | None = None,
     ) -> SpeakerInfo:
         """
@@ -82,7 +87,7 @@ def generate_speaker_router(
             speaker_or_singer="speaker",
             core_version=core_version,
             self_url=self_url,
-            resource_url=resource_url,
+            resource_format=resource_format,
         )
 
     manager = SpeakerResourceManager(speaker_info_dir, True)
@@ -93,7 +98,7 @@ def generate_speaker_router(
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
         self_url: str,
-        resource_url: bool,
+        resource_format: Literal["base64", "url"],
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
@@ -139,7 +144,7 @@ def generate_speaker_router(
 
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
-            portrait = manager.resource_str(portrait_path, self_url, resource_url)
+            portrait = manager.resource_str(portrait_path, self_url, resource_format)
 
             # スタイル情報を取得する
             style_infos = []
@@ -148,14 +153,14 @@ def generate_speaker_router(
 
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = manager.resource_str(style_icon_path, self_url, resource_url)
+                icon = manager.resource_str(style_icon_path, self_url, resource_format)
 
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = manager.resource_str(
-                        style_portrait_path, self_url, resource_url
+                        style_portrait_path, self_url, resource_format
                     )
 
                 # voice samples
@@ -164,7 +169,7 @@ def generate_speaker_router(
                     num = str(j + 1).zfill(3)
                     voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
                     voice_samples.append(
-                        manager.resource_str(voice_path, self_url, resource_url)
+                        manager.resource_str(voice_path, self_url, resource_format)
                     )
 
                 style_infos.append(
@@ -195,7 +200,7 @@ def generate_speaker_router(
     def singer_info(
         self_url: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
-        resource_url: bool = False,
+        resource_format: Literal["base64", "url"] = "base64",
         core_version: str | None = None,
     ) -> SpeakerInfo:
         """
@@ -207,7 +212,7 @@ def generate_speaker_router(
             speaker_or_singer="singer",
             core_version=core_version,
             self_url=self_url,
-            resource_url=resource_url,
+            resource_format=resource_format,
         )
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
