@@ -2,6 +2,7 @@
 
 import copy
 import math
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -675,9 +676,9 @@ class TTSEngine:
 class TTSEngineNotFound(Exception):
     """TTSEngine が見つからないエラー"""
 
-    def __init__(self, *arg, version: str, **args):
+    def __init__(self, *args: list[Any], version: str, **kwargs: dict[str, Any]):
         """TTSEngine のバージョン番号を用いてインスタンス化する。"""
-        super().__init__(*arg, **args)
+        super().__init__(*args, **kwargs)
         self.version = version
 
 
