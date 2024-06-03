@@ -2,13 +2,13 @@
 
 import base64
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
-from voicevox_engine.metas.Metas import Speaker, SpeakerInfo, StyleId
+from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 
 
@@ -52,7 +52,7 @@ def generate_speaker_router(
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
-        #   speaker_info/
+        #   character_info/
         #       {speaker_uuid_0}/
         #           policy.md
         #           portrait.png
@@ -154,36 +154,5 @@ def generate_speaker_router(
             speaker_or_singer="singer",
             core_version=core_version,
         )
-
-    @router.post("/initialize_speaker", status_code=204)
-    def initialize_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        skip_reinit: Annotated[
-            bool,
-            Query(
-                description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
-            ),
-        ] = False,
-        core_version: str | None = None,
-    ) -> None:
-        """
-        指定されたスタイルを初期化します。
-        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
-        """
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
-
-    @router.get("/is_initialized_speaker")
-    def is_initialized_speaker(
-        style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
-    ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return core.is_initialized_style_id_synthesis(style_id)
 
     return router

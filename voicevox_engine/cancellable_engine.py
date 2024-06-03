@@ -1,3 +1,5 @@
+"""キャンセル可能な音声合成"""
+
 import asyncio
 import queue
 import sys

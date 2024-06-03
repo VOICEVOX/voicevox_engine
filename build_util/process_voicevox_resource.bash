@@ -6,12 +6,12 @@ if [ ! -v DOWNLOAD_RESOURCE_PATH ]; then
 fi
 
 # ダミーのキャラクター情報を置き換える
-rm -r speaker_info
-cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" speaker_info
+rm -r resources/character_info
+cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" resources/character_info
 
 # キャラクター情報を前処理する
 python "${DOWNLOAD_RESOURCE_PATH}/scripts/clean_character_info.py" \
-    --character_info_dir speaker_info/
+    --character_info_dir resources/character_info/
 
 # エンジンマニフェストに含まれるダミーの情報を上書きする
 jq -s '.[0] * .[1]' engine_manifest.json "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest.json" \
