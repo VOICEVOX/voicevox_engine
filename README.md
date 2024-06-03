@@ -442,7 +442,7 @@ options:
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
-## 開発者向けガイド
+## 開発者ガイド
 
 ### 環境構築
 
@@ -558,42 +558,14 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 
 ### ビルド
 
-この方法でビルドしたものは、リリースで公開されているものとは異なります。
-また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
-
-```bash
-python -m pip install -r requirements-build.txt
-
-OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
-
-# モックでビルドする場合
-pyinstaller --noconfirm run.spec
-
-# 製品版でビルドする場合
-CORE_MODEL_DIR_PATH="/path/to/core_model" \
-LIBCORE_PATH="/path/to/libcore" \
-LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
-```
-
-TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
-
-#### Github Actions でビルド
-
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
-成果物は Release にアップロードされます。
+`pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりビルドが可能です。  
+手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。  
+ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。  
 
 ### 依存関係
 
-#### ライセンス
-
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。
-
-- MIT/Apache/BSD-3: OK
-- LGPL: OK （コアと動的分離されているため）
-- GPL: NG （全関連コードの公開が必要なため）
+依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
+詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。  
 
 ### マルチエンジン機能に関して
 
@@ -642,7 +614,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 </details>
 
-## 貢献者向けガイド
+## 貢献者ガイド
 VOICEVOX ENGINE は皆さんのコントリビューションをお待ちしています！  
 詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。  
 
