@@ -25,22 +25,22 @@ def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
-class SpeakerResourceManager:
+class ResourceManager:
     def __init__(self, speaker_info_dir: Path, is_development: bool) -> None:
-        try:
-            with (speaker_info_dir.parent / "filemap.json").open(mode="rb") as f:
-                data: dict[str, str] = json.load(f)
-            self.filemap = {speaker_info_dir / k: v for k, v in data.items()}
-        except FileNotFoundError as e:
+        filemap_json = speaker_info_dir.parent / "filemap.json"
+        if filemap_json.exists():
+            data: dict[str, str] = json.load(filemap_json.read_bytes())
+            self._file_to_hash = {speaker_info_dir / k: v for k, v in data.items()}
+        else:
             if is_development:
-                self.filemap = {
+                self._file_to_hash = {
                     i: sha256(i.read_bytes()).digest().hex()
                     for i in speaker_info_dir.glob("**/*")
                     if i.is_file()
                 }
             else:
-                raise e
-        self.hashmap = {v: k for k, v in self.filemap.items()}
+                raise Exception(f"{filemap_json}が見つかりません")
+        self._hash_to_file = {v: k for k, v in self._file_to_hash.items()}
 
     def resource_str(
         self,
@@ -50,10 +50,10 @@ class SpeakerResourceManager:
     ) -> str:
         if resource_format == "base64":
             return b64encode_str(resource_path.read_bytes())
-        return f"{base_url}/{self.filemap[resource_path]}"
+        return f"{base_url}/{self._file_to_hash[resource_path]}"
 
     def resource_path(self, filehash: str) -> Path:
-        return self.hashmap[filehash]
+        return self._hash_to_file[filehash]
 
 
 def generate_speaker_router(
@@ -90,7 +90,7 @@ def generate_speaker_router(
             resource_format=resource_format,
         )
 
-    manager = SpeakerResourceManager(speaker_info_dir, True)
+    manager = ResourceManager(speaker_info_dir, True)
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
