@@ -1,6 +1,5 @@
 """ユーザー辞書機能を提供する API Router"""
 
-import traceback
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
@@ -12,6 +11,7 @@ from voicevox_engine.user_dict.user_dict_word import (
     MAX_PRIORITY,
     MIN_PRIORITY,
     UserDictInputError,
+    WordProperty,
 )
 
 from ..dependencies import check_disabled_mutable_api
@@ -35,7 +35,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="辞書の読み込みに失敗しました。"
             )
@@ -67,11 +66,13 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             word_uuid = user_dict.apply_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_type=word_type,
-                priority=priority,
+                WordProperty(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                )
             )
             return word_uuid
         except ValidationError as e:
@@ -81,7 +82,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書への追加に失敗しました。"
             )
@@ -118,12 +118,14 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             user_dict.rewrite_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_uuid=word_uuid,
-                word_type=word_type,
-                priority=priority,
+                word_uuid,
+                WordProperty(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                ),
             )
         except ValidationError as e:
             raise HTTPException(
@@ -132,7 +134,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -153,7 +154,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -180,7 +180,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書のインポートに失敗しました。"
             )

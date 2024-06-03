@@ -41,7 +41,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TalkSingInvalidInputError,
     TTSEngineManager,
 )
-from voicevox_engine.utility.path_utility import delete_file
+from voicevox_engine.utility.file_utility import delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -498,5 +498,34 @@ def generate_tts_pipeline_router(
                 status_code=400,
                 detail=ParseKanaBadRequest(err).dict(),
             )
+
+    @router.post("/initialize_speaker", status_code=204, tags=["その他"])
+    def initialize_speaker(
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        skip_reinit: Annotated[
+            bool,
+            Query(
+                description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
+            ),
+        ] = False,
+        core_version: str | None = None,
+    ) -> None:
+        """
+        指定されたスタイルを初期化します。
+        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        """
+        core = core_manager.get_core(core_version)
+        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
+
+    @router.get("/is_initialized_speaker", tags=["その他"])
+    def is_initialized_speaker(
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        core_version: str | None = None,
+    ) -> bool:
+        """
+        指定されたスタイルが初期化されているかどうかを返します。
+        """
+        core = core_manager.get_core(core_version)
+        return core.is_initialized_style_id_synthesis(style_id)
 
     return router

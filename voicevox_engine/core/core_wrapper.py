@@ -1,3 +1,5 @@
+"""VOICEVOX CORE の Python ラッパー"""
+
 import os
 import platform
 from ctypes import _Pointer  # noqa: F401
