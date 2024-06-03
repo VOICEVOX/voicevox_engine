@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from voicevox_engine.setting.Setting import CorsPolicyMode, Setting, SettingHandler
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 
 
 def test_setting_handler_load_not_exist_file() -> None:
@@ -22,7 +23,7 @@ def test_setting_handler_load_not_exist_file() -> None:
 def test_setting_handler_load_exist_file_1() -> None:
     """`SettingHandler` に設定ファイルのパスを渡すとその値を読み込む。"""
     # Inputs
-    setting_path = Path("test/setting/setting-test-load-1.yaml")
+    setting_path = Path("test/unit/setting/setting-test-load-1.yaml")
     setting_loader = SettingHandler(setting_path)
     settings = setting_loader.load()
     # Expects
@@ -36,7 +37,7 @@ def test_setting_handler_load_exist_file_1() -> None:
 def test_setting_handler_load_exist_file_2() -> None:
     """`SettingHandler` に設定ファイルのパスを渡すとその値を読み込む。"""
     # Inputs
-    setting_path = Path("test/setting/setting-test-load-2.yaml")
+    setting_path = Path("test/unit/setting/setting-test-load-2.yaml")
     setting_loader = SettingHandler(setting_path)
     settings = setting_loader.load()
     # Expects
@@ -50,7 +51,7 @@ def test_setting_handler_load_exist_file_2() -> None:
 def test_setting_handler_load_exist_file_3() -> None:
     """`SettingHandler` に設定ファイルのパスを渡すとその値を読み込む。"""
     # Inputs
-    setting_path = Path("test/setting/setting-test-load-3.yaml")
+    setting_path = Path("test/unit/setting/setting-test-load-3.yaml")
     setting_loader = SettingHandler(setting_path)
     settings = setting_loader.load()
     # Expects

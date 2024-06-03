@@ -1093,7 +1093,7 @@
         "type": "object"
       },
       "WordTypes": {
-        "description": "fastapiでword_type引数を検証する時に使用するクラス",
+        "description": "品詞",
         "enum": [
           "PROPER_NOUN",
           "COMMON_NOUN",

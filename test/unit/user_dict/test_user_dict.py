@@ -5,15 +5,14 @@ from pathlib import Path
 import pytest
 from pyopenjtalk import g2p, unset_user_dict
 
-from voicevox_engine.model import UserDictWord, WordTypes
-from voicevox_engine.user_dict.part_of_speech_data import (
+from voicevox_engine.user_dict.model import UserDictWord, WordTypes
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_word import (
     MAX_PRIORITY,
-    part_of_speech_data,
-)
-from voicevox_engine.user_dict.user_dict import (
     UserDictInputError,
-    UserDictionary,
-    _create_word,
+    WordProperty,
+    create_word,
+    part_of_speech_data,
 )
 
 # jsonとして保存される正しい形式の辞書データ
@@ -76,12 +75,8 @@ def test_read_not_exist_json(tmp_path: Path) -> None:
 
 def test_create_word() -> None:
     # 将来的に品詞などが追加された時にテストを増やす
-    assert _create_word(
-        surface="test",
-        pronunciation="テスト",
-        accent_type=1,
-        word_type=None,
-        priority=None,
+    assert create_word(
+        WordProperty(surface="test", pronunciation="テスト", accent_type=1)
     ) == UserDictWord(
         surface="ｔｅｓｔ",
         priority=5,
@@ -106,7 +101,9 @@ def test_apply_word_without_json(tmp_path: Path) -> None:
         user_dict_path=tmp_path / "test_apply_word_without_json.json",
         compiled_dict_path=tmp_path / "test_apply_word_without_json.dic",
     )
-    user_dict.apply_word(surface="test", pronunciation="テスト", accent_type=1)
+    user_dict.apply_word(
+        WordProperty(surface="test", pronunciation="テスト", accent_type=1)
+    )
     res = user_dict.read_dict()
     assert len(res) == 1
     new_word = get_new_word(res)
@@ -127,9 +124,7 @@ def test_apply_word_with_json(tmp_path: Path) -> None:
         compiled_dict_path=tmp_path / "test_apply_word_with_json.dic",
     )
     user_dict.apply_word(
-        surface="test2",
-        pronunciation="テストツー",
-        accent_type=3,
+        WordProperty(surface="test2", pronunciation="テストツー", accent_type=3)
     )
     res = user_dict.read_dict()
     assert len(res) == 2
@@ -152,10 +147,8 @@ def test_rewrite_word_invalid_id(tmp_path: Path) -> None:
     )
     with pytest.raises(UserDictInputError):
         user_dict.rewrite_word(
-            word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
-            surface="test2",
-            pronunciation="テストツー",
-            accent_type=2,
+            "c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
+            WordProperty(surface="test2", pronunciation="テストツー", accent_type=2),
         )
 
 
@@ -169,10 +162,8 @@ def test_rewrite_word_valid_id(tmp_path: Path) -> None:
         compiled_dict_path=tmp_path / "test_rewrite_word_valid_id.dic",
     )
     user_dict.rewrite_word(
-        word_uuid="aab7dda2-0d97-43c8-8cb7-3f440dab9b4e",
-        surface="test2",
-        pronunciation="テストツー",
-        accent_type=2,
+        "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e",
+        WordProperty(surface="test2", pronunciation="テストツー", accent_type=2),
     )
     new_word = user_dict.read_dict()["aab7dda2-0d97-43c8-8cb7-3f440dab9b4e"]
     assert (new_word.surface, new_word.pronunciation, new_word.accent_type) == (
@@ -212,12 +203,14 @@ def test_priority() -> None:
     for pos in part_of_speech_data:
         for i in range(MAX_PRIORITY + 1):
             assert (
-                _create_word(
-                    surface="test",
-                    pronunciation="テスト",
-                    accent_type=1,
-                    word_type=pos,
-                    priority=i,
+                create_word(
+                    WordProperty(
+                        surface="test",
+                        pronunciation="テスト",
+                        accent_type=1,
+                        word_type=pos,
+                        priority=i,
+                    )
                 ).priority
                 == i
             )
@@ -318,10 +311,12 @@ def test_update_dict(tmp_path: Path) -> None:
     assert g2p(text=test_text, kana=True) != success_pronunciation
 
     user_dict.apply_word(
-        surface=test_text,
-        pronunciation=success_pronunciation,
-        accent_type=1,
-        priority=10,
+        WordProperty(
+            surface=test_text,
+            pronunciation=success_pronunciation,
+            accent_type=1,
+            priority=10,
+        )
     )
     assert g2p(text=test_text, kana=True) == success_pronunciation
 

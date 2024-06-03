@@ -6,6 +6,7 @@ from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
+from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -15,15 +16,8 @@ from voicevox_engine.cancellable_engine import (
 )
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.model import (
-    AccentPhrase,
-    AudioQuery,
-    FrameAudioQuery,
-    ParseKanaBadRequest,
-    ParseKanaError,
-    Score,
-)
-from voicevox_engine.preset.Preset import (
+from voicevox_engine.model import AudioQuery
+from voicevox_engine.preset.preset_manager import (
     PresetInputError,
     PresetInternalError,
     PresetManager,
@@ -32,12 +26,40 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
     ConnectBase64WavesException,
     connect_base64_waves,
 )
-from voicevox_engine.tts_pipeline.kana_converter import create_kana, parse_kana
+from voicevox_engine.tts_pipeline.kana_converter import (
+    ParseKanaError,
+    create_kana,
+    parse_kana,
+)
+from voicevox_engine.tts_pipeline.model import (
+    AccentPhrase,
+    FrameAudioQuery,
+    ParseKanaErrorCode,
+    Score,
+)
 from voicevox_engine.tts_pipeline.tts_engine import (
     TalkSingInvalidInputError,
     TTSEngineManager,
 )
-from voicevox_engine.utility.path_utility import delete_file
+from voicevox_engine.utility.file_utility import delete_file
+
+
+class ParseKanaBadRequest(BaseModel):
+    text: str = Field(title="エラーメッセージ")
+    error_name: str = Field(
+        title="エラー名",
+        description="|name|description|\n|---|---|\n"
+        + "\n".join(
+            [
+                "| {} | {} |".format(err.name, err.value)
+                for err in list(ParseKanaErrorCode)
+            ]
+        ),
+    )
+    error_args: dict[str, str] = Field(title="エラーを起こした箇所")
+
+    def __init__(self, err: ParseKanaError):
+        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
 
 
 def generate_tts_pipeline_router(
@@ -476,5 +498,34 @@ def generate_tts_pipeline_router(
                 status_code=400,
                 detail=ParseKanaBadRequest(err).dict(),
             )
+
+    @router.post("/initialize_speaker", status_code=204, tags=["その他"])
+    def initialize_speaker(
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        skip_reinit: Annotated[
+            bool,
+            Query(
+                description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
+            ),
+        ] = False,
+        core_version: str | None = None,
+    ) -> None:
+        """
+        指定されたスタイルを初期化します。
+        実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
+        """
+        core = core_manager.get_core(core_version)
+        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
+
+    @router.get("/is_initialized_speaker", tags=["その他"])
+    def is_initialized_speaker(
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        core_version: str | None = None,
+    ) -> bool:
+        """
+        指定されたスタイルが初期化されているかどうかを返します。
+        """
+        core = core_manager.get_core(core_version)
+        return core.is_initialized_style_id_synthesis(style_id)
 
     return router
