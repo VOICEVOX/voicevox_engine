@@ -573,15 +573,15 @@ Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動
 成果物は Release にアップロードされます。
 ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。  
 
-### 依存関係
-
-依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
-詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。  
-
 ### テスト・静的解析
 
 `pytest` を用いたテストと各種リンターを用いた静的解析が可能です。  
 手順の詳細は [貢献者ガイド#テスト](./CONTRIBUTING.md#テスト), [貢献者ガイド#静的解析](./CONTRIBUTING.md#静的解析) を御覧ください。  
+
+### 依存関係
+
+依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
+詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。  
 
 ### マルチエンジン機能に関して
 
