@@ -96,7 +96,7 @@ class SupportedFeatures(BaseModel):
         title="音声ライブラリのインストール・アンインストール"
     )
     return_resource_url: bool | None = Field(
-        title="speaker_info・singer_infoのリソースをURLで返す"
+        title="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 
