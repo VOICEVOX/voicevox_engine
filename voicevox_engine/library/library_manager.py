@@ -1,3 +1,5 @@
+"""音声ライブラリの管理"""
+
 import base64
 import json
 import os
@@ -64,7 +66,9 @@ class LibraryManager:
         ) as f:
             libraries = json.load(f)
             speaker_info = libraries[0]["speakers"][0]["speaker_info"]
-            mock_root_dir = Path("./speaker_info/7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff")
+            mock_root_dir = Path(
+                "./resources/character_info/7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff"
+            )
             speaker_info["policy"] = (mock_root_dir / "policy.md").read_text()
             speaker_info["portrait"] = base64.b64encode(
                 (mock_root_dir / "portrait.png").read_bytes()

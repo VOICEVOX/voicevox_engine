@@ -1,3 +1,5 @@
+"""VOICEVOX CORE のアダプター"""
+
 import json
 import threading
 from dataclasses import dataclass

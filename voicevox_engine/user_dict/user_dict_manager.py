@@ -14,6 +14,7 @@ from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord, WordTypes
 from .user_dict_word import (
     UserDictInputError,
+    WordProperty,
     cost2priority,
     create_word,
     part_of_speech_data,
@@ -54,155 +55,6 @@ mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
 
-@mutex_wrapper(mutex_user_dict)
-def _write_to_json(user_dict: dict[str, UserDictWord], user_dict_path: Path) -> None:
-    """
-    ユーザー辞書ファイルへのユーザー辞書データ書き込み
-    Parameters
-    ----------
-    user_dict : dict[str, UserDictWord]
-        ユーザー辞書データ
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    """
-    converted_user_dict = {}
-    for word_uuid, word in user_dict.items():
-        word_dict = word.dict()
-        word_dict["cost"] = priority2cost(
-            word_dict["context_id"], word_dict["priority"]
-        )
-        del word_dict["priority"]
-        converted_user_dict[word_uuid] = word_dict
-    # 予めjsonに変換できることを確かめる
-    user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
-
-    # ユーザー辞書ファイルへの書き込み
-    user_dict_path.write_text(user_dict_json, encoding="utf-8")
-
-
-@mutex_wrapper(mutex_openjtalk_dict)
-def _update_dict(
-    default_dict_path: Path, user_dict_path: Path, compiled_dict_path: Path
-) -> None:
-    """
-    辞書の更新
-    Parameters
-    ----------
-    default_dict_path : Path
-        デフォルト辞書ファイルのパス
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    compiled_dict_path : Path
-        コンパイル済み辞書ファイルのパス
-    """
-    random_string = uuid4()
-    tmp_csv_path = compiled_dict_path.with_suffix(
-        f".dict_csv-{random_string}.tmp"
-    )  # csv形式辞書データの一時保存ファイル
-    tmp_compiled_path = compiled_dict_path.with_suffix(
-        f".dict_compiled-{random_string}.tmp"
-    )  # コンパイル済み辞書データの一時保存ファイル
-
-    try:
-        # 辞書.csvを作成
-        csv_text = ""
-
-        # デフォルト辞書データの追加
-        if not default_dict_path.is_file():
-            print("Warning: Cannot find default dictionary.", file=sys.stderr)
-            return
-        default_dict = default_dict_path.read_text(encoding="utf-8")
-        if default_dict == default_dict.rstrip():
-            default_dict += "\n"
-        csv_text += default_dict
-
-        # ユーザー辞書データの追加
-        user_dict = _read_dict(user_dict_path=user_dict_path)
-        for word_uuid in user_dict:
-            word = user_dict[word_uuid]
-            csv_text += (
-                "{surface},{context_id},{context_id},{cost},{part_of_speech},"
-                + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
-                + "{part_of_speech_detail_3},{inflectional_type},"
-                + "{inflectional_form},{stem},{yomi},{pronunciation},"
-                + "{accent_type}/{mora_count},{accent_associative_rule}\n"
-            ).format(
-                surface=word.surface,
-                context_id=word.context_id,
-                cost=priority2cost(word.context_id, word.priority),
-                part_of_speech=word.part_of_speech,
-                part_of_speech_detail_1=word.part_of_speech_detail_1,
-                part_of_speech_detail_2=word.part_of_speech_detail_2,
-                part_of_speech_detail_3=word.part_of_speech_detail_3,
-                inflectional_type=word.inflectional_type,
-                inflectional_form=word.inflectional_form,
-                stem=word.stem,
-                yomi=word.yomi,
-                pronunciation=word.pronunciation,
-                accent_type=word.accent_type,
-                mora_count=word.mora_count,
-                accent_associative_rule=word.accent_associative_rule,
-            )
-        # 辞書データを辞書.csv へ一時保存
-        tmp_csv_path.write_text(csv_text, encoding="utf-8")
-
-        # 辞書.csvをOpenJTalk用にコンパイル
-        pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
-        if not tmp_compiled_path.is_file():
-            raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
-
-        # コンパイル済み辞書の置き換え・読み込み
-        pyopenjtalk.unset_user_dict()
-        tmp_compiled_path.replace(compiled_dict_path)
-        if compiled_dict_path.is_file():
-            pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
-
-    except Exception as e:
-        print("Error: Failed to update dictionary.", file=sys.stderr)
-        raise e
-
-    finally:
-        # 後処理
-        if tmp_csv_path.exists():
-            tmp_csv_path.unlink()
-        if tmp_compiled_path.exists():
-            tmp_compiled_path.unlink()
-
-
-@mutex_wrapper(mutex_user_dict)
-def _read_dict(user_dict_path: Path) -> dict[str, UserDictWord]:
-    """
-    ユーザー辞書の読み出し
-    Parameters
-    ----------
-    user_dict_path : Path
-        ユーザー辞書ファイルのパス
-    Returns
-    -------
-    result : dict[str, UserDictWord]
-        ユーザー辞書
-    """
-    # 指定ユーザー辞書が存在しない場合、空辞書を返す
-    if not user_dict_path.is_file():
-        return {}
-
-    with user_dict_path.open(encoding="utf-8") as f:
-        result: dict[str, UserDictWord] = {}
-        for word_uuid, word in json.load(f).items():
-            # cost2priorityで変換を行う際にcontext_idが必要となるが、
-            # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
-            # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
-            if word.get("context_id") is None:
-                word["context_id"] = part_of_speech_data[
-                    WordTypes.PROPER_NOUN
-                ].context_id
-            word["priority"] = cost2priority(word["context_id"], word["cost"])
-            del word["cost"]
-            result[str(UUID(word_uuid))] = UserDictWord(**word)
-
-    return result
-
-
 class UserDictionary:
     """ユーザー辞書"""
 
@@ -227,17 +79,128 @@ class UserDictionary:
         self._compiled_dict_path = compiled_dict_path
         self.update_dict()
 
+    @mutex_wrapper(mutex_user_dict)
+    def _write_to_json(self, user_dict: dict[str, UserDictWord]) -> None:
+        """ユーザー辞書データをファイルへ書き込む。"""
+        user_dict_path = self._user_dict_path
+
+        converted_user_dict = {}
+        for word_uuid, word in user_dict.items():
+            word_dict = word.dict()
+            word_dict["cost"] = priority2cost(
+                word_dict["context_id"], word_dict["priority"]
+            )
+            del word_dict["priority"]
+            converted_user_dict[word_uuid] = word_dict
+        # 予めjsonに変換できることを確かめる
+        user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
+
+        # ユーザー辞書ファイルへの書き込み
+        user_dict_path.write_text(user_dict_json, encoding="utf-8")
+
+    @mutex_wrapper(mutex_openjtalk_dict)
     def update_dict(self) -> None:
         """辞書を更新する。"""
-        _update_dict(
-            default_dict_path=self._default_dict_path,
-            user_dict_path=self._user_dict_path,
-            compiled_dict_path=self._compiled_dict_path,
-        )
+        default_dict_path = self._default_dict_path
+        compiled_dict_path = self._compiled_dict_path
 
+        random_string = uuid4()
+        tmp_csv_path = compiled_dict_path.with_suffix(
+            f".dict_csv-{random_string}.tmp"
+        )  # csv形式辞書データの一時保存ファイル
+        tmp_compiled_path = compiled_dict_path.with_suffix(
+            f".dict_compiled-{random_string}.tmp"
+        )  # コンパイル済み辞書データの一時保存ファイル
+
+        try:
+            # 辞書.csvを作成
+            csv_text = ""
+
+            # デフォルト辞書データの追加
+            if not default_dict_path.is_file():
+                print("Warning: Cannot find default dictionary.", file=sys.stderr)
+                return
+            default_dict = default_dict_path.read_text(encoding="utf-8")
+            if default_dict == default_dict.rstrip():
+                default_dict += "\n"
+            csv_text += default_dict
+
+            # ユーザー辞書データの追加
+            user_dict = self.read_dict()
+            for word_uuid in user_dict:
+                word = user_dict[word_uuid]
+                csv_text += (
+                    "{surface},{context_id},{context_id},{cost},{part_of_speech},"
+                    + "{part_of_speech_detail_1},{part_of_speech_detail_2},"
+                    + "{part_of_speech_detail_3},{inflectional_type},"
+                    + "{inflectional_form},{stem},{yomi},{pronunciation},"
+                    + "{accent_type}/{mora_count},{accent_associative_rule}\n"
+                ).format(
+                    surface=word.surface,
+                    context_id=word.context_id,
+                    cost=priority2cost(word.context_id, word.priority),
+                    part_of_speech=word.part_of_speech,
+                    part_of_speech_detail_1=word.part_of_speech_detail_1,
+                    part_of_speech_detail_2=word.part_of_speech_detail_2,
+                    part_of_speech_detail_3=word.part_of_speech_detail_3,
+                    inflectional_type=word.inflectional_type,
+                    inflectional_form=word.inflectional_form,
+                    stem=word.stem,
+                    yomi=word.yomi,
+                    pronunciation=word.pronunciation,
+                    accent_type=word.accent_type,
+                    mora_count=word.mora_count,
+                    accent_associative_rule=word.accent_associative_rule,
+                )
+            # 辞書データを辞書.csv へ一時保存
+            tmp_csv_path.write_text(csv_text, encoding="utf-8")
+
+            # 辞書.csvをOpenJTalk用にコンパイル
+            pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
+            if not tmp_compiled_path.is_file():
+                raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
+
+            # コンパイル済み辞書の置き換え・読み込み
+            pyopenjtalk.unset_user_dict()
+            tmp_compiled_path.replace(compiled_dict_path)
+            if compiled_dict_path.is_file():
+                pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
+
+        except Exception as e:
+            print("Error: Failed to update dictionary.", file=sys.stderr)
+            raise e
+
+        finally:
+            # 後処理
+            if tmp_csv_path.exists():
+                tmp_csv_path.unlink()
+            if tmp_compiled_path.exists():
+                tmp_compiled_path.unlink()
+
+    @mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
         """ユーザー辞書を読み出す。"""
-        return _read_dict(self._user_dict_path)
+        user_dict_path = self._user_dict_path
+
+        # 指定ユーザー辞書が存在しない場合、空辞書を返す
+        if not user_dict_path.is_file():
+            return {}
+
+        with user_dict_path.open(encoding="utf-8") as f:
+            result: dict[str, UserDictWord] = {}
+            for word_uuid, word in json.load(f).items():
+                # cost2priorityで変換を行う際にcontext_idが必要となるが、
+                # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
+                # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
+                if word.get("context_id") is None:
+                    word["context_id"] = part_of_speech_data[
+                        WordTypes.PROPER_NOUN
+                    ].context_id
+                word["priority"] = cost2priority(word["context_id"], word["cost"])
+                del word["cost"]
+                result[str(UUID(word_uuid))] = UserDictWord(**word)
+
+        return result
 
     def import_user_dict(
         self, dict_data: dict[str, UserDictWord], override: bool = False
@@ -278,7 +241,7 @@ class UserDictionary:
                 raise ValueError("対応していない品詞です")
 
         # 既存辞書の読み出し
-        old_dict = _read_dict(user_dict_path=self._user_dict_path)
+        old_dict = self.read_dict()
 
         # 辞書データの更新
         # 重複エントリの上書き
@@ -289,122 +252,42 @@ class UserDictionary:
             new_dict = {**dict_data, **old_dict}
 
         # 更新された辞書データの保存と適用
-        _write_to_json(user_dict=new_dict, user_dict_path=self._user_dict_path)
-        _update_dict(
-            default_dict_path=self._default_dict_path,
-            user_dict_path=self._user_dict_path,
-            compiled_dict_path=self._compiled_dict_path,
-        )
+        self._write_to_json(new_dict)
+        self.update_dict()
 
-    def apply_word(
-        self,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> str:
-        """
-        新規単語を追加する。
-        Parameters
-        ----------
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        Returns
-        -------
-        word_uuid : UserDictWord
-            追加された単語に発行されたUUID
-        """
+    def apply_word(self, word_property: WordProperty) -> str:
+        """新規単語を追加し、その単語に割り当てられた UUID を返す。"""
         # 新規単語の追加による辞書データの更新
-        word = create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
-        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        user_dict = self.read_dict()
         word_uuid = str(uuid4())
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = create_word(word_property)
 
         # 更新された辞書データの保存と適用
-        _write_to_json(user_dict, self._user_dict_path)
-        _update_dict(
-            default_dict_path=self._default_dict_path,
-            user_dict_path=self._user_dict_path,
-            compiled_dict_path=self._compiled_dict_path,
-        )
+        self._write_to_json(user_dict)
+        self.update_dict()
 
         return word_uuid
 
-    def rewrite_word(
-        self,
-        word_uuid: str,
-        surface: str,
-        pronunciation: str,
-        accent_type: int,
-        word_type: WordTypes | None = None,
-        priority: int | None = None,
-    ) -> None:
-        """
-        既存単語を上書き更新する。
-        Parameters
-        ----------
-        word_uuid : str
-            単語UUID
-        surface : str
-            単語情報
-        pronunciation : str
-            単語情報
-        accent_type : int
-            単語情報
-        word_type : WordTypes | None
-            品詞
-        priority : int | None
-            優先度
-        """
-        word = create_word(
-            surface=surface,
-            pronunciation=pronunciation,
-            accent_type=accent_type,
-            word_type=word_type,
-            priority=priority,
-        )
-
+    def rewrite_word(self, word_uuid: str, word_property: WordProperty) -> None:
+        """単語 UUID で指定された単語を上書き更新する。"""
         # 既存単語の上書きによる辞書データの更新
-        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        user_dict = self.read_dict()
         if word_uuid not in user_dict:
             raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
-        user_dict[word_uuid] = word
+        user_dict[word_uuid] = create_word(word_property)
 
         # 更新された辞書データの保存と適用
-        _write_to_json(user_dict, self._user_dict_path)
-        _update_dict(
-            default_dict_path=self._default_dict_path,
-            user_dict_path=self._user_dict_path,
-            compiled_dict_path=self._compiled_dict_path,
-        )
+        self._write_to_json(user_dict)
+        self.update_dict()
 
     def delete_word(self, word_uuid: str) -> None:
         """単語UUIDで指定された単語を削除する。"""
         # 既存単語の削除による辞書データの更新
-        user_dict = _read_dict(user_dict_path=self._user_dict_path)
+        user_dict = self.read_dict()
         if word_uuid not in user_dict:
             raise UserDictInputError("IDに該当するワードが見つかりませんでした")
         del user_dict[word_uuid]
 
         # 更新された辞書データの保存と適用
-        _write_to_json(user_dict, self._user_dict_path)
-        _update_dict(
-            default_dict_path=self._default_dict_path,
-            user_dict_path=self._user_dict_path,
-            compiled_dict_path=self._compiled_dict_path,
-        )
+        self._write_to_json(user_dict)
+        self.update_dict()
