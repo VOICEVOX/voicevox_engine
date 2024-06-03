@@ -1,26 +1,29 @@
 """ユーザー辞書機能を提供する API Router"""
 
-import traceback
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 
-from voicevox_engine.model import UserDictWord, WordTypes
-from voicevox_engine.user_dict.part_of_speech_data import MAX_PRIORITY, MIN_PRIORITY
-from voicevox_engine.user_dict.user_dict import UserDictInputError, UserDictionary
+from voicevox_engine.user_dict.model import UserDictWord, WordTypes
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_word import (
+    MAX_PRIORITY,
+    MIN_PRIORITY,
+    UserDictInputError,
+    WordProperty,
+)
 
 from ..dependencies import check_disabled_mutable_api
 
 
 def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["ユーザー辞書"])
 
     @router.get(
         "/user_dict",
         response_description="単語のUUIDとその詳細",
-        tags=["ユーザー辞書"],
     )
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
@@ -32,16 +35,11 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="辞書の読み込みに失敗しました。"
             )
 
-    @router.post(
-        "/user_dict_word",
-        tags=["ユーザー辞書"],
-        dependencies=[Depends(check_disabled_mutable_api)],
-    )
+    @router.post("/user_dict_word", dependencies=[Depends(check_disabled_mutable_api)])
     def add_user_dict_word(
         surface: Annotated[str, Query(description="言葉の表層形")],
         pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
@@ -68,11 +66,13 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             word_uuid = user_dict.apply_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_type=word_type,
-                priority=priority,
+                WordProperty(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                )
             )
             return word_uuid
         except ValidationError as e:
@@ -82,7 +82,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書への追加に失敗しました。"
             )
@@ -90,7 +89,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.put(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def rewrite_user_dict_word(
@@ -120,12 +118,14 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         """
         try:
             user_dict.rewrite_word(
-                surface=surface,
-                pronunciation=pronunciation,
-                accent_type=accent_type,
-                word_uuid=word_uuid,
-                word_type=word_type,
-                priority=priority,
+                word_uuid,
+                WordProperty(
+                    surface=surface,
+                    pronunciation=pronunciation,
+                    accent_type=accent_type,
+                    word_type=word_type,
+                    priority=priority,
+                ),
             )
         except ValidationError as e:
             raise HTTPException(
@@ -134,7 +134,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -142,7 +141,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.delete(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def delete_user_dict_word(
@@ -156,7 +154,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
             )
@@ -164,7 +161,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.post(
         "/import_user_dict",
         status_code=204,
-        tags=["ユーザー辞書"],
         dependencies=[Depends(check_disabled_mutable_api)],
     )
     def import_user_dict_words(
@@ -184,7 +180,6 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         except UserDictInputError as err:
             raise HTTPException(status_code=422, detail=str(err))
         except Exception:
-            traceback.print_exc()
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書のインポートに失敗しました。"
             )
