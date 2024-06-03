@@ -8,6 +8,8 @@ from numpy.typing import NDArray
 from pyopenjtalk import tts
 from soxr import resample
 
+from voicevox_engine.core.core_adapter import CoreAdapter
+
 from ...metas.Metas import StyleId
 from ...model import AudioQuery
 from ...tts_pipeline.tts_engine import TTSEngine, to_flatten_moras
@@ -22,6 +24,7 @@ class MockTTSEngine(TTSEngine):
 
     def synthesize_wave(
         self,
+        core: CoreAdapter,
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,

@@ -114,8 +114,12 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
-    target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
+    base_wave = engine.synthesize_wave(engine._core, query, base_style_id).astype(
+        np.double
+    )
+    target_wave = engine.synthesize_wave(engine._core, query, target_style_id).astype(
+        np.double
+    )
 
     fs = query.outputSamplingRate
     frame_period = 1.0

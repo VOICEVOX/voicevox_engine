@@ -46,19 +46,20 @@ def _gen_accent_phrases() -> list[AccentPhrase]:
 def test_update_length() -> None:
     """`.update_length()` がエラー無く生成をおこなう"""
     engine = MockTTSEngine()
-    engine.update_length(_gen_accent_phrases(), StyleId(0))
+    engine.update_length(engine._core, _gen_accent_phrases(), StyleId(0))
 
 
 def test_update_pitch() -> None:
     """`.update_pitch()` がエラー無く生成をおこなう"""
     engine = MockTTSEngine()
-    engine.update_pitch(_gen_accent_phrases(), StyleId(0))
+    engine.update_pitch(engine._core, _gen_accent_phrases(), StyleId(0))
 
 
 def test_synthesize_wave() -> None:
     """`.synthesize_wave()` がエラー無く生成をおこなう"""
     engine = MockTTSEngine()
     engine.synthesize_wave(
+        engine._core,
         AudioQuery(
             accent_phrases=_gen_accent_phrases(),
             speedScale=1,

@@ -255,7 +255,7 @@ def start_synthesis_subprocess(
                 continue
             # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
             wave = _engine.synthesize_wave(
-                query, style_id, enable_interrogative_upspeak=False
+                _engine._core, query, style_id, enable_interrogative_upspeak=False
             )
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(

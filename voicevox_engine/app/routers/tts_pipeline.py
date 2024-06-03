@@ -86,7 +86,7 @@ def generate_tts_pipeline_router(
         """
         engine = tts_engines.get_engine(core_version)
         core = core_manager.get_core(core_version)
-        accent_phrases = engine.create_accent_phrases(text, style_id)
+        accent_phrases = engine.create_accent_phrases(engine._core, text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -130,7 +130,9 @@ def generate_tts_pipeline_router(
                 status_code=422, detail="該当するプリセットIDが見つかりません"
             )
 
-        accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
+        accent_phrases = engine.create_accent_phrases(
+            engine._core, text, selected_preset.style_id
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=selected_preset.speedScale,
@@ -173,13 +175,15 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_engine(core_version)
         if is_kana:
             try:
-                return engine.create_accent_phrases_from_kana(text, style_id)
+                return engine.create_accent_phrases_from_kana(
+                    engine._core, text, style_id
+                )
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400, detail=ParseKanaBadRequest(err).dict()
                 )
         else:
-            return engine.create_accent_phrases(text, style_id)
+            return engine.create_accent_phrases(engine._core, text, style_id)
 
     @router.post(
         "/mora_data",
@@ -192,7 +196,7 @@ def generate_tts_pipeline_router(
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
-        return engine.update_length_and_pitch(accent_phrases, style_id)
+        return engine.update_length_and_pitch(engine._core, accent_phrases, style_id)
 
     @router.post(
         "/mora_length",
@@ -205,7 +209,7 @@ def generate_tts_pipeline_router(
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
-        return engine.update_length(accent_phrases, style_id)
+        return engine.update_length(engine._core, accent_phrases, style_id)
 
     @router.post(
         "/mora_pitch",
@@ -218,7 +222,7 @@ def generate_tts_pipeline_router(
         core_version: str | None = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
-        return engine.update_pitch(accent_phrases, style_id)
+        return engine.update_pitch(engine._core, accent_phrases, style_id)
 
     @router.post(
         "/synthesis",
@@ -246,7 +250,10 @@ def generate_tts_pipeline_router(
     ) -> FileResponse:
         engine = tts_engines.get_engine(core_version)
         wave = engine.synthesize_wave(
-            query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
+            engine._core,
+            query,
+            style_id,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
 
         with NamedTemporaryFile(delete=False) as f:
@@ -333,7 +340,9 @@ def generate_tts_pipeline_router(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesize_wave(queries[i], style_id)
+                        wave = engine.synthesize_wave(
+                            engine._core, queries[i], style_id
+                        )
                         soundfile.write(
                             file=wav_file,
                             data=wave,
@@ -366,7 +375,7 @@ def generate_tts_pipeline_router(
         core = core_manager.get_core(core_version)
         try:
             phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
-                score, style_id
+                engine._core, score, style_id
             )
         except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -394,7 +403,11 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_engine(core_version)
         try:
             return engine.create_sing_volume_from_phoneme_and_f0(
-                score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
+                engine._core,
+                score,
+                frame_audio_query.phonemes,
+                frame_audio_query.f0,
+                style_id,
             )
         except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -421,7 +434,7 @@ def generate_tts_pipeline_router(
         """
         engine = tts_engines.get_engine(core_version)
         try:
-            wave = engine.frame_synthsize_wave(query, style_id)
+            wave = engine.frame_synthsize_wave(engine._core, query, style_id)
         except TalkSingInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e))
 

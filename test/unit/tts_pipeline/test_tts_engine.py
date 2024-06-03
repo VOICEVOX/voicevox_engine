@@ -222,7 +222,7 @@ def test_update_length() -> None:
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Indirect Outputs（yukarin_sに渡される値）
-    tts_engine.update_length(hello_hiho, StyleId(1))
+    tts_engine.update_length(tts_engine._core, hello_hiho, StyleId(1))
     yukarin_s_args = _yukarin_s_mock.call_args[1]
     list_length = yukarin_s_args["length"]
     phoneme_list = yukarin_s_args["phoneme_list"]
@@ -252,7 +252,7 @@ def test_update_pitch() -> None:
     # Inputs
     phrases: list = []
     # Outputs
-    result = tts_engine.update_pitch(phrases, StyleId(1))
+    result = tts_engine.update_pitch(tts_engine._core, phrases, StyleId(1))
     # Expects
     true_result: list = []
     # Tests
@@ -261,7 +261,7 @@ def test_update_pitch() -> None:
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Indirect Outputs（yukarin_saに渡される値）
-    tts_engine.update_pitch(hello_hiho, StyleId(1))
+    tts_engine.update_pitch(tts_engine._core, hello_hiho, StyleId(1))
     yukarin_sa_args = _yukarin_sa_mock.call_args[1]
     list_length = yukarin_sa_args["length"]
     vowel_phoneme_list = yukarin_sa_args["vowel_phoneme_list"][0]
@@ -305,7 +305,9 @@ def test_create_accent_phrases_toward_unknown() -> None:
         "dummy", text_to_features=stub_unknown_features_koxx
     )
     with pytest.raises(ValueError) as e:
-        accent_phrases = engine.update_length_and_pitch(accent_phrases, StyleId(0))
+        accent_phrases = engine.update_length_and_pitch(
+            engine._core, accent_phrases, StyleId(0)
+        )
     assert str(e.value) == "tuple.index(x): x not in tuple"
 
 
@@ -315,7 +317,7 @@ def test_mocked_update_length_output(snapshot_json: SnapshotAssertion) -> None:
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Outputs
-    result = tts_engine.update_length(hello_hiho, StyleId(1))
+    result = tts_engine.update_length(tts_engine._core, hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -326,7 +328,7 @@ def test_mocked_update_pitch_output(snapshot_json: SnapshotAssertion) -> None:
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Outputs
-    result = tts_engine.update_pitch(hello_hiho, StyleId(1))
+    result = tts_engine.update_pitch(tts_engine._core, hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -339,7 +341,9 @@ def test_mocked_update_length_and_pitch_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Outputs
-    result = tts_engine.update_length_and_pitch(hello_hiho, StyleId(1))
+    result = tts_engine.update_length_and_pitch(
+        tts_engine._core, hello_hiho, StyleId(1)
+    )
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -352,7 +356,7 @@ def test_mocked_create_accent_phrases_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_text()
     # Outputs
-    result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
+    result = tts_engine.create_accent_phrases(tts_engine._core, hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -365,7 +369,9 @@ def test_mocked_create_accent_phrases_from_kana_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_kana()
     # Outputs
-    result = tts_engine.create_accent_phrases_from_kana(hello_hiho, StyleId(1))
+    result = tts_engine.create_accent_phrases_from_kana(
+        tts_engine._core, hello_hiho, StyleId(1)
+    )
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -376,7 +382,7 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_query()
     # Outputs
-    result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
+    result = tts_engine.synthesize_wave(tts_engine._core, hello_hiho, StyleId(1))
     # Tests
     assert snapshot_json == round_floats(result.tolist(), round_value=2)
 
@@ -392,11 +398,11 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     phonemes, f0s, _ = tts_engine.create_sing_phoneme_and_f0_and_volume(
-        doremi_srore, StyleId(1)
+        tts_engine._core, doremi_srore, StyleId(1)
     )
     # Outputs
     result = tts_engine.create_sing_volume_from_phoneme_and_f0(
-        doremi_srore, phonemes, f0s, StyleId(1)
+        tts_engine._core, doremi_srore, phonemes, f0s, StyleId(1)
     )
     # Tests
     assert snapshot_json == round_floats(result, round_value=2)
@@ -413,7 +419,9 @@ def test_mocked_synthesize_wave_from_score_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     # Outputs
-    result = tts_engine.create_sing_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    result = tts_engine.create_sing_phoneme_and_f0_and_volume(
+        tts_engine._core, doremi_srore, StyleId(1)
+    )
     # Tests
     assert snapshot_json(name="query") == round_floats(
         pydantic_to_native_type(result), round_value=2
@@ -430,7 +438,9 @@ def test_mocked_synthesize_wave_from_score_output(
         outputStereo=False,
     )
     # Outputs
-    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    result_wave = tts_engine.frame_synthsize_wave(
+        tts_engine._core, doremi_query, StyleId(1)
+    )
     # Tests
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2
@@ -527,7 +537,7 @@ def create_synthesis_test_base(
     (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
     """
     tts_engine = TTSEngine(core=MockCoreWrapper())
-    inputs = tts_engine.create_accent_phrases(text, StyleId(1))
+    inputs = tts_engine.create_accent_phrases(tts_engine._core, text, StyleId(1))
     outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
     assert expected == outputs, f"case(text:{text})"
 
@@ -540,7 +550,7 @@ def test_create_accent_phrases() -> None:
     text = "これはありますか？"
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
-    actual = tts_engine.create_accent_phrases(text, StyleId(1))
+    actual = tts_engine.create_accent_phrases(tts_engine._core, text, StyleId(1))
     assert expected == actual, f"case(text:{text})"
 
 

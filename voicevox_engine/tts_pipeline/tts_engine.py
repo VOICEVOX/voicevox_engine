@@ -419,11 +419,12 @@ class TTSEngine:
 
     def __init__(self, core: CoreWrapper):
         super().__init__()
+        # NOTE: 一時的にこの private field へ外部からアクセスしている。逆に内部からのアクセスは無い。
         self._core = CoreAdapter(core)
         # NOTE: self._coreは将来的に消す予定
 
     def update_length(
-        self, accent_phrases: list[AccentPhrase], style_id: StyleId
+        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モーラ系列を抽出する
@@ -436,7 +437,7 @@ class TTSEngine:
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
         # コアを用いて音素長を生成する
-        phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
+        phoneme_lengths = core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成結果でモーラ内の音素長属性を置換する
         vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
@@ -450,7 +451,7 @@ class TTSEngine:
         return accent_phrases
 
     def update_pitch(
-        self, accent_phrases: list[AccentPhrase], style_id: StyleId
+        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
@@ -495,7 +496,7 @@ class TTSEngine:
         vowel_ids = np.array([p.id for p in vowels], dtype=np.int64)
 
         # コアを用いてモーラ音高を生成する
-        f0 = self._core.safe_yukarin_sa_forward(
+        f0 = core.safe_yukarin_sa_forward(
             vowel_ids,
             consonant_ids,
             start_accent_list,
@@ -517,29 +518,32 @@ class TTSEngine:
         return accent_phrases
 
     def update_length_and_pitch(
-        self, accent_phrases: list[AccentPhrase], style_id: StyleId
+        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
-        accent_phrases = self.update_length(accent_phrases, style_id)
-        accent_phrases = self.update_pitch(accent_phrases, style_id)
+        accent_phrases = self.update_length(core, accent_phrases, style_id)
+        accent_phrases = self.update_pitch(core, accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self, core: CoreAdapter, text: str, style_id: StyleId
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         accent_phrases = text_to_accent_phrases(text)
-        accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
+        accent_phrases = self.update_length_and_pitch(core, accent_phrases, style_id)
         return accent_phrases
 
     def create_accent_phrases_from_kana(
-        self, kana: str, style_id: StyleId
+        self, core: CoreAdapter, kana: str, style_id: StyleId
     ) -> list[AccentPhrase]:
         """AquesTalk 風記法テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         accent_phrases = parse_kana(kana)
-        accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
+        accent_phrases = self.update_length_and_pitch(core, accent_phrases, style_id)
         return accent_phrases
 
     def synthesize_wave(
         self,
+        core: CoreAdapter,
         query: AudioQuery,
         style_id: StyleId,
         enable_interrogative_upspeak: bool = True,
@@ -552,7 +556,7 @@ class TTSEngine:
         )
 
         phoneme, f0 = query_to_decoder_feature(query)
-        raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
+        raw_wave, sr_raw_wave = core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
 
@@ -560,6 +564,7 @@ class TTSEngine:
     # 返す値の総称を考え、関数名を変更する
     def create_sing_phoneme_and_f0_and_volume(
         self,
+        core: CoreAdapter,
         score: Score,
         style_id: StyleId,
     ) -> tuple[list[FramePhoneme], list[float], list[float]]:
@@ -575,7 +580,7 @@ class TTSEngine:
         ) = notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
-        consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
+        consonant_lengths = core.safe_predict_sing_consonant_length_forward(
             note_consonants_array, note_vowels_array, note_lengths_array, style_id
         )
 
@@ -587,13 +592,11 @@ class TTSEngine:
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
         # コアを用いて音高を生成する
-        f0s = self._core.safe_predict_sing_f0_forward(
-            frame_phonemes, frame_keys, style_id
-        )
+        f0s = core.safe_predict_sing_f0_forward(frame_phonemes, frame_keys, style_id)
 
         # コアを用いて音量を生成する
         # FIXME: 変数名のsいらない？
-        volumes = self._core.safe_predict_sing_volume_forward(
+        volumes = core.safe_predict_sing_volume_forward(
             frame_phonemes, frame_keys, f0s, style_id
         )
 
@@ -609,6 +612,7 @@ class TTSEngine:
 
     def create_sing_volume_from_phoneme_and_f0(
         self,
+        core: CoreAdapter,
         score: Score,
         phonemes: list[FramePhoneme],
         f0s: list[float],
@@ -649,7 +653,7 @@ class TTSEngine:
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
         # コアを用いて音量を生成する
-        volumes = self._core.safe_predict_sing_volume_forward(
+        volumes = core.safe_predict_sing_volume_forward(
             frame_phonemes, frame_keys, f0_array, style_id
         )
 
@@ -660,13 +664,14 @@ class TTSEngine:
 
     def frame_synthsize_wave(
         self,
+        core: CoreAdapter,
         query: FrameAudioQuery,
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
 
         phoneme, f0, volume = frame_query_to_sf_decoder_feature(query)
-        raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
+        raw_wave, sr_raw_wave = core.safe_sf_decode_forward(
             phoneme, f0, volume, style_id
         )
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
