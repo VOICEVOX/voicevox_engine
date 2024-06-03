@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 
-from voicevox_engine.model import BaseLibraryInfo, LibrarySpeaker, VvlibManifest
+from voicevox_engine.library.model import BaseLibraryInfo, LibrarySpeaker, VvlibManifest
 
 
 def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastAPI:

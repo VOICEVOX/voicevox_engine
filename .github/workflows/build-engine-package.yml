@@ -25,7 +25,6 @@ on:
         default: false
 
 env:
-  PYTHON_VERSION: "3.11.3"
   VOICEVOX_RESOURCE_VERSION: "0.19.1"
   VOICEVOX_CORE_VERSION: "0.15.4"
 
@@ -76,12 +75,18 @@ jobs:
             cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip
             zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
             target: windows-nvidia
-          # Mac CPU (x64 arch only)
+          # Mac CPU (x64 arch)
           - os: macos-12
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-osx-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-x86_64-1.13.1.tgz
             target: macos-x64
+          # Mac CPU (arm64 arch)
+          - os: macos-14
+            architecture: "arm64"
+            voicevox_core_asset_prefix: voicevox_core-osx-arm64-cpu
+            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-osx-arm64-1.13.1.tgz
+            target: macos-arm64
           # Linux CPU
           - os: ubuntu-20.04
             architecture: "x64"
@@ -278,15 +283,10 @@ jobs:
         if: startsWith(matrix.os, 'windows-')
         uses: ilammy/msvc-dev-cmd@v1
 
-      # Python install path of windows: C:/hostedtoolcache/windows/Python
-      - name: <Setup> Set up Python
-        uses: actions/setup-python@v5
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - name: <Setup> Install Python dependencies
-        run: pip install -r requirements-build.txt
+          requirements-suffix: "-build"
 
       - name: <Setup> Prepare custom PyInstaller
         if: startsWith(matrix.os, 'windows-')
@@ -430,7 +430,7 @@ jobs:
           if [[ $OS == mac-* ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
           else
-            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/ 
+            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           fi
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
@@ -545,10 +545,6 @@ jobs:
           rm -rf download/cuda
           rm -rf download/cudnn
 
-      - name: <Setup> Set @rpath to @executable_path
-        if: startsWith(matrix.os, 'macos-')
-        run: install_name_tool -add_rpath @executable_path/. dist/run/run
-
       - name: <Build> Code signing
         if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
         run: bash build_util/codesign.bash "dist/run/run.exe"
@@ -572,9 +568,9 @@ jobs:
 
       - name: <Deploy> Upload 7z archives to artifact
         if: github.event.inputs.upload_artifact == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.vars.outputs.package_name }}
+          name: ${{ steps.vars.outputs.package_name }}-7z
           path: |
             ${{ steps.vars.outputs.package_name }}.7z.*
 
@@ -617,9 +613,9 @@ jobs:
 
       - name: <Deploy> Upload VVPP archives to artifact
         if: github.event.inputs.upload_artifact == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.vars.outputs.package_name }}
+          name: ${{ steps.vars.outputs.package_name }}-vvpp
           path: |
             ${{ steps.vars.outputs.package_name }}.vvpp
             ${{ steps.vars.outputs.package_name }}*.vvppp
@@ -638,6 +634,14 @@ jobs:
             ${{ steps.vars.outputs.package_name }}*.vvppp,
             ${{ steps.vars.outputs.package_name }}.vvpp.txt
           commit: ${{ github.sha }}
+
+      - name: <Deploy> Merge artifacts
+        if: github.event.inputs.upload_artifact == 'true'
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ steps.vars.outputs.package_name }}
+          pattern: ${{ steps.vars.outputs.package_name }}-*
+          delete-merged: true
 
   update-tag-to-current-commit:
     if: needs.config.outputs.version != ''
