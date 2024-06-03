@@ -57,7 +57,8 @@ class EngineManifestJson(BaseModel):
 
 
 class ManifestContainer(EngineManifestJson):
-    root: Path  # エンジンマニフェストに記述された相対パスのルート
+    # エンジンマニフェストの親ディレクトリのパス。マニフェストの `.icon` 等はここをルートとする相対パスで記述されている。
+    root: Path
 
     @classmethod
     def from_file(cls, manifest_path: Path) -> Self:
