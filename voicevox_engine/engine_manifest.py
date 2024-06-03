@@ -1,3 +1,5 @@
+"""エンジンマニフェスト関連の処理"""
+
 # マルチエンジン環境下においては、エンジンのバージョンがエディタのバージョンより
 # 古くなる可能性が十分に考えられる。その場合、エディタ側がEngineManifestの情報不足によって
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
@@ -6,6 +8,7 @@
 import json
 from base64 import b64encode
 from pathlib import Path
+from typing import TypeAlias
 
 from pydantic import BaseModel, Field
 
@@ -95,14 +98,18 @@ class SupportedFeatures(BaseModel):
     )
 
 
+EngineName: TypeAlias = str
+BrandName: TypeAlias = str
+
+
 class EngineManifest(BaseModel):
     """
     エンジン自体に関する情報
     """
 
     manifest_version: str = Field(title="マニフェストのバージョン")
-    name: str = Field(title="エンジン名")
-    brand_name: str = Field(title="ブランド名")
+    name: EngineName = Field(title="エンジン名")
+    brand_name: BrandName = Field(title="ブランド名")
     uuid: str = Field(title="エンジンのUUID")
     url: str = Field(title="エンジンのURL")
     icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
