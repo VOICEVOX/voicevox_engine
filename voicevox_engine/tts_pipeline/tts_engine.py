@@ -672,10 +672,13 @@ class TTSEngine:
         return wave
 
 
-class EngineNotFound(Exception):
-    """エンジンが見つからないエラー"""
+class TTSEngineNotFound(Exception):
+    """TTSEngine が見つからないエラー"""
 
-    pass
+    def __init__(self, *arg, version: str, **args):
+        """TTSEngine のバージョン番号を用いてインスタンス化する。"""
+        super().__init__(*arg, **args)
+        self.version = version
 
 
 class TTSEngineManager:
@@ -703,7 +706,8 @@ class TTSEngineManager:
         elif version in self._engines:
             return self._engines[version]
 
-        raise EngineNotFound(f"バージョン {version} のエンジンが見つかりません")
+        # TODO: `version` が None 受け入れを辞めたタイミングで falsy を削除する
+        raise TTSEngineNotFound(version=version or "latest")
 
     def has_engine(self, version: str) -> bool:
         """指定バージョンのエンジンが登録されているか否かを返す。"""

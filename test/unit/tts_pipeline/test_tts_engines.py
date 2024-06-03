@@ -3,7 +3,7 @@
 import pytest
 
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
-from voicevox_engine.tts_pipeline.tts_engine import EngineNotFound, TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineNotFound, TTSEngineManager
 
 
 def test_tts_engines_register_engine() -> None:
@@ -87,10 +87,8 @@ def test_tts_engines_get_engine_missing() -> None:
     tts_engine2 = MockTTSEngine()
     tts_engines.register_engine(tts_engine1, "0.0.1")
     tts_engines.register_engine(tts_engine2, "0.0.2")
-    # Expects
-    true_message = "バージョン 0.0.3 のエンジンが見つかりません"
     # Test
-    with pytest.raises(EngineNotFound, match=true_message):
+    with pytest.raises(TTSEngineNotFound):
         tts_engines.get_engine("0.0.3")
 
 

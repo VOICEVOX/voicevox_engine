@@ -3,8 +3,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from voicevox_engine.core.core_initializer import CoreNotFound
-from voicevox_engine.tts_pipeline.tts_engine import EngineNotFound
+from voicevox_engine.core.core_initializer import MOCK_VER, CoreNotFound
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineNotFound
 
 
 def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
@@ -16,13 +16,17 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
         return JSONResponse(status_code=422, content={"message": f"{str(e)}"})
 
     # 指定されたエンジンが見つからないエラー
-    @app.exception_handler(EngineNotFound)
+    @app.exception_handler(TTSEngineNotFound)
     async def enf_exception_handler(
-        request: Request, e: EngineNotFound
+        request: Request, e: TTSEngineNotFound
     ) -> JSONResponse:
-        # NOTE: EngineNotFound は CoreNotFound 以外でも起きうる。
-        #       しかしコアが無いケースが大半であるため、ユーザーの問題解決を助ける観点から情報を付与している。
-        msg = f"{str(e)}。当該バージョンのコアが存在しない可能性があります。"
+        version = e.version
+        if version == MOCK_VER:
+            msg = "コアのモックが見つかりません。エンジンの起動引数 `--enable_mock` を確認してください。"
+        elif version == "latest":
+            msg = "コアが1つも見つかりません。"
+        else:
+            msg = f"バージョン {version} のコアが見つかりません。"
         return JSONResponse(status_code=422, content={"message": msg})
 
     return app
