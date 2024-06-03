@@ -43,18 +43,21 @@ def hash_long_string(value: Any) -> Any:
         return value
 
 
-def hash_big_ndarray(value: Any) -> Any:
-    """要素数が100を超える NDArray はハッシュ化する"""
+def summarize_big_ndarray(value: Any) -> Any:
+    """要素数が100を超える NDArray はハッシュ値と shape からなる文字列へ要約する"""
 
     def to_hash(value: np.ndarray) -> str:
         return "MD5:" + hashlib.md5(value.tobytes()).hexdigest()
 
     if isinstance(value, np.ndarray):
-        return value if value.size <= 100 else to_hash(value)
+        if value.size <= 100:
+            return value
+        else:
+            return json.dumps({"hash": to_hash(value), "shape": value.shape})
     elif isinstance(value, list):
-        return [hash_big_ndarray(v) for v in value]
+        return [summarize_big_ndarray(v) for v in value]
     elif isinstance(value, dict):
-        return {k: hash_big_ndarray(v) for k, v in value.items()}
+        return {k: summarize_big_ndarray(v) for k, v in value.items()}
     else:
         return value
 
