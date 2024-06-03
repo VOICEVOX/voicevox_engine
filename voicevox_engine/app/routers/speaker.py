@@ -17,7 +17,7 @@ from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_sty
 RESOURCE_ENDPOINT = "resources"
 
 
-async def get_character_resource_baseurl(request: Request) -> str:
+async def get_resource_baseurl(request: Request) -> str:
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
@@ -68,7 +68,7 @@ def generate_speaker_router(
 
     @router.get("/speaker_info")
     def speaker_info(
-        self_url: Annotated[str, Depends(get_character_resource_baseurl)],
+        self_url: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_url: bool = False,
         core_version: str | None = None,
@@ -193,7 +193,7 @@ def generate_speaker_router(
 
     @router.get("/singer_info")
     def singer_info(
-        self_url: Annotated[str, Depends(get_character_resource_baseurl)],
+        self_url: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_url: bool = False,
         core_version: str | None = None,
