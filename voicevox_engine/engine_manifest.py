@@ -56,7 +56,7 @@ class EngineManifestJson(BaseModel):
     supported_features: SupportedFeaturesJson
 
 
-class ManifestContainer(EngineManifestJson):
+class ManifestWrapper(EngineManifestJson):
     # エンジンマニフェストの親ディレクトリのパス。マニフェストの `.icon` 等はここをルートとする相対パスで記述されている。
     root: Path
 
@@ -136,15 +136,15 @@ class EngineManifest(BaseModel):
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
 
 
-def load_manifest(manifest_path: Path) -> ManifestContainer:
+def load_manifest(manifest_path: Path) -> ManifestWrapper:
     """エンジンマニフェストを指定ファイルから読み込む。"""
-    return ManifestContainer.from_file(manifest_path)
+    return ManifestWrapper.from_file(manifest_path)
 
 
-def generate_engine_manifest(manifest_container: ManifestContainer) -> EngineManifest:
+def generate_engine_manifest(manifest_wrapper: ManifestWrapper) -> EngineManifest:
     """API 向けのエンジンマニフェストを生成する。"""
-    root_dir = manifest_container.root
-    manifest = manifest_container.dict()
+    root_dir = manifest_wrapper.root
+    manifest = manifest_wrapper.dict()
 
     return EngineManifest(
         manifest_version=manifest["manifest_version"],

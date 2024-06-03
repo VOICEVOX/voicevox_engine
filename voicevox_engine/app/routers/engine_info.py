@@ -10,7 +10,7 @@ from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import (
     EngineManifest,
-    ManifestContainer,
+    ManifestWrapper,
     generate_engine_manifest,
 )
 
@@ -35,7 +35,7 @@ class SupportedDevicesInfo(BaseModel):
 
 
 def generate_engine_info_router(
-    core_manager: CoreManager, engine_manifest_data: ManifestContainer
+    core_manager: CoreManager, engine_manifest_data: ManifestWrapper
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
