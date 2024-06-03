@@ -876,7 +876,7 @@
             "type": "boolean"
           },
           "return_resource_url": {
-            "title": "speaker_info・singer_infoのリソースをURLで返す",
+            "title": "speaker_info・singer_infoのリソースをURLで返送",
             "type": "boolean"
           },
           "sing": {
@@ -2456,12 +2456,16 @@
           },
           {
             "in": "query",
-            "name": "resource_url",
+            "name": "resource_format",
             "required": false,
             "schema": {
-              "default": false,
-              "title": "Resource Url",
-              "type": "boolean"
+              "default": "base64",
+              "enum": [
+                "base64",
+                "url"
+              ],
+              "title": "Resource Format",
+              "type": "string"
             }
           },
           {
@@ -2565,12 +2569,16 @@
           },
           {
             "in": "query",
-            "name": "resource_url",
+            "name": "resource_format",
             "required": false,
             "schema": {
-              "default": false,
-              "title": "Resource Url",
-              "type": "boolean"
+              "default": "base64",
+              "enum": [
+                "base64",
+                "url"
+              ],
+              "title": "Resource Format",
+              "type": "string"
             }
           },
           {
