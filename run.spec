@@ -5,7 +5,6 @@ import os
 
 datas = [
     ('resources', 'resources'),
-    ('speaker_info', 'speaker_info'),
     ('engine_manifest.json', '.'),
     ('licenses.json', '.'),
     ('presets.yaml', '.'),
