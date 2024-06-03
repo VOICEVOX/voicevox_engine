@@ -1,4 +1,4 @@
-"""マニフェストのテスト"""
+"""エンジンマニフェストのテスト"""
 
 from pathlib import Path
 
@@ -12,7 +12,7 @@ def test_ManifestWrapper_init() -> None:
 
 
 def test_ManifestWrapper_relative_path() -> None:
-    """`ManifestWrapper.root` を用いてマニフェスト内の相対パスが解決できる。"""
+    """`ManifestWrapper.root` を用いて相対パスが解決できる。"""
     wrapper = ManifestWrapper.from_file(Path("engine_manifest.json"))
     tos_path = wrapper.root / wrapper.terms_of_service
     assert tos_path.exists()
