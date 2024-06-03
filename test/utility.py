@@ -12,12 +12,12 @@ def round_floats(value: Any, round_value: int) -> Any:
     """floatの小数点以下を再帰的に丸める"""
     if isinstance(value, float):
         return round(value, round_value)
+    elif isinstance(value, np.ndarray):
+        return np.round(value, round_value)
     elif isinstance(value, list):
         return [round_floats(v, round_value) for v in value]
     elif isinstance(value, dict):
         return {k: round_floats(v, round_value) for k, v in value.items()}
-    elif isinstance(value, np.ndarray):
-        return np.round(value, round_value)
     else:
         return value
 
