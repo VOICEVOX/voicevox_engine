@@ -563,6 +563,11 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 - macOS: `/Users/<username>/Library/Application\ Support/`
 - Linux: `/home/<username>/.local/share/`
 
+### テスト・静的解析
+
+`pytest` を用いたテストと各種リンターを用いた静的解析が可能です。  
+手順の詳細は [貢献者ガイド#テスト](./CONTRIBUTING.md#テスト), [貢献者ガイド#静的解析](./CONTRIBUTING.md#静的解析) を御覧ください。  
+
 ### ビルド
 
 `pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりローカルでビルドが可能です。  
