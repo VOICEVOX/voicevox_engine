@@ -22,8 +22,8 @@ class MockTTSEngine(TTSEngine):
     def __init__(self) -> None:
         super().__init__(MockCoreWrapper())
 
+    @staticmethod
     def synthesize_wave(
-        self,
         core: CoreAdapter,
         query: AudioQuery,
         style_id: StyleId,
@@ -37,14 +37,15 @@ class MockTTSEngine(TTSEngine):
         flatten_moras = to_flatten_moras(query.accent_phrases)
         kana_text = "".join([mora.text for mora in flatten_moras])
 
-        wave = self.forward(kana_text)
+        wave = MockTTSEngine.forward(kana_text)
 
         # volume
         wave *= query.volumeScale
 
         return wave
 
-    def forward(self, text: str, **kwargs: dict[str, Any]) -> NDArray[np.float32]:
+    @staticmethod
+    def forward(text: str, **kwargs: dict[str, Any]) -> NDArray[np.float32]:
         """
         forward tts via pyopenjtalk.tts()
         参照→TTSEngine のdocstring [Mock]

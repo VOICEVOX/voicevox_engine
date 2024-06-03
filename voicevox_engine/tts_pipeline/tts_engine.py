@@ -423,8 +423,9 @@ class TTSEngine:
         self._core = CoreAdapter(core)
         # NOTE: self._coreは将来的に消す予定
 
+    @staticmethod
     def update_length(
-        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
+        core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
         # モーラ系列を抽出する
@@ -450,8 +451,9 @@ class TTSEngine:
 
         return accent_phrases
 
+    @staticmethod
     def update_pitch(
-        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
+        core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
@@ -517,32 +519,39 @@ class TTSEngine:
 
         return accent_phrases
 
+    @staticmethod
     def update_length_and_pitch(
-        self, core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
+        core: CoreAdapter, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
-        accent_phrases = self.update_length(core, accent_phrases, style_id)
-        accent_phrases = self.update_pitch(core, accent_phrases, style_id)
+        accent_phrases = TTSEngine.update_length(core, accent_phrases, style_id)
+        accent_phrases = TTSEngine.update_pitch(core, accent_phrases, style_id)
         return accent_phrases
 
+    @staticmethod
     def create_accent_phrases(
-        self, core: CoreAdapter, text: str, style_id: StyleId
+        core: CoreAdapter, text: str, style_id: StyleId
     ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         accent_phrases = text_to_accent_phrases(text)
-        accent_phrases = self.update_length_and_pitch(core, accent_phrases, style_id)
+        accent_phrases = TTSEngine.update_length_and_pitch(
+            core, accent_phrases, style_id
+        )
         return accent_phrases
 
+    @staticmethod
     def create_accent_phrases_from_kana(
-        self, core: CoreAdapter, kana: str, style_id: StyleId
+        core: CoreAdapter, kana: str, style_id: StyleId
     ) -> list[AccentPhrase]:
         """AquesTalk 風記法テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         accent_phrases = parse_kana(kana)
-        accent_phrases = self.update_length_and_pitch(core, accent_phrases, style_id)
+        accent_phrases = TTSEngine.update_length_and_pitch(
+            core, accent_phrases, style_id
+        )
         return accent_phrases
 
+    @staticmethod
     def synthesize_wave(
-        self,
         core: CoreAdapter,
         query: AudioQuery,
         style_id: StyleId,
@@ -562,8 +571,8 @@ class TTSEngine:
 
     # FIXME: sing用のエンジンに移すかクラス名変える
     # 返す値の総称を考え、関数名を変更する
+    @staticmethod
     def create_sing_phoneme_and_f0_and_volume(
-        self,
         core: CoreAdapter,
         score: Score,
         style_id: StyleId,
@@ -610,8 +619,8 @@ class TTSEngine:
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
 
+    @staticmethod
     def create_sing_volume_from_phoneme_and_f0(
-        self,
         core: CoreAdapter,
         score: Score,
         phonemes: list[FramePhoneme],
@@ -662,8 +671,8 @@ class TTSEngine:
 
         return volume_list
 
+    @staticmethod
     def frame_synthsize_wave(
-        self,
         core: CoreAdapter,
         query: FrameAudioQuery,
         style_id: StyleId,
