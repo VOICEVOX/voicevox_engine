@@ -1,8 +1,5 @@
 """話者情報機能を提供する API Router"""
 
-import base64
-import json
-from hashlib import sha256
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -13,6 +10,7 @@ from pydantic import parse_obj_as
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
+from voicevox_engine.resource_manager import ResourceManager
 
 RESOURCE_ENDPOINT = "resources"
 
@@ -21,43 +19,9 @@ async def get_resource_baseurl(request: Request) -> str:
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
-def b64encode_str(s: bytes) -> str:
-    return base64.b64encode(s).decode("utf-8")
-
-
-class ResourceManager:
-    def __init__(self, speaker_info_dir: Path, is_development: bool) -> None:
-        filemap_json = speaker_info_dir.parent / "filemap.json"
-        if filemap_json.exists():
-            data: dict[str, str] = json.load(filemap_json.read_bytes())
-            self._file_to_hash = {speaker_info_dir / k: v for k, v in data.items()}
-        else:
-            if is_development:
-                self._file_to_hash = {
-                    i: sha256(i.read_bytes()).digest().hex()
-                    for i in speaker_info_dir.glob("**/*")
-                    if i.is_file()
-                }
-            else:
-                raise Exception(f"{filemap_json}が見つかりません")
-        self._hash_to_file = {v: k for k, v in self._file_to_hash.items()}
-
-    def resource_str(
-        self,
-        resource_path: Path,
-        base_url: str,
-        resource_format: Literal["base64", "url"],
-    ) -> str:
-        if resource_format == "base64":
-            return b64encode_str(resource_path.read_bytes())
-        return f"{base_url}/{self._file_to_hash[resource_path]}"
-
-    def resource_path(self, filehash: str) -> Path:
-        return self._hash_to_file[filehash]
-
-
 def generate_speaker_router(
     core_manager: CoreManager,
+    resource_manager: ResourceManager,
     metas_store: MetasStore,
     speaker_info_dir: Path,
 ) -> APIRouter:
@@ -73,7 +37,7 @@ def generate_speaker_router(
 
     @router.get("/speaker_info")
     def speaker_info(
-        self_url: Annotated[str, Depends(get_resource_baseurl)],
+        resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: Literal["base64", "url"] = "base64",
         core_version: str | None = None,
@@ -86,18 +50,16 @@ def generate_speaker_router(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
             core_version=core_version,
-            self_url=self_url,
+            resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )
-
-    manager = ResourceManager(speaker_info_dir, True)
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
         speaker_uuid: str,
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
-        self_url: str,
+        resource_baseurl: str,
         resource_format: Literal["base64", "url"],
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
@@ -142,9 +104,14 @@ def generate_speaker_router(
             policy_path = speaker_path / "policy.md"
             policy = policy_path.read_text("utf-8")
 
+            def _resource_str(path: Path) -> str:
+                return resource_manager.resource_str(
+                    path, resource_baseurl, resource_format
+                )
+
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
-            portrait = manager.resource_str(portrait_path, self_url, resource_format)
+            portrait = _resource_str(portrait_path)
 
             # スタイル情報を取得する
             style_infos = []
@@ -153,24 +120,20 @@ def generate_speaker_router(
 
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = manager.resource_str(style_icon_path, self_url, resource_format)
+                icon = _resource_str(style_icon_path)
 
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
-                    style_portrait = manager.resource_str(
-                        style_portrait_path, self_url, resource_format
-                    )
+                    style_portrait = _resource_str(style_portrait_path)
 
                 # voice samples
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
                     voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
-                    voice_samples.append(
-                        manager.resource_str(voice_path, self_url, resource_format)
-                    )
+                    voice_samples.append(_resource_str(voice_path))
 
                 style_infos.append(
                     {
@@ -198,7 +161,7 @@ def generate_speaker_router(
 
     @router.get("/singer_info")
     def singer_info(
-        self_url: Annotated[str, Depends(get_resource_baseurl)],
+        resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: Literal["base64", "url"] = "base64",
         core_version: str | None = None,
@@ -211,7 +174,7 @@ def generate_speaker_router(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
             core_version=core_version,
-            self_url=self_url,
+            resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )
 
@@ -221,7 +184,7 @@ def generate_speaker_router(
         headers = {
             "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate"
         }
-        resource_path = manager.resource_path(resource_name)
+        resource_path = resource_manager.resource_path(resource_name)
         response = FileResponse(resource_path, headers=headers)
         return response
 

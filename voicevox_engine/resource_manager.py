@@ -1,0 +1,40 @@
+import base64
+import json
+from hashlib import sha256
+from pathlib import Path
+from typing import Literal
+
+
+def b64encode_str(s: bytes) -> str:
+    return base64.b64encode(s).decode("utf-8")
+
+
+class ResourceManager:
+    def __init__(self, resource_dir: Path, is_development: bool) -> None:
+        filemap_json = resource_dir.parent / "filemap.json"
+        if filemap_json.exists():
+            data: dict[str, str] = json.loads(filemap_json.read_bytes())
+            self._file_to_hash = {resource_dir / k: v for k, v in data.items()}
+        else:
+            if is_development:
+                self._file_to_hash = {
+                    i: sha256(i.read_bytes()).digest().hex()
+                    for i in resource_dir.glob("**/*")
+                    if i.is_file()
+                }
+            else:
+                raise Exception(f"{filemap_json}が見つかりません")
+        self._hash_to_file = {v: k for k, v in self._file_to_hash.items()}
+
+    def resource_str(
+        self,
+        resource_path: Path,
+        base_url: str,
+        resource_format: Literal["base64", "url"],
+    ) -> str:
+        if resource_format == "base64":
+            return b64encode_str(resource_path.read_bytes())
+        return f"{base_url}/{self._file_to_hash[resource_path]}"
+
+    def resource_path(self, filehash: str) -> Path:
+        return self._hash_to_file[filehash]

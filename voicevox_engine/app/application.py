@@ -24,6 +24,7 @@ from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
@@ -69,8 +70,12 @@ def generate_app(
     )
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
+
+    resource_manager = ResourceManager(speaker_info_dir, True)
     app.include_router(
-        generate_speaker_router(core_manager, metas_store, speaker_info_dir)
+        generate_speaker_router(
+            core_manager, resource_manager, metas_store, speaker_info_dir
+        )
     )
     if engine_manifest.supported_features.manage_library:
         app.include_router(generate_library_router(library_manager))
