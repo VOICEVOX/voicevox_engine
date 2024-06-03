@@ -3,7 +3,7 @@
 import pytest
 
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineNotFound, TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager, TTSEngineNotFound
 
 
 def test_tts_engines_register_engine() -> None:
