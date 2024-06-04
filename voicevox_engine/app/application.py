@@ -71,7 +71,8 @@ def generate_app(
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
 
-    resource_manager = ResourceManager(speaker_info_dir, True)
+    resource_manager = ResourceManager(True)
+    resource_manager.register_dir(speaker_info_dir)
     app.include_router(
         generate_speaker_router(
             core_manager, resource_manager, metas_store, speaker_info_dir

@@ -10,21 +10,26 @@ def b64encode_str(s: bytes) -> str:
 
 
 class ResourceManager:
-    def __init__(self, resource_dir: Path, is_development: bool) -> None:
+    def __init__(self, is_development: bool) -> None:
+        self._is_development = is_development
+        self._file_to_hash: dict[Path, str] = {}
+        self._hash_to_file: dict[str, Path] = {}
+
+    def register_dir(self, resource_dir: Path) -> None:
         filemap_json = resource_dir.parent / "filemap.json"
         if filemap_json.exists():
             data: dict[str, str] = json.loads(filemap_json.read_bytes())
-            self._file_to_hash = {resource_dir / k: v for k, v in data.items()}
+            self._file_to_hash |= {resource_dir / k: v for k, v in data.items()}
         else:
-            if is_development:
-                self._file_to_hash = {
+            if self._is_development:
+                self._file_to_hash |= {
                     i: sha256(i.read_bytes()).digest().hex()
                     for i in resource_dir.glob("**/*")
                     if i.is_file()
                 }
             else:
                 raise Exception(f"{filemap_json}が見つかりません")
-        self._hash_to_file = {v: k for k, v in self._file_to_hash.items()}
+        self._hash_to_file |= {v: k for k, v in self._file_to_hash.items()}
 
     def resource_str(
         self,
