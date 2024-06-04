@@ -1,3 +1,7 @@
+"""
+'ResourceManager'が参照するファイルを生成
+"""
+
 import json
 import os
 from argparse import ArgumentParser
@@ -5,8 +9,8 @@ from collections.abc import Generator
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 
-SPEAKER_INFO_DIR = (Path(__file__).parents[1] / "speaker_info").resolve()
 DEFAULT_FILENAME = "filemap.json"
+DEFAULT_TARGET_SUFFIX = ["png", "wav"]
 
 
 def to_posix_str_path(path: Path) -> str:
@@ -18,7 +22,7 @@ def make_hash(file: Path) -> str:
     return digest.hex()
 
 
-def walk_character_files(
+def walk_target_dir(
     character_dir: Path, suffix: tuple[str, ...]
 ) -> Generator[tuple[Path, str], None, None]:
     for root, _, files in os.walk(character_dir):
@@ -31,26 +35,34 @@ def walk_character_files(
             yield (relative, filehash)
 
 
-def mapping(target: Path) -> dict[str, str]:
+def generate_path_to_hash_dict(
+    target_dir: Path, target_suffix: list[str]
+) -> dict[str, str]:
+    suffix = tuple(target_suffix)
     return {
         to_posix_str_path(filepath): filehash
-        for filepath, filehash in walk_character_files(target, ("wav", "png"))
+        for filepath, filehash in walk_target_dir(target_dir, suffix)
     }
 
 
 def main() -> None:
     parser = ArgumentParser()
-    parser.add_argument("--save", type=Path)
-    parser.add_argument("--target", default=SPEAKER_INFO_DIR, type=Path)
+    parser.add_argument(
+        "--target_dir", type=Path, required=True, help="filemapを作成するディレクトリ"
+    )
+    parser.add_argument(
+        "--target_suffix",
+        nargs="+",
+        default=DEFAULT_TARGET_SUFFIX,
+        help=f"filemapに登録するファイルの拡張子\nデフォルトは{', '.join(DEFAULT_TARGET_SUFFIX)}",
+    )
     arg = parser.parse_args()
-    target_dir: Path = arg.target
-    save: Path = target_dir.parent if arg.save is None else arg.save
-    save_file: Path = save if not save.is_dir() else save / DEFAULT_FILENAME
+    target_dir: Path = arg.target_dir
     if not target_dir.is_dir():
-        raise Exception()
-    mapped = mapping(target_dir)
-    with save_file.open(mode="wt", encoding="utf-8") as f:
-        json.dump(mapped, f, ensure_ascii=False)
+        raise Exception(f"{target_dir}はディレクトリではありません")
+    save_path = target_dir.parent / DEFAULT_FILENAME
+    path_to_hash = generate_path_to_hash_dict(target_dir, arg.target_suffix)
+    save_path.write_text(json.dumps(path_to_hash, ensure_ascii=False), encoding="utf-8")
 
 
 if __name__ == "__main__":
