@@ -81,6 +81,8 @@ def generate_app(
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
 
-    app = configure_openapi_schema(app)
+    app = configure_openapi_schema(
+        app, engine_manifest.supported_features.manage_library
+    )
 
     return app
