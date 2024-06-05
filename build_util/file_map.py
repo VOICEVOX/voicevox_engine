@@ -23,15 +23,15 @@ def make_hash(file: Path) -> str:
 
 
 def walk_target_dir(
-    character_dir: Path, suffix: tuple[str, ...]
+    target_dir: Path, suffix: tuple[str, ...]
 ) -> Generator[tuple[Path, str], None, None]:
-    for root, _, files in os.walk(character_dir):
+    for root, _, files in os.walk(target_dir):
         for file in files:
             filepath = Path(root, file)
             if not filepath.suffix.endswith(suffix):
                 continue
             filehash = make_hash(filepath)
-            relative = filepath.relative_to(character_dir)
+            relative = filepath.relative_to(target_dir)
             yield (relative, filehash)
 
 
@@ -60,7 +60,7 @@ def main() -> None:
     target_dir: Path = arg.target_dir
     if not target_dir.is_dir():
         raise Exception(f"{target_dir}はディレクトリではありません")
-    save_path = target_dir.parent / DEFAULT_FILENAME
+    save_path = target_dir / DEFAULT_FILENAME
     path_to_hash = generate_path_to_hash_dict(target_dir, arg.target_suffix)
     save_path.write_text(json.dumps(path_to_hash, ensure_ascii=False), encoding="utf-8")
 

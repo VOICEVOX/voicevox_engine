@@ -16,7 +16,7 @@ class ResourceManager:
         self._hash_to_path: dict[str, Path] = {}
 
     def register_dir(self, resource_dir: Path) -> None:
-        filemap_json = resource_dir.parent / "filemap.json"
+        filemap_json = resource_dir / "filemap.json"
         if filemap_json.exists():
             data: dict[str, str] = json.loads(filemap_json.read_bytes())
             self._path_to_hash |= {resource_dir / k: v for k, v in data.items()}
