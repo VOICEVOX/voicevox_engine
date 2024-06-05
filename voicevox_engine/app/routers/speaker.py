@@ -180,12 +180,19 @@ def generate_speaker_router(
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
-    async def resources(request: Request, resource_name: str) -> Response:
-        headers = {
-            "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate"
-        }
+    def resources(resource_name: str) -> Response:
+        """
+        ResourceManagerから発行されたURLへのアクセスに対応する
+        """
         resource_path = resource_manager.resource_path(resource_name)
-        response = FileResponse(resource_path, headers=headers)
+        if resource_path is None or not resource_path.exists():
+            raise HTTPException(status_code=404)
+        response = FileResponse(
+            resource_path,
+            headers={
+                "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate=2592000"
+            },
+        )
         return response
 
     return router

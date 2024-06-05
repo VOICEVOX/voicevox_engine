@@ -41,5 +41,5 @@ class ResourceManager:
             return b64encode_str(resource_path.read_bytes())
         return f"{base_url}/{self._path_to_hash[resource_path]}"
 
-    def resource_path(self, filehash: str) -> Path:
-        return self._hash_to_path[filehash]
+    def resource_path(self, filehash: str) -> Path | None:
+        return self._hash_to_path.get(filehash)
