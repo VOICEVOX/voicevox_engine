@@ -1,9 +1,10 @@
 """話者情報機能を提供する API Router"""
 
+from email.utils import parsedate
 from pathlib import Path
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import FileResponse, Response
 from pydantic import parse_obj_as
 
@@ -180,7 +181,11 @@ def generate_speaker_router(
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
-    def resources(resource_name: str) -> Response:
+    def resources(
+        resource_name: str,
+        if_none_match: Annotated[str | None, Header()] = None,
+        if_modified_since: Annotated[str | None, Header()] = None,
+    ) -> Response:
         """
         ResourceManagerから発行されたURLへのアクセスに対応する
         """
@@ -192,7 +197,39 @@ def generate_speaker_router(
             headers={
                 "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate=2592000"
             },
+            stat_result=resource_path.stat(),
         )
+        res_headers = response.headers
+        # 304レスポンスの作成
+        modified_headers = {
+            k: res_headers.get(k)
+            for k in [
+                "Cache-Control",
+                "Content-Location",
+                "Date",
+                "ETag",
+                "Expires",
+                "Vary",
+            ]
+        }
+        modified_response = Response(
+            status_code=304,
+            headers={k: v for k, v in modified_headers.items() if v is not None},
+        )
+        # ETagとLast-Modifiedの検証
+        if if_none_match is not None:
+            etag = res_headers["ETag"]
+            if etag in [tag.strip(" W/") for tag in if_none_match.split(",")]:
+                return modified_response
+        elif if_modified_since is not None:
+            _if_modified_since = parsedate(if_modified_since)
+            last_modified = parsedate(res_headers["Last-Modified"])
+            if (
+                _if_modified_since is not None
+                and last_modified is not None
+                and _if_modified_since >= last_modified
+            ):
+                return modified_response
         return response
 
     return router
