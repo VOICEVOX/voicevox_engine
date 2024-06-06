@@ -201,20 +201,20 @@ def generate_speaker_router(
         )
         res_headers = response.headers
         # 304レスポンスの作成
-        modified_headers = {
-            k: res_headers.get(k)
-            for k in [
-                "Cache-Control",
-                "Content-Location",
-                "Date",
-                "ETag",
-                "Expires",
-                "Vary",
-            ]
-        }
         modified_response = Response(
             status_code=304,
-            headers={k: v for k, v in modified_headers.items() if v is not None},
+            headers={
+                k: res_headers[k]
+                for k in [
+                    "Cache-Control",
+                    "Content-Location",
+                    "Date",
+                    "ETag",
+                    "Expires",
+                    "Vary",
+                ]
+                if k in res_headers
+            },
         )
         # ETagとLast-Modifiedの検証
         if if_none_match is not None:
