@@ -611,7 +611,7 @@
             "type": "string"
           },
           "pauseLength": {
-            "title": "テキスト内の無音時間",
+            "title": "テキスト内の無音時間(絶対値)",
             "type": "number"
           },
           "pauseLengthScale": {
