@@ -176,9 +176,10 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間（`pauseLength`）を適用する"""
-    for mora in moras:
-        if mora.vowel == "pau":
-            mora.vowel_length = query.pauseLength
+    if query.pauseLength is not None:
+        for mora in moras:
+            if mora.vowel == "pau":
+                mora.vowel_length = query.pauseLength
     return moras
 
 
