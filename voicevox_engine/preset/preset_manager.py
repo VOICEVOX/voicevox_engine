@@ -52,8 +52,8 @@ class PresetManager:
             if obj is None:
                 raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
-            adapter = TypeAdapter(list[Preset])
-            _presets = adapter.validate_python(obj)
+            preset_list_adapter = TypeAdapter(list[Preset])
+            _presets = preset_list_adapter.validate_python(obj)
         except ValidationError:
             raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 

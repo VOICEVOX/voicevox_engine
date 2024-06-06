@@ -46,7 +46,7 @@ def generate_speaker_router(
             core_version=core_version,
         )
 
-    _adapter = TypeAdapter(list[Speaker])
+    _speaker_list_adapter = TypeAdapter(list[Speaker])
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
@@ -78,7 +78,7 @@ def generate_speaker_router(
         #           ...
 
         # 該当話者を検索する
-        speakers = _adapter.validate_python(
+        speakers = _speaker_list_adapter.validate_python(
             core_manager.get_core(core_version).speakers, from_attributes=True
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
