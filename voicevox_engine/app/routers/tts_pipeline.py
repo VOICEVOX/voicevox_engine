@@ -221,6 +221,7 @@ def generate_tts_pipeline_router(
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
+
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"

@@ -378,7 +378,6 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_query()
-    print(hello_hiho)
     # Outputs
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
