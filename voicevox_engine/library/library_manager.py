@@ -117,7 +117,7 @@ class LibraryManager:
         """
         for downloadable_library in self.downloadable_libraries():
             if downloadable_library.uuid == library_id:
-                library_info = downloadable_library.model_dump_json()
+                library_info = downloadable_library.model_dump_json(indent=4)
                 break
         else:
             msg = f"音声ライブラリ {library_id} が見つかりません。"
