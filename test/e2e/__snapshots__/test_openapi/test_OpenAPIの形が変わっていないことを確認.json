@@ -99,6 +99,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "pauseLength",
           "pauseLengthScale",
           "outputSamplingRate",
           "outputStereo"
@@ -658,6 +659,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "pauseLength",
           "pauseLengthScale"
         ],
         "title": "Preset",
