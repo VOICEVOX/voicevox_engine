@@ -183,6 +183,8 @@ def _gen_hello_hiho_query() -> AudioQuery:
         volumeScale=1.3,
         prePhonemeLength=0.1,
         postPhonemeLength=0.2,
+        pauseLength=0.3,
+        pauseLengthScale=0.8,
         outputSamplingRate=12000,
         outputStereo=True,
         kana=_gen_hello_hiho_kana(),

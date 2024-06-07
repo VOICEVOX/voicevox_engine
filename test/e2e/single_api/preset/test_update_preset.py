@@ -20,6 +20,8 @@ def test_post_update_preset_200(
         "volumeScale": 1,
         "prePhonemeLength": 10,
         "postPhonemeLength": 10,
+        "pauseLength": None,
+        "pauseLengthScale": 1,
     }
     response = client.post("/update_preset", params={}, json=preset)
     assert response.status_code == 200
@@ -40,6 +42,8 @@ def test_post_update_preset_422(
         "volumeScale": 404,
         "prePhonemeLength": 404,
         "postPhonemeLength": 404,
+        "pauseLength": 404,
+        "pauseLengthScale": 404,
     }
     response = client.post("/update_preset", params={}, json=preset)
     assert response.status_code == 422

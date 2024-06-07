@@ -27,6 +27,8 @@ def _gen_query(
     intonationScale: float = 1.0,
     prePhonemeLength: float = 0.0,
     postPhonemeLength: float = 0.0,
+    pauseLength: float | None = None,
+    pauseLengthScale: float = 1.0,
     volumeScale: float = 1.0,
     outputSamplingRate: int = 24000,
     outputStereo: bool = False,
@@ -40,6 +42,8 @@ def _gen_query(
         intonationScale=intonationScale,
         prePhonemeLength=prePhonemeLength,
         postPhonemeLength=postPhonemeLength,
+        pauseLength=pauseLength,
+        pauseLengthScale=pauseLengthScale,
         volumeScale=volumeScale,
         outputSamplingRate=outputSamplingRate,
         outputStereo=outputStereo,
@@ -270,16 +274,18 @@ def test_query_to_decoder_feature() -> None:
         intonationScale=0.5,
         prePhonemeLength=2 * 0.01067,
         postPhonemeLength=6 * 0.01067,
+        pauseLength=16 * 0.01067,
+        pauseLengthScale=0.25,
     )
 
     # Expects
     # frame_per_phoneme
     #                        Pre k  o  N pau h  i  h  O Pst
-    true_frame_per_phoneme = [1, 1, 2, 2, 1, 1, 2, 2, 1, 3]
+    true_frame_per_phoneme = [1, 1, 2, 2, 2, 1, 2, 2, 1, 3]
     n_frame = sum(true_frame_per_phoneme)
     # phoneme
-    #                     Pr  k   o   o  N  N pau  h   i   i   h   h  O Pt Pt Pt
-    frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
+    #                     Pr  k   o   o  N  N pau pau h   i   i   h   h  O Pt Pt Pt
+    frame_phoneme_idxs = [0, 23, 30, 30, 4, 4, 0, 0, 19, 21, 21, 19, 19, 5, 0, 0, 0]
     true_phoneme = np.zeros([n_frame, TRUE_NUM_PHONEME], dtype=np.float32)
     for frame_idx, phoneme_idx in enumerate(frame_phoneme_idxs):
         true_phoneme[frame_idx, phoneme_idx] = 1.0
@@ -288,8 +294,8 @@ def test_query_to_decoder_feature() -> None:
     # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
     #           pau   ko     ko     ko      N      N
     true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
-    #           pau   hi     hi     hi
-    true2_f0 = [0.0, 400.0, 400.0, 400.0]
+    #           pau  pau   hi     hi     hi
+    true2_f0 = [0.0, 0.0, 400.0, 400.0, 400.0]
     #           hO   hO   hO   paw  paw  paw
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
