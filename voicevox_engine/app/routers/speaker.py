@@ -13,7 +13,7 @@ from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
 from voicevox_engine.resource_manager import ResourceManager
 
-RESOURCE_ENDPOINT = "resources"
+RESOURCE_ENDPOINT = "_resources"
 
 
 async def get_resource_baseurl(request: Request) -> str:
