@@ -1,11 +1,10 @@
 """話者情報機能を提供する API Router"""
 
-from email.utils import parsedate
 from pathlib import Path
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
-from fastapi.responses import FileResponse, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic import parse_obj_as
 
 from voicevox_engine.core.core_initializer import CoreManager
@@ -181,55 +180,16 @@ def generate_speaker_router(
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
-    def resources(
-        resource_name: str,
-        if_none_match: Annotated[str | None, Header()] = None,
-        if_modified_since: Annotated[str | None, Header()] = None,
-    ) -> Response:
+    async def resources(resource_name: str) -> FileResponse:
         """
         ResourceManagerから発行されたURLへのアクセスに対応する
         """
         resource_path = resource_manager.resource_path(resource_name)
         if resource_path is None or not resource_path.exists():
             raise HTTPException(status_code=404)
-        response = FileResponse(
+        return FileResponse(
             resource_path,
-            headers={
-                "Cache-Control": "max-age=2592000, immutable, stale-while-revalidate=2592000"
-            },
-            stat_result=resource_path.stat(),
+            headers={"Cache-Control": "max-age=2592000"},
         )
-        res_headers = response.headers
-        # 304レスポンスの作成
-        modified_response = Response(
-            status_code=304,
-            headers={
-                k: res_headers[k]
-                for k in [
-                    "Cache-Control",
-                    "Content-Location",
-                    "Date",
-                    "ETag",
-                    "Expires",
-                    "Vary",
-                ]
-                if k in res_headers
-            },
-        )
-        # ETagとLast-Modifiedの検証
-        if if_none_match is not None:
-            etag = res_headers["ETag"]
-            if etag in [tag.strip(" W/") for tag in if_none_match.split(",")]:
-                return modified_response
-        elif if_modified_since is not None:
-            _if_modified_since = parsedate(if_modified_since)
-            last_modified = parsedate(res_headers["Last-Modified"])
-            if (
-                _if_modified_since is not None
-                and last_modified is not None
-                and _if_modified_since >= last_modified
-            ):
-                return modified_response
-        return response
 
     return router
