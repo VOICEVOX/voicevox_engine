@@ -1,3 +1,5 @@
+"""話者情報と話者メタ情報"""
+
 from enum import Enum
 from typing import Literal, NewType
 
