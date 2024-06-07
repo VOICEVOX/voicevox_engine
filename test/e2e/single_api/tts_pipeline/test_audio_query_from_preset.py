@@ -24,6 +24,8 @@ def test_post_audio_query_from_preset_200(
         "volumeScale": 1.3,
         "prePhonemeLength": 20,
         "postPhonemeLength": 5,
+        "pauseLength": 15,
+        "pauseLengthScale": 1.4,
     }
     client.post("/add_preset", params={}, json=preset)
 
