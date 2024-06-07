@@ -91,6 +91,8 @@ def _generate_preset(preset_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1,
         }
     ]
     with open(preset_path, mode="w", encoding="utf-8") as f:
