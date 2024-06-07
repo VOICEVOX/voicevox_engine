@@ -26,7 +26,7 @@ def _gen_query(
     intonationScale: float = 1.0,
     prePhonemeLength: float = 0.0,
     postPhonemeLength: float = 0.0,
-    pauseLength: float | None = -1,
+    pauseLength: float | None = None,
     pauseLengthScale: float = 1.0,
     volumeScale: float = 1.0,
     outputSamplingRate: int = 24000,

@@ -239,10 +239,9 @@ def query_to_decoder_feature(
     moras = apply_prepost_silence(moras, query)
     if (
         query.pauseLength is not None and query.pauseLength >= 0
-    ):  # pauseLengthがNoneでない場合
+    ):
         moras = apply_pause_length(moras, query)
-    if query.pauseLengthScale != 1:  # pauseLengthScaleが1以外の場合
-        moras = apply_pause_length_scale(moras, query)
+    moras = apply_pause_length_scale(moras, query)
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
