@@ -63,6 +63,7 @@
             "type": "boolean"
           },
           "pauseLength": {
+            "minimum": 0.0,
             "title": "テキスト内の無音時間(絶対値)",
             "type": "number"
           },
