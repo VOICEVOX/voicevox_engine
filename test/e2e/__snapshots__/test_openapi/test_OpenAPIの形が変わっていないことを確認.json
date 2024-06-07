@@ -63,12 +63,11 @@
             "type": "boolean"
           },
           "pauseLength": {
-            "minimum": 0.0,
-            "title": "テキスト内の無音時間(絶対値)",
+            "title": "句読点などの無音時間",
             "type": "number"
           },
           "pauseLengthScale": {
-            "title": "テキスト内の無音時間(倍率)",
+            "title": "句読点などの無音時間（倍率）",
             "type": "number"
           },
           "pitchScale": {
@@ -612,11 +611,11 @@
             "type": "string"
           },
           "pauseLength": {
-            "title": "テキスト内の無音時間(絶対値)",
+            "title": "句読点などの無音時間",
             "type": "number"
           },
           "pauseLengthScale": {
-            "title": "テキスト内の無音時間(倍率)",
+            "title": "句読点などの無音時間（倍率）",
             "type": "number"
           },
           "pitchScale": {
