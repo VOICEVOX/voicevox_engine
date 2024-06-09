@@ -21,12 +21,9 @@
             "type": "array"
           },
           "pause_mora": {
-            "anyOf": [
+            "allOf": [
               {
                 "$ref": "#/components/schemas/Mora"
-              },
-              {
-                "type": "null"
               }
             ],
             "title": "後ろに無音を付けるかどうか"
@@ -54,15 +51,8 @@
             "type": "number"
           },
           "kana": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される"
+            "title": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
+            "type": "string"
           },
           "outputSamplingRate": {
             "title": "音声データの出力サンプリングレート",
@@ -284,15 +274,8 @@
             "title": "エンジンが持つ機能"
           },
           "supported_vvlib_manifest_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "エンジンが対応するvvlibのバージョン"
+            "title": "エンジンが対応するvvlibのバージョン",
+            "type": "string"
           },
           "terms_of_service": {
             "title": "エンジンの利用規約",
@@ -489,15 +472,8 @@
         "description": "依存ライブラリのライセンス情報",
         "properties": {
           "license": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "依存ライブラリのライセンス名"
+            "title": "依存ライブラリのライセンス名",
+            "type": "string"
           },
           "name": {
             "title": "依存ライブラリ名",
@@ -508,15 +484,8 @@
             "type": "string"
           },
           "version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "依存ライブラリのバージョン"
+            "title": "依存ライブラリのバージョン",
+            "type": "string"
           }
         },
         "required": [
@@ -530,26 +499,12 @@
         "description": "モーラ（子音＋母音）ごとの情報",
         "properties": {
           "consonant": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "子音の音素"
+            "title": "子音の音素",
+            "type": "string"
           },
           "consonant_length": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "子音の音長"
+            "title": "子音の音長",
+            "type": "number"
           },
           "pitch": {
             "title": "音高",
@@ -598,15 +553,8 @@
             "type": "integer"
           },
           "key": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "音階"
+            "title": "音階",
+            "type": "integer"
           },
           "lyric": {
             "title": "音符の歌詞",
@@ -811,22 +759,15 @@
             "type": "string"
           },
           "type": {
-            "anyOf": [
-              {
-                "enum": [
-                  "talk",
-                  "singing_teacher",
-                  "frame_decode",
-                  "sing"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
             "default": "talk",
-            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
+            "enum": [
+              "talk",
+              "singing_teacher",
+              "frame_decode",
+              "sing"
+            ],
+            "title": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
+            "type": "string"
           }
         },
         "required": [
@@ -873,15 +814,8 @@
             "type": "integer"
           },
           "portrait": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの"
+            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの",
+            "type": "string"
           },
           "voice_samples": {
             "items": {
@@ -955,26 +889,12 @@
             "type": "boolean"
           },
           "manage_library": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "音声ライブラリのインストール・アンインストール"
+            "title": "音声ライブラリのインストール・アンインストール",
+            "type": "boolean"
           },
           "sing": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "歌唱音声合成"
+            "title": "歌唱音声合成",
+            "type": "boolean"
           },
           "synthesis_morphing": {
             "title": "2種類のスタイルでモーフィングした音声を合成",
@@ -998,18 +918,11 @@
         "description": "エンジンのアップデート情報",
         "properties": {
           "contributors": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "貢献者名"
+            "items": {
+              "type": "string"
+            },
+            "title": "貢献者名",
+            "type": "array"
           },
           "descriptions": {
             "items": {
@@ -1055,15 +968,8 @@
             "type": "string"
           },
           "mora_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "モーラ数"
+            "title": "モーラ数",
+            "type": "integer"
           },
           "part_of_speech": {
             "title": "品詞",

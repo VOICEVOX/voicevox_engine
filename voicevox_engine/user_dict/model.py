@@ -9,6 +9,7 @@ from re import findall, fullmatch
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic.json_schema import SkipJsonSchema
 
 
 class WordTypes(str, Enum):
@@ -47,7 +48,7 @@ class UserDictWord(BaseModel):
     yomi: str = Field(title="読み")
     pronunciation: str = Field(title="発音")
     accent_type: int = Field(title="アクセント型")
-    mora_count: int | None = Field(default=None, title="モーラ数")
+    mora_count: int | SkipJsonSchema[None] = Field(default=None, title="モーラ数")
     accent_associative_rule: str = Field(title="アクセント結合規則")
 
     @field_validator("surface")

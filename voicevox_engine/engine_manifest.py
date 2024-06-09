@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TypeAlias
 
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 
 
 class FeatureSupportJson(BaseModel):
@@ -63,7 +64,9 @@ class UpdateInfo(BaseModel):
 
     version: str = Field(title="エンジンのバージョン名")
     descriptions: list[str] = Field(title="アップデートの詳細についての説明")
-    contributors: list[str] | None = Field(default=None, title="貢献者名")
+    contributors: list[str] | SkipJsonSchema[None] = Field(
+        default=None, title="貢献者名"
+    )
 
 
 class LicenseInfo(BaseModel):
@@ -72,8 +75,12 @@ class LicenseInfo(BaseModel):
     """
 
     name: str = Field(title="依存ライブラリ名")
-    version: str | None = Field(default=None, title="依存ライブラリのバージョン")
-    license: str | None = Field(default=None, title="依存ライブラリのライセンス名")
+    version: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのバージョン"
+    )
+    license: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのライセンス名"
+    )
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
@@ -92,8 +99,8 @@ class SupportedFeatures(BaseModel):
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: bool | None = Field(default=None, title="歌唱音声合成")
-    manage_library: bool | None = Field(
+    sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
+    manage_library: bool | SkipJsonSchema[None] = Field(
         default=None, title="音声ライブラリのインストール・アンインストール"
     )
 
@@ -118,7 +125,7 @@ class EngineManifest(BaseModel):
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    supported_vvlib_manifest_version: str | None = Field(
+    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
         default=None, title="エンジンが対応するvvlibのバージョン"
     )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
