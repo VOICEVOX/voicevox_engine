@@ -67,6 +67,8 @@ def test_synthesize_wave() -> None:
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
+            pauseLength=None,
+            pauseLengthScale=1.0,
             outputSamplingRate=24000,
             outputStereo=False,
             kana=create_kana(_gen_accent_phrases()),
