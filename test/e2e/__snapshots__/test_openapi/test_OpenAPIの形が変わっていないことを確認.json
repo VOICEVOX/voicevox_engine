@@ -72,6 +72,14 @@
             "title": "音声データをステレオ出力するか否か",
             "type": "boolean"
           },
+          "pauseLength": {
+            "title": "句読点などの無音時間",
+            "type": "number"
+          },
+          "pauseLengthScale": {
+            "title": "句読点などの無音時間（倍率）",
+            "type": "number"
+          },
           "pitchScale": {
             "title": "全体の音高",
             "type": "number"
@@ -101,6 +109,7 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
+          "pauseLengthScale",
           "outputSamplingRate",
           "outputStereo"
         ],
@@ -653,6 +662,14 @@
             "title": "プリセット名",
             "type": "string"
           },
+          "pauseLength": {
+            "title": "句読点などの無音時間",
+            "type": "number"
+          },
+          "pauseLengthScale": {
+            "title": "句読点などの無音時間（倍率）",
+            "type": "number"
+          },
           "pitchScale": {
             "title": "全体の音高",
             "type": "number"
@@ -692,7 +709,8 @@
           "intonationScale",
           "volumeScale",
           "prePhonemeLength",
-          "postPhonemeLength"
+          "postPhonemeLength",
+          "pauseLengthScale"
         ],
         "title": "Preset",
         "type": "object"
