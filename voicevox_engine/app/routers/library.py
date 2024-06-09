@@ -9,11 +9,11 @@ from fastapi import APIRouter, Depends, Path, Request
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.library.model import DownloadableLibraryInfo, InstalledLibraryInfo
 
-from ..dependencies import VerifyMutability
+from ..dependencies import VerifyMutabilityAllowed
 
 
 def generate_library_router(
-    library_manager: LibraryManager, verify_mutability: VerifyMutability
+    library_manager: LibraryManager, verify_mutability: VerifyMutabilityAllowed
 ) -> APIRouter:
     """音声ライブラリ API Router を生成する"""
     router = APIRouter(tags=["音声ライブラリ管理"])

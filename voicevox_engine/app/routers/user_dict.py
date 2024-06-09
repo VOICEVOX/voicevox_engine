@@ -14,11 +14,11 @@ from voicevox_engine.user_dict.user_dict_word import (
     WordProperty,
 )
 
-from ..dependencies import VerifyMutability
+from ..dependencies import VerifyMutabilityAllowed
 
 
 def generate_user_dict_router(
-    user_dict: UserDictionary, verify_mutability: VerifyMutability
+    user_dict: UserDictionary, verify_mutability: VerifyMutabilityAllowed
 ) -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
     router = APIRouter(tags=["ユーザー辞書"])

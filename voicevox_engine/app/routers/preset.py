@@ -11,11 +11,11 @@ from voicevox_engine.preset.preset_manager import (
     PresetManager,
 )
 
-from ..dependencies import VerifyMutability
+from ..dependencies import VerifyMutabilityAllowed
 
 
 def generate_preset_router(
-    preset_manager: PresetManager, verify_mutability: VerifyMutability
+    preset_manager: PresetManager, verify_mutability: VerifyMutabilityAllowed
 ) -> APIRouter:
     """プリセット API Router を生成する"""
     router = APIRouter(tags=["その他"])
