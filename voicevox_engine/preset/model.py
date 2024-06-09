@@ -1,6 +1,7 @@
 """
-プリセット機能に関して API と ENGINE 内部実装が共有するモデル
-「API と ENGINE 内部実装が共有するモデル」については `voicevox_engine/model.py` の module docstring を確認すること。
+プリセット機能に関して API と ENGINE 内部実装が共有するモデル（データ構造）
+
+モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
 from pydantic import BaseModel, Field
@@ -23,3 +24,5 @@ class Preset(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+    pauseLength: float | None = Field(title="句読点などの無音時間")
+    pauseLengthScale: float = Field(title="句読点などの無音時間（倍率）")

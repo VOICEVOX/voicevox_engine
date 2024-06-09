@@ -11,10 +11,10 @@ from voicevox_engine.preset.preset_manager import (
     PresetManager,
 )
 
-presets_test_1_yaml_path = Path("test/preset/presets-test-1.yaml")
-presets_test_2_yaml_path = Path("test/preset/presets-test-2.yaml")
-presets_test_3_yaml_path = Path("test/preset/presets-test-3.yaml")
-presets_test_4_yaml_path = Path("test/preset/presets-test-4.yaml")
+presets_test_1_yaml_path = Path("test/unit/preset/presets-test-1.yaml")
+presets_test_2_yaml_path = Path("test/unit/preset/presets-test-2.yaml")
+presets_test_3_yaml_path = Path("test/unit/preset/presets-test-3.yaml")
+presets_test_4_yaml_path = Path("test/unit/preset/presets-test-4.yaml")
 
 
 def test_validation() -> None:
@@ -75,6 +75,8 @@ def test_add_preset(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     id = preset_manager.add_preset(preset)
@@ -103,6 +105,8 @@ def test_add_preset_load_failure() -> None:
                     "volumeScale": 0,
                     "prePhonemeLength": 0,
                     "postPhonemeLength": 0,
+                    "pauseLength": 0,
+                    "pauseLengthScale": 0,
                 }
             )
         )
@@ -124,6 +128,8 @@ def test_add_preset_conflict_id(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     id = preset_manager.add_preset(preset)
@@ -151,6 +157,8 @@ def test_add_preset_conflict_id2(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     id = preset_manager.add_preset(preset)
@@ -178,6 +186,8 @@ def test_add_preset_write_failure(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     preset_manager.load_presets()
@@ -206,6 +216,8 @@ def test_update_preset(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     id = preset_manager.update_preset(preset)
@@ -234,6 +246,8 @@ def test_update_preset_load_failure() -> None:
                     "volumeScale": 0,
                     "prePhonemeLength": 0,
                     "postPhonemeLength": 0,
+                    "pauseLength": 0,
+                    "pauseLengthScale": 0,
                 }
             )
         )
@@ -255,6 +269,8 @@ def test_update_preset_not_found(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     true_msg = "更新先のプリセットが存在しません"
@@ -280,6 +296,8 @@ def test_update_preset_write_failure(tmp_path: Path) -> None:
             "volumeScale": 1,
             "prePhonemeLength": 0.1,
             "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1.0,
         }
     )
     preset_manager.load_presets()

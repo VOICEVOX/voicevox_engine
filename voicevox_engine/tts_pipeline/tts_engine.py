@@ -1,3 +1,5 @@
+"""音声合成エンジン"""
+
 import copy
 import math
 
@@ -173,6 +175,23 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
+def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間（`pauseLength`）を適用する"""
+    if query.pauseLength is not None:
+        for mora in moras:
+            if mora.vowel == "pau":
+                mora.vowel_length = query.pauseLength
+    return moras
+
+
+def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間スケール（`pauseLengthScale`）を適用する"""
+    for mora in moras:
+        if mora.vowel == "pau":
+            mora.vowel_length *= query.pauseLengthScale
+    return moras
+
+
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
@@ -219,6 +238,8 @@ def query_to_decoder_feature(
 
     # 設定を適用する
     moras = apply_prepost_silence(moras, query)
+    moras = apply_pause_length(moras, query)
+    moras = apply_pause_length_scale(moras, query)
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)

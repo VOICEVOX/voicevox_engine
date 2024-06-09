@@ -1,6 +1,7 @@
 """
-ユーザー辞書機能に関して API と ENGINE 内部実装が共有するモデル
-「API と ENGINE 内部実装が共有するモデル」については `voicevox_engine/model.py` の module docstring を確認すること。
+ユーザー辞書機能に関して API と ENGINE 内部実装が共有するモデル（データ構造）
+
+モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
 from enum import Enum
@@ -11,9 +12,7 @@ from pydantic import BaseModel, Field, validator
 
 
 class WordTypes(str, Enum):
-    """
-    fastapiでword_type引数を検証する時に使用するクラス
-    """
+    """品詞"""
 
     PROPER_NOUN = "PROPER_NOUN"
     COMMON_NOUN = "COMMON_NOUN"

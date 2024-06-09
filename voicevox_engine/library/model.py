@@ -1,7 +1,7 @@
 """
-ライブラリ機能に関して API と ENGINE 内部実装が共有するモデル
+ライブラリ機能に関して API と ENGINE 内部実装が共有するモデル（データ構造）
 
-「API と ENGINE 内部実装が共有するモデル」については `voicevox_engine/model.py` の module docstring を確認すること。
+モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
 from pydantic import BaseModel, Field, StrictStr

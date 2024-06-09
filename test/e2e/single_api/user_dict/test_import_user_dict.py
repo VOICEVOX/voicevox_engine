@@ -6,13 +6,15 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_post_import_user_dict_204(client: TestClient) -> None:
+def test_post_import_user_dict_204(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     user_dict: dict[str, dict[str, str | int]] = {}
     response = client.post(
         "/import_user_dict", json=user_dict, params={"override": True}
     )
     assert response.status_code == 204
-    # '204 No Content' につきスナップショットテストは不要
+    assert snapshot == response.content
 
 
 def test_post_import_user_dict_contents(

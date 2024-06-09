@@ -1,3 +1,12 @@
+"""
+API と ENGINE 内部実装が共有するモデル
+
+このモジュールで定義されるモデル（データ構造）は API と ENGINE の 2 箇所から使われる。そのため
+- モデルの変更は API 変更となるため慎重に検討する。
+- モデルの docstring や Field は API スキーマとして使われるため、ユーザー向けに丁寧に書く。
+- モデルクラスは FastAPI の制約から `BaseModel` を継承しなければならない。
+"""
+
 from pydantic import BaseModel, Field
 
 from voicevox_engine.tts_pipeline.model import AccentPhrase
@@ -15,6 +24,8 @@ class AudioQuery(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
+    pauseLength: float | None = Field(title="句読点などの無音時間")
+    pauseLengthScale: float = Field(title="句読点などの無音時間（倍率）")
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: str | None = Field(
@@ -27,15 +38,3 @@ class AudioQuery(BaseModel):
             for k, v in self.__dict__.items()
         ]
         return hash(tuple(sorted(items)))
-
-
-class MorphableTargetInfo(BaseModel):
-    is_morphable: bool = Field(title="指定した話者に対してモーフィングの可否")
-    # FIXME: add reason property
-    # reason: str | None = Field(title="is_morphableがfalseである場合、その理由")
-
-
-class StyleIdNotFoundError(LookupError):
-    def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
-        self.style_id = style_id
-        super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
