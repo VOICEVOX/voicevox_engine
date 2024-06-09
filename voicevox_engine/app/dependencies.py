@@ -1,3 +1,5 @@
+"""FastAPI dependencies"""
+
 from typing import Any, Callable, Coroutine, TypeAlias
 
 from fastapi import HTTPException

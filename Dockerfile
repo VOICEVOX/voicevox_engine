@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# TODO: build-arg と target のドキュメントをこのファイルに書く
+
 ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
@@ -23,7 +25,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.3
+ARG VOICEVOX_CORE_VERSION=0.15.4
 
 RUN <<EOF
     set -eux
@@ -231,7 +233,6 @@ ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
 ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
-ADD ./speaker_info /opt/voicevox_engine/speaker_info
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -239,7 +240,8 @@ RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION
 RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
-ADD ./requirements-license.txt /tmp/
+ADD ./requirements.txt /tmp/
+ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
     set -eux
 
@@ -249,7 +251,9 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
+    # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
+    gosu user /opt/python/bin/pip3 install "$(grep pip-licenses /tmp/requirements-dev.txt | cut -f 1 -d ';')"
     gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
@@ -275,7 +279,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.19.0
+ARG VOICEVOX_RESOURCE_VERSION=0.19.1
 RUN <<EOF
     set -eux
 
