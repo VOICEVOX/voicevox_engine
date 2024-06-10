@@ -1,13 +1,12 @@
 """話者情報と話者メタ情報の管理"""
 
 import base64
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
 
 from fastapi import HTTPException
-from pydantic import BaseModel, Field, parse_obj_as
+from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
@@ -16,6 +15,7 @@ from voicevox_engine.metas.Metas import (
     SpeakerStyle,
     SpeakerSupportedFeatures,
     StyleId,
+    speaker_list_adapter,
 )
 
 
@@ -56,8 +56,8 @@ class MetasStore:
         self._speakers_path = engine_speakers_path
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
-            folder.name: _EngineSpeaker(
-                **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
+            folder.name: _EngineSpeaker.model_validate_json(
+                (folder / "metas.json").read_text(encoding="utf-8")
             )
             for folder in engine_speakers_path.iterdir()
         }
@@ -106,7 +106,9 @@ class MetasStore:
         #         ...
 
         # 該当話者を検索する
-        speakers = parse_obj_as(list[Speaker], core_speakers)
+        speakers = speaker_list_adapter.validate_python(
+            core_speakers, from_attributes=True
+        )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None

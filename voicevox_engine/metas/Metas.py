@@ -3,7 +3,8 @@
 from enum import Enum
 from typing import Literal, NewType
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
+from pydantic.json_schema import SkipJsonSchema
 
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
@@ -18,7 +19,7 @@ class SpeakerStyle(BaseModel):
 
     name: str = Field(title="スタイル名")
     id: StyleId = Field(title="スタイルID")
-    type: StyleType | None = Field(
+    type: StyleType = Field(
         default="talk",
         title=(
             "スタイルの種類。"
@@ -65,6 +66,9 @@ class Speaker(BaseModel):
     )
 
 
+speaker_list_adapter = TypeAdapter(list[Speaker])
+
+
 class StyleInfo(BaseModel):
     """
     スタイルの追加情報
@@ -72,8 +76,8 @@ class StyleInfo(BaseModel):
 
     id: StyleId = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
-    portrait: str | None = Field(
-        title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+    portrait: str | SkipJsonSchema[None] = Field(
+        default=None, title="当該スタイルのportrait.pngをbase64エンコードしたもの"
     )
     voice_samples: list[str] = Field(
         title="voice_sampleのwavファイルをbase64エンコードしたもの"
