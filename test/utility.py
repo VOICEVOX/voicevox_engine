@@ -1,11 +1,10 @@
 import hashlib
 import io
-import json
 from typing import Any
 
 import numpy as np
 import soundfile as sf
-from pydantic.json import pydantic_encoder
+from fastapi.encoders import jsonable_encoder
 
 
 def round_floats(value: Any, round_value: int) -> Any:
@@ -22,7 +21,7 @@ def round_floats(value: Any, round_value: int) -> Any:
 
 def pydantic_to_native_type(value: Any) -> Any:
     """pydanticの型をnativeな型に変換する"""
-    return json.loads(json.dumps(value, default=pydantic_encoder))
+    return jsonable_encoder(value)
 
 
 def hash_long_string(value: Any) -> Any:
