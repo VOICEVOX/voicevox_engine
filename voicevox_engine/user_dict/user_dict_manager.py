@@ -9,7 +9,7 @@ from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
 import pyopenjtalk
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord
@@ -57,6 +57,8 @@ _COMPILED_DICT_PATH: Final = save_dir / "user.dic"  # コンパイル済み辞�
 mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
+
+_encoded_dict_adapter = TypeAdapter(dict[str, EncodedUserDictWord])
 
 class UserDictionary:
     """ユーザー辞書"""
@@ -178,7 +180,7 @@ class UserDictionary:
             return {}
 
         with self._user_dict_path.open(encoding="utf-8") as f:
-            encoded_dict = parse_obj_as(dict[str, EncodedUserDictWord], json.load(f))
+            encoded_dict = _encoded_dict_adapter.validate_python(json.load(f))
             result: dict[str, UserDictWord] = {}
             for word_uuid, word in encoded_dict.items():
                 result[str(UUID(word_uuid))] = decode_word(word)

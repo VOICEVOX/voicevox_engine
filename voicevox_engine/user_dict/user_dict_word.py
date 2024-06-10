@@ -244,7 +244,7 @@ class EncodedUserDictWord(BaseModel):
 
     surface: str
     cost: int  # `UserDictWord.priority` と対応
-    context_id: int | None  # v0.12 以前の辞書でのみ `None`
+    context_id: int | None = None  # v0.12 以前の辞書でのみ `None`
     part_of_speech: str
     part_of_speech_detail_1: str
     part_of_speech_detail_2: str
@@ -255,7 +255,7 @@ class EncodedUserDictWord(BaseModel):
     yomi: str
     pronunciation: str
     accent_type: int
-    mora_count: int | None
+    mora_count: int | None = None
     accent_associative_rule: str
 
 
