@@ -1,3 +1,9 @@
+"""
+URLから取得可能なリソースの管理
+
+アップデートでリソースの変更が反映されるようにURLはハッシュ値から生成する
+"""
+
 import base64
 import json
 from hashlib import sha256
@@ -10,8 +16,8 @@ def b64encode_str(s: bytes) -> str:
 
 
 class ResourceManager:
-    def __init__(self, is_development: bool) -> None:
-        self._is_development = is_development
+    def __init__(self, create_filemap_if_not_exist: bool) -> None:
+        self._create_filemap_if_not_exist = create_filemap_if_not_exist
         self._path_to_hash: dict[Path, str] = {}
         self._hash_to_path: dict[str, Path] = {}
 
@@ -21,7 +27,7 @@ class ResourceManager:
             data: dict[str, str] = json.loads(filemap_json.read_bytes())
             self._path_to_hash |= {resource_dir / k: v for k, v in data.items()}
         else:
-            if self._is_development:
+            if self._create_filemap_if_not_exist:
                 self._path_to_hash |= {
                     i: sha256(i.read_bytes()).digest().hex()
                     for i in resource_dir.glob("**/*")
