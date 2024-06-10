@@ -2,14 +2,15 @@
   "detail": [
     {
       "ctx": {
-        "limit_value": 10
+        "le": 10
       },
+      "input": "100",
       "loc": [
         "query",
         "priority"
       ],
-      "msg": "ensure this value is less than or equal to 10",
-      "type": "value_error.number.not_le"
+      "msg": "Input should be less than or equal to 10",
+      "type": "less_than_equal"
     }
   ]
 }

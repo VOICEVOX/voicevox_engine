@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Self, TypeAlias
 
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 
 
 class FeatureSupportJson(BaseModel):
@@ -63,9 +64,9 @@ class ManifestWrapper(EngineManifestJson):
     @classmethod
     def from_file(cls, manifest_path: Path) -> Self:
         """指定ファイルからインスタンスを生成する。"""
-        manifest = EngineManifestJson.parse_file(manifest_path)
+        manifest = EngineManifestJson.model_validate_json(manifest_path.read_bytes())
         manifest_root = manifest_path.parent
-        return cls(root=manifest_root, **manifest.dict())
+        return cls(root=manifest_root, **manifest.model_dump())
 
 
 class UpdateInfo(BaseModel):
@@ -75,7 +76,9 @@ class UpdateInfo(BaseModel):
 
     version: str = Field(title="エンジンのバージョン名")
     descriptions: list[str] = Field(title="アップデートの詳細についての説明")
-    contributors: list[str] | None = Field(title="貢献者名")
+    contributors: list[str] | SkipJsonSchema[None] = Field(
+        default=None, title="貢献者名"
+    )
 
 
 class LicenseInfo(BaseModel):
@@ -84,8 +87,12 @@ class LicenseInfo(BaseModel):
     """
 
     name: str = Field(title="依存ライブラリ名")
-    version: str | None = Field(title="依存ライブラリのバージョン")
-    license: str | None = Field(title="依存ライブラリのライセンス名")
+    version: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのバージョン"
+    )
+    license: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのライセンス名"
+    )
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
@@ -104,9 +111,9 @@ class SupportedFeatures(BaseModel):
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: bool | None = Field(title="歌唱音声合成")
-    manage_library: bool | None = Field(
-        title="音声ライブラリのインストール・アンインストール"
+    sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
+    manage_library: bool | SkipJsonSchema[None] = Field(
+        default=None, title="音声ライブラリのインストール・アンインストール"
     )
 
 
@@ -130,8 +137,8 @@ class EngineManifest(BaseModel):
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    supported_vvlib_manifest_version: str | None = Field(
-        title="エンジンが対応するvvlibのバージョン"
+    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
+        default=None, title="エンジンが対応するvvlibのバージョン"
     )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
 
@@ -144,7 +151,7 @@ def load_manifest(manifest_path: Path) -> ManifestWrapper:
 def generate_engine_manifest(manifest_wrapper: ManifestWrapper) -> EngineManifest:
     """API 向けのエンジンマニフェストを生成する。"""
     root_dir = manifest_wrapper.root
-    manifest = manifest_wrapper.dict()
+    manifest = manifest_wrapper.model_dump()
 
     return EngineManifest(
         manifest_version=manifest["manifest_version"],

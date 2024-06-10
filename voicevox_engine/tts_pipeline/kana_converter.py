@@ -116,7 +116,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
         # push mora
         else:
-            moras.append(_kana2mora[matched_text].copy(deep=True))
+            moras.append(_kana2mora[matched_text].model_copy(deep=True))
             base_index += len(matched_text)
             stack = ""
             matched_text = None
