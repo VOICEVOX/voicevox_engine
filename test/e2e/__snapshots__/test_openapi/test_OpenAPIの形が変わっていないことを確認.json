@@ -778,7 +778,6 @@
         "type": "object"
       },
       "SpeakerSupportPermittedSynthesisMorphing": {
-        "description": "An enumeration.",
         "enum": [
           "ALL",
           "SELF_ONLY",
@@ -3014,7 +3013,8 @@
                   "$ref": "#/components/schemas/WordTypes"
                 }
               ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+              "title": "Word Type"
             }
           },
           {
@@ -3024,8 +3024,8 @@
             "required": false,
             "schema": {
               "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "title": "Priority",
               "type": "integer"
             }
@@ -3156,7 +3156,8 @@
                   "$ref": "#/components/schemas/WordTypes"
                 }
               ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
+              "title": "Word Type"
             }
           },
           {
@@ -3166,8 +3167,8 @@
             "required": false,
             "schema": {
               "description": "単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
-              "maximum": 10.0,
-              "minimum": 0.0,
+              "maximum": 10,
+              "minimum": 0,
               "title": "Priority",
               "type": "integer"
             }
