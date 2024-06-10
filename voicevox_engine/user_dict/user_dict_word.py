@@ -1,9 +1,10 @@
 """ユーザー辞書を構成する言葉（単語）関連の処理"""
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
 
 from voicevox_engine.user_dict.model import (
     USER_DICT_MAX_PRIORITY,
@@ -239,12 +240,12 @@ def priority2cost(context_id: int, priority: int) -> int:
     return cost_candidates[MAX_PRIORITY - priority]
 
 
-class EncodedUserDictWord(BaseModel):
+@dataclass
+class EncodedUserDictWord:
     """単語の保存形式"""
 
     surface: str
     cost: int  # `UserDictWord.priority` と対応
-    context_id: int | None = None  # v0.12 以前の辞書でのみ `None`
     part_of_speech: str
     part_of_speech_detail_1: str
     part_of_speech_detail_2: str
@@ -255,14 +256,18 @@ class EncodedUserDictWord(BaseModel):
     yomi: str
     pronunciation: str
     accent_type: int
-    mora_count: int | None = None
     accent_associative_rule: str
+    context_id: int | None = None  # v0.12 以前の辞書でのみ `None`
+    mora_count: int | None = None
 
 
-def encode_word(word: UserDictWord) -> EncodedUserDictWord:
+_encoded_word_adapter = TypeAdapter(EncodedUserDictWord)
+
+
+def encode_word(word: UserDictWord) -> dict[str, Any]:
     """単語を保存形式へエンコードする。"""
     cost = priority2cost(word.context_id, word.priority)
-    return EncodedUserDictWord(
+    encoded_word = EncodedUserDictWord(
         surface=word.surface,
         cost=cost,
         context_id=word.context_id,
@@ -279,6 +284,8 @@ def encode_word(word: UserDictWord) -> EncodedUserDictWord:
         mora_count=word.mora_count,
         accent_associative_rule=word.accent_associative_rule,
     )
+    dumped: dict[str, Any] = _encoded_word_adapter.dump_python(encoded_word)
+    return dumped
 
 
 def decode_word(word: EncodedUserDictWord) -> UserDictWord:

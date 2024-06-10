@@ -60,6 +60,7 @@ mutex_openjtalk_dict = threading.Lock()
 
 _encoded_dict_adapter = TypeAdapter(dict[str, EncodedUserDictWord])
 
+
 class UserDictionary:
     """ユーザー辞書"""
 
@@ -89,7 +90,7 @@ class UserDictionary:
         """ユーザー辞書データをファイルへ書き込む。"""
         encoded_user_dict: dict[str, dict[str, Any]] = {}
         for word_uuid, word in user_dict.items():
-            encoded_user_dict[word_uuid] = encode_word(word).model_dump()
+            encoded_user_dict[word_uuid] = encode_word(word)
         user_dict_json = json.dumps(encoded_user_dict, ensure_ascii=False)
         self._user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
