@@ -1,5 +1,0 @@
-# typos の設定ファイル
-# 書式は以下の公式ドキュメントを参照: https://github.com/crate-ci/typos#false-positives
-
-[default.extend-words]
-datas="datas" # PyInstallerの引数
