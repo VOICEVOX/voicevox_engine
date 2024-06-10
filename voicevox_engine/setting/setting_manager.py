@@ -16,7 +16,7 @@ class Setting(BaseModel):
     """
 
     cors_policy_mode: CorsPolicyMode = Field(title="リソース共有ポリシー")
-    allow_origin: str | None = Field(title="許可するオリジン")
+    allow_origin: str | None = Field(default=None, title="許可するオリジン")
 
 
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
@@ -50,7 +50,7 @@ class SettingHandler:
 
     def save(self, settings: Setting) -> None:
         """設定値をファイルへ書き込む。"""
-        settings_dict = settings.dict()
+        settings_dict = settings.model_dump()
 
         if isinstance(settings_dict["cors_policy_mode"], Enum):
             settings_dict["cors_policy_mode"] = settings_dict["cors_policy_mode"].value

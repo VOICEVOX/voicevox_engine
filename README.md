@@ -630,7 +630,7 @@ typos
 
 でタイポチェックを行えます。
 もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`pyproject.toml`を編集してください。
 
 ### 依存関係
 
@@ -653,7 +653,6 @@ poetry update # 全部更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with build -o requirements-build.txt
-poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
 #### ライセンス

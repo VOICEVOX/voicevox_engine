@@ -6,6 +6,7 @@ from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query
+from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -45,7 +46,7 @@ def generate_morphing_router(
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[StyleId], core_version: str | None = None
+        base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
@@ -83,7 +84,7 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
