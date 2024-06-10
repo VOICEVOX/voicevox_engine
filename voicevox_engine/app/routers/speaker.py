@@ -1,7 +1,7 @@
 """話者情報機能を提供する API Router"""
 
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -13,6 +13,7 @@ from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_sty
 from voicevox_engine.resource_manager import ResourceManager
 
 RESOURCE_ENDPOINT = "_resources"
+ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
 async def get_resource_baseurl(request: Request) -> str:
@@ -39,7 +40,7 @@ def generate_speaker_router(
     def speaker_info(
         resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
-        resource_format: Literal["base64", "url"] = "base64",
+        resource_format: ResourceFormat = "base64",
         core_version: str | None = None,
     ) -> SpeakerInfo:
         """
@@ -60,7 +61,7 @@ def generate_speaker_router(
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
         resource_baseurl: str,
-        resource_format: Literal["base64", "url"],
+        resource_format: ResourceFormat,
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
@@ -163,7 +164,7 @@ def generate_speaker_router(
     def singer_info(
         resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
-        resource_format: Literal["base64", "url"] = "base64",
+        resource_format: ResourceFormat = "base64",
         core_version: str | None = None,
     ) -> SpeakerInfo:
         """
