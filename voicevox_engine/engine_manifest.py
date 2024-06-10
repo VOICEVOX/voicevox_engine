@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TypeAlias
 
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 
 
 class FeatureSupportJson(BaseModel):
@@ -64,7 +65,9 @@ class UpdateInfo(BaseModel):
 
     version: str = Field(title="エンジンのバージョン名")
     descriptions: list[str] = Field(title="アップデートの詳細についての説明")
-    contributors: list[str] | None = Field(title="貢献者名")
+    contributors: list[str] | SkipJsonSchema[None] = Field(
+        default=None, title="貢献者名"
+    )
 
 
 class LicenseInfo(BaseModel):
@@ -73,8 +76,12 @@ class LicenseInfo(BaseModel):
     """
 
     name: str = Field(title="依存ライブラリ名")
-    version: str | None = Field(title="依存ライブラリのバージョン")
-    license: str | None = Field(title="依存ライブラリのライセンス名")
+    version: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのバージョン"
+    )
+    license: str | SkipJsonSchema[None] = Field(
+        default=None, title="依存ライブラリのライセンス名"
+    )
     text: str = Field(title="依存ライブラリのライセンス本文")
 
 
@@ -93,12 +100,12 @@ class SupportedFeatures(BaseModel):
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: bool | None = Field(title="歌唱音声合成")
-    manage_library: bool | None = Field(
-        title="音声ライブラリのインストール・アンインストール"
+    sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
+    manage_library: bool | SkipJsonSchema[None] = Field(
+        default=None, title="音声ライブラリのインストール・アンインストール"
     )
-    return_resource_url: bool | None = Field(
-        title="speaker_info・singer_infoのリソースをURLで返送"
+    return_resource_url: bool | SkipJsonSchema[None] = Field(
+        default=None, title="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 
@@ -122,8 +129,8 @@ class EngineManifest(BaseModel):
     terms_of_service: str = Field(title="エンジンの利用規約")
     update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
     dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    supported_vvlib_manifest_version: str | None = Field(
-        title="エンジンが対応するvvlibのバージョン"
+    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
+        default=None, title="エンジンが対応するvvlibのバージョン"
     )
     supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
 
@@ -132,7 +139,9 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = EngineManifestJson.parse_file(manifest_path).dict()
+    manifest = EngineManifestJson.model_validate_json(
+        manifest_path.read_bytes()
+    ).model_dump()
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
         name=manifest["name"],

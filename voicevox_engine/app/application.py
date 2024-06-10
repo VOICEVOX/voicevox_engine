@@ -54,6 +54,7 @@ def generate_app(
         title=engine_manifest.name,
         description=f"{engine_manifest.brand_name} の音声合成エンジンです。",
         version=__version__,
+        separate_input_output_schemas=False,  # Pydantic V1 のときのスキーマに合わせるため
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)

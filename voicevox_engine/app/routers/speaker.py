@@ -5,7 +5,8 @@ from typing import Annotated, Literal, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
+from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
@@ -30,7 +31,7 @@ def generate_speaker_router(
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
-    def speakers(core_version: str | None = None) -> list[Speaker]:
+    def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
         core = core_manager.get_core(core_version)
         speakers = metas_store.load_combined_metas(core.speakers)
@@ -41,7 +42,7 @@ def generate_speaker_router(
         resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: ResourceFormat = "base64",
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
@@ -54,6 +55,8 @@ def generate_speaker_router(
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )
+
+    _speaker_list_adapter = TypeAdapter(list[Speaker])
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
@@ -87,8 +90,8 @@ def generate_speaker_router(
         #           ...
 
         # 該当話者を検索する
-        speakers = parse_obj_as(
-            list[Speaker], core_manager.get_core(core_version).speakers
+        speakers = _speaker_list_adapter.validate_python(
+            core_manager.get_core(core_version).speakers, from_attributes=True
         )
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
@@ -154,7 +157,7 @@ def generate_speaker_router(
         return spk_info
 
     @router.get("/singers")
-    def singers(core_version: str | None = None) -> list[Speaker]:
+    def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
         core = core_manager.get_core(core_version)
         singers = metas_store.load_combined_metas(core.speakers)
@@ -165,7 +168,7 @@ def generate_speaker_router(
         resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: ResourceFormat = "base64",
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
