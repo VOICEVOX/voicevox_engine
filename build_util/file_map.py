@@ -22,17 +22,10 @@ def make_hash(file: Path) -> str:
     return digest.hex()
 
 
-def walk_target_dir(
-    target_dir: Path, suffix: tuple[str, ...]
-) -> Generator[tuple[Path, str], None, None]:
+def walk_target_dir(target_dir: Path) -> Generator[Path, None, None]:
     for root, _, files in os.walk(target_dir):
         for file in files:
-            filepath = Path(root, file)
-            if not filepath.suffix.endswith(suffix):
-                continue
-            filehash = make_hash(filepath)
-            relative = filepath.relative_to(target_dir)
-            yield (relative, filehash)
+            yield Path(root, file)
 
 
 def generate_path_to_hash_dict(
@@ -40,8 +33,9 @@ def generate_path_to_hash_dict(
 ) -> dict[str, str]:
     suffix = tuple(target_suffix)
     return {
-        to_posix_str_path(filepath): filehash
-        for filepath, filehash in walk_target_dir(target_dir, suffix)
+        to_posix_str_path(filepath.relative_to(target_dir)): make_hash(filepath)
+        for filepath in walk_target_dir(target_dir)
+        if filepath.suffix.endswith(suffix)
     }
 
 
