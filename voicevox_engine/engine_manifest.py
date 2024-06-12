@@ -5,16 +5,18 @@
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
 # 変更する際は、Optionalにする必要があることに留意しなければならない。
 
+from dataclasses import dataclass
 import json
 from base64 import b64encode
 from pathlib import Path
 from typing import TypeAlias
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 
-class FeatureSupportJson(BaseModel):
+@dataclass
+class FeatureSupportJson:
     """`engine_manifest.json` の機能サポート状況"""
 
     type: str
@@ -22,7 +24,8 @@ class FeatureSupportJson(BaseModel):
     name: str
 
 
-class SupportedFeaturesJson(BaseModel):
+@dataclass
+class SupportedFeaturesJson:
     """`engine_manifest.json` のサポート機能一覧"""
 
     adjust_mora_pitch: FeatureSupportJson
@@ -37,7 +40,8 @@ class SupportedFeaturesJson(BaseModel):
     manage_library: FeatureSupportJson
 
 
-class EngineManifestJson(BaseModel):
+@dataclass
+class EngineManifestJson:
     """`engine_manifest.json` のコンテンツ"""
 
     manifest_version: str
@@ -55,6 +59,8 @@ class EngineManifestJson(BaseModel):
     update_infos: str
     dependency_licenses: str
     supported_features: SupportedFeaturesJson
+
+_manifest_json_adapter = TypeAdapter(EngineManifestJson)
 
 
 class UpdateInfo(BaseModel):
@@ -135,9 +141,8 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = EngineManifestJson.model_validate_json(
-        manifest_path.read_bytes()
-    ).model_dump()
+    manifest_obj = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
+    manifest = _manifest_json_adapter.dump_python(manifest_obj)
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
         name=manifest["name"],
