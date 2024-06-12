@@ -8,7 +8,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.engine_manifest import BrandName
 from voicevox_engine.setting.model import CorsPolicyMode
-from voicevox_engine.setting.setting_manager import Setting, SettingHandler
+from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.utility.path_utility import resource_root
 
 from ..dependencies import check_disabled_mutable_api
@@ -31,10 +31,7 @@ def generate_setting_router(
         """
         設定ページを返します。
         """
-        settings = setting_loader.load()
-
-        cors_policy_mode = settings.cors_policy_mode
-        allow_origin = settings.allow_origin
+        cors_policy_mode, allow_origin = setting_loader.load()
 
         if allow_origin is None:
             allow_origin = ""
@@ -56,15 +53,7 @@ def generate_setting_router(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
     ) -> None:
-        """
-        設定を更新します。
-        """
-        settings = Setting(
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-        )
-
-        # 更新した設定へ上書き
-        setting_loader.save(settings)
+        """設定を更新します。"""
+        setting_loader.save(cors_policy_mode, allow_origin)
 
     return router

@@ -33,7 +33,7 @@ class SettingHandler:
         """
         self.setting_file_path = setting_file_path
 
-    def load(self) -> Setting:
+    def load(self) -> tuple[CorsPolicyMode, str | None]:
         """設定値をファイルから読み込む。"""
         if not self.setting_file_path.is_file():
             # 設定ファイルが存在しないためデフォルト値を取得
@@ -43,14 +43,17 @@ class SettingHandler:
             # FIXME: 型チェックと例外処理を追加する
             setting = yaml.safe_load(self.setting_file_path.read_text(encoding="utf-8"))
 
-        return Setting(
+        setting_obj = Setting(
             cors_policy_mode=setting["cors_policy_mode"],
             allow_origin=setting["allow_origin"],
         )
+        return setting_obj.cors_policy_mode, setting_obj.allow_origin
 
-    def save(self, settings: Setting) -> None:
+    def save(self, cors_policy_mode: CorsPolicyMode, allow_origin: str | None) -> None:
         """設定値をファイルへ書き込む。"""
-        settings_dict = settings.model_dump()
+        settings_dict = Setting(
+            cors_policy_mode=cors_policy_mode, allow_origin=allow_origin
+        ).model_dump()
 
         if isinstance(settings_dict["cors_policy_mode"], Enum):
             settings_dict["cors_policy_mode"] = settings_dict["cors_policy_mode"].value

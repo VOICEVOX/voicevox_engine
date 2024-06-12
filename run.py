@@ -297,19 +297,19 @@ def main() -> None:
         )
 
     setting_loader = SettingHandler(args.setting_file)
-    settings = setting_loader.load()
+    setting_cors_policy_mode, setting_allow_origin_raw = setting_loader.load()
 
     # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
     root_dir = select_first_not_none([voicevox_dir, engine_root()])
 
     cors_policy_mode = select_first_not_none(
-        [arg_cors_policy_mode, settings.cors_policy_mode]
+        [arg_cors_policy_mode, setting_cors_policy_mode]
     )
 
     setting_allow_origin = None
-    if settings.allow_origin is not None:
-        setting_allow_origin = settings.allow_origin.split(" ")
+    if setting_allow_origin_raw is not None:
+        setting_allow_origin = setting_allow_origin_raw.split(" ")
     allow_origin = select_first_not_none_or_none(
         [arg_allow_origin, setting_allow_origin]
     )

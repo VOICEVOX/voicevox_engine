@@ -11,13 +11,14 @@ def test_setting_handler_load_not_exist_file() -> None:
     """`SettingHandler` に存在しない設定ファイルのパスを渡すとデフォルト値になる。"""
     # Inputs
     setting_loader = SettingHandler(Path("not_exist.yaml"))
-    settings = setting_loader.load()
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_cors_policy_mode = CorsPolicyMode.localapps
+    true_allow_origin = None
     # Outputs
-    setting = settings.model_dump()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Test
-    assert true_setting == setting
+    assert true_cors_policy_mode == cors_policy_mode
+    assert true_allow_origin == allow_origin
 
 
 def test_setting_handler_load_exist_file_1() -> None:
@@ -25,13 +26,14 @@ def test_setting_handler_load_exist_file_1() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-1.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_cors_policy_mode = CorsPolicyMode.localapps
+    true_allow_origin = None
     # Outputs
-    setting = settings.model_dump()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Test
-    assert true_setting == setting
+    assert true_cors_policy_mode == cors_policy_mode
+    assert true_allow_origin == allow_origin
 
 
 def test_setting_handler_load_exist_file_2() -> None:
@@ -39,13 +41,15 @@ def test_setting_handler_load_exist_file_2() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-2.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": "all"}
+    true_cors_policy_mode = CorsPolicyMode.all
+    true_allow_origin = None
     # Outputs
-    setting = settings.model_dump()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Test
-    assert true_setting == setting
+    assert true_cors_policy_mode == cors_policy_mode
+    assert true_allow_origin == allow_origin
 
 
 def test_setting_handler_load_exist_file_3() -> None:
@@ -53,16 +57,15 @@ def test_setting_handler_load_exist_file_3() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-3.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Expects
-    true_setting = {
-        "allow_origin": "192.168.254.255 192.168.255.255",
-        "cors_policy_mode": CorsPolicyMode.localapps,
-    }
+    true_cors_policy_mode = CorsPolicyMode.localapps
+    true_allow_origin = "192.168.254.255 192.168.255.255"
     # Outputs
-    setting = settings.model_dump()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Test
-    assert true_setting == setting
+    assert true_cors_policy_mode == cors_policy_mode
+    assert true_allow_origin == allow_origin
 
 
 def test_setting_handler_save(tmp_path: Path) -> None:
@@ -70,15 +73,18 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     # Inputs
     setting_path = tmp_path / "setting-test-dump.yaml"
     setting_loader = SettingHandler(setting_path)
-    new_setting = Setting(cors_policy_mode=CorsPolicyMode.localapps)
+    new_setting_cors = CorsPolicyMode.localapps
+    new_setting_origin = None
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_cors_policy_mode = CorsPolicyMode.localapps
+    true_allow_origin = None
     # Outputs
-    setting_loader.save(new_setting)
+    setting_loader.save(new_setting_cors, new_setting_origin)
     # NOTE: `.load()` の正常動作を前提とする
-    setting = setting_loader.load().model_dump()
+    cors_policy_mode, allow_origin = setting_loader.load()
     # Test
-    assert true_setting == setting
+    assert true_cors_policy_mode == cors_policy_mode
+    assert true_allow_origin == allow_origin
 
 
 def test_setting_invalid_input() -> None:
