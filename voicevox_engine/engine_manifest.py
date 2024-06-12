@@ -5,9 +5,9 @@
 # エラーを吐いて表示が崩壊する可能性がある。これを防止するため、EngineManifest関連の定義を
 # 変更する際は、Optionalにする必要があることに留意しなければならない。
 
-from dataclasses import dataclass
 import json
 from base64 import b64encode
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias
 
@@ -59,6 +59,7 @@ class EngineManifestJson:
     update_infos: str
     dependency_licenses: str
     supported_features: SupportedFeaturesJson
+
 
 _manifest_json_adapter = TypeAdapter(EngineManifestJson)
 
