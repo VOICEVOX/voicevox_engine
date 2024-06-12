@@ -22,8 +22,8 @@ class WordTypes(str, Enum):
     SUFFIX = "SUFFIX"
 
 
-USER_DICT_MIN_PRIORITY = 0
-USER_DICT_MAX_PRIORITY = 10
+MIN_PRIORITY = 0
+MAX_PRIORITY = 10
 
 
 class UserDictWord(BaseModel):
@@ -34,9 +34,7 @@ class UserDictWord(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     surface: str = Field(title="表層形")
-    priority: int = Field(
-        title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
-    )
+    priority: int = Field(title="優先度", ge=MIN_PRIORITY, le=MAX_PRIORITY)
     context_id: int = Field(title="文脈ID", default=1348)
     part_of_speech: str = Field(title="品詞")
     part_of_speech_detail_1: str = Field(title="品詞細分類1")

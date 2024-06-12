@@ -6,14 +6,12 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from voicevox_engine.user_dict.model import (
-    USER_DICT_MAX_PRIORITY,
-    USER_DICT_MIN_PRIORITY,
+    MAX_PRIORITY,
+    MIN_PRIORITY,
     UserDictWord,
     WordTypes,
 )
 
-MIN_PRIORITY = USER_DICT_MIN_PRIORITY
-MAX_PRIORITY = USER_DICT_MAX_PRIORITY
 
 
 class PartOfSpeechDetail(BaseModel):
