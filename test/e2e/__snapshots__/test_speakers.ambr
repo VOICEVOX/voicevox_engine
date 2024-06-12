@@ -1,0 +1,157 @@
+# serializer version: 1
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_icon]
+  'MD5:517ba089e0b03f8868af2ce956f7699d'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_0]
+  'MD5:517ba089e0b03f8868af2ce956f7699d'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_1]
+  'MD5:517ba089e0b03f8868af2ce956f7699d'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_2]
+  'MD5:517ba089e0b03f8868af2ce956f7699d'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_icon]
+  'MD5:562ad0f61ca6dd81e89a4479f97dcd9f'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_0]
+  'MD5:562ad0f61ca6dd81e89a4479f97dcd9f'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_1]
+  'MD5:562ad0f61ca6dd81e89a4479f97dcd9f'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_2]
+  'MD5:562ad0f61ca6dd81e89a4479f97dcd9f'
+# ---
+# name: test_歌手の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_portrait]
+  'MD5:27777cb0883c98cd9870707005bf1faf'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_icon]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_portrait]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_0]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_1]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_2]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_icon]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_portrait]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_0]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_1]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_2]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌手の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_portrait]
+  'MD5:78228648fe527ee23597b66db59a4f94'
+# ---
+# name: test_歌手の情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_icon]
+  'MD5:1e3d0a6e88264b1b99839aeb7c7cbe1f'
+# ---
+# name: test_歌手の情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_0]
+  'MD5:1e3d0a6e88264b1b99839aeb7c7cbe1f'
+# ---
+# name: test_歌手の情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_1]
+  'MD5:1e3d0a6e88264b1b99839aeb7c7cbe1f'
+# ---
+# name: test_歌手の情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_2]
+  'MD5:1e3d0a6e88264b1b99839aeb7c7cbe1f'
+# ---
+# name: test_歌手の情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_portrait]
+  'MD5:381ba07cbcad95f1c99109f5f6d096a8'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_icon]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_portrait]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_0]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_1]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_2]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_話者の情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_portrait]
+  'MD5:bd6cf66dcc652f56892b14b423f6f37c'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_icon]
+  'MD5:becb1cc2aaf82623a13a1250a39d7393'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_0]
+  'MD5:becb1cc2aaf82623a13a1250a39d7393'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_1]
+  'MD5:becb1cc2aaf82623a13a1250a39d7393'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_2]
+  'MD5:becb1cc2aaf82623a13a1250a39d7393'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_icon]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_portrait]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_0]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_1]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_2]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_話者の情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_portrait]
+  'MD5:27777cb0883c98cd9870707005bf1faf'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_icon]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_portrait]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_0]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_1]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_2]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_icon]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_portrait]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_0]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_1]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_2]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_話者の情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_portrait]
+  'MD5:78228648fe527ee23597b66db59a4f94'
+# ---
