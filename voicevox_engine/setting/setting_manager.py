@@ -2,6 +2,7 @@
 
 from enum import Enum
 from pathlib import Path
+from typing import TypeAlias
 
 import yaml
 from pydantic import BaseModel
@@ -10,11 +11,14 @@ from ..utility.path_utility import get_save_dir
 from .model import CorsPolicyMode
 
 
+_AllowOrigin: TypeAlias = str | None
+
+
 class _Setting(BaseModel):
     """エンジンの設定情報"""
 
     cors_policy_mode: CorsPolicyMode  # リソース共有ポリシー
-    allow_origin: str | None  # 許可するオリジン
+    allow_origin: _AllowOrigin  # 許可するオリジン
 
 
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
@@ -31,7 +35,7 @@ class SettingHandler:
         """
         self.setting_file_path = setting_file_path
 
-    def load(self) -> tuple[CorsPolicyMode, str | None]:
+    def load(self) -> tuple[CorsPolicyMode, _AllowOrigin]:
         """設定値をファイルから読み込む。"""
         if not self.setting_file_path.is_file():
             # 設定ファイルが存在しないためデフォルト値を取得
@@ -47,7 +51,7 @@ class SettingHandler:
         )
         return setting_obj.cors_policy_mode, setting_obj.allow_origin
 
-    def save(self, cors_policy_mode: CorsPolicyMode, allow_origin: str | None) -> None:
+    def save(self, cors_policy_mode: CorsPolicyMode, allow_origin: _AllowOrigin) -> None:
         """設定値をファイルへ書き込む。"""
         settings_dict = _Setting(
             cors_policy_mode=cors_policy_mode, allow_origin=allow_origin
