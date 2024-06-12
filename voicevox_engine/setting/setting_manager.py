@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from ..utility.path_utility import get_save_dir
 from .model import CorsPolicyMode
 
-
 _AllowOrigin: TypeAlias = str | None
 
 
@@ -48,7 +47,9 @@ class SettingHandler:
         setting_obj = _Setting.model_validate(setting)
         return setting_obj.cors_policy_mode, setting_obj.allow_origin
 
-    def save(self, cors_policy_mode: CorsPolicyMode, allow_origin: _AllowOrigin) -> None:
+    def save(
+        self, cors_policy_mode: CorsPolicyMode, allow_origin: _AllowOrigin
+    ) -> None:
         """設定値をファイルへ書き込む。"""
         settings_dict = _Setting(
             cors_policy_mode=cors_policy_mode, allow_origin=allow_origin
