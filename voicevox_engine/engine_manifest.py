@@ -135,9 +135,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = EngineManifestJson.model_validate_json(
-        manifest_path.read_bytes()
-    )
+    manifest = EngineManifestJson.model_validate_json(manifest_path.read_bytes())
     return EngineManifest(
         manifest_version=manifest.manifest_version,
         name=manifest.name,
@@ -162,6 +160,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
             )
         ],
         supported_features={
-            key: item["value"] for key, item in manifest.supported_features.model_dump().items()
+            key: item["value"]
+            for key, item in manifest.supported_features.model_dump().items()
         },
     )
