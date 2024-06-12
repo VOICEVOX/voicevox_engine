@@ -23,9 +23,7 @@ class PartOfSpeechDetail:
     part_of_speech_detail_1: str  # 品詞細分類1
     part_of_speech_detail_2: str  # 品詞細分類2
     part_of_speech_detail_3: str  # 品詞細分類3
-    # context_idは辞書の左・右文脈IDのこと
-    # https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
-    context_id: int
+    context_id: int  # 辞書の左・右文脈ID。https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
     cost_candidates: list[int]  # コストのパーセンタイル
     accent_associative_rules: list[str]  # アクセント結合規則の一覧
 
