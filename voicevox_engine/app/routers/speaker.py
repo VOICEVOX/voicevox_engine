@@ -11,7 +11,7 @@ from pydantic.json_schema import SkipJsonSchema
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
-from voicevox_engine.resource_manager import ResourceManager
+from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
 ResourceFormat: TypeAlias = Literal["base64", "url"]
@@ -147,7 +147,7 @@ def generate_speaker_router(
                         "voice_samples": voice_samples,
                     }
                 )
-        except FileNotFoundError:
+        except (FileNotFoundError, ResourceManagerError):
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 

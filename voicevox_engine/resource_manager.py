@@ -11,6 +11,11 @@ from pathlib import Path
 from typing import Literal
 
 
+class ResourceManagerError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
 def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
@@ -34,7 +39,7 @@ class ResourceManager:
                     if i.is_file()
                 }
             else:
-                raise Exception(f"{filemap_json}が見つかりません")
+                raise ResourceManagerError(f"{filemap_json}が見つかりません")
         self._hash_to_path |= {v: k for k, v in self._path_to_hash.items()}
 
     def resource_str(
@@ -43,9 +48,12 @@ class ResourceManager:
         base_url: str,
         resource_format: Literal["base64", "url"],
     ) -> str:
-        if resource_format == "base64":
-            return b64encode_str(resource_path.read_bytes())
-        return f"{base_url}/{self._path_to_hash[resource_path]}"
+        try:
+            if resource_format == "base64":
+                return b64encode_str(resource_path.read_bytes())
+            return f"{base_url}/{self._path_to_hash[resource_path]}"
+        except (FileNotFoundError, KeyError):
+            raise ResourceManagerError(f"{resource_path}がfilemapに登録されていません")
 
     def resource_path(self, filehash: str) -> Path | None:
         return self._hash_to_path.get(filehash)
