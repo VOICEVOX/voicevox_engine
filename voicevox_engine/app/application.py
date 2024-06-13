@@ -30,6 +30,7 @@ from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.runtime_utility import is_development
 
 
 def generate_app(
@@ -72,7 +73,7 @@ def generate_app(
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
 
-    resource_manager = ResourceManager(True)
+    resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(speaker_info_dir)
     app.include_router(
         generate_speaker_router(
