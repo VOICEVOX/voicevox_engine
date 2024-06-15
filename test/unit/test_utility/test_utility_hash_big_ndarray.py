@@ -1,6 +1,5 @@
 """テストユーティリティ `summarize_big_ndarray()` のテスト"""
 
-import json
 from test.utility import summarize_big_ndarray
 
 import numpy as np
