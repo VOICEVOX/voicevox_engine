@@ -44,7 +44,7 @@ def hash_long_string(value: Any) -> Any:
 
 
 def summarize_big_ndarray(value: Any) -> Any:
-    """要素数が100を超える NDArray はハッシュ値と shape からなる文字列へ要約する"""
+    """要素数が100を超える NDArray を、ハッシュ値と shape からなる文字列へ要約する"""
 
     def to_hash(value: np.ndarray) -> str:
         return "MD5:" + hashlib.md5(value.tobytes()).hexdigest()
