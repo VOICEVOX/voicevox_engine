@@ -47,7 +47,7 @@ Consonant = Literal[
 
 # 音素のリスト
 _PHONEME_LIST: tuple[Vowel | Consonant, ...] = ()
-_PHONEME_LIST = ("pau", "A", "E", "I", "N", "O", "U", "a", "b", "by")
+_PHONEME_LIST += ("pau", "A", "E", "I", "N", "O", "U", "a", "b", "by")
 _PHONEME_LIST += ("ch", "cl", "d", "dy", "e", "f", "g", "gw", "gy", "h")
 _PHONEME_LIST += ("hy", "i", "j", "k", "kw", "ky", "m", "my", "n", "ny")
 _PHONEME_LIST += ("o", "p", "py", "r", "ry", "s", "sh", "t", "ts", "ty")
