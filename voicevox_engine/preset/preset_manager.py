@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import yaml
-from pydantic import ValidationError, parse_obj_as
+from pydantic import TypeAdapter, ValidationError
 
 from .model import Preset
 
@@ -52,7 +52,8 @@ class PresetManager:
             if obj is None:
                 raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
-            _presets = parse_obj_as(list[Preset], obj)
+            preset_list_adapter = TypeAdapter(list[Preset])
+            _presets = preset_list_adapter.validate_python(obj)
         except ValidationError:
             raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 
@@ -156,7 +157,7 @@ class PresetManager:
         """プリセット情報のファイル（簡易データベース）書き込み"""
         with open(self.preset_path, mode="w", encoding="utf-8") as f:
             yaml.safe_dump(
-                [preset.dict() for preset in self.presets],
+                [preset.model_dump() for preset in self.presets],
                 f,
                 allow_unicode=True,
                 sort_keys=False,
