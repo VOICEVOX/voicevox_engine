@@ -27,6 +27,8 @@ def test_post_synthesis_morphing_200(client: TestClient) -> None:
         "volumeScale": 1.0,
         "prePhonemeLength": 0.1,
         "postPhonemeLength": 0.1,
+        "pauseLength": None,
+        "pauseLengthScale": 1.0,
         "outputSamplingRate": 24000,
         "outputStereo": False,
         "kana": "テ'_スト",
