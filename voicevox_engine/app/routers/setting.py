@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
+from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.engine_manifest import BrandName
 from voicevox_engine.setting.model import CorsPolicyMode
@@ -53,7 +54,7 @@ def generate_setting_router(
     )
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
-        allow_origin: Annotated[str | None, Form()] = None,
+        allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
     ) -> None:
         """
         設定を更新します。

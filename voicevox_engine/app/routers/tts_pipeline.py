@@ -7,6 +7,7 @@ from typing import Annotated
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -41,7 +42,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TalkSingInvalidInputError,
     TTSEngineManager,
 )
-from voicevox_engine.utility.file_utility import delete_file
+from voicevox_engine.utility.file_utility import try_delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -79,7 +80,7 @@ def generate_tts_pipeline_router(
     def audio_query(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -95,6 +96,8 @@ def generate_tts_pipeline_router(
             volumeScale=1,
             prePhonemeLength=0.1,
             postPhonemeLength=0.1,
+            pauseLength=None,
+            pauseLengthScale=1,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
@@ -108,7 +111,7 @@ def generate_tts_pipeline_router(
     def audio_query_from_preset(
         text: str,
         preset_id: int,
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -139,6 +142,8 @@ def generate_tts_pipeline_router(
             volumeScale=selected_preset.volumeScale,
             prePhonemeLength=selected_preset.prePhonemeLength,
             postPhonemeLength=selected_preset.postPhonemeLength,
+            pauseLength=selected_preset.pauseLength,
+            pauseLengthScale=selected_preset.pauseLengthScale,
             outputSamplingRate=core.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
@@ -159,7 +164,7 @@ def generate_tts_pipeline_router(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         is_kana: bool = False,
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
@@ -176,7 +181,7 @@ def generate_tts_pipeline_router(
                 return engine.create_accent_phrases_from_kana(text, style_id)
             except ParseKanaError as err:
                 raise HTTPException(
-                    status_code=400, detail=ParseKanaBadRequest(err).dict()
+                    status_code=400, detail=ParseKanaBadRequest(err).model_dump()
                 )
         else:
             return engine.create_accent_phrases(text, style_id)
@@ -189,7 +194,7 @@ def generate_tts_pipeline_router(
     def mora_data(
         accent_phrases: list[AccentPhrase],
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
@@ -202,7 +207,7 @@ def generate_tts_pipeline_router(
     def mora_length(
         accent_phrases: list[AccentPhrase],
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
         return engine.update_length(accent_phrases, style_id)
@@ -215,7 +220,7 @@ def generate_tts_pipeline_router(
     def mora_pitch(
         accent_phrases: list[AccentPhrase],
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         engine = tts_engines.get_engine(core_version)
         return engine.update_pitch(accent_phrases, style_id)
@@ -242,7 +247,7 @@ def generate_tts_pipeline_router(
                 description="疑問系のテキストが与えられたら語尾を自動調整する",
             ),
         ] = True,
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         engine = tts_engines.get_engine(core_version)
         wave = engine.synthesize_wave(
@@ -257,7 +262,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -277,7 +282,7 @@ def generate_tts_pipeline_router(
         query: AudioQuery,
         request: Request,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         if cancellable_engine is None:
             raise HTTPException(
@@ -297,7 +302,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f_name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f_name),
+            background=BackgroundTask(try_delete_file, f_name),
         )
 
     @router.post(
@@ -318,7 +323,7 @@ def generate_tts_pipeline_router(
     def multi_synthesis(
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         engine = tts_engines.get_engine(core_version)
         sampling_rate = queries[0].outputSamplingRate
@@ -346,7 +351,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="application/zip",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -357,7 +362,7 @@ def generate_tts_pipeline_router(
     def sing_frame_audio_query(
         score: Score,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FrameAudioQuery:
         """
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
@@ -389,7 +394,7 @@ def generate_tts_pipeline_router(
         score: Score,
         frame_audio_query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> list[float]:
         engine = tts_engines.get_engine(core_version)
         try:
@@ -414,7 +419,7 @@ def generate_tts_pipeline_router(
     def frame_synthesis(
         query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
         歌唱音声合成を行います。
@@ -433,7 +438,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -469,7 +474,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -496,7 +501,7 @@ def generate_tts_pipeline_router(
         except ParseKanaError as err:
             raise HTTPException(
                 status_code=400,
-                detail=ParseKanaBadRequest(err).dict(),
+                detail=ParseKanaBadRequest(err).model_dump(),
             )
 
     @router.post("/initialize_speaker", status_code=204, tags=["その他"])
@@ -508,7 +513,7 @@ def generate_tts_pipeline_router(
                 description="既に初期化済みのスタイルの再初期化をスキップするかどうか"
             ),
         ] = False,
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> None:
         """
         指定されたスタイルを初期化します。
@@ -520,7 +525,7 @@ def generate_tts_pipeline_router(
     @router.get("/is_initialized_speaker", tags=["その他"])
     def is_initialized_speaker(
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> bool:
         """
         指定されたスタイルが初期化されているかどうかを返します。
