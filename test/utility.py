@@ -53,7 +53,7 @@ def summarize_big_ndarray(value: Any) -> Any:
         if value.size <= 100:
             return value
         else:
-            return json.dumps({"hash": to_hash(value), "shape": value.shape})
+            return {"hash": to_hash(value), "shape": value.shape}
     elif isinstance(value, list):
         return [summarize_big_ndarray(v) for v in value]
     elif isinstance(value, dict):
