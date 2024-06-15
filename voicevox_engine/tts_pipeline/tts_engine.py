@@ -9,7 +9,7 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
-from ..core.core_initializer import CoreManager
+from ..core.core_initializer import MOCK_VER, CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
@@ -701,6 +701,14 @@ class TTSEngineNotFound(Exception):
         self.version = version
 
 
+class LatestTTSEngineNotFound(Exception):
+    """自動取得しようとした最新バージョンの TTSEngine が見つからないエラー"""
+
+
+class MockTTSEngineNotFound(Exception):
+    """モック TTSEngine が見つからないエラー"""
+
+
 class TTSEngineManager:
     """TTS エンジンの集まりを一括管理するマネージャー"""
 
@@ -722,12 +730,19 @@ class TTSEngineManager:
     def get_engine(self, version: str | None = None) -> TTSEngine:
         """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
         if version is None:
-            return self._engines[self.latest_version()]
-        elif version in self._engines:
-            return self._engines[version]
-
-        # TODO: `version` が None 受け入れを辞めたタイミングで falsy を削除する
-        raise TTSEngineNotFound(version=version or "latest")
+            try:
+                latest_version = self.latest_version()
+            except Exception:
+                raise LatestTTSEngineNotFound()
+            return self._engines[latest_version]
+        else:
+            if version in self._engines:
+                return self._engines[version]
+            else:
+                if version == MOCK_VER:
+                    raise MockTTSEngineNotFound()
+                else:
+                    raise TTSEngineNotFound(version=version)
 
     def has_engine(self, version: str) -> bool:
         """指定バージョンのエンジンが登録されているか否かを返す。"""

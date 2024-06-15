@@ -3,8 +3,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from voicevox_engine.core.core_initializer import MOCK_VER, CoreNotFound
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineNotFound
+from voicevox_engine.core.core_initializer import CoreNotFound
+from voicevox_engine.tts_pipeline.tts_engine import (
+    LatestTTSEngineNotFound,
+    MockTTSEngineNotFound,
+    TTSEngineNotFound,
+)
 
 
 def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
@@ -17,16 +21,26 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
 
     # 指定されたエンジンが見つからないエラー
     @app.exception_handler(TTSEngineNotFound)
-    async def enf_exception_handler(
+    async def no_engine_exception_handler(
         request: Request, e: TTSEngineNotFound
     ) -> JSONResponse:
-        version = e.version
-        if version == MOCK_VER:
-            msg = "コアのモックが見つかりません。エンジンの起動引数 `--enable_mock` を確認してください。"
-        elif version == "latest":
-            msg = "コアが1つも見つかりません。"
-        else:
-            msg = f"バージョン {version} のコアが見つかりません。"
+        msg = f"バージョン {e.version} のコアが見つかりません。"
+        return JSONResponse(status_code=422, content={"message": msg})
+
+    # 指定されたモック版エンジンが見つからないエラー
+    @app.exception_handler(MockTTSEngineNotFound)
+    async def no_mock_exception_handler(
+        request: Request, e: MockTTSEngineNotFound
+    ) -> JSONResponse:
+        msg = "モックが見つかりません。エンジンの起動引数 `--enable_mock` を確認してください。"
+        return JSONResponse(status_code=422, content={"message": msg})
+
+    # 自動取得されるはずのエンジンが見つからないエラー
+    @app.exception_handler(LatestTTSEngineNotFound)
+    async def no_latest_tts_engine_exception_handler(
+        request: Request, e: LatestTTSEngineNotFound
+    ) -> JSONResponse:
+        msg = "コアが1つも見つかりません。"
         return JSONResponse(status_code=422, content={"message": msg})
 
     return app
