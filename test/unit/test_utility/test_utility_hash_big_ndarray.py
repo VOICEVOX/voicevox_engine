@@ -22,8 +22,7 @@ def test_summarize_big_ndarray_raw_big_array() -> None:
     true_hash_header = "MD5:"
     true_shape = target.shape
     # Outputs
-    summary_str = summarize_big_ndarray(target)
-    summary = json.loads(summary_str)
+    summary = summarize_big_ndarray(target)
     hash_header = summary["hash"][:4]
     shape = tuple(summary["shape"])
     # Tests
