@@ -48,12 +48,12 @@ class ResourceManager:
         base_url: str,
         resource_format: Literal["base64", "url"],
     ) -> str:
-        try:
+        filehash = self._path_to_hash.get(resource_path)
+        if filehash is not None:
             if resource_format == "base64":
                 return b64encode_str(resource_path.read_bytes())
-            return f"{base_url}/{self._path_to_hash[resource_path]}"
-        except (FileNotFoundError, KeyError):
-            raise ResourceManagerError(f"{resource_path}がfilemapに登録されていません")
+            return f"{base_url}/{filehash}"
+        raise ResourceManagerError(f"{resource_path}がfilemapに登録されていません")
 
     def resource_path(self, filehash: str) -> Path | None:
         return self._hash_to_path.get(filehash)
