@@ -1,6 +1,5 @@
 """話者情報と話者メタ情報の管理"""
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
@@ -98,8 +97,8 @@ class MetasStore:
         """
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
-            folder.name: _EngineSpeaker(
-                **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
+            folder.name: _EngineSpeaker.model_validate_json(
+                (folder / "metas.json").read_text(encoding="utf-8")
             )
             for folder in engine_speakers_path.iterdir()
         }

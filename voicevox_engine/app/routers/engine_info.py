@@ -4,6 +4,7 @@ from typing import Self
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine import __version__
 from voicevox_engine.core.core_adapter import DeviceSupport
@@ -47,7 +48,9 @@ def generate_engine_info_router(
         return core_manager.versions()
 
     @router.get("/supported_devices")
-    def supported_devices(core_version: str | None = None) -> SupportedDevicesInfo:
+    def supported_devices(
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
         supported_devices = core_manager.get_core(core_version).supported_devices
         if supported_devices is None:
