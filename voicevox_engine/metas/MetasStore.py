@@ -111,14 +111,14 @@ class MetasStore:
             speaker_uuid = core_speaker.speaker_uuid
             engine_speaker = self._loaded_metas[speaker_uuid]
             styles = cast_styles(core_speaker.styles)
-            talk_styles = filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
-            sing_styles = filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+            talk_styles = list(filter(lambda style: style.type in TALK_STYLE_TYPES, styles))
+            sing_styles = list(filter(lambda style: style.type in SING_STYLE_TYPES, styles))
             characters.append(
                 Character(
                     name=core_speaker.name,
                     uuid=speaker_uuid,
-                    talk_styles=list(talk_styles),
-                    sing_styles=list(sing_styles),
+                    talk_styles=talk_styles,
+                    sing_styles=sing_styles,
                     version=core_speaker.version,
                     supported_features=engine_speaker.supported_features,
                 )
