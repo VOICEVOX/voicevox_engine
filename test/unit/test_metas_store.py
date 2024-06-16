@@ -2,7 +2,7 @@ import uuid
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleId, StyleType
 from voicevox_engine.metas.MetasStore import (
-    filter_speakers_and_styles,
+    filter_characters_and_styles,
     speakers_to_characters,
 )
 
@@ -40,7 +40,7 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_speakers_and_styles(
+    result = filter_characters_and_styles(
         speakers_to_characters(
             [
                 speaker_talk_only,
@@ -74,7 +74,7 @@ def test_filter_speakers_and_styles_with_singer() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_speakers_and_styles(
+    result = filter_characters_and_styles(
         speakers_to_characters(
             [
                 speaker_talk_only,

@@ -11,7 +11,7 @@ from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import (
     MetasStore,
-    filter_speakers_and_styles,
+    filter_characters_and_styles,
     speakers_to_characters,
 )
 
@@ -33,7 +33,7 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         core = core_manager.get_core(core_version)
         speakers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(speakers, "speaker")
+        return filter_characters_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:
@@ -81,7 +81,7 @@ def generate_speaker_router(
             list[Speaker], core_manager.get_core(core_version).speakers
         )
         characters = speakers_to_characters(speakers)
-        speakers = filter_speakers_and_styles(characters, speaker_or_singer)
+        speakers = filter_characters_and_styles(characters, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
@@ -144,7 +144,7 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         core = core_manager.get_core(core_version)
         singers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(singers, "singer")
+        return filter_characters_and_styles(singers, "singer")
 
     @router.get("/singer_info")
     def singer_info(speaker_uuid: str, core_version: str | None = None) -> SpeakerInfo:

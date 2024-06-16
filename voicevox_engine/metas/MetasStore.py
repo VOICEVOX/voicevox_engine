@@ -126,7 +126,7 @@ class MetasStore:
         return characters
 
 
-def filter_speakers_and_styles(
+def filter_characters_and_styles(
     characters: list[Character],
     speaker_or_singer: Literal["speaker", "singer"],
 ) -> list[Speaker]:
