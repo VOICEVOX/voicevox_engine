@@ -61,6 +61,7 @@ class Envs:
 
 
 def read_environment_variables() -> Envs:
+    """環境変数を読み込む。"""
     return Envs(
         output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
         cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
