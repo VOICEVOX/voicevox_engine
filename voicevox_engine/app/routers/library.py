@@ -4,9 +4,16 @@ import asyncio
 from io import BytesIO
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
-from voicevox_engine.library.library_manager import LibraryManager
+from voicevox_engine.library.library_manager import (
+    LibraryFormatInvalidError,
+    LibraryInternalError,
+    LibraryManager,
+    LibraryNotFoundError,
+    LibraryOperationUnauthorizedError,
+    LibraryUnsupportedError,
+)
 from voicevox_engine.library.model import DownloadableLibraryInfo, InstalledLibraryInfo
 
 from ..dependencies import check_disabled_mutable_api
@@ -51,9 +58,20 @@ def generate_library_router(library_manager: LibraryManager) -> APIRouter:
         """
         archive = BytesIO(await request.body())
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None, library_manager.install_library, library_uuid, archive
-        )
+        try:
+            await loop.run_in_executor(
+                None, library_manager.install_library, library_uuid, archive
+            )
+        except LibraryNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        except LibraryFormatInvalidError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        except LibraryUnsupportedError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        except LibraryOperationUnauthorizedError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        except LibraryInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
     @router.post(
         "/uninstall_library/{library_uuid}",
@@ -66,6 +84,17 @@ def generate_library_router(library_manager: LibraryManager) -> APIRouter:
         """
         音声ライブラリをアンインストールします。
         """
-        library_manager.uninstall_library(library_uuid)
+        try:
+            library_manager.uninstall_library(library_uuid)
+        except LibraryNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        except LibraryFormatInvalidError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        except LibraryUnsupportedError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        except LibraryOperationUnauthorizedError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        except LibraryInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
     return router

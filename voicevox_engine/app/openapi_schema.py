@@ -20,13 +20,17 @@ def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastA
         openapi_schema = get_openapi(
             title=app.title,
             version=app.version,
+            openapi_version=app.openapi_version,
+            summary=app.summary,
             description=app.description,
-            routes=app.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
             terms_of_service=app.terms_of_service,
             contact=app.contact,
             license_info=app.license_info,
+            routes=app.routes,
+            webhooks=app.webhooks.routes,
+            tags=app.openapi_tags,
+            servers=app.servers,
+            separate_input_output_schemas=app.separate_input_output_schemas,
         )
         if manage_library:
             additional_models: list[type[BaseModel]] = [
@@ -35,10 +39,12 @@ def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastA
             ]
             for model in additional_models:
                 # ref_templateを指定しない場合、definitionsを参照してしまうので、手動で指定する
-                schema = model.schema(ref_template="#/components/schemas/{model}")
+                schema = model.model_json_schema(
+                    ref_template="#/components/schemas/{model}"
+                )
                 # definitionsは既存のモデルを重複して定義するため、不要なので削除
-                if "definitions" in schema:
-                    del schema["definitions"]
+                if "$defs" in schema:
+                    del schema["$defs"]
                 openapi_schema["components"]["schemas"][schema["title"]] = schema
         app.openapi_schema = openapi_schema
         return openapi_schema

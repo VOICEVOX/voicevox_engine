@@ -229,7 +229,6 @@ poetry update # 全部更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with build -o requirements-build.txt
-poetry export --without-hashes --with license -o requirements-license.txt
 ```
 
 ## 静的解析
@@ -297,7 +296,7 @@ python -m pytest --snapshot-update
 シェルで以下のコマンドを実行することで脆弱性が診断されます。  
 
 ```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt -r requirements-license.txt
+safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ## ビルド
