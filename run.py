@@ -1,6 +1,7 @@
 """VOICEVOX ENGINE の実行"""
 
 import argparse
+from dataclasses import dataclass
 import multiprocessing
 import os
 import sys
@@ -47,6 +48,25 @@ def decide_boolean_from_env(env_name: str) -> bool:
             stacklevel=1,
         )
         return False
+
+
+
+@dataclass
+class Envs:
+    """環境変数の集合"""
+    output_log_utf8: bool
+    cpu_num_threads: str | None
+    env_preset_path: str | None
+    disable_mutable_api: bool
+
+
+def read_environment_variables() -> Envs:
+    return Envs(
+        output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
+        cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
+        env_preset_path=os.getenv("VV_PRESET_FILE"),
+        disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
+    )
 
 
 def set_output_log_utf8() -> None:
@@ -114,8 +134,9 @@ def main() -> None:
 
     multiprocessing.freeze_support()
 
-    output_log_utf8 = decide_boolean_from_env("VV_OUTPUT_LOG_UTF8")
-    if output_log_utf8:
+    envs = read_environment_variables()
+
+    if envs.output_log_utf8:
         set_output_log_utf8()
 
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
@@ -182,7 +203,7 @@ def main() -> None:
     parser.add_argument(
         "--cpu_num_threads",
         type=int,
-        default=os.getenv("VV_CPU_NUM_THREADS") or None,
+        default=envs.cpu_num_threads or None,
         help=(
             "音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。"
             "VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。"
@@ -311,9 +332,8 @@ def main() -> None:
         [arg_allow_origin, setting_allow_origin]
     )
 
-    env_preset_path_str = os.getenv("VV_PRESET_FILE")
-    if env_preset_path_str is not None and len(env_preset_path_str) != 0:
-        env_preset_path = Path(env_preset_path_str)
+    if envs.env_preset_path is not None and len(envs.env_preset_path) != 0:
+        env_preset_path = Path(envs.env_preset_path)
     else:
         env_preset_path = None
     root_preset_path = engine_root() / "presets.yaml"
@@ -338,7 +358,7 @@ def main() -> None:
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
-        disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
+        disable_mutable_api = envs.disable_mutable_api
 
     root_dir = select_first_not_none([voicevox_dir, engine_root()])
     speaker_info_dir = root_dir / "resources" / "character_info"
