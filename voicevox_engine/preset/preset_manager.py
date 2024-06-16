@@ -5,8 +5,6 @@ from pathlib import Path
 import yaml
 from pydantic import TypeAdapter, ValidationError
 
-from voicevox_engine.utility.path_utility import engine_root
-
 from .model import Preset
 
 
@@ -30,16 +28,22 @@ class PresetManager:
     YAMLファイルをSSoTとする簡易データベース方式により、プリセットの管理をおこなう。
     """
 
-    def __init__(self, preset_path: Path):
-        """プリセットの設定ファイルへのパスからプリセットマネージャーを生成する"""
+    def __init__(self, preset_path: Path, make_file_if_not_exist: bool = False):
+        """
+        プリセットマネージャーを生成する。
+
+        Parameters
+        ----------
+        preset_path :
+            プリセットの設定ファイルへのパス
+        make_file_if_not_exist :
+            パスが空のとき、プリセットファイルを自動生成するか否か
+        """
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
 
-        # プリセットファイルが無指定の場合、初期値を生成する
-        default_path = engine_root() / "presets.yaml"
-        preset_not_specified = default_path.resolve() == preset_path.resolve()
-        if not self.preset_path.exists() and preset_not_specified:
+        if not self.preset_path.exists() and make_file_if_not_exist:
             self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:

@@ -316,12 +316,12 @@ def main() -> None:
         env_preset_path = Path(env_preset_path_str)
     else:
         env_preset_path = None
-    root_preset_path = engine_root() / "presets.yaml"
-    preset_path = select_first_not_none(
-        [arg_preset_path, env_preset_path, root_preset_path]
-    )
-    # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
-    preset_manager = PresetManager(preset_path)
+    preset_path = select_first_not_none_or_none([arg_preset_path, env_preset_path])
+    if preset_path is not None:
+        preset_manager = PresetManager(preset_path)
+    else:
+        default_preset_path = engine_root() / "presets.yaml"
+        preset_manager = PresetManager(default_preset_path, make_file_if_not_exist=True)
 
     use_dict = UserDictionary()
 
