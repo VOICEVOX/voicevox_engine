@@ -402,7 +402,7 @@ $ python run.py -h
 
 usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
               [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
-              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE]
+              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE] [--disable_mutable_api]
 
 VOICEVOX のエンジンです。
 
@@ -410,32 +410,33 @@ options:
   -h, --help            show this help message and exit
   --host HOST           接続を受け付けるホストアドレスです。
   --port PORT           接続を受け付けるポート番号です。
-  --use_gpu             指定するとGPUを使って音声合成するようになります。
+  --use_gpu             GPUを使って音声合成するようになります。
   --voicevox_dir VOICEVOX_DIR
                         VOICEVOXのディレクトリパスです。
   --voicelib_dir VOICELIB_DIR
                         VOICEVOX COREのディレクトリパスです。
   --runtime_dir RUNTIME_DIR
                         VOICEVOX COREで使用するライブラリのディレクトリパスです。
-  --enable_mock         指定するとVOICEVOX COREを使わずモックで音声合成を行います。
+  --enable_mock         VOICEVOX COREを使わずモックで音声合成を行います。
   --enable_cancellable_synthesis
-                        指定すると音声合成を途中でキャンセルできるようになります。
+                        音声合成を途中でキャンセルできるようになります。
   --init_processes INIT_PROCESSES
                         cancellable_synthesis機能の初期化時に生成するプロセス数です。
-  --load_all_models     指定すると起動時に全ての音声合成モデルを読み込みます。
+  --load_all_models     起動時に全ての音声合成モデルを読み込みます。
   --cpu_num_threads CPU_NUM_THREADS
-                        音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。
-  --output_log_utf8     指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
+                        音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。
+  --output_log_utf8     ログ出力をUTF-8でおこないます。指定しない場合、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
   --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
-                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
-                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
+                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。このオプションは--
+                        setting_fileで指定される設定ファイルよりも優先されます。
   --allow_origin [ALLOW_ORIGIN ...]
-                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。
-                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
+                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
-                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、実行ファイルのディレクトリのpresets.yamlを順に探します。
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。
+  --disable_mutable_api
+                        辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API の値が使われます。VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0または空文字、値がない場合は無視されます。
 ```
 
 ### アップデート
@@ -460,8 +461,8 @@ Issue 側で取り組み始めたことを伝えるか、最初に Draft プル�
 # 実行環境のインストール
 python -m pip install -r requirements.txt
 
-# 開発環境・テスト環境のインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
+# 開発環境・テスト環境・ビルド環境のインストール
+python -m pip install -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ### 実行
@@ -569,7 +570,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements-build.txt
 
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash build_util/create_venv_and_generate_licenses.bash
@@ -583,6 +584,8 @@ LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
 pyinstaller --noconfirm run.spec
 ```
+
+TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
 
 #### Github Actions でビルド
 
@@ -628,7 +631,7 @@ typos
 
 でタイポチェックを行えます。
 もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`pyproject.toml`を編集してください。
 
 ### 依存関係
 
@@ -641,7 +644,7 @@ typos
 # パッケージを追加する場合
 poetry add `パッケージ名`
 poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group test `パッケージ名` # テスト依存の追加
+poetry add --group build `パッケージ名` # ビルド依存の追加
 
 # パッケージをアップデートする場合
 poetry update `パッケージ名`
@@ -650,8 +653,7 @@ poetry update # 全部更新
 # requirements.txtの更新
 poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with test -o requirements-test.txt
-poetry export --without-hashes --with license -o requirements-license.txt
+poetry export --without-hashes --with build -o requirements-build.txt
 ```
 
 #### ライセンス
@@ -689,7 +691,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
 
-キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
+キャラクター情報は`resources/character_info`ディレクトリ内のファイルで管理されています。
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
 音声合成は`voicevox_engine/tts_pipeline/tts_engine.py`で行われています。

@@ -1,3 +1,5 @@
+"""音声合成エンジン"""
+
 import copy
 import math
 
@@ -7,18 +9,13 @@ from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..model import (
-    AccentPhrase,
-    AudioQuery,
-    FrameAudioQuery,
-    FramePhoneme,
-    Mora,
-    Note,
-    Score,
-)
+from ..model import AudioQuery
+from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
+from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
@@ -27,6 +24,12 @@ from .text_analyzer import text_to_accent_phrases
 UPSPEAK_LENGTH = 0.15
 UPSPEAK_PITCH_ADD = 0.3
 UPSPEAK_PITCH_MAX = 6.5
+
+
+class TalkSingInvalidInputError(Exception):
+    """Talk と Sing の不正な入力エラー"""
+
+    pass
 
 
 # TODO: move mora utility to mora module
@@ -172,6 +175,23 @@ def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
+def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間（`pauseLength`）を適用する"""
+    if query.pauseLength is not None:
+        for mora in moras:
+            if mora.vowel == "pau":
+                mora.vowel_length = query.pauseLength
+    return moras
+
+
+def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ無音時間スケール（`pauseLengthScale`）を適用する"""
+    for mora in moras:
+        if mora.vowel == "pau":
+            mora.vowel_length *= query.pauseLengthScale
+    return moras
+
+
 def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
@@ -218,6 +238,8 @@ def query_to_decoder_feature(
 
     # 設定を適用する
     moras = apply_prepost_silence(moras, query)
+    moras = apply_pause_length(moras, query)
+    moras = apply_pause_length_scale(moras, query)
     moras = apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
@@ -263,10 +285,8 @@ def calc_phoneme_lengths(
         if i < len(consonant_lengths) - 1:
             # 最初のノートは子音長が0の、pauである必要がある
             if i == 0 and consonant_lengths[i] != 0:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}",
-                )
+                msg = f"consonant_lengths[0] must be 0, but {consonant_lengths[0]}"
+                raise TalkSingInvalidInputError(msg)
 
             next_consonant_length = consonant_lengths[i + 1]
             note_duration = note_durations[i]
@@ -332,10 +352,8 @@ def notes_to_keys_and_phonemes(
     for note in notes:
         if note.lyric == "":
             if note.key is not None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="lyricが空文字列の場合、keyはnullである必要があります。",
-                )
+                msg = "lyricが空文字列の場合、keyはnullである必要があります。"
+                raise TalkSingInvalidInputError(msg)
             note_lengths.append(note.frame_length)
             note_consonants.append(-1)
             note_vowels.append(0)  # pau
@@ -343,10 +361,8 @@ def notes_to_keys_and_phonemes(
             phoneme_keys.append(-1)
         else:
             if note.key is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="keyがnullの場合、lyricは空文字列である必要があります。",
-                )
+                msg = "keyがnullの場合、lyricは空文字列である必要があります。"
+                raise TalkSingInvalidInputError(msg)
 
             # TODO: 1ノートに複数のモーラがある場合の処理
             mora_phonemes = mora_kana_to_mora_phonemes.get(
@@ -355,10 +371,8 @@ def notes_to_keys_and_phonemes(
                 _hira_to_kana(note.lyric)  # type: ignore
             )
             if mora_phonemes is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"lyricが不正です: {note.lyric}",
-                )
+                msg = f"lyricが不正です: {note.lyric}"
+                raise TalkSingInvalidInputError(msg)
 
             consonant, vowel = mora_phonemes
             if consonant is None:
@@ -403,10 +417,8 @@ def frame_query_to_sf_decoder_feature(
 
     for phoneme in query.phonemes:
         if phoneme.phoneme not in Phoneme._PHONEME_LIST:
-            raise HTTPException(
-                status_code=400,
-                detail=f"phoneme {phoneme.phoneme} is not valid",
-            )
+            msg = f"phoneme {phoneme.phoneme} is not valid"
+            raise TalkSingInvalidInputError(msg)
 
         phonemes.append(Phoneme(phoneme.phoneme).id)
         phoneme_lengths.append(phoneme.frame_length)
@@ -648,10 +660,8 @@ class TTSEngine:
             all_equals = np.bool_(False)
 
         if not all_equals:
-            raise HTTPException(
-                status_code=400,
-                detail="Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。",
-            )
+            msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
+            raise TalkSingInvalidInputError(msg)
 
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
@@ -682,16 +692,48 @@ class TTSEngine:
         return wave
 
 
-def make_tts_engines_from_cores(cores: dict[str, CoreAdapter]) -> dict[str, TTSEngine]:
+class TTSEngineManager:
+    """TTS エンジンの集まりを一括管理するマネージャー"""
+
+    def __init__(self) -> None:
+        self._engines: dict[str, TTSEngine] = {}
+
+    def versions(self) -> list[str]:
+        """登録されたエンジンのバージョン一覧を取得する。"""
+        return list(self._engines.keys())
+
+    def latest_version(self) -> str:
+        """登録された最新版エンジンのバージョンを取得する。"""
+        return get_latest_version(self.versions())
+
+    def register_engine(self, engine: TTSEngine, version: str) -> None:
+        """エンジンを登録する。"""
+        self._engines[version] = engine
+
+    def get_engine(self, version: str | None = None) -> TTSEngine:
+        """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
+        if version is None:
+            return self._engines[self.latest_version()]
+        elif version in self._engines:
+            return self._engines[version]
+
+        raise HTTPException(status_code=422, detail="不明なバージョンです")
+
+    def has_engine(self, version: str) -> bool:
+        """指定バージョンのエンジンが登録されているか否かを返す。"""
+        return version in self._engines
+
+
+def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
     # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
     MOCK_VER = "0.0.0"
-    tts_engines: dict[str, TTSEngine] = {}
-    for ver, core in cores.items():
+    tts_engines = TTSEngineManager()
+    for ver, core in core_manager.items():
         if ver == MOCK_VER:
             from ..dev.tts_engine.mock import MockTTSEngine
 
-            tts_engines[ver] = MockTTSEngine()
+            tts_engines.register_engine(MockTTSEngine(), ver)
         else:
-            tts_engines[ver] = TTSEngine(core.core)
+            tts_engines.register_engine(TTSEngine(core.core), ver)
     return tts_engines

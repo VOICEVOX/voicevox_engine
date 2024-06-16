@@ -1,3 +1,5 @@
+"""キャンセル可能な音声合成"""
+
 import asyncio
 import queue
 import sys
@@ -12,15 +14,18 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import soundfile
-
-# FIXME: remove FastAPI dependency
-from fastapi import HTTPException, Request
+from fastapi import Request
 
 from .core.core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import make_tts_engines_from_cores
-from .utility.core_version_utility import get_latest_version
+
+
+class CancellableEngineInternalError(Exception):
+    """キャンセル可能エンジンの内部エラー"""
+
+    pass
 
 
 class CancellableEngine:
@@ -174,11 +179,9 @@ class CancellableEngine:
                 audio_file_name = f_name
             else:
                 # ここには来ないはず
-                raise HTTPException(status_code=500, detail="不正な値が生成されました")
+                raise CancellableEngineInternalError("不正な値が生成されました")
         except EOFError:
-            raise HTTPException(
-                status_code=500, detail="既にサブプロセスは終了されています"
-            )
+            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
         except Exception:
             self.finalize_con(request, proc, sub_proc_con1)
             raise
@@ -228,7 +231,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -236,17 +239,16 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
+    tts_engines = make_tts_engines_from_cores(core_manager)
 
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     while True:
         try:
             query, style_id, core_version = sub_proc_con.recv()
             if core_version is None:
-                _engine = tts_engines[latest_core_version]
-            elif core_version in tts_engines:
-                _engine = tts_engines[core_version]
+                _engine = tts_engines.get_engine()
+            elif tts_engines.has_engine(core_version):
+                _engine = tts_engines.get_engine(core_version)
             else:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")

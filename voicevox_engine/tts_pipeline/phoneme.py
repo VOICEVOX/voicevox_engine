@@ -1,3 +1,5 @@
+"""音素"""
+
 from typing import Literal
 
 import numpy as np
@@ -44,64 +46,18 @@ Consonant = Literal[
 ]
 
 # 音素のリスト
-_P_LIST1: tuple[Vowel | Consonant, ...] = (
-    "pau",
-    "A",
-    "E",
-    "I",
-    "N",
-    "O",
-    "U",
-    "a",
-    "b",
-    "by",
-)
-_P_LIST2: tuple[Vowel | Consonant, ...] = (
-    "ch",
-    "cl",
-    "d",
-    "dy",
-    "e",
-    "f",
-    "g",
-    "gw",
-    "gy",
-    "h",
-)
-_P_LIST3: tuple[Vowel | Consonant, ...] = (
-    "hy",
-    "i",
-    "j",
-    "k",
-    "kw",
-    "ky",
-    "m",
-    "my",
-    "n",
-    "ny",
-)
-_P_LIST4: tuple[Vowel | Consonant, ...] = (
-    "o",
-    "p",
-    "py",
-    "r",
-    "ry",
-    "s",
-    "sh",
-    "t",
-    "ts",
-    "ty",
-)
-_P_LIST5: tuple[Vowel | Consonant, ...] = ("u", "v", "w", "y", "z")
-_PHONEME_LIST: tuple[Vowel | Consonant, ...] = (
-    _P_LIST1 + _P_LIST2 + _P_LIST3 + _P_LIST4 + _P_LIST5
-)
+_PHONEME_LIST: tuple[Vowel | Consonant, ...] = ()
+_PHONEME_LIST += ("pau", "A", "E", "I", "N", "O", "U", "a", "b", "by")
+_PHONEME_LIST += ("ch", "cl", "d", "dy", "e", "f", "g", "gw", "gy", "h")
+_PHONEME_LIST += ("hy", "i", "j", "k", "kw", "ky", "m", "my", "n", "ny")
+_PHONEME_LIST += ("o", "p", "py", "r", "ry", "s", "sh", "t", "ts", "ty")
+_PHONEME_LIST += ("u", "v", "w", "y", "z")
 
 # 音素リストの要素数
 _NUM_PHONEME = len(_PHONEME_LIST)
 
-UNVOICED_MORA_TAIL_PHONEMES = ["A", "I", "U", "E", "O", "cl", "pau"]
-MORA_TAIL_PHONEMES = ["a", "i", "u", "e", "o", "N"] + UNVOICED_MORA_TAIL_PHONEMES
+_UNVOICED_MORA_TAIL_PHONEMES = ["A", "I", "U", "E", "O", "cl", "pau"]
+_MORA_TAIL_PHONEMES = ["a", "i", "u", "e", "o", "N"] + _UNVOICED_MORA_TAIL_PHONEMES
 
 
 class Phoneme:
@@ -133,8 +89,8 @@ class Phoneme:
 
     def is_mora_tail(self) -> bool:
         """この音素はモーラ末尾音素（母音・撥音・促音・無音）である"""
-        return self._phoneme in MORA_TAIL_PHONEMES
+        return self._phoneme in _MORA_TAIL_PHONEMES
 
     def is_unvoiced_mora_tail(self) -> bool:
         """この音素は無声のモーラ末尾音素（無声母音・促音・無音）である"""
-        return self._phoneme in UNVOICED_MORA_TAIL_PHONEMES
+        return self._phoneme in _UNVOICED_MORA_TAIL_PHONEMES

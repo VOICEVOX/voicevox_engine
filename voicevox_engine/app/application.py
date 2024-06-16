@@ -1,9 +1,12 @@
+"""ASGI application の生成"""
+
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import deprecated_mutable_api
+from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
@@ -16,93 +19,71 @@ from voicevox_engine.app.routers.speaker import generate_speaker_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
-from voicevox_engine.engine_manifest.EngineManifestLoader import load_manifest
-from voicevox_engine.library_manager import LibraryManager
+from voicevox_engine.core.core_initializer import CoreManager
+from voicevox_engine.engine_manifest import EngineManifest
+from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
-from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
+from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import SettingHandler
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.utility.path_utility import engine_root
 
 
 def generate_app(
-    tts_engines: dict[str, TTSEngine],
-    cores: dict[str, CoreAdapter],
-    latest_core_version: str,
+    tts_engines: TTSEngineManager,
+    core_manager: CoreManager,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
     user_dict: UserDictionary,
+    engine_manifest: EngineManifest,
+    library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
-    root_dir: Path | None = None,
+    speaker_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if root_dir is None:
-        root_dir = engine_root()
-
-    engine_manifest_data = load_manifest(engine_root() / "engine_manifest.json")
-
-    user_dict.update_dict()
+    if speaker_info_dir is None:
+        speaker_info_dir = engine_root() / "resources" / "character_info"
 
     app = FastAPI(
-        title=engine_manifest_data.name,
-        description=f"{engine_manifest_data.brand_name} の音声合成エンジンです。",
+        title=engine_manifest.name,
+        description=f"{engine_manifest.brand_name} の音声合成エンジンです。",
         version=__version__,
+        separate_input_output_schemas=False,  # Pydantic V1 のときのスキーマに合わせるため
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
+    app = configure_global_exception_handlers(app)
 
     if disable_mutable_api:
         deprecated_mutable_api.enable = False
 
-    library_manager = LibraryManager(
-        get_save_dir() / "installed_libraries",
-        engine_manifest_data.supported_vvlib_manifest_version,
-        engine_manifest_data.brand_name,
-        engine_manifest_data.name,
-        engine_manifest_data.uuid,
-    )
-
-    metas_store = MetasStore(root_dir / "speaker_info")
-
-    def get_engine(core_version: str | None) -> TTSEngine:
-        if core_version is None:
-            return tts_engines[latest_core_version]
-        if core_version in tts_engines:
-            return tts_engines[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def get_core(core_version: str | None) -> CoreAdapter:
-        """指定したバージョンのコアを取得する"""
-        if core_version is None:
-            return cores[latest_core_version]
-        if core_version in cores:
-            return cores[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+    metas_store = MetasStore(speaker_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
+            tts_engines, core_manager, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
+    app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
-    app.include_router(generate_user_dict_router(user_dict))
     app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
+        generate_speaker_router(core_manager, metas_store, speaker_info_dir)
     )
-    app.include_router(generate_setting_router(setting_loader, engine_manifest_data))
-    app.include_router(generate_portal_page_router(engine_manifest_data))
+    if engine_manifest.supported_features.manage_library:
+        app.include_router(generate_library_router(library_manager))
+    app.include_router(generate_user_dict_router(user_dict))
+    app.include_router(generate_engine_info_router(core_manager, engine_manifest))
+    app.include_router(
+        generate_setting_router(setting_loader, engine_manifest.brand_name)
+    )
+    app.include_router(generate_portal_page_router(engine_manifest.name))
 
-    app = configure_openapi_schema(app)
+    app = configure_openapi_schema(
+        app, engine_manifest.supported_features.manage_library
+    )
 
     return app

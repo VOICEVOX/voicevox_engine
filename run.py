@@ -7,20 +7,25 @@ import sys
 import warnings
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TypeVar
+from typing import TextIO, TypeVar
 
 import uvicorn
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.engine_manifest import load_manifest
+from voicevox_engine.library.library_manager import LibraryManager
+from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict import UserDictionary
-from voicevox_engine.utility.core_version_utility import get_latest_version
-from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.utility.path_utility import (
+    engine_manifest_path,
+    engine_root,
+    get_save_dir,
+)
 
 
 def decide_boolean_from_env(env_name: str) -> bool:
@@ -45,35 +50,41 @@ def decide_boolean_from_env(env_name: str) -> bool:
 
 
 def set_output_log_utf8() -> None:
-    """
-    stdout/stderrのエンコーディングをUTF-8に切り替える関数
-    """
-    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-    if sys.stdout is not None:
-        if isinstance(sys.stdout, TextIOWrapper):
-            sys.stdout.reconfigure(encoding="utf-8")
+    """標準出力と標準エラー出力の出力形式を UTF-8 ベースに切り替える"""
+
+    # NOTE: for 文で回せないため関数内関数で実装している
+    def _prepare_utf8_stdio(stdio: TextIO) -> TextIO:
+        """UTF-8 ベースの標準入出力インターフェイスを用意する"""
+
+        CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
+        ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
+
+        # 既定の `TextIOWrapper` 入出力インターフェイスを UTF-8 へ再設定して返す
+        if isinstance(stdio, TextIOWrapper):
+            stdio.reconfigure(encoding=CODEC)
+            return stdio
         else:
-            # バッファを全て出力する
-            sys.stdout.flush()
+            # 既定インターフェイスのバッファを全て出力しきった上で UTF-8 設定の `TextIOWrapper` を生成して返す
+            stdio.flush()
             try:
-                sys.stdout = TextIOWrapper(
-                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-                )
+                return TextIOWrapper(stdio.buffer, encoding=CODEC, errors=ERR)
             except AttributeError:
-                # stdout.bufferがない場合は無視
-                pass
-    if sys.stderr is not None:
-        if isinstance(sys.stderr, TextIOWrapper):
-            sys.stderr.reconfigure(encoding="utf-8")
-        else:
-            sys.stderr.flush()
-            try:
-                sys.stderr = TextIOWrapper(
-                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stderr.bufferがない場合は無視
-                pass
+                # バッファへのアクセスに失敗した場合、設定変更をおこなわず返す
+                return stdio
+
+    # NOTE:
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # これは Python インタープリタが標準入出力へ接続されていないことを意味するため、設定不要とみなす
+
+    if sys.stdout is None:
+        pass
+    else:
+        sys.stdout = _prepare_utf8_stdio(sys.stdout)
+
+    if sys.stderr is None:
+        pass
+    else:
+        sys.stderr = _prepare_utf8_stdio(sys.stderr)
 
 
 T = TypeVar("T")
@@ -222,8 +233,7 @@ def main() -> None:
         default=None,
         help=(
             "プリセットファイルを指定できます。"
-            "指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、"
-            "実行ファイルのディレクトリのpresets.yamlを順に探します。"
+            "指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。"
         ),
     )
 
@@ -257,7 +267,7 @@ def main() -> None:
     cpu_num_threads: int | None = args.cpu_num_threads
     load_all_models: bool = args.load_all_models
 
-    cores = initialize_cores(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -266,9 +276,8 @@ def main() -> None:
         enable_mock=enable_mock,
         load_all_models=load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
+    tts_engines = make_tts_engines_from_cores(core_manager)
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
 
     # Cancellable Engine
     enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
@@ -291,8 +300,6 @@ def main() -> None:
 
     # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
-    root_dir = select_first_not_none([voicevox_dir, engine_root()])
-
     cors_policy_mode = select_first_not_none(
         [arg_cors_policy_mode, settings.cors_policy_mode]
     )
@@ -309,7 +316,7 @@ def main() -> None:
         env_preset_path = Path(env_preset_path_str)
     else:
         env_preset_path = None
-    root_preset_path = root_dir / "presets.yaml"
+    root_preset_path = engine_root() / "presets.yaml"
     preset_path = select_first_not_none(
         [arg_preset_path, env_preset_path, root_preset_path]
     )
@@ -318,21 +325,38 @@ def main() -> None:
 
     use_dict = UserDictionary()
 
+    engine_manifest = load_manifest(engine_manifest_path())
+
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
+
     if arg_disable_mutable_api:
         disable_mutable_api = True
     else:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
+    root_dir = select_first_not_none([voicevox_dir, engine_root()])
+    speaker_info_dir = root_dir / "resources" / "character_info"
+    # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
+    if not speaker_info_dir.exists():
+        speaker_info_dir = root_dir / "speaker_info"
+
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
-        cores,
-        latest_core_version,
+        core_manager,
         setting_loader,
         preset_manager,
         use_dict,
+        engine_manifest,
+        library_manager,
         cancellable_engine,
-        root_dir,
+        speaker_info_dir,
         cors_policy_mode,
         allow_origin,
         disable_mutable_api=disable_mutable_api,

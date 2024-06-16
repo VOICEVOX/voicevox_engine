@@ -7,9 +7,6 @@ on:
   schedule:
     - cron: "00 04 15 * *" # 毎月15日 13:00 JST
 
-env:
-  PYTHON_VERSION: "3.11.3"
-
 defaults:
   run:
     shell: bash
@@ -21,17 +18,13 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Set up Python
-        uses: actions/setup-python@v5
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - name: <Setup> Install Python dependencies
-        run: pip install -r requirements-dev.txt
+          requirements-suffix: "-dev"
 
       - name: <Test> Check Python dependency security
-        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-test.txt -r requirements-license.txt -o bare
+        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt -o bare
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1

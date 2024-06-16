@@ -36,6 +36,9 @@ line_length = 88
 multi_line_output = 3
 use_parentheses = true
 
+[tool.typos.default.extend-words]
+datas = "datas" # PyInstaller's argument
+
 [tool.poetry]
 package-mode = false
 
@@ -53,17 +56,10 @@ pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "b35fc89f
 semver = "^3.0.0"
 platformdirs = "^4.2.0"
 soxr = "^0.3.6"
-pydantic = "^1.10.15"
+pydantic = "^2.7.3"
 starlette = "^0.37.0"
 
 [tool.poetry.group.dev.dependencies]
-pyinstaller = "^5.13"
-pre-commit = "^2.16.0"
-poetry = "1.8.2"
-poetry-plugin-export = "^1.8.0"
-safety = "^3.1.0"
-
-[tool.poetry.group.test.dependencies]
 pysen = "^0.11.0"
 black = "^24.4.0"
 flake8-bugbear = "^24.4.26"
@@ -77,9 +73,12 @@ poetry-plugin-export = "^1.8.0"
 httpx = "^0.27.0" # NOTE: required by fastapi.testclient.TestClient
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
+safety = "^3.1.0"
+pip-licenses = "4.4.0" # NOTE: must be specified exactly (c.f. #1281)
+pre-commit = "^2.16.0"
 
-[tool.poetry.group.license.dependencies]
-pip-licenses = "^4.4.0"
+[tool.poetry.group.build.dependencies]
+pyinstaller = "^5.13"
 
 [build-system]
 requires = ["poetry-core"]
