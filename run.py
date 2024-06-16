@@ -110,7 +110,7 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
     return None
 
 
-@dataclass
+@dataclass(frozen=True)
 class CLIArgs:
     host: str
     port: int
