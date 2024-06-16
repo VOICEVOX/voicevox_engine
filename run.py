@@ -1,11 +1,11 @@
 """VOICEVOX ENGINE の実行"""
 
 import argparse
-from dataclasses import dataclass
 import multiprocessing
 import os
 import sys
 import warnings
+from dataclasses import dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TextIO, TypeVar
@@ -50,10 +50,10 @@ def decide_boolean_from_env(env_name: str) -> bool:
         return False
 
 
-
 @dataclass
 class Envs:
     """環境変数の集合"""
+
     output_log_utf8: bool
     cpu_num_threads: str | None
     env_preset_path: str | None
