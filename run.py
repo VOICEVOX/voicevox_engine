@@ -50,7 +50,7 @@ def decide_boolean_from_env(env_name: str) -> bool:
         return False
 
 
-@dataclass
+@dataclass(frozen=True)
 class Envs:
     """環境変数の集合"""
 
