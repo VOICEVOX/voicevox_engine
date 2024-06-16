@@ -50,7 +50,7 @@ if __name__ == "__main__":
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
-        None, # NOTE: `engine_manifest.supported_vvlib_manifest_version` を実装予定
+        None,  # NOTE: `engine_manifest.supported_vvlib_manifest_version` を実装予定
         engine_manifest.brand_name,
         engine_manifest.name,
         engine_manifest.uuid,
