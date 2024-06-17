@@ -9,9 +9,12 @@ from typing import Any
 from unittest import TestCase
 from zipfile import ZipFile
 
-from fastapi import HTTPException
-
-from voicevox_engine.library.library_manager import LibraryManager
+from voicevox_engine.library.library_manager import (
+    LibraryFormatInvalidError,
+    LibraryManager,
+    LibraryNotFoundError,
+    LibraryUnsupportedError,
+)
 
 VVLIB_MANIFEST_NAME = "vvlib_manifest.json"
 
@@ -91,32 +94,25 @@ class TestLibraryManager(TestCase):
     def test_install_unauthorized_library(self) -> None:
         """エンジンの受け入れリストに ID の無い音声ライブラリはインストールできない。"""
         invalid_uuid = "52398bd5-3cc3-406c-a159-dfec5ace4bab"
-        with self.assertRaises(HTTPException) as e:
+        with self.assertRaises(LibraryNotFoundError):
             self.library_manger.install_library(invalid_uuid, self.library_file)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {invalid_uuid} が見つかりません。",
-        )
 
     def test_install_non_zip_file(self) -> None:
         """非 ZIP ファイルは音声ライブラリとしてインストールできない。"""
-        with self.assertRaises(HTTPException) as e:
+        with self.assertRaises(LibraryFormatInvalidError):
             self.library_manger.install_library(self.library_uuid, BytesIO())
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} は不正なファイル形式です。",
-        )
 
     def test_install_manifest_less_library(self) -> None:
         """マニフェストの無い ZIP ファイルは音声ライブラリとしてインストールできない。"""
         invalid_vvlib_name = "test/invalid.vvlib"
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryFormatInvalidError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} にvvlib_manifest.jsonが存在しません。",
-        )
+
+        # Teardown
         # TODO: tmp ファイルを用いた自動削除、あるいは、共通 teardown による削除へ実装し直す
         os.remove(invalid_vvlib_name)
 
@@ -129,13 +125,13 @@ class TestLibraryManager(TestCase):
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
-        # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryFormatInvalidError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} のvvlib_manifest.jsonは不正です。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install_invalid_type_manifest_library(self) -> None:
@@ -150,12 +146,13 @@ class TestLibraryManager(TestCase):
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryFormatInvalidError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} のvvlib_manifest.jsonが不正な形式です。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install_invalid_version_manifest_library(self) -> None:
@@ -170,12 +167,13 @@ class TestLibraryManager(TestCase):
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryFormatInvalidError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} のversion形式が不正です。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install_invalid_manifest_version_library(self) -> None:
@@ -190,12 +188,13 @@ class TestLibraryManager(TestCase):
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryFormatInvalidError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} のmanifest_version形式が不正です。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install_invalid_manifest_version_library_2(self) -> None:
@@ -210,12 +209,13 @@ class TestLibraryManager(TestCase):
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryUnsupportedError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} は未対応です。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install_non_target_engine_library(self) -> None:
@@ -231,12 +231,13 @@ class TestLibraryManager(TestCase):
         append_any_as_manifest_to_vvlib(invalid_vvlib_manifest, invalid_vvlib_name)
 
         # Tests
-        with open(invalid_vvlib_name, "br") as f, self.assertRaises(HTTPException) as e:
+        with (
+            open(invalid_vvlib_name, "br") as f,
+            self.assertRaises(LibraryUnsupportedError),
+        ):
             self.library_manger.install_library(self.library_uuid, f)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} は{self.engine_name}向けではありません。",
-        )
+
+        # Teardown
         os.remove(invalid_vvlib_name)
 
     def test_install(self) -> None:
@@ -250,12 +251,8 @@ class TestLibraryManager(TestCase):
 
     def test_uninstall_library(self) -> None:
         # TODO: アンインストール出来ないライブラリをテストできるようにしたい
-        with self.assertRaises(HTTPException) as e:
+        with self.assertRaises(LibraryNotFoundError):
             self.library_manger.uninstall_library(self.library_uuid)
-        self.assertEqual(
-            e.exception.detail,
-            f"音声ライブラリ {self.library_uuid} はインストールされていません。",
-        )
 
         self.library_manger.install_library(self.library_uuid, self.library_file)
         self.library_manger.uninstall_library(self.library_uuid)

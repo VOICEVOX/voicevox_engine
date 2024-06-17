@@ -86,7 +86,7 @@ class UserDictionary:
 
         converted_user_dict = {}
         for word_uuid, word in user_dict.items():
-            word_dict = word.dict()
+            word_dict = word.model_dump()
             word_dict["cost"] = priority2cost(
                 word_dict["context_id"], word_dict["priority"]
             )
