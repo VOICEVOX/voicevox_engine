@@ -50,12 +50,14 @@ def main() -> None:
         default=DEFAULT_TARGET_SUFFIX,
         help=f"filemapに登録するファイルの拡張子\nデフォルトは{', '.join(DEFAULT_TARGET_SUFFIX)}",
     )
-    arg = parser.parse_args()
-    target_dir: Path = arg.target_dir
+    args = parser.parse_args()
+
+    target_dir: Path = args.target_dir
     if not target_dir.is_dir():
         raise Exception(f"{target_dir}はディレクトリではありません")
+
     save_path = target_dir / DEFAULT_FILENAME
-    path_to_hash = generate_path_to_hash_dict(target_dir, arg.target_suffix)
+    path_to_hash = generate_path_to_hash_dict(target_dir, args.target_suffix)
     save_path.write_text(json.dumps(path_to_hash, ensure_ascii=False), encoding="utf-8")
 
 
