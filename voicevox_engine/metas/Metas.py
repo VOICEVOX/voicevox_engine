@@ -69,23 +69,23 @@ class Speaker(BaseModel):
 class StyleInfo(BaseModel):
     """
     スタイルの追加情報
+    `リソース`はバイナリをbase64エンコードしたもの、または取得用のURL
     """
 
     id: StyleId = Field(title="スタイルID")
-    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    icon: str = Field(title="当該スタイルのアイコンのリソース")
     portrait: str | SkipJsonSchema[None] = Field(
-        default=None, title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+        default=None, title="当該スタイルのポートレート画像のリソース"
     )
-    voice_samples: list[str] = Field(
-        title="voice_sampleのwavファイルをbase64エンコードしたもの"
-    )
+    voice_samples: list[str] = Field(title="サンプル音声のリソース")
 
 
 class SpeakerInfo(BaseModel):
     """
     話者の追加情報
+    `リソース`はバイナリをbase64エンコードしたもの、または取得用のURL
     """
 
     policy: str = Field(title="policy.md")
-    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
+    portrait: str = Field(title="ポートレート画像のリソース")
     style_infos: list[StyleInfo] = Field(title="スタイルの追加情報")

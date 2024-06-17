@@ -721,14 +721,14 @@
         "type": "object"
       },
       "SpeakerInfo": {
-        "description": "話者の追加情報",
+        "description": "話者の追加情報\n`リソース`はバイナリをbase64エンコードしたもの、または取得用のURL",
         "properties": {
           "policy": {
             "title": "policy.md",
             "type": "string"
           },
           "portrait": {
-            "title": "portrait.pngをbase64エンコードしたもの",
+            "title": "ポートレート画像のリソース",
             "type": "string"
           },
           "style_infos": {
@@ -803,10 +803,10 @@
         "type": "object"
       },
       "StyleInfo": {
-        "description": "スタイルの追加情報",
+        "description": "スタイルの追加情報\n`リソース`はバイナリをbase64エンコードしたもの、または取得用のURL",
         "properties": {
           "icon": {
-            "title": "当該スタイルのアイコンをbase64エンコードしたもの",
+            "title": "当該スタイルのアイコンのリソース",
             "type": "string"
           },
           "id": {
@@ -814,14 +814,14 @@
             "type": "integer"
           },
           "portrait": {
-            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの",
+            "title": "当該スタイルのポートレート画像のリソース",
             "type": "string"
           },
           "voice_samples": {
             "items": {
               "type": "string"
             },
-            "title": "voice_sampleのwavファイルをbase64エンコードしたもの",
+            "title": "サンプル音声のリソース",
             "type": "array"
           }
         },
@@ -2459,7 +2459,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2572,7 +2572,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {

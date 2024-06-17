@@ -46,7 +46,7 @@ def generate_speaker_router(
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
+        画像や音声はresource_formatで指定した形式で返されます。
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
@@ -172,7 +172,7 @@ def generate_speaker_router(
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
+        画像や音声はresource_formatで指定した形式で返されます。
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
