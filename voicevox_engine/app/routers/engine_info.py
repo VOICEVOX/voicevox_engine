@@ -108,11 +108,11 @@ class EngineManifest(BaseModel):
 
 
 def generate_engine_manifest(
-    manifest_wrapper: EngineManifestInternal,
+    internal_manifest: EngineManifestInternal,
 ) -> EngineManifest:
     """API 向けのエンジンマニフェストオブジェクトを生成する。"""
-    root_dir = manifest_wrapper.root
-    manifest = manifest_wrapper.model_dump()
+    root_dir = internal_manifest.root
+    manifest = internal_manifest.model_dump()
 
     return EngineManifest(
         manifest_version=manifest["manifest_version"],
