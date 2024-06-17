@@ -21,6 +21,13 @@ def b64encode_str(s: bytes) -> str:
 
 
 class ResourceManager:
+    """
+    リソースファイルのパスと、一意なハッシュ値の対応(filemap)を管理する。
+
+    APIでリソースファイルを一意なURLとして返すときに使う。
+    ついでにファイルをbase64文字列に変換することもできる。
+    """
+
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
         self._create_filemap_if_not_exist = create_filemap_if_not_exist
         self._path_to_hash: dict[Path, str] = {}
