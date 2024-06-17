@@ -21,7 +21,7 @@ fi
 pip install -r requirements.txt
 # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
 pip install "$(grep pip-licenses requirements-dev.txt | cut -f 1 -d ';')"
-python scripts/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
+python tools/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 deactivate
 
