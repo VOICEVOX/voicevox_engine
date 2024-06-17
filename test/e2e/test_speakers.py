@@ -52,10 +52,12 @@ def test_話者の情報をURLで取得できる(
             params={"speaker_uuid": speaker_id, "resource_format": "url"},
         )
         assert snapshot_json(name=speaker_id) == response.json()
+
         speaker_info = SpeakerInfo.model_validate_json(response.content)
         portrait = client.get(speaker_info.portrait)
         assert portrait.status_code == 200
         assert snapshot(name=f"{speaker_id}_portrait") == _hash_bytes(portrait.content)
+
         for style in speaker_info.style_infos:
             icon = client.get(style.icon)
             assert icon.status_code == 200
