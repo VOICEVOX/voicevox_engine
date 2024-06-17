@@ -39,7 +39,7 @@ def generate_path_to_hash_dict(
     }
 
 
-def main() -> None:
+if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
         "--target_dir", type=Path, required=True, help="filemapを作成するディレクトリ"
@@ -59,7 +59,3 @@ def main() -> None:
     save_path = target_dir / DEFAULT_FILENAME
     path_to_hash = generate_path_to_hash_dict(target_dir, args.target_suffix)
     save_path.write_text(json.dumps(path_to_hash, ensure_ascii=False), encoding="utf-8")
-
-
-if __name__ == "__main__":
-    main()
