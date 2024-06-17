@@ -1,5 +1,5 @@
 """
-'ResourceManager'が参照するファイルを生成
+'ResourceManager'が参照するfilemapを予め生成する。
 """
 
 import json
