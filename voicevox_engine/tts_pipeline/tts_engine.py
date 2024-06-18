@@ -726,11 +726,11 @@ class TTSEngineManager:
         """指定バージョンのエンジンを取得する"""
         if version in self._engines:
             return self._engines[version]
+        
+        if version == MOCK_VER:
+            raise MockTTSEngineNotFound()
         else:
-            if version == MOCK_VER:
-                raise MockTTSEngineNotFound()
-            else:
-                raise TTSEngineNotFound(version=version)
+            raise TTSEngineNotFound(version=version)
 
     def has_engine(self, version: str) -> bool:
         """指定バージョンのエンジンが登録されているか否かを返す。"""
