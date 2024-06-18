@@ -2,10 +2,7 @@
 
 from typing import Annotated
 
-# NOTE: `Form` requires python-multipart
 from fastapi import APIRouter, Depends, Form, Request, Response
-
-# NOTE: `Jinja2Templates` requires jinja2
 from fastapi.templating import Jinja2Templates
 from jinja2 import Environment, FileSystemLoader
 from pydantic.json_schema import SkipJsonSchema
