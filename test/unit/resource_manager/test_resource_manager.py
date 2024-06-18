@@ -43,6 +43,11 @@ def test_with_filemap() -> None:
     wav_path = with_filemap_dir / "dummy.wav"
     _assert_resource(manager, wav_path)
 
+    # 同じバイナリがある場合のテスト
+    same_wav_path = with_filemap_dir / "dummy_same_binary.wav"
+    assert wav_path.read_bytes() == same_wav_path.read_bytes()
+    _assert_resource(manager, same_wav_path)
+
     # テキストは通常エンコードせずにJSONに含めるためResourceManagerでは管理しない
     txt_path = with_filemap_dir / "dummy.txt"
     with pytest.raises(ResourceManagerError) as _:
@@ -75,6 +80,11 @@ def test_without_filemap() -> None:
 
     wav_path = without_filemap_dir / "dummy.wav"
     _assert_resource(manager, wav_path)
+
+    # 同じバイナリがある場合のテスト
+    same_wav_path = without_filemap_dir / "dummy_same_binary.wav"
+    assert wav_path.read_bytes() == same_wav_path.read_bytes()
+    _assert_resource(manager, same_wav_path)
 
     # "filemap.json"がない場合、全てのファイルが公開される
     txt_path = without_filemap_dir / "dummy.txt"
