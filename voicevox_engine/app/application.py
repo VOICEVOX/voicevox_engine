@@ -64,6 +64,8 @@ def generate_app(
         deprecated_mutable_api.enable = False
 
     metas_store = MetasStore(speaker_info_dir)
+    resource_manager = ResourceManager(is_development())
+    resource_manager.register_dir(speaker_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -73,8 +75,6 @@ def generate_app(
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(generate_preset_router(preset_manager))
 
-    resource_manager = ResourceManager(is_development())
-    resource_manager.register_dir(speaker_info_dir)
     app.include_router(
         generate_speaker_router(
             core_manager, resource_manager, metas_store, speaker_info_dir
