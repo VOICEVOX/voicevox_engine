@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import generate_verify_mutability_allowed
+from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
@@ -49,7 +49,9 @@ def generate_app(
     if speaker_info_dir is None:
         speaker_info_dir = engine_root() / "resources" / "character_info"
 
-    verify_mutability_allowed = generate_verify_mutability_allowed(disable_mutable_api)
+    verify_mutability_allowed = generate_mutability_allowed_verifier(
+        disable_mutable_api
+    )
 
     app = FastAPI(
         title=engine_manifest.name,
