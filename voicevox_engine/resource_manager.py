@@ -53,6 +53,7 @@ class ResourceManager:
         resource_path: Path,
         resource_format: Literal["base64", "hash"],
     ) -> str:
+        # NOTE: 意図しないパスのファイルの結果を返さないようにする
         filehash = self._path_to_hash.get(resource_path)
         if filehash is None:
             raise ResourceManagerError(f"{resource_path}がfilemapに登録されていません")
