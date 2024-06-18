@@ -700,10 +700,6 @@ class TTSEngineNotFound(Exception):
         self.version = version
 
 
-class LatestTTSEngineNotFound(Exception):
-    """自動取得しようとした最新バージョンの TTSEngine が見つからないエラー"""
-
-
 class MockTTSEngineNotFound(Exception):
     """モック TTSEngine が見つからないエラー"""
 
