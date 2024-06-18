@@ -1,23 +1,22 @@
 """FastAPI dependencies"""
 
-from dataclasses import dataclass
+from typing import Any, Callable, Coroutine, TypeAlias
 
 from fastapi import HTTPException
 
-
-# 許可されていないAPIを無効化する
-@dataclass
-class MutableAPI:
-    enable: bool = True
+VerifyMutabilityAllowed: TypeAlias = Callable[[], Coroutine[Any, Any, None]]
 
 
-# FIXME: グローバル変数が複数ファイルに分散しているため、DI 等で局所化する
-deprecated_mutable_api = MutableAPI()
+def generate_mutability_allowed_verifier(
+    disable_mutable_api: bool,
+) -> VerifyMutabilityAllowed:
+    """verify_mutability_allowed 関数（データ変更の許可を確認する関数）を生成する。"""
 
+    async def verify_mutability_allowed() -> None:
+        if disable_mutable_api:
+            msg = "エンジンの静的なデータを変更するAPIは無効化されています"
+            raise HTTPException(status_code=403, detail=msg)
+        else:
+            pass
 
-async def check_disabled_mutable_api() -> None:
-    if not deprecated_mutable_api.enable:
-        raise HTTPException(
-            status_code=403,
-            detail="エンジンの静的なデータを変更するAPIは無効化されています",
-        )
+    return verify_mutability_allowed

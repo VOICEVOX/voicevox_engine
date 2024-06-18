@@ -1,5 +1,5 @@
 import json
-from test.utility import pydantic_to_native_type, round_floats
+from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
 from unittest.mock import Mock
 
 import numpy as np
@@ -183,6 +183,8 @@ def _gen_hello_hiho_query() -> AudioQuery:
         volumeScale=1.3,
         prePhonemeLength=0.1,
         postPhonemeLength=0.2,
+        pauseLength=0.3,
+        pauseLengthScale=0.8,
         outputSamplingRate=12000,
         outputStereo=True,
         kana=_gen_hello_hiho_kana(),
@@ -378,7 +380,7 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     # Outputs
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
-    assert snapshot_json == round_floats(result.tolist(), round_value=2)
+    assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 
 
 def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
