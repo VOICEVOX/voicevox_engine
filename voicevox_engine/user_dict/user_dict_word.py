@@ -29,11 +29,11 @@ class _PartOfSpeechDetail(BaseModel):
     accent_associative_rules: list[str] = Field(title="アクセント結合規則の一覧")
 
 
-costs_proper_noun = [-988, 3488, 4768, 6048, 7328, 8609, 8734, 8859, 8984, 9110, 14176]
-costs_common_noun = [-4445, 49, 1473, 2897, 4321, 5746, 6554, 7362, 8170, 8979, 15001]
-costs_verb = [3100, 6160, 6360, 6561, 6761, 6962, 7414, 7866, 8318, 8771, 13433]
-costs_adjective = [1527, 3266, 3561, 3857, 4153, 4449, 5149, 5849, 6549, 7250, 10001]
-costs_suffix = [4399, 5373, 6041, 6710, 7378, 8047, 9440, 10834, 12228, 13622, 15847]
+_costs_proper_noun = [-988, 3488, 4768, 6048, 7328, 8609, 8734, 8859, 8984, 9110, 14176]
+_costs_common_noun = [-4445, 49, 1473, 2897, 4321, 5746, 6554, 7362, 8170, 8979, 15001]
+_costs_verb = [3100, 6160, 6360, 6561, 6761, 6962, 7414, 7866, 8318, 8771, 13433]
+_costs_adjective = [1527, 3266, 3561, 3857, 4153, 4449, 5149, 5849, 6549, 7250, 10001]
+_costs_suffix = [4399, 5373, 6041, 6710, 7378, 8047, 9440, 10834, 12228, 13622, 15847]
 
 
 part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
@@ -43,7 +43,7 @@ part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
         part_of_speech_detail_2="一般",
         part_of_speech_detail_3="*",
         context_id=1348,
-        cost_candidates=costs_proper_noun,
+        cost_candidates=_costs_proper_noun,
         accent_associative_rules=["*", "C1", "C2", "C3", "C4", "C5"],
     ),
     WordTypes.COMMON_NOUN: _PartOfSpeechDetail(
@@ -52,7 +52,7 @@ part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=1345,
-        cost_candidates=costs_common_noun,
+        cost_candidates=_costs_common_noun,
         accent_associative_rules=["*", "C1", "C2", "C3", "C4", "C5"],
     ),
     WordTypes.VERB: _PartOfSpeechDetail(
@@ -61,7 +61,7 @@ part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=642,
-        cost_candidates=costs_verb,
+        cost_candidates=_costs_verb,
         accent_associative_rules=["*"],
     ),
     WordTypes.ADJECTIVE: _PartOfSpeechDetail(
@@ -70,7 +70,7 @@ part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
         part_of_speech_detail_2="*",
         part_of_speech_detail_3="*",
         context_id=20,
-        cost_candidates=costs_adjective,
+        cost_candidates=_costs_adjective,
         accent_associative_rules=["*"],
     ),
     WordTypes.SUFFIX: _PartOfSpeechDetail(
@@ -79,7 +79,7 @@ part_of_speech_data: dict[WordTypes, _PartOfSpeechDetail] = {
         part_of_speech_detail_2="一般",
         part_of_speech_detail_3="*",
         context_id=1358,
-        cost_candidates=costs_suffix,
+        cost_candidates=_costs_suffix,
         accent_associative_rules=["*", "C1", "C2", "C3", "C4", "C5"],
     ),
 }
