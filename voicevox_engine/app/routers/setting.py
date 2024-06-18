@@ -12,7 +12,7 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 from voicevox_engine.utility.path_utility import resource_root
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 _setting_ui_template = Jinja2Templates(
     env=Environment(
@@ -24,7 +24,9 @@ _setting_ui_template = Jinja2Templates(
 
 
 def generate_setting_router(
-    setting_loader: SettingHandler, brand_name: BrandName
+    setting_loader: SettingHandler,
+    brand_name: BrandName,
+    verify_mutability: VerifyMutabilityAllowed,
 ) -> APIRouter:
     """設定 API Router を生成する"""
     router = APIRouter(tags=["設定"])
@@ -52,9 +54,7 @@ def generate_setting_router(
             },
         )
 
-    @router.post(
-        "/setting", status_code=204, dependencies=[Depends(check_disabled_mutable_api)]
-    )
+    @router.post("/setting", status_code=204, dependencies=[Depends(verify_mutability)])
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
