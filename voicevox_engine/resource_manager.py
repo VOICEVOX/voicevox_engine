@@ -39,15 +39,15 @@ class ResourceManager:
         if filemap_json.exists():
             data: dict[str, str] = json.loads(filemap_json.read_bytes())
             self._path_to_hash |= {resource_dir / k: v for k, v in data.items()}
+        elif self._create_filemap_if_not_exist:
+            self._path_to_hash |= {
+                i: sha256(i.read_bytes()).digest().hex()
+                for i in resource_dir.rglob("*")
+                if i.is_file()
+            }
         else:
-            if self._create_filemap_if_not_exist:
-                self._path_to_hash |= {
-                    i: sha256(i.read_bytes()).digest().hex()
-                    for i in resource_dir.rglob("*")
-                    if i.is_file()
-                }
-            else:
-                raise ResourceManagerError(f"{filemap_json}が見つかりません")
+            raise ResourceManagerError(f"{filemap_json}が見つかりません")
+
         self._hash_to_path |= {v: k for k, v in self._path_to_hash.items()}
 
     def resource_str(
