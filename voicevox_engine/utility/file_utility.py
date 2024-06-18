@@ -4,8 +4,8 @@ import os
 import traceback
 
 
-def delete_file(file_path: str) -> None:
-    """指定されたファイルを削除する。"""
+def try_delete_file(file_path: str) -> None:
+    """指定されたファイルの削除を試み、失敗したらログを残したうえでエラーを握り潰す。"""
     try:
         os.remove(file_path)
     except OSError:
