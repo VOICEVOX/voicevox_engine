@@ -726,7 +726,7 @@ class TTSEngineManager:
         """指定バージョンのエンジンを取得する"""
         if version in self._engines:
             return self._engines[version]
-        
+
         if version == MOCK_VER:
             raise MockTTSEngineNotFound()
         else:
