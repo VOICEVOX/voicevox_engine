@@ -34,7 +34,7 @@ class CoreSpeaker(BaseModel):
     name: str
     speaker_uuid: str
     styles: list[CoreSpeakerStyle]
-    version: str = Field("話者のバージョン")
+    version: str = Field(title="話者のバージョン")
 
 
 @dataclass(frozen=True)
