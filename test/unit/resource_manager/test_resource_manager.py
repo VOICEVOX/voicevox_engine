@@ -15,7 +15,7 @@ def b64encode_str(s: bytes) -> str:
 
 def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
     """
-    `test_path`で指定したファイルから正しくbase64が取得できるか確認する
+    `input_path`で指定したファイルから正しくbase64が取得できるか確認する
     また、ハッシュを取得し、対応するファイルから同じバイト列が取得できるか確認する
     """
     true_bytes = input_path.read_bytes()
