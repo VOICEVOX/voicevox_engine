@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Literal, NewType
 
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
@@ -64,9 +64,6 @@ class Speaker(BaseModel):
     supported_features: SpeakerSupportedFeatures = Field(
         title="話者の対応機能", default_factory=SpeakerSupportedFeatures
     )
-
-
-speaker_list_adapter = TypeAdapter(list[Speaker])
 
 
 class StyleInfo(BaseModel):

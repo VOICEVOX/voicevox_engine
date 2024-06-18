@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import deprecated_mutable_api
+from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
@@ -49,6 +49,10 @@ def generate_app(
     if speaker_info_dir is None:
         speaker_info_dir = engine_root() / "resources" / "character_info"
 
+    verify_mutability_allowed = generate_mutability_allowed_verifier(
+        disable_mutable_api
+    )
+
     app = FastAPI(
         title=engine_manifest.name,
         description=f"{engine_manifest.brand_name} の音声合成エンジンです。",
@@ -58,9 +62,6 @@ def generate_app(
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)
 
-    if disable_mutable_api:
-        deprecated_mutable_api.enable = False
-
     metas_store = MetasStore(speaker_info_dir)
 
     app.include_router(
@@ -69,14 +70,20 @@ def generate_app(
         )
     )
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
-    app.include_router(generate_preset_router(preset_manager))
+    app.include_router(
+        generate_preset_router(preset_manager, verify_mutability_allowed)
+    )
     app.include_router(generate_speaker_router(core_manager, metas_store))
     if engine_manifest.supported_features.manage_library:
-        app.include_router(generate_library_router(library_manager))
-    app.include_router(generate_user_dict_router(user_dict))
+        app.include_router(
+            generate_library_router(library_manager, verify_mutability_allowed)
+        )
+    app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
     app.include_router(generate_engine_info_router(core_manager, engine_manifest))
     app.include_router(
-        generate_setting_router(setting_loader, engine_manifest.brand_name)
+        generate_setting_router(
+            setting_loader, engine_manifest.brand_name, verify_mutability_allowed
+        )
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
 

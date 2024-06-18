@@ -15,7 +15,6 @@ from voicevox_engine.metas.Metas import (
     SpeakerStyle,
     SpeakerSupportedFeatures,
     StyleId,
-    speaker_list_adapter,
 )
 
 
@@ -106,9 +105,7 @@ class MetasStore:
         #         ...
 
         # 該当話者を検索する
-        speakers = speaker_list_adapter.validate_python(
-            core_speakers, from_attributes=True
-        )
+        speakers = self.load_combined_metas(core_speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
