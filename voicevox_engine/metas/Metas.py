@@ -87,5 +87,5 @@ class SpeakerInfo(BaseModel):
     """
 
     policy: str = Field(title="policy.md")
-    portrait: str = Field(title="ポートレート画像のリソース")
+    portrait: str = Field(title="立ち絵画像のリソース")
     style_infos: list[StyleInfo] = Field(title="スタイルの追加情報")
