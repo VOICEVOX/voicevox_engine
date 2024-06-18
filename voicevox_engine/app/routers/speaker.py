@@ -184,9 +184,9 @@ def generate_speaker_router(
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
-    async def resources(resource_name: str) -> FileResponse:
+    async def resources(resource_hash: str) -> FileResponse:
         """
-        ResourceManagerから発行されたURLへのアクセスに対応する
+        ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
         """
         resource_path = resource_manager.resource_path(resource_name)
         if resource_path is None or not resource_path.exists():
