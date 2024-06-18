@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Form, Request, Response
 
 # NOTE: `Jinja2Templates` requires jinja2
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.engine_manifest import BrandName
@@ -17,9 +18,11 @@ from voicevox_engine.utility.path_utility import resource_root
 from ..dependencies import check_disabled_mutable_api
 
 _setting_ui_template = Jinja2Templates(
-    directory=resource_root(),
-    variable_start_string="<JINJA_PRE>",
-    variable_end_string="<JINJA_POST>",
+    env=Environment(
+        variable_start_string="<JINJA_PRE>",
+        variable_end_string="<JINJA_POST>",
+        loader=FileSystemLoader(resource_root()),
+    ),
 )
 
 
@@ -43,9 +46,9 @@ def generate_setting_router(
             allow_origin = ""
 
         return _setting_ui_template.TemplateResponse(
-            "setting_ui_template.html",
-            {
-                "request": request,
+            request=request,
+            name="setting_ui_template.html",
+            context={
                 "brand_name": brand_name,
                 "cors_policy_mode": cors_policy_mode.value,
                 "allow_origin": allow_origin,
