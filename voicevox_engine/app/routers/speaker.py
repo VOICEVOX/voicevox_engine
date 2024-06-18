@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
@@ -46,8 +45,6 @@ def generate_speaker_router(
             core_version=core_version,
         )
 
-    _speaker_list_adapter = TypeAdapter(list[Speaker])
-
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
         speaker_uuid: str,
@@ -78,9 +75,8 @@ def generate_speaker_router(
         #           ...
 
         # 該当話者を検索する
-        speakers = _speaker_list_adapter.validate_python(
-            core_manager.get_core(core_version).speakers, from_attributes=True
-        )
+        core_speakers = core_manager.get_core(core_version).speakers
+        speakers = metas_store.load_combined_metas(core_speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
