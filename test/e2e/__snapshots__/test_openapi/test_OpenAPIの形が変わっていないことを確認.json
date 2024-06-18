@@ -728,7 +728,7 @@
             "type": "string"
           },
           "portrait": {
-            "title": "ポートレート画像のリソース",
+            "title": "立ち絵画像のリソース",
             "type": "string"
           },
           "style_infos": {
@@ -814,7 +814,7 @@
             "type": "integer"
           },
           "portrait": {
-            "title": "当該スタイルのポートレート画像のリソース",
+            "title": "このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
             "type": "string"
           },
           "voice_samples": {

@@ -109,8 +109,9 @@ def generate_speaker_router(
             policy = policy_path.read_text("utf-8")
 
             def _resource_str(path: Path) -> str:
-                res_format = "hash" if resource_format == "url" else "base64"
-                resource_str = resource_manager.resource_str(path, res_format)
+                resource_str = resource_manager.resource_str(
+                    path, "hash" if resource_format == "url" else "base64"
+                )
                 if resource_format == "base64":
                     return resource_str
                 return f"{resource_baseurl}/{resource_str}"
@@ -185,7 +186,7 @@ def generate_speaker_router(
         )
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
-    @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_name}}", include_in_schema=False)
+    @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_hash}}", include_in_schema=False)
     async def resources(resource_hash: str) -> FileResponse:
         """
         ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す

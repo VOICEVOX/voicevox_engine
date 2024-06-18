@@ -20,6 +20,17 @@ def _hash_bytes(value: bytes) -> str:
     return "MD5:" + hashlib.md5(value).hexdigest()
 
 
+def _assert_resource(
+    client: TestClient, snapshot: SnapshotAssertion, url: str, name: str
+) -> None:
+    """
+    URLからデータが正しく取得できるかスナップショットテストをする
+    """
+    response = client.get(url)
+    assert response.status_code == 200
+    assert snapshot(name=name) == _hash_bytes(response.content)
+
+
 def test_話者一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
@@ -54,28 +65,28 @@ def test_話者の情報をURLで取得できる(
         assert snapshot_json(name=speaker_id) == response.json()
 
         speaker_info = SpeakerInfo.model_validate_json(response.content)
-        portrait = client.get(speaker_info.portrait)
-        assert portrait.status_code == 200
-        assert snapshot(name=f"{speaker_id}_portrait") == _hash_bytes(portrait.content)
+        _assert_resource(
+            client, snapshot, speaker_info.portrait, f"{speaker_id}_portrait"
+        )
 
         for style in speaker_info.style_infos:
-            icon = client.get(style.icon)
-            assert icon.status_code == 200
-            assert snapshot(name=f"{speaker_id}_{style.id}_icon") == _hash_bytes(
-                icon.content
+            _assert_resource(
+                client, snapshot, style.icon, f"{speaker_id}_{style.id}_icon"
             )
             if style.portrait is not None:
-                portrait = client.get(style.portrait)
-                assert portrait.status_code == 200
-                assert snapshot(
-                    name=f"{speaker_id}_{style.id}_portrait"
-                ) == _hash_bytes(icon.content)
+                _assert_resource(
+                    client,
+                    snapshot,
+                    style.portrait,
+                    f"{speaker_id}_{style.id}_portrait",
+                )
             for i, voice_sample in enumerate(style.voice_samples):
-                sample = client.get(voice_sample)
-                assert sample.status_code == 200
-                assert snapshot(
-                    name=f"{speaker_id}_{style.id}_voice_sample_{i}"
-                ) == _hash_bytes(icon.content)
+                _assert_resource(
+                    client,
+                    snapshot,
+                    voice_sample,
+                    f"{speaker_id}_{style.id}_voice_sample_{i}",
+                )
 
 
 def test_歌手一覧が取得できる(
@@ -110,25 +121,24 @@ def test_歌手の情報をURLで取得できる(
             params={"speaker_uuid": singer_id, "resource_format": "url"},
         )
         assert snapshot_json(name=singer_id) == response.json()
+
         speaker_info = SpeakerInfo.model_validate_json(response.content)
-        portrait = client.get(speaker_info.portrait)
-        assert portrait.status_code == 200
-        assert snapshot(name=f"{singer_id}_portrait") == _hash_bytes(portrait.content)
+        _assert_resource(
+            client, snapshot, speaker_info.portrait, f"{singer_id}_portrait"
+        )
+
         for style in speaker_info.style_infos:
-            icon = client.get(style.icon)
-            assert icon.status_code == 200
-            assert snapshot(name=f"{singer_id}_{style.id}_icon") == _hash_bytes(
-                icon.content
+            _assert_resource(
+                client, snapshot, style.icon, f"{singer_id}_{style.id}_icon"
             )
             if style.portrait is not None:
-                portrait = client.get(style.portrait)
-                assert portrait.status_code == 200
-                assert snapshot(name=f"{singer_id}_{style.id}_portrait") == _hash_bytes(
-                    icon.content
+                _assert_resource(
+                    client, snapshot, style.portrait, f"{singer_id}_{style.id}_portrait"
                 )
             for i, voice_sample in enumerate(style.voice_samples):
-                sample = client.get(voice_sample)
-                assert sample.status_code == 200
-                assert snapshot(
-                    name=f"{singer_id}_{style.id}_voice_sample_{i}"
-                ) == _hash_bytes(icon.content)
+                _assert_resource(
+                    client,
+                    snapshot,
+                    voice_sample,
+                    f"{singer_id}_{style.id}_voice_sample_{i}",
+                )

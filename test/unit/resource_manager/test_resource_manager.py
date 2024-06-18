@@ -1,5 +1,4 @@
 import base64
-from os.path import basename
 from pathlib import Path
 
 import pytest
@@ -9,48 +8,48 @@ from voicevox_engine.resource_manager import ResourceManager, ResourceManagerErr
 with_filemap_dir = Path(__file__).parent / "with_filemap"
 without_filemap_dir = Path(__file__).parent / "without_filemap"
 
-dummy_base_url = "http://localhost"
-
 
 def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
+def _assert_resource(manager: ResourceManager, test_path: Path) -> None:
+    """
+    `test_path`で指定したファイルが正しくbase64とハッシュが取得できるか確認する
+    また、取得したハッシュから取得したファイルから同じバイト列が取得できるか確認する
+    """
+    test_bytes = test_path.read_bytes()
+
+    assert manager.resource_str(test_path, "base64") == b64encode_str(test_bytes)
+
+    test_filehash = manager.resource_str(test_path, "hash")
+    test_res_path = manager.resource_path(test_filehash)
+    assert test_res_path is not None
+    assert test_res_path.read_bytes() == test_bytes
+
+
 def test_with_filemap() -> None:
     manager = ResourceManager(False)
     manager.register_dir(with_filemap_dir)
-    png_path = with_filemap_dir / "dummy.png"
-    png_bytes = png_path.read_bytes()
 
-    assert manager.resource_str(png_path, dummy_base_url, "base64") == b64encode_str(
-        png_bytes
-    )
-    png_filehash = basename(manager.resource_str(png_path, dummy_base_url, "url"))
-    png_res_path = manager.resource_path(png_filehash)
-    assert png_res_path is not None
-    assert png_res_path.read_bytes() == png_bytes
+    png_path = with_filemap_dir / "dummy.png"
+    _assert_resource(manager, png_path)
 
     wav_path = with_filemap_dir / "dummy.wav"
-    wav_bytes = wav_path.read_bytes()
+    _assert_resource(manager, wav_path)
 
-    assert manager.resource_str(wav_path, dummy_base_url, "base64") == b64encode_str(
-        wav_bytes
-    )
-    wav_filehash = basename(manager.resource_str(wav_path, dummy_base_url, "url"))
-    wav_res_path = manager.resource_path(wav_filehash)
-    assert wav_res_path is not None
-    assert wav_res_path.read_bytes() == wav_bytes
-
+    # テキストは通常エンコードせずにJSONに含めるためResourceManagerでは管理しない
     txt_path = with_filemap_dir / "dummy.txt"
     with pytest.raises(ResourceManagerError) as _:
-        manager.resource_str(txt_path, dummy_base_url, "base64")
+        manager.resource_str(txt_path, "base64")
     with pytest.raises(ResourceManagerError) as _:
-        manager.resource_str(txt_path, dummy_base_url, "url")
+        manager.resource_str(txt_path, "hash")
 
-    assert manager.resource_path("BAD_HASH") is None
+    assert manager.resource_path("NOT_EXIST_HASH") is None
 
 
 def test_without_filemap_when_production() -> None:
+    # "create_filemap_if_not_exist"がFaseで"filemap.json"が無い場合エラーにする
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError) as _:
         manager.register_dir(without_filemap_dir)
@@ -59,37 +58,15 @@ def test_without_filemap_when_production() -> None:
 def test_without_filemap() -> None:
     manager = ResourceManager(True)
     manager.register_dir(without_filemap_dir)
-    png_path = without_filemap_dir / "dummy.png"
-    png_bytes = png_path.read_bytes()
 
-    assert manager.resource_str(png_path, dummy_base_url, "base64") == b64encode_str(
-        png_bytes
-    )
-    png_filehash = basename(manager.resource_str(png_path, dummy_base_url, "url"))
-    png_res_path = manager.resource_path(png_filehash)
-    assert png_res_path is not None
-    assert png_res_path.read_bytes() == png_bytes
+    png_path = without_filemap_dir / "dummy.png"
+    _assert_resource(manager, png_path)
 
     wav_path = without_filemap_dir / "dummy.wav"
-    wav_bytes = wav_path.read_bytes()
+    _assert_resource(manager, wav_path)
 
-    assert manager.resource_str(wav_path, dummy_base_url, "base64") == b64encode_str(
-        wav_bytes
-    )
-    wav_filehash = basename(manager.resource_str(wav_path, dummy_base_url, "url"))
-    wav_res_path = manager.resource_path(wav_filehash)
-    assert wav_res_path is not None
-    assert wav_res_path.read_bytes() == wav_bytes
-
+    # "filemap.json"がない場合、全てのファイルが公開される
     txt_path = without_filemap_dir / "dummy.txt"
-    txt_bytes = txt_path.read_bytes()
+    _assert_resource(manager, txt_path)
 
-    assert manager.resource_str(txt_path, dummy_base_url, "base64") == b64encode_str(
-        txt_bytes
-    )
-    txt_filehash = basename(manager.resource_str(txt_path, dummy_base_url, "url"))
-    txt_res_path = manager.resource_path(txt_filehash)
-    assert txt_res_path is not None
-    assert txt_res_path.read_bytes() == txt_bytes
-
-    assert manager.resource_path("BAD_HASH") is None
+    assert manager.resource_path("NOT_EXIST_HASH") is None
