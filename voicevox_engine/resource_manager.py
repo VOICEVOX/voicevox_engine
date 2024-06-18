@@ -43,7 +43,7 @@ class ResourceManager:
             if self._create_filemap_if_not_exist:
                 self._path_to_hash |= {
                     i: sha256(i.read_bytes()).digest().hex()
-                    for i in resource_dir.glob("**/*")
+                    for i in resource_dir.rglob("*")
                     if i.is_file()
                 }
             else:
