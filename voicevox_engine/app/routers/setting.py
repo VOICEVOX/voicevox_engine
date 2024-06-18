@@ -2,8 +2,8 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Request, Response
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, Form, Request, Response # NOTE: `Form` requires python-multipart
+from fastapi.templating import Jinja2Templates  # NOTE: `Jinja2Templates` requires jinja2
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.engine_manifest import BrandName
