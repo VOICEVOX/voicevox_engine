@@ -20,7 +20,7 @@ def _hash_bytes(value: bytes) -> str:
     return "MD5:" + hashlib.md5(value).hexdigest()
 
 
-def _assert_resource(
+def _assert_resource_url(
     client: TestClient, snapshot: SnapshotAssertion, url: str, name: str
 ) -> None:
     """
@@ -65,23 +65,23 @@ def test_話者の情報をURLで取得できる(
         assert snapshot_json(name=speaker_id) == response.json()
 
         speaker_info = SpeakerInfo.model_validate_json(response.content)
-        _assert_resource(
+        _assert_resource_url(
             client, snapshot, speaker_info.portrait, f"{speaker_id}_portrait"
         )
 
         for style in speaker_info.style_infos:
-            _assert_resource(
+            _assert_resource_url(
                 client, snapshot, style.icon, f"{speaker_id}_{style.id}_icon"
             )
             if style.portrait is not None:
-                _assert_resource(
+                _assert_resource_url(
                     client,
                     snapshot,
                     style.portrait,
                     f"{speaker_id}_{style.id}_portrait",
                 )
             for i, voice_sample in enumerate(style.voice_samples):
-                _assert_resource(
+                _assert_resource_url(
                     client,
                     snapshot,
                     voice_sample,
@@ -123,20 +123,20 @@ def test_歌手の情報をURLで取得できる(
         assert snapshot_json(name=singer_id) == response.json()
 
         speaker_info = SpeakerInfo.model_validate_json(response.content)
-        _assert_resource(
+        _assert_resource_url(
             client, snapshot, speaker_info.portrait, f"{singer_id}_portrait"
         )
 
         for style in speaker_info.style_infos:
-            _assert_resource(
+            _assert_resource_url(
                 client, snapshot, style.icon, f"{singer_id}_{style.id}_icon"
             )
             if style.portrait is not None:
-                _assert_resource(
+                _assert_resource_url(
                     client, snapshot, style.portrait, f"{singer_id}_{style.id}_portrait"
                 )
             for i, voice_sample in enumerate(style.voice_samples):
-                _assert_resource(
+                _assert_resource_url(
                     client,
                     snapshot,
                     voice_sample,
