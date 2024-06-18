@@ -233,8 +233,7 @@ def main() -> None:
         default=None,
         help=(
             "プリセットファイルを指定できます。"
-            "指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、"
-            "実行ファイルのディレクトリのpresets.yamlを順に探します。"
+            "指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。"
         ),
     )
 
@@ -301,8 +300,6 @@ def main() -> None:
 
     # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
-    root_dir = select_first_not_none([voicevox_dir, engine_root()])
-
     cors_policy_mode = select_first_not_none(
         [arg_cors_policy_mode, settings.cors_policy_mode]
     )
@@ -319,7 +316,7 @@ def main() -> None:
         env_preset_path = Path(env_preset_path_str)
     else:
         env_preset_path = None
-    root_preset_path = root_dir / "presets.yaml"
+    root_preset_path = engine_root() / "presets.yaml"
     preset_path = select_first_not_none(
         [arg_preset_path, env_preset_path, root_preset_path]
     )
@@ -343,6 +340,7 @@ def main() -> None:
     else:
         disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
 
+    root_dir = select_first_not_none([voicevox_dir, engine_root()])
     speaker_info_dir = root_dir / "resources" / "character_info"
     # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
     if not speaker_info_dir.exists():

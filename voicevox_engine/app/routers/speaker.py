@@ -5,7 +5,6 @@ from typing import Annotated, Literal, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
-from pydantic import TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
@@ -33,7 +32,8 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         speakers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(speakers, "speaker")
 
@@ -55,8 +55,6 @@ def generate_speaker_router(
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )
-
-    _speaker_list_adapter = TypeAdapter(list[Speaker])
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
@@ -89,10 +87,11 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
+        version = core_version or core_manager.latest_version()
+
         # 該当話者を検索する
-        speakers = _speaker_list_adapter.validate_python(
-            core_manager.get_core(core_version).speakers, from_attributes=True
-        )
+        core_speakers = core_manager.get_core(version).speakers
+        speakers = metas_store.load_combined_metas(core_speakers)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
@@ -162,7 +161,8 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         singers = metas_store.load_combined_metas(core.speakers)
         return filter_speakers_and_styles(singers, "singer")
 
