@@ -63,4 +63,5 @@ class ResourceManager:
         return f"{base_url}/{filehash}"
 
     def resource_path(self, filehash: str) -> Path | None:
+        """指定したハッシュ値を持つリソースファイルのパスを返す。"""
         return self._hash_to_path.get(filehash)
