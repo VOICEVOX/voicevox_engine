@@ -49,7 +49,7 @@ def test_with_filemap() -> None:
 
 
 def test_without_filemap_when_production() -> None:
-    # "create_filemap_if_not_exist"がFaseで"filemap.json"が無い場合エラーにする
+    # "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError) as _:
         manager.register_dir(without_filemap_dir)
