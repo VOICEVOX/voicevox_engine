@@ -16,6 +16,7 @@ def _gen_speaker(style_types: list[StyleType]) -> Speaker:
             )
             for style_type in style_types
         ],
+        version="",
     )
 
 
