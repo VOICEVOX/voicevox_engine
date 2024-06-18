@@ -51,8 +51,7 @@ class ResourceManager:
     def resource_str(
         self,
         resource_path: Path,
-        base_url: str,
-        resource_format: Literal["base64", "url"],
+        resource_format: Literal["base64", "hash"],
     ) -> str:
         filehash = self._path_to_hash.get(resource_path)
         if filehash is None:
