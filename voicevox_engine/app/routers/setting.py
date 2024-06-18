@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request, Response
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.engine_manifest import BrandName
@@ -11,17 +12,21 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 from voicevox_engine.utility.path_utility import resource_root
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 _setting_ui_template = Jinja2Templates(
-    directory=resource_root(),
-    variable_start_string="<JINJA_PRE>",
-    variable_end_string="<JINJA_POST>",
+    env=Environment(
+        variable_start_string="<JINJA_PRE>",
+        variable_end_string="<JINJA_POST>",
+        loader=FileSystemLoader(resource_root()),
+    ),
 )
 
 
 def generate_setting_router(
-    setting_loader: SettingHandler, brand_name: BrandName
+    setting_loader: SettingHandler,
+    brand_name: BrandName,
+    verify_mutability: VerifyMutabilityAllowed,
 ) -> APIRouter:
     """設定 API Router を生成する"""
     router = APIRouter(tags=["設定"])
@@ -40,18 +45,16 @@ def generate_setting_router(
             allow_origin = ""
 
         return _setting_ui_template.TemplateResponse(
-            "setting_ui_template.html",
-            {
-                "request": request,
+            request=request,
+            name="setting_ui_template.html",
+            context={
                 "brand_name": brand_name,
                 "cors_policy_mode": cors_policy_mode.value,
                 "allow_origin": allow_origin,
             },
         )
 
-    @router.post(
-        "/setting", status_code=204, dependencies=[Depends(check_disabled_mutable_api)]
-    )
+    @router.post("/setting", status_code=204, dependencies=[Depends(verify_mutability)])
     def setting_post(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
