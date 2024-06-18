@@ -13,19 +13,19 @@ def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
-def _assert_resource(manager: ResourceManager, test_path: Path) -> None:
+def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
     """
-    `test_path`で指定したファイルが正しくbase64とハッシュが取得できるか確認する
-    また、取得したハッシュから取得したファイルから同じバイト列が取得できるか確認する
+    `test_path`で指定したファイルから正しくbase64が取得できるか確認する
+    また、ハッシュを取得し、対応するファイルから同じバイト列が取得できるか確認する
     """
-    test_bytes = test_path.read_bytes()
+    true_bytes = input_path.read_bytes()
 
-    assert manager.resource_str(test_path, "base64") == b64encode_str(test_bytes)
+    assert manager.resource_str(input_path, "base64") == b64encode_str(true_bytes)
 
-    test_filehash = manager.resource_str(test_path, "hash")
-    test_res_path = manager.resource_path(test_filehash)
-    assert test_res_path is not None
-    assert test_res_path.read_bytes() == test_bytes
+    result_filehash = manager.resource_str(input_path, "hash")
+    result_path = manager.resource_path(result_filehash)
+    assert result_path is not None
+    assert result_path.read_bytes() == true_bytes
 
 
 def test_with_filemap() -> None:
