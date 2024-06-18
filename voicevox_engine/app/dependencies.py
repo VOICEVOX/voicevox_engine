@@ -7,7 +7,7 @@ from fastapi import HTTPException
 VerifyMutabilityAllowed: TypeAlias = Callable[[], Coroutine[Any, Any, None]]
 
 
-def generate_verify_mutability_allowed(
+def generate_mutability_allowed_verifier(
     disable_mutable_api: bool,
 ) -> VerifyMutabilityAllowed:
     """verify_mutability_allowed 関数（データ変更の許可を確認する関数）を生成する。"""
