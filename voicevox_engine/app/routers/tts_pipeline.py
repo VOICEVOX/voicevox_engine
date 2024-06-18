@@ -42,7 +42,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TalkSingInvalidInputError,
     TTSEngineManager,
 )
-from voicevox_engine.utility.file_utility import delete_file
+from voicevox_engine.utility.file_utility import try_delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -269,7 +269,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -310,7 +310,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f_name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f_name),
+            background=BackgroundTask(try_delete_file, f_name),
         )
 
     @router.post(
@@ -360,7 +360,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="application/zip",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -450,7 +450,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(
@@ -486,7 +486,7 @@ def generate_tts_pipeline_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     @router.post(

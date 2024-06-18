@@ -25,7 +25,7 @@ from voicevox_engine.morphing.morphing import (
 )
 from voicevox_engine.morphing.morphing import synthesize_morphed_wave
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.utility.file_utility import delete_file
+from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -134,7 +134,7 @@ def generate_morphing_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     return router
