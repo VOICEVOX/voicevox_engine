@@ -193,7 +193,7 @@ def generate_speaker_router(
             raise HTTPException(status_code=404)
         return FileResponse(
             resource_path,
-            headers={"Cache-Control": "max-age=2592000"},
+            headers={"Cache-Control": "max-age=2592000"}, # 30日
         )
 
     return router
