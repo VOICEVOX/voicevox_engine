@@ -29,6 +29,11 @@ def _assert_resource(manager: ResourceManager, test_path: Path) -> None:
 
 
 def test_with_filemap() -> None:
+    """
+    "filemap.json"があるディレクトリでのテスト
+    fimemapの生成方法
+    `python build_util/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
+    """
     manager = ResourceManager(False)
     manager.register_dir(with_filemap_dir)
 
@@ -45,17 +50,23 @@ def test_with_filemap() -> None:
     with pytest.raises(ResourceManagerError) as _:
         manager.resource_str(txt_path, "hash")
 
+    # 登録されていないハッシュが渡された場合Noneを返す
     assert manager.resource_path("NOT_EXIST_HASH") is None
 
 
 def test_without_filemap_when_production() -> None:
-    # "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする
+    """
+    "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする(製品版を想定)
+    """
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError) as _:
         manager.register_dir(without_filemap_dir)
 
 
 def test_without_filemap() -> None:
+    """
+    "create_filemap_if_not_exist"がTrueで"filemap.json"が無い場合エラーにする(開発時を想定)
+    """
     manager = ResourceManager(True)
     manager.register_dir(without_filemap_dir)
 
@@ -69,4 +80,5 @@ def test_without_filemap() -> None:
     txt_path = without_filemap_dir / "dummy.txt"
     _assert_resource(manager, txt_path)
 
+    # 登録されていないハッシュが渡された場合Noneを返す
     assert manager.resource_path("NOT_EXIST_HASH") is None
