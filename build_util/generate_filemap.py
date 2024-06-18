@@ -9,7 +9,7 @@ from collections.abc import Generator
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 
-DEFAULT_FILENAME = "filemap.json"
+FILEMAP_FILENAME = "filemap.json"
 DEFAULT_TARGET_SUFFIX = ["png", "wav"]
 
 
