@@ -75,7 +75,8 @@ class StyleInfo(BaseModel):
     id: StyleId = Field(title="スタイルID")
     icon: str = Field(title="当該スタイルのアイコンのリソース")
     portrait: str | SkipJsonSchema[None] = Field(
-        default=None, title="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL"
+        default=None,
+        title="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
     )
     voice_samples: list[str] = Field(title="サンプル音声のリソース")
 

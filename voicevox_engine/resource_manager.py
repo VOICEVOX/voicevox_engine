@@ -59,7 +59,7 @@ class ResourceManager:
 
         if resource_format == "base64":
             return b64encode_str(resource_path.read_bytes())
-        return f"{base_url}/{filehash}"
+        return filehash
 
     def resource_path(self, filehash: str) -> Path | None:
         """指定したハッシュ値を持つリソースファイルのパスを返す。"""

@@ -109,9 +109,11 @@ def generate_speaker_router(
             policy = policy_path.read_text("utf-8")
 
             def _resource_str(path: Path) -> str:
-                return resource_manager.resource_str(
-                    path, resource_baseurl, resource_format
-                )
+                res_format = "hash" if resource_format == "url" else "base64"
+                resource_str = resource_manager.resource_str(path, res_format)
+                if resource_format == "base64":
+                    return resource_str
+                return f"{resource_baseurl}/{resource_str}"
 
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
@@ -188,12 +190,12 @@ def generate_speaker_router(
         """
         ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
         """
-        resource_path = resource_manager.resource_path(resource_name)
+        resource_path = resource_manager.resource_path(resource_hash)
         if resource_path is None or not resource_path.exists():
             raise HTTPException(status_code=404)
         return FileResponse(
             resource_path,
-            headers={"Cache-Control": "max-age=2592000"}, # 30日
+            headers={"Cache-Control": "max-age=2592000"},  # 30日
         )
 
     return router
