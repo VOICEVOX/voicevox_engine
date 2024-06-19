@@ -8,7 +8,7 @@ from pyopenjtalk import g2p, unset_user_dict
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    MAX_PRIORITY,
+    USER_DICT_MAX_PRIORITY,
     UserDictInputError,
     WordProperty,
     create_word,
@@ -201,7 +201,7 @@ def test_delete_word_valid_id(tmp_path: Path) -> None:
 
 def test_priority() -> None:
     for pos in part_of_speech_data:
-        for i in range(MAX_PRIORITY + 1):
+        for i in range(USER_DICT_MAX_PRIORITY + 1):
             assert (
                 create_word(
                     WordProperty(
