@@ -163,7 +163,7 @@ def priority2cost(context_id: int, priority: int) -> int:
 
 @dataclass
 class SaveFormatUserDictWord:
-    """単語の保存形式"""
+    """保存用の単語の型"""
 
     surface: str
     cost: int  # `UserDictWord.priority` と対応
@@ -182,7 +182,7 @@ class SaveFormatUserDictWord:
     mora_count: int | None = None
 
 
-def convert_word_into_save_format(word: UserDictWord) -> SaveFormatUserDictWord:
+def convert_to_save_format(word: UserDictWord) -> SaveFormatUserDictWord:
     """単語を保存用に変換する。"""
     cost = priority2cost(word.context_id, word.priority)
     return SaveFormatUserDictWord(
@@ -204,7 +204,7 @@ def convert_word_into_save_format(word: UserDictWord) -> SaveFormatUserDictWord:
     )
 
 
-def convert_save_format_word_into_word(word: SaveFormatUserDictWord) -> UserDictWord:
+def convert_from_save_format(word: SaveFormatUserDictWord) -> UserDictWord:
     """単語を保存用から変換する。"""
     context_id_p_noun = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
     # cost2priorityで変換を行う際にcontext_idが必要となるが、

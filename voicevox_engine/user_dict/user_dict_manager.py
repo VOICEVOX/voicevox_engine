@@ -17,8 +17,8 @@ from .user_dict_word import (
     SaveFormatUserDictWord,
     UserDictInputError,
     WordProperty,
-    convert_save_format_word_into_word,
-    convert_word_into_save_format,
+    convert_from_save_format,
+    convert_to_save_format,
     create_word,
     part_of_speech_data,
     priority2cost,
@@ -90,7 +90,7 @@ class UserDictionary:
         """ユーザー辞書データをファイルへ書き込む。"""
         save_format_user_dict: dict[str, SaveFormatUserDictWord] = {}
         for word_uuid, word in user_dict.items():
-            save_format_word = convert_word_into_save_format(word)
+            save_format_word = convert_to_save_format(word)
             save_format_user_dict[word_uuid] = save_format_word
         user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
         self._user_dict_path.write_bytes(user_dict_json)
@@ -185,7 +185,7 @@ class UserDictionary:
             save_format_dict = _save_format_dict_adapter.validate_python(json.load(f))
             result: dict[str, UserDictWord] = {}
             for word_uuid, word in save_format_dict.items():
-                result[str(UUID(word_uuid))] = convert_save_format_word_into_word(word)
+                result[str(UUID(word_uuid))] = convert_from_save_format(word)
         return result
 
     def import_user_dict(
