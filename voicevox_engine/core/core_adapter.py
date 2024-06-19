@@ -7,7 +7,7 @@ from typing import Any, Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import TypeAdapter
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
@@ -32,7 +32,7 @@ class CoreCharacter:
     name: str
     speaker_uuid: str
     styles: list[CoreCharacterStyle]
-    version: str = Field(title="話者のバージョン")
+    version: str # 話者のバージョン
 
 
 _core_character_adapter = TypeAdapter(CoreCharacter)
