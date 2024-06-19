@@ -69,7 +69,6 @@ class Speaker(BaseModel):
 class StyleInfo(BaseModel):
     """
     スタイルの追加情報
-    画像や音声はバイナリをbase64エンコードしたもの、あるいはURL
     """
 
     id: StyleId = Field(title="スタイルID")
