@@ -266,7 +266,6 @@ def read_cli_arguments() -> CLIArgs:
     )
 
     args = _cli_args_adapter.validate_python(vars(parser.parse_args()))
-    print(args)
 
     return args
 
