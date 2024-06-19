@@ -14,12 +14,12 @@ from pydantic import TypeAdapter
 from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord
 from .user_dict_word import (
-    EncodedUserDictWord,
+    SaveFormatUserDictWord,
     UserDictInputError,
     WordProperty,
+    convert_save_format_word_into_word,
+    convert_word_into_save_format,
     create_word,
-    decode_word,
-    encode_word,
     part_of_speech_data,
     priority2cost,
 )
@@ -58,7 +58,7 @@ mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
 
-_encoded_dict_adapter = TypeAdapter(dict[str, EncodedUserDictWord])
+_save_format_dict_adapter = TypeAdapter(dict[str, SaveFormatUserDictWord])
 
 
 class UserDictionary:
@@ -90,7 +90,7 @@ class UserDictionary:
         """ユーザー辞書データをファイルへ書き込む。"""
         encoded_user_dict: dict[str, dict[str, Any]] = {}
         for word_uuid, word in user_dict.items():
-            encoded_user_dict[word_uuid] = encode_word(word)
+            encoded_user_dict[word_uuid] = convert_word_into_save_format(word)
         user_dict_json = json.dumps(encoded_user_dict, ensure_ascii=False)
         self._user_dict_path.write_text(user_dict_json, encoding="utf-8")
 
@@ -181,10 +181,10 @@ class UserDictionary:
             return {}
 
         with self._user_dict_path.open(encoding="utf-8") as f:
-            encoded_dict = _encoded_dict_adapter.validate_python(json.load(f))
+            encoded_dict = _save_format_dict_adapter.validate_python(json.load(f))
             result: dict[str, UserDictWord] = {}
             for word_uuid, word in encoded_dict.items():
-                result[str(UUID(word_uuid))] = decode_word(word)
+                result[str(UUID(word_uuid))] = convert_save_format_word_into_word(word)
         return result
 
     def import_user_dict(

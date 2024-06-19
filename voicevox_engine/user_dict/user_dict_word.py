@@ -163,7 +163,7 @@ def priority2cost(context_id: int, priority: int) -> int:
 
 
 @dataclass
-class EncodedUserDictWord:
+class SaveFormatUserDictWord:
     """単語の保存形式"""
 
     surface: str
@@ -183,13 +183,13 @@ class EncodedUserDictWord:
     mora_count: int | None = None
 
 
-_encoded_word_adapter = TypeAdapter(EncodedUserDictWord)
+_encoded_word_adapter = TypeAdapter(SaveFormatUserDictWord)
 
 
-def encode_word(word: UserDictWord) -> dict[str, Any]:
-    """単語を保存形式へエンコードする。"""
+def convert_word_into_save_format(word: UserDictWord) -> dict[str, Any]:
+    """単語を保存用に変換する。"""
     cost = priority2cost(word.context_id, word.priority)
-    encoded_word = EncodedUserDictWord(
+    encoded_word = SaveFormatUserDictWord(
         surface=word.surface,
         cost=cost,
         context_id=word.context_id,
@@ -210,8 +210,8 @@ def encode_word(word: UserDictWord) -> dict[str, Any]:
     return dumped
 
 
-def decode_word(word: EncodedUserDictWord) -> UserDictWord:
-    """単語を保存形式からデコードする。"""
+def convert_save_format_word_into_word(word: SaveFormatUserDictWord) -> UserDictWord:
+    """単語を保存用から変換する。"""
     context_id_p_noun = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
     # cost2priorityで変換を行う際にcontext_idが必要となるが、
     # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
