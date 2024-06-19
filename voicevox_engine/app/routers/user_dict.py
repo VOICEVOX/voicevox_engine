@@ -9,8 +9,8 @@ from pydantic.json_schema import SkipJsonSchema
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    MAX_PRIORITY,
-    MIN_PRIORITY,
+    USER_DICT_MAX_PRIORITY,
+    USER_DICT_MIN_PRIORITY,
     UserDictInputError,
     WordProperty,
 )
@@ -58,11 +58,14 @@ def generate_user_dict_router(
         priority: Annotated[
             int | SkipJsonSchema[None],
             Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
+                ge=USER_DICT_MIN_PRIORITY,
+                le=USER_DICT_MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
                 # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
-                json_schema_extra={"maximum": MAX_PRIORITY, "minimum": MIN_PRIORITY},
+                json_schema_extra={
+                    "maximum": USER_DICT_MAX_PRIORITY,
+                    "minimum": USER_DICT_MIN_PRIORITY,
+                },
             ),
         ] = None,
     ) -> str:
@@ -112,11 +115,14 @@ def generate_user_dict_router(
         priority: Annotated[
             int | SkipJsonSchema[None],
             Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
+                ge=USER_DICT_MIN_PRIORITY,
+                le=USER_DICT_MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
                 # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
-                json_schema_extra={"maximum": MAX_PRIORITY, "minimum": MIN_PRIORITY},
+                json_schema_extra={
+                    "maximum": USER_DICT_MAX_PRIORITY,
+                    "minimum": USER_DICT_MIN_PRIORITY,
+                },
             ),
         ] = None,
     ) -> None:

@@ -8,7 +8,7 @@ from typing import Final, Literal
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
+from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerInfo,
@@ -18,7 +18,7 @@ from voicevox_engine.metas.Metas import (
 )
 
 
-def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
+def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:
     """コアから取得したスタイル情報をエンジン形式へキャストする。"""
     return [
         SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
@@ -61,7 +61,7 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_metas: list[CoreSpeaker]) -> list[Speaker]:
+    def load_combined_metas(self, core_metas: list[CoreCharacter]) -> list[Speaker]:
         """コアとエンジンのメタ情報を統合する。"""
         return [
             Speaker(
@@ -80,7 +80,7 @@ class MetasStore:
         self,
         speaker_uuid: str,
         speaker_or_singer: Literal["speaker", "singer"],
-        core_speakers: list[CoreSpeaker],
+        core_characters: list[CoreCharacter],
     ) -> SpeakerInfo:
         # キャラクター情報は以下のディレクトリ構造に従わなければならない。
         # {engine_speakers_path}/
@@ -105,7 +105,7 @@ class MetasStore:
         #         ...
 
         # 該当話者を検索する
-        speakers = self.load_combined_metas(core_speakers)
+        speakers = self.load_combined_metas(core_characters)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None

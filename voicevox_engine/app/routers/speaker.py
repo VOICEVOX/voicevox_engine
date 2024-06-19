@@ -19,7 +19,7 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        speakers = metas_store.load_combined_metas(core.speakers)
+        speakers = metas_store.load_combined_metas(core.characters)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
@@ -31,10 +31,11 @@ def generate_speaker_router(
         画像や音声はbase64エンコードされたものが返されます。
         """
         version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         return metas_store.speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
-            core_speakers=core_manager.get_core(version).speakers,
+            core_characters=core.characters,
         )
 
     @router.get("/singers")
@@ -42,7 +43,7 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        singers = metas_store.load_combined_metas(core.speakers)
+        singers = metas_store.load_combined_metas(core.characters)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
@@ -54,10 +55,11 @@ def generate_speaker_router(
         画像や音声はbase64エンコードされたものが返されます。
         """
         version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         return metas_store.speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
-            core_speakers=core_manager.get_core(version).speakers,
+            core_characters=core.characters,
         )
 
     return router
