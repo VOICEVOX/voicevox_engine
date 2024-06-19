@@ -32,7 +32,7 @@ class CoreCharacter:
     name: str
     speaker_uuid: str
     styles: list[CoreCharacterStyle]
-    version: str # 話者のバージョン
+    version: str  # 話者のバージョン
 
 
 _core_character_adapter = TypeAdapter(CoreCharacter)
