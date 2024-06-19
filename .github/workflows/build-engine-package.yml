@@ -445,7 +445,7 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
-      - name: <Build> Build VOICEVOX ENGINE
+      - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
           set -eux
 
@@ -470,7 +470,7 @@ jobs:
           CORE_MODEL_DIR_PATH="download/core/model" \
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm build_util/run.spec
+          pyinstaller --noconfirm run.spec
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)

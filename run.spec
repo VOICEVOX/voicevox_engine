@@ -4,10 +4,10 @@ from PyInstaller.utils.hooks import collect_data_files
 import os
 
 datas = [
-    ('../resources', 'resources'),
-    ('../engine_manifest.json', '.'),
-    ('../licenses.json', '.'),
-    ('../presets.yaml', '.'),
+    ('resources', 'resources'),
+    ('engine_manifest.json', '.'),
+    ('licenses.json', '.'),
+    ('presets.yaml', '.'),
 ]
 datas += collect_data_files('pyopenjtalk')
 
@@ -40,7 +40,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['../voicevox_engine/run.py'],
+    ['voicevox_engine/run.py'],
     pathex=[],
     binaries=[],
     datas=datas,
