@@ -16,14 +16,13 @@ CoreStyleId = NewType("CoreStyleId", int)
 CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
-class CoreSpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
+@dataclass(frozen=True)
+class CoreCharacterStyle:
+    """コアに含まれるキャラクターのスタイル情報"""
 
     name: str
     id: CoreStyleId
-    type: CoreStyleType | None = Field(default="talk")
+    type: CoreStyleType | None = "talk"
 
 
 @dataclass(frozen=True)
@@ -32,7 +31,7 @@ class CoreCharacter:
 
     name: str
     speaker_uuid: str
-    styles: list[CoreSpeakerStyle]
+    styles: list[CoreCharacterStyle]
     version: str = Field(title="話者のバージョン")
 
 
