@@ -159,3 +159,73 @@ def priority2cost(context_id: int, priority: int) -> int:
     assert USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY
     cost_candidates = _search_cost_candidates(context_id)
     return cost_candidates[USER_DICT_MAX_PRIORITY - priority]
+
+
+@dataclass
+class SaveFormatUserDictWord:
+    """保存用の単語の型"""
+
+    surface: str
+    cost: int  # `UserDictWord.priority` と対応
+    part_of_speech: str
+    part_of_speech_detail_1: str
+    part_of_speech_detail_2: str
+    part_of_speech_detail_3: str
+    inflectional_type: str
+    inflectional_form: str
+    stem: str
+    yomi: str
+    pronunciation: str
+    accent_type: int
+    accent_associative_rule: str
+    context_id: int | None = None  # v0.12 以前の辞書でのみ `None`
+    mora_count: int | None = None
+
+
+def convert_to_save_format(word: UserDictWord) -> SaveFormatUserDictWord:
+    """単語を保存用に変換する。"""
+    cost = priority2cost(word.context_id, word.priority)
+    return SaveFormatUserDictWord(
+        surface=word.surface,
+        cost=cost,
+        context_id=word.context_id,
+        part_of_speech=word.part_of_speech,
+        part_of_speech_detail_1=word.part_of_speech_detail_1,
+        part_of_speech_detail_2=word.part_of_speech_detail_2,
+        part_of_speech_detail_3=word.part_of_speech_detail_3,
+        inflectional_type=word.inflectional_type,
+        inflectional_form=word.inflectional_form,
+        stem=word.stem,
+        yomi=word.yomi,
+        pronunciation=word.pronunciation,
+        accent_type=word.accent_type,
+        mora_count=word.mora_count,
+        accent_associative_rule=word.accent_associative_rule,
+    )
+
+
+def convert_from_save_format(word: SaveFormatUserDictWord) -> UserDictWord:
+    """単語を保存用から変換する。"""
+    context_id_p_noun = part_of_speech_data[WordTypes.PROPER_NOUN].context_id
+    # cost2priorityで変換を行う際にcontext_idが必要となるが、
+    # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
+    # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
+    context_id = context_id_p_noun if word.context_id is None else word.context_id
+    priority = cost2priority(context_id, word.cost)
+    return UserDictWord(
+        surface=word.surface,
+        priority=priority,
+        context_id=context_id,
+        part_of_speech=word.part_of_speech,
+        part_of_speech_detail_1=word.part_of_speech_detail_1,
+        part_of_speech_detail_2=word.part_of_speech_detail_2,
+        part_of_speech_detail_3=word.part_of_speech_detail_3,
+        inflectional_type=word.inflectional_type,
+        inflectional_form=word.inflectional_form,
+        stem=word.stem,
+        yomi=word.yomi,
+        pronunciation=word.pronunciation,
+        accent_type=word.accent_type,
+        mora_count=word.mora_count,
+        accent_associative_rule=word.accent_associative_rule,
+    )
