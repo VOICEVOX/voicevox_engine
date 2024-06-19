@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field, TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 
-@dataclass
+@dataclass(frozen=True)
 class FeatureSupportJson:
     """`engine_manifest.json` の機能サポート状況"""
 
@@ -24,7 +24,7 @@ class FeatureSupportJson:
     name: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class SupportedFeaturesJson:
     """`engine_manifest.json` のサポート機能一覧"""
 
@@ -40,7 +40,7 @@ class SupportedFeaturesJson:
     manage_library: FeatureSupportJson
 
 
-@dataclass
+@dataclass(frozen=True)
 class EngineManifestJson:
     """`engine_manifest.json` のコンテンツ"""
 
