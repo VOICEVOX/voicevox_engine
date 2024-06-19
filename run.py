@@ -117,8 +117,8 @@ class CLIArgs:
     port: int
     use_gpu: bool
     voicevox_dir: Path | None
-    voicelib_dir: list[Path] | None
-    runtime_dir: list[Path] | None
+    voicelib_dirs: list[Path] | None
+    runtime_dirs: list[Path] | None
     enable_mock: bool
     enable_cancellable_synthesis: bool
     init_processes: int
@@ -126,7 +126,7 @@ class CLIArgs:
     cpu_num_threads: int | None
     output_log_utf8: bool
     cors_policy_mode: CorsPolicyMode | None
-    allow_origin: list[str] | None
+    allow_origins: list[str] | None
     setting_file: Path
     preset_file: Path | None
     disable_mutable_api: bool
@@ -265,7 +265,14 @@ def read_cli_arguments() -> CLIArgs:
         ),
     )
 
-    args = _cli_args_adapter.validate_python(vars(parser.parse_args()))
+    args_dict = vars(parser.parse_args())
+
+    # NOTE: 複数個の同名引数に基づいてリスト化されるため `CLIArgs` で複数形にリネームされている
+    args_dict["voicelib_dirs"] = args_dict.pop("voicelib_dir")
+    args_dict["runtime_dirs"] = args_dict.pop("runtime_dir")
+    args_dict["allow_origins"] = args_dict.pop("allow_origin")
+
+    args = _cli_args_adapter.validate_python(args_dict)
 
     return args
 
@@ -286,9 +293,9 @@ def main() -> None:
 
     core_manager = initialize_cores(
         use_gpu=args.use_gpu,
-        voicelib_dirs=args.voicelib_dir,
+        voicelib_dirs=args.voicelib_dirs,
         voicevox_dir=args.voicevox_dir,
-        runtime_dirs=args.runtime_dir,
+        runtime_dirs=args.runtime_dirs,
         cpu_num_threads=args.cpu_num_threads,
         enable_mock=args.enable_mock,
         load_all_models=args.load_all_models,
@@ -301,9 +308,9 @@ def main() -> None:
         cancellable_engine = CancellableEngine(
             init_processes=args.init_processes,
             use_gpu=args.use_gpu,
-            voicelib_dirs=args.voicelib_dir,
+            voicelib_dirs=args.voicelib_dirs,
             voicevox_dir=args.voicevox_dir,
-            runtime_dirs=args.runtime_dir,
+            runtime_dirs=args.runtime_dirs,
             cpu_num_threads=args.cpu_num_threads,
             enable_mock=args.enable_mock,
         )
@@ -317,11 +324,11 @@ def main() -> None:
         [args.cors_policy_mode, settings.cors_policy_mode]
     )
 
-    setting_allow_origin = None
+    setting_allow_origins = None
     if settings.allow_origin is not None:
-        setting_allow_origin = settings.allow_origin.split(" ")
+        setting_allow_origins = settings.allow_origin.split(" ")
     allow_origin = select_first_not_none_or_none(
-        [args.allow_origin, setting_allow_origin]
+        [args.allow_origins, setting_allow_origins]
     )
 
     env_preset_path_str = os.getenv("VV_PRESET_FILE")
