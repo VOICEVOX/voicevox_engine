@@ -573,7 +573,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 python -m pip install -r requirements-build.txt
 
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
+bash tools/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
 pyinstaller --noconfirm run.spec
@@ -686,7 +686,8 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
-エンジンの情報はエンジンマニフェスト（`engine_manifest.json`）で管理されています。
+エンジンの情報はルート直下のマニフェストファイル（`engine_manifest.json`）で管理されています。
+この形式のマニフェストファイルはVOICEVOX API準拠エンジンに必須です。
 マニフェストファイル内の情報を見て適宜変更してください。
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
@@ -718,7 +719,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-PYTHONPATH=. python build_util/make_docs.py
+PYTHONPATH=. python tools/make_docs.py
 ```
 
 ### GitHub Actions
