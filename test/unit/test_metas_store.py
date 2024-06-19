@@ -9,7 +9,7 @@ from voicevox_engine.metas.MetasStore import (
 )
 
 
-def speakers_to_characters(speakers: list[Speaker]) -> list[Character]:
+def _speakers_to_characters(speakers: list[Speaker]) -> list[Character]:
     """Speaker 配列をキャラクター配列へキャストする。"""
     characters: list[Character] = []
     for speaker in speakers:
@@ -64,7 +64,7 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
 
     # Outputs
     result = filter_characters_and_styles(
-        speakers_to_characters(
+        _speakers_to_characters(
             [
                 speaker_talk_only,
                 speaker_singing_teacher_only,
@@ -98,7 +98,7 @@ def test_filter_speakers_and_styles_with_singer() -> None:
 
     # Outputs
     result = filter_characters_and_styles(
-        speakers_to_characters(
+        _speakers_to_characters(
             [
                 speaker_talk_only,
                 speaker_singing_teacher_only,
