@@ -183,13 +183,13 @@ class SaveFormatUserDictWord:
     mora_count: int | None = None
 
 
-_encoded_word_adapter = TypeAdapter(SaveFormatUserDictWord)
+_save_format_word_adapter = TypeAdapter(SaveFormatUserDictWord)
 
 
 def convert_word_into_save_format(word: UserDictWord) -> dict[str, Any]:
     """単語を保存用に変換する。"""
     cost = priority2cost(word.context_id, word.priority)
-    encoded_word = SaveFormatUserDictWord(
+    save_format_word = SaveFormatUserDictWord(
         surface=word.surface,
         cost=cost,
         context_id=word.context_id,
@@ -206,7 +206,7 @@ def convert_word_into_save_format(word: UserDictWord) -> dict[str, Any]:
         mora_count=word.mora_count,
         accent_associative_rule=word.accent_associative_rule,
     )
-    dumped: dict[str, Any] = _encoded_word_adapter.dump_python(encoded_word)
+    dumped: dict[str, Any] = _save_format_word_adapter.dump_python(save_format_word)
     return dumped
 
 
