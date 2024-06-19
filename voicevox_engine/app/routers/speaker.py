@@ -9,10 +9,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import (
-    MetasStore,
-    filter_characters_and_styles,
-)
+from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
 
 
 def b64encode_str(s: bytes) -> str:

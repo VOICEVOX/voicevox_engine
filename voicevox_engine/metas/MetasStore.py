@@ -83,7 +83,9 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_characters: list[CoreCharacter]) -> list[Character]:
+    def load_combined_metas(
+        self, core_characters: list[CoreCharacter]
+    ) -> list[Character]:
         """コアとエンジンのメタ情報を統合する。"""
         characters: list[Character] = []
         for core_character in core_characters:
