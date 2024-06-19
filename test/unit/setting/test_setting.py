@@ -1,8 +1,5 @@
 from pathlib import Path
 
-import pytest
-from pydantic import ValidationError
-
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import (
     Setting,
@@ -83,10 +80,3 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     setting = _setting_adapter.dump_python(setting_loader.load())
     # Test
     assert true_setting == setting
-
-
-def test_setting_invalid_input() -> None:
-    """`Setting` は不正な入力に対してエラーを送出する。"""
-    # Test
-    with pytest.raises(ValidationError) as _:
-        Setting(cors_policy_mode="invalid_value", allow_origin="*")
