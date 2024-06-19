@@ -167,35 +167,35 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+python -m voicevox_engine --help
 ```
 
 ### 音声ライブラリ無しで実行
 音声ライブラリを導入しなかった場合あるいは軽量のモック版音声合成を利用したい場合、シェルで以下のコマンドを実行することでエンジンが実行されます。
 ```bash
-python run.py --enable_mock
+python -m voicevox_engine --enable_mock
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
 VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+python -m voicevox_engine --voicevox_dir=$VOICEVOX_DIR
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
-python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
+python -m voicevox_engine --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
 ### ログを UTF8 に変更
 
 ```bash
-python run.py --output_log_utf8
+python -m voicevox_engine --output_log_utf8
 # もしくは
-VV_OUTPUT_LOG_UTF8=1 python run.py
+VV_OUTPUT_LOG_UTF8=1 python -m voicevox_engine
 ```
 
 ## コードを編集する

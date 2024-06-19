@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # 実行コマンドは `python -m test.benchmark.speed.request` である。
     # `server="localhost"` の場合、本ベンチマーク実行に先立ってエンジン起動が必要である。
     # エンジン起動コマンドの一例として以下を示す。
-    # （別プロセスで）`python run.py --voicevox_dir=VOICEVOX/vv-engine`
+    # （別プロセスで）`python -m voicevox_engine --voicevox_dir=VOICEVOX/vv-engine`
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--voicevox_dir", type=Path)
