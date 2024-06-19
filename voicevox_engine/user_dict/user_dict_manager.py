@@ -182,9 +182,9 @@ class UserDictionary:
             return {}
 
         with self._user_dict_path.open(encoding="utf-8") as f:
-            encoded_dict = _save_format_dict_adapter.validate_python(json.load(f))
+            save_format_dict = _save_format_dict_adapter.validate_python(json.load(f))
             result: dict[str, UserDictWord] = {}
-            for word_uuid, word in encoded_dict.items():
+            for word_uuid, word in save_format_dict.items():
                 result[str(UUID(word_uuid))] = convert_save_format_word_into_word(word)
         return result
 
