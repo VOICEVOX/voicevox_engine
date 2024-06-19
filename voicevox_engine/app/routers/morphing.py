@@ -6,6 +6,7 @@ from typing import Annotated
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query
+from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -24,7 +25,7 @@ from voicevox_engine.morphing.morphing import (
 )
 from voicevox_engine.morphing.morphing import synthesize_morphed_wave
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.utility.file_utility import delete_file
+from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -45,7 +46,7 @@ def generate_morphing_router(
         summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[StyleId], core_version: str | None = None
+        base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
@@ -53,8 +54,10 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = core_manager.get_core(core_version)
-        speakers = metas_store.load_combined_metas(core.speakers)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+
+        speakers = metas_store.load_combined_metas(core.characters)
         try:
             morphable_targets = get_morphable_targets(speakers, base_style_ids)
         except StyleIdNotFoundError as e:
@@ -83,17 +86,18 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
-        core_version: str | None = None,
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
-        speakers = metas_store.load_combined_metas(core.speakers)
+        speakers = metas_store.load_combined_metas(core.characters)
         try:
             morphable = is_morphable(speakers, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
@@ -130,7 +134,7 @@ def generate_morphing_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     return router

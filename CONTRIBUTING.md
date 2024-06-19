@@ -304,7 +304,7 @@ safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.t
 
 ```bash
 OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
+bash tools/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
 pyinstaller --noconfirm run.spec
@@ -329,7 +329,7 @@ fork したリポジトリで Actions を ON にし、workflow_dispatch で`buil
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-PYTHONPATH=. python build_util/make_docs.py
+PYTHONPATH=. python tools/make_docs.py
 ```
 
 ## GitHub Actions

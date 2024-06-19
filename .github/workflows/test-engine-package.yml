@@ -82,4 +82,4 @@ jobs:
         run: chmod +x dist/run
 
       - name: <Test> Test ENGINE package
-        run: python build_util/check_release_build.py --dist_dir dist/
+        run: python tools/check_release_build.py --dist_dir dist/

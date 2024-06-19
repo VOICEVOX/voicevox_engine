@@ -4,20 +4,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
+from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.user_dict.model import UserDictWord, WordTypes
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    MAX_PRIORITY,
-    MIN_PRIORITY,
+    USER_DICT_MAX_PRIORITY,
+    USER_DICT_MIN_PRIORITY,
     UserDictInputError,
     WordProperty,
 )
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 
-def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
+def generate_user_dict_router(
+    user_dict: UserDictionary, verify_mutability: VerifyMutabilityAllowed
+) -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
     router = APIRouter(tags=["ユーザー辞書"])
 
@@ -39,7 +42,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
                 status_code=500, detail="辞書の読み込みに失敗しました。"
             )
 
-    @router.post("/user_dict_word", dependencies=[Depends(check_disabled_mutable_api)])
+    @router.post("/user_dict_word", dependencies=[Depends(verify_mutability)])
     def add_user_dict_word(
         surface: Annotated[str, Query(description="言葉の表層形")],
         pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
@@ -47,17 +50,22 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
             int, Query(description="アクセント型（音が下がる場所を指す）")
         ],
         word_type: Annotated[
-            WordTypes | None,
+            WordTypes | SkipJsonSchema[None],
             Query(
                 description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             ),
         ] = None,
         priority: Annotated[
-            int | None,
+            int | SkipJsonSchema[None],
             Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
+                ge=USER_DICT_MIN_PRIORITY,
+                le=USER_DICT_MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+                # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
+                json_schema_extra={
+                    "maximum": USER_DICT_MAX_PRIORITY,
+                    "minimum": USER_DICT_MIN_PRIORITY,
+                },
             ),
         ] = None,
     ) -> str:
@@ -89,7 +97,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.put(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def rewrite_user_dict_word(
         surface: Annotated[str, Query(description="言葉の表層形")],
@@ -99,17 +107,22 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
         ],
         word_uuid: Annotated[str, Path(description="更新する言葉のUUID")],
         word_type: Annotated[
-            WordTypes | None,
+            WordTypes | SkipJsonSchema[None],
             Query(
                 description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             ),
         ] = None,
         priority: Annotated[
-            int | None,
+            int | SkipJsonSchema[None],
             Query(
-                ge=MIN_PRIORITY,
-                le=MAX_PRIORITY,
+                ge=USER_DICT_MIN_PRIORITY,
+                le=USER_DICT_MAX_PRIORITY,
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
+                # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
+                json_schema_extra={
+                    "maximum": USER_DICT_MAX_PRIORITY,
+                    "minimum": USER_DICT_MIN_PRIORITY,
+                },
             ),
         ] = None,
     ) -> None:
@@ -141,7 +154,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.delete(
         "/user_dict_word/{word_uuid}",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def delete_user_dict_word(
         word_uuid: Annotated[str, Path(description="削除する言葉のUUID")]
@@ -161,7 +174,7 @@ def generate_user_dict_router(user_dict: UserDictionary) -> APIRouter:
     @router.post(
         "/import_user_dict",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def import_user_dict_words(
         import_dict_data: Annotated[

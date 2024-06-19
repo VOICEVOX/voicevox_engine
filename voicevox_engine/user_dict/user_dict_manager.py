@@ -9,13 +9,16 @@ from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
 import pyopenjtalk
+from pydantic import TypeAdapter
 
 from ..utility.path_utility import get_save_dir, resource_root
-from .model import UserDictWord, WordTypes
+from .model import UserDictWord
 from .user_dict_word import (
+    SaveFormatUserDictWord,
     UserDictInputError,
     WordProperty,
-    cost2priority,
+    convert_from_save_format,
+    convert_to_save_format,
     create_word,
     part_of_speech_data,
     priority2cost,
@@ -55,6 +58,9 @@ mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
 
+_save_format_dict_adapter = TypeAdapter(dict[str, SaveFormatUserDictWord])
+
+
 class UserDictionary:
     """ユーザー辞書"""
 
@@ -82,21 +88,12 @@ class UserDictionary:
     @mutex_wrapper(mutex_user_dict)
     def _write_to_json(self, user_dict: dict[str, UserDictWord]) -> None:
         """ユーザー辞書データをファイルへ書き込む。"""
-        user_dict_path = self._user_dict_path
-
-        converted_user_dict = {}
+        save_format_user_dict: dict[str, SaveFormatUserDictWord] = {}
         for word_uuid, word in user_dict.items():
-            word_dict = word.dict()
-            word_dict["cost"] = priority2cost(
-                word_dict["context_id"], word_dict["priority"]
-            )
-            del word_dict["priority"]
-            converted_user_dict[word_uuid] = word_dict
-        # 予めjsonに変換できることを確かめる
-        user_dict_json = json.dumps(converted_user_dict, ensure_ascii=False)
-
-        # ユーザー辞書ファイルへの書き込み
-        user_dict_path.write_text(user_dict_json, encoding="utf-8")
+            save_format_word = convert_to_save_format(word)
+            save_format_user_dict[word_uuid] = save_format_word
+        user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
+        self._user_dict_path.write_bytes(user_dict_json)
 
     @mutex_wrapper(mutex_openjtalk_dict)
     def update_dict(self) -> None:
@@ -180,26 +177,15 @@ class UserDictionary:
     @mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
         """ユーザー辞書を読み出す。"""
-        user_dict_path = self._user_dict_path
-
         # 指定ユーザー辞書が存在しない場合、空辞書を返す
-        if not user_dict_path.is_file():
+        if not self._user_dict_path.is_file():
             return {}
 
-        with user_dict_path.open(encoding="utf-8") as f:
+        with self._user_dict_path.open(encoding="utf-8") as f:
+            save_format_dict = _save_format_dict_adapter.validate_python(json.load(f))
             result: dict[str, UserDictWord] = {}
-            for word_uuid, word in json.load(f).items():
-                # cost2priorityで変換を行う際にcontext_idが必要となるが、
-                # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
-                # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
-                if word.get("context_id") is None:
-                    word["context_id"] = part_of_speech_data[
-                        WordTypes.PROPER_NOUN
-                    ].context_id
-                word["priority"] = cost2priority(word["context_id"], word["cost"])
-                del word["cost"]
-                result[str(UUID(word_uuid))] = UserDictWord(**word)
-
+            for word_uuid, word in save_format_dict.items():
+                result[str(UUID(word_uuid))] = convert_from_save_format(word)
         return result
 
     def import_user_dict(

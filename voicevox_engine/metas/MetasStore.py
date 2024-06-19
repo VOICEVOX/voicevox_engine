@@ -1,13 +1,12 @@
 """話者情報と話者メタ情報の管理"""
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
 
 from pydantic import BaseModel, Field
 
-from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
+from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
@@ -16,7 +15,7 @@ from voicevox_engine.metas.Metas import (
 )
 
 
-def cast_styles(cores: list[CoreSpeakerStyle]) -> list[SpeakerStyle]:
+def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:
     """コアから取得したスタイル情報をエンジン形式へキャストする。"""
     return [
         SpeakerStyle(name=core.name, id=StyleId(core.id), type=core.type)
@@ -48,13 +47,13 @@ class MetasStore:
         """
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
-            folder.name: _EngineSpeaker(
-                **json.loads((folder / "metas.json").read_text(encoding="utf-8"))
+            folder.name: _EngineSpeaker.model_validate_json(
+                (folder / "metas.json").read_text(encoding="utf-8")
             )
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_metas: list[CoreSpeaker]) -> list[Speaker]:
+    def load_combined_metas(self, core_metas: list[CoreCharacter]) -> list[Speaker]:
         """コアとエンジンのメタ情報を統合する。"""
         return [
             Speaker(
