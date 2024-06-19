@@ -191,8 +191,9 @@ def generate_speaker_router(
         """
         ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
         """
-        resource_path = resource_manager.resource_path(resource_hash)
-        if resource_path is None or not resource_path.exists():
+        try:
+            resource_path = resource_manager.resource_path(resource_hash)
+        except ResourceManagerError:
             raise HTTPException(status_code=404)
         return FileResponse(
             resource_path,

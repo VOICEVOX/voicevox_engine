@@ -63,6 +63,10 @@ class ResourceManager:
             return b64encode_str(resource_path.read_bytes())
         return filehash
 
-    def resource_path(self, filehash: str) -> Path | None:
+    def resource_path(self, filehash: str) -> Path:
         """指定したハッシュ値を持つリソースファイルのパスを返す。"""
-        return self._hash_to_path.get(filehash)
+        resource_path = self._hash_to_path.get(filehash)
+
+        if resource_path is None:
+            raise ResourceManagerError(f"'{filehash}'に対応するリソースがありません")
+        return resource_path
