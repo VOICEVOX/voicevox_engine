@@ -29,7 +29,7 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        speakers = metas_store.load_combined_metas(core.speakers)
+        speakers = metas_store.load_combined_metas(core.characters)
         return filter_speakers_and_styles(speakers, "speaker")
 
     @router.get("/speaker_info")
@@ -78,8 +78,8 @@ def generate_speaker_router(
         version = core_version or core_manager.latest_version()
 
         # 該当話者を検索する
-        core_speakers = core_manager.get_core(version).speakers
-        speakers = metas_store.load_combined_metas(core_speakers)
+        core_characters = core_manager.get_core(version).characters
+        speakers = metas_store.load_combined_metas(core_characters)
         speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
@@ -143,7 +143,7 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        singers = metas_store.load_combined_metas(core.speakers)
+        singers = metas_store.load_combined_metas(core.characters)
         return filter_speakers_and_styles(singers, "singer")
 
     @router.get("/singer_info")
