@@ -16,10 +16,12 @@ from voicevox_engine.library.library_manager import (
 )
 from voicevox_engine.library.model import DownloadableLibraryInfo, InstalledLibraryInfo
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 
-def generate_library_router(library_manager: LibraryManager) -> APIRouter:
+def generate_library_router(
+    library_manager: LibraryManager, verify_mutability: VerifyMutabilityAllowed
+) -> APIRouter:
     """音声ライブラリ API Router を生成する"""
     router = APIRouter(tags=["音声ライブラリ管理"])
 
@@ -46,7 +48,7 @@ def generate_library_router(library_manager: LibraryManager) -> APIRouter:
     @router.post(
         "/install_library/{library_uuid}",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     async def install_library(
         library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
@@ -76,7 +78,7 @@ def generate_library_router(library_manager: LibraryManager) -> APIRouter:
     @router.post(
         "/uninstall_library/{library_uuid}",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def uninstall_library(
         library_uuid: Annotated[str, Path(description="音声ライブラリのID")]

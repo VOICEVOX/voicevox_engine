@@ -707,15 +707,15 @@
             "title": "話者の対応機能"
           },
           "version": {
-            "default": "話者のバージョン",
-            "title": "Version",
+            "title": "話者のバージョン",
             "type": "string"
           }
         },
         "required": [
           "name",
           "speaker_uuid",
-          "styles"
+          "styles",
+          "version"
         ],
         "title": "Speaker",
         "type": "object"
