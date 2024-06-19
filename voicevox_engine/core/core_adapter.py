@@ -63,8 +63,8 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
-    def speakers(self) -> list[CoreCharacter]:
-        """話者情報"""
+    def characters(self) -> list[CoreCharacter]:
+        """キャラクター情報"""
         metas: list[Any] = json.loads(self.core.metas())
         return list(map(_core_character_adapter.validate_python, metas))
 
