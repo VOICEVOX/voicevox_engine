@@ -6,7 +6,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, Field
 
-from voicevox_engine.core.core_adapter import CoreSpeaker, CoreSpeakerStyle
+from voicevox_engine.core.core_adapter import CoreCharacter, CoreSpeakerStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
@@ -53,7 +53,7 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_metas: list[CoreSpeaker]) -> list[Speaker]:
+    def load_combined_metas(self, core_metas: list[CoreCharacter]) -> list[Speaker]:
         """コアとエンジンのメタ情報を統合する。"""
         return [
             Speaker(
