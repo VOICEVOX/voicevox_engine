@@ -4,7 +4,11 @@ import pytest
 from pydantic import ValidationError
 
 from voicevox_engine.setting.model import CorsPolicyMode
-from voicevox_engine.setting.setting_manager import Setting, SettingHandler
+from voicevox_engine.setting.setting_manager import (
+    Setting,
+    SettingHandler,
+    _setting_adapter,
+)
 
 
 def test_setting_handler_load_not_exist_file() -> None:
@@ -15,7 +19,7 @@ def test_setting_handler_load_not_exist_file() -> None:
     # Expects
     true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
     # Outputs
-    setting = settings.model_dump()
+    setting = _setting_adapter.dump_python(settings)
     # Test
     assert true_setting == setting
 
@@ -29,7 +33,7 @@ def test_setting_handler_load_exist_file_1() -> None:
     # Expects
     true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
     # Outputs
-    setting = settings.model_dump()
+    setting = _setting_adapter.dump_python(settings)
     # Test
     assert true_setting == setting
 
@@ -43,7 +47,7 @@ def test_setting_handler_load_exist_file_2() -> None:
     # Expects
     true_setting = {"allow_origin": None, "cors_policy_mode": "all"}
     # Outputs
-    setting = settings.model_dump()
+    setting = _setting_adapter.dump_python(settings)
     # Test
     assert true_setting == setting
 
@@ -60,7 +64,7 @@ def test_setting_handler_load_exist_file_3() -> None:
         "cors_policy_mode": CorsPolicyMode.localapps,
     }
     # Outputs
-    setting = settings.model_dump()
+    setting = _setting_adapter.dump_python(settings)
     # Test
     assert true_setting == setting
 
@@ -76,7 +80,7 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     # Outputs
     setting_loader.save(new_setting)
     # NOTE: `.load()` の正常動作を前提とする
-    setting = setting_loader.load().model_dump()
+    setting = _setting_adapter.dump_python(setting_loader.load())
     # Test
     assert true_setting == setting
 
