@@ -39,26 +39,6 @@ TALK_STYLE_TYPES: Final = ["talk"]
 SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
-def speakers_to_characters(speakers: list[Speaker]) -> list[Character]:
-    """Speaker 配列をキャラクター配列へキャストする。"""
-    characters: list[Character] = []
-    for speaker in speakers:
-        styles = speaker.styles
-        talk_styles = filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
-        sing_styles = filter(lambda style: style.type in SING_STYLE_TYPES, styles)
-        characters.append(
-            Character(
-                name=speaker.name,
-                uuid=speaker.speaker_uuid,
-                talk_styles=list(talk_styles),
-                sing_styles=list(sing_styles),
-                version=speaker.version,
-                supported_features=speaker.supported_features,
-            )
-        )
-    return characters
-
-
 def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
     """キャラクター配列を Speaker 配列へキャストする。"""
     return [
