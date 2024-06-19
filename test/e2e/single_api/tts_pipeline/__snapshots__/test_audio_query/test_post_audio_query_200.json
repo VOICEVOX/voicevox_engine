@@ -52,6 +52,8 @@
   "kana": "テ'_ストデ_ス",
   "outputSamplingRate": 24000,
   "outputStereo": false,
+  "pauseLength": null,
+  "pauseLengthScale": 1.0,
   "pitchScale": 0.0,
   "postPhonemeLength": 0.1,
   "prePhonemeLength": 0.1,
