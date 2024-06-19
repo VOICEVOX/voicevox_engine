@@ -12,7 +12,7 @@ from voicevox_engine.user_dict.model import (
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _PartOfSpeechDetail:
     """品詞ごとの情報"""
 
