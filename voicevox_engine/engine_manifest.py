@@ -7,7 +7,7 @@
 
 import json
 from base64 import b64encode
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TypeAlias
 
@@ -142,36 +142,32 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest_obj = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
-    manifest = _manifest_json_adapter.dump_python(manifest_obj)
+    manifest = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
     return EngineManifest(
-        manifest_version=manifest["manifest_version"],
-        name=manifest["name"],
-        brand_name=manifest["brand_name"],
-        uuid=manifest["uuid"],
-        url=manifest["url"],
-        default_sampling_rate=manifest["default_sampling_rate"],
-        frame_rate=manifest["frame_rate"],
-        icon=b64encode((root_dir / manifest["icon"]).read_bytes()).decode("utf-8"),
-        terms_of_service=(root_dir / manifest["terms_of_service"]).read_text("utf-8"),
+        manifest_version=manifest.manifest_version,
+        name=manifest.name,
+        brand_name=manifest.brand_name,
+        uuid=manifest.uuid,
+        url=manifest.url,
+        default_sampling_rate=manifest.default_sampling_rate,
+        frame_rate=manifest.frame_rate,
+        icon=b64encode((root_dir / manifest.icon).read_bytes()).decode("utf-8"),
+        terms_of_service=(root_dir / manifest.terms_of_service).read_text("utf-8"),
         update_infos=[
             UpdateInfo(**update_info)
             for update_info in json.loads(
-                (root_dir / manifest["update_infos"]).read_text("utf-8")
+                (root_dir / manifest.update_infos).read_text("utf-8")
             )
         ],
-        # supported_vvlib_manifest_versionを持たないengine_manifestのために
-        # キーが存在しない場合はNoneを返すgetを使う
-        supported_vvlib_manifest_version=manifest.get(
-            "supported_vvlib_manifest_version"
-        ),
+        supported_vvlib_manifest_version=None,
         dependency_licenses=[
             LicenseInfo(**license_info)
             for license_info in json.loads(
-                (root_dir / manifest["dependency_licenses"]).read_text("utf-8")
+                (root_dir / manifest.dependency_licenses).read_text("utf-8")
             )
         ],
         supported_features={
-            key: item["value"] for key, item in manifest["supported_features"].items()
+            key: item["value"]
+            for key, item in asdict(manifest.supported_features).items()
         },
     )

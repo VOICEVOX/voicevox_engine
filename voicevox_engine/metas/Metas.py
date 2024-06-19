@@ -60,7 +60,7 @@ class Speaker(BaseModel):
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="話者のUUID")
     styles: list[SpeakerStyle] = Field(title="スタイルの一覧")
-    version: str = Field("話者のバージョン")
+    version: str = Field(title="話者のバージョン")
     supported_features: SpeakerSupportedFeatures = Field(
         title="話者の対応機能", default_factory=SpeakerSupportedFeatures
     )

@@ -52,7 +52,8 @@ def generate_engine_info_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
-        supported_devices = core_manager.get_core(core_version).supported_devices
+        version = core_version or core_manager.latest_version()
+        supported_devices = core_manager.get_core(version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return SupportedDevicesInfo.generate_from(supported_devices)
