@@ -6,8 +6,8 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from voicevox_engine.user_dict.model import (
-    MAX_PRIORITY,
-    MIN_PRIORITY,
+    USER_DICT_MAX_PRIORITY,
+    USER_DICT_MIN_PRIORITY,
     UserDictWord,
     WordTypes,
 )
@@ -107,7 +107,7 @@ def create_word(word_property: WordProperty) -> UserDictWord:
     priority: int | None = word_property.priority
     if priority is None:
         priority = 5
-    if not MIN_PRIORITY <= priority <= MAX_PRIORITY:
+    if not USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY:
         raise UserDictInputError("優先度の値が無効です")
 
     pos_detail = part_of_speech_data[word_type]
@@ -149,10 +149,13 @@ def cost2priority(context_id: int, cost: int) -> int:
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
     # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
     # この関数とpriority2cost関数によって、辞書ファイルのcostを操作しても最も近いpriorityのcostに上書きされる
-    return MAX_PRIORITY - np.argmin(np.abs(np.array(cost_candidates) - cost)).item()
+    return (
+        USER_DICT_MAX_PRIORITY
+        - np.argmin(np.abs(np.array(cost_candidates) - cost)).item()
+    )
 
 
 def priority2cost(context_id: int, priority: int) -> int:
-    assert MIN_PRIORITY <= priority <= MAX_PRIORITY
+    assert USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY
     cost_candidates = _search_cost_candidates(context_id)
-    return cost_candidates[MAX_PRIORITY - priority]
+    return cost_candidates[USER_DICT_MAX_PRIORITY - priority]
