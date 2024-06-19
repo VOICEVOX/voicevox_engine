@@ -721,7 +721,7 @@
         "type": "object"
       },
       "SpeakerInfo": {
-        "description": "話者の追加情報\n画像や音声はバイナリをbase64エンコードしたもの、あるいはURL",
+        "description": "話者の追加情報",
         "properties": {
           "policy": {
             "title": "policy.md",
@@ -803,7 +803,7 @@
         "type": "object"
       },
       "StyleInfo": {
-        "description": "スタイルの追加情報\n画像や音声はバイナリをbase64エンコードしたもの、あるいはURL",
+        "description": "スタイルの追加情報",
         "properties": {
           "icon": {
             "title": "このスタイルのアイコンをbase64エンコードしたもの、あるいはURL",
