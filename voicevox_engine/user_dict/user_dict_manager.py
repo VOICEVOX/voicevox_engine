@@ -88,11 +88,12 @@ class UserDictionary:
     @mutex_wrapper(mutex_user_dict)
     def _write_to_json(self, user_dict: dict[str, UserDictWord]) -> None:
         """ユーザー辞書データをファイルへ書き込む。"""
-        encoded_user_dict: dict[str, dict[str, Any]] = {}
+        save_format_user_dict: dict[str, SaveFormatUserDictWord] = {}
         for word_uuid, word in user_dict.items():
-            encoded_user_dict[word_uuid] = convert_word_into_save_format(word)
-        user_dict_json = json.dumps(encoded_user_dict, ensure_ascii=False)
-        self._user_dict_path.write_text(user_dict_json, encoding="utf-8")
+            save_format_word = convert_word_into_save_format(word)
+            save_format_user_dict[word_uuid] = save_format_word
+        user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
+        self._user_dict_path.write_bytes(user_dict_json)
 
     @mutex_wrapper(mutex_openjtalk_dict)
     def update_dict(self) -> None:

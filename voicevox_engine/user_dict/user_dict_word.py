@@ -1,10 +1,9 @@
 """ユーザー辞書を構成する言葉（単語）関連の処理"""
 
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field
 
 from voicevox_engine.user_dict.model import (
     USER_DICT_MAX_PRIORITY,
@@ -183,13 +182,10 @@ class SaveFormatUserDictWord:
     mora_count: int | None = None
 
 
-_save_format_word_adapter = TypeAdapter(SaveFormatUserDictWord)
-
-
-def convert_word_into_save_format(word: UserDictWord) -> dict[str, Any]:
+def convert_word_into_save_format(word: UserDictWord) -> SaveFormatUserDictWord:
     """単語を保存用に変換する。"""
     cost = priority2cost(word.context_id, word.priority)
-    save_format_word = SaveFormatUserDictWord(
+    return SaveFormatUserDictWord(
         surface=word.surface,
         cost=cost,
         context_id=word.context_id,
@@ -206,8 +202,6 @@ def convert_word_into_save_format(word: UserDictWord) -> dict[str, Any]:
         mora_count=word.mora_count,
         accent_associative_rule=word.accent_associative_rule,
     )
-    dumped: dict[str, Any] = _save_format_word_adapter.dump_python(save_format_word)
-    return dumped
 
 
 def convert_save_format_word_into_word(word: SaveFormatUserDictWord) -> UserDictWord:
