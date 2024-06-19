@@ -11,10 +11,12 @@ from voicevox_engine.preset.preset_manager import (
     PresetManager,
 )
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 
-def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
+def generate_preset_router(
+    preset_manager: PresetManager, verify_mutability: VerifyMutabilityAllowed
+) -> APIRouter:
     """プリセット API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
@@ -37,7 +39,7 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/add_preset",
         response_description="追加したプリセットのプリセットID",
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def add_preset(
         preset: Annotated[
@@ -61,7 +63,7 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/update_preset",
         response_description="更新したプリセットのプリセットID",
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def update_preset(
         preset: Annotated[
@@ -85,7 +87,7 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
     @router.post(
         "/delete_preset",
         status_code=204,
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")]

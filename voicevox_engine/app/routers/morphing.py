@@ -54,7 +54,9 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+
         speakers = metas_store.load_combined_metas(core.speakers)
         try:
             morphable_targets = get_morphable_targets(speakers, base_style_ids)
@@ -90,8 +92,9 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
         speakers = metas_store.load_combined_metas(core.speakers)
