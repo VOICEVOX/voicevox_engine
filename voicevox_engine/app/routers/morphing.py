@@ -25,7 +25,7 @@ from voicevox_engine.morphing.morphing import (
 )
 from voicevox_engine.morphing.morphing import synthesize_morphed_wave
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.utility.file_utility import delete_file
+from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -54,7 +54,9 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+
         speakers = metas_store.load_combined_metas(core.speakers)
         try:
             morphable_targets = get_morphable_targets(speakers, base_style_ids)
@@ -90,8 +92,9 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
         speakers = metas_store.load_combined_metas(core.speakers)
@@ -131,7 +134,7 @@ def generate_morphing_router(
         return FileResponse(
             f.name,
             media_type="audio/wav",
-            background=BackgroundTask(delete_file, f.name),
+            background=BackgroundTask(try_delete_file, f.name),
         )
 
     return router
