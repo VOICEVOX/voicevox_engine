@@ -10,8 +10,8 @@ from io import TextIOWrapper
 from pathlib import Path
 from typing import TextIO, TypeVar
 
-from pydantic import TypeAdapter
 import uvicorn
+from pydantic import TypeAdapter
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
