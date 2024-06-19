@@ -5,11 +5,12 @@ import multiprocessing
 import os
 import sys
 import warnings
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TextIO, TypeVar
 
+from pydantic import TypeAdapter
 import uvicorn
 
 from voicevox_engine.app.application import generate_app
@@ -60,14 +61,18 @@ class Envs:
     disable_mutable_api: bool
 
 
+_env_adapter = TypeAdapter(Envs)
+
+
 def read_environment_variables() -> Envs:
     """環境変数を読み込む。"""
-    return Envs(
+    envs = Envs(
         output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
         cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
         env_preset_path=os.getenv("VV_PRESET_FILE"),
         disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
     )
+    return _env_adapter.validate_python(asdict(envs))
 
 
 def set_output_log_utf8() -> None:
