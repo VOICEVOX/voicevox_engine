@@ -87,7 +87,6 @@ class StyleInfo(BaseModel):
 class SpeakerInfo(BaseModel):
     """
     話者の追加情報
-    画像や音声はバイナリをbase64エンコードしたもの、あるいはURL
     """
 
     policy: str = Field(title="policy.md")
