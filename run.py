@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TextIO, TypeVar
 
 import uvicorn
+from pydantic import TypeAdapter
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -129,6 +130,9 @@ class CLIArgs:
     setting_file: Path
     preset_file: Path | None
     disable_mutable_api: bool
+
+
+_cli_args_adapter = TypeAdapter(CLIArgs)
 
 
 def read_cli_arguments() -> CLIArgs:
@@ -261,7 +265,8 @@ def read_cli_arguments() -> CLIArgs:
         ),
     )
 
-    args = CLIArgs(**vars(parser.parse_args()))
+    args = _cli_args_adapter.validate_python(vars(parser.parse_args()))
+    print(args)
 
     return args
 
