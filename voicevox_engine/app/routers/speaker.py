@@ -29,8 +29,8 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        speakers = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(speakers, "speaker")
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -143,8 +143,8 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        singers = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(singers, "singer")
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "singer")
 
     @router.get("/singer_info")
     def singer_info(
