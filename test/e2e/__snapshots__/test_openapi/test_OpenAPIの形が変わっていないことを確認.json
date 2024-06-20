@@ -777,26 +777,18 @@
         "title": "SpeakerStyle",
         "type": "object"
       },
-      "SpeakerSupportPermittedSynthesisMorphing": {
-        "enum": [
-          "ALL",
-          "SELF_ONLY",
-          "NOTHING"
-        ],
-        "title": "SpeakerSupportPermittedSynthesisMorphing",
-        "type": "string"
-      },
       "SpeakerSupportedFeatures": {
         "description": "話者の対応機能の情報",
         "properties": {
           "permitted_synthesis_morphing": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SpeakerSupportPermittedSynthesisMorphing"
-              }
-            ],
             "default": "ALL",
-            "title": "モーフィング機能への対応"
+            "enum": [
+              "ALL",
+              "SELF_ONLY",
+              "NOTHING"
+            ],
+            "title": "モーフィング機能への対応",
+            "type": "string"
           }
         },
         "title": "SpeakerSupportedFeatures",

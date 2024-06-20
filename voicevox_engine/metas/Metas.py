@@ -1,6 +1,5 @@
 """話者情報と話者メタ情報"""
 
-from enum import Enum
 from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
@@ -31,20 +30,15 @@ class SpeakerStyle(BaseModel):
     )
 
 
-class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
-    ALL = "ALL"  # 全て許可
-    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
-    NOTHING = "NOTHING"  # 全て禁止
-
-
 class SpeakerSupportedFeatures(BaseModel):
     """
     話者の対応機能の情報
     """
 
-    permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
+    # 全て許可, 同じ話者内でのみ許可, 全て禁止
+    permitted_synthesis_morphing: Literal["ALL", "SELF_ONLY", "NOTHING"] = Field(
         title="モーフィング機能への対応",
-        default=SpeakerSupportPermittedSynthesisMorphing.ALL,
+        default="ALL",
     )
 
 
