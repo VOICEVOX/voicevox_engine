@@ -337,7 +337,9 @@ def main() -> None:
     else:
         env_preset_path = None
     default_preset_path = engine_root() / "presets.yaml"
-    preset_path = select_first_not_none([args.preset_file, env_preset_path, default_preset_path])
+    preset_path = select_first_not_none(
+        [args.preset_file, env_preset_path, default_preset_path]
+    )
     preset_manager = PresetManager(preset_path)
 
     use_dict = UserDictionary()
