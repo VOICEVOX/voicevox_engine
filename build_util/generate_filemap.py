@@ -13,6 +13,7 @@ FILEMAP_FILENAME = "filemap.json"
 DEFAULT_TARGET_SUFFIX = ["png", "wav"]
 
 
+# WindowsとPOSIXで同じファイルが生成されるようにPurePosixPathに変換してから文字列にする。
 def to_posix_str_path(path: Path) -> str:
     return str(PurePosixPath(path))
 
