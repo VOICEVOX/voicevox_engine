@@ -18,6 +18,7 @@
 全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
 ## 目次
+
 目的に合わせたガイドはこちらです。
 
 - [ユーザーガイド](#ユーザーガイド): 音声合成をしたい方向け
@@ -451,6 +452,7 @@ options:
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
 ## 貢献者ガイド
+
 VOICEVOX ENGINE は皆さんのコントリビューションをお待ちしています！  
 詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。  
 また [VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
@@ -574,22 +576,22 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 ### ビルド
 
 `pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりローカルでビルドが可能です。  
-手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。  
+手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。
 
 GitHub を用いる場合、fork したリポジトリで GitHub Actions によるビルドが可能です。  
 Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
-ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。  
+ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。
 
 ### テスト・静的解析
 
 `pytest` を用いたテストと各種リンターを用いた静的解析が可能です。  
-手順の詳細は [貢献者ガイド#テスト](./CONTRIBUTING.md#テスト), [貢献者ガイド#静的解析](./CONTRIBUTING.md#静的解析) を御覧ください。  
+手順の詳細は [貢献者ガイド#テスト](./CONTRIBUTING.md#テスト), [貢献者ガイド#静的解析](./CONTRIBUTING.md#静的解析) を御覧ください。
 
 ### 依存関係
 
 依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
-詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。  
+詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。
 
 ### マルチエンジン機能に関して
 
@@ -613,7 +615,7 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
 エンジンの情報はルート直下のマニフェストファイル（`engine_manifest.json`）で管理されています。
-この形式のマニフェストファイルはVOICEVOX API準拠エンジンに必須です。
+この形式のマニフェストファイルは VOICEVOX API 準拠エンジンに必須です。
 マニフェストファイル内の情報を見て適宜変更してください。
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
