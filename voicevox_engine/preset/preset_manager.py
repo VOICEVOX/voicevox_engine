@@ -28,22 +28,13 @@ class PresetManager:
     YAMLファイルをSSoTとする簡易データベース方式により、プリセットの管理をおこなう。
     """
 
-    def __init__(self, preset_path: Path, make_file_if_not_exist: bool = False):
-        """
-        プリセットマネージャーを生成する。
+    def __init__(self, preset_path: Path):
+        """プリセットマネージャーを生成する。プリセットファイルが存在しない場合は新規作成する。"""
 
-        Parameters
-        ----------
-        preset_path :
-            プリセットの設定ファイルへのパス
-        make_file_if_not_exist :
-            パスが空のとき、プリセットファイルを自動生成するか否か
-        """
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
-
-        if not self.preset_path.exists() and make_file_if_not_exist:
+        if not self.preset_path.exists():
             self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:

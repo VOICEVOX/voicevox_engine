@@ -62,7 +62,7 @@ if __name__ == "__main__":
         tts_engines=tts_engines,
         core_manager=core_manager,
         setting_loader=SettingHandler(USER_SETTING_PATH),
-        preset_manager=PresetManager(preset_path, make_file_if_not_exist=True),
+        preset_manager=PresetManager(preset_path),
         user_dict=UserDictionary(),
         engine_manifest=engine_manifest,
         library_manager=library_manager,
