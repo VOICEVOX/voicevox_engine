@@ -31,7 +31,7 @@ def test_with_filemap() -> None:
     """
     "filemap.json"があるディレクトリでのテスト
     fimemapの生成方法
-    `python build_util/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
+    `python tools/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
     """
     manager = ResourceManager(False)
     manager.register_dir(with_filemap_dir)

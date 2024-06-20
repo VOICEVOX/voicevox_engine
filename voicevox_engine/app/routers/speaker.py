@@ -9,7 +9,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
+from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
@@ -34,8 +34,8 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        speakers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(speakers, "speaker")
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -90,9 +90,9 @@ def generate_speaker_router(
         version = core_version or core_manager.latest_version()
 
         # 該当話者を検索する
-        core_speakers = core_manager.get_core(version).speakers
-        speakers = metas_store.load_combined_metas(core_speakers)
-        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
+        core_characters = core_manager.get_core(version).characters
+        characters = metas_store.load_combined_metas(core_characters)
+        speakers = filter_characters_and_styles(characters, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
@@ -163,8 +163,8 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        singers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(singers, "singer")
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "singer")
 
     @router.get("/singer_info")
     def singer_info(

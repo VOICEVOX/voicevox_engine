@@ -69,11 +69,11 @@
 ### 例
 
 ```bash
-python build_util/generate_filemap.py --target_dir resources/character_info
+python tools/generate_filemap.py --target_dir resources/character_info
 ```
 
 pngとwavに加えてjpgファイルを登録する例
 ```bash
-python build_util/generate_filemap.py --target_dir resources/character_info \
+python tools/generate_filemap.py --target_dir resources/character_info \
     --target_suffix png --target_suffix wav --target_suffix jpg
 ```
