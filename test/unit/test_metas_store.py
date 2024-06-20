@@ -1,7 +1,32 @@
 import uuid
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerStyle, StyleId, StyleType
-from voicevox_engine.metas.MetasStore import filter_speakers_and_styles
+from voicevox_engine.metas.MetasStore import (
+    SING_STYLE_TYPES,
+    TALK_STYLE_TYPES,
+    Character,
+    filter_characters_and_styles,
+)
+
+
+def _speakers_to_characters(speakers: list[Speaker]) -> list[Character]:
+    """Speaker 配列をキャラクター配列へキャストする。"""
+    characters: list[Character] = []
+    for speaker in speakers:
+        styles = speaker.styles
+        talk_styles = filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
+        sing_styles = filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+        characters.append(
+            Character(
+                name=speaker.name,
+                uuid=speaker.speaker_uuid,
+                talk_styles=list(talk_styles),
+                sing_styles=list(sing_styles),
+                version=speaker.version,
+                supported_features=speaker.supported_features,
+            )
+        )
+    return characters
 
 
 def _gen_speaker(style_types: list[StyleType]) -> Speaker:
@@ -38,14 +63,16 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_speakers_and_styles(
-        [
-            speaker_talk_only,
-            speaker_singing_teacher_only,
-            speaker_frame_decode_only,
-            speaker_sing_only,
-            speaker_allstyle,
-        ],
+    result = filter_characters_and_styles(
+        _speakers_to_characters(
+            [
+                speaker_talk_only,
+                speaker_singing_teacher_only,
+                speaker_frame_decode_only,
+                speaker_sing_only,
+                speaker_allstyle,
+            ]
+        ),
         "speaker",
     )
 
@@ -70,14 +97,16 @@ def test_filter_speakers_and_styles_with_singer() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_speakers_and_styles(
-        [
-            speaker_talk_only,
-            speaker_singing_teacher_only,
-            speaker_frame_decode_only,
-            speaker_sing_only,
-            speaker_allstyle,
-        ],
+    result = filter_characters_and_styles(
+        _speakers_to_characters(
+            [
+                speaker_talk_only,
+                speaker_singing_teacher_only,
+                speaker_frame_decode_only,
+                speaker_sing_only,
+                speaker_allstyle,
+            ]
+        ),
         "singer",
     )
 
