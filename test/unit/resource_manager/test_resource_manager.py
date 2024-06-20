@@ -62,7 +62,7 @@ def test_with_filemap() -> None:
 
 def test_without_filemap_when_production() -> None:
     """
-    "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする(製品版を想定)
+    "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする
     """
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError):
@@ -71,25 +71,25 @@ def test_without_filemap_when_production() -> None:
 
 def test_without_filemap() -> None:
     """
-    "create_filemap_if_not_exist"がTrueで"filemap.json"が無い場合エラーにする(開発時を想定)
+    "create_filemap_if_not_exist"がTrueで"filemap.json"が無い場合は登録時にfilemapを生成する
     """
     manager = ResourceManager(True)
     manager.register_dir(without_filemap_dir)
 
+    # 全てのファイルが管理される
     png_path = without_filemap_dir / "dummy.png"
     _assert_resource(manager, png_path)
 
     wav_path = without_filemap_dir / "dummy.wav"
     _assert_resource(manager, wav_path)
 
+    txt_path = without_filemap_dir / "dummy.txt"
+    _assert_resource(manager, txt_path)
+
     # 同じバイナリがある場合のテスト
     same_wav_path = without_filemap_dir / "dummy_same_binary.wav"
     assert wav_path.read_bytes() == same_wav_path.read_bytes()
     _assert_resource(manager, same_wav_path)
-
-    # "filemap.json"がない場合、全てのファイルが公開される
-    txt_path = without_filemap_dir / "dummy.txt"
-    _assert_resource(manager, txt_path)
 
     # 登録されていないハッシュが渡された場合エラー
     with pytest.raises(ResourceManagerError):

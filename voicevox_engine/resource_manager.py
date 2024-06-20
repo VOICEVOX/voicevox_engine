@@ -27,6 +27,12 @@ class ResourceManager:
     """
 
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
+        """
+        Parameters
+        ----------
+        create_filemap_if_not_exist : bool
+            `filemap.json`がない場合でも登録時にfilemapを生成するか(開発時を想定)
+        """
         self._create_filemap_if_not_exist = create_filemap_if_not_exist
         self._path_to_hash: dict[Path, str] = {}
         self._hash_to_path: dict[str, Path] = {}
