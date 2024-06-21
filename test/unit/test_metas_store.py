@@ -5,6 +5,7 @@ from voicevox_engine.metas.MetasStore import (
     SING_STYLE_TYPES,
     TALK_STYLE_TYPES,
     Character,
+    characters_to_speakers,
     filter_characters_and_styles,
 )
 
@@ -63,17 +64,19 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_characters_and_styles(
-        _speakers_to_characters(
-            [
-                speaker_talk_only,
-                speaker_singing_teacher_only,
-                speaker_frame_decode_only,
-                speaker_sing_only,
-                speaker_allstyle,
-            ]
-        ),
-        "talk",
+    result = characters_to_speakers(
+        filter_characters_and_styles(
+            _speakers_to_characters(
+                [
+                    speaker_talk_only,
+                    speaker_singing_teacher_only,
+                    speaker_frame_decode_only,
+                    speaker_sing_only,
+                    speaker_allstyle,
+                ]
+            ),
+            "talk",
+        )
     )
 
     # Tests
@@ -97,17 +100,19 @@ def test_filter_speakers_and_styles_with_singer() -> None:
     speaker_allstyle = _gen_speaker(["talk", "singing_teacher", "frame_decode", "sing"])
 
     # Outputs
-    result = filter_characters_and_styles(
-        _speakers_to_characters(
-            [
-                speaker_talk_only,
-                speaker_singing_teacher_only,
-                speaker_frame_decode_only,
-                speaker_sing_only,
-                speaker_allstyle,
-            ]
-        ),
-        "sing",
+    result = characters_to_speakers(
+        filter_characters_and_styles(
+            _speakers_to_characters(
+                [
+                    speaker_talk_only,
+                    speaker_singing_teacher_only,
+                    speaker_frame_decode_only,
+                    speaker_sing_only,
+                    speaker_allstyle,
+                ]
+            ),
+            "sing",
+        )
     )
 
     # Tests

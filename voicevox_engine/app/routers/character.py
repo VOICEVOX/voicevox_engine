@@ -9,7 +9,11 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
+from voicevox_engine.metas.MetasStore import (
+    MetasStore,
+    characters_to_speakers,
+    filter_characters_and_styles,
+)
 
 
 def b64encode_str(s: bytes) -> str:
@@ -30,7 +34,8 @@ def generate_character_router(
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(characters, "talk")
+        talk_characters = filter_characters_and_styles(characters, "talk")
+        return characters_to_speakers(talk_characters)
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -41,14 +46,14 @@ def generate_character_router(
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(
-            speaker_uuid=speaker_uuid,
+            character_uuid=speaker_uuid,
             talk_or_sing="talk",
             core_version=core_version,
         )
 
     # FIXME: この関数をどこかに切り出す
     def _character_info(
-        speaker_uuid: str,
+        character_uuid: str,
         talk_or_sing: Literal["talk", "sing"],
         core_version: str | None,
     ) -> SpeakerInfo:
@@ -80,29 +85,29 @@ def generate_character_router(
         # 該当キャラクターを検索する
         core_characters = core_manager.get_core(version).characters
         characters = metas_store.load_combined_metas(core_characters)
-        speakers = filter_characters_and_styles(characters, talk_or_sing)
-        speaker = next(
-            filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
+        characters = filter_characters_and_styles(characters, talk_or_sing)
+        character = next(
+            filter(lambda character: character.uuid == character_uuid, characters), None
         )
-        if speaker is None:
+        if character is None:
             msg = "該当するキャラクターが見つかりません"
             raise HTTPException(status_code=404, detail=msg)
 
         # キャラクター情報を取得する
         try:
-            character_path = character_info_dir / speaker_uuid
+            character_path = character_info_dir / character_uuid
 
-            # speaker policy
+            # character policy
             policy_path = character_path / "policy.md"
             policy = policy_path.read_text("utf-8")
 
-            # speaker portrait
+            # character portrait
             portrait_path = character_path / "portrait.png"
             portrait = b64encode_str(portrait_path.read_bytes())
 
             # スタイル情報を取得する
             style_infos = []
-            for style in speaker.styles:
+            for style in character.talk_styles + character.sing_styles:
                 id = style.id
 
                 # style icon
@@ -145,7 +150,8 @@ def generate_character_router(
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(characters, "sing")
+        sing_characters = filter_characters_and_styles(characters, "sing")
+        return characters_to_speakers(sing_characters)
 
     @router.get("/singer_info")
     def singer_info(
@@ -156,7 +162,7 @@ def generate_character_router(
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(
-            speaker_uuid=speaker_uuid,
+            character_uuid=speaker_uuid,
             talk_or_sing="sing",
             core_version=core_version,
         )

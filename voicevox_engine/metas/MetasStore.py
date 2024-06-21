@@ -109,7 +109,7 @@ def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
 def filter_characters_and_styles(
     characters: list[Character],
     talk_or_sing: Literal["talk", "sing"],
-) -> list[Speaker]:
+) -> list[Character]:
     """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
     if talk_or_sing == "talk":
         # talk 系スタイルを持たないキャラクターを除外する
@@ -119,7 +119,7 @@ def filter_characters_and_styles(
         # sing 系スタイルを除外する
         for talk_character in talk_characters:
             talk_character.sing_styles = []
-        return characters_to_speakers(talk_characters)
+        return talk_characters
     elif talk_or_sing == "sing":
         # sing 系スタイルを持たないキャラクターを除外する
         sing_characters = list(
@@ -128,6 +128,6 @@ def filter_characters_and_styles(
         # talk 系スタイルを除外する
         for sing_character in sing_characters:
             sing_character.talk_styles = []
-        return characters_to_speakers(sing_characters)
+        return sing_characters
     else:
         raise Exception(f"'{talk_or_sing}' は不正な style_type です")
