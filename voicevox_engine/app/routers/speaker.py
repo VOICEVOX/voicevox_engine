@@ -85,7 +85,10 @@ def generate_speaker_router(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
         if speaker is None:
-            raise HTTPException(status_code=404, detail="該当するキャラクターが見つかりません")
+            msg = "該当するキャラクターが見つかりません"
+            raise HTTPException(
+                status_code=404, detail=msg
+            )
 
         # キャラクター情報を取得する
         try:
