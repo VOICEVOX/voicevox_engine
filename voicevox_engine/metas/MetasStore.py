@@ -34,7 +34,7 @@ TALK_STYLE_TYPES: Final = ["talk"]
 SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
-class _EngineSpeaker(BaseModel):
+class _EngineCharacter(BaseModel):
     """
     エンジンに含まれるキャラクター情報
     """
@@ -50,8 +50,8 @@ class MetasStore:
     def __init__(self, engine_characters_path: Path) -> None:
         """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""
         # エンジンに含まれる各キャラクターのメタ情報
-        self._loaded_metas: dict[str, _EngineSpeaker] = {
-            folder.name: _EngineSpeaker.model_validate_json(
+        self._loaded_metas: dict[str, _EngineCharacter] = {
+            folder.name: _EngineCharacter.model_validate_json(
                 (folder / "metas.json").read_text(encoding="utf-8")
             )
             for folder in engine_characters_path.iterdir()
