@@ -58,13 +58,11 @@ def generate_character_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
+        UUID で指定された話者の情報を取得します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(
-            character_uuid=speaker_uuid,
-            talk_or_sing="talk",
-            core_version=core_version,
+            character_uuid=speaker_uuid, talk_or_sing="talk", core_version=core_version
         )
 
     # FIXME: この関数をどこかに切り出す
@@ -155,10 +153,10 @@ def generate_character_router(
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
-        spk_info = SpeakerInfo(
+        character_info = SpeakerInfo(
             policy=policy, portrait=portrait, style_infos=style_infos
         )
-        return spk_info
+        return character_info
 
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
@@ -174,13 +172,11 @@ def generate_character_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
+        UUID で指定された歌手の情報を取得します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(
-            character_uuid=speaker_uuid,
-            talk_or_sing="sing",
-            core_version=core_version,
+            character_uuid=speaker_uuid, talk_or_sing="sing", core_version=core_version
         )
 
     return router
