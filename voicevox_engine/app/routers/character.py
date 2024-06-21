@@ -1,4 +1,4 @@
-"""キャラクター情報機能を提供する API Router"""
+"""話者情報機能を提供する API Router"""
 
 import base64
 from pathlib import Path
@@ -41,7 +41,7 @@ def generate_character_router(
     metas_store: MetasStore,
     character_info_dir: Path,
 ) -> APIRouter:
-    """キャラクター情報 API Router を生成する"""
+    """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
@@ -58,7 +58,7 @@ def generate_character_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        UUID で指定された話者の情報を取得します。
+        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(
@@ -71,7 +71,7 @@ def generate_character_router(
         talk_or_sing: Literal["talk", "sing"],
         core_version: str | None,
     ) -> SpeakerInfo:
-        # エンジンに含まれるキャラクターメタ情報は、次のディレクトリ構造に従わなければならない：
+        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
         #   character_info/
         #       {speaker_uuid_0}/
@@ -96,7 +96,7 @@ def generate_character_router(
 
         version = core_version or core_manager.latest_version()
 
-        # 該当キャラクターを検索する
+        # 該当話者を検索する
         core_characters = core_manager.get_core(version).characters
         characters = metas_store.load_combined_metas(core_characters)
         characters = filter_characters_and_styles(characters, talk_or_sing)
@@ -104,10 +104,9 @@ def generate_character_router(
             filter(lambda character: character.uuid == character_uuid, characters), None
         )
         if character is None:
-            msg = "該当するキャラクターが見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
-        # キャラクター情報を取得する
+        # 話者情報を取得する
         try:
             character_path = character_info_dir / character_uuid
 
@@ -172,7 +171,7 @@ def generate_character_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        UUID で指定された歌手の情報を取得します。
+        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _character_info(

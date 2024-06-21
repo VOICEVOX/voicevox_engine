@@ -1,4 +1,4 @@
-"""キャラクター情報とキャラクターメタ情報の管理"""
+"""話者情報と話者メタ情報の管理"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,7 +45,9 @@ class _EngineCharacter(BaseModel):
 
 
 class MetasStore:
-    """キャラクターやスタイルのメタ情報を管理する"""
+    """
+    話者やスタイルのメタ情報を管理する
+    """
 
     def __init__(self, engine_characters_path: Path) -> None:
         """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""

@@ -1,4 +1,4 @@
-"""キャラクターに関係したリクエストにかかる時間の測定"""
+"""話者に関係したリクエストにかかる時間の測定"""
 
 import argparse
 from pathlib import Path
