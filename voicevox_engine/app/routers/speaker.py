@@ -1,4 +1,4 @@
-"""話者情報機能を提供する API Router"""
+"""キャラクター情報機能を提供する API Router"""
 
 import base64
 from pathlib import Path
@@ -21,7 +21,7 @@ def generate_speaker_router(
     metas_store: MetasStore,
     speaker_info_dir: Path,
 ) -> APIRouter:
-    """話者情報 API Router を生成する"""
+    """キャラクター情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
@@ -37,7 +37,7 @@ def generate_speaker_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
+        UUID で指定された話者の情報を取得します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -52,7 +52,7 @@ def generate_speaker_router(
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
     ) -> SpeakerInfo:
-        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
+        # エンジンに含まれるキャラクターメタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
         #   character_info/
         #       {speaker_uuid_0}/
@@ -77,7 +77,7 @@ def generate_speaker_router(
 
         version = core_version or core_manager.latest_version()
 
-        # 該当話者を検索する
+        # 該当キャラクターを検索する
         core_characters = core_manager.get_core(version).characters
         characters = metas_store.load_combined_metas(core_characters)
         speakers = filter_characters_and_styles(characters, speaker_or_singer)
@@ -87,7 +87,7 @@ def generate_speaker_router(
         if speaker is None:
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
-        # 話者情報を取得する
+        # キャラクター情報を取得する
         try:
             speaker_path = speaker_info_dir / speaker_uuid
 
@@ -140,7 +140,7 @@ def generate_speaker_router(
 
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
-        """歌手情報の一覧を取得します"""
+        """UUID で指定された歌手の情報を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)

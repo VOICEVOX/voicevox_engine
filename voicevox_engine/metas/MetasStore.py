@@ -1,4 +1,4 @@
-"""話者情報と話者メタ情報の管理"""
+"""キャラクター情報とキャラクターメタ情報の管理"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,9 +54,7 @@ def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
 
 
 class _EngineSpeaker(BaseModel):
-    """
-    エンジンに含まれる話者情報
-    """
+    """エンジンに含まれるキャラクター情報"""
 
     supported_features: SpeakerSupportedFeatures = Field(
         default_factory=SpeakerSupportedFeatures
@@ -64,18 +62,11 @@ class _EngineSpeaker(BaseModel):
 
 
 class MetasStore:
-    """
-    話者やスタイルのメタ情報を管理する
-    """
+    """キャラクターやスタイルのメタ情報を管理する"""
 
     def __init__(self, engine_speakers_path: Path) -> None:
-        """
-        Parameters
-        ----------
-        engine_speakers_path : Path
-            エンジンに含まれる話者メタ情報ディレクトリのパス。
-        """
-        # エンジンに含まれる各話者のメタ情報
+        """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""
+        # エンジンに含まれる各キャラクターのメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
             folder.name: _EngineSpeaker.model_validate_json(
                 (folder / "metas.json").read_text(encoding="utf-8")
