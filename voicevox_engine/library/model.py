@@ -28,7 +28,9 @@ class BaseLibraryInfo(BaseModel):
     version: str = Field(title="音声ライブラリのバージョン")
     download_url: str = Field(title="音声ライブラリのダウンロードURL")
     bytes: int = Field(title="音声ライブラリのバイト数")
-    speakers: list[LibrarySpeaker] = Field(title="音声ライブラリに含まれるキャラクターのリスト")
+    speakers: list[LibrarySpeaker] = Field(
+        title="音声ライブラリに含まれるキャラクターのリスト"
+    )
 
 
 # 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている

@@ -86,8 +86,12 @@ if __name__ == "__main__":
     _result_spk_infos_localhost = benchmark_get_speaker_info_all("localhost", root_dir)
     result_spk_infos_fakeserve = "{:.3f}".format(_result_spk_infos_fakeserve)
     result_spk_infos_localhost = "{:.3f}".format(_result_spk_infos_localhost)
-    print(f"全キャラクター `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec")
-    print(f"全キャラクター `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
+    print(
+        f"全キャラクター `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec"
+    )
+    print(
+        f"全キャラクター `GET /speaker_info` localhost: {result_spk_infos_localhost} sec"
+    )
 
     req_time_all_fake = benchmark_request_time_for_all_speakers("fake", root_dir)
     req_time_all_local = benchmark_request_time_for_all_speakers("localhost", root_dir)

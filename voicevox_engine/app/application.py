@@ -9,13 +9,13 @@ from voicevox_engine.app.dependencies import generate_mutability_allowed_verifie
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
+from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
 from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
-from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
