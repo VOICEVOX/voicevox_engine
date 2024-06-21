@@ -1,27 +1,25 @@
 # ResourceManagerの仕様について
 
+一部のリソースファイルはURLとして返します。  
+ファイルの内容が変わってもURLが同じ場合、キャッシュが働いて新しいリソースを取得できない可能性があります。  
+これを防ぐためハッシュを使用してリソースの変更の度にURLを変更します。
+
+ResourceManagerはファイルとハッシュを管理します。  
+filemap.jsonは事前に生成したハッシュとファイルの関連付けを行います。  
+generate_filemap.pyはfilemap.pyの作成を行います。
+
 ## ResourceManager
 
-### 初期化
+初期化時に`create_filemap_if_not_exist`を`True`にすると`filemap.json`がないディレクトリの登録ができます。  
+登録されるリソースは`filemap.json`にあるものに限ります。  
+`filemap.json`がない場合ディレクトリ内のすべてのファイルが登録されます。
 
-`create_filemap_if_not_exist`に`True`を渡すことによって登録するディレクトリに`filemap.json`が存在しないディレクトリを登録可能にします。  
-これは開発時を想定したものです。
-
-### リソースの登録
-
-`register_dir(resource_dir)`でディレクトリ内のリソースを登録します。  
-登録されるリソースは`filemap.json`にあるものに限ります。
-
-`filemap.json`がない場合
-- `create_filemap_if_not_exist`が`False`  
-`ResourceManagerError`が発生します。
-
-- `create_filemap_if_not_exist`が`True`  
-ディレクトリ内のすべてのファイルが登録されます。
+細かい仕様はResourceManagerのドキュメントと実装を確認してください。
 
 ## filemap.json
 
-キーは登録するファイルパスを登録するディレクトリを基準にした相対パスです。
+キーは登録するファイルパスを登録するディレクトリを基準にした相対パスです。  
+パス区切り文字は互換性のため`/`である必要があります。
 
 値は登録するファイルを一意に識別できるハッシュ等の文字列です。  
 `generate_filemap.py`はsha256ハッシュを生成します。
