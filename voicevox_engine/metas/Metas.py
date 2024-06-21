@@ -64,7 +64,7 @@ class Speaker(BaseModel):
 
 class StyleInfo(BaseModel):
     """
-    話者の追加情報
+    スタイルの追加情報
     """
 
     id: StyleId = Field(title="スタイルID")
@@ -78,7 +78,9 @@ class StyleInfo(BaseModel):
 
 
 class SpeakerInfo(BaseModel):
-    """キャラクターの追加情報"""
+    """
+    話者の追加情報
+    """
 
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
