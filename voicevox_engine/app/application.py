@@ -9,7 +9,7 @@ from voicevox_engine.app.dependencies import generate_mutability_allowed_verifie
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
-from voicevox_engine.app.routers.characters import generate_speaker_router
+from voicevox_engine.app.routers.character import generate_speaker_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
