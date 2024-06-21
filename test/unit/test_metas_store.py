@@ -79,7 +79,7 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
     # Tests
     assert len(result) == 2
 
-    # 話者だけになっている
+    # 喋れるキャラクターだけになっている
     assert _equal_speakers(result, [speaker_talk_only, speaker_allstyle])
 
     # スタイルがフィルタリングされている
@@ -113,7 +113,7 @@ def test_filter_speakers_and_styles_with_singer() -> None:
     # Tests
     assert len(result) == 4
 
-    # 歌手だけになっている
+    # 歌えるキャラクターだけになっている
     assert _equal_speakers(
         result,
         [

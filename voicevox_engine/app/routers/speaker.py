@@ -26,7 +26,7 @@ def generate_speaker_router(
 
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
-        """話者情報の一覧を取得します。"""
+        """喋れるキャラクターの情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
@@ -37,7 +37,7 @@ def generate_speaker_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        UUID で指定された話者の情報を取得します。
+        UUID で指定された喋れるキャラクターの情報を取得します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(
@@ -85,7 +85,7 @@ def generate_speaker_router(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
         if speaker is None:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+            raise HTTPException(status_code=404, detail="該当するキャラクターが見つかりません")
 
         # キャラクター情報を取得する
         try:
@@ -140,7 +140,7 @@ def generate_speaker_router(
 
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
-        """UUID で指定された歌手の情報を取得します。"""
+        """歌えるキャラクターの情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
@@ -151,7 +151,7 @@ def generate_speaker_router(
         speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
+        UUID で指定された歌えるキャラクターの情報を取得します。
         画像や音声はbase64エンコードされたものが返されます。
         """
         return _speaker_info(

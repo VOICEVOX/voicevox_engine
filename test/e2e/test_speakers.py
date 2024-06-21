@@ -1,6 +1,6 @@
 """
-話者・歌手のテスト。
-TODO: 話者と歌手の両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
+喋れるキャラクター・歌えるキャラクターのテスト。
+TODO: 喋れるキャラクター・歌えるキャラクターの両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
 """
 
 from test.utility import hash_long_string
@@ -14,7 +14,7 @@ from voicevox_engine.metas.Metas import Speaker
 _speaker_list_adapter = TypeAdapter(list[Speaker])
 
 
-def test_話者一覧が取得できる(
+def test_喋れるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/speakers")
@@ -22,7 +22,7 @@ def test_話者一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_話者の情報を取得できる(
+def test_喋れるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     speakers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
@@ -35,7 +35,7 @@ def test_話者の情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_歌手一覧が取得できる(
+def test_歌えるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/singers")
@@ -43,7 +43,7 @@ def test_歌手一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_歌手の情報を取得できる(
+def test_歌えるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     singers = _speaker_list_adapter.validate_python(client.get("/singers").json())
