@@ -1,5 +1,5 @@
 import json
-from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
+from test.utility import pydantic_to_native_type, round_floats
 from unittest.mock import Mock
 
 import numpy as np
