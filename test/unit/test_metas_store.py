@@ -15,8 +15,8 @@ from voicevox_engine.metas.MetasStore import (
 
 
 def _gen_character(style_types: list[StyleType]) -> Character:
-    talk_styles = list(filter(lambda s: s in SING_STYLE_TYPES, style_types))
-    sing_styles = list(filter(lambda s: s in TALK_STYLE_TYPES, style_types))
+    talk_styles = list(filter(lambda s: s in TALK_STYLE_TYPES, style_types))
+    sing_styles = list(filter(lambda s: s in SING_STYLE_TYPES, style_types))
     return Character(
         name="",
         uuid=str(uuid.uuid4()),
