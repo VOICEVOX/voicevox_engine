@@ -90,6 +90,8 @@ if __name__ == "__main__":
     print(f"全話者 `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
 
     req_time_all_fake = benchmark_request_time_for_all_talk_characters("fake", root_dir)
-    req_time_all_local = benchmark_request_time_for_all_talk_characters("localhost", root_dir)
+    req_time_all_local = benchmark_request_time_for_all_talk_characters(
+        "localhost", root_dir
+    )
     print("全話者 `GET /` fakeserve: {:.3f} sec".format(req_time_all_fake))
     print("全話者 `GET /` localhost: {:.3f} sec".format(req_time_all_local))
