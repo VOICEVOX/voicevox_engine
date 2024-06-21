@@ -90,6 +90,22 @@ class MetasStore:
         return characters
 
 
+def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
+    """キャラクターのリストを `Speaker` のリストへキャストする。"""
+    return list(
+        map(
+            lambda character: Speaker(
+                name=character.name,
+                speaker_uuid=character.uuid,
+                styles=character.talk_styles + character.sing_styles,
+                version=character.version,
+                supported_features=character.supported_features,
+            ),
+            characters,
+        )
+    )
+
+
 def filter_characters_and_styles(
     characters: list[Character],
     talk_or_sing: Literal["talk", "sing"],
@@ -97,37 +113,21 @@ def filter_characters_and_styles(
     """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
     if talk_or_sing == "talk":
         # talk 系スタイルを持たないキャラクターを除外する
-        talk_characters = filter(
-            lambda character: len(character.talk_styles) > 0, characters
+        talk_characters = list(
+            filter(lambda character: len(character.talk_styles) > 0, characters)
         )
-        # キャラクター内のスタイルを talk 系のみにしたうえでキャストする
-        talk_speakers = map(
-            lambda talker: Speaker(
-                name=talker.name,
-                speaker_uuid=talker.uuid,
-                styles=talker.talk_styles,
-                version=talker.version,
-                supported_features=talker.supported_features,
-            ),
-            talk_characters,
-        )
-        return list(talk_speakers)
+        # sing 系スタイルを除外する
+        for talk_character in talk_characters:
+            talk_character.sing_styles = []
+        return characters_to_speakers(talk_characters)
     elif talk_or_sing == "sing":
         # sing 系スタイルを持たないキャラクターを除外する
-        sing_characters = filter(
-            lambda character: len(character.sing_styles) > 0, characters
+        sing_characters = list(
+            filter(lambda character: len(character.sing_styles) > 0, characters)
         )
-        # キャラクター内のスタイルを sing 系のみにしたうえでキャストする
-        sing_speakers = map(
-            lambda singer: Speaker(
-                name=singer.name,
-                speaker_uuid=singer.uuid,
-                styles=singer.sing_styles,
-                version=singer.version,
-                supported_features=singer.supported_features,
-            ),
-            sing_characters,
-        )
-        return list(sing_speakers)
+        # talk 系スタイルを除外する
+        for sing_character in sing_characters:
+            sing_character.talk_styles = []
+        return characters_to_speakers(sing_characters)
     else:
         raise Exception(f"'{talk_or_sing}' は不正な style_type です")
