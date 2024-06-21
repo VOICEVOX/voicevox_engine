@@ -30,7 +30,7 @@ def generate_speaker_router(
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(characters, "speaker")
+        return filter_characters_and_styles(characters, "talk")
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -42,14 +42,14 @@ def generate_speaker_router(
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
-            speaker_or_singer="speaker",
+            talk_or_sing="talk",
             core_version=core_version,
         )
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
         speaker_uuid: str,
-        speaker_or_singer: Literal["speaker", "singer"],
+        talk_or_sing: Literal["talk", "sing"],
         core_version: str | None,
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
@@ -80,7 +80,7 @@ def generate_speaker_router(
         # 該当話者を検索する
         core_characters = core_manager.get_core(version).characters
         characters = metas_store.load_combined_metas(core_characters)
-        speakers = filter_characters_and_styles(characters, speaker_or_singer)
+        speakers = filter_characters_and_styles(characters, talk_or_sing)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
@@ -144,7 +144,7 @@ def generate_speaker_router(
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
-        return filter_characters_and_styles(characters, "singer")
+        return filter_characters_and_styles(characters, "sing")
 
     @router.get("/singer_info")
     def singer_info(
@@ -156,7 +156,7 @@ def generate_speaker_router(
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
-            speaker_or_singer="singer",
+            talk_or_sing="sing",
             core_version=core_version,
         )
 

@@ -113,10 +113,10 @@ class MetasStore:
 
 def filter_characters_and_styles(
     characters: list[Character],
-    speaker_or_singer: Literal["speaker", "singer"],
+    talk_or_sing: Literal["talk", "sing"],
 ) -> list[Speaker]:
     """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
-    if speaker_or_singer == "speaker":
+    if talk_or_sing == "talk":
         # talk 系スタイルを持たないキャラクターを除外する
         talk_characters = filter(
             lambda character: len(character.talk_styles) > 0, characters
@@ -133,7 +133,7 @@ def filter_characters_and_styles(
             talk_characters,
         )
         return list(talk_speakers)
-    elif speaker_or_singer == "singer":
+    elif talk_or_sing == "sing":
         # sing 系スタイルを持たないキャラクターを除外する
         sing_characters = filter(
             lambda character: len(character.sing_styles) > 0, characters
@@ -151,4 +151,4 @@ def filter_characters_and_styles(
         )
         return list(sing_speakers)
     else:
-        raise Exception(f"'{speaker_or_singer}' は不正な style_type です")
+        raise Exception(f"'{talk_or_sing}' は不正な style_type です")

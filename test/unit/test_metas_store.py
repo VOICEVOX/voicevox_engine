@@ -73,7 +73,7 @@ def test_filter_speakers_and_styles_with_speaker() -> None:
                 speaker_allstyle,
             ]
         ),
-        "speaker",
+        "talk",
     )
 
     # Tests
@@ -107,7 +107,7 @@ def test_filter_speakers_and_styles_with_singer() -> None:
                 speaker_allstyle,
             ]
         ),
-        "singer",
+        "sing",
     )
 
     # Tests
