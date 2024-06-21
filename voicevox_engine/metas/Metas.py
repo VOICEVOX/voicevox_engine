@@ -1,4 +1,4 @@
-"""話者情報と話者メタ情報"""
+"""キャラクター情報とキャラクターメタ情報"""
 
 from enum import Enum
 from typing import Literal, NewType
@@ -13,9 +13,7 @@ StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
 class SpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
+    """キャラクターのスタイル情報"""
 
     name: str = Field(title="スタイル名")
     id: StyleId = Field(title="スタイルID")
@@ -33,14 +31,12 @@ class SpeakerStyle(BaseModel):
 
 class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
     ALL = "ALL"  # 全て許可
-    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
+    SELF_ONLY = "SELF_ONLY"  # 同じキャラクター内でのみ許可
     NOTHING = "NOTHING"  # 全て禁止
 
 
 class SpeakerSupportedFeatures(BaseModel):
-    """
-    話者の対応機能の情報
-    """
+    """キャラクターの対応機能の情報"""
 
     permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
         title="モーフィング機能への対応",
@@ -49,16 +45,14 @@ class SpeakerSupportedFeatures(BaseModel):
 
 
 class Speaker(BaseModel):
-    """
-    話者情報
-    """
+    """キャラクター情報"""
 
     name: str = Field(title="名前")
-    speaker_uuid: str = Field(title="話者のUUID")
+    speaker_uuid: str = Field(title="キャラクターのUUID")
     styles: list[SpeakerStyle] = Field(title="スタイルの一覧")
-    version: str = Field(title="話者のバージョン")
+    version: str = Field(title="キャラクターのバージョン")
     supported_features: SpeakerSupportedFeatures = Field(
-        title="話者の対応機能", default_factory=SpeakerSupportedFeatures
+        title="キャラクターの対応機能", default_factory=SpeakerSupportedFeatures
     )
 
 
@@ -78,9 +72,7 @@ class StyleInfo(BaseModel):
 
 
 class SpeakerInfo(BaseModel):
-    """
-    話者の追加情報
-    """
+    """キャラクターの追加情報"""
 
     policy: str = Field(title="policy.md")
     portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")

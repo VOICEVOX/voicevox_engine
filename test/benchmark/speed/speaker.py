@@ -1,4 +1,4 @@
-"""話者に関係したリクエストにかかる時間の測定"""
+"""キャラクターに関係したリクエストにかかる時間の測定"""
 
 import argparse
 from pathlib import Path
@@ -22,7 +22,7 @@ def benchmark_get_speakers(server: ServerType, root_dir: Path | None = None) -> 
 def benchmark_get_speaker_info_all(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
-    """全話者への `GET /speaker_info` にかかる時間を測定する。"""
+    """全キャラクターへの `GET /speaker_info` にかかる時間を測定する。"""
 
     client = generate_client(server, root_dir)
 
@@ -45,8 +45,8 @@ def benchmark_request_time_for_all_speakers(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
     """
-    全話者数と同じ回数の `GET /` にかかる時間を測定する。
-    `GET /` はエンジン内部処理が最小であるため、全話者分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
+    全キャラクター数と同じ回数の `GET /` にかかる時間を測定する。
+    `GET /` はエンジン内部処理が最小であるため、全キャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
 
     client = generate_client(server, root_dir)
@@ -86,10 +86,10 @@ if __name__ == "__main__":
     _result_spk_infos_localhost = benchmark_get_speaker_info_all("localhost", root_dir)
     result_spk_infos_fakeserve = "{:.3f}".format(_result_spk_infos_fakeserve)
     result_spk_infos_localhost = "{:.3f}".format(_result_spk_infos_localhost)
-    print(f"全話者 `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec")
-    print(f"全話者 `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
+    print(f"全キャラクター `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec")
+    print(f"全キャラクター `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
 
     req_time_all_fake = benchmark_request_time_for_all_speakers("fake", root_dir)
     req_time_all_local = benchmark_request_time_for_all_speakers("localhost", root_dir)
-    print("全話者 `GET /` fakeserve: {:.3f} sec".format(req_time_all_fake))
-    print("全話者 `GET /` localhost: {:.3f} sec".format(req_time_all_local))
+    print("全キャラクター `GET /` fakeserve: {:.3f} sec".format(req_time_all_fake))
+    print("全キャラクター `GET /` localhost: {:.3f} sec".format(req_time_all_local))

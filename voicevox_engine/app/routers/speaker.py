@@ -1,4 +1,4 @@
-"""話者情報機能を提供する API Router"""
+"""キャラクター情報機能を提供する API Router"""
 
 import base64
 from pathlib import Path
@@ -21,7 +21,7 @@ def generate_speaker_router(
     metas_store: MetasStore,
     speaker_info_dir: Path,
 ) -> APIRouter:
-    """話者情報 API Router を生成する"""
+    """キャラクター情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
@@ -52,7 +52,7 @@ def generate_speaker_router(
         talk_or_sing: Literal["talk", "sing"],
         core_version: str | None,
     ) -> SpeakerInfo:
-        # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
+        # エンジンに含まれるキャラクターメタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
         #   character_info/
         #       {speaker_uuid_0}/
@@ -77,7 +77,7 @@ def generate_speaker_router(
 
         version = core_version or core_manager.latest_version()
 
-        # 該当話者を検索する
+        # 該当キャラクターを検索する
         core_characters = core_manager.get_core(version).characters
         characters = metas_store.load_combined_metas(core_characters)
         speakers = filter_characters_and_styles(characters, talk_or_sing)
@@ -85,9 +85,9 @@ def generate_speaker_router(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
         if speaker is None:
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+            raise HTTPException(status_code=404, detail="該当するキャラクターが見つかりません")
 
-        # 話者情報を取得する
+        # キャラクター情報を取得する
         try:
             speaker_path = speaker_info_dir / speaker_uuid
 

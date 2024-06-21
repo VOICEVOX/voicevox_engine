@@ -86,7 +86,7 @@ def is_morphable(
         return False
     elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
         return False
-    # 同一話者のみの場合は同一話者判定
+    # 同一キャラクターのみの場合は同一キャラクター判定
     elif morphable_1 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
         return uuid_1 == uuid_2
     elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
