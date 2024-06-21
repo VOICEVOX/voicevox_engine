@@ -721,7 +721,7 @@
         "type": "object"
       },
       "SpeakerInfo": {
-        "description": "キャラクターの追加情報",
+        "description": "話者の追加情報",
         "properties": {
           "policy": {
             "title": "policy.md",
@@ -803,7 +803,7 @@
         "type": "object"
       },
       "StyleInfo": {
-        "description": "話者の追加情報",
+        "description": "スタイルの追加情報",
         "properties": {
           "icon": {
             "title": "当該スタイルのアイコンをbase64エンコードしたもの",
