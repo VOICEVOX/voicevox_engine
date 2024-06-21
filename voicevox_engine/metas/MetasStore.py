@@ -30,8 +30,8 @@ class Character:
     supported_features: SpeakerSupportedFeatures
 
 
-TALK_STYLE_TYPES: Final = ["talk"]
-SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
+_TALK_STYLE_TYPES: Final = ["talk"]
+_SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
 class _EngineCharacter(BaseModel):
@@ -67,10 +67,10 @@ class MetasStore:
             engine_character = self._loaded_metas[character_uuid]
             styles = cast_styles(core_character.styles)
             talk_styles = list(
-                filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
+                filter(lambda style: style.type in _TALK_STYLE_TYPES, styles)
             )
             sing_styles = list(
-                filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+                filter(lambda style: style.type in _SING_STYLE_TYPES, styles)
             )
             characters.append(
                 Character(

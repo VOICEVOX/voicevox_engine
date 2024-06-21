@@ -7,16 +7,16 @@ from voicevox_engine.metas.Metas import (
     StyleType,
 )
 from voicevox_engine.metas.MetasStore import (
-    SING_STYLE_TYPES,
-    TALK_STYLE_TYPES,
+    _SING_STYLE_TYPES,
+    _TALK_STYLE_TYPES,
     Character,
     filter_characters_and_styles,
 )
 
 
 def _gen_character(style_types: list[StyleType]) -> Character:
-    talk_styles = list(filter(lambda s: s in TALK_STYLE_TYPES, style_types))
-    sing_styles = list(filter(lambda s: s in SING_STYLE_TYPES, style_types))
+    talk_styles = list(filter(lambda s: s in _TALK_STYLE_TYPES, style_types))
+    sing_styles = list(filter(lambda s: s in _SING_STYLE_TYPES, style_types))
     return Character(
         name="",
         uuid=str(uuid.uuid4()),
