@@ -39,20 +39,6 @@ TALK_STYLE_TYPES: Final = ["talk"]
 SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
-def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
-    """キャラクター配列を Speaker 配列へキャストする。"""
-    return [
-        Speaker(
-            name=character.name,
-            speaker_uuid=character.uuid,
-            styles=character.talk_styles + character.sing_styles,
-            version=character.version,
-            supported_features=character.supported_features,
-        )
-        for character in characters
-    ]
-
-
 class _EngineSpeaker(BaseModel):
     """
     エンジンに含まれるキャラクター情報

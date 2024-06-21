@@ -12,7 +12,7 @@ from starlette.responses import FileResponse
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore, characters_to_speakers
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.morphing.model import MorphableTargetInfo
 from voicevox_engine.morphing.morphing import (
@@ -58,9 +58,8 @@ def generate_morphing_router(
         core = core_manager.get_core(version)
 
         characters = metas_store.load_combined_metas(core.characters)
-        speakers = characters_to_speakers(characters)
         try:
-            morphable_targets = get_morphable_targets(speakers, base_style_ids)
+            morphable_targets = get_morphable_targets(characters, base_style_ids)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
             raise HTTPException(status_code=404, detail=msg)
@@ -99,9 +98,8 @@ def generate_morphing_router(
 
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.load_combined_metas(core.characters)
-        speakers = characters_to_speakers(characters)
         try:
-            morphable = is_morphable(speakers, base_style_id, target_style_id)
+            morphable = is_morphable(characters, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
             raise HTTPException(status_code=404, detail=msg)
