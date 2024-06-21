@@ -29,19 +29,19 @@ def benchmark_get_speaker_info_all(
     # speaker_uuid 一覧を準備
     response = client.get("/speakers", params={})
     assert response.status_code == 200
-    speakers = response.json()
-    speaker_uuids = list(map(lambda speaker: speaker["speaker_uuid"], speakers))
+    talkers = response.json()
+    talker_uuids = list(map(lambda talker: talker["speaker_uuid"], talkers))
 
     def execute() -> None:
         """計測対象となる処理を実行する"""
-        for speaker_uuid in speaker_uuids:
-            client.get("/speaker_info", params={"speaker_uuid": speaker_uuid})
+        for talker_uuid in talker_uuids:
+            client.get("/speaker_info", params={"speaker_uuid": talker_uuid})
 
     average_time = benchmark_time(execute, n_repeat=10)
     return average_time
 
 
-def benchmark_request_time_for_all_speakers(
+def benchmark_request_time_for_all_talkers(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
     """
@@ -54,12 +54,12 @@ def benchmark_request_time_for_all_speakers(
     # speaker_uuid 一覧を準備
     response = client.get("/speakers", params={})
     assert response.status_code == 200
-    speakers = response.json()
-    speaker_uuids = list(map(lambda speaker: speaker["speaker_uuid"], speakers))
+    talkers = response.json()
+    talker_uuids = list(map(lambda talker: talker["speaker_uuid"], talkers))
 
     def execute() -> None:
         """計測対象となる処理を実行する"""
-        for _ in speaker_uuids:
+        for _ in talker_uuids:
             client.get("/", params={})
 
     average_time = benchmark_time(execute, n_repeat=10)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     print(f"全話者 `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec")
     print(f"全話者 `GET /speaker_info` localhost: {result_spk_infos_localhost} sec")
 
-    req_time_all_fake = benchmark_request_time_for_all_speakers("fake", root_dir)
-    req_time_all_local = benchmark_request_time_for_all_speakers("localhost", root_dir)
+    req_time_all_fake = benchmark_request_time_for_all_talkers("fake", root_dir)
+    req_time_all_local = benchmark_request_time_for_all_talkers("localhost", root_dir)
     print("全話者 `GET /` fakeserve: {:.3f} sec".format(req_time_all_fake))
     print("全話者 `GET /` localhost: {:.3f} sec".format(req_time_all_local))

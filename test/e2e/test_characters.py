@@ -22,13 +22,13 @@ def test_話者一覧が取得できる(
 def test_話者の情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    speakers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
-    for speaker in speakers:
+    talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
+    for talker in talkers:
         response = client.get(
-            "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
+            "/speaker_info", params={"speaker_uuid": talker.speaker_uuid}
         )
         assert snapshot_json(
-            name=speaker.speaker_uuid,
+            name=talker.speaker_uuid,
         ) == hash_long_string(response.json())
 
 
