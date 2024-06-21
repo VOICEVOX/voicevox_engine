@@ -40,14 +40,14 @@ def generate_app(
     engine_manifest: EngineManifest,
     library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
-    speaker_info_dir: Path | None = None,
+    character_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if speaker_info_dir is None:
-        speaker_info_dir = engine_root() / "resources" / "character_info"
+    if character_info_dir is None:
+        character_info_dir = engine_root() / "resources" / "character_info"
 
     verify_mutability_allowed = generate_mutability_allowed_verifier(
         disable_mutable_api
@@ -62,7 +62,7 @@ def generate_app(
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)
 
-    metas_store = MetasStore(speaker_info_dir)
+    metas_store = MetasStore(character_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -74,7 +74,7 @@ def generate_app(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
     app.include_router(
-        generate_character_router(core_manager, metas_store, speaker_info_dir)
+        generate_character_router(core_manager, metas_store, character_info_dir)
     )
     if engine_manifest.supported_features.manage_library:
         app.include_router(

@@ -19,7 +19,7 @@ def b64encode_str(s: bytes) -> str:
 def generate_character_router(
     core_manager: CoreManager,
     metas_store: MetasStore,
-    speaker_info_dir: Path,
+    character_info_dir: Path,
 ) -> APIRouter:
     """キャラクター情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -40,14 +40,14 @@ def generate_character_router(
         指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
-        return _speaker_info(
+        return _character_info(
             speaker_uuid=speaker_uuid,
             talk_or_sing="talk",
             core_version=core_version,
         )
 
     # FIXME: この関数をどこかに切り出す
-    def _speaker_info(
+    def _character_info(
         speaker_uuid: str,
         talk_or_sing: Literal["talk", "sing"],
         core_version: str | None,
@@ -90,14 +90,14 @@ def generate_character_router(
 
         # キャラクター情報を取得する
         try:
-            speaker_path = speaker_info_dir / speaker_uuid
+            character_path = character_info_dir / speaker_uuid
 
             # speaker policy
-            policy_path = speaker_path / "policy.md"
+            policy_path = character_path / "policy.md"
             policy = policy_path.read_text("utf-8")
 
             # speaker portrait
-            portrait_path = speaker_path / "portrait.png"
+            portrait_path = character_path / "portrait.png"
             portrait = b64encode_str(portrait_path.read_bytes())
 
             # スタイル情報を取得する
@@ -106,11 +106,11 @@ def generate_character_router(
                 id = style.id
 
                 # style icon
-                style_icon_path = speaker_path / "icons" / f"{id}.png"
+                style_icon_path = character_path / "icons" / f"{id}.png"
                 icon = b64encode_str(style_icon_path.read_bytes())
 
                 # style portrait
-                style_portrait_path = speaker_path / "portraits" / f"{id}.png"
+                style_portrait_path = character_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = b64encode_str(style_portrait_path.read_bytes())
@@ -119,7 +119,7 @@ def generate_character_router(
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
-                    voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_path = character_path / "voice_samples" / f"{id}_{num}.wav"
                     voice_samples.append(b64encode_str(voice_path.read_bytes()))
 
                 style_infos.append(
@@ -155,7 +155,7 @@ def generate_character_router(
         指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はbase64エンコードされたものが返されます。
         """
-        return _speaker_info(
+        return _character_info(
             speaker_uuid=speaker_uuid,
             talk_or_sing="sing",
             core_version=core_version,

@@ -385,10 +385,10 @@ def main() -> None:
         disable_mutable_api = envs.disable_mutable_api
 
     root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
-    speaker_info_dir = root_dir / "resources" / "character_info"
+    character_info_dir = root_dir / "resources" / "character_info"
     # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
-    if not speaker_info_dir.exists():
-        speaker_info_dir = root_dir / "speaker_info"
+    if not character_info_dir.exists():
+        character_info_dir = root_dir / "speaker_info"
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
@@ -400,7 +400,7 @@ def main() -> None:
         engine_manifest,
         library_manager,
         cancellable_engine,
-        speaker_info_dir,
+        character_info_dir,
         cors_policy_mode,
         allow_origin,
         disable_mutable_api=disable_mutable_api,
