@@ -15,7 +15,7 @@ from voicevox_engine.app.routers.morphing import generate_morphing_router
 from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
-from voicevox_engine.app.routers.speaker import generate_speaker_router
+from voicevox_engine.app.routers.characters import generate_speaker_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
