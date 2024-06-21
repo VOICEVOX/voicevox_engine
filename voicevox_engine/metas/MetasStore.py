@@ -7,12 +7,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
-from voicevox_engine.metas.Metas import (
-    Speaker,
-    SpeakerStyle,
-    SpeakerSupportedFeatures,
-    StyleId,
-)
+from voicevox_engine.metas.Metas import SpeakerStyle, SpeakerSupportedFeatures, StyleId
 
 
 def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:
@@ -88,22 +83,6 @@ class MetasStore:
                 )
             )
         return characters
-
-
-def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
-    """キャラクターのリストを `Speaker` のリストへキャストする。"""
-    return list(
-        map(
-            lambda character: Speaker(
-                name=character.name,
-                speaker_uuid=character.uuid,
-                styles=character.talk_styles + character.sing_styles,
-                version=character.version,
-                supported_features=character.supported_features,
-            ),
-            characters,
-        )
-    )
 
 
 def filter_characters_and_styles(

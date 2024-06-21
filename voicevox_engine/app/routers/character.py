@@ -10,14 +10,30 @@ from pydantic.json_schema import SkipJsonSchema
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import (
+    Character,
     MetasStore,
-    characters_to_speakers,
     filter_characters_and_styles,
 )
 
 
 def b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
+
+
+def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
+    """キャラクターのリストを `Speaker` のリストへキャストする。"""
+    return list(
+        map(
+            lambda character: Speaker(
+                name=character.name,
+                speaker_uuid=character.uuid,
+                styles=character.talk_styles + character.sing_styles,
+                version=character.version,
+                supported_features=character.supported_features,
+            ),
+            characters,
+        )
+    )
 
 
 def generate_character_router(
@@ -35,7 +51,7 @@ def generate_character_router(
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
         talk_characters = filter_characters_and_styles(characters, "talk")
-        return characters_to_speakers(talk_characters)
+        return _characters_to_speakers(talk_characters)
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -151,7 +167,7 @@ def generate_character_router(
         core = core_manager.get_core(version)
         characters = metas_store.load_combined_metas(core.characters)
         sing_characters = filter_characters_and_styles(characters, "sing")
-        return characters_to_speakers(sing_characters)
+        return _characters_to_speakers(sing_characters)
 
     @router.get("/singer_info")
     def singer_info(
