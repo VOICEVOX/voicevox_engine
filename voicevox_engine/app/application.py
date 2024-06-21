@@ -15,7 +15,7 @@ from voicevox_engine.app.routers.morphing import generate_morphing_router
 from voicevox_engine.app.routers.portal_page import generate_portal_page_router
 from voicevox_engine.app.routers.preset import generate_preset_router
 from voicevox_engine.app.routers.setting import generate_setting_router
-from voicevox_engine.app.routers.speaker import generate_speaker_router
+from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -74,7 +74,7 @@ def generate_app(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
     app.include_router(
-        generate_speaker_router(core_manager, metas_store, speaker_info_dir)
+        generate_character_router(core_manager, metas_store, speaker_info_dir)
     )
     if engine_manifest.supported_features.manage_library:
         app.include_router(
