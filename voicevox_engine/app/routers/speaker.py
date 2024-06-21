@@ -86,9 +86,7 @@ def generate_speaker_router(
         )
         if speaker is None:
             msg = "該当するキャラクターが見つかりません"
-            raise HTTPException(
-                status_code=404, detail=msg
-            )
+            raise HTTPException(status_code=404, detail=msg)
 
         # キャラクター情報を取得する
         try:
