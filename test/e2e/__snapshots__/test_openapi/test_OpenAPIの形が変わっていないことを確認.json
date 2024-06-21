@@ -2455,7 +2455,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "UUID で指定された歌手の情報を取得します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2554,7 +2554,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "UUID で指定された話者の情報を取得します。\n画像や音声はbase64エンコードされたものが返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {
