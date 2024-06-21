@@ -36,10 +36,6 @@ class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
     SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
     NOTHING = "NOTHING"  # 全て禁止
 
-    @classmethod
-    def _missing_(cls, value: object) -> "SpeakerSupportPermittedSynthesisMorphing":
-        return SpeakerSupportPermittedSynthesisMorphing.ALL
-
 
 class SpeakerSupportedFeatures(BaseModel):
     """
@@ -48,7 +44,7 @@ class SpeakerSupportedFeatures(BaseModel):
 
     permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
         title="モーフィング機能への対応",
-        default=SpeakerSupportPermittedSynthesisMorphing(None),
+        default=SpeakerSupportPermittedSynthesisMorphing.ALL,
     )
 
 
