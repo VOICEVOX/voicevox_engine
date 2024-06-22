@@ -110,6 +110,16 @@ class MetasStore:
             )
         return characters
 
+    def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+        """話せるキャラクターの情報の一覧を取得する。"""
+        characters = self.load_combined_metas(core_characters)
+        return filter_characters_and_styles(characters, "speaker")
+
+    def sing_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+        """歌えるキャラクターの情報の一覧を取得する。"""
+        characters = self.load_combined_metas(core_characters)
+        return filter_characters_and_styles(characters, "singer")
+
 
 def filter_characters_and_styles(
     characters: list[Character],
