@@ -5,12 +5,11 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, filter_speakers_and_styles
+from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
 
 
 def b64encode_str(s: bytes) -> str:
@@ -28,9 +27,10 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        core = core_manager.get_core(core_version)
-        speakers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(speakers, "speaker")
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "speaker")
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -45,8 +45,6 @@ def generate_speaker_router(
             speaker_or_singer="speaker",
             core_version=core_version,
         )
-
-    _speaker_list_adapter = TypeAdapter(list[Speaker])
 
     # FIXME: この関数をどこかに切り出す
     def _speaker_info(
@@ -77,11 +75,12 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
+        version = core_version or core_manager.latest_version()
+
         # 該当話者を検索する
-        speakers = _speaker_list_adapter.validate_python(
-            core_manager.get_core(core_version).speakers, from_attributes=True
-        )
-        speakers = filter_speakers_and_styles(speakers, speaker_or_singer)
+        core_characters = core_manager.get_core(version).characters
+        characters = metas_store.load_combined_metas(core_characters)
+        speakers = filter_characters_and_styles(characters, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
@@ -142,9 +141,10 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        core = core_manager.get_core(core_version)
-        singers = metas_store.load_combined_metas(core.speakers)
-        return filter_speakers_and_styles(singers, "singer")
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        characters = metas_store.load_combined_metas(core.characters)
+        return filter_characters_and_styles(characters, "singer")
 
     @router.get("/singer_info")
     def singer_info(
