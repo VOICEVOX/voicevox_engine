@@ -52,7 +52,7 @@ def test_喋れるキャラクターの情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_話者の情報をURLで取得できる(
+def test_喋れるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:
@@ -101,7 +101,7 @@ def test_歌えるキャラクターの情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_歌手の情報をURLで取得できる(
+def test_歌えるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:
