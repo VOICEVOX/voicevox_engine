@@ -542,6 +542,6 @@ def generate_tts_pipeline_router(
         """
         version = core_version or core_manager.latest_version()
         engine = tts_engines.get_engine(version)
-        return engine.is_initialized_synthesis(style_id)
+        return engine.is_synthesis_initialized(style_id)
 
     return router
