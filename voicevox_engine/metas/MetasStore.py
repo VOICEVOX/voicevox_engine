@@ -1,6 +1,5 @@
 """話者情報と話者メタ情報の管理"""
 
-import base64
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal, TypeAlias
