@@ -62,7 +62,7 @@ def generate_app(
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)
 
-    metas_store = MetasStore(speaker_info_dir)
+    metas_store = MetasStore(speaker_info_dir, core_manager)
 
     app.include_router(
         generate_tts_pipeline_router(

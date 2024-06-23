@@ -27,9 +27,7 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return metas_store.talk_characters(core.characters)
+        return metas_store.talk_characters(core_version)
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -140,9 +138,7 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return metas_store.sing_characters(core.characters)
+        return metas_store.sing_characters(core_version)
 
     @router.get("/singer_info")
     def singer_info(

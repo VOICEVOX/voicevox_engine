@@ -7,6 +7,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
+from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerStyle,
@@ -68,13 +69,14 @@ class MetasStore:
     話者やスタイルのメタ情報を管理する
     """
 
-    def __init__(self, engine_speakers_path: Path) -> None:
+    def __init__(self, engine_speakers_path: Path, core_manager: CoreManager) -> None:
         """
         Parameters
         ----------
         engine_speakers_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
+        self._core_manager = core_manager
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
             folder.name: _EngineSpeaker.model_validate_json(
@@ -110,14 +112,20 @@ class MetasStore:
             )
         return characters
 
-    def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+    def talk_characters(self, core_version: str | None) -> list[Speaker]:
         """話せるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_characters)
+        version = core_version or self._core_manager.latest_version()
+        core = self._core_manager.get_core(version)
+
+        characters = self.load_combined_metas(core.characters)
         return filter_characters_and_styles(characters, "speaker")
 
-    def sing_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+    def sing_characters(self, core_version: str | None) -> list[Speaker]:
         """歌えるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_characters)
+        version = core_version or self._core_manager.latest_version()
+        core = self._core_manager.get_core(version)
+
+        characters = self.load_combined_metas(core.characters)
         return filter_characters_and_styles(characters, "singer")
 
 
