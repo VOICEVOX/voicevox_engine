@@ -68,12 +68,15 @@ class StyleInfo(BaseModel):
     """
 
     id: StyleId = Field(title="スタイルID")
-    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    icon: str = Field(
+        title="このスタイルのアイコンをbase64エンコードしたもの、あるいはURL"
+    )
     portrait: str | SkipJsonSchema[None] = Field(
-        default=None, title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+        default=None,
+        title="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
     )
     voice_samples: list[str] = Field(
-        title="voice_sampleのwavファイルをbase64エンコードしたもの"
+        title="サンプル音声をbase64エンコードしたもの、あるいはURL"
     )
 
 
@@ -83,5 +86,5 @@ class SpeakerInfo(BaseModel):
     """
 
     policy: str = Field(title="policy.md")
-    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
+    portrait: str = Field(title="立ち絵画像をbase64エンコードしたもの、あるいはURL")
     style_infos: list[StyleInfo] = Field(title="スタイルの追加情報")

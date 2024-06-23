@@ -24,11 +24,13 @@ from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
+from voicevox_engine.utility.runtime_utility import is_development
 
 
 def generate_app(
@@ -63,6 +65,8 @@ def generate_app(
     app = configure_global_exception_handlers(app)
 
     metas_store = MetasStore(speaker_info_dir, core_manager)
+    resource_manager = ResourceManager(is_development())
+    resource_manager.register_dir(speaker_info_dir)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -73,7 +77,9 @@ def generate_app(
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
-    app.include_router(generate_speaker_router(metas_store, speaker_info_dir))
+    app.include_router(
+        generate_speaker_router(resource_manager, metas_store, speaker_info_dir)
+    )
     if engine_manifest.supported_features.manage_library:
         app.include_router(
             generate_library_router(library_manager, verify_mutability_allowed)

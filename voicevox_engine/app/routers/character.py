@@ -1,21 +1,26 @@
 """話者情報機能を提供する API Router"""
 
-import base64
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal, TypeAlias
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
+from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
+
+RESOURCE_ENDPOINT = "_resources"
+ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
-def b64encode_str(s: bytes) -> str:
-    return base64.b64encode(s).decode("utf-8")
+async def _get_resource_baseurl(request: Request) -> str:
+    return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
 def generate_speaker_router(
+    resource_manager: ResourceManager,
     metas_store: MetasStore,
     speaker_info_dir: Path,
 ) -> APIRouter:
@@ -29,16 +34,21 @@ def generate_speaker_router(
 
     @router.get("/speaker_info")
     def speaker_info(
-        speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
+        resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
+        speaker_uuid: str,
+        resource_format: ResourceFormat = "base64",
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
+        画像や音声はresource_formatで指定した形式で返されます。
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="speaker",
             core_version=core_version,
+            resource_baseurl=resource_baseurl,
+            resource_format=resource_format,
         )
 
     # FIXME: この関数をどこかに切り出す
@@ -46,6 +56,8 @@ def generate_speaker_router(
         speaker_uuid: str,
         speaker_or_singer: Literal["speaker", "singer"],
         core_version: str | None,
+        resource_baseurl: str,
+        resource_format: ResourceFormat,
     ) -> SpeakerInfo:
         # エンジンに含まれる話者メタ情報は、次のディレクトリ構造に従わなければならない：
         # {root_dir}/
@@ -87,9 +99,17 @@ def generate_speaker_router(
             policy_path = speaker_path / "policy.md"
             policy = policy_path.read_text("utf-8")
 
+            def _resource_str(path: Path) -> str:
+                resource_str = resource_manager.resource_str(
+                    path, "hash" if resource_format == "url" else "base64"
+                )
+                if resource_format == "base64":
+                    return resource_str
+                return f"{resource_baseurl}/{resource_str}"
+
             # speaker portrait
             portrait_path = speaker_path / "portrait.png"
-            portrait = b64encode_str(portrait_path.read_bytes())
+            portrait = _resource_str(portrait_path)
 
             # スタイル情報を取得する
             style_infos = []
@@ -98,20 +118,20 @@ def generate_speaker_router(
 
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon = b64encode_str(style_icon_path.read_bytes())
+                icon = _resource_str(style_icon_path)
 
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
-                    style_portrait = b64encode_str(style_portrait_path.read_bytes())
+                    style_portrait = _resource_str(style_portrait_path)
 
                 # voice samples
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
                     voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
-                    voice_samples.append(b64encode_str(voice_path.read_bytes()))
+                    voice_samples.append(_resource_str(voice_path))
 
                 style_infos.append(
                     {
@@ -121,7 +141,7 @@ def generate_speaker_router(
                         "voice_samples": voice_samples,
                     }
                 )
-        except FileNotFoundError:
+        except (FileNotFoundError, ResourceManagerError):
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
@@ -137,16 +157,36 @@ def generate_speaker_router(
 
     @router.get("/singer_info")
     def singer_info(
-        speaker_uuid: str, core_version: str | SkipJsonSchema[None] = None
+        resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
+        speaker_uuid: str,
+        resource_format: ResourceFormat = "base64",
+        core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
         指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
-        画像や音声はbase64エンコードされたものが返されます。
+        画像や音声はresource_formatで指定した形式で返されます。
         """
         return _speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
             core_version=core_version,
+            resource_baseurl=resource_baseurl,
+            resource_format=resource_format,
+        )
+
+    # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
+    @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_hash}}", include_in_schema=False)
+    async def resources(resource_hash: str) -> FileResponse:
+        """
+        ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
+        """
+        try:
+            resource_path = resource_manager.resource_path(resource_hash)
+        except ResourceManagerError:
+            raise HTTPException(status_code=404)
+        return FileResponse(
+            resource_path,
+            headers={"Cache-Control": "max-age=2592000"},  # 30日
         )
 
     return router
