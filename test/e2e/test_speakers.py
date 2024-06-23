@@ -113,6 +113,9 @@ def test_歌手の情報を取得できる(
 def test_歌手の情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
+    def assert_resource_url(url: str, name: str) -> None:
+        _assert_resource_url(client, snapshot, url, name)
+
     singers = _speaker_list_adapter.validate_json(client.get("/singers").content)
     for singer in singers:
         singer_id = singer.speaker_uuid
@@ -123,22 +126,13 @@ def test_歌手の情報をURLで取得できる(
         assert snapshot_json(name=singer_id) == response.json()
 
         speaker_info = SpeakerInfo.model_validate_json(response.content)
-        _assert_resource_url(
-            client, snapshot, speaker_info.portrait, f"{singer_id}_portrait"
-        )
+        assert_resource_url(speaker_info.portrait, f"{singer_id}_portrait")
 
         for style in speaker_info.style_infos:
-            _assert_resource_url(
-                client, snapshot, style.icon, f"{singer_id}_{style.id}_icon"
-            )
+            assert_resource_url(style.icon, f"{singer_id}_{style.id}_icon")
             if style.portrait is not None:
-                _assert_resource_url(
-                    client, snapshot, style.portrait, f"{singer_id}_{style.id}_portrait"
-                )
+                assert_resource_url(style.portrait, f"{singer_id}_{style.id}_portrait")
             for i, voice_sample in enumerate(style.voice_samples):
-                _assert_resource_url(
-                    client,
-                    snapshot,
-                    voice_sample,
-                    f"{singer_id}_{style.id}_voice_sample_{i}",
+                assert_resource_url(
+                    voice_sample, f"{singer_id}_{style.id}_voice_sample_{i}"
                 )
