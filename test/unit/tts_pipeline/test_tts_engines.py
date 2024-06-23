@@ -48,6 +48,25 @@ def test_tts_engines_get_engine_existing() -> None:
     assert true_acquired_tts_engine == acquired_tts_engine
 
 
+def test_tts_engines_get_engine_latest() -> None:
+    """TTSEngineManager.get_engine(None) で最新版の TTS エンジンを取得できる。"""
+    # Inputs
+    tts_engines = TTSEngineManager()
+    tts_engine1 = MockTTSEngine()
+    tts_engine2 = MockTTSEngine()
+    tts_engine3 = MockTTSEngine()
+    tts_engines.register_engine(tts_engine1, "0.0.1")
+    tts_engines.register_engine(tts_engine2, "0.0.2")
+    tts_engines.register_engine(tts_engine3, "0.1.0")
+    # Expects
+    true_acquired_tts_engine = tts_engine3
+    # Outputs
+    acquired_tts_engine = tts_engines.get_engine(None)
+
+    # Test
+    assert true_acquired_tts_engine == acquired_tts_engine
+
+
 def test_tts_engines_get_engine_missing() -> None:
     """TTSEngineManager.get_engine() で存在しない TTS エンジンを取得しようとするとエラーになる。"""
     # Inputs

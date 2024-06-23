@@ -8,6 +8,8 @@ from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
+from voicevox_engine.utility.core_version_utility import get_latest_version
+
 from ..core.core_adapter import CoreAdapter
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
@@ -701,12 +703,16 @@ class TTSEngineManager:
         """登録されたエンジンのバージョン一覧を取得する。"""
         return list(self._engines.keys())
 
+    def _latest_version(self) -> str:
+        return get_latest_version(self.versions())
+
     def register_engine(self, engine: TTSEngine, version: str) -> None:
         """エンジンを登録する。"""
         self._engines[version] = engine
 
-    def get_engine(self, version: str) -> TTSEngine:
+    def get_engine(self, core_version: str | None) -> TTSEngine:
         """指定バージョンのエンジンを取得する。"""
+        version = core_version or self._latest_version()
         if version in self._engines:
             return self._engines[version]
 

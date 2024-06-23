@@ -94,7 +94,7 @@ def generate_morphing_router(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         version = core_version or core_manager.latest_version()
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_engine(core_version)
         core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
