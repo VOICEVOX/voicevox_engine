@@ -30,7 +30,7 @@ def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
 def test_with_filemap() -> None:
     """
     "filemap.json"があるディレクトリでのテスト
-    fimemapの生成方法
+    （fimemapの生成コマンド）
     `python tools/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
     """
     manager = ResourceManager(False)
