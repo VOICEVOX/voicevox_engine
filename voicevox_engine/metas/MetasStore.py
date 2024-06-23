@@ -69,10 +69,6 @@ class _EngineSpeaker(BaseModel):
     )
 
 
-def b64encode_str(s: bytes) -> str:
-    return base64.b64encode(s).decode("utf-8")
-
-
 class MetasStore:
     """
     話者やスタイルのメタ情報を管理する
@@ -162,7 +158,7 @@ class MetasStore:
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
         )
         if speaker is None:
-            # FIXME: ドメインを合わせる
+            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         # 話者情報を取得する
@@ -216,7 +212,7 @@ class MetasStore:
                     }
                 )
         except (FileNotFoundError, ResourceManagerError):
-            # FIXME: ドメインを合わせる
+            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
