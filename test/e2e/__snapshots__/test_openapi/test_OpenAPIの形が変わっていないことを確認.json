@@ -782,6 +782,7 @@
         "properties": {
           "permitted_synthesis_morphing": {
             "default": "ALL",
+            "description": "'ALL' は「全て許可」、'SELF_ONLY' は「同じ話者内でのみ許可」、'NOTHING' は「全て禁止」",
             "enum": [
               "ALL",
               "SELF_ONLY",
