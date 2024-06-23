@@ -438,7 +438,10 @@ class TTSEngine:
     def __init__(self, core: CoreWrapper):
         super().__init__()
         self._core = CoreAdapter(core)
-        # NOTE: self._coreは将来的に消す予定
+
+    @property
+    def default_sampling_rate(self) -> int:
+        return self._core.default_sampling_rate
 
     def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
@@ -573,6 +576,14 @@ class TTSEngine:
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+    def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
+        """指定されたスタイル ID を合成する機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""
+        self._core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
+
+    def is_initialized_synthesis(self, style_id: StyleId) -> bool:
+        """指定されたスタイル ID を合成する機能が初期化済みか否かを取得する。"""
+        return self._core.is_initialized_style_id_synthesis(style_id)
 
     # FIXME: sing用のエンジンに移すかクラス名変える
     # 返す値の総称を考え、関数名を変更する

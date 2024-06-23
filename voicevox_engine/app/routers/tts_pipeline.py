@@ -87,7 +87,6 @@ def generate_tts_pipeline_router(
         """
         version = core_version or core_manager.latest_version()
         engine = tts_engines.get_engine(version)
-        core = core_manager.get_core(version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -99,7 +98,7 @@ def generate_tts_pipeline_router(
             postPhonemeLength=0.1,
             pauseLength=None,
             pauseLengthScale=1,
-            outputSamplingRate=core.default_sampling_rate,
+            outputSamplingRate=engine.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -119,7 +118,6 @@ def generate_tts_pipeline_router(
         """
         version = core_version or core_manager.latest_version()
         engine = tts_engines.get_engine(version)
-        core = core_manager.get_core(version)
         try:
             presets = preset_manager.load_presets()
         except PresetInputError as err:
@@ -146,7 +144,7 @@ def generate_tts_pipeline_router(
             postPhonemeLength=selected_preset.postPhonemeLength,
             pauseLength=selected_preset.pauseLength,
             pauseLengthScale=selected_preset.pauseLengthScale,
-            outputSamplingRate=core.default_sampling_rate,
+            outputSamplingRate=engine.default_sampling_rate,
             outputStereo=False,
             kana=create_kana(accent_phrases),
         )
@@ -378,7 +376,6 @@ def generate_tts_pipeline_router(
         """
         version = core_version or core_manager.latest_version()
         engine = tts_engines.get_engine(version)
-        core = core_manager.get_core(version)
         try:
             phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
                 score, style_id
@@ -391,7 +388,7 @@ def generate_tts_pipeline_router(
             volume=volume,
             phonemes=phonemes,
             volumeScale=1,
-            outputSamplingRate=core.default_sampling_rate,
+            outputSamplingRate=engine.default_sampling_rate,
             outputStereo=False,
         )
 
@@ -532,8 +529,8 @@ def generate_tts_pipeline_router(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
+        engine = tts_engines.get_engine(version)
+        engine.initialize_synthesis(style_id, skip_reinit=skip_reinit)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
     def is_initialized_speaker(
@@ -544,7 +541,7 @@ def generate_tts_pipeline_router(
         指定されたスタイルが初期化されているかどうかを返します。
         """
         version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return core.is_initialized_style_id_synthesis(style_id)
+        engine = tts_engines.get_engine(version)
+        return engine.is_initialized_synthesis(style_id)
 
     return router
