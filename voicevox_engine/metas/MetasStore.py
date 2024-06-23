@@ -2,12 +2,21 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal
+from typing import Final, Literal, TypeAlias
 
+from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
-from voicevox_engine.metas.Metas import SpeakerStyle, SpeakerSupportedFeatures, StyleId
+from voicevox_engine.metas.Metas import (
+    SpeakerInfo,
+    SpeakerStyle,
+    SpeakerSupportedFeatures,
+    StyleId,
+)
+from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
+
+ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
 def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:
@@ -49,8 +58,17 @@ class MetasStore:
     話者やスタイルのメタ情報を管理する
     """
 
-    def __init__(self, engine_characters_path: Path) -> None:
-        """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""
+    def __init__(
+        self, engine_characters_path: Path, resource_manager: ResourceManager
+    ) -> None:
+        """
+        Parameters
+        ----------
+        engine_speakers_path : Path
+            エンジンに含まれる話者メタ情報ディレクトリのパス。
+        """
+        self._characters_path = engine_characters_path
+        self._resource_manager = resource_manager
         # エンジンに含まれる各キャラクターのメタ情報
         self._loaded_metas: dict[str, _EngineCharacter] = {
             folder.name: _EngineCharacter.model_validate_json(
@@ -86,6 +104,106 @@ class MetasStore:
                 )
             )
         return characters
+
+    def character_info(
+        self,
+        character_uuid: str,
+        talk_or_sing: Literal["talk", "sing"],
+        core_characters: list[CoreCharacter],
+        resource_baseurl: str,
+        resource_format: ResourceFormat,
+    ) -> SpeakerInfo:
+        # キャラクター情報は以下のディレクトリ構造に従わなければならない。
+        # {engine_characters_path}/
+        #     {character_uuid_0}/
+        #         policy.md
+        #         portrait.png
+        #         icons/
+        #             {id_0}.png
+        #             {id_1}.png
+        #             ...
+        #         portraits/
+        #             {id_0}.png
+        #             {id_1}.png
+        #             ...
+        #         voice_samples/
+        #             {id_0}_001.wav
+        #             {id_0}_002.wav
+        #             {id_0}_003.wav
+        #             {id_1}_001.wav
+        #             ...
+        #     {character_uuid_1}/
+        #         ...
+
+        # 該当話者を検索する
+        characters = self.load_combined_metas(core_characters)
+        characters = filter_characters_and_styles(characters, talk_or_sing)
+        character = next(
+            filter(lambda character: character.uuid == character_uuid, characters), None
+        )
+        if character is None:
+            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
+            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+
+        # 話者情報を取得する
+        try:
+            character_path = self._characters_path / character_uuid
+
+            # character policy
+            policy_path = character_path / "policy.md"
+            policy = policy_path.read_text("utf-8")
+
+            def _resource_str(path: Path) -> str:
+                resource_str = self._resource_manager.resource_str(
+                    path, "hash" if resource_format == "url" else "base64"
+                )
+                if resource_format == "base64":
+                    return resource_str
+                return f"{resource_baseurl}/{resource_str}"
+
+            # character portrait
+            portrait_path = character_path / "portrait.png"
+            portrait = _resource_str(portrait_path)
+
+            # スタイル情報を取得する
+            style_infos = []
+            for style in character.talk_styles + character.sing_styles:
+                id = style.id
+
+                # style icon
+                style_icon_path = character_path / "icons" / f"{id}.png"
+                icon = _resource_str(style_icon_path)
+
+                # style portrait
+                style_portrait_path = character_path / "portraits" / f"{id}.png"
+                style_portrait = None
+                if style_portrait_path.exists():
+                    style_portrait = _resource_str(style_portrait_path)
+
+                # voice samples
+                voice_samples: list[str] = []
+                for j in range(3):
+                    num = str(j + 1).zfill(3)
+                    voice_path = character_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_samples.append(_resource_str(voice_path))
+
+                style_infos.append(
+                    {
+                        "id": id,
+                        "icon": icon,
+                        "portrait": style_portrait,
+                        "voice_samples": voice_samples,
+                    }
+                )
+        except (FileNotFoundError, ResourceManagerError):
+            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
+            msg = "追加情報が見つかりませんでした"
+            raise HTTPException(status_code=500, detail=msg)
+
+        character_info = SpeakerInfo(
+            policy=policy, portrait=portrait, style_infos=style_infos
+        )
+        return character_info
 
     def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Character]:
         """話せるキャラクターの情報の一覧を取得する。"""

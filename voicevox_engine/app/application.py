@@ -64,9 +64,9 @@ def generate_app(
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)
 
-    metas_store = MetasStore(character_info_dir)
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(character_info_dir)
+    metas_store = MetasStore(character_info_dir, resource_manager)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -78,9 +78,7 @@ def generate_app(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
     app.include_router(
-        generate_character_router(
-            core_manager, resource_manager, metas_store, character_info_dir
-        )
+        generate_character_router(core_manager, resource_manager, metas_store)
     )
     if engine_manifest.supported_features.manage_library:
         app.include_router(
