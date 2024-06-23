@@ -1,6 +1,5 @@
 """話者情報機能を提供する API Router"""
 
-from pathlib import Path
 from typing import Annotated, Literal, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -9,7 +8,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
+from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
@@ -23,7 +22,7 @@ async def _get_resource_baseurl(request: Request) -> str:
 def generate_speaker_router(
     core_manager: CoreManager,
     resource_manager: ResourceManager,
-    metas_store: MetasStore
+    metas_store: MetasStore,
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -79,7 +78,7 @@ def generate_speaker_router(
         return metas_store.speaker_info(
             speaker_uuid=speaker_uuid,
             speaker_or_singer="singer",
-            core_version=core_version,
+            core_characters=core.characters,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )

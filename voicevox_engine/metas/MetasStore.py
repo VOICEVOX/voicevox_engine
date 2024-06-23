@@ -77,7 +77,9 @@ class MetasStore:
     話者やスタイルのメタ情報を管理する
     """
 
-    def __init__(self, engine_speakers_path: Path, resource_manager: ResourceManager) -> None:
+    def __init__(
+        self, engine_speakers_path: Path, resource_manager: ResourceManager
+    ) -> None:
         """
         Parameters
         ----------
@@ -189,7 +191,7 @@ class MetasStore:
 
                 # style icon
                 style_icon_path = speaker_path / "icons" / f"{id}.png"
-                icon =  _resource_str(style_icon_path)
+                icon = _resource_str(style_icon_path)
 
                 # style portrait
                 style_portrait_path = speaker_path / "portraits" / f"{id}.png"
