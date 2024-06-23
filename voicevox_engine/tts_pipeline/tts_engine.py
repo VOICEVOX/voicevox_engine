@@ -441,6 +441,7 @@ class TTSEngine:
 
     @property
     def default_sampling_rate(self) -> int:
+        """合成される音声波形のデフォルトサンプリングレートを取得する。"""
         return self._core.default_sampling_rate
 
     @property
