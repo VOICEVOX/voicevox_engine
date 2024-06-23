@@ -1,0 +1,26 @@
+{
+  "policy": "dummy1 policy\n\nhttps://voicevox.hiroshiba.jp/\n",
+  "portrait": "http://testserver/_resources/bc1db0b6614d4433dc98b4ab3bc7b81954471c16633f8c49c15532fabfad7e27",
+  "style_infos": [
+    {
+      "icon": "http://testserver/_resources/6b7f0d06aa7306be8f887a8e99fa23dc6e0cb7be80cbbe2ce2823fc304a1c350",
+      "id": 0,
+      "portrait": "http://testserver/_resources/62071bcc940cba30d87bf1a617482a0987a96954d307fe9ecd34d913f679fa2a",
+      "voice_samples": [
+        "http://testserver/_resources/2926d3d4670d0be0eae498e8b0422ae1f85a44f7cd3df51bd70c8b8c9f607c0a",
+        "http://testserver/_resources/4ad32dd8e4793fa610160a3c4ef9e026a874a8399d4c86f897e2584bba171dc4",
+        "http://testserver/_resources/25158f0e0d2b2da3985a7ef5e2d74b46c517d3c6f6240fc3ef42be780634889b"
+      ]
+    },
+    {
+      "icon": "http://testserver/_resources/7706521aeee094e95c0e5fecae4f1253361c60900c378403e89b3142523b7d2c",
+      "id": 2,
+      "portrait": "http://testserver/_resources/c038f14a8b3916a6d8723cfd72e949b947ff860e9c7536ad41a7f849de2f2031",
+      "voice_samples": [
+        "http://testserver/_resources/89b799594937ae9df49e3b7caffed2392ac9432b4e30273ba09f47de1ec4e31c",
+        "http://testserver/_resources/7d47428eb2e765aedc0e040873a926ebbfc19c6bb8c07f0dd5e2181003d57481",
+        "http://testserver/_resources/106106a9d7bcba3862f79660a0295a46cd32ec4f517405a9d18f595f93cfb540"
+      ]
+    }
+  ]
+}

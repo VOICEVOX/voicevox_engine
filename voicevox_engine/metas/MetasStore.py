@@ -57,6 +57,7 @@ class MetasStore:
                 (folder / "metas.json").read_text(encoding="utf-8")
             )
             for folder in engine_characters_path.iterdir()
+            if folder.is_dir()
         }
 
     def load_combined_metas(
