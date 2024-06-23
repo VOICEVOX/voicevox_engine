@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
-from ..core.core_adapter import CoreAdapter
+from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
@@ -442,6 +442,11 @@ class TTSEngine:
     @property
     def default_sampling_rate(self) -> int:
         return self._core.default_sampling_rate
+
+    @property
+    def supported_devices(self) -> DeviceSupport | None:
+        """合成時に各デバイスが利用可能か否かの一覧を取得する。"""
+        return self._core.supported_devices
 
     def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
