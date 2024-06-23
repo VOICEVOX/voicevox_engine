@@ -258,6 +258,10 @@ RUN <<EOF
     cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
 
+# Generate filemap.json
+ADD ./tools/generate_filemap.py /tmp/
+RUN gosu user /opt/python/bin/python3 /tmp/generate_filemap.py --target_dir resources/character_info
+
 # Keep this layer separated to use layer cache on download failed in local build
 RUN <<EOF
     set -eux
