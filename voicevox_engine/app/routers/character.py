@@ -72,11 +72,8 @@ def generate_speaker_router(
         #       {speaker_uuid_1}/
         #           ...
 
-        version = core_version or core_manager.latest_version()
-
         # 該当話者を検索する
-        core_characters = core_manager.get_core(version).characters
-        characters = metas_store.load_combined_metas(core_characters)
+        characters = metas_store.load_combined_metas(core_version)
         speakers = filter_characters_and_styles(characters, speaker_or_singer)
         speaker = next(
             filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
