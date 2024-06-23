@@ -48,7 +48,7 @@ def test_with_filemap() -> None:
     _assert_resource(manager, same_wav_path)
 
     # filemap.jsonに含まれないものはエラー
-    # NOTE: テキストは通常エンコードせずにJSONに含めるためResourceManagerでは管理しない
+    # NOTE: 通常、テキストはResourceManagerで管理しない
     txt_path = with_filemap_dir / "dummy.txt"
     with pytest.raises(ResourceManagerError):
         manager.resource_str(txt_path, "base64")
