@@ -3,12 +3,11 @@
 import base64
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal
+from typing import Final, Literal, TypeAlias
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from voicevox_engine.app.routers.character import ResourceFormat
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
 from voicevox_engine.metas.Metas import (
     Speaker,
@@ -18,6 +17,8 @@ from voicevox_engine.metas.Metas import (
     StyleId,
 )
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
+
+ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
 def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:

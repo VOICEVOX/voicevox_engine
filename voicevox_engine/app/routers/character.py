@@ -1,6 +1,6 @@
 """話者情報機能を提供する API Router"""
 
-from typing import Annotated, Literal, TypeAlias
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -8,11 +8,10 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.MetasStore import MetasStore, ResourceFormat
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
-ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
 async def _get_resource_baseurl(request: Request) -> str:
