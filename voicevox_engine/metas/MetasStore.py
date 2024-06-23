@@ -64,7 +64,7 @@ class MetasStore:
         """
         Parameters
         ----------
-        engine_speakers_path : Path
+        engine_characters_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
         self._characters_path = engine_characters_path
