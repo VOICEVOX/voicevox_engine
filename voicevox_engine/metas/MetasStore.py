@@ -85,11 +85,12 @@ class MetasStore:
             for folder in engine_speakers_path.iterdir()
         }
 
-    def load_combined_metas(self, core_version: str | None) -> list[Character]:
-        """コアとエンジンのメタ情報を統合する。"""
+    def characters(self, core_version: str | None) -> list[Character]:
+        """キャラクターの情報の一覧を取得する。"""
         version = core_version or self._core_manager.latest_version()
         core = self._core_manager.get_core(version)
 
+        # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
         for core_character in core.characters:
             character_uuid = core_character.speaker_uuid
@@ -115,13 +116,11 @@ class MetasStore:
 
     def talk_characters(self, core_version: str | None) -> list[Speaker]:
         """話せるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_version)
-        return filter_characters_and_styles(characters, "speaker")
+        return filter_characters_and_styles(self.characters(core_version), "speaker")
 
     def sing_characters(self, core_version: str | None) -> list[Speaker]:
         """歌えるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_version)
-        return filter_characters_and_styles(characters, "singer")
+        return filter_characters_and_styles(self.characters(core_version), "singer")
 
 
 def filter_characters_and_styles(

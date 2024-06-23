@@ -54,7 +54,7 @@ def generate_morphing_router(
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        characters = metas_store.load_combined_metas(core_version)
+        characters = metas_store.characters(core_version)
         speakers = characters_to_speakers(characters)
         try:
             morphable_targets = get_morphable_targets(speakers, base_style_ids)
@@ -95,7 +95,7 @@ def generate_morphing_router(
         core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
-        characters = metas_store.load_combined_metas(core_version)
+        characters = metas_store.characters(core_version)
         speakers = characters_to_speakers(characters)
         try:
             morphable = is_morphable(speakers, base_style_id, target_style_id)
