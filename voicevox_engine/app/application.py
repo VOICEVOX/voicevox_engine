@@ -73,9 +73,7 @@ def generate_app(
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
-    app.include_router(
-        generate_speaker_router(core_manager, metas_store, speaker_info_dir)
-    )
+    app.include_router(generate_speaker_router(metas_store, speaker_info_dir))
     if engine_manifest.supported_features.manage_library:
         app.include_router(
             generate_library_router(library_manager, verify_mutability_allowed)

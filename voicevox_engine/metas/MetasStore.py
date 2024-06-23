@@ -75,6 +75,8 @@ class MetasStore:
         ----------
         engine_speakers_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
+        core_manager:
+            コアマネージャー
         """
         self._core_manager = core_manager
         # エンジンに含まれる各話者のメタ情報

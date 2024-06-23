@@ -7,7 +7,6 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import MetasStore, filter_characters_and_styles
 
@@ -17,7 +16,6 @@ def b64encode_str(s: bytes) -> str:
 
 
 def generate_speaker_router(
-    core_manager: CoreManager,
     metas_store: MetasStore,
     speaker_info_dir: Path,
 ) -> APIRouter:
