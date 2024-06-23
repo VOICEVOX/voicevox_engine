@@ -445,6 +445,9 @@ jobs:
           # FIXME: VOICEVOX (editor) cannot build without licenses.json
           cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
+      - name: <Build> Generate filemap.json
+        run: python tools/generate_filemap.py --target_dir resources/character_info
+
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
           set -eux
