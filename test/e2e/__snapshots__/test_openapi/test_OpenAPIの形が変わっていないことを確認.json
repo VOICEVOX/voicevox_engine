@@ -728,7 +728,7 @@
             "type": "string"
           },
           "portrait": {
-            "title": "portrait.pngをbase64エンコードしたもの",
+            "title": "立ち絵画像をbase64エンコードしたもの、あるいはURL",
             "type": "string"
           },
           "style_infos": {
@@ -806,7 +806,7 @@
         "description": "スタイルの追加情報",
         "properties": {
           "icon": {
-            "title": "当該スタイルのアイコンをbase64エンコードしたもの",
+            "title": "このスタイルのアイコンをbase64エンコードしたもの、あるいはURL",
             "type": "string"
           },
           "id": {
@@ -814,14 +814,14 @@
             "type": "integer"
           },
           "portrait": {
-            "title": "当該スタイルのportrait.pngをbase64エンコードしたもの",
+            "title": "このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
             "type": "string"
           },
           "voice_samples": {
             "items": {
               "type": "string"
             },
-            "title": "voice_sampleのwavファイルをbase64エンコードしたもの",
+            "title": "サンプル音声をbase64エンコードしたもの、あるいはURL",
             "type": "array"
           }
         },
@@ -890,6 +890,10 @@
           },
           "manage_library": {
             "title": "音声ライブラリのインストール・アンインストール",
+            "type": "boolean"
+          },
+          "return_resource_url": {
+            "title": "speaker_info・singer_infoのリソースをURLで返送",
             "type": "boolean"
           },
           "sing": {
@@ -2455,7 +2459,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2464,6 +2468,20 @@
             "required": true,
             "schema": {
               "title": "Speaker Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "resource_format",
+            "required": false,
+            "schema": {
+              "default": "base64",
+              "enum": [
+                "base64",
+                "url"
+              ],
+              "title": "Resource Format",
               "type": "string"
             }
           },
@@ -2554,7 +2572,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はbase64エンコードされたものが返されます。",
+        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {
@@ -2563,6 +2581,20 @@
             "required": true,
             "schema": {
               "title": "Speaker Uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "resource_format",
+            "required": false,
+            "schema": {
+              "default": "base64",
+              "enum": [
+                "base64",
+                "url"
+              ],
+              "title": "Resource Format",
               "type": "string"
             }
           },
