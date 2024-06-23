@@ -64,9 +64,9 @@ def generate_app(
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
     app = configure_global_exception_handlers(app)
 
-    metas_store = MetasStore(speaker_info_dir, core_manager)
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(speaker_info_dir)
+    metas_store = MetasStore(speaker_info_dir, core_manager, resource_manager)
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -77,9 +77,7 @@ def generate_app(
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
-    app.include_router(
-        generate_speaker_router(resource_manager, metas_store, speaker_info_dir)
-    )
+    app.include_router(generate_speaker_router(resource_manager, metas_store))
     if engine_manifest.supported_features.manage_library:
         app.include_router(
             generate_library_router(library_manager, verify_mutability_allowed)
