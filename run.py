@@ -5,7 +5,7 @@ import multiprocessing
 import os
 import sys
 import warnings
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from typing import TextIO, TypeVar
@@ -49,6 +49,30 @@ def decide_boolean_from_env(env_name: str) -> bool:
             stacklevel=1,
         )
         return False
+
+
+@dataclass(frozen=True)
+class Envs:
+    """環境変数の集合"""
+
+    output_log_utf8: bool
+    cpu_num_threads: str | None
+    env_preset_path: str | None
+    disable_mutable_api: bool
+
+
+_env_adapter = TypeAdapter(Envs)
+
+
+def read_environment_variables() -> Envs:
+    """環境変数を読み込む。"""
+    envs = Envs(
+        output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
+        cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
+        env_preset_path=os.getenv("VV_PRESET_FILE"),
+        disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
+    )
+    return _env_adapter.validate_python(asdict(envs))
 
 
 def set_output_log_utf8() -> None:
@@ -135,7 +159,7 @@ class CLIArgs:
 _cli_args_adapter = TypeAdapter(CLIArgs)
 
 
-def read_cli_arguments() -> CLIArgs:
+def read_cli_arguments(envs: Envs) -> CLIArgs:
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
     # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
@@ -200,7 +224,7 @@ def read_cli_arguments() -> CLIArgs:
     parser.add_argument(
         "--cpu_num_threads",
         type=int,
-        default=os.getenv("VV_CPU_NUM_THREADS") or None,
+        default=envs.cpu_num_threads,
         help=(
             "音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。"
             "VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。"
@@ -282,11 +306,12 @@ def main() -> None:
 
     multiprocessing.freeze_support()
 
-    output_log_utf8 = decide_boolean_from_env("VV_OUTPUT_LOG_UTF8")
-    if output_log_utf8:
+    envs = read_environment_variables()
+
+    if envs.output_log_utf8:
         set_output_log_utf8()
 
-    args = read_cli_arguments()
+    args = read_cli_arguments(envs)
 
     if args.output_log_utf8:
         set_output_log_utf8()
@@ -331,9 +356,8 @@ def main() -> None:
         [args.allow_origins, setting_allow_origins]
     )
 
-    env_preset_path_str = os.getenv("VV_PRESET_FILE")
-    if env_preset_path_str is not None and len(env_preset_path_str) != 0:
-        env_preset_path = Path(env_preset_path_str)
+    if envs.env_preset_path is not None and len(envs.env_preset_path) != 0:
+        env_preset_path = Path(envs.env_preset_path)
     else:
         env_preset_path = None
     root_preset_path = engine_root() / "presets.yaml"
@@ -358,7 +382,7 @@ def main() -> None:
     if args.disable_mutable_api:
         disable_mutable_api = True
     else:
-        disable_mutable_api = decide_boolean_from_env("VV_DISABLE_MUTABLE_API")
+        disable_mutable_api = envs.disable_mutable_api
 
     root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
     speaker_info_dir = root_dir / "resources" / "character_info"
