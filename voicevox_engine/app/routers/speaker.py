@@ -16,7 +16,7 @@ RESOURCE_ENDPOINT = "_resources"
 ResourceFormat: TypeAlias = Literal["base64", "url"]
 
 
-async def get_resource_baseurl(request: Request) -> str:
+async def _get_resource_baseurl(request: Request) -> str:
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
@@ -39,7 +39,7 @@ def generate_speaker_router(
 
     @router.get("/speaker_info")
     def speaker_info(
-        resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
+        resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: ResourceFormat = "base64",
         core_version: str | SkipJsonSchema[None] = None,
@@ -168,7 +168,7 @@ def generate_speaker_router(
 
     @router.get("/singer_info")
     def singer_info(
-        resource_baseurl: Annotated[str, Depends(get_resource_baseurl)],
+        resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
         speaker_uuid: str,
         resource_format: ResourceFormat = "base64",
         core_version: str | SkipJsonSchema[None] = None,
