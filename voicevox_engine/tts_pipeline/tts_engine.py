@@ -578,11 +578,11 @@ class TTSEngine:
         return wave
 
     def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
-        """指定されたスタイル ID を合成する機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""
+        """指定されたスタイル ID に関する合成機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""
         self._core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
     def is_synthesis_initialized(self, style_id: StyleId) -> bool:
-        """指定されたスタイル ID を合成する機能が初期化済みか否かを取得する。"""
+        """指定されたスタイル ID に関する合成機能が初期化済みか否かを取得する。"""
         return self._core.is_initialized_style_id_synthesis(style_id)
 
     # FIXME: sing用のエンジンに移すかクラス名変える
