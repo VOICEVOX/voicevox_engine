@@ -14,7 +14,6 @@ from soxr import resample
 
 from voicevox_engine.morphing.model import MorphableTargetInfo
 
-from ..core.core_adapter import CoreAdapter
 from ..metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
