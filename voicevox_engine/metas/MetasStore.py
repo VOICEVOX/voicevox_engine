@@ -101,8 +101,8 @@ class MetasStore:
         ----------
         engine_speakers_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
-        core_manager:
-            コアマネージャー
+        get_core_characters:
+            コアに含まれるキャラクター情報を返す関数
         """
         self._speakers_path = engine_speakers_path
         self._get_core_characters = get_core_characters
