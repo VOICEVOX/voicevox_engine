@@ -38,6 +38,7 @@ class SupportedFeaturesJson:
     synthesis_morphing: FeatureSupportJson
     sing: FeatureSupportJson
     manage_library: FeatureSupportJson
+    return_resource_url: FeatureSupportJson
 
 
 @dataclass(frozen=True)
@@ -109,6 +110,9 @@ class SupportedFeatures(BaseModel):
     sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
     manage_library: bool | SkipJsonSchema[None] = Field(
         default=None, title="音声ライブラリのインストール・アンインストール"
+    )
+    return_resource_url: bool | SkipJsonSchema[None] = Field(
+        default=None, title="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 

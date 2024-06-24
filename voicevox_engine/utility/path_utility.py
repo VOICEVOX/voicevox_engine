@@ -5,10 +5,12 @@ from pathlib import Path
 
 from platformdirs import user_data_dir
 
+from voicevox_engine.utility.runtime_utility import is_development
+
 
 def engine_root() -> Path:
     """エンジンのルートディレクトリを指すパスを取得する。"""
-    if _is_development():
+    if is_development():
         # git レポジトリのルートを指している
         root_dir = Path(__file__).parents[2]
     else:
@@ -28,22 +30,13 @@ def engine_manifest_path() -> Path:
     return engine_root() / "engine_manifest.json"
 
 
-def _is_development() -> bool:
-    """
-    動作環境が開発版であるか否かを返す。
-    Pyinstallerでコンパイルされていない場合は開発環境とする。
-    """
-    # pyinstallerでビルドをした際はsys.frozenが設定される
-    return False if getattr(sys, "frozen", False) else True
-
-
 def get_save_dir() -> Path:
     """ファイルの保存先ディレクトリを指すパスを取得する。"""
 
     # FIXME: ファイル保存場所をエンジン固有のIDが入ったものにする
     # FIXME: Windowsは`voicevox-engine/voicevox-engine`ディレクトリに保存されているので
     # `VOICEVOX/voicevox-engine`に変更する
-    if _is_development():
+    if is_development():
         app_name = "voicevox-engine-dev"
     else:
         app_name = "voicevox-engine"
