@@ -63,8 +63,15 @@
             "type": "boolean"
           },
           "pauseLength": {
-            "title": "句読点などの無音時間",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "句読点などの無音時間"
           },
           "pauseLengthScale": {
             "default": 1,
