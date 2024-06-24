@@ -74,13 +74,13 @@ def test_apply_prepost_silence() -> None:
     # Inputs
     query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
     moras = [
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
     ]
 
     # Expects
     true_moras_with_silence = [
         _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
         _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
     ]
 
@@ -95,19 +95,19 @@ def test_apply_speed_scale() -> None:
     # Inputs
     query = _gen_query(speedScale=2.0)
     input_moras = [
-        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
-        _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
+        _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 5.0),
+        _gen_mora("ン", None, None, "N", 4 * 0.01067, 5.0),
         _gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
+        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 6.0),
         _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
     ]
 
     # Expects - x2 fast
     true_moras = [
-        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 50.0),
-        _gen_mora("ン", None, None, "N", 2 * 0.01067, 50.0),
+        _gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 5.0),
+        _gen_mora("ン", None, None, "N", 2 * 0.01067, 5.0),
         _gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 125.0),
+        _gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 6.0),
         _gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
     ]
 
@@ -122,19 +122,19 @@ def test_apply_pitch_scale() -> None:
     # Inputs
     query = _gen_query(pitchScale=2.0)
     input_moras = [
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 50.0),
-        _gen_mora("ン", None, None, "N", 0.0, 50.0),
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 5.0),
+        _gen_mora("ン", None, None, "N", 0.0, 5.0),
         _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 125.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 6.0),
         _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
 
     # Expects - x4 value scaled
     true_moras = [
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
-        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 20.0),
+        _gen_mora("ン", None, None, "N", 0.0, 20.0),
         _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 24.0),
         _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
 
@@ -149,19 +149,19 @@ def test_apply_intonation_scale() -> None:
     # Inputs
     query = _gen_query(intonationScale=0.5)
     input_moras = [
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 200.0),
-        _gen_mora("ン", None, None, "N", 0.0, 200.0),
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 5.0),
+        _gen_mora("ン", None, None, "N", 0.0, 5.0),
         _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 500.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 8.0),
         _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
 
-    # Expects - mean=300 var x0.5 intonation scaling
+    # Expects - mean=6 var x0.5 intonation scaling
     true_moras = [
-        _gen_mora("コ", "k", 0.0, "o", 0.0, 250.0),
-        _gen_mora("ン", None, None, "N", 0.0, 250.0),
+        _gen_mora("コ", "k", 0.0, "o", 0.0, 5.5),
+        _gen_mora("ン", None, None, "N", 0.0, 5.5),
         _gen_mora("、", None, None, "pau", 0.0, 0.0),
-        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 400.0),
+        _gen_mora("ヒ", "h", 0.0, "i", 0.0, 7.0),
         _gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
 
@@ -252,15 +252,15 @@ def test_query_to_decoder_feature() -> None:
     accent_phrases = [
         AccentPhrase(
             moras=[
-                _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 50.0),
-                _gen_mora("ン", None, None, "N", 4 * 0.01067, 50.0),
+                _gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 5.0),
+                _gen_mora("ン", None, None, "N", 4 * 0.01067, 5.0),
             ],
             accent=1,
             pause_mora=_gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
         ),
         AccentPhrase(
             moras=[
-                _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 125.0),
+                _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 8.0),
                 _gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
             ],
             accent=1,
@@ -292,10 +292,10 @@ def test_query_to_decoder_feature() -> None:
     # Pitch
     #                   paw ko  N pau hi hO paw
     # frame_per_vowel = [1, 3,  2, 1, 3, 3, 3]
-    #           pau   ko     ko     ko      N      N
-    true1_f0 = [0.0, 250.0, 250.0, 250.0, 250.0, 250.0]
-    #           pau  pau   hi     hi     hi
-    true2_f0 = [0.0, 0.0, 400.0, 400.0, 400.0]
+    #           pau   ko    ko    ko     N     N
+    true1_f0 = [0.0, 22.0, 22.0, 22.0, 22.0, 22.0]
+    #           pau  pau  hi    hi    hi
+    true2_f0 = [0.0, 0.0, 28.0, 28.0, 28.0]
     #           hO   hO   hO   paw  paw  paw
     true3_f0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
