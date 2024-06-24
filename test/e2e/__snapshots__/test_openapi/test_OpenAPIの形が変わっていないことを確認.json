@@ -67,6 +67,7 @@
             "type": "number"
           },
           "pauseLengthScale": {
+            "default": 1,
             "title": "句読点などの無音時間（倍率）",
             "type": "number"
           },
@@ -99,7 +100,6 @@
           "volumeScale",
           "prePhonemeLength",
           "postPhonemeLength",
-          "pauseLengthScale",
           "outputSamplingRate",
           "outputStereo"
         ],
@@ -615,6 +615,7 @@
             "type": "number"
           },
           "pauseLengthScale": {
+            "default": 1,
             "title": "句読点などの無音時間（倍率）",
             "type": "number"
           },
@@ -657,8 +658,7 @@
           "intonationScale",
           "volumeScale",
           "prePhonemeLength",
-          "postPhonemeLength",
-          "pauseLengthScale"
+          "postPhonemeLength"
         ],
         "title": "Preset",
         "type": "object"
