@@ -522,16 +522,9 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     ]
 
 
-def create_synthesis_test_base(
-    text: str, enable_interrogative_upspeak: bool
-) -> list[AccentPhrase]:
-    """音声合成時に疑問文モーラ処理を行っているかどうかを検証
-    (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
-    """
+def create_synthesis_test_base(text: str) -> list[AccentPhrase]:
     tts_engine = TTSEngine(core=MockCoreWrapper())
-    inputs = tts_engine.create_accent_phrases(text, StyleId(1))
-    outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
-    return outputs
+    return tts_engine.create_accent_phrases(text, StyleId(1))
 
 
 def test_create_accent_phrases() -> None:
@@ -548,6 +541,8 @@ def test_create_accent_phrases() -> None:
 
 def test_upspeak_voiced_last_mora() -> None:
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか？")
     # Expects
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
@@ -562,30 +557,28 @@ def test_upspeak_voiced_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="これはありますか？", enable_interrogative_upspeak=True
-    )
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか？")
     # Expects
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="これはありますか？", enable_interrogative_upspeak=False
-    )
+    outputs = apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
     # voiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか")
     # Expects
     expected = koreha_arimasuka_base_expected()
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="これはありますか", enable_interrogative_upspeak=True
-    )
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -611,14 +604,18 @@ def test_upspeak_voiced_N_last_mora() -> None:
         ]
 
     # voiced + "" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん")
     # Expects
     expected = nn_base_expected()
     # Outputs
-    outputs = create_synthesis_test_base(text="ん", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん？")
     # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
@@ -633,18 +630,18 @@ def test_upspeak_voiced_N_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = create_synthesis_test_base(text="ん？", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん？")
     # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="ん？", enable_interrogative_upspeak=False
-    )
+    outputs = apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -670,30 +667,34 @@ def test_upspeak_unvoiced_last_mora() -> None:
         ]
 
     # unvoiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ")
     # Expects
     expected = ltu_base_expected()
     # Outputs
-    outputs = create_synthesis_test_base(text="っ", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # unvoiced + "？" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ？")
     # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = create_synthesis_test_base(text="っ？", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # unvoiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ？")
     # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="っ？", enable_interrogative_upspeak=False
-    )
+    outputs = apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -719,14 +720,18 @@ def test_upspeak_voiced_u_last_mora() -> None:
         ]
 
     # voiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す")
     # Expects
     expected = su_base_expected()
     # Outputs
-    outputs = create_synthesis_test_base(text="す", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す？")
     # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True
@@ -741,17 +746,17 @@ def test_upspeak_voiced_u_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = create_synthesis_test_base(text="す？", enable_interrogative_upspeak=True)
+    outputs = apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す？")
     # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = create_synthesis_test_base(
-        text="す？", enable_interrogative_upspeak=False
-    )
+    outputs = apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
