@@ -140,14 +140,6 @@ def test_to_flatten_phonemes() -> None:
     assert true_phonemes == phonemes
 
 
-def _gen_hello_hiho_text() -> str:
-    return "こんにちは、ヒホです"
-
-
-def _gen_hello_hiho_kana() -> str:
-    return "コンニチワ'、ヒ'ホデ_ス"
-
-
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
@@ -187,7 +179,7 @@ def _gen_hello_hiho_query() -> AudioQuery:
         pauseLengthScale=0.8,
         outputSamplingRate=12000,
         outputStereo=True,
-        kana=_gen_hello_hiho_kana(),
+        kana="コンニチワ'、ヒ'ホデ_ス",
     )
 
 
@@ -352,7 +344,7 @@ def test_mocked_create_accent_phrases_output(
     """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_text()
+    hello_hiho = "こんにちは、ヒホです"
     # Outputs
     result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
     # Tests
@@ -365,7 +357,7 @@ def test_mocked_create_accent_phrases_from_kana_output(
     """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_kana()
+    hello_hiho = "コンニチワ'、ヒ'ホデ_ス"
     # Outputs
     result = tts_engine.create_accent_phrases_from_kana(hello_hiho, StyleId(1))
     # Tests
