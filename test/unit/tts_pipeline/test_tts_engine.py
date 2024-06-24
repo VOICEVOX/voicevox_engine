@@ -26,6 +26,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
+from .tts_utils import gen_mora
 
 
 def yukarin_s_mock(
@@ -103,32 +104,13 @@ class MockCore:
         return True
 
 
-def _gen_mora(
-    text: str,
-    consonant: str | None,
-    consonant_length: float | None,
-    vowel: str,
-    vowel_length: float,
-    pitch: float,
-) -> Mora:
-    """Generate Mora with positional arguments for test simplicity."""
-    return Mora(
-        text=text,
-        consonant=consonant,
-        consonant_length=consonant_length,
-        vowel=vowel,
-        vowel_length=vowel_length,
-        pitch=pitch,
-    )
-
-
 def test_to_flatten_phonemes() -> None:
     """Test `to_flatten_phonemes`."""
     # Inputs
     moras = [
-        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
-        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
+        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
     ]
 
     # Expects
@@ -144,21 +126,21 @@ def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
-                _gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
-                _gen_mora("ン", None, None, "N", 0.0, 0.0),
-                _gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
-                _gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
+                gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
+                gen_mora("ン", None, None, "N", 0.0, 0.0),
+                gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
+                gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
+                gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
             ],
             accent=5,
-            pause_mora=_gen_mora("、", None, None, "pau", 0.0, 0.0),
+            pause_mora=gen_mora("、", None, None, "pau", 0.0, 0.0),
         ),
         AccentPhrase(
             moras=[
-                _gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
-                _gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
-                _gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
+                gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
+                gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
+                gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
+                gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
             ],
             accent=1,
             pause_mora=None,
