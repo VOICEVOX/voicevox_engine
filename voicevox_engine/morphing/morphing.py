@@ -15,7 +15,7 @@ from soxr import resample
 from voicevox_engine.morphing.model import MorphableTargetInfo
 
 from ..core.core_adapter import CoreAdapter
-from ..metas.Metas import Speaker, SpeakerSupportPermittedSynthesisMorphing, StyleId
+from ..metas.Metas import Speaker, StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
 
@@ -82,21 +82,18 @@ def is_morphable(
     morphable_2 = character_2.supported_features.permitted_synthesis_morphing
 
     # 禁止されている場合はFalse
-    if morphable_1 == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
+    if morphable_1 == "NOTHING":
         return False
-    elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.NOTHING:
+    elif morphable_2 == "NOTHING":
         return False
     # 同一キャラクターのみの場合は同一キャラクター判定
-    elif morphable_1 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+    elif morphable_1 == "SELF_ONLY":
         return uuid_1 == uuid_2
-    elif morphable_2 == SpeakerSupportPermittedSynthesisMorphing.SELF_ONLY:
+    elif morphable_2 == "SELF_ONLY":
         return uuid_1 == uuid_2
 
     # 念のため許可されているかチェック
-    return (
-        morphable_1 == SpeakerSupportPermittedSynthesisMorphing.ALL
-        and morphable_2 == SpeakerSupportPermittedSynthesisMorphing.ALL
-    )
+    return morphable_1 == "ALL" and morphable_2 == "ALL"
 
 
 def synthesis_morphing_parameter(
