@@ -2,12 +2,12 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, TypeAlias
+from typing import Callable, Final, Literal, TypeAlias
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from voicevox_engine.core.core_adapter import CoreCharacterStyle
+from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import (
     Speaker,
@@ -69,6 +69,22 @@ class _EngineSpeaker(BaseModel):
     )
 
 
+GetCoreCharacters: TypeAlias = Callable[[str | None], list[CoreCharacter]]
+
+
+def generate_core_characters_getter(core_manager: CoreManager) -> GetCoreCharacters:
+    """コアマネージャーを基に `get_core_characters()` 関数を生成する。"""
+
+    def get_core_characters(version: str | None) -> list[CoreCharacter]:
+        """バージョンで指定されたコアからキャラクター一覧を取得する。"""
+        # NOTE: CoreManager へ直接触れずにキャラクター情報を取得するために関数化している
+        version = version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        return core.characters
+
+    return get_core_characters
+
+
 class MetasStore:
     """
     話者やスタイルのメタ情報を管理する
@@ -77,7 +93,7 @@ class MetasStore:
     def __init__(
         self,
         engine_speakers_path: Path,
-        core_manager: CoreManager,
+        get_core_characters: GetCoreCharacters,
         resource_manager: ResourceManager,
     ) -> None:
         """
@@ -89,7 +105,7 @@ class MetasStore:
             コアマネージャー
         """
         self._speakers_path = engine_speakers_path
-        self._core_manager = core_manager
+        self._get_core_characters = get_core_characters
         self._resource_manager = resource_manager
         # エンジンに含まれる各話者のメタ情報
         self._loaded_metas: dict[str, _EngineSpeaker] = {
@@ -102,12 +118,10 @@ class MetasStore:
 
     def characters(self, core_version: str | None) -> list[Character]:
         """キャラクターの情報の一覧を取得する。"""
-        version = core_version or self._core_manager.latest_version()
-        core = self._core_manager.get_core(version)
 
         # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
-        for core_character in core.characters:
+        for core_character in self._get_core_characters(core_version):
             character_uuid = core_character.speaker_uuid
             engine_character = self._loaded_metas[character_uuid]
             styles = cast_styles(core_character.styles)

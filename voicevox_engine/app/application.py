@@ -22,7 +22,7 @@ from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.MetasStore import MetasStore, generate_core_characters_getter
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode
@@ -66,7 +66,11 @@ def generate_app(
 
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(speaker_info_dir)
-    metas_store = MetasStore(speaker_info_dir, core_manager, resource_manager)
+    metas_store = MetasStore(
+        speaker_info_dir,
+        generate_core_characters_getter(core_manager),
+        resource_manager,
+    )
 
     app.include_router(
         generate_tts_pipeline_router(
