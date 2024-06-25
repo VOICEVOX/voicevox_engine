@@ -7,11 +7,11 @@ from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_intonation_scale,
     _apply_output_sampling_rate,
+    _apply_output_stereo,
     _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
     _apply_volume_scale,
-    apply_output_stereo,
     count_frame_per_unit,
     query_to_decoder_feature,
     raw_wave_to_output_wave,
@@ -182,17 +182,16 @@ def test_apply_output_sampling_rate() -> None:
 
 
 def test_apply_output_stereo() -> None:
-    """Test `apply_output_stereo`."""
+    """Test `_apply_output_stereo()`."""
     # Inputs
     query = _gen_query(outputStereo=True)
     input_wave = np.array([1.0, 0.0, 2.0])
-
     # Expects - Stereo :: (Time, Channel)
     true_wave = np.array([[1.0, 1.0], [0.0, 0.0], [2.0, 2.0]])
-
     # Outputs
-    wave = apply_output_stereo(input_wave, query)
+    wave = _apply_output_stereo(input_wave, query)
 
+    # Test
     assert np.array_equal(wave, true_wave)
 
 
