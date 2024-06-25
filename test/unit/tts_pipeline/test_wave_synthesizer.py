@@ -14,14 +14,14 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_prepost_silence,
     _apply_speed_scale,
     _apply_volume_scale,
+    _count_frame_per_unit,
     _query_to_decoder_feature,
-    count_frame_per_unit,
     raw_wave_to_output_wave,
 )
 
 from .tts_utils import gen_mora
 
-T: Final = 0.01067
+T: Final = 0.01067  # 1 フレームが約 10.67 ミリ秒
 TRUE_NUM_PHONEME = 45
 
 
@@ -198,16 +198,16 @@ def test_apply_output_stereo() -> None:
 
 
 def test_count_frame_per_unit() -> None:
-    """Test `count_frame_per_unit`."""
+    """Test `_count_frame_per_unit()`."""
     # Inputs
     moras = [
-        gen_mora("　", None, None, "　", 2 * 0.01067, 0.0),  # 0.01067 [sec/frame]
-        gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 0.0),
-        gen_mora("ン", None, None, "N", 4 * 0.01067, 0.0),
-        gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 0.0),
-        gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
-        gen_mora("　", None, None, "　", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "　", 2 * T, 0.0),
+        gen_mora("コ", "k", 2 * T, "o", 4 * T, 0.0),
+        gen_mora("ン", None, None, "N", 4 * T, 0.0),
+        gen_mora("、", None, None, "pau", 2 * T, 0.0),
+        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 0.0),
+        gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
+        gen_mora("　", None, None, "　", 6 * T, 0.0),
     ]
 
     # Expects
@@ -219,8 +219,9 @@ def test_count_frame_per_unit() -> None:
     true_frame_per_mora = np.array(true_frame_per_mora_list, dtype=np.int32)
 
     # Outputs
-    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
+    frame_per_phoneme, frame_per_mora = _count_frame_per_unit(moras)
 
+    # Test
     assert np.array_equal(frame_per_phoneme, true_frame_per_phoneme)
     assert np.array_equal(frame_per_mora, true_frame_per_mora)
 

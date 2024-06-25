@@ -111,7 +111,7 @@ def _apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def count_frame_per_unit(
+def _count_frame_per_unit(
     moras: list[Mora],
 ) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
@@ -237,7 +237,7 @@ def _query_to_decoder_feature(
     f0 = np.array([mora.pitch for mora in moras], dtype=np.float32)
 
     # 時間スケールを変更する（音素・モーラ → フレーム）
-    frame_per_phoneme, frame_per_mora = count_frame_per_unit(moras)
+    frame_per_phoneme, frame_per_mora = _count_frame_per_unit(moras)
     phoneme = np.repeat(phoneme, frame_per_phoneme, axis=0)
     f0 = np.repeat(f0, frame_per_mora)
 
