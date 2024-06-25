@@ -8,7 +8,7 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, ResourceFormat
+from voicevox_engine.metas.MetasStore import Character, MetasStore, ResourceFormat
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
@@ -18,7 +18,23 @@ async def _get_resource_baseurl(request: Request) -> str:
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
-def generate_speaker_router(
+def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
+    """キャラクターのリストを `Speaker` のリストへキャストする。"""
+    return list(
+        map(
+            lambda character: Speaker(
+                name=character.name,
+                speaker_uuid=character.uuid,
+                styles=character.talk_styles + character.sing_styles,
+                version=character.version,
+                supported_features=character.supported_features,
+            ),
+            characters,
+        )
+    )
+
+
+def generate_character_router(
     core_manager: CoreManager,
     resource_manager: ResourceManager,
     metas_store: MetasStore,
@@ -31,7 +47,8 @@ def generate_speaker_router(
         """話者情報の一覧を取得します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        return metas_store.talk_characters(core.characters)
+        characters = metas_store.talk_characters(core.characters)
+        return _characters_to_speakers(characters)
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -46,9 +63,9 @@ def generate_speaker_router(
         """
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        return metas_store.speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="speaker",
+        return metas_store.character_info(
+            character_uuid=speaker_uuid,
+            talk_or_sing="talk",
             core_characters=core.characters,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
@@ -59,7 +76,8 @@ def generate_speaker_router(
         """歌手情報の一覧を取得します"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        return metas_store.sing_characters(core.characters)
+        characters = metas_store.sing_characters(core.characters)
+        return _characters_to_speakers(characters)
 
     @router.get("/singer_info")
     def singer_info(
@@ -74,9 +92,9 @@ def generate_speaker_router(
         """
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
-        return metas_store.speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="singer",
+        return metas_store.character_info(
+            character_uuid=speaker_uuid,
+            talk_or_sing="sing",
             core_characters=core.characters,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
