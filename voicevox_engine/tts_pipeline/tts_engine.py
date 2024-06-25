@@ -191,7 +191,7 @@ def _apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def apply_volume_scale(
+def _apply_volume_scale(
     wave: NDArray[np.float32], query: AudioQuery | FrameAudioQuery
 ) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ音量スケール（`volumeScale`）を適用する"""
@@ -248,7 +248,7 @@ def raw_wave_to_output_wave(
     query: AudioQuery | FrameAudioQuery, wave: NDArray[np.float32], sr_wave: int
 ) -> NDArray[np.float32]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
-    wave = apply_volume_scale(wave, query)
+    wave = _apply_volume_scale(wave, query)
     wave = apply_output_sampling_rate(wave, sr_wave, query)
     wave = apply_output_stereo(wave, query)
     return wave

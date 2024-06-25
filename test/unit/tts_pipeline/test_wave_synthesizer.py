@@ -9,9 +9,9 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
+    _apply_volume_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
-    apply_volume_scale,
     count_frame_per_unit,
     query_to_decoder_feature,
     raw_wave_to_output_wave,
@@ -152,17 +152,16 @@ def test_apply_intonation_scale() -> None:
 
 
 def test_apply_volume_scale() -> None:
-    """Test `apply_volume_scale`."""
+    """Test `_apply_volume_scale()`."""
     # Inputs
     query = _gen_query(volumeScale=3.0)
     input_wave = np.array([0.0, 1.0, 2.0])
-
     # Expects - x3 scale
     true_wave = np.array([0.0, 3.0, 6.0])
-
     # Outputs
-    wave = apply_volume_scale(input_wave, query)
+    wave = _apply_volume_scale(input_wave, query)
 
+    # Test
     assert np.allclose(wave, true_wave)
 
 
