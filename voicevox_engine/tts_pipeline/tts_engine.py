@@ -41,7 +41,7 @@ def to_flatten_moras(accent_phrases: list[AccentPhrase]) -> list[Mora]:
     return moras
 
 
-def to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
+def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     """モーラ系列から音素系列を抽出する"""
     phonemes: list[Phoneme] = []
     for mora in moras:
@@ -233,7 +233,7 @@ def query_to_decoder_feature(
     moras = apply_intonation_scale(moras, query)
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
-    phoneme = np.stack([p.onehot for p in to_flatten_phonemes(moras)])
+    phoneme = np.stack([p.onehot for p in _to_flatten_phonemes(moras)])
     f0 = np.array([mora.pitch for mora in moras], dtype=np.float32)
 
     # 時間スケールを変更する（音素・モーラ → フレーム）
@@ -437,7 +437,7 @@ class TTSEngine:
         moras = to_flatten_moras(accent_phrases)
 
         # 音素系列を抽出する
-        phonemes = to_flatten_phonemes(moras)
+        phonemes = _to_flatten_phonemes(moras)
 
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
