@@ -109,7 +109,7 @@ def test_to_flatten_phonemes() -> None:
     # Inputs
     moras = [
         gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
+        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
         gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
     ]
 
