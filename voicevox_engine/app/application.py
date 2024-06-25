@@ -69,9 +69,7 @@ def generate_app(
     metas_store = MetasStore(speaker_info_dir, resource_manager)
 
     app.include_router(
-        generate_tts_pipeline_router(
-            tts_engines, core_manager, preset_manager, cancellable_engine
-        )
+        generate_tts_pipeline_router(tts_engines, preset_manager, cancellable_engine)
     )
     app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
     app.include_router(

@@ -15,7 +15,6 @@ from voicevox_engine.cancellable_engine import (
     CancellableEngine,
     CancellableEngineInternalError,
 )
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.preset_manager import (
@@ -65,7 +64,6 @@ class ParseKanaBadRequest(BaseModel):
 
 def generate_tts_pipeline_router(
     tts_engines: TTSEngineManager,
-    core_manager: CoreManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:
@@ -287,10 +285,9 @@ def generate_tts_pipeline_router(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
-        version = core_version or core_manager.latest_version()
         try:
             f_name = cancellable_engine._synthesis_impl(
-                query, style_id, request, version=version
+                query, style_id, request, core_version=core_version
             )
         except CancellableEngineInternalError as e:
             raise HTTPException(status_code=500, detail=str(e))
