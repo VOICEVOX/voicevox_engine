@@ -14,7 +14,6 @@ from soxr import resample
 
 from voicevox_engine.morphing.model import MorphableTargetInfo
 
-from ..core.core_adapter import CoreAdapter
 from ..metas.Metas import Speaker, StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
@@ -98,7 +97,6 @@ def is_morphable(
 
 def synthesis_morphing_parameter(
     engine: TTSEngine,
-    core: CoreAdapter,
     query: AudioQuery,
     base_style_id: StyleId,
     target_style_id: StyleId,
@@ -106,7 +104,7 @@ def synthesis_morphing_parameter(
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
-    query.outputSamplingRate = core.default_sampling_rate
+    query.outputSamplingRate = engine.default_sampling_rate
 
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
