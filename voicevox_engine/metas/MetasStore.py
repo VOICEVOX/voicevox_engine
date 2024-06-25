@@ -8,7 +8,6 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import (
     Speaker,
     SpeakerInfo,
@@ -70,19 +69,6 @@ class _EngineSpeaker(BaseModel):
 
 
 GetCoreCharacters: TypeAlias = Callable[[str | None], list[CoreCharacter]]
-
-
-def generate_core_characters_getter(core_manager: CoreManager) -> GetCoreCharacters:
-    """コアマネージャーを基に `get_core_characters()` 関数を生成する。"""
-
-    def get_core_characters(version: str | None) -> list[CoreCharacter]:
-        """バージョンで指定されたコアからキャラクター一覧を取得する。"""
-        # NOTE: CoreManager へ直接触れずにキャラクター情報を取得するために関数化している
-        version = version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return core.characters
-
-    return get_core_characters
 
 
 class MetasStore:

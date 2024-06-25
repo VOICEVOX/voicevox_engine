@@ -19,10 +19,11 @@ from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.core.core_adapter import CoreCharacter
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore, generate_core_characters_getter
+from voicevox_engine.metas.MetasStore import GetCoreCharacters, MetasStore
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode
@@ -31,6 +32,19 @@ from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.runtime_utility import is_development
+
+
+def _generate_core_characters_getter(core_manager: CoreManager) -> GetCoreCharacters:
+    """コアマネージャーを基に `get_core_characters()` 関数を生成する。"""
+
+    def get_core_characters(version: str | None) -> list[CoreCharacter]:
+        """バージョンで指定されたコアからキャラクター一覧を取得する。"""
+        # NOTE: CoreManager へ直接触れずにキャラクター情報を取得するために関数化している
+        version = version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        return core.characters
+
+    return get_core_characters
 
 
 def generate_app(
@@ -68,7 +82,7 @@ def generate_app(
     resource_manager.register_dir(speaker_info_dir)
     metas_store = MetasStore(
         speaker_info_dir,
-        generate_core_characters_getter(core_manager),
+        _generate_core_characters_getter(core_manager),
         resource_manager,
     )
 
