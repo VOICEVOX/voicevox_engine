@@ -6,11 +6,11 @@ from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_prepost_silence,
+    _apply_speed_scale,
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
     apply_pitch_scale,
-    apply_speed_scale,
     apply_volume_scale,
     count_frame_per_unit,
     query_to_decoder_feature,
@@ -75,28 +75,28 @@ def test_apply_prepost_silence() -> None:
 
 
 def test_apply_speed_scale() -> None:
-    """Test `apply_speed_scale`."""
+    """Test `_apply_speed_scale()`."""
     # Inputs
     query = _gen_query(speedScale=2.0)
     input_moras = [
-        gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 5.0),
-        gen_mora("ン", None, None, "N", 4 * 0.01067, 5.0),
-        gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 6.0),
-        gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+        gen_mora("コ", "k", 2 * T, "o", 4 * T, 5.0),
+        gen_mora("ン", None, None, "N", 4 * T, 5.0),
+        gen_mora("、", None, None, "pau", 2 * T, 0.0),
+        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 6.0),
+        gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
     ]
 
     # Expects - x2 fast
     true_moras = [
-        gen_mora("コ", "k", 1 * 0.01067, "o", 2 * 0.01067, 5.0),
-        gen_mora("ン", None, None, "N", 2 * 0.01067, 5.0),
-        gen_mora("、", None, None, "pau", 1 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 1 * 0.01067, "i", 2 * 0.01067, 6.0),
-        gen_mora("ホ", "h", 2 * 0.01067, "O", 1 * 0.01067, 0.0),
+        gen_mora("コ", "k", 1 * T, "o", 2 * T, 5.0),
+        gen_mora("ン", None, None, "N", 2 * T, 5.0),
+        gen_mora("、", None, None, "pau", 1 * T, 0.0),
+        gen_mora("ヒ", "h", 1 * T, "i", 2 * T, 6.0),
+        gen_mora("ホ", "h", 2 * T, "O", 1 * T, 0.0),
     ]
 
     # Outputs
-    moras = apply_speed_scale(input_moras, query)
+    moras = _apply_speed_scale(input_moras, query)
 
     assert moras == true_moras
 

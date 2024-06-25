@@ -102,7 +102,7 @@ def _apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_speed_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ話速スケール（`speedScale`）を適用する"""
     for mora in moras:
         mora.vowel_length /= query.speedScale
@@ -228,7 +228,7 @@ def query_to_decoder_feature(
     moras = _apply_prepost_silence(moras, query)
     moras = apply_pause_length(moras, query)
     moras = apply_pause_length_scale(moras, query)
-    moras = apply_speed_scale(moras, query)
+    moras = _apply_speed_scale(moras, query)
     moras = apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
 
