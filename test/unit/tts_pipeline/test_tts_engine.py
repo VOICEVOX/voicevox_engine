@@ -1,10 +1,10 @@
-import json
+"""TTSEngine のテスト"""
+
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
-from unittest.mock import Mock
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
+from pytest_mock import MockerFixture
 from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -27,81 +27,6 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 
 from .test_text_analyzer import stub_unknown_features_koxx
 from .tts_utils import gen_mora
-
-
-def yukarin_s_mock(
-    length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-    return np.array(result, dtype=np.float32)
-
-
-def yukarin_sa_mock(
-    length: int,
-    vowel_phoneme_list: NDArray[np.int64],
-    consonant_phoneme_list: NDArray[np.int64],
-    start_accent_list: NDArray[np.int64],
-    end_accent_list: NDArray[np.int64],
-    start_accent_phrase_list: NDArray[np.int64],
-    end_accent_phrase_list: NDArray[np.int64],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(
-            round(
-                (
-                    (
-                        vowel_phoneme_list[0][i]
-                        + consonant_phoneme_list[0][i]
-                        + start_accent_list[0][i]
-                        + end_accent_list[0][i]
-                        + start_accent_phrase_list[0][i]
-                        + end_accent_phrase_list[0][i]
-                    )
-                    * 0.0625
-                    + style_id
-                ).item(),
-                2,
-            )
-        )
-    return np.array(result, dtype=np.float32)[np.newaxis]
-
-
-def decode_mock(
-    length: int,
-    phoneme_size: int,
-    f0: NDArray[np.float32],
-    phoneme: NDArray[np.float32],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result += [
-            (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
-        ] * 256
-    return np.array(result, dtype=np.float32)
-
-
-class MockCore:
-    default_sampling_rate = 24000
-    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
-    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
-    decode_forward = Mock(side_effect=decode_mock)
-
-    def metas(self) -> str:
-        return ""
-
-    def supported_devices(self) -> str:
-        return json.dumps({"cpu": True, "cuda": False, "dml": False})
-
-    def is_model_loaded(self, style_id: str) -> bool:
-        return True
 
 
 def test_to_flatten_phonemes() -> None:
@@ -191,10 +116,10 @@ def test_to_flatten_moras() -> None:
     )
 
 
-def test_update_length() -> None:
-    core = MockCore()
-    _yukarin_s_mock = core.yukarin_s_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+def test_update_length(mocker: MockerFixture) -> None:
+    core = MockCoreWrapper()
+    _yukarin_s_mock = mocker.spy(core, "yukarin_s_forward")
+    tts_engine = TTSEngine(core=core)
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Indirect Outputs（yukarin_sに渡される値）
@@ -219,10 +144,10 @@ def test_update_length() -> None:
     )
 
 
-def test_update_pitch() -> None:
-    core = MockCore()
-    _yukarin_sa_mock = core.yukarin_sa_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+def test_update_pitch(mocker: MockerFixture) -> None:
+    core = MockCoreWrapper()
+    _yukarin_sa_mock = mocker.spy(core, "yukarin_sa_forward")
+    tts_engine = TTSEngine(core=core)
 
     # 空のリストでエラーを吐かないか
     # Inputs
