@@ -5,11 +5,11 @@ import numpy as np
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
+    _apply_prepost_silence,
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
     apply_pitch_scale,
-    apply_prepost_silence,
     apply_speed_scale,
     apply_volume_scale,
     count_frame_per_unit,
@@ -19,6 +19,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 
 from .tts_utils import gen_mora
 
+T = 0.01067
 TRUE_NUM_PHONEME = 45
 
 
@@ -53,22 +54,22 @@ def _gen_query(
 
 
 def test_apply_prepost_silence() -> None:
-    """Test `apply_prepost_silence`."""
+    """Test `_apply_prepost_silence()`."""
     # Inputs
-    query = _gen_query(prePhonemeLength=2 * 0.01067, postPhonemeLength=6 * 0.01067)
+    query = _gen_query(prePhonemeLength=2 * T, postPhonemeLength=6 * T)
     moras = [
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
+        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
     ]
 
     # Expects
     true_moras_with_silence = [
-        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
-        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", 2 * T, 0.0),
+        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
+        gen_mora("　", None, None, "sil", 6 * T, 0.0),
     ]
 
     # Outputs
-    moras_with_silence = apply_prepost_silence(moras, query)
+    moras_with_silence = _apply_prepost_silence(moras, query)
 
     assert moras_with_silence == true_moras_with_silence
 

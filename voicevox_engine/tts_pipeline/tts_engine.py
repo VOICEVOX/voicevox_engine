@@ -94,7 +94,7 @@ def _apply_interrogative_upspeak(
     return accent_phrases
 
 
-def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ前後無音（`prePhonemeLength` & `postPhonemeLength`）を付加する"""
     pre_silence_moras = [_generate_silence_mora(query.prePhonemeLength)]
     post_silence_moras = [_generate_silence_mora(query.postPhonemeLength)]
@@ -225,7 +225,7 @@ def query_to_decoder_feature(
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
-    moras = apply_prepost_silence(moras, query)
+    moras = _apply_prepost_silence(moras, query)
     moras = apply_pause_length(moras, query)
     moras = apply_pause_length_scale(moras, query)
     moras = apply_speed_scale(moras, query)
