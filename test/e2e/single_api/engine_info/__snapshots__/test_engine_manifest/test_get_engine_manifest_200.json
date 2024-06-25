@@ -16,6 +16,7 @@
   "supported_features": {
     "adjust_intonation_scale": true,
     "adjust_mora_pitch": true,
+    "adjust_pause_length": true,
     "adjust_phoneme_length": true,
     "adjust_pitch_scale": true,
     "adjust_speed_scale": true,

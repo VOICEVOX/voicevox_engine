@@ -861,6 +861,10 @@
             "title": "モーラごとの音高の調整",
             "type": "boolean"
           },
+          "adjust_pause_length": {
+            "title": "句読点などの無音時間の調整",
+            "type": "boolean"
+          },
           "adjust_phoneme_length": {
             "title": "音素ごとの長さの調整",
             "type": "boolean"
