@@ -26,6 +26,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
+from .tts_utils import gen_mora
 
 
 def yukarin_s_mock(
@@ -103,32 +104,13 @@ class MockCore:
         return True
 
 
-def _gen_mora(
-    text: str,
-    consonant: str | None,
-    consonant_length: float | None,
-    vowel: str,
-    vowel_length: float,
-    pitch: float,
-) -> Mora:
-    """Generate Mora with positional arguments for test simplicity."""
-    return Mora(
-        text=text,
-        consonant=consonant,
-        consonant_length=consonant_length,
-        vowel=vowel,
-        vowel_length=vowel_length,
-        pitch=pitch,
-    )
-
-
 def test_to_flatten_phonemes() -> None:
     """Test `to_flatten_phonemes`."""
     # Inputs
     moras = [
-        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
-        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
+        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
+        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
     ]
 
     # Expects
@@ -140,33 +122,25 @@ def test_to_flatten_phonemes() -> None:
     assert true_phonemes == phonemes
 
 
-def _gen_hello_hiho_text() -> str:
-    return "こんにちは、ヒホです"
-
-
-def _gen_hello_hiho_kana() -> str:
-    return "コンニチワ'、ヒ'ホデ_ス"
-
-
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
-                _gen_mora("コ", "k", 0.1, "o", 0.1, 100.0),
-                _gen_mora("ン", None, None, "N", 0.1, 100.0),
-                _gen_mora("ニ", "n", 0.1, "i", 0.1, 100.0),
-                _gen_mora("チ", "ch", 0.1, "i", 0.1, 100.0),
-                _gen_mora("ワ", "w", 0.1, "a", 0.1, 100.0),
+                gen_mora("コ", "k", 0.1, "o", 0.1, 100.0),
+                gen_mora("ン", None, None, "N", 0.1, 100.0),
+                gen_mora("ニ", "n", 0.1, "i", 0.1, 100.0),
+                gen_mora("チ", "ch", 0.1, "i", 0.1, 100.0),
+                gen_mora("ワ", "w", 0.1, "a", 0.1, 100.0),
             ],
             accent=5,
-            pause_mora=_gen_mora("、", None, None, "pau", 0.1, 0.0),
+            pause_mora=gen_mora("、", None, None, "pau", 0.1, 0.0),
         ),
         AccentPhrase(
             moras=[
-                _gen_mora("ヒ", "h", 0.1, "i", 0.1, 0.0),
-                _gen_mora("ホ", "h", 0.1, "o", 0.1, 100.0),
-                _gen_mora("デ", "d", 0.1, "e", 0.1, 100.0),
-                _gen_mora("ス", "s", 0.1, "U", 0.1, 0.0),
+                gen_mora("ヒ", "h", 0.1, "i", 0.1, 0.0),
+                gen_mora("ホ", "h", 0.1, "o", 0.1, 100.0),
+                gen_mora("デ", "d", 0.1, "e", 0.1, 100.0),
+                gen_mora("ス", "s", 0.1, "U", 0.1, 0.0),
             ],
             accent=1,
             pause_mora=None,
@@ -187,7 +161,7 @@ def _gen_hello_hiho_query() -> AudioQuery:
         pauseLengthScale=0.8,
         outputSamplingRate=12000,
         outputStereo=True,
-        kana=_gen_hello_hiho_kana(),
+        kana="コンニチワ'、ヒ'ホデ_ス",
     )
 
 
@@ -352,7 +326,7 @@ def test_mocked_create_accent_phrases_output(
     """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_text()
+    hello_hiho = "こんにちは、ヒホです"
     # Outputs
     result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
     # Tests
@@ -365,7 +339,7 @@ def test_mocked_create_accent_phrases_from_kana_output(
     """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_kana()
+    hello_hiho = "コンニチワ'、ヒ'ホデ_ス"
     # Outputs
     result = tts_engine.create_accent_phrases_from_kana(hello_hiho, StyleId(1))
     # Tests

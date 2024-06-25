@@ -34,10 +34,12 @@ class SupportedFeaturesJson:
     adjust_pitch_scale: FeatureSupportJson
     adjust_intonation_scale: FeatureSupportJson
     adjust_volume_scale: FeatureSupportJson
+    adjust_pause_length: FeatureSupportJson
     interrogative_upspeak: FeatureSupportJson
     synthesis_morphing: FeatureSupportJson
     sing: FeatureSupportJson
     manage_library: FeatureSupportJson
+    return_resource_url: FeatureSupportJson
 
 
 @dataclass(frozen=True)
@@ -102,6 +104,9 @@ class SupportedFeatures(BaseModel):
     adjust_pitch_scale: bool = Field(title="全体の音高の調整")
     adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
+    adjust_pause_length: bool | SkipJsonSchema[None] = Field(
+        default=None, title="句読点などの無音時間の調整"
+    )
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
@@ -109,6 +114,9 @@ class SupportedFeatures(BaseModel):
     sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
     manage_library: bool | SkipJsonSchema[None] = Field(
         default=None, title="音声ライブラリのインストール・アンインストール"
+    )
+    return_resource_url: bool | SkipJsonSchema[None] = Field(
+        default=None, title="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 
