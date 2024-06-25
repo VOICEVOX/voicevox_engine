@@ -259,7 +259,7 @@ def _hira_to_kana(text: str) -> str:
     return "".join(chr(ord(c) + 96) if "ぁ" <= c <= "ゔ" else c for c in text)
 
 
-def calc_phoneme_lengths(
+def _calc_phoneme_lengths(
     consonant_lengths: NDArray[np.int64],
     note_durations: NDArray[np.int64],
 ) -> NDArray[np.int64]:
@@ -587,7 +587,7 @@ class TTSEngine:
         )
 
         # 予測した子音長を元に、すべての音素長を計算する
-        phoneme_lengths = calc_phoneme_lengths(consonant_lengths, note_lengths_array)
+        phoneme_lengths = _calc_phoneme_lengths(consonant_lengths, note_lengths_array)
 
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
