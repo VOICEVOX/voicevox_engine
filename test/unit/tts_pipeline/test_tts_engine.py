@@ -354,7 +354,7 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     # Outputs
     result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
     # Tests
-    assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=1))
+    assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 
 
 def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
