@@ -2,14 +2,14 @@
 
 import copy
 import math
+from typing import Any
 
 import numpy as np
-from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
 from ..core.core_adapter import CoreAdapter
-from ..core.core_initializer import CoreManager
+from ..core.core_initializer import MOCK_VER, CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
@@ -691,6 +691,19 @@ class TTSEngine:
         return wave
 
 
+class TTSEngineNotFound(Exception):
+    """TTSEngine が見つからないエラー"""
+
+    def __init__(self, *args: list[Any], version: str, **kwargs: dict[str, Any]):
+        """TTSEngine のバージョン番号を用いてインスタンス化する。"""
+        super().__init__(*args, **kwargs)
+        self.version = version
+
+
+class MockTTSEngineNotFound(Exception):
+    """モック TTSEngine が見つからないエラー"""
+
+
 class TTSEngineManager:
     """TTS エンジンの集まりを一括管理するマネージャー"""
 
@@ -706,11 +719,14 @@ class TTSEngineManager:
         self._engines[version] = engine
 
     def get_engine(self, version: str) -> TTSEngine:
-        """指定バージョンのエンジンを取得する。"""
+        """指定バージョンのエンジンを取得する"""
         if version in self._engines:
             return self._engines[version]
 
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+        if version == MOCK_VER:
+            raise MockTTSEngineNotFound()
+        else:
+            raise TTSEngineNotFound(version=version)
 
     def has_engine(self, version: str) -> bool:
         """指定バージョンのエンジンが登録されているか否かを返す。"""
