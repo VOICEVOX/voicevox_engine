@@ -302,7 +302,7 @@ def _calc_phoneme_lengths(
     return phoneme_durations_array
 
 
-def notes_to_keys_and_phonemes(
+def _notes_to_keys_and_phonemes(
     notes: list[Note],
 ) -> tuple[
     NDArray[np.int64],
@@ -579,7 +579,7 @@ class TTSEngine:
             note_vowels_array,
             phonemes_array,
             phoneme_keys_array,
-        ) = notes_to_keys_and_phonemes(notes)
+        ) = _notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
         consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
@@ -630,7 +630,7 @@ class TTSEngine:
             _,
             phonemes_array_from_notes,
             phoneme_keys_array,
-        ) = notes_to_keys_and_phonemes(notes)
+        ) = _notes_to_keys_and_phonemes(notes)
 
         phonemes_array = np.array(
             [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
