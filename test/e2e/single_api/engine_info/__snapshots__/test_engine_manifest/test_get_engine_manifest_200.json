@@ -16,12 +16,14 @@
   "supported_features": {
     "adjust_intonation_scale": true,
     "adjust_mora_pitch": true,
+    "adjust_pause_length": true,
     "adjust_phoneme_length": true,
     "adjust_pitch_scale": true,
     "adjust_speed_scale": true,
     "adjust_volume_scale": true,
     "interrogative_upspeak": true,
     "manage_library": true,
+    "return_resource_url": true,
     "sing": true,
     "synthesis_morphing": true
   },

@@ -13,7 +13,6 @@ from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
-from ..utility.core_version_utility import get_latest_version
 from .kana_converter import parse_kana
 from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
@@ -702,19 +701,13 @@ class TTSEngineManager:
         """登録されたエンジンのバージョン一覧を取得する。"""
         return list(self._engines.keys())
 
-    def latest_version(self) -> str:
-        """登録された最新版エンジンのバージョンを取得する。"""
-        return get_latest_version(self.versions())
-
     def register_engine(self, engine: TTSEngine, version: str) -> None:
         """エンジンを登録する。"""
         self._engines[version] = engine
 
-    def get_engine(self, version: str | None = None) -> TTSEngine:
-        """指定バージョンのエンジンを取得する。指定が無い場合、最新バージョンを返す。"""
-        if version is None:
-            return self._engines[self.latest_version()]
-        elif version in self._engines:
+    def get_engine(self, version: str) -> TTSEngine:
+        """指定バージョンのエンジンを取得する。"""
+        if version in self._engines:
             return self._engines[version]
 
         raise HTTPException(status_code=422, detail="不明なバージョンです")

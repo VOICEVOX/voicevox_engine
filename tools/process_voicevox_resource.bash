@@ -19,7 +19,7 @@ jq -s '.[0] * .[1]' engine_manifest.json "${DOWNLOAD_RESOURCE_PATH}/engine/engin
 mv engine_manifest.json.tmp engine_manifest.json
 
 # エンジンとリソースの更新情報を統合する
-python build_util/merge_update_infos.py \
+python tools/merge_update_infos.py \
     resources/engine_manifest_assets/update_infos.json \
     "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest_assets/update_infos.json" \
     resources/engine_manifest_assets/update_infos.json

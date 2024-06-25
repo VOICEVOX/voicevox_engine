@@ -7,14 +7,16 @@
 
 import json
 from base64 import b64encode
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TypeAlias
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
 
 
-class FeatureSupportJson(BaseModel):
+@dataclass(frozen=True)
+class FeatureSupportJson:
     """`engine_manifest.json` の機能サポート状況"""
 
     type: str
@@ -22,7 +24,8 @@ class FeatureSupportJson(BaseModel):
     name: str
 
 
-class SupportedFeaturesJson(BaseModel):
+@dataclass(frozen=True)
+class SupportedFeaturesJson:
     """`engine_manifest.json` のサポート機能一覧"""
 
     adjust_mora_pitch: FeatureSupportJson
@@ -31,13 +34,16 @@ class SupportedFeaturesJson(BaseModel):
     adjust_pitch_scale: FeatureSupportJson
     adjust_intonation_scale: FeatureSupportJson
     adjust_volume_scale: FeatureSupportJson
+    adjust_pause_length: FeatureSupportJson
     interrogative_upspeak: FeatureSupportJson
     synthesis_morphing: FeatureSupportJson
     sing: FeatureSupportJson
     manage_library: FeatureSupportJson
+    return_resource_url: FeatureSupportJson
 
 
-class EngineManifestJson(BaseModel):
+@dataclass(frozen=True)
+class EngineManifestJson:
     """`engine_manifest.json` のコンテンツ"""
 
     manifest_version: str
@@ -55,6 +61,9 @@ class EngineManifestJson(BaseModel):
     update_infos: str
     dependency_licenses: str
     supported_features: SupportedFeaturesJson
+
+
+_manifest_json_adapter = TypeAdapter(EngineManifestJson)
 
 
 class UpdateInfo(BaseModel):
@@ -95,6 +104,9 @@ class SupportedFeatures(BaseModel):
     adjust_pitch_scale: bool = Field(title="全体の音高の調整")
     adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
+    adjust_pause_length: bool | SkipJsonSchema[None] = Field(
+        default=None, title="句読点などの無音時間の調整"
+    )
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
@@ -102,6 +114,9 @@ class SupportedFeatures(BaseModel):
     sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
     manage_library: bool | SkipJsonSchema[None] = Field(
         default=None, title="音声ライブラリのインストール・アンインストール"
+    )
+    return_resource_url: bool | SkipJsonSchema[None] = Field(
+        default=None, title="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 
@@ -135,37 +150,32 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = EngineManifestJson.model_validate_json(
-        manifest_path.read_bytes()
-    ).model_dump()
+    manifest = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
     return EngineManifest(
-        manifest_version=manifest["manifest_version"],
-        name=manifest["name"],
-        brand_name=manifest["brand_name"],
-        uuid=manifest["uuid"],
-        url=manifest["url"],
-        default_sampling_rate=manifest["default_sampling_rate"],
-        frame_rate=manifest["frame_rate"],
-        icon=b64encode((root_dir / manifest["icon"]).read_bytes()).decode("utf-8"),
-        terms_of_service=(root_dir / manifest["terms_of_service"]).read_text("utf-8"),
+        manifest_version=manifest.manifest_version,
+        name=manifest.name,
+        brand_name=manifest.brand_name,
+        uuid=manifest.uuid,
+        url=manifest.url,
+        default_sampling_rate=manifest.default_sampling_rate,
+        frame_rate=manifest.frame_rate,
+        icon=b64encode((root_dir / manifest.icon).read_bytes()).decode("utf-8"),
+        terms_of_service=(root_dir / manifest.terms_of_service).read_text("utf-8"),
         update_infos=[
             UpdateInfo(**update_info)
             for update_info in json.loads(
-                (root_dir / manifest["update_infos"]).read_text("utf-8")
+                (root_dir / manifest.update_infos).read_text("utf-8")
             )
         ],
-        # supported_vvlib_manifest_versionを持たないengine_manifestのために
-        # キーが存在しない場合はNoneを返すgetを使う
-        supported_vvlib_manifest_version=manifest.get(
-            "supported_vvlib_manifest_version"
-        ),
+        supported_vvlib_manifest_version=None,
         dependency_licenses=[
             LicenseInfo(**license_info)
             for license_info in json.loads(
-                (root_dir / manifest["dependency_licenses"]).read_text("utf-8")
+                (root_dir / manifest.dependency_licenses).read_text("utf-8")
             )
         ],
         supported_features={
-            key: item["value"] for key, item in manifest["supported_features"].items()
+            key: item["value"]
+            for key, item in asdict(manifest.supported_features).items()
         },
     )

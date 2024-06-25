@@ -231,8 +231,9 @@ ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
 ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
-ADD ./build_util/generate_licenses.py /opt/voicevox_engine/build_util/
-ADD ./build_util/licenses /opt/voicevox_engine/build_util/licenses
+ADD ./tools/generate_licenses.py /opt/voicevox_engine/tools/
+ADD ./tools/licenses /opt/voicevox_engine/tools/licenses
+ADD ./tools/generate_filemap.py /opt/voicevox_engine/tools/
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -254,9 +255,12 @@ RUN <<EOF
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
     # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
     gosu user /opt/python/bin/pip3 install "$(grep pip-licenses /tmp/requirements-dev.txt | cut -f 1 -d ';')"
-    gosu user /opt/python/bin/python3 build_util/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
+    gosu user /opt/python/bin/python3 tools/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
     cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
+
+# Generate filemap.json
+RUN /opt/python/bin/python3 /opt/voicevox_engine/tools/generate_filemap.py --target_dir /opt/voicevox_engine/resources/character_info
 
 # Keep this layer separated to use layer cache on download failed in local build
 RUN <<EOF

@@ -1,6 +1,5 @@
 """話者情報と話者メタ情報"""
 
-from enum import Enum
 from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
@@ -31,24 +30,15 @@ class SpeakerStyle(BaseModel):
     )
 
 
-class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
-    ALL = "ALL"  # 全て許可
-    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
-    NOTHING = "NOTHING"  # 全て禁止
-
-    @classmethod
-    def _missing_(cls, value: object) -> "SpeakerSupportPermittedSynthesisMorphing":
-        return SpeakerSupportPermittedSynthesisMorphing.ALL
-
-
 class SpeakerSupportedFeatures(BaseModel):
     """
     話者の対応機能の情報
     """
 
-    permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
+    permitted_synthesis_morphing: Literal["ALL", "SELF_ONLY", "NOTHING"] = Field(
         title="モーフィング機能への対応",
-        default=SpeakerSupportPermittedSynthesisMorphing(None),
+        description="'ALL' は「全て許可」、'SELF_ONLY' は「同じ話者内でのみ許可」、'NOTHING' は「全て禁止」",
+        default="ALL",
     )
 
 
@@ -60,7 +50,7 @@ class Speaker(BaseModel):
     name: str = Field(title="名前")
     speaker_uuid: str = Field(title="話者のUUID")
     styles: list[SpeakerStyle] = Field(title="スタイルの一覧")
-    version: str = Field("話者のバージョン")
+    version: str = Field(title="話者のバージョン")
     supported_features: SpeakerSupportedFeatures = Field(
         title="話者の対応機能", default_factory=SpeakerSupportedFeatures
     )
@@ -72,12 +62,15 @@ class StyleInfo(BaseModel):
     """
 
     id: StyleId = Field(title="スタイルID")
-    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    icon: str = Field(
+        title="このスタイルのアイコンをbase64エンコードしたもの、あるいはURL"
+    )
     portrait: str | SkipJsonSchema[None] = Field(
-        default=None, title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+        default=None,
+        title="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
     )
     voice_samples: list[str] = Field(
-        title="voice_sampleのwavファイルをbase64エンコードしたもの"
+        title="サンプル音声をbase64エンコードしたもの、あるいはURL"
     )
 
 
@@ -87,5 +80,5 @@ class SpeakerInfo(BaseModel):
     """
 
     policy: str = Field(title="policy.md")
-    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
+    portrait: str = Field(title="立ち絵画像をbase64エンコードしたもの、あるいはURL")
     style_infos: list[StyleInfo] = Field(title="スタイルの追加情報")

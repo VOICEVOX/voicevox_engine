@@ -85,8 +85,9 @@ def generate_tts_pipeline_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -116,8 +117,9 @@ def generate_tts_pipeline_router(
         """
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
         try:
             presets = preset_manager.load_presets()
         except PresetInputError as err:
@@ -175,7 +177,8 @@ def generate_tts_pipeline_router(
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         if is_kana:
             try:
                 return engine.create_accent_phrases_from_kana(text, style_id)
@@ -196,7 +199,8 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -209,7 +213,8 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         return engine.update_length(accent_phrases, style_id)
 
     @router.post(
@@ -222,7 +227,8 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         return engine.update_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -249,7 +255,8 @@ def generate_tts_pipeline_router(
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
@@ -289,9 +296,10 @@ def generate_tts_pipeline_router(
                 status_code=404,
                 detail="実験的機能はデフォルトで無効になっています。使用するには引数を指定してください。",
             )
+        version = core_version or core_manager.latest_version()
         try:
             f_name = cancellable_engine._synthesis_impl(
-                query, style_id, request, core_version=core_version
+                query, style_id, request, version=version
             )
         except CancellableEngineInternalError as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -325,7 +333,8 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -367,8 +376,9 @@ def generate_tts_pipeline_router(
         """
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
-        engine = tts_engines.get_engine(core_version)
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
+        core = core_manager.get_core(version)
         try:
             phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
                 score, style_id
@@ -396,7 +406,8 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[float]:
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         try:
             return engine.create_sing_volume_from_phoneme_and_f0(
                 score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
@@ -424,7 +435,8 @@ def generate_tts_pipeline_router(
         """
         歌唱音声合成を行います。
         """
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or core_manager.latest_version()
+        engine = tts_engines.get_engine(version)
         try:
             wave = engine.frame_synthsize_wave(query, style_id)
         except TalkSingInvalidInputError as e:
@@ -519,7 +531,8 @@ def generate_tts_pipeline_router(
         指定されたスタイルを初期化します。
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         core.initialize_style_id_synthesis(style_id, skip_reinit=skip_reinit)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
@@ -530,7 +543,8 @@ def generate_tts_pipeline_router(
         """
         指定されたスタイルが初期化されているかどうかを返します。
         """
-        core = core_manager.get_core(core_version)
+        version = core_version or core_manager.latest_version()
+        core = core_manager.get_core(version)
         return core.is_initialized_style_id_synthesis(style_id)
 
     return router

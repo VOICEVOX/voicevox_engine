@@ -1,8 +1,5 @@
 from pathlib import Path
 
-import pytest
-from pydantic import ValidationError
-
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 
@@ -10,12 +7,12 @@ from voicevox_engine.setting.setting_manager import Setting, SettingHandler
 def test_setting_handler_load_not_exist_file() -> None:
     """`SettingHandler` に存在しない設定ファイルのパスを渡すとデフォルト値になる。"""
     # Inputs
-    setting_loader = SettingHandler(Path("not_exist.yaml"))
-    settings = setting_loader.load()
+    setting_path = Path("not_exist.yaml")
+    setting_loader = SettingHandler(setting_path)
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_setting = Setting(cors_policy_mode=CorsPolicyMode.localapps, allow_origin=None)
     # Outputs
-    setting = settings.model_dump()
+    setting = setting_loader.load()
     # Test
     assert true_setting == setting
 
@@ -25,11 +22,10 @@ def test_setting_handler_load_exist_file_1() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-1.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_setting = Setting(cors_policy_mode=CorsPolicyMode.localapps, allow_origin=None)
     # Outputs
-    setting = settings.model_dump()
+    setting = setting_loader.load()
     # Test
     assert true_setting == setting
 
@@ -39,11 +35,10 @@ def test_setting_handler_load_exist_file_2() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-2.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": "all"}
+    true_setting = Setting(cors_policy_mode=CorsPolicyMode.all, allow_origin=None)
     # Outputs
-    setting = settings.model_dump()
+    setting = setting_loader.load()
     # Test
     assert true_setting == setting
 
@@ -53,14 +48,12 @@ def test_setting_handler_load_exist_file_3() -> None:
     # Inputs
     setting_path = Path("test/unit/setting/setting-test-load-3.yaml")
     setting_loader = SettingHandler(setting_path)
-    settings = setting_loader.load()
     # Expects
-    true_setting = {
-        "allow_origin": "192.168.254.255 192.168.255.255",
-        "cors_policy_mode": CorsPolicyMode.localapps,
-    }
+    true_policy = CorsPolicyMode.localapps
+    true_origin = "192.168.254.255 192.168.255.255"
+    true_setting = Setting(cors_policy_mode=true_policy, allow_origin=true_origin)
     # Outputs
-    setting = settings.model_dump()
+    setting = setting_loader.load()
     # Test
     assert true_setting == setting
 
@@ -72,17 +65,9 @@ def test_setting_handler_save(tmp_path: Path) -> None:
     setting_loader = SettingHandler(setting_path)
     new_setting = Setting(cors_policy_mode=CorsPolicyMode.localapps)
     # Expects
-    true_setting = {"allow_origin": None, "cors_policy_mode": CorsPolicyMode.localapps}
+    true_setting = Setting(cors_policy_mode=CorsPolicyMode.localapps, allow_origin=None)
     # Outputs
     setting_loader.save(new_setting)
-    # NOTE: `.load()` の正常動作を前提とする
-    setting = setting_loader.load().model_dump()
+    setting = setting_loader.load()  # NOTE: `.load()` の正常動作を前提とする
     # Test
     assert true_setting == setting
-
-
-def test_setting_invalid_input() -> None:
-    """`Setting` は不正な入力に対してエラーを送出する。"""
-    # Test
-    with pytest.raises(ValidationError) as _:
-        Setting(cors_policy_mode="invalid_value", allow_origin="*")
