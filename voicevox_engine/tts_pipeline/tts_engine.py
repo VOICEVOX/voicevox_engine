@@ -180,7 +180,7 @@ def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]
     return moras
 
 
-def apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
     voiced = list(filter(lambda mora: mora.pitch > 0, moras))

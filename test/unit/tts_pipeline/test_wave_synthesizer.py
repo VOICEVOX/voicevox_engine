@@ -5,10 +5,10 @@ import numpy as np
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
+    _apply_intonation_scale,
     _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
-    apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
     apply_volume_scale,
@@ -126,7 +126,7 @@ def test_apply_pitch_scale() -> None:
 
 
 def test_apply_intonation_scale() -> None:
-    """Test `apply_intonation_scale`."""
+    """Test `_apply_intonation_scale()`."""
     # Inputs
     query = _gen_query(intonationScale=0.5)
     input_moras = [
@@ -136,7 +136,6 @@ def test_apply_intonation_scale() -> None:
         gen_mora("ヒ", "h", 0.0, "i", 0.0, 8.0),
         gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
-
     # Expects - mean=6 var x0.5 intonation scaling
     true_moras = [
         gen_mora("コ", "k", 0.0, "o", 0.0, 5.5),
@@ -145,10 +144,10 @@ def test_apply_intonation_scale() -> None:
         gen_mora("ヒ", "h", 0.0, "i", 0.0, 7.0),
         gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
-
     # Outputs
-    moras = apply_intonation_scale(input_moras, query)
+    moras = _apply_intonation_scale(input_moras, query)
 
+    # Test
     assert moras == true_moras
 
 
