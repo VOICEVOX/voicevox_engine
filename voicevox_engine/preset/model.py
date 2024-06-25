@@ -28,4 +28,4 @@ class Preset(BaseModel):
     pauseLength: float | SkipJsonSchema[None] = Field(
         default=None, title="句読点などの無音時間"
     )
-    pauseLengthScale: float = Field(title="句読点などの無音時間（倍率）")
+    pauseLengthScale: float = Field(default=1, title="句読点などの無音時間（倍率）")
