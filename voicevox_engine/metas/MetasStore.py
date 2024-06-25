@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
 from voicevox_engine.metas.Metas import (
-    Speaker,
     SpeakerInfo,
     SpeakerStyle,
     SpeakerSupportedFeatures,
@@ -40,27 +39,13 @@ class Character:
     supported_features: SpeakerSupportedFeatures
 
 
-TALK_STYLE_TYPES: Final = ["talk"]
-SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
+_TALK_STYLE_TYPES: Final = ["talk"]
+_SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
-def characters_to_speakers(characters: list[Character]) -> list[Speaker]:
-    """キャラクター配列を Speaker 配列へキャストする。"""
-    return [
-        Speaker(
-            name=character.name,
-            speaker_uuid=character.uuid,
-            styles=character.talk_styles + character.sing_styles,
-            version=character.version,
-            supported_features=character.supported_features,
-        )
-        for character in characters
-    ]
-
-
-class _EngineSpeaker(BaseModel):
+class _EngineCharacter(BaseModel):
     """
-    エンジンに含まれる話者情報
+    エンジンに含まれるキャラクター情報
     """
 
     supported_features: SpeakerSupportedFeatures = Field(
@@ -74,22 +59,22 @@ class MetasStore:
     """
 
     def __init__(
-        self, engine_speakers_path: Path, resource_manager: ResourceManager
+        self, engine_characters_path: Path, resource_manager: ResourceManager
     ) -> None:
         """
         Parameters
         ----------
-        engine_speakers_path : Path
+        engine_characters_path : Path
             エンジンに含まれる話者メタ情報ディレクトリのパス。
         """
-        self._speakers_path = engine_speakers_path
+        self._characters_path = engine_characters_path
         self._resource_manager = resource_manager
-        # エンジンに含まれる各話者のメタ情報
-        self._loaded_metas: dict[str, _EngineSpeaker] = {
-            folder.name: _EngineSpeaker.model_validate_json(
+        # エンジンに含まれる各キャラクターのメタ情報
+        self._loaded_metas: dict[str, _EngineCharacter] = {
+            folder.name: _EngineCharacter.model_validate_json(
                 (folder / "metas.json").read_text(encoding="utf-8")
             )
-            for folder in engine_speakers_path.iterdir()
+            for folder in engine_characters_path.iterdir()
             if folder.is_dir()
         }
 
@@ -103,10 +88,10 @@ class MetasStore:
             engine_character = self._loaded_metas[character_uuid]
             styles = cast_styles(core_character.styles)
             talk_styles = list(
-                filter(lambda style: style.type in TALK_STYLE_TYPES, styles)
+                filter(lambda style: style.type in _TALK_STYLE_TYPES, styles)
             )
             sing_styles = list(
-                filter(lambda style: style.type in SING_STYLE_TYPES, styles)
+                filter(lambda style: style.type in _SING_STYLE_TYPES, styles)
             )
             characters.append(
                 Character(
@@ -120,17 +105,17 @@ class MetasStore:
             )
         return characters
 
-    def speaker_info(
+    def character_info(
         self,
-        speaker_uuid: str,
-        speaker_or_singer: Literal["speaker", "singer"],
+        character_uuid: str,
+        talk_or_sing: Literal["talk", "sing"],
         core_characters: list[CoreCharacter],
         resource_baseurl: str,
         resource_format: ResourceFormat,
     ) -> SpeakerInfo:
         # キャラクター情報は以下のディレクトリ構造に従わなければならない。
-        # {engine_speakers_path}/
-        #     {speaker_uuid_0}/
+        # {engine_characters_path}/
+        #     {character_uuid_0}/
         #         policy.md
         #         portrait.png
         #         icons/
@@ -147,25 +132,25 @@ class MetasStore:
         #             {id_0}_003.wav
         #             {id_1}_001.wav
         #             ...
-        #     {speaker_uuid_1}/
+        #     {character_uuid_1}/
         #         ...
 
         # 該当話者を検索する
         characters = self.load_combined_metas(core_characters)
-        speakers = filter_characters_and_styles(characters, speaker_or_singer)
-        speaker = next(
-            filter(lambda spk: spk.speaker_uuid == speaker_uuid, speakers), None
+        characters = filter_characters_and_styles(characters, talk_or_sing)
+        character = next(
+            filter(lambda character: character.uuid == character_uuid, characters), None
         )
-        if speaker is None:
+        if character is None:
             # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
             raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
 
         # 話者情報を取得する
         try:
-            speaker_path = self._speakers_path / speaker_uuid
+            character_path = self._characters_path / character_uuid
 
-            # speaker policy
-            policy_path = speaker_path / "policy.md"
+            # character policy
+            policy_path = character_path / "policy.md"
             policy = policy_path.read_text("utf-8")
 
             def _resource_str(path: Path) -> str:
@@ -176,21 +161,21 @@ class MetasStore:
                     return resource_str
                 return f"{resource_baseurl}/{resource_str}"
 
-            # speaker portrait
-            portrait_path = speaker_path / "portrait.png"
+            # character portrait
+            portrait_path = character_path / "portrait.png"
             portrait = _resource_str(portrait_path)
 
             # スタイル情報を取得する
             style_infos = []
-            for style in speaker.styles:
+            for style in character.talk_styles + character.sing_styles:
                 id = style.id
 
                 # style icon
-                style_icon_path = speaker_path / "icons" / f"{id}.png"
+                style_icon_path = character_path / "icons" / f"{id}.png"
                 icon = _resource_str(style_icon_path)
 
                 # style portrait
-                style_portrait_path = speaker_path / "portraits" / f"{id}.png"
+                style_portrait_path = character_path / "portraits" / f"{id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = _resource_str(style_portrait_path)
@@ -199,7 +184,7 @@ class MetasStore:
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
-                    voice_path = speaker_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_path = character_path / "voice_samples" / f"{id}_{num}.wav"
                     voice_samples.append(_resource_str(voice_path))
 
                 style_infos.append(
@@ -215,60 +200,44 @@ class MetasStore:
             msg = "追加情報が見つかりませんでした"
             raise HTTPException(status_code=500, detail=msg)
 
-        spk_info = SpeakerInfo(
+        character_info = SpeakerInfo(
             policy=policy, portrait=portrait, style_infos=style_infos
         )
-        return spk_info
+        return character_info
 
-    def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+    def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Character]:
         """話せるキャラクターの情報の一覧を取得する。"""
         characters = self.load_combined_metas(core_characters)
-        return filter_characters_and_styles(characters, "speaker")
+        return filter_characters_and_styles(characters, "talk")
 
-    def sing_characters(self, core_characters: list[CoreCharacter]) -> list[Speaker]:
+    def sing_characters(self, core_characters: list[CoreCharacter]) -> list[Character]:
         """歌えるキャラクターの情報の一覧を取得する。"""
         characters = self.load_combined_metas(core_characters)
-        return filter_characters_and_styles(characters, "singer")
+        return filter_characters_and_styles(characters, "sing")
 
 
 def filter_characters_and_styles(
     characters: list[Character],
-    speaker_or_singer: Literal["speaker", "singer"],
-) -> list[Speaker]:
+    talk_or_sing: Literal["talk", "sing"],
+) -> list[Character]:
     """キャラクター内のスタイルをtalk系・sing系のみにする。スタイル数が0になったキャラクターは除外する。"""
-    if speaker_or_singer == "speaker":
+    if talk_or_sing == "talk":
         # talk 系スタイルを持たないキャラクターを除外する
-        talk_characters = filter(
-            lambda character: len(character.talk_styles) > 0, characters
+        talk_characters = list(
+            filter(lambda character: len(character.talk_styles) > 0, characters)
         )
-        # キャラクター内のスタイルを talk 系のみにしたうえでキャストする
-        talk_speakers = map(
-            lambda talker: Speaker(
-                name=talker.name,
-                speaker_uuid=talker.uuid,
-                styles=talker.talk_styles,
-                version=talker.version,
-                supported_features=talker.supported_features,
-            ),
-            talk_characters,
-        )
-        return list(talk_speakers)
-    elif speaker_or_singer == "singer":
+        # sing 系スタイルを除外する
+        for talk_character in talk_characters:
+            talk_character.sing_styles = []
+        return talk_characters
+    elif talk_or_sing == "sing":
         # sing 系スタイルを持たないキャラクターを除外する
-        sing_characters = filter(
-            lambda character: len(character.sing_styles) > 0, characters
+        sing_characters = list(
+            filter(lambda character: len(character.sing_styles) > 0, characters)
         )
-        # キャラクター内のスタイルを sing 系のみにしたうえでキャストする
-        sing_speakers = map(
-            lambda singer: Speaker(
-                name=singer.name,
-                speaker_uuid=singer.uuid,
-                styles=singer.sing_styles,
-                version=singer.version,
-                supported_features=singer.supported_features,
-            ),
-            sing_characters,
-        )
-        return list(sing_speakers)
+        # talk 系スタイルを除外する
+        for sing_character in sing_characters:
+            sing_character.talk_styles = []
+        return sing_characters
     else:
-        raise Exception(f"'{speaker_or_singer}' は不正な style_type です")
+        raise Exception(f"'{talk_or_sing}' は不正な style_type です")
