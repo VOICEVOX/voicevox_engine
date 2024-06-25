@@ -62,7 +62,7 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
     return onehot.astype(np.int64)
 
 
-def generate_silence_mora(length: float) -> Mora:
+def _generate_silence_mora(length: float) -> Mora:
     """無音モーラの生成"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
@@ -96,8 +96,8 @@ def apply_interrogative_upspeak(
 
 def apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ前後無音（`prePhonemeLength` & `postPhonemeLength`）を付加する"""
-    pre_silence_moras = [generate_silence_mora(query.prePhonemeLength)]
-    post_silence_moras = [generate_silence_mora(query.postPhonemeLength)]
+    pre_silence_moras = [_generate_silence_mora(query.prePhonemeLength)]
+    post_silence_moras = [_generate_silence_mora(query.postPhonemeLength)]
     moras = pre_silence_moras + moras + post_silence_moras
     return moras
 
