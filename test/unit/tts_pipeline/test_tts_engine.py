@@ -20,8 +20,8 @@ from voicevox_engine.tts_pipeline.model import (
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
+    _apply_interrogative_upspeak,
     _to_flatten_phonemes,
-    apply_interrogative_upspeak,
     to_flatten_moras,
 )
 
@@ -504,7 +504,7 @@ def create_synthesis_test_base(
     """
     tts_engine = TTSEngine(core=MockCoreWrapper())
     inputs = tts_engine.create_accent_phrases(text, StyleId(1))
-    outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
+    outputs = _apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
     assert expected == outputs, f"case(text:{text})"
 
 

@@ -67,7 +67,7 @@ def _generate_silence_mora(length: float) -> Mora:
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
-def apply_interrogative_upspeak(
+def _apply_interrogative_upspeak(
     accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
 ) -> list[AccentPhrase]:
     """必要に応じて各アクセント句の末尾へ疑問形モーラ（同一母音・継続長 0.15秒・音高↑）を付与する"""
@@ -554,7 +554,7 @@ class TTSEngine:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        query.accent_phrases = apply_interrogative_upspeak(
+        query.accent_phrases = _apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak
         )
 
