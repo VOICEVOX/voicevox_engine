@@ -163,7 +163,7 @@ def _apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間（`pauseLength`）を適用する"""
     if query.pauseLength is not None:
         for mora in moras:
@@ -172,7 +172,7 @@ def apply_pause_length(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_pause_length_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ無音時間スケール（`pauseLengthScale`）を適用する"""
     for mora in moras:
         if mora.vowel == "pau":
@@ -226,11 +226,11 @@ def query_to_decoder_feature(
 
     # 設定を適用する
     moras = _apply_prepost_silence(moras, query)
-    moras = apply_pause_length(moras, query)
-    moras = apply_pause_length_scale(moras, query)
+    moras = _apply_pause_length(moras, query)
+    moras = _apply_pause_length_scale(moras, query)
     moras = _apply_speed_scale(moras, query)
     moras = _apply_pitch_scale(moras, query)
-    moras = apply_intonation_scale(moras, query)
+    moras = _apply_intonation_scale(moras, query)
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in _to_flatten_phonemes(moras)])
