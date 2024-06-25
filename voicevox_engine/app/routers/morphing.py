@@ -112,7 +112,6 @@ def generate_morphing_router(
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
-            core=core,
             query=query,
             base_style_id=base_style_id,
             target_style_id=target_style_id,
