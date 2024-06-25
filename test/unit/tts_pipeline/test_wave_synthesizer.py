@@ -6,11 +6,11 @@ from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_intonation_scale,
+    _apply_output_sampling_rate,
     _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
     _apply_volume_scale,
-    apply_output_sampling_rate,
     apply_output_stereo,
     count_frame_per_unit,
     query_to_decoder_feature,
@@ -166,19 +166,18 @@ def test_apply_volume_scale() -> None:
 
 
 def test_apply_output_sampling_rate() -> None:
-    """Test `apply_output_sampling_rate`."""
+    """Test `_apply_output_sampling_rate()`."""
     # Inputs
     query = _gen_query(outputSamplingRate=12000)
     input_wave = np.array([1.0 for _ in range(120)])
     input_sr_wave = 24000
-
     # Expects - half sampling rate
     true_wave = np.array([1.0 for _ in range(60)])
     assert true_wave.shape == (60,), "Prerequisites"
-
     # Outputs
-    wave = apply_output_sampling_rate(input_wave, input_sr_wave, query)
+    wave = _apply_output_sampling_rate(input_wave, input_sr_wave, query)
 
+    # Test
     assert wave.shape[0] == true_wave.shape[0]
 
 

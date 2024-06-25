@@ -198,7 +198,7 @@ def _apply_volume_scale(
     return wave * query.volumeScale
 
 
-def apply_output_sampling_rate(
+def _apply_output_sampling_rate(
     wave: NDArray[np.float32], sr_wave: float, query: AudioQuery | FrameAudioQuery
 ) -> NDArray[np.float32]:
     """音声波形へ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
@@ -249,7 +249,7 @@ def raw_wave_to_output_wave(
 ) -> NDArray[np.float32]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する"""
     wave = _apply_volume_scale(wave, query)
-    wave = apply_output_sampling_rate(wave, sr_wave, query)
+    wave = _apply_output_sampling_rate(wave, sr_wave, query)
     wave = apply_output_stereo(wave, query)
     return wave
 
