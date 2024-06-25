@@ -1,6 +1,5 @@
 """
 喋れるキャラクター・歌えるキャラクターのテスト。
-TODO: 喋れるキャラクター・歌えるキャラクターの両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
 """
 
 import hashlib
@@ -42,13 +41,13 @@ def test_喋れるキャラクター一覧が取得できる(
 def test_喋れるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    speakers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
-    for speaker in speakers:
+    talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
+    for talker in talkers:
         response = client.get(
-            "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
+            "/speaker_info", params={"speaker_uuid": talker.speaker_uuid}
         )
         assert snapshot_json(
-            name=speaker.speaker_uuid,
+            name=talker.speaker_uuid,
         ) == hash_long_string(response.json())
 
 
