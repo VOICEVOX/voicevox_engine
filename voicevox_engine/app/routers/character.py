@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import MetasStore, ResourceFormat
+from voicevox_engine.metas.MetasStore import Character, MetasStore, ResourceFormat
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
@@ -17,9 +17,24 @@ async def _get_resource_baseurl(request: Request) -> str:
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
-def generate_speaker_router(
-    resource_manager: ResourceManager,
-    metas_store: MetasStore,
+def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
+    """キャラクターのリストを `Speaker` のリストへキャストする。"""
+    return list(
+        map(
+            lambda character: Speaker(
+                name=character.name,
+                speaker_uuid=character.uuid,
+                styles=character.talk_styles + character.sing_styles,
+                version=character.version,
+                supported_features=character.supported_features,
+            ),
+            characters,
+        )
+    )
+
+
+def generate_character_router(
+    resource_manager: ResourceManager, metas_store: MetasStore
 ) -> APIRouter:
     """話者情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -27,7 +42,8 @@ def generate_speaker_router(
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """話者情報の一覧を取得します。"""
-        return metas_store.talk_characters(core_version)
+        characters = metas_store.talk_characters(core_version)
+        return _characters_to_speakers(characters)
 
     @router.get("/speaker_info")
     def speaker_info(
@@ -40,9 +56,9 @@ def generate_speaker_router(
         指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        return metas_store.speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="speaker",
+        return metas_store.character_info(
+            character_uuid=speaker_uuid,
+            talk_or_sing="talk",
             core_version=core_version,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
@@ -51,7 +67,8 @@ def generate_speaker_router(
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌手情報の一覧を取得します"""
-        return metas_store.sing_characters(core_version)
+        characters = metas_store.sing_characters(core_version)
+        return _characters_to_speakers(characters)
 
     @router.get("/singer_info")
     def singer_info(
@@ -64,9 +81,9 @@ def generate_speaker_router(
         指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        return metas_store.speaker_info(
-            speaker_uuid=speaker_uuid,
-            speaker_or_singer="singer",
+        return metas_store.character_info(
+            character_uuid=speaker_uuid,
+            talk_or_sing="sing",
             core_version=core_version,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
