@@ -31,19 +31,8 @@ class TalkSingInvalidInputError(Exception):
     pass
 
 
-# TODO: move mora utility to mora module
 def to_flatten_moras(accent_phrases: list[AccentPhrase]) -> list[Mora]:
-    """
-    アクセント句系列に含まれるモーラの抽出
-    Parameters
-    ----------
-    accent_phrases : list[AccentPhrase]
-        アクセント句系列
-    Returns
-    -------
-    moras : list[Mora]
-        モーラ系列。ポーズモーラを含む。
-    """
+    """アクセント句系列からモーラ系列を抽出する。"""
     moras: list[Mora] = []
     for accent_phrase in accent_phrases:
         moras += accent_phrase.moras
