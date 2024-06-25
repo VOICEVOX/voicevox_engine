@@ -233,6 +233,7 @@ ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./tools/generate_licenses.py /opt/voicevox_engine/tools/
 ADD ./tools/licenses /opt/voicevox_engine/tools/licenses
+ADD ./tools/generate_filemap.py /opt/voicevox_engine/tools/
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -259,8 +260,7 @@ RUN <<EOF
 EOF
 
 # Generate filemap.json
-ADD ./tools/generate_filemap.py /tmp/
-RUN gosu user /opt/python/bin/python3 /tmp/generate_filemap.py --target_dir resources/character_info
+RUN /opt/python/bin/python3 /opt/voicevox_engine/tools/generate_filemap.py --target_dir /opt/voicevox_engine/resources/character_info
 
 # Keep this layer separated to use layer cache on download failed in local build
 RUN <<EOF
