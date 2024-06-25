@@ -218,7 +218,7 @@ def _apply_output_stereo(
     return wave
 
 
-def query_to_decoder_feature(
+def _query_to_decoder_feature(
     query: AudioQuery,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
@@ -558,7 +558,7 @@ class TTSEngine:
             query.accent_phrases, enable_interrogative_upspeak
         )
 
-        phoneme, f0 = query_to_decoder_feature(query)
+        phoneme, f0 = _query_to_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave

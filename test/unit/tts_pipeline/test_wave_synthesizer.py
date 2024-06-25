@@ -1,5 +1,7 @@
 """波形合成のテスト"""
 
+from typing import Final
+
 import numpy as np
 
 from voicevox_engine.model import AudioQuery
@@ -12,14 +14,14 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_prepost_silence,
     _apply_speed_scale,
     _apply_volume_scale,
+    _query_to_decoder_feature,
     count_frame_per_unit,
-    query_to_decoder_feature,
     raw_wave_to_output_wave,
 )
 
 from .tts_utils import gen_mora
 
-T = 0.01067
+T: Final = 0.01067
 TRUE_NUM_PHONEME = 45
 
 
@@ -224,21 +226,21 @@ def test_count_frame_per_unit() -> None:
 
 
 def test_query_to_decoder_feature() -> None:
-    """Test `query_to_decoder_feature`."""
+    """Test `_query_to_decoder_feature()`."""
     # Inputs
     accent_phrases = [
         AccentPhrase(
             moras=[
-                gen_mora("コ", "k", 2 * 0.01067, "o", 4 * 0.01067, 5.0),
-                gen_mora("ン", None, None, "N", 4 * 0.01067, 5.0),
+                gen_mora("コ", "k", 2 * T, "o", 4 * T, 5.0),
+                gen_mora("ン", None, None, "N", 4 * T, 5.0),
             ],
             accent=1,
-            pause_mora=gen_mora("、", None, None, "pau", 2 * 0.01067, 0.0),
+            pause_mora=gen_mora("、", None, None, "pau", 2 * T, 0.0),
         ),
         AccentPhrase(
             moras=[
-                gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 8.0),
-                gen_mora("ホ", "h", 4 * 0.01067, "O", 2 * 0.01067, 0.0),
+                gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 8.0),
+                gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
             ],
             accent=1,
             pause_mora=None,
@@ -249,9 +251,9 @@ def test_query_to_decoder_feature() -> None:
         speedScale=2.0,
         pitchScale=2.0,
         intonationScale=0.5,
-        prePhonemeLength=2 * 0.01067,
-        postPhonemeLength=6 * 0.01067,
-        pauseLength=16 * 0.01067,
+        prePhonemeLength=2 * T,
+        postPhonemeLength=6 * T,
+        pauseLength=16 * T,
         pauseLengthScale=0.25,
     )
 
@@ -278,8 +280,9 @@ def test_query_to_decoder_feature() -> None:
     true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
 
     # Outputs
-    phoneme, f0 = query_to_decoder_feature(query)
+    phoneme, f0 = _query_to_decoder_feature(query)
 
+    # Test
     assert np.array_equal(phoneme, true_phoneme)
     assert np.array_equal(f0, true_f0)
 
