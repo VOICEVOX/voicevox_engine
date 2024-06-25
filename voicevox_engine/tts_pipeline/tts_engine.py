@@ -156,7 +156,7 @@ def _to_frame(sec: float) -> int:
     return sec_rounded.astype(np.int32).item()
 
 
-def apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+def _apply_pitch_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ音高スケール（`pitchScale`）を適用する"""
     for mora in moras:
         mora.pitch *= 2**query.pitchScale
@@ -229,7 +229,7 @@ def query_to_decoder_feature(
     moras = apply_pause_length(moras, query)
     moras = apply_pause_length_scale(moras, query)
     moras = _apply_speed_scale(moras, query)
-    moras = apply_pitch_scale(moras, query)
+    moras = _apply_pitch_scale(moras, query)
     moras = apply_intonation_scale(moras, query)
 
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）

@@ -5,12 +5,12 @@ import numpy as np
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
+    _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
     apply_intonation_scale,
     apply_output_sampling_rate,
     apply_output_stereo,
-    apply_pitch_scale,
     apply_volume_scale,
     count_frame_per_unit,
     query_to_decoder_feature,
@@ -60,17 +60,16 @@ def test_apply_prepost_silence() -> None:
     moras = [
         gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
     ]
-
     # Expects
     true_moras_with_silence = [
         gen_mora("　", None, None, "sil", 2 * T, 0.0),
         gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
         gen_mora("　", None, None, "sil", 6 * T, 0.0),
     ]
-
     # Outputs
     moras_with_silence = _apply_prepost_silence(moras, query)
 
+    # Test
     assert moras_with_silence == true_moras_with_silence
 
 
@@ -85,7 +84,6 @@ def test_apply_speed_scale() -> None:
         gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 6.0),
         gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
     ]
-
     # Expects - x2 fast
     true_moras = [
         gen_mora("コ", "k", 1 * T, "o", 2 * T, 5.0),
@@ -94,15 +92,15 @@ def test_apply_speed_scale() -> None:
         gen_mora("ヒ", "h", 1 * T, "i", 2 * T, 6.0),
         gen_mora("ホ", "h", 2 * T, "O", 1 * T, 0.0),
     ]
-
     # Outputs
     moras = _apply_speed_scale(input_moras, query)
 
+    # Test
     assert moras == true_moras
 
 
 def test_apply_pitch_scale() -> None:
-    """Test `apply_pitch_scale`."""
+    """Test `_apply_pitch_scale()`."""
     # Inputs
     query = _gen_query(pitchScale=2.0)
     input_moras = [
@@ -112,7 +110,6 @@ def test_apply_pitch_scale() -> None:
         gen_mora("ヒ", "h", 0.0, "i", 0.0, 6.0),
         gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
-
     # Expects - x4 value scaled
     true_moras = [
         gen_mora("コ", "k", 0.0, "o", 0.0, 20.0),
@@ -121,10 +118,10 @@ def test_apply_pitch_scale() -> None:
         gen_mora("ヒ", "h", 0.0, "i", 0.0, 24.0),
         gen_mora("ホ", "h", 0.0, "O", 0.0, 0.0),
     ]
-
     # Outputs
-    moras = apply_pitch_scale(input_moras, query)
+    moras = _apply_pitch_scale(input_moras, query)
 
+    # Test
     assert moras == true_moras
 
 
