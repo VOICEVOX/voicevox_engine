@@ -4,8 +4,8 @@ from test.utility import pydantic_to_native_type, round_floats, summarize_big_nd
 
 import numpy as np
 import pytest
-from pytest_mock import MockerFixture
 from syrupy.assertion import SnapshotAssertion
+from unittest.mock import MagicMock
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
@@ -116,9 +116,10 @@ def test_to_flatten_moras() -> None:
     )
 
 
-def test_update_length(mocker: MockerFixture) -> None:
+def test_update_length() -> None:
     core = MockCoreWrapper()
-    _yukarin_s_mock = mocker.spy(core, "yukarin_s_forward")
+    core.yukarin_s_forward = MagicMock(wraps=core.yukarin_s_forward)
+    _yukarin_s_mock = core.yukarin_s_forward
     tts_engine = TTSEngine(core=core)
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
@@ -144,9 +145,10 @@ def test_update_length(mocker: MockerFixture) -> None:
     )
 
 
-def test_update_pitch(mocker: MockerFixture) -> None:
+def test_update_pitch() -> None:
     core = MockCoreWrapper()
-    _yukarin_sa_mock = mocker.spy(core, "yukarin_sa_forward")
+    core.yukarin_sa_forward = MagicMock(wraps=core.yukarin_sa_forward)
+    _yukarin_sa_mock = core.yukarin_sa_forward
     tts_engine = TTSEngine(core=core)
 
     # 空のリストでエラーを吐かないか
