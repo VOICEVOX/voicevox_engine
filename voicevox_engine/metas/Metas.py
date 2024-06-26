@@ -37,7 +37,7 @@ class SpeakerSupportedFeatures(BaseModel):
 
     permitted_synthesis_morphing: Literal["ALL", "SELF_ONLY", "NOTHING"] = Field(
         description=(
-            "モーフィング機能への対応\n\n"
+            "モーフィング機能への対応。"
             "'ALL' は「全て許可」、'SELF_ONLY' は「同じ話者内でのみ許可」、'NOTHING' は「全て禁止」"
         ),
         default="ALL",
