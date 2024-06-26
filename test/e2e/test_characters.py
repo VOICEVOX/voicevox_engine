@@ -1,6 +1,4 @@
-"""
-喋れるキャラクター・歌えるキャラクターのテスト。
-"""
+"""キャラクターのテスト"""
 
 import hashlib
 from test.utility import hash_long_string
