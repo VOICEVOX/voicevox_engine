@@ -1,7 +1,5 @@
 """波形合成のテスト"""
 
-from typing import Final
-
 import numpy as np
 
 from voicevox_engine.model import AudioQuery
