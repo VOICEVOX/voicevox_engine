@@ -118,7 +118,7 @@ def test_to_flatten_moras() -> None:
 
 def test_update_length() -> None:
     core = MockCoreWrapper()
-    core.yukarin_s_forward = MagicMock(wraps=core.yukarin_s_forward)
+    core.yukarin_s_forward = MagicMock(wraps=core.yukarin_s_forward)  # type: ignore[method-assign]
     _yukarin_s_mock = core.yukarin_s_forward
     tts_engine = TTSEngine(core=core)
     # Inputs
@@ -147,7 +147,7 @@ def test_update_length() -> None:
 
 def test_update_pitch() -> None:
     core = MockCoreWrapper()
-    core.yukarin_sa_forward = MagicMock(wraps=core.yukarin_sa_forward)
+    core.yukarin_sa_forward = MagicMock(wraps=core.yukarin_sa_forward)  # type: ignore[method-assign]
     _yukarin_sa_mock = core.yukarin_sa_forward
     tts_engine = TTSEngine(core=core)
 
