@@ -26,7 +26,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
-from .tts_utils import gen_mora
+from .tts_utils import gen_mora, sec
 
 
 def yukarin_s_mock(
@@ -108,9 +108,9 @@ def test_to_flatten_phonemes() -> None:
     """Test `_to_flatten_phonemes()`."""
     # Inputs
     moras = [
-        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
-        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
+        gen_mora("　", None, None, "sil", sec(6), 0.0),
     ]
     # Expects
     true_phoneme_strs = ["pau", "h", "i", "pau"]

@@ -19,9 +19,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     raw_wave_to_output_wave,
 )
 
-from .tts_utils import gen_mora
+from .tts_utils import gen_mora, sec
 
-T: Final = 0.01067  # 1 フレームが約 10.67 ミリ秒
 TRUE_NUM_PHONEME = 45
 
 
@@ -58,15 +57,15 @@ def _gen_query(
 def test_apply_prepost_silence() -> None:
     """Test `_apply_prepost_silence()`."""
     # Inputs
-    query = _gen_query(prePhonemeLength=2 * T, postPhonemeLength=6 * T)
+    query = _gen_query(prePhonemeLength=sec(2), postPhonemeLength=sec(6))
     moras = [
-        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
     ]
     # Expects
     true_moras_with_silence = [
-        gen_mora("　", None, None, "sil", 2 * T, 0.0),
-        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 5.0),
-        gen_mora("　", None, None, "sil", 6 * T, 0.0),
+        gen_mora("　", None, None, "sil", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
+        gen_mora("　", None, None, "sil", sec(6), 0.0),
     ]
     # Outputs
     moras_with_silence = _apply_prepost_silence(moras, query)
@@ -80,19 +79,19 @@ def test_apply_speed_scale() -> None:
     # Inputs
     query = _gen_query(speedScale=2.0)
     input_moras = [
-        gen_mora("コ", "k", 2 * T, "o", 4 * T, 5.0),
-        gen_mora("ン", None, None, "N", 4 * T, 5.0),
-        gen_mora("、", None, None, "pau", 2 * T, 0.0),
-        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 6.0),
-        gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
+        gen_mora("コ", "k", sec(2), "o", sec(4), 5.0),
+        gen_mora("ン", None, None, "N", sec(4), 5.0),
+        gen_mora("、", None, None, "pau", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 6.0),
+        gen_mora("ホ", "h", sec(4), "O", sec(2), 0.0),
     ]
     # Expects - x2 fast
     true_moras = [
-        gen_mora("コ", "k", 1 * T, "o", 2 * T, 5.0),
-        gen_mora("ン", None, None, "N", 2 * T, 5.0),
-        gen_mora("、", None, None, "pau", 1 * T, 0.0),
-        gen_mora("ヒ", "h", 1 * T, "i", 2 * T, 6.0),
-        gen_mora("ホ", "h", 2 * T, "O", 1 * T, 0.0),
+        gen_mora("コ", "k", sec(1), "o", sec(2), 5.0),
+        gen_mora("ン", None, None, "N", sec(2), 5.0),
+        gen_mora("、", None, None, "pau", sec(1), 0.0),
+        gen_mora("ヒ", "h", sec(1), "i", sec(2), 6.0),
+        gen_mora("ホ", "h", sec(2), "O", sec(1), 0.0),
     ]
     # Outputs
     moras = _apply_speed_scale(input_moras, query)
@@ -201,13 +200,13 @@ def test_count_frame_per_unit() -> None:
     """Test `_count_frame_per_unit()`."""
     # Inputs
     moras = [
-        gen_mora("　", None, None, "　", 2 * T, 0.0),
-        gen_mora("コ", "k", 2 * T, "o", 4 * T, 0.0),
-        gen_mora("ン", None, None, "N", 4 * T, 0.0),
-        gen_mora("、", None, None, "pau", 2 * T, 0.0),
-        gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 0.0),
-        gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
-        gen_mora("　", None, None, "　", 6 * T, 0.0),
+        gen_mora("　", None, None, "　", sec(2), 0.0),
+        gen_mora("コ", "k", sec(2), "o", sec(4), 0.0),
+        gen_mora("ン", None, None, "N", sec(4), 0.0),
+        gen_mora("、", None, None, "pau", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 0.0),
+        gen_mora("ホ", "h", sec(4), "O", sec(2), 0.0),
+        gen_mora("　", None, None, "　", sec(6), 0.0),
     ]
 
     # Expects
@@ -232,16 +231,16 @@ def test_query_to_decoder_feature() -> None:
     accent_phrases = [
         AccentPhrase(
             moras=[
-                gen_mora("コ", "k", 2 * T, "o", 4 * T, 5.0),
-                gen_mora("ン", None, None, "N", 4 * T, 5.0),
+                gen_mora("コ", "k", sec(2), "o", sec(4), 5.0),
+                gen_mora("ン", None, None, "N", sec(4), 5.0),
             ],
             accent=1,
-            pause_mora=gen_mora("、", None, None, "pau", 2 * T, 0.0),
+            pause_mora=gen_mora("、", None, None, "pau", sec(2), 0.0),
         ),
         AccentPhrase(
             moras=[
-                gen_mora("ヒ", "h", 2 * T, "i", 4 * T, 8.0),
-                gen_mora("ホ", "h", 4 * T, "O", 2 * T, 0.0),
+                gen_mora("ヒ", "h", sec(2), "i", sec(4), 8.0),
+                gen_mora("ホ", "h", sec(4), "O", sec(2), 0.0),
             ],
             accent=1,
             pause_mora=None,
@@ -252,9 +251,9 @@ def test_query_to_decoder_feature() -> None:
         speedScale=2.0,
         pitchScale=2.0,
         intonationScale=0.5,
-        prePhonemeLength=2 * T,
-        postPhonemeLength=6 * T,
-        pauseLength=16 * T,
+        prePhonemeLength=sec(2),
+        postPhonemeLength=sec(6),
+        pauseLength=sec(16),
         pauseLengthScale=0.25,
     )
 
