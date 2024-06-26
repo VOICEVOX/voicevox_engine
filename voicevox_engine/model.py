@@ -25,10 +25,13 @@ class AudioQuery(BaseModel):
     volumeScale: float = Field(title="全体の音量")
     prePhonemeLength: float = Field(title="音声の前の無音時間")
     postPhonemeLength: float = Field(title="音声の後の無音時間")
-    pauseLength: float | SkipJsonSchema[None] = Field(
-        default=None, title="句読点などの無音時間"
+    pauseLength: float | None = Field(
+        default=None,
+        title="句読点などの無音時間。nullのときは無視される。デフォルト値はnull",
     )
-    pauseLengthScale: float = Field(default=1, title="句読点などの無音時間（倍率）")
+    pauseLengthScale: float = Field(
+        default=1, title="句読点などの無音時間（倍率）。デフォルト値は1"
+    )
     outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
     outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
     kana: str | SkipJsonSchema[None] = Field(

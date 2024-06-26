@@ -63,12 +63,19 @@
             "type": "boolean"
           },
           "pauseLength": {
-            "title": "句読点などの無音時間",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "句読点などの無音時間。nullのときは無視される。デフォルト値はnull"
           },
           "pauseLengthScale": {
             "default": 1,
-            "title": "句読点などの無音時間（倍率）",
+            "title": "句読点などの無音時間（倍率）。デフォルト値は1",
             "type": "number"
           },
           "pitchScale": {
