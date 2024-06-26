@@ -1,11 +1,11 @@
 """TTSEngine のテスト"""
 
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 from syrupy.assertion import SnapshotAssertion
-from unittest.mock import MagicMock
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
 from voicevox_engine.metas.Metas import StyleId
