@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TextIO, TypeVar
 
 import uvicorn
-from pydantic import TypeAdapter
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -28,6 +27,7 @@ from voicevox_engine.utility.path_utility import (
     engine_root,
     get_save_dir,
 )
+from voicevox_engine.utility.validation_utility import generate_obj_validator
 
 
 def decide_boolean_from_env(env_name: str) -> bool:
@@ -61,7 +61,7 @@ class Envs:
     disable_mutable_api: bool
 
 
-_env_adapter = TypeAdapter(Envs)
+_validate_obj_as_envs = generate_obj_validator(Envs)
 
 
 def read_environment_variables() -> Envs:
@@ -72,7 +72,7 @@ def read_environment_variables() -> Envs:
         env_preset_path=os.getenv("VV_PRESET_FILE"),
         disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
     )
-    return _env_adapter.validate_python(asdict(envs))
+    return _validate_obj_as_envs(asdict(envs))
 
 
 def set_output_log_utf8() -> None:
@@ -156,7 +156,7 @@ class CLIArgs:
     disable_mutable_api: bool
 
 
-_cli_args_adapter = TypeAdapter(CLIArgs)
+_validate_obj_as_cli_args = generate_obj_validator(CLIArgs)
 
 
 def read_cli_arguments(envs: Envs) -> CLIArgs:
@@ -296,7 +296,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
     args_dict["runtime_dirs"] = args_dict.pop("runtime_dir")
     args_dict["allow_origins"] = args_dict.pop("allow_origin")
 
-    args = _cli_args_adapter.validate_python(args_dict)
+    args = _validate_obj_as_cli_args(args_dict)
 
     return args
 

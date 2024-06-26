@@ -4,12 +4,16 @@ import hashlib
 from test.utility import hash_long_string
 
 from fastapi.testclient import TestClient
-from pydantic import TypeAdapter
 from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
+from voicevox_engine.utility.validation_utility import (
+    generate_bytes_validator,
+    generate_obj_validator,
+)
 
-_speaker_list_adapter = TypeAdapter(list[Speaker])
+_validate_obj_as_speakers = generate_obj_validator(list[Speaker])
+_validate_bytes_as_speakers = generate_bytes_validator(list[Speaker])
 
 
 def _hash_bytes(value: bytes) -> str:
@@ -39,7 +43,7 @@ def test_話者一覧が取得できる(
 def test_話者の情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
+    talkers = _validate_obj_as_speakers(client.get("/speakers").json())
     for talker in talkers:
         response = client.get(
             "/speaker_info", params={"speaker_uuid": talker.speaker_uuid}
@@ -55,7 +59,7 @@ def test_話者の情報をURLで取得できる(
     def assert_resource_url(url: str, name: str) -> None:
         _assert_resource_url(client, snapshot, url, name)
 
-    speakers = _speaker_list_adapter.validate_json(client.get("/speakers").content)
+    speakers = _validate_bytes_as_speakers(client.get("/speakers").content)
     for speaker in speakers:
         speaker_id = speaker.speaker_uuid
         response = client.get(
@@ -88,7 +92,7 @@ def test_歌手一覧が取得できる(
 def test_歌手の情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    singers = _speaker_list_adapter.validate_python(client.get("/singers").json())
+    singers = _validate_obj_as_speakers(client.get("/singers").json())
     for singer in singers:
         response = client.get(
             "/singer_info", params={"speaker_uuid": singer.speaker_uuid}
@@ -104,7 +108,7 @@ def test_歌手の情報をURLで取得できる(
     def assert_resource_url(url: str, name: str) -> None:
         _assert_resource_url(client, snapshot, url, name)
 
-    singers = _speaker_list_adapter.validate_json(client.get("/singers").content)
+    singers = _validate_bytes_as_speakers(client.get("/singers").content)
     for singer in singers:
         singer_id = singer.speaker_uuid
         response = client.get(

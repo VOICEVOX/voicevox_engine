@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import TypeAdapter
+
+from voicevox_engine.utility.validation_utility import (
+    generate_obj_dumper,
+    generate_obj_validator,
+)
 
 from ..utility.path_utility import get_save_dir
 from .model import CorsPolicyMode
@@ -20,7 +24,8 @@ class Setting:
     allow_origin: str | None = None  # 許可するオリジン
 
 
-_setting_adapter = TypeAdapter(Setting)
+_validate_obj_as_setting = generate_obj_validator(Setting)
+_dump_setting_as_obj = generate_obj_dumper(Setting)
 
 
 USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
@@ -47,11 +52,11 @@ class SettingHandler:
             # FIXME: 例外処理を追加する
             setting = yaml.safe_load(self.setting_file_path.read_text(encoding="utf-8"))
 
-        return _setting_adapter.validate_python(setting)
+        return _validate_obj_as_setting(setting)
 
     def save(self, settings: Setting) -> None:
         """設定値をファイルへ書き込む。"""
-        settings_dict: dict[str, Any] = _setting_adapter.dump_python(settings)
+        settings_dict: dict[str, Any] = _dump_setting_as_obj(settings)
 
         if isinstance(settings_dict["cors_policy_mode"], Enum):
             settings_dict["cors_policy_mode"] = settings_dict["cors_policy_mode"].value

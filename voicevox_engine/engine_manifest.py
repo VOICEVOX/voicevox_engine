@@ -11,8 +11,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TypeAlias
 
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
+
+from voicevox_engine.utility.validation_utility import generate_bytes_validator
 
 
 @dataclass(frozen=True)
@@ -63,7 +65,7 @@ class EngineManifestJson:
     supported_features: SupportedFeaturesJson
 
 
-_manifest_json_adapter = TypeAdapter(EngineManifestJson)
+validate_bytes_as_manifest_json = generate_bytes_validator(EngineManifestJson)
 
 
 class UpdateInfo(BaseModel):
@@ -150,7 +152,7 @@ def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
 
     root_dir = manifest_path.parent
-    manifest = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
+    manifest = validate_bytes_as_manifest_json(manifest_path.read_bytes())
     return EngineManifest(
         manifest_version=manifest.manifest_version,
         name=manifest.name,

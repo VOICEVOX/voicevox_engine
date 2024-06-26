@@ -9,7 +9,11 @@ from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
 
 import pyopenjtalk
-from pydantic import TypeAdapter
+
+from voicevox_engine.utility.validation_utility import (
+    generate_bytes_dumper,
+    generate_obj_validator,
+)
 
 from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord
@@ -58,7 +62,12 @@ mutex_user_dict = threading.Lock()
 mutex_openjtalk_dict = threading.Lock()
 
 
-_save_format_dict_adapter = TypeAdapter(dict[str, SaveFormatUserDictWord])
+_validate_obj_as_save_format_dict = generate_obj_validator(
+    dict[str, SaveFormatUserDictWord]
+)
+_dump_save_format_dict_as_bytes = generate_bytes_dumper(
+    dict[str, SaveFormatUserDictWord]
+)
 
 
 class UserDictionary:
@@ -92,7 +101,7 @@ class UserDictionary:
         for word_uuid, word in user_dict.items():
             save_format_word = convert_to_save_format(word)
             save_format_user_dict[word_uuid] = save_format_word
-        user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
+        user_dict_json = _dump_save_format_dict_as_bytes(save_format_user_dict)
         self._user_dict_path.write_bytes(user_dict_json)
 
     @mutex_wrapper(mutex_openjtalk_dict)
@@ -182,7 +191,7 @@ class UserDictionary:
             return {}
 
         with self._user_dict_path.open(encoding="utf-8") as f:
-            save_format_dict = _save_format_dict_adapter.validate_python(json.load(f))
+            save_format_dict = _validate_obj_as_save_format_dict(json.load(f))
             result: dict[str, UserDictWord] = {}
             for word_uuid, word in save_format_dict.items():
                 result[str(UUID(word_uuid))] = convert_from_save_format(word)

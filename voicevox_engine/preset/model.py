@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.utility.validation_utility import generate_obj_validator
 
 
 class Preset(BaseModel):
@@ -29,3 +30,6 @@ class Preset(BaseModel):
         default=None, title="句読点などの無音時間"
     )
     pauseLengthScale: float = Field(default=1, title="句読点などの無音時間（倍率）")
+
+
+validate_obj_as_presets = generate_obj_validator(list[Preset])

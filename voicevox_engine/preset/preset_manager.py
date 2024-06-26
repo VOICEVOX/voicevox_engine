@@ -3,9 +3,9 @@
 from pathlib import Path
 
 import yaml
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
-from .model import Preset
+from .model import Preset, validate_obj_as_presets
 
 
 class PresetInputError(Exception):
@@ -52,8 +52,7 @@ class PresetManager:
             if obj is None:
                 raise PresetInternalError("プリセットの設定ファイルが空の内容です")
         try:
-            preset_list_adapter = TypeAdapter(list[Preset])
-            _presets = preset_list_adapter.validate_python(obj)
+            _presets = validate_obj_as_presets(obj)
         except ValidationError:
             raise PresetInternalError("プリセットの設定ファイルにミスがあります")
 

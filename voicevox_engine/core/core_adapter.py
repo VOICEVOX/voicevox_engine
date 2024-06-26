@@ -7,7 +7,8 @@ from typing import Any, Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import TypeAdapter
+
+from voicevox_engine.utility.validation_utility import generate_obj_validator
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
@@ -35,7 +36,7 @@ class CoreCharacter:
     version: str  # 話者のバージョン
 
 
-_core_character_adapter = TypeAdapter(CoreCharacter)
+_validate_obj_as_core_character = generate_obj_validator(CoreCharacter)
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ class CoreAdapter:
     def characters(self) -> list[CoreCharacter]:
         """キャラクター情報"""
         metas: list[Any] = json.loads(self.core.metas())
-        return list(map(_core_character_adapter.validate_python, metas))
+        return list(map(_validate_obj_as_core_character, metas))
 
     @property
     def supported_devices(self) -> DeviceSupport | None:
