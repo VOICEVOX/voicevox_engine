@@ -34,19 +34,6 @@ from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.runtime_utility import is_development
 
 
-def _generate_core_characters_getter(core_manager: CoreManager) -> GetCoreCharacters:
-    """コアマネージャーを基に `get_core_characters()` 関数を生成する。"""
-
-    def get_core_characters(version: str | None) -> list[CoreCharacter]:
-        """バージョンで指定されたコアからキャラクター一覧を取得する。"""
-        # NOTE: CoreManager へ直接触れずにキャラクター情報を取得するために関数化している
-        version = version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        return core.characters
-
-    return get_core_characters
-
-
 def generate_app(
     tts_engines: TTSEngineManager,
     core_manager: CoreManager,
@@ -80,9 +67,15 @@ def generate_app(
 
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(character_info_dir)
+
+    def _get_core_characters(version: str | None) -> list[CoreCharacter]:
+        version = version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        return core.characters
+
     metas_store = MetasStore(
         character_info_dir,
-        _generate_core_characters_getter(core_manager),
+        _get_core_characters,
         resource_manager,
     )
 
