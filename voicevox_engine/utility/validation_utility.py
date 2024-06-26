@@ -4,8 +4,8 @@ from typing import Any, Callable, TypeVar
 
 from pydantic import TypeAdapter
 
-
 T = TypeVar("T")
+
 
 def generate_obj_validator(type: type[T]) -> Callable[[Any], T]:
     x_adapter = TypeAdapter(type)
@@ -19,6 +19,7 @@ def generate_obj_validator(type: type[T]) -> Callable[[Any], T]:
 
 S = TypeVar("S")
 
+
 def generate_obj_dumper(type: type[S]) -> Callable[[S], Any]:
     x_adapter = TypeAdapter(type)
 
@@ -29,6 +30,7 @@ def generate_obj_dumper(type: type[S]) -> Callable[[S], Any]:
 
 
 U = TypeVar("U")
+
 
 def generate_bytes_validator(type: type[U]) -> Callable[[bytes], U]:
     x_adapter = TypeAdapter(type)
@@ -41,6 +43,7 @@ def generate_bytes_validator(type: type[U]) -> Callable[[bytes], U]:
 
 
 V = TypeVar("V")
+
 
 def generate_bytes_dumper(type: type[V]) -> Callable[[V], bytes]:
     x_adapter = TypeAdapter(type)
