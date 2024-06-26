@@ -12,10 +12,10 @@ import pyworld as pw
 from numpy.typing import NDArray
 from soxr import resample
 
+from voicevox_engine.metas.MetasStore import Character
 from voicevox_engine.morphing.model import MorphableTargetInfo
 
-from ..core.core_adapter import CoreAdapter
-from ..metas.Metas import Speaker, StyleId
+from ..metas.Metas import StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
 
@@ -37,7 +37,7 @@ class _MorphingParameter:
 
 
 def get_morphable_targets(
-    speakers: list[Speaker],
+    characters: list[Character],
     base_style_ids: list[StyleId],
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
@@ -47,9 +47,11 @@ def get_morphable_targets(
     morphable_targets_arr = []
     for base_style_id in base_style_ids:
         morphable_targets: dict[StyleId, MorphableTargetInfo] = {}
-        for style in chain.from_iterable(speaker.styles for speaker in speakers):
+        for style in chain.from_iterable(
+            character.talk_styles + character.sing_styles for character in characters
+        ):
             morphable_targets[style.id] = MorphableTargetInfo(
-                is_morphable=is_morphable(speakers, base_style_id, style.id)
+                is_morphable=is_morphable(characters, base_style_id, style.id)
             )
         morphable_targets_arr.append(morphable_targets)
 
@@ -57,15 +59,15 @@ def get_morphable_targets(
 
 
 def is_morphable(
-    speakers: list[Speaker], style_id_1: StyleId, style_id_2: StyleId
+    characters: list[Character], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
     """指定された２つのスタイル ID がモーフィング可能か判定する。"""
 
     # スタイル ID にキャラクターを紐付ける対応表を生成する。
-    style_id_to_character: dict[StyleId, Speaker] = {}
-    for speaker in speakers:
-        for style in speaker.styles:
-            style_id_to_character[style.id] = speaker
+    style_id_to_character: dict[StyleId, Character] = {}
+    for character in characters:
+        for style in character.talk_styles + character.sing_styles:
+            style_id_to_character[style.id] = character
 
     try:
         character_1 = style_id_to_character[style_id_1]
@@ -76,8 +78,8 @@ def is_morphable(
     except KeyError:
         raise StyleIdNotFoundError(style_id_2)
 
-    uuid_1 = character_1.speaker_uuid
-    uuid_2 = character_2.speaker_uuid
+    uuid_1 = character_1.uuid
+    uuid_2 = character_2.uuid
     morphable_1 = character_1.supported_features.permitted_synthesis_morphing
     morphable_2 = character_2.supported_features.permitted_synthesis_morphing
 
@@ -98,7 +100,6 @@ def is_morphable(
 
 def synthesis_morphing_parameter(
     engine: TTSEngine,
-    core: CoreAdapter,
     query: AudioQuery,
     base_style_id: StyleId,
     target_style_id: StyleId,
@@ -106,7 +107,7 @@ def synthesis_morphing_parameter(
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
-    query.outputSamplingRate = core.default_sampling_rate
+    query.outputSamplingRate = engine.default_sampling_rate
 
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False

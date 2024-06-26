@@ -34,6 +34,7 @@ class SupportedFeaturesJson:
     adjust_pitch_scale: FeatureSupportJson
     adjust_intonation_scale: FeatureSupportJson
     adjust_volume_scale: FeatureSupportJson
+    adjust_pause_length: FeatureSupportJson
     interrogative_upspeak: FeatureSupportJson
     synthesis_morphing: FeatureSupportJson
     sing: FeatureSupportJson
@@ -103,6 +104,9 @@ class SupportedFeatures(BaseModel):
     adjust_pitch_scale: bool = Field(title="全体の音高の調整")
     adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(title="全体の音量の調整")
+    adjust_pause_length: bool | SkipJsonSchema[None] = Field(
+        default=None, title="句読点などの無音時間の調整"
+    )
     interrogative_upspeak: bool = Field(title="疑問文の自動調整")
     synthesis_morphing: bool = Field(
         title="2種類のスタイルでモーフィングした音声を合成"
