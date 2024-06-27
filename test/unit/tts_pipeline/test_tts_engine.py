@@ -20,31 +20,31 @@ from voicevox_engine.tts_pipeline.model import (
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
-    apply_interrogative_upspeak,
+    _apply_interrogative_upspeak,
+    _to_flatten_phonemes,
     to_flatten_moras,
-    to_flatten_phonemes,
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
-from .tts_utils import gen_mora
+from .tts_utils import gen_mora, sec
 
 
 def test_to_flatten_phonemes() -> None:
-    """Test `to_flatten_phonemes`."""
+    """Test `_to_flatten_phonemes()`."""
     # Inputs
     moras = [
-        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
-        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
+        gen_mora("　", None, None, "sil", sec(6), 0.0),
     ]
-
     # Expects
-    true_phonemes = ["pau", "h", "i", "pau"]
-
+    true_phoneme_strs = ["pau", "h", "i", "pau"]
     # Outputs
-    phonemes = list(map(lambda p: p._phoneme, to_flatten_phonemes(moras)))
+    phonemes = _to_flatten_phonemes(moras)
+    phoneme_strs = list(map(lambda p: p._phoneme, phonemes))
 
-    assert true_phonemes == phonemes
+    # Test
+    assert true_phoneme_strs == phoneme_strs
 
 
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
@@ -458,7 +458,7 @@ def test_upspeak_voiced_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -469,7 +469,7 @@ def test_upspeak_voiced_last_mora() -> None:
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -479,7 +479,7 @@ def test_upspeak_voiced_last_mora() -> None:
     # Expects
     expected = koreha_arimasuka_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -510,7 +510,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
     # Expects
     expected = nn_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -531,7 +531,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -542,7 +542,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -573,7 +573,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     # Expects
     expected = ltu_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -584,7 +584,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -595,7 +595,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -626,7 +626,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
     # Expects
     expected = su_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -647,7 +647,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -658,6 +658,6 @@ def test_upspeak_voiced_u_last_mora() -> None:
     expected = su_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
