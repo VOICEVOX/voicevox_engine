@@ -148,7 +148,7 @@
             "type": "string"
           },
           "speakers": {
-            "description": "音声ライブラリに含まれる話者のリスト",
+            "description": "音声ライブラリに含まれるキャラクターのリスト",
             "items": {
               "$ref": "#/components/schemas/LibrarySpeaker"
             },
@@ -237,7 +237,7 @@
             "type": "string"
           },
           "speakers": {
-            "description": "音声ライブラリに含まれる話者のリスト",
+            "description": "音声ライブラリに含まれるキャラクターのリスト",
             "items": {
               "$ref": "#/components/schemas/LibrarySpeaker"
             },
@@ -468,7 +468,7 @@
             "type": "string"
           },
           "speakers": {
-            "description": "音声ライブラリに含まれる話者のリスト",
+            "description": "音声ライブラリに含まれるキャラクターのリスト",
             "items": {
               "$ref": "#/components/schemas/LibrarySpeaker"
             },
@@ -504,7 +504,7 @@
         "type": "object"
       },
       "LibrarySpeaker": {
-        "description": "音声ライブラリに含まれる話者の情報",
+        "description": "音声ライブラリに含まれるキャラクターの情報",
         "properties": {
           "speaker": {
             "$ref": "#/components/schemas/Speaker"
@@ -597,7 +597,7 @@
       "MorphableTargetInfo": {
         "properties": {
           "is_morphable": {
-            "description": "指定した話者に対してモーフィングの可否",
+            "description": "指定したキャラクターに対してモーフィングの可否",
             "title": "Is Morphable",
             "type": "boolean"
           }
@@ -708,7 +708,7 @@
             "type": "number"
           },
           "speaker_uuid": {
-            "description": "話者のUUID",
+            "description": "キャラクターのUUID",
             "title": "Speaker Uuid",
             "type": "string"
           },
@@ -762,7 +762,7 @@
         "type": "object"
       },
       "Speaker": {
-        "description": "話者情報",
+        "description": "キャラクター情報",
         "properties": {
           "name": {
             "description": "名前",
@@ -770,7 +770,7 @@
             "type": "string"
           },
           "speaker_uuid": {
-            "description": "話者のUUID",
+            "description": "キャラクターのUUID",
             "title": "Speaker Uuid",
             "type": "string"
           },
@@ -788,10 +788,10 @@
                 "$ref": "#/components/schemas/SpeakerSupportedFeatures"
               }
             ],
-            "description": "話者の対応機能"
+            "description": "キャラクターの対応機能"
           },
           "version": {
-            "description": "話者のバージョン",
+            "description": "キャラクターのバージョン",
             "title": "Version",
             "type": "string"
           }
@@ -806,7 +806,7 @@
         "type": "object"
       },
       "SpeakerInfo": {
-        "description": "話者の追加情報",
+        "description": "キャラクターの追加情報",
         "properties": {
           "policy": {
             "description": "policy.md",
@@ -836,7 +836,7 @@
         "type": "object"
       },
       "SpeakerStyle": {
-        "description": "話者のスタイル情報",
+        "description": "キャラクターのスタイル情報",
         "properties": {
           "id": {
             "description": "スタイルID",
@@ -869,11 +869,11 @@
         "type": "object"
       },
       "SpeakerSupportedFeatures": {
-        "description": "話者の対応機能の情報",
+        "description": "キャラクターの対応機能の情報",
         "properties": {
           "permitted_synthesis_morphing": {
             "default": "ALL",
-            "description": "モーフィング機能への対応。'ALL' は「全て許可」、'SELF_ONLY' は「同じ話者内でのみ許可」、'NOTHING' は「全て禁止」",
+            "description": "モーフィング機能への対応。'ALL' は「全て許可」、'SELF_ONLY' は「同じキャラクター内でのみ許可」、'NOTHING' は「全て禁止」",
             "enum": [
               "ALL",
               "SELF_ONLY",
@@ -2260,7 +2260,7 @@
     },
     "/morphable_targets": {
       "post": {
-        "description": "指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
+        "description": "指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
         "operationId": "morphable_targets_morphable_targets_post",
         "parameters": [
           {
@@ -2316,7 +2316,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
+        "summary": "指定したスタイルに対してエンジン内のキャラクターがモーフィングが可能か判定する",
         "tags": [
           "音声合成"
         ]
@@ -2591,7 +2591,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
+        "description": "UUID で指定された歌えるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "singer_info_singer_info_get",
         "parameters": [
           {
@@ -2657,7 +2657,7 @@
     },
     "/singers": {
       "get": {
-        "description": "歌手情報の一覧を取得します",
+        "description": "歌えるキャラクターの情報の一覧を返します。",
         "operationId": "singers_singers_get",
         "parameters": [
           {
@@ -2704,7 +2704,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "指定されたspeaker_uuidの話者に関する情報をjson形式で返します。\n画像や音声はresource_formatで指定した形式で返されます。",
+        "description": "UUID で指定された喋れるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "speaker_info_speaker_info_get",
         "parameters": [
           {
@@ -2770,7 +2770,7 @@
     },
     "/speakers": {
       "get": {
-        "description": "話者情報の一覧を取得します。",
+        "description": "喋れるキャラクターの情報の一覧を返します。",
         "operationId": "speakers_speakers_get",
         "parameters": [
           {

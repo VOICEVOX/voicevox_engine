@@ -11,11 +11,11 @@ from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 
 class LibrarySpeaker(BaseModel):
     """
-    音声ライブラリに含まれる話者の情報
+    音声ライブラリに含まれるキャラクターの情報
     """
 
-    speaker: Speaker = Field(description="話者情報")
-    speaker_info: SpeakerInfo = Field(description="話者の追加情報")
+    speaker: Speaker = Field(description="キャラクター情報")
+    speaker_info: SpeakerInfo = Field(description="キャラクターの追加情報")
 
 
 class BaseLibraryInfo(BaseModel):
@@ -29,7 +29,7 @@ class BaseLibraryInfo(BaseModel):
     download_url: str = Field(description="音声ライブラリのダウンロードURL")
     bytes: int = Field(description="音声ライブラリのバイト数")
     speakers: list[LibrarySpeaker] = Field(
-        description="音声ライブラリに含まれる話者のリスト"
+        description="音声ライブラリに含まれるキャラクターのリスト"
     )
 
 

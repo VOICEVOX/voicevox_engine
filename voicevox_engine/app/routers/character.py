@@ -1,4 +1,4 @@
-"""話者情報機能を提供する API Router"""
+"""キャラクター情報機能を提供する API Router"""
 
 from typing import Annotated
 
@@ -39,12 +39,12 @@ def generate_character_router(
     resource_manager: ResourceManager,
     metas_store: MetasStore,
 ) -> APIRouter:
-    """話者情報 API Router を生成する"""
+    """キャラクター情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
-        """話者情報の一覧を取得します。"""
+        """喋れるキャラクターの情報の一覧を返します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.talk_characters(core.characters)
@@ -58,7 +58,7 @@ def generate_character_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの話者に関する情報をjson形式で返します。
+        UUID で指定された喋れるキャラクターの情報を返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
         version = core_version or core_manager.latest_version()
@@ -73,7 +73,7 @@ def generate_character_router(
 
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
-        """歌手情報の一覧を取得します"""
+        """歌えるキャラクターの情報の一覧を返します。"""
         version = core_version or core_manager.latest_version()
         core = core_manager.get_core(version)
         characters = metas_store.sing_characters(core.characters)
@@ -87,7 +87,7 @@ def generate_character_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> SpeakerInfo:
         """
-        指定されたspeaker_uuidの歌手に関する情報をjson形式で返します。
+        UUID で指定された歌えるキャラクターの情報を返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
         version = core_version or core_manager.latest_version()

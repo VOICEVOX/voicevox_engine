@@ -1,4 +1,4 @@
-"""話者・歌手のテスト"""
+"""キャラクターのテスト"""
 
 import hashlib
 from test.utility import hash_long_string
@@ -28,7 +28,7 @@ def _assert_resource_url(
     assert snapshot(name=name) == _hash_bytes(response.content)
 
 
-def test_話者一覧が取得できる(
+def test_喋れるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/speakers")
@@ -36,7 +36,7 @@ def test_話者一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_話者の情報を取得できる(
+def test_喋れるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
@@ -49,7 +49,7 @@ def test_話者の情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_話者の情報をURLで取得できる(
+def test_喋れるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:
@@ -77,7 +77,7 @@ def test_話者の情報をURLで取得できる(
                 )
 
 
-def test_歌手一覧が取得できる(
+def test_歌えるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/singers")
@@ -85,7 +85,7 @@ def test_歌手一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_歌手の情報を取得できる(
+def test_歌えるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     singers = _speaker_list_adapter.validate_python(client.get("/singers").json())
@@ -98,7 +98,7 @@ def test_歌手の情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_歌手の情報をURLで取得できる(
+def test_歌えるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:

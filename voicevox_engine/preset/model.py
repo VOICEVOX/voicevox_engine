@@ -17,7 +17,7 @@ class Preset(BaseModel):
 
     id: int = Field(description="プリセットID")
     name: str = Field(description="プリセット名")
-    speaker_uuid: str = Field(description="話者のUUID")
+    speaker_uuid: str = Field(description="キャラクターのUUID")
     style_id: StyleId = Field(description="スタイルID")
     speedScale: float = Field(description="全体の話速")
     pitchScale: float = Field(description="全体の音高")
