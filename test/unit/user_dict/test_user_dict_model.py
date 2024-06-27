@@ -7,7 +7,7 @@ from voicevox_engine.tts_pipeline.kana_converter import parse_kana
 from voicevox_engine.user_dict.model import UserDictWord
 
 
-class TestModel(TypedDict):
+class _TestModel(TypedDict):
     surface: str
     priority: int
     part_of_speech: str
@@ -24,7 +24,7 @@ class TestModel(TypedDict):
     accent_associative_rule: str
 
 
-def generate_model() -> TestModel:
+def generate_model() -> _TestModel:
     return {
         "surface": "テスト",
         "priority": 0,
