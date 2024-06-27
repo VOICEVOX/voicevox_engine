@@ -82,7 +82,7 @@ def generate_app(
     app.include_router(
         generate_tts_pipeline_router(tts_engines, preset_manager, cancellable_engine)
     )
-    app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
+    app.include_router(generate_morphing_router(tts_engines, metas_store))
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )

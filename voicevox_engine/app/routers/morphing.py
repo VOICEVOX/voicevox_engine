@@ -10,7 +10,6 @@ from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery
@@ -34,9 +33,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    tts_engines: TTSEngineManager,
-    core_manager: CoreManager,
-    metas_store: MetasStore,
+    tts_engines: TTSEngineManager, metas_store: MetasStore
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
     router = APIRouter(tags=["音声合成"])
