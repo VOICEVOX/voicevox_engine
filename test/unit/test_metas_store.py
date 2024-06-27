@@ -21,12 +21,12 @@ def _gen_character(style_types: list[StyleType]) -> Character:
         name="",
         uuid=str(uuid.uuid4()),
         talk_styles=[
-            SpeakerStyle(name="", id=StyleId(0), type=style_type)
-            for style_type in talk_styles
+            SpeakerStyle(name="", id=StyleId(0 + i), type=style_type)
+            for i, style_type in enumerate(talk_styles)
         ],
         sing_styles=[
-            SpeakerStyle(name="", id=StyleId(0), type=style_type)
-            for style_type in sing_styles
+            SpeakerStyle(name="", id=StyleId(6000 + i), type=style_type)
+            for i, style_type in enumerate(sing_styles)
         ],
         version="",
         supported_features=SpeakerSupportedFeatures(),
@@ -59,7 +59,7 @@ def test_filter_characters_and_styles_with_talk() -> None:
     # Tests
     assert len(result) == 2
 
-    # 話者だけになっている
+    # 喋れるキャラクターだけになっている
     assert _equal_characters(result, [talk_only, allstyle])
 
     # スタイルがフィルタリングされている
@@ -85,7 +85,7 @@ def test_filter_characters_and_styles_with_sing() -> None:
     # Tests
     assert len(result) == 4
 
-    # 歌手だけになっている
+    # 歌えるキャラクターだけになっている
     assert _equal_characters(
         result, [singing_teacher_only, frame_decode_only, sing_only, allstyle]
     )
