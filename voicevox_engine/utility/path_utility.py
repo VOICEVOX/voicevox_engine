@@ -14,7 +14,7 @@ def engine_root() -> Path:
         # git レポジトリのルートを指している
         root_dir = Path(__file__).parents[2]
     else:
-        root_dir = Path(sys.argv[0]).parent
+        root_dir = Path(sys.executable).parent
 
     return root_dir.resolve(strict=True)
 
