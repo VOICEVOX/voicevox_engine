@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
 
 
 def test_tts_engines_register_engine() -> None:
@@ -49,7 +49,7 @@ def test_tts_engines_get_engine_existing() -> None:
 
 
 def test_tts_engines_get_engine_latest() -> None:
-    """TTSEngineManager.get_engine(None) で最新版の TTS エンジンを取得できる。"""
+    """TTSEngineManager.get_engine(LATEST_VERSION) で最新版の TTS エンジンを取得できる。"""
     # Inputs
     tts_engines = TTSEngineManager()
     tts_engine1 = MockTTSEngine()
@@ -61,7 +61,7 @@ def test_tts_engines_get_engine_latest() -> None:
     # Expects
     true_acquired_tts_engine = tts_engine3
     # Outputs
-    acquired_tts_engine = tts_engines.get_engine(None)
+    acquired_tts_engine = tts_engines.get_engine(LATEST_VERSION)
 
     # Test
     assert true_acquired_tts_engine == acquired_tts_engine

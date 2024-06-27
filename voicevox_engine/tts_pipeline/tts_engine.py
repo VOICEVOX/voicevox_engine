@@ -2,6 +2,7 @@
 
 import copy
 import math
+from typing import Literal, TypeAlias
 
 import numpy as np
 from fastapi import HTTPException
@@ -699,6 +700,10 @@ class TTSEngine:
         return wave
 
 
+LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
+LATEST_VERSION: LatestVersion = "LATEST_VERSION"
+
+
 class TTSEngineManager:
     """TTS エンジンの集まりを一括管理するマネージャー"""
 
@@ -716,10 +721,11 @@ class TTSEngineManager:
         """エンジンを登録する。"""
         self._engines[version] = engine
 
-    def get_engine(self, core_version: str | None) -> TTSEngine:
+    def get_engine(self, version: str | LatestVersion) -> TTSEngine:
         """指定バージョンのエンジンを取得する。"""
-        version = core_version or self._latest_version()
-        if version in self._engines:
+        if version == LATEST_VERSION:
+            return self._engines[self._latest_version()]
+        elif version in self._engines:
             return self._engines[version]
 
         raise HTTPException(status_code=422, detail="不明なバージョンです")

@@ -23,7 +23,7 @@ from voicevox_engine.morphing.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.morphing.morphing import synthesize_morphed_wave
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
 from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
@@ -86,7 +86,8 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        engine = tts_engines.get_engine(core_version)
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_engine(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
