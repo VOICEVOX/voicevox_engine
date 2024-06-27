@@ -2,7 +2,7 @@
 
 import copy
 import math
-from typing import Literal, TypeAlias
+from typing import Final, Literal, TypeAlias
 
 import numpy as np
 from fastapi import HTTPException
@@ -701,7 +701,7 @@ class TTSEngine:
 
 
 LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
-LATEST_VERSION: LatestVersion = "LATEST_VERSION"
+LATEST_VERSION: Final[LatestVersion] = "LATEST_VERSION"
 
 
 class TTSEngineManager:
