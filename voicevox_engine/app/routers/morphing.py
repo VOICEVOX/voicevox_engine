@@ -43,13 +43,13 @@ def generate_morphing_router(
 
     @router.post(
         "/morphable_targets",
-        summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
+        summary="指定したスタイルに対してエンジン内のキャラクターがモーフィングが可能か判定する",
     )
     def morphable_targets(
         base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
-        指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
+        指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。

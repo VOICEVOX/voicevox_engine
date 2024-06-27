@@ -3,6 +3,11 @@
 from voicevox_engine.tts_pipeline.model import Mora
 
 
+def sec(frame: int) -> float:
+    """フレーム数に相当する秒数を返す。"""
+    return 0.01067 * frame  # 1 フレームが約 10.67 ミリ秒
+
+
 def gen_mora(
     text: str,
     consonant: str | None,

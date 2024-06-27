@@ -1,4 +1,4 @@
-"""話者情報と話者メタ情報の管理"""
+"""キャラクター情報とキャラクターメタ情報の管理"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,19 +54,12 @@ class _EngineCharacter(BaseModel):
 
 
 class MetasStore:
-    """
-    話者やスタイルのメタ情報を管理する
-    """
+    """キャラクターやスタイルのメタ情報を管理する"""
 
     def __init__(
         self, engine_characters_path: Path, resource_manager: ResourceManager
     ) -> None:
-        """
-        Parameters
-        ----------
-        engine_characters_path : Path
-            エンジンに含まれる話者メタ情報ディレクトリのパス。
-        """
+        """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""
         self._characters_path = engine_characters_path
         self._resource_manager = resource_manager
         # エンジンに含まれる各キャラクターのメタ情報
@@ -135,7 +128,7 @@ class MetasStore:
         #     {character_uuid_1}/
         #         ...
 
-        # 該当話者を検索する
+        # 該当キャラクターを検索する
         characters = self.load_combined_metas(core_characters)
         characters = filter_characters_and_styles(characters, talk_or_sing)
         character = next(
@@ -143,9 +136,10 @@ class MetasStore:
         )
         if character is None:
             # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
-            raise HTTPException(status_code=404, detail="該当する話者が見つかりません")
+            msg = "該当するキャラクターが見つかりません"
+            raise HTTPException(status_code=404, detail=msg)
 
-        # 話者情報を取得する
+        # キャラクター情報を取得する
         try:
             character_path = self._characters_path / character_uuid
 

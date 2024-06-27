@@ -32,7 +32,7 @@ class CoreCharacter:
     name: str
     speaker_uuid: str
     styles: list[CoreCharacterStyle]
-    version: str  # 話者のバージョン
+    version: str  # キャラクターのバージョン
 
 
 _core_character_adapter = TypeAdapter(CoreCharacter)
@@ -94,13 +94,13 @@ class CoreAdapter:
         style_id : StyleId
             スタイルID
         skip_reinit : bool
-            True の場合, 既に初期化済みの話者の再初期化をスキップします
+            True の場合, 既に初期化済みのキャラクターの再初期化をスキップします
         """
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
                 # 1. 引数 skip_reinit が False の場合
-                # 2. 話者が初期化されていない場合
+                # 2. キャラクターが初期化されていない場合
                 if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
                     self.core.load_model(style_id)
         except OldCoreError:

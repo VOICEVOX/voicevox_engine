@@ -18,9 +18,9 @@ class SupportedDevicesInfo(BaseModel):
     対応しているデバイスの情報
     """
 
-    cpu: bool = Field(title="CPUに対応しているか")
-    cuda: bool = Field(title="CUDA(Nvidia GPU)に対応しているか")
-    dml: bool = Field(title="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
+    cpu: bool = Field(description="CPUに対応しているか")
+    cuda: bool = Field(description="CUDA(Nvidia GPU)に対応しているか")
+    dml: bool = Field(description="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
 
     @classmethod
     def generate_from(cls, device_support: DeviceSupport) -> Self:

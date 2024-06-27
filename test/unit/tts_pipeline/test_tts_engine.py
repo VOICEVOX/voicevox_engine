@@ -1,10 +1,10 @@
-import json
+"""TTSEngine のテスト"""
+
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
 from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -20,106 +20,31 @@ from voicevox_engine.tts_pipeline.model import (
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
-    apply_interrogative_upspeak,
+    _apply_interrogative_upspeak,
+    _to_flatten_phonemes,
     to_flatten_moras,
-    to_flatten_phonemes,
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
-from .tts_utils import gen_mora
-
-
-def yukarin_s_mock(
-    length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-    return np.array(result, dtype=np.float32)
-
-
-def yukarin_sa_mock(
-    length: int,
-    vowel_phoneme_list: NDArray[np.int64],
-    consonant_phoneme_list: NDArray[np.int64],
-    start_accent_list: NDArray[np.int64],
-    end_accent_list: NDArray[np.int64],
-    start_accent_phrase_list: NDArray[np.int64],
-    end_accent_phrase_list: NDArray[np.int64],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(
-            round(
-                (
-                    (
-                        vowel_phoneme_list[0][i]
-                        + consonant_phoneme_list[0][i]
-                        + start_accent_list[0][i]
-                        + end_accent_list[0][i]
-                        + start_accent_phrase_list[0][i]
-                        + end_accent_phrase_list[0][i]
-                    )
-                    * 0.0625
-                    + style_id
-                ).item(),
-                2,
-            )
-        )
-    return np.array(result, dtype=np.float32)[np.newaxis]
-
-
-def decode_mock(
-    length: int,
-    phoneme_size: int,
-    f0: NDArray[np.float32],
-    phoneme: NDArray[np.float32],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result += [
-            (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
-        ] * 256
-    return np.array(result, dtype=np.float32)
-
-
-class MockCore:
-    default_sampling_rate = 24000
-    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
-    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
-    decode_forward = Mock(side_effect=decode_mock)
-
-    def metas(self) -> str:
-        return ""
-
-    def supported_devices(self) -> str:
-        return json.dumps({"cpu": True, "cuda": False, "dml": False})
-
-    def is_model_loaded(self, style_id: str) -> bool:
-        return True
+from .tts_utils import gen_mora, sec
 
 
 def test_to_flatten_phonemes() -> None:
-    """Test `to_flatten_phonemes`."""
+    """Test `_to_flatten_phonemes()`."""
     # Inputs
     moras = [
-        gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 5.0),
-        gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
+        gen_mora("　", None, None, "sil", sec(6), 0.0),
     ]
-
     # Expects
-    true_phonemes = ["pau", "h", "i", "pau"]
-
+    true_phoneme_strs = ["pau", "h", "i", "pau"]
     # Outputs
-    phonemes = list(map(lambda p: p._phoneme, to_flatten_phonemes(moras)))
+    phonemes = _to_flatten_phonemes(moras)
+    phoneme_strs = list(map(lambda p: p._phoneme, phonemes))
 
-    assert true_phonemes == phonemes
+    # Test
+    assert true_phoneme_strs == phoneme_strs
 
 
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
@@ -192,9 +117,10 @@ def test_to_flatten_moras() -> None:
 
 
 def test_update_length() -> None:
-    core = MockCore()
+    core = MockCoreWrapper()
+    core.yukarin_s_forward = MagicMock(wraps=core.yukarin_s_forward)  # type: ignore[method-assign]
     _yukarin_s_mock = core.yukarin_s_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+    tts_engine = TTSEngine(core=core)
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Indirect Outputs（yukarin_sに渡される値）
@@ -220,9 +146,10 @@ def test_update_length() -> None:
 
 
 def test_update_pitch() -> None:
-    core = MockCore()
+    core = MockCoreWrapper()
+    core.yukarin_sa_forward = MagicMock(wraps=core.yukarin_sa_forward)  # type: ignore[method-assign]
     _yukarin_sa_mock = core.yukarin_sa_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+    tts_engine = TTSEngine(core=core)
 
     # 空のリストでエラーを吐かないか
     # Inputs
@@ -531,7 +458,7 @@ def test_upspeak_voiced_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -542,7 +469,7 @@ def test_upspeak_voiced_last_mora() -> None:
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -552,7 +479,7 @@ def test_upspeak_voiced_last_mora() -> None:
     # Expects
     expected = koreha_arimasuka_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -583,7 +510,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
     # Expects
     expected = nn_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -604,7 +531,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -615,7 +542,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -646,7 +573,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     # Expects
     expected = ltu_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -657,7 +584,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -668,7 +595,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
 
@@ -699,7 +626,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
     # Expects
     expected = su_base_expected()
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -720,7 +647,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
         )
     ]
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, True)
+    outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
     assert expected == outputs
 
@@ -731,6 +658,6 @@ def test_upspeak_voiced_u_last_mora() -> None:
     expected = su_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
-    outputs = apply_interrogative_upspeak(inputs, False)
+    outputs = _apply_interrogative_upspeak(inputs, False)
     # Test
     assert expected == outputs
