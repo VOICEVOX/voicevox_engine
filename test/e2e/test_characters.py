@@ -1,7 +1,4 @@
-"""
-話者・歌手のテスト。
-TODO: 話者と歌手の両ドメイン共通のドメイン用語を定め、このテストファイル名を変更する。
-"""
+"""キャラクターのテスト"""
 
 import hashlib
 from test.utility import hash_long_string
@@ -31,7 +28,7 @@ def _assert_resource_url(
     assert snapshot(name=name) == _hash_bytes(response.content)
 
 
-def test_話者一覧が取得できる(
+def test_喋れるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/speakers")
@@ -39,20 +36,20 @@ def test_話者一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_話者の情報を取得できる(
+def test_喋れるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    speakers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
-    for speaker in speakers:
+    talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
+    for talker in talkers:
         response = client.get(
-            "/speaker_info", params={"speaker_uuid": speaker.speaker_uuid}
+            "/speaker_info", params={"speaker_uuid": talker.speaker_uuid}
         )
         assert snapshot_json(
-            name=speaker.speaker_uuid,
+            name=talker.speaker_uuid,
         ) == hash_long_string(response.json())
 
 
-def test_話者の情報をURLで取得できる(
+def test_喋れるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:
@@ -80,7 +77,7 @@ def test_話者の情報をURLで取得できる(
                 )
 
 
-def test_歌手一覧が取得できる(
+def test_歌えるキャラクター一覧が取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.get("/singers")
@@ -88,7 +85,7 @@ def test_歌手一覧が取得できる(
     assert snapshot_json == response.json()
 
 
-def test_歌手の情報を取得できる(
+def test_歌えるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     singers = _speaker_list_adapter.validate_python(client.get("/singers").json())
@@ -101,7 +98,7 @@ def test_歌手の情報を取得できる(
         ) == hash_long_string(response.json())
 
 
-def test_歌手の情報をURLで取得できる(
+def test_歌えるキャラクターの情報をURLで取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion, snapshot: SnapshotAssertion
 ) -> None:
     def assert_resource_url(url: str, name: str) -> None:

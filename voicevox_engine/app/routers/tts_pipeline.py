@@ -45,10 +45,10 @@ from voicevox_engine.utility.file_utility import try_delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
-    text: str = Field(title="エラーメッセージ")
+    text: str = Field(description="エラーメッセージ")
     error_name: str = Field(
-        title="エラー名",
-        description="|name|description|\n|---|---|\n"
+        description="エラー名\n\n"
+        "|name|description|\n|---|---|\n"
         + "\n".join(
             [
                 "| {} | {} |".format(err.name, err.value)
@@ -56,7 +56,7 @@ class ParseKanaBadRequest(BaseModel):
             ]
         ),
     )
-    error_args: dict[str, str] = Field(title="エラーを起こした箇所")
+    error_args: dict[str, str] = Field(description="エラーを起こした箇所")
 
     def __init__(self, err: ParseKanaError):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)

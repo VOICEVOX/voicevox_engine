@@ -9,7 +9,7 @@ from voicevox_engine.app.dependencies import generate_mutability_allowed_verifie
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import configure_openapi_schema
-from voicevox_engine.app.routers.character import generate_speaker_router
+from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
@@ -42,14 +42,14 @@ def generate_app(
     engine_manifest: EngineManifest,
     library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
-    speaker_info_dir: Path | None = None,
+    character_info_dir: Path | None = None,
     cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
     allow_origin: list[str] | None = None,
     disable_mutable_api: bool = False,
 ) -> FastAPI:
     """ASGI 'application' 仕様に準拠した VOICEVOX ENGINE アプリケーションインスタンスを生成する。"""
-    if speaker_info_dir is None:
-        speaker_info_dir = engine_root() / "resources" / "character_info"
+    if character_info_dir is None:
+        character_info_dir = engine_root() / "resources" / "character_info"
 
     verify_mutability_allowed = generate_mutability_allowed_verifier(
         disable_mutable_api
@@ -65,8 +65,8 @@ def generate_app(
     app = configure_global_exception_handlers(app)
 
     resource_manager = ResourceManager(is_development())
-    resource_manager.register_dir(speaker_info_dir)
-    metas_store = MetasStore(speaker_info_dir, resource_manager)
+    resource_manager.register_dir(character_info_dir)
+    metas_store = MetasStore(character_info_dir, resource_manager)
 
     app.include_router(
         generate_tts_pipeline_router(tts_engines, preset_manager, cancellable_engine)
@@ -76,7 +76,7 @@ def generate_app(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
     app.include_router(
-        generate_speaker_router(core_manager, resource_manager, metas_store)
+        generate_character_router(core_manager, resource_manager, metas_store)
     )
     if engine_manifest.supported_features.manage_library:
         app.include_router(

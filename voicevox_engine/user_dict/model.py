@@ -33,23 +33,23 @@ class UserDictWord(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True)
 
-    surface: str = Field(title="表層形")
+    surface: str = Field(description="表層形")
     priority: int = Field(
-        title="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
+        description="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
     )
-    context_id: int = Field(title="文脈ID", default=1348)
-    part_of_speech: str = Field(title="品詞")
-    part_of_speech_detail_1: str = Field(title="品詞細分類1")
-    part_of_speech_detail_2: str = Field(title="品詞細分類2")
-    part_of_speech_detail_3: str = Field(title="品詞細分類3")
-    inflectional_type: str = Field(title="活用型")
-    inflectional_form: str = Field(title="活用形")
-    stem: str = Field(title="原形")
-    yomi: str = Field(title="読み")
-    pronunciation: str = Field(title="発音")
-    accent_type: int = Field(title="アクセント型")
-    mora_count: int | SkipJsonSchema[None] = Field(default=None, title="モーラ数")
-    accent_associative_rule: str = Field(title="アクセント結合規則")
+    context_id: int = Field(description="文脈ID", default=1348)
+    part_of_speech: str = Field(description="品詞")
+    part_of_speech_detail_1: str = Field(description="品詞細分類1")
+    part_of_speech_detail_2: str = Field(description="品詞細分類2")
+    part_of_speech_detail_3: str = Field(description="品詞細分類3")
+    inflectional_type: str = Field(description="活用型")
+    inflectional_form: str = Field(description="活用形")
+    stem: str = Field(description="原形")
+    yomi: str = Field(description="読み")
+    pronunciation: str = Field(description="発音")
+    accent_type: int = Field(description="アクセント型")
+    mora_count: int | SkipJsonSchema[None] = Field(default=None, description="モーラ数")
+    accent_associative_rule: str = Field(description="アクセント結合規則")
 
     @field_validator("surface")
     @classmethod
