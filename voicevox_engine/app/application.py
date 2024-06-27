@@ -19,6 +19,7 @@ from voicevox_engine.app.routers.setting import generate_setting_router
 from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
 from voicevox_engine.app.routers.user_dict import generate_user_dict_router
 from voicevox_engine.cancellable_engine import CancellableEngine
+from voicevox_engine.core.core_adapter import CoreCharacter
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
@@ -66,7 +67,17 @@ def generate_app(
 
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(character_info_dir)
-    metas_store = MetasStore(character_info_dir, resource_manager)
+
+    def _get_core_characters(version: str | None) -> list[CoreCharacter]:
+        version = version or core_manager.latest_version()
+        core = core_manager.get_core(version)
+        return core.characters
+
+    metas_store = MetasStore(
+        character_info_dir,
+        _get_core_characters,
+        resource_manager,
+    )
 
     app.include_router(
         generate_tts_pipeline_router(
@@ -77,9 +88,7 @@ def generate_app(
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
-    app.include_router(
-        generate_character_router(core_manager, resource_manager, metas_store)
-    )
+    app.include_router(generate_character_router(resource_manager, metas_store))
     if engine_manifest.supported_features.manage_library:
         app.include_router(
             generate_library_router(library_manager, verify_mutability_allowed)

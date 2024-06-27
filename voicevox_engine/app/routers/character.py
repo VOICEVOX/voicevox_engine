@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 from voicevox_engine.metas.MetasStore import Character, MetasStore, ResourceFormat
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
@@ -35,9 +34,7 @@ def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
 
 
 def generate_character_router(
-    core_manager: CoreManager,
-    resource_manager: ResourceManager,
-    metas_store: MetasStore,
+    resource_manager: ResourceManager, metas_store: MetasStore
 ) -> APIRouter:
     """キャラクター情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -45,9 +42,7 @@ def generate_character_router(
     @router.get("/speakers")
     def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """喋れるキャラクターの情報の一覧を返します。"""
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        characters = metas_store.talk_characters(core.characters)
+        characters = metas_store.talk_characters(core_version)
         return _characters_to_speakers(characters)
 
     @router.get("/speaker_info")
@@ -61,12 +56,10 @@ def generate_character_router(
         UUID で指定された喋れるキャラクターの情報を返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
         return metas_store.character_info(
             character_uuid=speaker_uuid,
             talk_or_sing="talk",
-            core_characters=core.characters,
+            core_version=core_version,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )
@@ -74,9 +67,7 @@ def generate_character_router(
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
         """歌えるキャラクターの情報の一覧を返します。"""
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-        characters = metas_store.sing_characters(core.characters)
+        characters = metas_store.sing_characters(core_version)
         return _characters_to_speakers(characters)
 
     @router.get("/singer_info")
@@ -90,12 +81,10 @@ def generate_character_router(
         UUID で指定された歌えるキャラクターの情報を返します。
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
         return metas_store.character_info(
             character_uuid=speaker_uuid,
             talk_or_sing="sing",
-            core_characters=core.characters,
+            core_version=core_version,
             resource_baseurl=resource_baseurl,
             resource_format=resource_format,
         )

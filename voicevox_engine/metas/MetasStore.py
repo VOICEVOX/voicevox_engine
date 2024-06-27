@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, TypeAlias
+from typing import Callable, Final, Literal, TypeAlias
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
@@ -53,14 +53,30 @@ class _EngineCharacter(BaseModel):
     )
 
 
+GetCoreCharacters: TypeAlias = Callable[[str | None], list[CoreCharacter]]
+
+
 class MetasStore:
     """キャラクターやスタイルのメタ情報を管理する"""
 
     def __init__(
-        self, engine_characters_path: Path, resource_manager: ResourceManager
+        self,
+        engine_characters_path: Path,
+        get_core_characters: GetCoreCharacters,
+        resource_manager: ResourceManager,
     ) -> None:
-        """エンジンに含まれるメタ情報へのパスを基にインスタンスを生成する。"""
+        """
+        インスタンスを生成する。
+
+        Parameters
+        ----------
+        engine_characters_path : Path
+            エンジンに含まれるキャラクターメタ情報ディレクトリのパス。
+        get_core_characters:
+            コアに含まれるキャラクター情報を返す関数
+        """
         self._characters_path = engine_characters_path
+        self._get_core_characters = get_core_characters
         self._resource_manager = resource_manager
         # エンジンに含まれる各キャラクターのメタ情報
         self._loaded_metas: dict[str, _EngineCharacter] = {
@@ -71,12 +87,12 @@ class MetasStore:
             if folder.is_dir()
         }
 
-    def load_combined_metas(
-        self, core_characters: list[CoreCharacter]
-    ) -> list[Character]:
-        """コアとエンジンのメタ情報を統合する。"""
+    def characters(self, core_version: str | None) -> list[Character]:
+        """キャラクターの情報の一覧を取得する。"""
+
+        # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
-        for core_character in core_characters:
+        for core_character in self._get_core_characters(core_version):
             character_uuid = core_character.speaker_uuid
             engine_character = self._loaded_metas[character_uuid]
             styles = cast_styles(core_character.styles)
@@ -102,7 +118,7 @@ class MetasStore:
         self,
         character_uuid: str,
         talk_or_sing: Literal["talk", "sing"],
-        core_characters: list[CoreCharacter],
+        core_version: str | None,
         resource_baseurl: str,
         resource_format: ResourceFormat,
     ) -> SpeakerInfo:
@@ -129,7 +145,7 @@ class MetasStore:
         #         ...
 
         # 該当キャラクターを検索する
-        characters = self.load_combined_metas(core_characters)
+        characters = self.characters(core_version)
         characters = filter_characters_and_styles(characters, talk_or_sing)
         character = next(
             filter(lambda character: character.uuid == character_uuid, characters), None
@@ -199,15 +215,13 @@ class MetasStore:
         )
         return character_info
 
-    def talk_characters(self, core_characters: list[CoreCharacter]) -> list[Character]:
+    def talk_characters(self, core_version: str | None) -> list[Character]:
         """話せるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_characters)
-        return filter_characters_and_styles(characters, "talk")
+        return filter_characters_and_styles(self.characters(core_version), "talk")
 
-    def sing_characters(self, core_characters: list[CoreCharacter]) -> list[Character]:
+    def sing_characters(self, core_version: str | None) -> list[Character]:
         """歌えるキャラクターの情報の一覧を取得する。"""
-        characters = self.load_combined_metas(core_characters)
-        return filter_characters_and_styles(characters, "sing")
+        return filter_characters_and_styles(self.characters(core_version), "sing")
 
 
 def filter_characters_and_styles(
