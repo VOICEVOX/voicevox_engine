@@ -73,10 +73,10 @@ class UpdateInfo(BaseModel):
     エンジンのアップデート情報
     """
 
-    version: str = Field(title="エンジンのバージョン名")
-    descriptions: list[str] = Field(title="アップデートの詳細についての説明")
+    version: str = Field(description="エンジンのバージョン名")
+    descriptions: list[str] = Field(description="アップデートの詳細についての説明")
     contributors: list[str] | SkipJsonSchema[None] = Field(
-        default=None, title="貢献者名"
+        default=None, description="貢献者名"
     )
 
 
@@ -85,14 +85,14 @@ class LicenseInfo(BaseModel):
     依存ライブラリのライセンス情報
     """
 
-    name: str = Field(title="依存ライブラリ名")
+    name: str = Field(description="依存ライブラリ名")
     version: str | SkipJsonSchema[None] = Field(
-        default=None, title="依存ライブラリのバージョン"
+        default=None, description="依存ライブラリのバージョン"
     )
     license: str | SkipJsonSchema[None] = Field(
-        default=None, title="依存ライブラリのライセンス名"
+        default=None, description="依存ライブラリのライセンス名"
     )
-    text: str = Field(title="依存ライブラリのライセンス本文")
+    text: str = Field(description="依存ライブラリのライセンス本文")
 
 
 class SupportedFeatures(BaseModel):
@@ -100,25 +100,25 @@ class SupportedFeatures(BaseModel):
     エンジンが持つ機能の一覧
     """
 
-    adjust_mora_pitch: bool = Field(title="モーラごとの音高の調整")
-    adjust_phoneme_length: bool = Field(title="音素ごとの長さの調整")
-    adjust_speed_scale: bool = Field(title="全体の話速の調整")
-    adjust_pitch_scale: bool = Field(title="全体の音高の調整")
-    adjust_intonation_scale: bool = Field(title="全体の抑揚の調整")
-    adjust_volume_scale: bool = Field(title="全体の音量の調整")
+    adjust_mora_pitch: bool = Field(description="モーラごとの音高の調整")
+    adjust_phoneme_length: bool = Field(description="音素ごとの長さの調整")
+    adjust_speed_scale: bool = Field(description="全体の話速の調整")
+    adjust_pitch_scale: bool = Field(description="全体の音高の調整")
+    adjust_intonation_scale: bool = Field(description="全体の抑揚の調整")
+    adjust_volume_scale: bool = Field(description="全体の音量の調整")
     adjust_pause_length: bool | SkipJsonSchema[None] = Field(
-        default=None, title="句読点などの無音時間の調整"
+        default=None, description="句読点などの無音時間の調整"
     )
-    interrogative_upspeak: bool = Field(title="疑問文の自動調整")
+    interrogative_upspeak: bool = Field(description="疑問文の自動調整")
     synthesis_morphing: bool = Field(
-        title="2種類のスタイルでモーフィングした音声を合成"
+        description="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: bool | SkipJsonSchema[None] = Field(default=None, title="歌唱音声合成")
+    sing: bool | SkipJsonSchema[None] = Field(default=None, description="歌唱音声合成")
     manage_library: bool | SkipJsonSchema[None] = Field(
-        default=None, title="音声ライブラリのインストール・アンインストール"
+        default=None, description="音声ライブラリのインストール・アンインストール"
     )
     return_resource_url: bool | SkipJsonSchema[None] = Field(
-        default=None, title="speaker_info・singer_infoのリソースをURLで返送"
+        default=None, description="speaker_info・singer_infoのリソースをURLで返送"
     )
 
 
@@ -131,21 +131,23 @@ class EngineManifest(BaseModel):
     エンジン自体に関する情報
     """
 
-    manifest_version: str = Field(title="マニフェストのバージョン")
-    name: EngineName = Field(title="エンジン名")
-    brand_name: BrandName = Field(title="ブランド名")
-    uuid: str = Field(title="エンジンのUUID")
-    url: str = Field(title="エンジンのURL")
-    icon: str = Field(title="エンジンのアイコンをBASE64エンコードしたもの")
-    default_sampling_rate: int = Field(title="デフォルトのサンプリング周波数")
-    frame_rate: float = Field(title="エンジンのフレームレート")
-    terms_of_service: str = Field(title="エンジンの利用規約")
-    update_infos: list[UpdateInfo] = Field(title="エンジンのアップデート情報")
-    dependency_licenses: list[LicenseInfo] = Field(title="依存関係のライセンス情報")
-    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
-        default=None, title="エンジンが対応するvvlibのバージョン"
+    manifest_version: str = Field(description="マニフェストのバージョン")
+    name: EngineName = Field(description="エンジン名")
+    brand_name: BrandName = Field(description="ブランド名")
+    uuid: str = Field(description="エンジンのUUID")
+    url: str = Field(description="エンジンのURL")
+    icon: str = Field(description="エンジンのアイコンをBASE64エンコードしたもの")
+    default_sampling_rate: int = Field(description="デフォルトのサンプリング周波数")
+    frame_rate: float = Field(description="エンジンのフレームレート")
+    terms_of_service: str = Field(description="エンジンの利用規約")
+    update_infos: list[UpdateInfo] = Field(description="エンジンのアップデート情報")
+    dependency_licenses: list[LicenseInfo] = Field(
+        description="依存関係のライセンス情報"
     )
-    supported_features: SupportedFeatures = Field(title="エンジンが持つ機能")
+    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
+        default=None, description="エンジンが対応するvvlibのバージョン"
+    )
+    supported_features: SupportedFeatures = Field(description="エンジンが持つ機能")
 
 
 def load_manifest(manifest_path: Path) -> EngineManifest:

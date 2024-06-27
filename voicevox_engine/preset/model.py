@@ -16,20 +16,22 @@ class Preset(BaseModel):
     プリセット情報
     """
 
-    id: int = Field(title="プリセットID")
-    name: str = Field(title="プリセット名")
-    speaker_uuid: str = Field(title="話者のUUID")
-    style_id: StyleId = Field(title="スタイルID")
-    speedScale: float = Field(title="全体の話速")
-    pitchScale: float = Field(title="全体の音高")
-    intonationScale: float = Field(title="全体の抑揚")
-    volumeScale: float = Field(title="全体の音量")
-    prePhonemeLength: float = Field(title="音声の前の無音時間")
-    postPhonemeLength: float = Field(title="音声の後の無音時間")
+    id: int = Field(description="プリセットID")
+    name: str = Field(description="プリセット名")
+    speaker_uuid: str = Field(description="話者のUUID")
+    style_id: StyleId = Field(description="スタイルID")
+    speedScale: float = Field(description="全体の話速")
+    pitchScale: float = Field(description="全体の音高")
+    intonationScale: float = Field(description="全体の抑揚")
+    volumeScale: float = Field(description="全体の音量")
+    prePhonemeLength: float = Field(description="音声の前の無音時間")
+    postPhonemeLength: float = Field(description="音声の後の無音時間")
     pauseLength: float | SkipJsonSchema[None] = Field(
-        default=None, title="句読点などの無音時間"
+        default=None, description="句読点などの無音時間"
     )
-    pauseLengthScale: float = Field(default=1, title="句読点などの無音時間（倍率）")
+    pauseLengthScale: float = Field(
+        default=1, description="句読点などの無音時間（倍率）"
+    )
 
 
 validate_obj_as_presets = generate_obj_validator(list[Preset])
