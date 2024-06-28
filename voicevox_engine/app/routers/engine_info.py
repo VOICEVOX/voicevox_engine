@@ -8,9 +8,8 @@ from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine import __version__
 from voicevox_engine.core.core_adapter import DeviceSupport
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
 
 
 class SupportedDevicesInfo(BaseModel):
@@ -33,7 +32,7 @@ class SupportedDevicesInfo(BaseModel):
 
 
 def generate_engine_info_router(
-    core_manager: CoreManager,
+    core_version_list: list[str],
     tts_engine_manager: TTSEngineManager,
     engine_manifest_data: EngineManifest,
 ) -> APIRouter:
@@ -48,14 +47,14 @@ def generate_engine_info_router(
     @router.get("/core_versions")
     async def core_versions() -> list[str]:
         """利用可能なコアのバージョン一覧を取得します。"""
-        return core_manager.versions()
+        return core_version_list
 
     @router.get("/supported_devices")
     def supported_devices(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
-        version = core_version or core_manager.latest_version()
+        version = core_version or LATEST_VERSION
         supported_devices = tts_engine_manager.get_engine(version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")

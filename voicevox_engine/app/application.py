@@ -68,6 +68,8 @@ def generate_app(
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(character_info_dir)
 
+    core_version_list = core_manager.versions()
+
     def _get_core_characters(version: str | None) -> list[CoreCharacter]:
         version = version or core_manager.latest_version()
         core = core_manager.get_core(version)
@@ -93,7 +95,7 @@ def generate_app(
         )
     app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
     app.include_router(
-        generate_engine_info_router(core_manager, tts_engines, engine_manifest)
+        generate_engine_info_router(core_version_list, tts_engines, engine_manifest)
     )
     app.include_router(
         generate_setting_router(
