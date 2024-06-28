@@ -116,7 +116,7 @@ def test_count_mora_xwa() -> None:
 
 
 def test_invalid_pronunciation_not_katakana() -> None:
-    """UserDictWord はカタカナでない pronunciation を拒絶する。"""
+    """UserDictWord はカタカナでない pronunciation をエラーとする。"""
     # Inputs
     test_value = generate_model()
     test_value["pronunciation"] = "ぼいぼ"
@@ -127,7 +127,7 @@ def test_invalid_pronunciation_not_katakana() -> None:
 
 
 def test_invalid_pronunciation_invalid_sutegana() -> None:
-    """UserDictWord は無効な pronunciation を拒絶する。"""
+    """UserDictWord は無効な pronunciation をエラーとする。"""
     # Inputs
     test_value = generate_model()
     test_value["pronunciation"] = "アィウェォ"
@@ -138,7 +138,7 @@ def test_invalid_pronunciation_invalid_sutegana() -> None:
 
 
 def test_invalid_pronunciation_invalid_xwa() -> None:
-    """UserDictWord は無効な pronunciation を拒絶する。"""
+    """UserDictWord は無効な pronunciation をエラーとする。"""
     # Inputs
     test_value = generate_model()
     test_value["pronunciation"] = "アヮ"
@@ -163,7 +163,7 @@ def test_count_mora_voiced_sound() -> None:
 
 
 def test_word_accent_type_too_big() -> None:
-    """UserDictWord はモーラ数を超えた accent_type を拒絶する。"""
+    """UserDictWord はモーラ数を超えた accent_type をエラーとする。"""
     # Inputs
     test_value = generate_model()
     test_value["accent_type"] = 4
@@ -174,7 +174,7 @@ def test_word_accent_type_too_big() -> None:
 
 
 def test_word_accent_type_negative() -> None:
-    """UserDictWord は負の accent_type を拒絶する。"""
+    """UserDictWord は負の accent_type をエラーとする。"""
     # Inputs
     test_value = generate_model()
     test_value["accent_type"] = -1
