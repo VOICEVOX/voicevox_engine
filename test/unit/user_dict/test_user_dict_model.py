@@ -27,7 +27,7 @@ class UserDictWordInputs(TypedDict):
 
 
 def generate_model() -> UserDictWordInputs:
-    """テスト用入力テンプレートを生成する。"""
+    """テスト用に UserDictWord の引数からなる辞書を生成する。"""
     return {
         "surface": "テスト",
         "priority": 0,
@@ -47,12 +47,12 @@ def generate_model() -> UserDictWordInputs:
 
 
 def test_valid_word() -> None:
-    """テスト用入力テンプレートは正常値である。"""
-    # Inputs
-    test_value = generate_model()
+    """generate_model 関数は UserDictWord の引数からなる辞書を生成する。"""
+    # Outputs
+    args = generate_model()
 
     # Test
-    UserDictWord(**test_value)
+    UserDictWord(**args)
 
 
 def test_convert_to_zenkaku() -> None:
