@@ -730,10 +730,6 @@ class TTSEngineManager:
 
         raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-    def has_engine(self, version: str) -> bool:
-        """指定バージョンのエンジンが登録されているか否かを返す。"""
-        return version in self._engines
-
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
