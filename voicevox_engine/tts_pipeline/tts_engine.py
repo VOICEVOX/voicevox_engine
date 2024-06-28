@@ -2,11 +2,14 @@
 
 import copy
 import math
+from typing import Final, Literal, TypeAlias
 
 import numpy as np
 from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
+
+from voicevox_engine.utility.core_version_utility import get_latest_version
 
 from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
@@ -697,6 +700,10 @@ class TTSEngine:
         return wave
 
 
+LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
+LATEST_VERSION: Final[LatestVersion] = "LATEST_VERSION"
+
+
 class TTSEngineManager:
     """TTS エンジンの集まりを一括管理するマネージャー"""
 
@@ -707,20 +714,21 @@ class TTSEngineManager:
         """登録されたエンジンのバージョン一覧を取得する。"""
         return list(self._engines.keys())
 
+    def _latest_version(self) -> str:
+        return get_latest_version(self.versions())
+
     def register_engine(self, engine: TTSEngine, version: str) -> None:
         """エンジンを登録する。"""
         self._engines[version] = engine
 
-    def get_engine(self, version: str) -> TTSEngine:
+    def get_engine(self, version: str | LatestVersion) -> TTSEngine:
         """指定バージョンのエンジンを取得する。"""
-        if version in self._engines:
+        if version == LATEST_VERSION:
+            return self._engines[self._latest_version()]
+        elif version in self._engines:
             return self._engines[version]
 
         raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def has_engine(self, version: str) -> bool:
-        """指定バージョンのエンジンが登録されているか否かを返す。"""
-        return version in self._engines
 
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
