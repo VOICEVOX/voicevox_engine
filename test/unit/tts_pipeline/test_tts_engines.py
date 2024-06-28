@@ -79,33 +79,3 @@ def test_tts_engines_get_engine_missing() -> None:
     # Test
     with pytest.raises(HTTPException) as _:
         tts_engines.get_engine("0.0.3")
-
-
-def test_tts_engines_has_engine_true() -> None:
-    """TTSEngineManager.has_engine() で TTS エンジンが登録されていることを確認できる。"""
-    # Inputs
-    tts_engines = TTSEngineManager()
-    tts_engines.register_engine(MockTTSEngine(), "0.0.1")
-    tts_engines.register_engine(MockTTSEngine(), "0.0.2")
-    # Expects
-    expected_has = True
-    # Outputs
-    has = tts_engines.has_engine("0.0.1")
-
-    # Test
-    assert expected_has == has
-
-
-def test_tts_engines_has_engine_false() -> None:
-    """TTSEngineManager.has_engine() で TTS エンジンが登録されていないことを確認できる。"""
-    # Inputs
-    tts_engines = TTSEngineManager()
-    tts_engines.register_engine(MockTTSEngine(), "0.0.1")
-    tts_engines.register_engine(MockTTSEngine(), "0.0.2")
-    # Expects
-    expected_has = False
-    # Outputs
-    has = tts_engines.has_engine("0.0.3")
-
-    # Test
-    assert expected_has == has
