@@ -94,9 +94,7 @@ def generate_app(
             generate_library_router(library_manager, verify_mutability_allowed)
         )
     app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
-    app.include_router(
-        generate_engine_info_router(core_version_list, tts_engines, engine_manifest)
-    )
+    app.include_router(generate_engine_info_router(core_version_list, engine_manifest))
     app.include_router(
         generate_setting_router(
             setting_loader, engine_manifest.brand_name, verify_mutability_allowed

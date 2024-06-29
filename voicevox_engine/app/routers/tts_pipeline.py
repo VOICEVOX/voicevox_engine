@@ -2,7 +2,7 @@
 
 import zipfile
 from tempfile import NamedTemporaryFile, TemporaryFile
-from typing import Annotated
+from typing import Annotated, Self
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -15,6 +15,7 @@ from voicevox_engine.cancellable_engine import (
     CancellableEngine,
     CancellableEngineInternalError,
 )
+from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.preset_manager import (
@@ -61,6 +62,25 @@ class ParseKanaBadRequest(BaseModel):
 
     def __init__(self, err: ParseKanaError):
         super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
+
+
+class SupportedDevicesInfo(BaseModel):
+    """
+    対応しているデバイスの情報
+    """
+
+    cpu: bool = Field(description="CPUに対応しているか")
+    cuda: bool = Field(description="CUDA(Nvidia GPU)に対応しているか")
+    dml: bool = Field(description="DirectML(Nvidia GPU/Radeon GPU等)に対応しているか")
+
+    @classmethod
+    def generate_from(cls, device_support: DeviceSupport) -> Self:
+        """`DeviceSupport` インスタンスからこのインスタンスを生成する。"""
+        return cls(
+            cpu=device_support.cpu,
+            cuda=device_support.cuda,
+            dml=device_support.dml,
+        )
 
 
 def generate_tts_pipeline_router(
@@ -542,5 +562,16 @@ def generate_tts_pipeline_router(
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         return engine.is_synthesis_initialized(style_id)
+
+    @router.get("/supported_devices", tags=["その他"])
+    def supported_devices(
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> SupportedDevicesInfo:
+        """対応デバイスの一覧を取得します。"""
+        version = core_version or LATEST_VERSION
+        supported_devices = tts_engines.get_engine(version).supported_devices
+        if supported_devices is None:
+            raise HTTPException(status_code=422, detail="非対応の機能です。")
+        return SupportedDevicesInfo.generate_from(supported_devices)
 
     return router
