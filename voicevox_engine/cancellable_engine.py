@@ -98,32 +98,28 @@ class CancellableEngine:
         return new_process, connection_outer
 
     def _finalize_con(
-        self,
-        req: Request,
-        proc: Process,
-        sub_proc_con: ConnectionType | None,
+        self, req: Request, proc: Process, sub_proc_con: ConnectionType | None
     ) -> None:
         """
-        接続が切断された時の処理を行う関数
-        watch_con_listからの削除、プロセスの後処理を行う
-        プロセスが生きている場合はそのままprocs_and_consに加える
-        死んでいる場合は新しく生成したものをprocs_and_consに加える
+        合成の後処理をおこなう。
 
         Parameters
         ----------
-        req: fastapi.Request
-            接続確立時に受け取ったものをそのまま渡せばよい
-            https://fastapi.tiangolo.com/advanced/using-request-directly/
-        proc: Process
+        req:
+            HTTP 接続状態に関するオブジェクト
+        proc:
             音声合成を行っていたプロセス
-        sub_proc_con: ConnectionType, optional
-            音声合成を行っていたプロセスとのPipe
+        sub_proc_con:
+            音声合成を行っていたプロセスとのコネクション
             指定されていない場合、プロセスは再利用されず終了される
         """
+        # 監視対象リストから除外する
         try:
             self.watch_con_list.remove((req, proc))
         except ValueError:
             pass
+
+        # 待機中リストへ再登録する
         try:
             if not proc.is_alive() or sub_proc_con is None:
                 proc.close()
