@@ -134,7 +134,7 @@ class CancellableEngine:
             # プロセスが死んでいるので新しく作り直す
             self.procs_and_cons.put(self.start_new_process())
 
-    def _synthesis_impl(
+    def synthesize_wave(
         self,
         query: AudioQuery,
         style_id: StyleId,
