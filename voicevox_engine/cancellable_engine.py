@@ -29,24 +29,7 @@ class CancellableEngineInternalError(Exception):
 
 
 class CancellableEngine:
-    """
-    音声合成のキャンセル機能に関するクラス
-    初期化後は、synthesis関数で音声合成できる
-    （オリジナルと比べ引数が増えているので注意）
-
-    パラメータ use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
-
-    Attributes
-    ----------
-    watch_con_list: list[tuple[Request, Process]]
-        Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
-        クライアントから接続があるとlistにtupleが追加される
-        接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: Queue[tuple[Process, ConnectionType]]
-        音声合成の準備が終わっているプロセスのList
-        （音声合成中のプロセスは入っていない）
-    """
+    """音声合成のキャンセル機能に関するクラス"""
 
     def __init__(
         self,
@@ -60,6 +43,8 @@ class CancellableEngine:
     ) -> None:
         """
         変数の初期化を行う
+        パラメータ use_gpu, voicelib_dirs, voicevox_dir,
+        runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
         また、init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
 
@@ -70,13 +55,16 @@ class CancellableEngine:
         self.cpu_num_threads = cpu_num_threads
         self.enable_mock = enable_mock
 
-        self.watch_con_list: list[tuple[Request, Process]] = []
+        # Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
+        # クライアントから接続があるとlistにtupleが追加される
+        # 接続が切断、もしくは音声合成が終了すると削除される
+        self._watching_reqs_and_procs: list[tuple[Request, Process]] = []
 
-        # 音声合成用のサブプロセスと、それと通信できるコネクション
+        # 待機しているサブプロセスと、それと通信できるコネクション
         procs_and_cons: Queue[tuple[Process, ConnectionType]] = Queue()
         for _ in range(init_processes):
             procs_and_cons.put(self._start_new_process())
-        self.procs_and_cons = procs_and_cons
+        self._waiting_procs_and_cons = procs_and_cons
 
     def _start_new_process(self) -> tuple[Process, ConnectionType]:
         """音声合成可能な新しいプロセスを開始し、そのプロセスとそこへのコネクションを返す。"""
@@ -115,7 +103,7 @@ class CancellableEngine:
         """
         # 監視対象リストから除外する
         try:
-            self.watch_con_list.remove((req, proc))
+            self._watching_reqs_and_procs.remove((req, proc))
         except ValueError:
             pass
 
@@ -125,10 +113,10 @@ class CancellableEngine:
                 proc.close()
                 raise ValueError
             # プロセスが死んでいない場合は再利用する
-            self.procs_and_cons.put((proc, sub_proc_con))
+            self._waiting_procs_and_cons.put((proc, sub_proc_con))
         except ValueError:
             # プロセスが死んでいるので新しく作り直す
-            self.procs_and_cons.put(self._start_new_process())
+            self._waiting_procs_and_cons.put(self._start_new_process())
 
     def synthesize_wave(
         self,
@@ -148,8 +136,8 @@ class CancellableEngine:
             合成に用いる TTSEngine のバージョン
         """
         # 待機中のプロセスとそのコネクションを取得し、監視対象リストへ登録する
-        synth_process, synth_connection = self.procs_and_cons.get()
-        self.watch_con_list.append((request, synth_process))
+        synth_process, synth_connection = self._waiting_procs_and_cons.get()
+        self._watching_reqs_and_procs.append((request, synth_process))
 
         # サブプロセスへ入力を渡して音声を合成する
         try:
@@ -174,7 +162,7 @@ class CancellableEngine:
         """
         while True:
             await asyncio.sleep(1)
-            for con in self.watch_con_list:
+            for con in self._watching_reqs_and_procs:
                 req, proc = con
                 if await req.is_disconnected():
                     try:
