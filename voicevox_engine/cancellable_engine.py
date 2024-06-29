@@ -188,6 +188,7 @@ class CancellableEngine:
                         self._finalize_con(req, proc, None)
 
 
+# NOTE: pickle化の関係でグローバルに書いている
 def start_synthesis_subprocess(
     use_gpu: bool,
     voicelib_dirs: list[Path] | None,
@@ -195,21 +196,20 @@ def start_synthesis_subprocess(
     runtime_dirs: list[Path] | None,
     cpu_num_threads: int | None,
     enable_mock: bool,
-    sub_proc_con: ConnectionType,
+    connection: ConnectionType,
 ) -> None:
     """
-    音声合成を行うサブプロセスで行うための関数
-    pickle化の関係でグローバルに書いている
+    コネクションへの入力に応答して音声合成をおこなうループを実行する
 
     引数 use_gpu, voicelib_dirs, voicevox_dir,
     runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Parameters
     ----------
-    sub_proc_con: ConnectionType
-        メインプロセスと通信するためのPipe
+    connection:
+        メインプロセスと通信するためのコネクション
     """
-
+    # 音声合成エンジンを用意する
     core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
@@ -219,16 +219,20 @@ def start_synthesis_subprocess(
         enable_mock=enable_mock,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
-
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+
+    # 「キュー入力待機 → キュー入力受付 → 音声合成 → ファイル名送信」をループする
     while True:
         try:
-            query, style_id, version = sub_proc_con.recv()
+            # キューへ入力が来たらそれを受け取る
+            query, style_id, version = connection.recv()
+
+            # 音声を合成しファイルへ保存する
             try:
                 _engine = tts_engines.get_engine(version)
             except Exception:
-                # バージョンが見つからないエラー
-                sub_proc_con.send("")
+                # コネクションを介して「バージョンが見つからないエラー」を送信する
+                connection.send("")  # `""` をエラーして扱う
                 continue
             # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
             wave = _engine.synthesize_wave(
@@ -238,7 +242,10 @@ def start_synthesis_subprocess(
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
                 )
-            sub_proc_con.send(f.name)
+
+            # コネクションを介してファイル名を送信する
+            connection.send(f.name)
+
         except Exception:
-            sub_proc_con.close()
+            connection.close()
             raise
