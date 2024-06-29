@@ -1,7 +1,7 @@
 """キャンセル可能な音声合成"""
 
 import asyncio
-import queue
+from queue import Queue
 import sys
 from multiprocessing import Pipe, Process
 
@@ -43,7 +43,7 @@ class CancellableEngine:
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
         クライアントから接続があるとlistにtupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
-    procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
+    procs_and_cons: Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList
         （音声合成中のプロセスは入っていない）
     """
@@ -72,7 +72,8 @@ class CancellableEngine:
 
         self.watch_con_list: list[tuple[Request, Process]] = []
 
-        procs_and_cons: queue.Queue[tuple[Process, ConnectionType]] = queue.Queue()
+        # 音声合成用のサブプロセスと、それと通信できるコネクション
+        procs_and_cons: Queue[tuple[Process, ConnectionType]] = Queue()
         for _ in range(init_processes):
             procs_and_cons.put(self.start_new_process())
         self.procs_and_cons = procs_and_cons
