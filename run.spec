@@ -7,7 +7,6 @@ datas = [
     ('resources', 'resources'),
     ('engine_manifest.json', '.'),
     ('licenses.json', '.'),
-    ('presets.yaml', '.'),
 ]
 datas += collect_data_files('pyopenjtalk')
 
