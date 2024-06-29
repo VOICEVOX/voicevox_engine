@@ -29,7 +29,7 @@ class CancellableEngineInternalError(Exception):
 
 
 class CancellableEngine:
-    """音声合成のキャンセル機能に関するクラス"""
+    """マルチプロセスでの合成・キャンセル可能な合成をサポートする音声合成エンジン"""
 
     def __init__(
         self,
@@ -45,7 +45,7 @@ class CancellableEngine:
         変数の初期化を行う
         パラメータ use_gpu, voicelib_dirs, voicevox_dir,
         runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
-        また、init_processesの数だけプロセスを起動し、procs_and_consに格納する
+        init_processesの数だけプロセスを起動し、procs_and_consに格納する
         """
 
         self.use_gpu = use_gpu
