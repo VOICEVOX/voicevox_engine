@@ -74,24 +74,13 @@ class CancellableEngine:
 
         procs_and_cons: queue.Queue[tuple[Process, ConnectionType]] = queue.Queue()
         for _ in range(init_processes):
-            procs_and_cons.put(self.start_new_proc())
+            procs_and_cons.put(self.start_new_process())
         self.procs_and_cons = procs_and_cons
 
-    def start_new_proc(
-        self,
-    ) -> tuple[Process, ConnectionType]:
-        """
-        新しく開始したプロセスを返す関数
-
-        Returns
-        -------
-        ret_proc: Process
-            新規のプロセス
-        sub_proc_con1: ConnectionType
-            ret_procのプロセスと通信するためのPipe
-        """
-        sub_proc_con1, sub_proc_con2 = Pipe(True)
-        ret_proc = Process(
+    def start_new_process(self) -> tuple[Process, ConnectionType]:
+        """音声合成可能な新しいプロセスを開始し、そのプロセスとそこへのコネクションを返す。"""
+        connection_outer, connection_inner = Pipe(True)
+        new_process = Process(
             target=start_synthesis_subprocess,
             kwargs={
                 "use_gpu": self.use_gpu,
@@ -100,12 +89,12 @@ class CancellableEngine:
                 "runtime_dirs": self.runtime_dirs,
                 "cpu_num_threads": self.cpu_num_threads,
                 "enable_mock": self.enable_mock,
-                "sub_proc_con": sub_proc_con2,
+                "sub_proc_con": connection_inner,
             },
             daemon=True,
         )
-        ret_proc.start()
-        return ret_proc, sub_proc_con1
+        new_process.start()
+        return new_process, connection_outer
 
     def finalize_con(
         self,
@@ -142,7 +131,7 @@ class CancellableEngine:
             self.procs_and_cons.put((proc, sub_proc_con))
         except ValueError:
             # プロセスが死んでいるので新しく作り直す
-            self.procs_and_cons.put(self.start_new_proc())
+            self.procs_and_cons.put(self.start_new_process())
 
     def _synthesis_impl(
         self,
