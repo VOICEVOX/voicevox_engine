@@ -97,7 +97,7 @@ class CancellableEngine:
         new_process.start()
         return new_process, connection_outer
 
-    def finalize_con(
+    def _finalize_con(
         self,
         req: Request,
         proc: Process,
@@ -173,10 +173,10 @@ class CancellableEngine:
         except EOFError:
             raise CancellableEngineInternalError("既にサブプロセスは終了されています")
         except Exception:
-            self.finalize_con(request, proc, sub_proc_con1)
+            self._finalize_con(request, proc, sub_proc_con1)
             raise
 
-        self.finalize_con(request, proc, sub_proc_con1)
+        self._finalize_con(request, proc, sub_proc_con1)
         return audio_file_name
 
     async def catch_disconnection(self) -> None:
@@ -196,7 +196,7 @@ class CancellableEngine:
                     except ValueError:
                         pass
                     finally:
-                        self.finalize_con(req, proc, None)
+                        self._finalize_con(req, proc, None)
 
 
 def start_synthesis_subprocess(
