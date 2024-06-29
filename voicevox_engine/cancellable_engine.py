@@ -142,41 +142,34 @@ class CancellableEngine:
         version: str | LatestVersion,
     ) -> str:
         """
-        音声合成を行う関数
-        通常エンジンの引数に比べ、requestが必要になっている
-        また、返り値がファイル名になっている
+        サブプロセス上において、音声合成用のクエリ・スタイルIDに基づいて音声波形を生成し、音声ファイル名を返す。
 
         Parameters
         ----------
-        query: AudioQuery
-        style_id: StyleId
-        request: fastapi.Request
-            接続確立時に受け取ったものをそのまま渡せばよい
-            https://fastapi.tiangolo.com/advanced/using-request-directly/
-        version
-
-        Returns
-        -------
-        f_name: str
-            生成された音声ファイルの名前
+        request:
+            HTTP 接続状態に関するオブジェクト
+        version:
+            合成に用いる TTSEngine のバージョン
         """
-        proc, sub_proc_con1 = self.procs_and_cons.get()
-        self.watch_con_list.append((request, proc))
+        # 待機中のプロセスとそのコネクションを取得し、監視対象リストへ登録する
+        synth_process, synth_connection = self.procs_and_cons.get()
+        self.watch_con_list.append((request, synth_process))
+
+        # サブプロセスへ入力を渡して音声を合成する
         try:
-            sub_proc_con1.send((query, style_id, version))
-            f_name = sub_proc_con1.recv()
-            if isinstance(f_name, str):
-                audio_file_name = f_name
-            else:
+            synth_connection.send((query, style_id, version))
+            audio_file_name = synth_connection.recv()
+
+            if not isinstance(audio_file_name, str):
                 # ここには来ないはず
                 raise CancellableEngineInternalError("不正な値が生成されました")
         except EOFError:
             raise CancellableEngineInternalError("既にサブプロセスは終了されています")
         except Exception:
-            self._finalize_con(request, proc, sub_proc_con1)
+            self._finalize_con(request, synth_process, synth_connection)
             raise
+        self._finalize_con(request, synth_process, synth_connection)
 
-        self._finalize_con(request, proc, sub_proc_con1)
         return audio_file_name
 
     async def catch_disconnection(self) -> None:
