@@ -19,7 +19,7 @@ from fastapi import Request
 from .core.core_initializer import initialize_cores
 from .metas.Metas import StyleId
 from .model import AudioQuery
-from .tts_pipeline.tts_engine import make_tts_engines_from_cores
+from .tts_pipeline.tts_engine import LatestVersion, make_tts_engines_from_cores
 
 
 class CancellableEngineInternalError(Exception):
@@ -149,7 +149,7 @@ class CancellableEngine:
         query: AudioQuery,
         style_id: StyleId,
         request: Request,
-        version: str,
+        version: str | LatestVersion,
     ) -> str:
         """
         音声合成を行う関数
@@ -163,7 +163,7 @@ class CancellableEngine:
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
-        version: str
+        version
 
         Returns
         -------
@@ -245,9 +245,9 @@ def start_synthesis_subprocess(
     while True:
         try:
             query, style_id, version = sub_proc_con.recv()
-            if tts_engines.has_engine(version):
+            try:
                 _engine = tts_engines.get_engine(version)
-            else:
+            except Exception:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue

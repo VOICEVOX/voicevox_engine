@@ -68,6 +68,8 @@ def generate_app(
     resource_manager = ResourceManager(is_development())
     resource_manager.register_dir(character_info_dir)
 
+    core_version_list = core_manager.versions()
+
     def _get_core_characters(version: str | None) -> list[CoreCharacter]:
         version = version or core_manager.latest_version()
         core = core_manager.get_core(version)
@@ -80,11 +82,9 @@ def generate_app(
     )
 
     app.include_router(
-        generate_tts_pipeline_router(
-            tts_engines, core_manager, preset_manager, cancellable_engine
-        )
+        generate_tts_pipeline_router(tts_engines, preset_manager, cancellable_engine)
     )
-    app.include_router(generate_morphing_router(tts_engines, core_manager, metas_store))
+    app.include_router(generate_morphing_router(tts_engines, metas_store))
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
@@ -94,7 +94,7 @@ def generate_app(
             generate_library_router(library_manager, verify_mutability_allowed)
         )
     app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
-    app.include_router(generate_engine_info_router(core_manager, engine_manifest))
+    app.include_router(generate_engine_info_router(core_version_list, engine_manifest))
     app.include_router(
         generate_setting_router(
             setting_loader, engine_manifest.brand_name, verify_mutability_allowed

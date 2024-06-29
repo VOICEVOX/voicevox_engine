@@ -3,12 +3,11 @@
 from fastapi import APIRouter
 
 from voicevox_engine import __version__
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 
 
 def generate_engine_info_router(
-    core_manager: CoreManager, engine_manifest_data: EngineManifest
+    core_version_list: list[str], engine_manifest_data: EngineManifest
 ) -> APIRouter:
     """エンジン情報 API Router を生成する"""
     router = APIRouter(tags=["その他"])
@@ -21,7 +20,7 @@ def generate_engine_info_router(
     @router.get("/core_versions")
     async def core_versions() -> list[str]:
         """利用可能なコアのバージョン一覧を取得します。"""
-        return core_manager.versions()
+        return core_version_list
 
     @router.get("/engine_manifest")
     async def engine_manifest() -> EngineManifest:
