@@ -1,9 +1,9 @@
 """キャンセル可能な音声合成"""
 
 import asyncio
-from queue import Queue
 import sys
 from multiprocessing import Pipe, Process
+from queue import Queue
 
 if sys.platform == "win32":
     from multiprocessing.connection import PipeConnection as ConnectionType
