@@ -75,10 +75,10 @@ class CancellableEngine:
         # 音声合成用のサブプロセスと、それと通信できるコネクション
         procs_and_cons: Queue[tuple[Process, ConnectionType]] = Queue()
         for _ in range(init_processes):
-            procs_and_cons.put(self.start_new_process())
+            procs_and_cons.put(self._start_new_process())
         self.procs_and_cons = procs_and_cons
 
-    def start_new_process(self) -> tuple[Process, ConnectionType]:
+    def _start_new_process(self) -> tuple[Process, ConnectionType]:
         """音声合成可能な新しいプロセスを開始し、そのプロセスとそこへのコネクションを返す。"""
         connection_outer, connection_inner = Pipe(True)
         new_process = Process(
@@ -132,7 +132,7 @@ class CancellableEngine:
             self.procs_and_cons.put((proc, sub_proc_con))
         except ValueError:
             # プロセスが死んでいるので新しく作り直す
-            self.procs_and_cons.put(self.start_new_process())
+            self.procs_and_cons.put(self._start_new_process())
 
     def synthesize_wave(
         self,
