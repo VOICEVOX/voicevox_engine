@@ -253,12 +253,17 @@
               bootstrapToast.value = new bootstrap.Toast(toastElem.value);
             });
 
-            // メッセージを表示する。typeはsuccess・info・warning・dangerなど。
+            // メッセージを表示する。typeはsuccess・info・warning・danger。
             const showToastWithMessage = (message, type) => {
               console.log(`showToastWithMessage: ${message}, ${type}`);
               bootstrapToast.value.show();
               toastMessage.value = message;
-              toastElem.value.classList.remove("bg-success", "bg-danger");
+              toastElem.value.classList.remove(
+                "bg-success",
+                "bg-info",
+                "bg-warning",
+                "bg-danger",
+              );
               toastElem.value.classList.add(`bg-${type}`);
             };
 
