@@ -1,5 +1,21 @@
 [
   {
+    "version": "0.20.0",
+    "descriptions": [
+      "句読点などの無音時間の調整パラメータを追加",
+      "キャラクター情報のリソースをURLで返す機能追加",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "Hiroshiba",
+      "nix6839",
+      "sabonerune",
+      "tarepan",
+      "weweweok",
+      "X-20A"
+    ]
+  },
+  {
     "version": "0.19.1",
     "descriptions": ["キャラクター「後鬼」のスタイルを追加"],
     "contributors": []
