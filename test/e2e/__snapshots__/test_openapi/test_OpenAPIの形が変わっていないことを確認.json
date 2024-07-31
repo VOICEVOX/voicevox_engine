@@ -997,7 +997,7 @@
             "type": "boolean"
           },
           "return_resource_url": {
-            "description": "speaker_info・singer_infoのリソースをURLで返送",
+            "description": "キャラクター情報のリソースをURLで返送",
             "title": "Return Resource Url",
             "type": "boolean"
           },
