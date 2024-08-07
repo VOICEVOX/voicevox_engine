@@ -171,7 +171,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
         help="接続を受け付けるホストアドレスです。",
     )
     parser.add_argument(
-        "--port", type=int, default=50021, help="接続を受け付けるポート番号です。"
+        "--port", type=int, default=50121, help="接続を受け付けるポート番号です。"
     )
     parser.add_argument(
         "--use_gpu", action="store_true", help="GPUを使って音声合成するようになります。"

@@ -26,7 +26,7 @@ on:
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.20.0"
-  VOICEVOX_CORE_VERSION: "0.15.4"
+  VOICEVOX_CORE_VERSION: "0.15.0"
 
 defaults:
   run:
@@ -402,7 +402,7 @@ jobs:
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
-          repository: VOICEVOX/voicevox_resource
+          repository: VOICEVOX/voicevox_nemo_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
 
@@ -424,7 +424,7 @@ jobs:
         env:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
-          curl -L "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          curl -L "https://github.com/VOICEVOX/voicevox_nemo_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
           OS=${{ matrix.os }}
           if [[ $OS == mac-* ]]; then
