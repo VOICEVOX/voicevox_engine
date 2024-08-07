@@ -1,0 +1,39 @@
+# Python 依存パッケージの脆弱性診断を定期的に行う
+# NOTE: 公式 Action は API key 等を必要とするため利用しない（https://github.com/pyupio/safety-action/tree/main）
+
+name: test-security
+
+on:
+  schedule:
+    - cron: "00 04 15 * *" # 毎月15日 13:00 JST
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-security:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
+        with:
+          requirements-suffix: "-dev"
+
+      - name: <Test> Check Python dependency security
+        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt -o bare
+
+      - name: <Deploy> Notify Discord of security testing result
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: GitHub Actions
+          title: "依存パッケージ脆弱性診断の結果"
+          status: ${{ job.status }}
+          color: ${{ job.status == 'success' && '0x00FF00' || '0xFF0000' }} 
+          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+

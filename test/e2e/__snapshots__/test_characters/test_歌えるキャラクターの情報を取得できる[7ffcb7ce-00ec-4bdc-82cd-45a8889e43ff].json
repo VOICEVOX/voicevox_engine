@@ -1,0 +1,26 @@
+{
+  "policy": "dummy1 policy\n\nhttps://voicevox.hiroshiba.jp/\n",
+  "portrait": "MD5:cab33c9fdf563682108666a012dc9853",
+  "style_infos": [
+    {
+      "icon": "MD5:9dfc8b32d4afc3c933388ba85a8d8d12",
+      "id": 4,
+      "portrait": "MD5:2aba7f7037d00903dada4401582bf31a",
+      "voice_samples": [
+        "MD5:49c763de77c5c6be4967900b08b561a9",
+        "MD5:d9736740e3735bbf45efd792f8af7383",
+        "MD5:58bda86215149663b605d0ba0db59bde"
+      ]
+    },
+    {
+      "icon": "MD5:53b0f8ce874e450fc8cc5758d6ed2b03",
+      "id": 6,
+      "portrait": "MD5:6a79f7e6d8ca9087be9a0e39eac67e7b",
+      "voice_samples": [
+        "MD5:e9fbdc80f22d91a1ad96612ea60391b4",
+        "MD5:8c403062ffc5fca5605aca46778ed512",
+        "MD5:95a626ec8a36a3a550d7ba4188937cb3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "brand_name": "DUMMY",
+  "default_sampling_rate": 24000,
+  "dependency_licenses": [
+    {
+      "license": "dummy license",
+      "name": "dummy library",
+      "text": "dummy license text",
+      "version": "0.0.1"
+    }
+  ],
+  "frame_rate": 93.75,
+  "icon": "MD5:f957eb4f5daedccb4eb6a5170f384bf4",
+  "manifest_version": "0.13.1",
+  "name": "DUMMY Engine",
+  "supported_features": {
+    "adjust_intonation_scale": true,
+    "adjust_mora_pitch": true,
+    "adjust_pause_length": true,
+    "adjust_phoneme_length": true,
+    "adjust_pitch_scale": true,
+    "adjust_speed_scale": true,
+    "adjust_volume_scale": true,
+    "interrogative_upspeak": true,
+    "manage_library": true,
+    "return_resource_url": true,
+    "sing": true,
+    "synthesis_morphing": true
+  },
+  "supported_vvlib_manifest_version": null,
+  "terms_of_service": "dummy teams of service",
+  "update_infos": [
+    {
+      "contributors": [],
+      "descriptions": [
+        "VOICEVOX Nemoを追加"
+      ],
+      "version": "0.14.0"
+    }
+  ],
+  "url": "https://github.com/VOICEVOX/voicevox_engine",
+  "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06"
+}

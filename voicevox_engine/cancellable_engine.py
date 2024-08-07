@@ -1,3 +1,5 @@
+"""キャンセル可能な音声合成"""
+
 import asyncio
 import queue
 import sys
@@ -12,13 +14,18 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import soundfile
+from fastapi import Request
 
-# FIXME: remove FastAPI dependency
-from fastapi import HTTPException, Request
-
+from .core.core_initializer import initialize_cores
+from .metas.Metas import StyleId
 from .model import AudioQuery
-from .synthesis_engine import make_synthesis_engines
-from .utility import get_latest_core_version
+from .tts_pipeline.tts_engine import LatestVersion, make_tts_engines_from_cores
+
+
+class CancellableEngineInternalError(Exception):
+    """キャンセル可能エンジンの内部エラー"""
+
+    pass
 
 
 class CancellableEngine:
@@ -28,13 +35,13 @@ class CancellableEngine:
     （オリジナルと比べ引数が増えているので注意）
 
     パラメータ use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Attributes
     ----------
     watch_con_list: list[tuple[Request, Process]]
         Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
-        クライアントから接続があるとListにTupleが追加される
+        クライアントから接続があるとlistにtupleが追加される
         接続が切断、もしくは音声合成が終了すると削除される
     procs_and_cons: queue.Queue[tuple[Process, ConnectionType]]
         音声合成の準備が終わっているプロセスのList
@@ -140,9 +147,9 @@ class CancellableEngine:
     def _synthesis_impl(
         self,
         query: AudioQuery,
-        style_id: int,
+        style_id: StyleId,
         request: Request,
-        core_version: str | None,
+        version: str | LatestVersion,
     ) -> str:
         """
         音声合成を行う関数
@@ -152,11 +159,11 @@ class CancellableEngine:
         Parameters
         ----------
         query: AudioQuery
-        style_id: int
+        style_id: StyleId
         request: fastapi.Request
             接続確立時に受け取ったものをそのまま渡せばよい
             https://fastapi.tiangolo.com/advanced/using-request-directly/
-        core_version: str
+        version
 
         Returns
         -------
@@ -166,18 +173,23 @@ class CancellableEngine:
         proc, sub_proc_con1 = self.procs_and_cons.get()
         self.watch_con_list.append((request, proc))
         try:
-            sub_proc_con1.send((query, style_id, core_version))
+            sub_proc_con1.send((query, style_id, version))
             f_name = sub_proc_con1.recv()
+            if isinstance(f_name, str):
+                audio_file_name = f_name
+            else:
+                # ここには来ないはず
+                raise CancellableEngineInternalError("不正な値が生成されました")
         except EOFError:
-            raise HTTPException(status_code=422, detail="既にサブプロセスは終了されています")
+            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
         except Exception:
             self.finalize_con(request, proc, sub_proc_con1)
             raise
 
         self.finalize_con(request, proc, sub_proc_con1)
-        return f_name
+        return audio_file_name
 
-    async def catch_disconnection(self):
+    async def catch_disconnection(self) -> None:
         """
         接続監視を行うコルーチン
         """
@@ -211,7 +223,7 @@ def start_synthesis_subprocess(
     pickle化の関係でグローバルに書いている
 
     引数 use_gpu, voicelib_dirs, voicevox_dir,
-    runtime_dirs, cpu_num_threads, enable_mock は、 make_synthesis_engines を参照
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Parameters
     ----------
@@ -219,7 +231,7 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのPipe
     """
 
-    synthesis_engines = make_synthesis_engines(
+    core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
@@ -227,20 +239,22 @@ def start_synthesis_subprocess(
         cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    assert len(synthesis_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_core_version(versions=synthesis_engines.keys())
+    tts_engines = make_tts_engines_from_cores(core_manager)
+
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
     while True:
         try:
-            query, style_id, core_version = sub_proc_con.recv()
-            if core_version is None:
-                _engine = synthesis_engines[latest_core_version]
-            elif core_version in synthesis_engines:
-                _engine = synthesis_engines[core_version]
-            else:
+            query, style_id, version = sub_proc_con.recv()
+            try:
+                _engine = tts_engines.get_engine(version)
+            except Exception:
                 # バージョンが見つからないエラー
                 sub_proc_con.send("")
                 continue
-            wave = _engine._synthesis_impl(query, style_id)
+            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
+            wave = _engine.synthesize_wave(
+                query, style_id, enable_interrogative_upspeak=False
+            )
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"

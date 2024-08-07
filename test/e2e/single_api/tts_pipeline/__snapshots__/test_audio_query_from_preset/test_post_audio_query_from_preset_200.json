@@ -1,0 +1,62 @@
+{
+  "accent_phrases": [
+    {
+      "accent": 1,
+      "is_interrogative": false,
+      "moras": [
+        {
+          "consonant": "t",
+          "consonant_length": 10001.31,
+          "pitch": 10002.38,
+          "text": "テ",
+          "vowel": "e",
+          "vowel_length": 9999.88
+        },
+        {
+          "consonant": "s",
+          "consonant_length": 10001.19,
+          "pitch": 0.0,
+          "text": "ス",
+          "vowel": "U",
+          "vowel_length": 9999.38
+        },
+        {
+          "consonant": "t",
+          "consonant_length": 10001.31,
+          "pitch": 10003.19,
+          "text": "ト",
+          "vowel": "o",
+          "vowel_length": 10000.88
+        },
+        {
+          "consonant": "d",
+          "consonant_length": 9999.75,
+          "pitch": 10000.62,
+          "text": "デ",
+          "vowel": "e",
+          "vowel_length": 9999.88
+        },
+        {
+          "consonant": "s",
+          "consonant_length": 10001.19,
+          "pitch": 0.0,
+          "text": "ス",
+          "vowel": "U",
+          "vowel_length": 9999.38
+        }
+      ],
+      "pause_mora": null
+    }
+  ],
+  "intonationScale": 1.2,
+  "kana": "テ'_ストデ_ス",
+  "outputSamplingRate": 24000,
+  "outputStereo": false,
+  "pauseLength": 15.0,
+  "pauseLengthScale": 1.4,
+  "pitchScale": 0.9,
+  "postPhonemeLength": 5.0,
+  "prePhonemeLength": 20.0,
+  "speedScale": 1.1,
+  "volumeScale": 1.3
+}

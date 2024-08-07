@@ -1,0 +1,376 @@
+# serializer version: 1
+# name: test_get_setting_200
+  '''
+  <!DOCTYPE html>
+  
+  <!-- 
+    VOICEVOXエンジンの設定ページです。
+    VueとBootstrapを使っています。
+    ライブラリを読み込んだあと、Vueコンポーネントの初期化が完了してからUIを表示します。
+  -->
+  
+  <html lang="ja">
+    <head>
+      <meta charset="utf-8" />
+      <title>VOICEVOX Engine 設定</title>
+      <link
+        rel="shortcut icon"
+        href="https://voicevox.hiroshiba.jp/favicon-32x32.png"
+      />
+  
+      <style>
+        .before-init-fadein {
+          animation: fadein 0.5s;
+        }
+  
+        /* 指定時間の最後に現れるフェードイン */
+        @keyframes fadein {
+          0% {
+            opacity: 0;
+          }
+          95% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+      </style>
+    </head>
+  
+    <body>
+      <!-- Vueの準備が完了した後にdisplay: noneにする -->
+      <div id="before-init" style="display: block" class="before-init-fadein">
+        <p>読み込み中です。表示には数秒かかることがあります。</p>
+      </div>
+  
+      <!-- Vueの準備が完了した後にdisplay: blockにする -->
+      <div id="app" class="container p-3" style="display: none">
+        <h1 class="mb-3">{{brandName}} エンジン 設定</h1>
+  
+        <div class="alert alert-warning" role="alert">
+          変更を反映するにはエンジンの再起動が必要です。
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">CORS Policy Mode</label>
+          <select
+            class="form-select"
+            aria-label="corsPolicyMode"
+            v-model="corsPolicyMode"
+          >
+            <option value="localapps">localapps</option>
+            <option value="all">all</option>
+          </select>
+          <div class="form-text">
+            <p class="mb-1">
+              localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。
+            </p>
+            <p class="mb-1">
+              その他のオリジンはAllow Originオプションで追加できます。
+            </p>
+            <p>allはすべてを許可します。危険性を理解した上でご利用ください。</p>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">Allow Origin</label>
+          <input
+            class="form-control"
+            type="text"
+            v-model.trim.lazy="allowOrigin"
+          />
+          <div class="form-text">
+            許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">ユーザー辞書のインポート</label>
+          <div class="col-12">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#importUserDictModal"
+            >
+              インポート
+            </button>
+          </div>
+        </div>
+  
+        <div class="mb-3">
+          <label class="form-label">ユーザー辞書のエクスポート</label>
+          <div class="col-12">
+            <a
+              download="VOICEVOXユーザー辞書.json"
+              class="btn btn-primary mb-3"
+              href="/user_dict"
+              @click="showToastWithMessage('辞書をエクスポートしました。');"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              エクスポート
+            </a>
+          </div>
+        </div>
+  
+        <!-- ユーザー辞書インポート用モーダル -->
+        <div
+          class="modal fade"
+          id="importUserDictModal"
+          tabindex="-1"
+          aria-labelledby="importUserDictModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="importUserDictModalLabel">
+                  ユーザー辞書のインポート
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <input
+                  class="form-control"
+                  type="file"
+                  accept="application/json"
+                  @change="(e) => { userDictFileForImport = e.target.files[0]; }"
+                />
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="button"
+                  @click="importUserDict"
+                  class="btn btn-primary"
+                  data-bs-dismiss="modal"
+                  :disabled="userDictFileForImport == undefined"
+                >
+                  インポート
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- トースト -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+          <div
+            class="toast align-items-center autohide text-white bg-success"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            ref="toastElem"
+          >
+            <div class="d-flex">
+              <div class="toast-body">{{toastMessage}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <script>
+        // Vueの初期化
+        function initVue() {
+          const { createApp, ref, watch, onMounted } = Vue;
+          createApp({
+            setup() {
+              // 設定値周り
+              const corsPolicyMode = ref(
+                "localapps"
+              );
+              const allowOrigin = ref("");
+  
+              // 設定が変更されたら自動保存
+              watch([corsPolicyMode, allowOrigin], () => {
+                const formData = new FormData();
+                formData.append("cors_policy_mode", corsPolicyMode.value);
+                formData.append("allow_origin", allowOrigin.value);
+  
+                fetch("/setting", {
+                  method: "POST",
+                  mode: "same-origin",
+                  body: formData,
+                }).then((res) => {
+                  if (res.ok) {
+                    showToastWithMessage("設定を保存しました。");
+                  } else {
+                    showToastWithMessage("設定の保存に失敗しました。");
+                  }
+                });
+              });
+  
+              // ユーザー辞書周り
+              const userDictFileForImport = ref();
+  
+              const importUserDict = () => {
+                if (userDictFileForImport.value == undefined) {
+                  throw new Error("userDictFileForImportが見つかりません。");
+                }
+  
+                const reader = new FileReader();
+                reader.addEventListener("load", async () => {
+                  const params = new URLSearchParams({
+                    override: true, // 重複するエントリを上書きする
+                  });
+                  await fetch(`/import_user_dict?${params}`, {
+                    method: "POST",
+                    mode: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: reader.result,
+                  });
+  
+                  showToastWithMessage("辞書をインポートしました。");
+                });
+  
+                reader.readAsText(userDictFileForImport.value);
+              };
+  
+              // トースト
+              const toastElem = ref(undefined);
+              const bootstrapToast = ref(undefined);
+              const toastMessage = ref("");
+              onMounted(() => {
+                if (toastElem.value == undefined) {
+                  throw new Error("toastElemが見つかりません。");
+                }
+                bootstrapToast.value = new bootstrap.Toast(toastElem.value);
+              });
+              const showToastWithMessage = (message) => {
+                console.log(`showToastWithMessage: ${message}`);
+                bootstrapToast.value.show();
+                toastMessage.value = message;
+              };
+  
+              // 表示用の情報
+              const brandName = ref("DUMMY");
+  
+              // Vueの準備が完了したら表示・非表示を切り替える
+              onMounted(() => {
+                document.getElementById("before-init").style.display = "none";
+                document.getElementById("app").style.display = "block";
+              });
+  
+              return {
+                corsPolicyMode,
+                allowOrigin,
+                userDictFileForImport,
+                importUserDict,
+                toastElem,
+                toastMessage,
+                showToastWithMessage,
+                brandName,
+              };
+            },
+          }).mount("#app");
+        }
+  
+        /**
+         * CDNからscriptやCSSを読み込む。
+         * CDNが使えないときのために複数の候補を試す。
+         */
+        const loadCDN = async (scriptOrCss, candidateUrlList, integrity) => {
+          if (scriptOrCss !== "script" && scriptOrCss !== "css") {
+            throw new Error("scriptOrCssはscriptかcssを指定してください。");
+          }
+  
+          let current = 0;
+          await new Promise((resolve, reject) => {
+            const loadNext = async () => {
+              if (current >= candidateUrlList.length) {
+                reject(new Error("全てのCDNで読み込みに失敗しました。"));
+                return;
+              }
+  
+              let elem;
+              if (scriptOrCss === "script") {
+                elem = document.createElement("script");
+                elem.src = candidateUrlList[current];
+              } else {
+                elem = document.createElement("link");
+                elem.href = candidateUrlList[current];
+                elem.rel = "stylesheet";
+              }
+              elem.integrity = integrity;
+              elem.crossOrigin = "anonymous";
+              elem.onload = resolve;
+              elem.onerror = () => {
+                console.warn(
+                  `CDNの読み込みに失敗しました。 ${candidateUrlList[current]}`
+                );
+                document.head.removeChild(elem);
+                current++;
+                loadNext();
+              };
+              document.head.appendChild(elem);
+            };
+            loadNext();
+          });
+        };
+  
+        // 初期化用の関数
+        const init = async () => {
+          // ライブラリ読み込み用のPromiseリスト
+          const libraryLoadingPromises = [];
+  
+          // Bootstrapを読み込む
+          const bootstrapCssPromise = loadCDN(
+            "css",
+            [
+              "https://unpkg.com/bootstrap@5.0.2/dist/css/bootstrap.min.css",
+              "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css",
+              "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css",
+            ],
+            "sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          );
+          libraryLoadingPromises.push(bootstrapCssPromise);
+  
+          const bootstrapScriptPromise = loadCDN(
+            "script",
+            [
+              "https://unpkg.com/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js",
+              "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js",
+              "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js",
+            ],
+            "sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+          );
+          libraryLoadingPromises.push(bootstrapScriptPromise);
+  
+          // Vueを読み込む
+          const vuePromise = loadCDN(
+            "script",
+            [
+              "https://unpkg.com/vue@3.3.10/dist/vue.global.js",
+              "https://cdn.jsdelivr.net/npm/vue@3.3.10/dist/vue.global.js",
+              "https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.10/vue.global.js",
+            ],
+            "sha384-ttfhgYK68lNlS8ak6Z//mvUbpRbRCh43MYGuqEtK8mj/yzlKqY8GA8o3BPMi23cE"
+          );
+          libraryLoadingPromises.push(vuePromise);
+  
+          // ライブラリの読み込みが完了したらVueを初期化
+          await Promise.all(libraryLoadingPromises);
+          initVue();
+        };
+        init();
+      </script>
+    </body>
+  </html>
+  '''
+# ---
+# name: test_post_setting_204
+  b''
+# ---

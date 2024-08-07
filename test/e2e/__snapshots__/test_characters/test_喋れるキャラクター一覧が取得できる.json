@@ -1,0 +1,57 @@
+[
+  {
+    "name": "dummy1",
+    "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+    "styles": [
+      {
+        "id": 0,
+        "name": "style0",
+        "type": "talk"
+      },
+      {
+        "id": 2,
+        "name": "style1",
+        "type": "talk"
+      }
+    ],
+    "supported_features": {
+      "permitted_synthesis_morphing": "ALL"
+    },
+    "version": "mock"
+  },
+  {
+    "name": "dummy2",
+    "speaker_uuid": "388f246b-8c41-4ac1-8e2d-5d79f3ff56d9",
+    "styles": [
+      {
+        "id": 1,
+        "name": "style0",
+        "type": "talk"
+      },
+      {
+        "id": 3,
+        "name": "style1",
+        "type": "talk"
+      }
+    ],
+    "supported_features": {
+      "permitted_synthesis_morphing": "SELF_ONLY"
+    },
+    "version": "mock"
+  },
+  {
+    "name": "dummy3",
+    "speaker_uuid": "35b2c544-660e-401e-b503-0e14c635303a",
+    "styles": [
+      {
+        "id": 8,
+        "name": "style0",
+        "type": "talk"
+      }
+    ],
+    "supported_features": {
+      "permitted_synthesis_morphing": "NOTHING"
+    },
+    "version": "mock"
+  }
+]

@@ -1,0 +1,40 @@
+name: "Prepare Python"
+description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを出力する"
+
+inputs:
+  only-export-python-version:
+    description: "Python バージョンの出力のみをおこなうか否か"
+    required: false
+    default: "false"
+  requirements-suffix:
+    description: "依存パッケージインストール時に `rquirements` へ付ける接尾語"
+    required: false
+    default: ""
+  python-version:
+    description: "インストールされる Python ランタイムのバージョン。デフォルト値はこのリポジトリが想定する Python バージョン。"
+    required: false
+    default: "3.11.3"
+outputs:
+  python-version:
+    description: "Python version"
+    value: ${{ steps.export-python-version.outputs.python-version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: <Setup> Set up Python
+      if: ${{ inputs.only-export-python-version == 'false' }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+
+    - name: <Setup> Install Python dependencies
+      if: ${{ inputs.only-export-python-version == 'false' }}
+      run: pip install -r requirements${{ inputs.requirements-suffix }}.txt
+      shell: bash
+
+    - name: <Deploy> Export Python version
+      id: export-python-version
+      run: echo "python-version=${{ inputs.python-version }}" >> $GITHUB_OUTPUT
+      shell: bash

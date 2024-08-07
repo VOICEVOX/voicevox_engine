@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# TODO: build-arg と target のドキュメントをこのファイルに書く
+
 ARG BASE_IMAGE=ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
@@ -23,7 +25,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.14.0
+ARG VOICEVOX_CORE_VERSION=0.15.0
 
 RUN <<EOF
     set -eux
@@ -185,6 +187,8 @@ WORKDIR /opt/voicevox_engine
 
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
+# libsndfile1: soundfile shared object for arm64
+# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
@@ -195,7 +199,8 @@ RUN <<EOF
         cmake \
         ca-certificates \
         build-essential \
-        gosu
+        gosu \
+        libsndfile1
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
@@ -224,10 +229,11 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./generate_licenses.py ./presets.yaml ./default.csv ./default_setting.yml ./engine_manifest.json /opt/voicevox_engine/
-ADD ./speaker_info /opt/voicevox_engine/speaker_info
-ADD ./ui_template /opt/voicevox_engine/ui_template
-ADD ./engine_manifest_assets /opt/voicevox_engine/engine_manifest_assets
+ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./resources /opt/voicevox_engine/resources
+ADD ./tools/generate_licenses.py /opt/voicevox_engine/tools/
+ADD ./tools/licenses /opt/voicevox_engine/tools/licenses
+ADD ./tools/generate_filemap.py /opt/voicevox_engine/tools/
 
 # Replace version
 ARG VOICEVOX_ENGINE_VERSION=latest
@@ -235,7 +241,8 @@ RUN sed -i "s/__version__ = \"latest\"/__version__ = \"${VOICEVOX_ENGINE_VERSION
 RUN sed -i "s/\"version\": \"999\\.999\\.999\"/\"version\": \"${VOICEVOX_ENGINE_VERSION}\"/" /opt/voicevox_engine/engine_manifest.json
 
 # Generate licenses.json
-ADD ./requirements-license.txt /tmp/
+ADD ./requirements.txt /tmp/
+ADD ./requirements-dev.txt /tmp/
 RUN <<EOF
     set -eux
 
@@ -245,10 +252,15 @@ RUN <<EOF
     # /home/user/.local/bin is required to use the commands installed by pip
     export PATH="/home/user/.local/bin:${PATH:-}"
 
-    gosu user /opt/python/bin/pip3 install -r /tmp/requirements-license.txt
-    gosu user /opt/python/bin/python3 generate_licenses.py > /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json
-    cp /opt/voicevox_engine/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
+    gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
+    # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
+    gosu user /opt/python/bin/pip3 install "$(grep pip-licenses /tmp/requirements-dev.txt | cut -f 1 -d ';')"
+    gosu user /opt/python/bin/python3 tools/generate_licenses.py > /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json
+    cp /opt/voicevox_engine/resources/engine_manifest_assets/dependency_licenses.json /opt/voicevox_engine/licenses.json
 EOF
+
+# Generate filemap.json
+RUN /opt/python/bin/python3 /opt/voicevox_engine/tools/generate_filemap.py --target_dir /opt/voicevox_engine/resources/character_info
 
 # Keep this layer separated to use layer cache on download failed in local build
 RUN <<EOF
@@ -271,7 +283,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.14.0
+ARG VOICEVOX_RESOURCE_VERSION=0.20.0
 RUN <<EOF
     set -eux
 
