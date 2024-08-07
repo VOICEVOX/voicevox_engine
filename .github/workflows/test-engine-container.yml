@@ -58,7 +58,7 @@ jobs:
         run: docker pull "${{ steps.docker_vars.outputs.image_tag }}"
 
       - name: <Setup> Run ENGINE application docker container
-        run: docker run -d -p 50021:50021 "${{ steps.docker_vars.outputs.image_tag }}"
+        run: docker run -d -p 50121:50121 "${{ steps.docker_vars.outputs.image_tag }}"
 
       # Docker コンテナが起動してから、レスポンスが返ってくるまで待機する
       # リトライは10回まで `/version` にアクセスしてレスポンスのステータスコードをチェック
@@ -68,7 +68,7 @@ jobs:
         run: |
           set +e # curlのエラーを無視する
           
-          url="http://127.0.0.1:50021/version"
+          url="http://127.0.0.1:50121/version"
           max_attempts=10
           sleep_interval=5
           
