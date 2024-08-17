@@ -63,6 +63,7 @@ class Note(BaseModel):
     音符ごとの情報
     """
 
+    id: str | SkipJsonSchema[None] = Field(default=None, description="ID")
     key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
     frame_length: int = Field(description="音符のフレーム長")
     lyric: str = Field(description="音符の歌詞")
