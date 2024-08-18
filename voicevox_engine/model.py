@@ -8,7 +8,6 @@ API と ENGINE 内部実装が共有するモデル
 """
 
 from pydantic import BaseModel, Field
-from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 
@@ -34,7 +33,7 @@ class AudioQuery(BaseModel):
     )
     outputSamplingRate: int = Field(description="音声データの出力サンプリングレート")
     outputStereo: bool = Field(description="音声データをステレオ出力するか否か")
-    kana: str | SkipJsonSchema[None] = Field(
+    kana: str | None = Field(
         default=None,
         description="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
     )

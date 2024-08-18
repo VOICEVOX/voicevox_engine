@@ -24,13 +24,15 @@
             "type": "array"
           },
           "pause_mora": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Mora"
+              },
+              {
+                "type": "null"
               }
             ],
-            "description": "後ろに無音を付けるかどうか",
-            "title": "Pause Mora"
+            "description": "後ろに付ける無音モーラ"
           }
         },
         "required": [
@@ -57,9 +59,16 @@
             "type": "number"
           },
           "kana": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
-            "title": "Kana",
-            "type": "string"
+            "title": "Kana"
           },
           "outputSamplingRate": {
             "description": "音声データの出力サンプリングレート",
@@ -316,9 +325,16 @@
             "description": "エンジンが持つ機能"
           },
           "supported_vvlib_manifest_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "エンジンが対応するvvlibのバージョン",
-            "title": "Supported Vvlib Manifest Version",
-            "type": "string"
+            "title": "Supported Vvlib Manifest Version"
           },
           "terms_of_service": {
             "description": "エンジンの利用規約",
@@ -524,9 +540,16 @@
         "description": "依存ライブラリのライセンス情報",
         "properties": {
           "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "依存ライブラリのライセンス名",
-            "title": "License",
-            "type": "string"
+            "title": "License"
           },
           "name": {
             "description": "依存ライブラリ名",
@@ -539,9 +562,16 @@
             "type": "string"
           },
           "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "依存ライブラリのバージョン",
-            "title": "Version",
-            "type": "string"
+            "title": "Version"
           }
         },
         "required": [
@@ -555,14 +585,28 @@
         "description": "モーラ（子音＋母音）ごとの情報",
         "properties": {
           "consonant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "子音の音素",
-            "title": "Consonant",
-            "type": "string"
+            "title": "Consonant"
           },
           "consonant_length": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "子音の音長",
-            "title": "Consonant Length",
-            "type": "number"
+            "title": "Consonant Length"
           },
           "pitch": {
             "description": "音高",
@@ -617,9 +661,16 @@
             "type": "integer"
           },
           "key": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "音階",
-            "title": "Key",
-            "type": "integer"
+            "title": "Key"
           },
           "lyric": {
             "description": "音符の歌詞",
@@ -682,9 +733,16 @@
             "type": "string"
           },
           "pauseLength": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "句読点などの無音時間",
-            "title": "Pauselength",
-            "type": "number"
+            "title": "Pauselength"
           },
           "pauseLengthScale": {
             "default": 1,
@@ -900,9 +958,16 @@
             "type": "integer"
           },
           "portrait": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
-            "title": "Portrait",
-            "type": "string"
+            "title": "Portrait"
           },
           "voice_samples": {
             "description": "サンプル音声をbase64エンコードしたもの、あるいはURL",
@@ -962,9 +1027,16 @@
             "type": "boolean"
           },
           "adjust_pause_length": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "句読点などの無音時間の調整",
-            "title": "Adjust Pause Length",
-            "type": "boolean"
+            "title": "Adjust Pause Length"
           },
           "adjust_phoneme_length": {
             "description": "音素ごとの長さの調整",
@@ -992,19 +1064,40 @@
             "type": "boolean"
           },
           "manage_library": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "音声ライブラリのインストール・アンインストール",
-            "title": "Manage Library",
-            "type": "boolean"
+            "title": "Manage Library"
           },
           "return_resource_url": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "キャラクター情報のリソースをURLで返送",
-            "title": "Return Resource Url",
-            "type": "boolean"
+            "title": "Return Resource Url"
           },
           "sing": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "歌唱音声合成",
-            "title": "Sing",
-            "type": "boolean"
+            "title": "Sing"
           },
           "synthesis_morphing": {
             "description": "2種類のスタイルでモーフィングした音声を合成",
@@ -1029,12 +1122,19 @@
         "description": "エンジンのアップデート情報",
         "properties": {
           "contributors": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "貢献者名",
-            "items": {
-              "type": "string"
-            },
-            "title": "Contributors",
-            "type": "array"
+            "title": "Contributors"
           },
           "descriptions": {
             "description": "アップデートの詳細についての説明",
@@ -1087,9 +1187,16 @@
             "type": "string"
           },
           "mora_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "description": "モーラ数",
-            "title": "Mora Count",
-            "type": "integer"
+            "title": "Mora Count"
           },
           "part_of_speech": {
             "description": "品詞",

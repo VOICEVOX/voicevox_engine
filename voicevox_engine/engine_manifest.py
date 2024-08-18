@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import TypeAlias
 
 from pydantic import BaseModel, Field, TypeAdapter
-from pydantic.json_schema import SkipJsonSchema
 
 
 @dataclass(frozen=True)
@@ -73,9 +72,7 @@ class UpdateInfo(BaseModel):
 
     version: str = Field(description="エンジンのバージョン名")
     descriptions: list[str] = Field(description="アップデートの詳細についての説明")
-    contributors: list[str] | SkipJsonSchema[None] = Field(
-        default=None, description="貢献者名"
-    )
+    contributors: list[str] | None = Field(default=None, description="貢献者名")
 
 
 class LicenseInfo(BaseModel):
@@ -84,10 +81,8 @@ class LicenseInfo(BaseModel):
     """
 
     name: str = Field(description="依存ライブラリ名")
-    version: str | SkipJsonSchema[None] = Field(
-        default=None, description="依存ライブラリのバージョン"
-    )
-    license: str | SkipJsonSchema[None] = Field(
+    version: str | None = Field(default=None, description="依存ライブラリのバージョン")
+    license: str | None = Field(
         default=None, description="依存ライブラリのライセンス名"
     )
     text: str = Field(description="依存ライブラリのライセンス本文")
@@ -104,18 +99,18 @@ class SupportedFeatures(BaseModel):
     adjust_pitch_scale: bool = Field(description="全体の音高の調整")
     adjust_intonation_scale: bool = Field(description="全体の抑揚の調整")
     adjust_volume_scale: bool = Field(description="全体の音量の調整")
-    adjust_pause_length: bool | SkipJsonSchema[None] = Field(
+    adjust_pause_length: bool | None = Field(
         default=None, description="句読点などの無音時間の調整"
     )
     interrogative_upspeak: bool = Field(description="疑問文の自動調整")
     synthesis_morphing: bool = Field(
         description="2種類のスタイルでモーフィングした音声を合成"
     )
-    sing: bool | SkipJsonSchema[None] = Field(default=None, description="歌唱音声合成")
-    manage_library: bool | SkipJsonSchema[None] = Field(
+    sing: bool | None = Field(default=None, description="歌唱音声合成")
+    manage_library: bool | None = Field(
         default=None, description="音声ライブラリのインストール・アンインストール"
     )
-    return_resource_url: bool | SkipJsonSchema[None] = Field(
+    return_resource_url: bool | None = Field(
         default=None, description="キャラクター情報のリソースをURLで返送"
     )
 
@@ -142,7 +137,7 @@ class EngineManifest(BaseModel):
     dependency_licenses: list[LicenseInfo] = Field(
         description="依存関係のライセンス情報"
     )
-    supported_vvlib_manifest_version: str | SkipJsonSchema[None] = Field(
+    supported_vvlib_manifest_version: str | None = Field(
         default=None, description="エンジンが対応するvvlibのバージョン"
     )
     supported_features: SupportedFeatures = Field(description="エンジンが持つ機能")

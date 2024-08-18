@@ -7,7 +7,6 @@
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.json_schema import SkipJsonSchema
 
 
 class Mora(BaseModel):
@@ -18,12 +17,8 @@ class Mora(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     text: str = Field(description="文字")
-    consonant: str | SkipJsonSchema[None] = Field(
-        default=None, description="子音の音素"
-    )
-    consonant_length: float | SkipJsonSchema[None] = Field(
-        default=None, description="子音の音長"
-    )
+    consonant: str | None = Field(default=None, description="子音の音素")
+    consonant_length: float | None = Field(default=None, description="子音の音長")
     vowel: str = Field(description="母音の音素")
     vowel_length: float = Field(description="母音の音長")
     pitch: float = Field(
@@ -45,9 +40,7 @@ class AccentPhrase(BaseModel):
 
     moras: list[Mora] = Field(description="モーラのリスト")
     accent: int = Field(description="アクセント箇所")
-    pause_mora: Mora | SkipJsonSchema[None] = Field(
-        default=None, description="後ろに無音を付けるかどうか"
-    )
+    pause_mora: Mora | None = Field(default=None, description="後ろに付ける無音モーラ")
     is_interrogative: bool = Field(default=False, description="疑問系かどうか")
 
     def __hash__(self) -> int:
@@ -63,7 +56,7 @@ class Note(BaseModel):
     音符ごとの情報
     """
 
-    key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
+    key: int | None = Field(default=None, description="音階")
     frame_length: int = Field(description="音符のフレーム長")
     lyric: str = Field(description="音符の歌詞")
 

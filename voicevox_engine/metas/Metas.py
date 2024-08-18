@@ -3,7 +3,6 @@
 from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
-from pydantic.json_schema import SkipJsonSchema
 
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
@@ -59,7 +58,7 @@ class StyleInfo(BaseModel):
     icon: str = Field(
         description="このスタイルのアイコンをbase64エンコードしたもの、あるいはURL"
     )
-    portrait: str | SkipJsonSchema[None] = Field(
+    portrait: str | None = Field(
         default=None,
         description="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
     )
