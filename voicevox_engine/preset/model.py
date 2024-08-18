@@ -5,7 +5,6 @@
 """
 
 from pydantic import BaseModel, Field
-from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.metas.Metas import StyleId
 
@@ -25,9 +24,7 @@ class Preset(BaseModel):
     volumeScale: float = Field(description="全体の音量")
     prePhonemeLength: float = Field(description="音声の前の無音時間")
     postPhonemeLength: float = Field(description="音声の後の無音時間")
-    pauseLength: float | SkipJsonSchema[None] = Field(
-        default=None, description="句読点などの無音時間"
-    )
+    pauseLength: float | None = Field(default=None, description="句読点などの無音時間")
     pauseLengthScale: float = Field(
         default=1, description="句読点などの無音時間（倍率）"
     )
