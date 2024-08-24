@@ -17,7 +17,15 @@ from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
 from .kana_converter import parse_kana
-from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
+from .model import (
+    AccentPhrase,
+    FrameAudioQuery,
+    FramePhoneme,
+    Mora,
+    Note,
+    NoteId,
+    Score,
+)
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
@@ -313,6 +321,7 @@ def _notes_to_keys_and_phonemes(
     NDArray[np.int64],
     NDArray[np.int64],
     NDArray[np.int64],
+    list[NoteId | None],
 ]:
     """
     ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
@@ -332,6 +341,8 @@ def _notes_to_keys_and_phonemes(
         音素列
     phoneme_keys : NDArray[np.int64]
         音素ごとのキー列
+    phoneme_note_ids : list[NoteId]
+        音素ごとのノートID列
     """
 
     note_lengths: list[int] = []
@@ -339,6 +350,7 @@ def _notes_to_keys_and_phonemes(
     note_vowels: list[int] = []
     phonemes: list[int] = []
     phoneme_keys: list[int] = []
+    phoneme_note_ids: list[NoteId | None] = []
 
     for note in notes:
         if note.lyric == "":
@@ -350,6 +362,7 @@ def _notes_to_keys_and_phonemes(
             note_vowels.append(0)  # pau
             phonemes.append(0)  # pau
             phoneme_keys.append(-1)
+            phoneme_note_ids.append(note.id)
         else:
             if note.key is None:
                 msg = "keyがnullの場合、lyricは空文字列である必要があります。"
@@ -378,8 +391,10 @@ def _notes_to_keys_and_phonemes(
             if consonant_id != -1:
                 phonemes.append(consonant_id)
                 phoneme_keys.append(note.key)
+                phoneme_note_ids.append(note.id)
             phonemes.append(vowel_id)
             phoneme_keys.append(note.key)
+            phoneme_note_ids.append(note.id)
 
     # 各データをnumpy配列に変換する
     note_lengths_array = np.array(note_lengths, dtype=np.int64)
@@ -394,6 +409,7 @@ def _notes_to_keys_and_phonemes(
         note_vowels_array,
         phonemes_array,
         phoneme_keys_array,
+        phoneme_note_ids,
     )
 
 
@@ -599,6 +615,7 @@ class TTSEngine:
             note_vowels_array,
             phonemes_array,
             phoneme_keys_array,
+            phoneme_note_ids,
         ) = _notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
@@ -628,8 +645,11 @@ class TTSEngine:
             FramePhoneme(
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
                 frame_length=phoneme_duration,
+                note_id=phoneme_note_id,
             )
-            for phoneme_id, phoneme_duration in zip(phonemes_array, phoneme_lengths)
+            for phoneme_id, phoneme_duration, phoneme_note_id in zip(
+                phonemes_array, phoneme_lengths, phoneme_note_ids
+            )
         ]
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
@@ -650,6 +670,7 @@ class TTSEngine:
             _,
             phonemes_array_from_notes,
             phoneme_keys_array,
+            _,
         ) = _notes_to_keys_and_phonemes(notes)
 
         phonemes_array = np.array(
