@@ -133,7 +133,7 @@ def generate_licenses() -> list[License]:
 
         licenses.append(license)
 
-    python_version = "3.11.3"
+    python_version = "3.11.9"
 
     licenses += [
         # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
