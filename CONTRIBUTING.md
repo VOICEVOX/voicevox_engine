@@ -247,7 +247,7 @@ poetry update # 全部更新
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
 ```bash
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with build -o requirements-build.txt
 ```
