@@ -57,9 +57,7 @@ semver = "^3.0.0"
 platformdirs = "^4.2.0"
 soxr = "^0.5.0"
 pydantic = "^2.7.3"
-# NOTE: Different versions of FastAPI will use a specific newer version of Starlette.
-# ref: https://fastapi.tiangolo.com/deployment/versions/#about-starlette )
-starlette = "*"
+starlette = "^0.38.4"
 
 [tool.poetry.group.dev.dependencies]
 pysen = "^0.11.0"
