@@ -606,7 +606,7 @@ class TTSEngine:
         score: Score,
         style_id: StyleId,
     ) -> tuple[list[FramePhoneme], list[float], list[float]]:
-        """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
+        """歌声合成用の楽譜・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
         (

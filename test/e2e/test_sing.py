@@ -8,10 +8,10 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 
-def test_スコアとキャラクターIDから音声を合成できる(
+def test_楽譜とキャラクターIDから音声を合成できる(
     client: TestClient, snapshot: SnapshotAssertion
 ) -> None:
-    # スコアとキャラクター ID から FrameAudioQuery を生成する
+    # 楽譜とキャラクター ID から FrameAudioQuery を生成する
     score = {
         "notes": [
             {"key": None, "frame_length": 10, "lyric": ""},
