@@ -29,10 +29,13 @@ class PresetManager:
     """
 
     def __init__(self, preset_path: Path):
-        """プリセットの設定ファイルへのパスからプリセットマネージャーを生成する"""
+        """プリセットマネージャーを生成する。プリセットファイルが存在しない場合は新規作成する。"""
+
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
+        if not self.preset_path.exists():
+            self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""

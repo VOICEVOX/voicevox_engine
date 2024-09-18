@@ -52,11 +52,10 @@ def test_empty_file() -> None:
         preset_manager.load_presets()
 
 
-def test_not_exist_file() -> None:
-    preset_manager = PresetManager(preset_path=Path("test/presets-dummy.yaml"))
-    true_msg = "プリセットの設定ファイルが見つかりません"
-    with pytest.raises(PresetInternalError, match=true_msg):
-        preset_manager.load_presets()
+def test_not_exist_file(tmp_path: Path) -> None:
+    preset_manager = PresetManager(preset_path=tmp_path / "presets-dummy.yaml")
+    presets = preset_manager.load_presets()
+    assert len(presets) == 0
 
 
 def test_add_preset(tmp_path: Path) -> None:
