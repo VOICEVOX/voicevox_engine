@@ -33,6 +33,17 @@
     {
       "contributors": [
         "Hiroshiba",
+        "naga-na",
+        "sabonerune"
+      ],
+      "descriptions": [
+        "開発環境の向上"
+      ],
+      "version": "0.21.0"
+    },
+    {
+      "contributors": [
+        "Hiroshiba",
         "nix6839",
         "sabonerune",
         "tarepan",
