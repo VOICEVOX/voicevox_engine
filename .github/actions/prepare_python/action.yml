@@ -13,7 +13,7 @@ inputs:
   python-version:
     description: "インストールされる Python ランタイムのバージョン。デフォルト値はこのリポジトリが想定する Python バージョン。"
     required: false
-    default: "3.11.3"
+    default: "3.11.9"
 outputs:
   python-version:
     description: "Python version"

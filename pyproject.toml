@@ -45,19 +45,19 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "~3.11"
 numpy = "^1.26.0"
-fastapi-slim = "^0.111.0"
+fastapi-slim = "^0.112.2"
 jinja2 = "^3.1.3" # NOTE: required by fastapi.templating.Jinja2Templates (fastapi-slim's unmanaged dependency)
 python-multipart = "^0.0.9" # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
-uvicorn = "^0.29.0"
+uvicorn = "^0.30.6"
 soundfile = "^0.12.1"
 pyyaml = "^6.0.1"
 pyworld = "^0.3.0"
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "b35fc89fe42948a28e33aed886ea145a51113f88" }
 semver = "^3.0.0"
 platformdirs = "^4.2.0"
-soxr = "^0.3.6"
+soxr = "^0.5.0"
 pydantic = "^2.7.3"
-starlette = "^0.37.0"
+starlette = "^0.38.4"
 
 [tool.poetry.group.dev.dependencies]
 pysen = "^0.11.0"
@@ -67,15 +67,15 @@ flake8 = "^7.0.0"
 isort = "^5.13.0"
 mypy = "^1.10.0"
 pytest = "^8.2.0"
-coveralls = "^3.2.0"
-poetry = "1.8.2"
+coveralls = "^4.0.1"
+poetry = "1.8.3"
 poetry-plugin-export = "^1.8.0"
 httpx = "^0.27.0" # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
 safety = "^3.1.0"
-pip-licenses = "4.4.0" # NOTE: must be specified exactly (c.f. #1281)
-pre-commit = "^2.16.0"
+pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
+pre-commit = "^3.8.0"
 
 [tool.poetry.group.build.dependencies]
 pyinstaller = "^5.13"

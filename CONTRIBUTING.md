@@ -124,7 +124,7 @@ GitHub Issues を用いて機能向上を一元管理しています。
 
 ## 環境構築
 
-`Python 3.11.3` を用いて開発されています。
+`Python 3.11.9` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ### 依存ライブラリをインストールする
@@ -247,7 +247,7 @@ poetry update # 全部更新
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
 ```bash
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
+poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
 poetry export --without-hashes --with dev -o requirements-dev.txt
 poetry export --without-hashes --with build -o requirements-build.txt
 ```

@@ -25,7 +25,7 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.20.0"
+  VOICEVOX_RESOURCE_VERSION: "0.21.0"
   VOICEVOX_CORE_VERSION: "0.15.0"
 
 defaults:
@@ -215,7 +215,7 @@ jobs:
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
           OS=${{ matrix.os }}
           if [[ $OS == windows-* ]]; then
-            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.zip
+            curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
 
@@ -225,7 +225,7 @@ jobs:
 
             rm download/cudnn.zip
           else
-            curl -L "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
+            curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
 
             tar -Jxf download/cudnn.tar.xz -C download/
 
@@ -263,7 +263,7 @@ jobs:
       - name: <Setup> Download zlib dynamic Library
         if: steps.zlib-cache-restore.outputs.cache-hit != 'true' && matrix.zlib_url != ''
         run: |
-          curl -L "${{ matrix.zlib_url }}" -o download/zlib.zip
+          curl -L --retry 3 --retry-delay 5 "${{ matrix.zlib_url }}" -o download/zlib.zip
           mkdir -p download/zlib
 
           # extract only dlls
@@ -329,7 +329,7 @@ jobs:
       - name: <Setup> Set up DirectML dynamic Library
         if: steps.directml-cache-restore.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
         run: |
-          curl -L "${{ matrix.directml_url }}" -o download/directml.zip
+          curl -L --retry 3 --retry-delay 5 "${{ matrix.directml_url }}" -o download/directml.zip
           mkdir -p download/directml
 
           # extract only dlls
@@ -359,7 +359,7 @@ jobs:
       - name: <Setup> Download ONNX Runtime (Windows)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
         run: |
-          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+          curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
@@ -379,7 +379,7 @@ jobs:
       - name: <Setup> Download ONNX Runtime (Mac/Linux)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
         run: |
-          curl -L "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+          curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
           tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
@@ -424,7 +424,8 @@ jobs:
         env:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
-          curl -L "https://github.com/VOICEVOX/voicevox_nemo_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
+          curl -L --retry 3 --retry-delay 5 \
+            "https://github.com/VOICEVOX/voicevox_nemo_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
           OS=${{ matrix.os }}
           if [[ $OS == mac-* ]]; then
@@ -606,7 +607,7 @@ jobs:
           done
 
           # Rename to artifact.vvpp if there are only artifact.001.vvppp
-          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp -maxdepth 1 | wc -l)" == 1 ]; then
+          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp -maxdepth 1 | wc -l)" -eq 1 ]; then
             mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 

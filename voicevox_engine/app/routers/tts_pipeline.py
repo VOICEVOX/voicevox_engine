@@ -414,7 +414,7 @@ def generate_tts_pipeline_router(
     @router.post(
         "/sing_frame_volume",
         tags=["クエリ編集"],
-        summary="スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
+        summary="楽譜・歌唱音声合成用のクエリからフレームごとの音量を得る",
     )
     def sing_frame_volume(
         score: Score,

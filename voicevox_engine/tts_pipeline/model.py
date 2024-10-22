@@ -5,9 +5,12 @@
 """
 
 from enum import Enum
+from typing import NewType
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.json_schema import SkipJsonSchema
+
+NoteId = NewType("NoteId", str)
 
 
 class Mora(BaseModel):
@@ -63,6 +66,7 @@ class Note(BaseModel):
     音符ごとの情報
     """
 
+    id: NoteId | None = Field(default=None, description="ID")
     key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
     frame_length: int = Field(description="音符のフレーム長")
     lyric: str = Field(description="音符の歌詞")
@@ -83,6 +87,7 @@ class FramePhoneme(BaseModel):
 
     phoneme: str = Field(description="音素")
     frame_length: int = Field(description="音素のフレーム長")
+    note_id: NoteId | None = Field(default=None, description="音符のID")
 
 
 class FrameAudioQuery(BaseModel):

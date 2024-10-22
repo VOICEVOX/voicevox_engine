@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.21.0",
+    "descriptions": ["変更を追従"],
+    "contributors": []
+  },
+  {
+    "version": "0.20.0",
+    "descriptions": ["変更を追従"],
+    "contributors": []
+  },
+  {
     "version": "0.14.0",
     "descriptions": ["VOICEVOX Nemoを追加"],
     "contributors": []

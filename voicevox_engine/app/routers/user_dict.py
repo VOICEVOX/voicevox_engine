@@ -63,6 +63,8 @@ def generate_user_dict_router(
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
                 # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
                 json_schema_extra={
+                    "le": None,
+                    "ge": None,
                     "maximum": USER_DICT_MAX_PRIORITY,
                     "minimum": USER_DICT_MIN_PRIORITY,
                 },
@@ -120,6 +122,8 @@ def generate_user_dict_router(
                 description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
                 # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
                 json_schema_extra={
+                    "le": None,
+                    "ge": None,
                     "maximum": USER_DICT_MAX_PRIORITY,
                     "minimum": USER_DICT_MIN_PRIORITY,
                 },

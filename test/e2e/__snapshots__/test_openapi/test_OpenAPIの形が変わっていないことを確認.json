@@ -423,6 +423,18 @@
             "title": "Frame Length",
             "type": "integer"
           },
+          "note_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "音符のID",
+            "title": "Note Id"
+          },
           "phoneme": {
             "description": "音素",
             "title": "Phoneme",
@@ -615,6 +627,18 @@
             "description": "音符のフレーム長",
             "title": "Frame Length",
             "type": "integer"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ID",
+            "title": "Id"
           },
           "key": {
             "description": "音階",
@@ -2583,7 +2607,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
+        "summary": "楽譜・歌唱音声合成用のクエリからフレームごとの音量を得る",
         "tags": [
           "クエリ編集"
         ]
