@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.21.1",
+    "descriptions": ["キャラクター「Voidoll」を追加"],
+    "contributors": []
+  },
+  {
     "version": "0.21.0",
     "descriptions": ["開発環境の向上"],
     "contributors": ["Hiroshiba", "naga-na", "sabonerune"]
