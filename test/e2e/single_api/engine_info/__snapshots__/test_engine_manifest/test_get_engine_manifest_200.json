@@ -31,6 +31,13 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「Voidoll」を追加"
+      ],
+      "version": "0.21.1"
+    },
+    {
       "contributors": [
         "Hiroshiba",
         "naga-na",
