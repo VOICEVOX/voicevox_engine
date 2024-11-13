@@ -47,6 +47,7 @@ if __name__ == "__main__":
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
+    preset_path = engine_root() / "presets.yaml"
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
@@ -61,9 +62,7 @@ if __name__ == "__main__":
         tts_engines=tts_engines,
         core_manager=core_manager,
         setting_loader=SettingHandler(USER_SETTING_PATH),
-        preset_manager=PresetManager(  # FIXME: impl MockPresetManager
-            preset_path=engine_root() / "presets.yaml",
-        ),
+        preset_manager=PresetManager(preset_path),
         user_dict=UserDictionary(),
         engine_manifest=engine_manifest,
         library_manager=library_manager,
