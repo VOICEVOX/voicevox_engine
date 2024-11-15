@@ -13,10 +13,11 @@ cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" resources/character_info
 python "${DOWNLOAD_RESOURCE_PATH}/scripts/clean_character_info.py" \
     --character_info_dir resources/character_info/
 
-# エンジンマニフェストに含まれるダミーの情報を上書きする
-jq -s '.[0] * .[1]' engine_manifest.json "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest.json" \
-    > engine_manifest.json.tmp
-mv engine_manifest.json.tmp engine_manifest.json
+# エンジンマニフェストを統合する
+python tools/merge_engine_manifest.py \
+    engine_manifest.json \
+    "${DOWNLOAD_RESOURCE_PATH}/engine/engine_manifest.json" \
+    engine_manifest.json
 
 # エンジンとリソースの更新情報を統合する
 python tools/merge_update_infos.py \

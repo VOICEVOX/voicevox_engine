@@ -42,14 +42,14 @@ def merge_json_string(src: str, dst: str) -> str:
                     # 異なるものがあった場合だけ後ろに付け足す
                     src_item[key] = list(OrderedDict.fromkeys(src_value + dst_value))
 
-    return json.dumps(src_json)
+    return json.dumps(src_json, ensure_ascii=False)
 
 
 def merge_update_infos(src_path: Path, dst_path: Path, output_path: Path) -> None:
     src = src_path.read_text(encoding="utf-8")
     dst = dst_path.read_text(encoding="utf-8")
     merged = merge_json_string(src, dst)
-    output_path.write_text(merged)
+    output_path.write_text(merged, encoding="utf-8")
 
 
 if __name__ == "__main__":
