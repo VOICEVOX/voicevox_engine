@@ -29,7 +29,7 @@ def configure_middlewares(
 
     # CORS用のヘッダを生成するミドルウェア
     localhost_regex = (
-        r"^[a-zA-Z+\-\.]+://(([^/]+\.)localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?$"
+        r"^[a-zA-Z+\-\.]+://(([^/]+\.)?localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?$"
     )
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
