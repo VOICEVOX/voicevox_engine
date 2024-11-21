@@ -24,11 +24,7 @@
             "type": "array"
           },
           "pause_mora": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Mora"
-              }
-            ],
+            "$ref": "#/components/schemas/Mora",
             "description": "後ろに無音を付けるかどうか",
             "title": "Pause Mora"
           }
@@ -308,11 +304,7 @@
             "type": "string"
           },
           "supported_features": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SupportedFeatures"
-              }
-            ],
+            "$ref": "#/components/schemas/SupportedFeatures",
             "description": "エンジンが持つ機能"
           },
           "supported_vvlib_manifest_version": {
@@ -807,11 +799,7 @@
             "type": "array"
           },
           "supported_features": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SpeakerSupportedFeatures"
-              }
-            ],
+            "$ref": "#/components/schemas/SpeakerSupportedFeatures",
             "description": "キャラクターの対応機能"
           },
           "version": {
@@ -1401,13 +1389,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/Preset"
-                  }
-                ],
-                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。",
-                "title": "Preset"
+                "$ref": "#/components/schemas/Preset",
+                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
               }
             }
           },
@@ -3085,13 +3068,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/Preset"
-                  }
-                ],
-                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。",
-                "title": "Preset"
+                "$ref": "#/components/schemas/Preset",
+                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
               }
             }
           },
@@ -3196,13 +3174,8 @@
             "name": "word_type",
             "required": false,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/WordTypes"
-                }
-              ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
-              "title": "Word Type"
+              "$ref": "#/components/schemas/WordTypes",
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
@@ -3339,13 +3312,8 @@
             "name": "word_type",
             "required": false,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/WordTypes"
-                }
-              ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
-              "title": "Word Type"
+              "$ref": "#/components/schemas/WordTypes",
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
