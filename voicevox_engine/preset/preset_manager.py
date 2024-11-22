@@ -46,19 +46,24 @@ class PresetManager:
             if _last_modified_time == self.last_modified_time:
                 # 更新無し
                 return
-        except OSError:
-            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
-        # データベースの読み込み
-        with open(self.preset_path, mode="r", encoding="utf-8") as f:
-            obj = yaml.safe_load(f)
-            if obj is None:
-                raise PresetInternalError("プリセットの設定ファイルが空の内容です")
+            # データベースの読み込み
+            with open(self.preset_path, mode="r", encoding="utf-8") as f:
+                obj = yaml.safe_load(f)
+        except OSError as err:
+            raise PresetInternalError("プリセットの読み込みに失敗しました") from err
+        except yaml.YAMLError as err:
+            raise PresetInternalError("プリセットのパースに失敗しました") from err
+        if obj is None:
+            raise PresetInternalError("プリセットの設定ファイルが空の内容です")
+
         try:
             preset_list_adapter = TypeAdapter(list[Preset])
             _presets = preset_list_adapter.validate_python(obj)
-        except ValidationError:
-            raise PresetInternalError("プリセットの設定ファイルにミスがあります")
+        except ValidationError as err:
+            raise PresetInternalError(
+                "プリセットの設定ファイルにミスがあります"
+            ) from err
 
         # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(
@@ -87,8 +92,8 @@ class PresetManager:
             self._write_on_file()
         except Exception as err:
             self.presets.pop()
-            if isinstance(err, FileNotFoundError):
-                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            if isinstance(err, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました") from err
             else:
                 raise err
 
@@ -123,8 +128,8 @@ class PresetManager:
             self._write_on_file()
         except Exception as err:
             self.presets[prev_preset[0]] = prev_preset[1]
-            if isinstance(err, FileNotFoundError):
-                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            if isinstance(err, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました") from err
             else:
                 raise err
 
@@ -150,9 +155,9 @@ class PresetManager:
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
-        except FileNotFoundError:
+        except OSError as err:
             self.presets.insert(buf_index, buf)
-            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            raise PresetInternalError("プリセットの書き込みに失敗しました") from err
 
         return id
 
