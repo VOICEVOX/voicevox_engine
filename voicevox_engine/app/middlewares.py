@@ -3,6 +3,7 @@
 import re
 import sys
 from collections.abc import Awaitable, Callable
+from traceback import print_exception
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,7 @@ def configure_middlewares(
     # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
     # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
     async def global_execution_handler(request: Request, exc: Exception) -> Response:
+        print_exception(exc)
         return JSONResponse(
             status_code=500,
             content="Internal Server Error",
