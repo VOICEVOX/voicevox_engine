@@ -192,7 +192,7 @@ def test_add_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.add_preset(preset)
     assert len(preset_manager.presets) == 2
@@ -302,7 +302,7 @@ def test_update_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.update_preset(preset)
     assert len(preset_manager.presets) == 2
@@ -345,7 +345,7 @@ def test_delete_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.delete_preset(1)
     assert len(preset_manager.presets) == 2
