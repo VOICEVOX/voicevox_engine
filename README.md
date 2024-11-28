@@ -249,7 +249,7 @@ curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 
 ### プリセット機能について
 
-`presets.yaml`を編集することでキャラクターや話速などのプリセットを使うことができます。
+ユーザーディレクトリに存在する`presets.yaml`を編集することでキャラクターや話速などのプリセットを使うことができます。
 
 ```bash
 echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
@@ -442,7 +442,7 @@ options:
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
-                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。
   --disable_mutable_api
                         辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API の値が使われます。VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0または空文字、値がない場合は無視されます。
 ```

@@ -47,7 +47,7 @@ if __name__ == "__main__":
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
-    preset_path = engine_root() / "presets.yaml"
+    preset_path = get_save_dir() / "presets.yaml"
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
