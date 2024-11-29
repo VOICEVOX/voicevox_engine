@@ -44,7 +44,10 @@ class PresetManager:
                 try:
                     shutil.move(old_preset_path, self.preset_path)
                 except OSError:
-                    warnings.warn("Failed to migrate preset file.", stacklevel=1)
+                    warnings.warn(
+                        "プリセットファイルのマイグレーションに失敗しました",
+                        stacklevel=1,
+                    )
                     self.preset_path.write_text("[]")
             else:
                 self.preset_path.write_text("[]")
