@@ -353,7 +353,7 @@ def test_delete_preset_write_failure(tmp_path: Path) -> None:
     remove(preset_path)
 
 
-def test_migrate_preset(tmp_path: Path) -> None:
+def test_migrate_default_preset_path(tmp_path: Path) -> None:
     preset_path = tmp_path / "presets.yaml"
     old_preset_path = engine_root() / "presets.yaml"
     assert not preset_path.exists()
