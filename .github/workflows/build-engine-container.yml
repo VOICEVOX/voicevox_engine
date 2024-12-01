@@ -44,9 +44,9 @@ jobs:
           - ""
           - cpu
           - cpu-ubuntu20.04
-          - cpu-ubuntu22.04
           - nvidia
           - nvidia-ubuntu20.04
+          - cpu-ubuntu22.04
           - nvidia-ubuntu22.04
         include:
           # Ubuntu 20.04
