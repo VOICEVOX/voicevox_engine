@@ -1,4 +1,4 @@
-from os import remove
+from os import environ, remove
 from pathlib import Path
 from shutil import copyfile
 
@@ -353,6 +353,8 @@ def test_delete_preset_write_failure(tmp_path: Path) -> None:
     remove(preset_path)
 
 
+# テストのためにエンジン直下にファイルを作るため、念のためActions上のみで実行
+@pytest.mark.skipif(not environ.get("CI", False), reason="runs only on Github Actions")
 def test_migrate_default_preset_path(tmp_path: Path) -> None:
     preset_path = tmp_path / "presets.yaml"
     old_preset_path = engine_root() / "presets.yaml"
