@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.11
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
