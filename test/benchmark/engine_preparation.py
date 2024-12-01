@@ -24,7 +24,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
-    preset_manager = PresetManager(Path("./presets.yaml"))
+    preset_manager = PresetManager(get_save_dir() / "presets.yaml")
     user_dict = UserDictionary()
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
