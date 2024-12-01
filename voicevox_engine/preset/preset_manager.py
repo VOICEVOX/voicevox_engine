@@ -1,10 +1,13 @@
 """プリセット関連の処理"""
 
+import shutil
+import warnings
 from pathlib import Path
 
 import yaml
 from pydantic import TypeAdapter, ValidationError
 
+from ..utility.path_utility import engine_root
 from .model import Preset
 
 
@@ -35,7 +38,19 @@ class PresetManager:
         self.last_modified_time = 0.0
         self.preset_path = preset_path
         if not self.preset_path.exists():
-            self.preset_path.write_text("[]")
+            # エンジンのディレクトリ内に`presets.yaml`があった場合、マイグレーションする
+            old_preset_path = engine_root() / "presets.yaml"
+            if old_preset_path.exists():
+                try:
+                    shutil.move(old_preset_path, self.preset_path)
+                except OSError:
+                    warnings.warn(
+                        "プリセットファイルのマイグレーションに失敗しました",
+                        stacklevel=1,
+                    )
+                    self.preset_path.write_text("[]")
+            else:
+                self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
