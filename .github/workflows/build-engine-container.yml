@@ -153,14 +153,12 @@ jobs:
         run: |
           # --cache-from に指定するためのタグ名を steps.generate-docker-buildcache-image-names.outputs.cache-from に格納する
           # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
-          # 例1: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu20.04-latest-buildcache
-          # 例2: type=registry,ref=voicevox/voicevox_engine:nvidia-ubuntu22.04-latest-buildcache
+          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
           echo "cache-from=type=registry,ref=${{ matrix.buildcache_tag }}-latest-buildcache" >> $GITHUB_OUTPUT
 
           # --cache-to に指定するためのタグ名を steps.generate-docker-buildcache-image-names.outputs.cache-to に格納する
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
-          # 例1: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu20.04-latest-buildcache,mode=max
-          # 例2: type=registry,ref=voicevox/voicevox_engine:nvidia-ubuntu22.04-latest-buildcache,mode=max
+          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
           {
             echo "cache-to<<EOF"
 
