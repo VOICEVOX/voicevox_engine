@@ -139,6 +139,14 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       # ビルドキャッシュ（docker build コマンドのオプション --cache-from と --cache-to）に指定するためのタグ名を生成する
+      #
+      # 例1: buildcache_tag="cpu-ubuntu22.04", version="latest"
+      # cache-from: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
+      # cache-to: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
+      #
+      # 例2: buildcache_tag="nvidia-ubuntu22.04", version="0.22.0"
+      # cache-from: type=registry,ref=voicevox/voicevox_engine:nvidia-ubuntu22.04-latest-buildcache
+      # cache-to: (空文字列)
       - name: <Build> Generate Docker buildcache image names
         id: generate-docker-buildcache-image-names
         shell: bash
