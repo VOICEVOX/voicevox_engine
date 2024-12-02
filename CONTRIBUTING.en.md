@@ -46,7 +46,7 @@ You can check frequently used commands for development from the following:
   - [Checking for Typos](#checking-for-typos)
   - [Running Static Analysis in Batch](#running-static-analysis-in-batch)
 - Tests
-  - [Testing the Code](#testing-the-code)
+  - [Testing Code](#testing-code)
   - [Updating Snapshots](#updating-snapshots)
   - [Diagnosing Vulnerabilities](#diagnosing-vulnerabilities)
 
