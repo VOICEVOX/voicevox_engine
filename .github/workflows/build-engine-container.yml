@@ -39,6 +39,13 @@ jobs:
 
     strategy:
       matrix:
+        # tags: カンマ区切りのタグ名（バージョン文字列の前のプレフィックス）。空文字列の場合、バージョン文字列のみのタグ名になる
+        # buildcache_tag: ビルドキャッシュのタグ名（latestの前のプレフィックス）。空文字列やカンマは使用不可
+        # target: Dockerfile のビルドステージ名
+        # base_image: Dockerfile のビルド変数 BASE_IMAGE に渡すベースイメージ
+        # base_runtime_image: Dockerfile のビルド変数 BASE_RUNTIME_IMAGE に渡す実行ステージ用のベースイメージ
+        # onnxruntime_version: Dockerfile のビルド変数 ONNXRUNTIME_VERSION に渡すONNX Runtimeのバージョン
+        # platforms: docker build コマンドのオプション --platform に渡すプラットフォーム
         include:
           # Ubuntu 20.04
           - tags: ",cpu,cpu-ubuntu20.04"
