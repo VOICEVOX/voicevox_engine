@@ -70,6 +70,19 @@ jobs:
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
+          # Ubuntu 22.04
+          - tag: cpu-ubuntu22.04
+            target: runtime-env
+            base_image: ubuntu:22.04
+            base_runtime_image: ubuntu:22.04
+            onnxruntime_version: 1.13.1
+            platforms: linux/amd64,linux/arm64/v8
+          - tag: nvidia-ubuntu22.04
+            target: runtime-nvidia-env
+            base_image: ubuntu:22.04
+            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+            onnxruntime_version: 1.13.1
+            platforms: linux/amd64
 
     steps:
       - name: <Setup> Check out the repository
