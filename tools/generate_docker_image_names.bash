@@ -37,7 +37,7 @@ comma_separated_prefixes=${3:-}
 IFS=',' read -r -a prefixes <<< "${comma_separated_prefixes}"
 
 # prefixesが空（comma_separated_prefixesが空文字列）の場合、prefixesに空文字列を追加する
-if [ ${#prefixes[@]} -eq 0 ]; then
+if [ ${#prefixes[@]} = 0 ]; then
   prefixes+=("")
 fi
 
