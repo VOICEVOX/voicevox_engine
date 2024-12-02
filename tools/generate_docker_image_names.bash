@@ -30,7 +30,7 @@ repository=$1
 version_or_latest=${2:-latest}
 comma_separated_prefixes=${3:-}
 
-# カンマ区切りのタグ名を改行区切りに変換して、forループで反復できるようにする
+# カンマ区切りのタグ名を配列に読み込んで、forループで反復できるようにする
 # 例1: "" -> ("")
 # 例2: ",cpu,cpu-ubuntu22.04" -> ("" "cpu" "cpu-ubuntu22.04")
 # 例3: "nvidia,nvidia-ubuntu22.04" -> ("nvidia" "nvidia-ubuntu22.04")
