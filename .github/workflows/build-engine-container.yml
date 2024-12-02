@@ -115,10 +115,15 @@ jobs:
         run: bash tools/process_voicevox_resource.bash
 
       # Matrixのtags（カンマ区切りのタグ名）から、バージョン文字列付きのタグ名を生成する
-      # 例: tags=,cpu,cpu-ubuntu22.04
+      #
+      # 例1: tags=",cpu,cpu-ubuntu22.04", version="0.22.0"
       # voicevox/voicevox_engine:0.22.0
       # voicevox/voicevox_engine:cpu-0.22.0
       # voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0
+      #
+      # 例2: tags="nvidia,nvidia-ubuntu22.04", version="latest"
+      # voicevox/voicevox_engine:nvidia-latest
+      # voicevox/voicevox_engine:nvidia-ubuntu22.04-latest
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
         shell: bash
