@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
-# バージョン文字列付きのDockerイメージ名を改行区切りで出力する
+# バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する
 #
 # 例1
 # $ ./tools/generate_docker_image_names.bash "voicevox/voicevox_engine" "0.22.0" ",cpu,cpu-ubuntu22.04"
@@ -21,8 +21,8 @@
 set -eux
 
 if [ $# -lt 1 ]; then
-  # 引数の数が1未満の場合、ヘルプを出力して終了する
-  echo "Usage: $0 <repository> [version_or_latest] [comma_separated_prefixes]"
+  # 引数の数が1未満の場合、ヘルプを標準エラー出力に出力して終了する
+  echo "Usage: $0 <repository> [version_or_latest] [comma_separated_prefixes]" 1>&2
   exit 1
 fi
 
