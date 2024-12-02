@@ -4,18 +4,18 @@
 # バージョン文字列付きのDockerイメージ名を改行区切りで出力する
 #
 # 例1
-# $ ./tools/generate_docker_image_names.bash voicevox/voicevox_engine 0.22.0 ,cpu,cpu-ubuntu22.04
+# $ ./tools/generate_docker_image_names.bash "voicevox/voicevox_engine" "0.22.0" ",cpu,cpu-ubuntu22.04"
 # voicevox/voicevox_engine:0.22.0
 # voicevox/voicevox_engine:cpu-0.22.0
 # voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0
 #
 # 例2
-# $ ./tools/generate_docker_image_names.bash voicevox/voicevox_engine 0.22.0 nvidia,nvidia-ubuntu22.04
+# $ ./tools/generate_docker_image_names.bash "voicevox/voicevox_engine" "0.22.0" "nvidia,nvidia-ubuntu22.04"
 # voicevox/voicevox_engine:nvidia-0.22.0
 # voicevox/voicevox_engine:nvidia-ubuntu22.04-0.22.0
 #
 # 例3
-# $ ./tools/generate_docker_image_names.bash voicevox/voicevox_engine latest ""
+# $ ./tools/generate_docker_image_names.bash "voicevox/voicevox_engine" "latest" ""
 # voicevox/voicevox_engine:latest
 
 set -eux
