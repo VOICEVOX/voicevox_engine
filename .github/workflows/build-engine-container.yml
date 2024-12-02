@@ -115,31 +115,20 @@ jobs:
         run: bash tools/process_voicevox_resource.bash
 
       # Matrixのtags（カンマ区切りのタグ名）から、バージョン文字列付きのタグ名を生成する
+      # 例: tags=,cpu,cpu-ubuntu22.04
+      # voicevox/voicevox_engine:0.22.0
+      # voicevox/voicevox_engine:cpu-0.22.0
+      # voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
         shell: bash
         run: |
-          # カンマ区切りのタグ名をスペース区切りに変換して、forループで反復できるようにする
-          prefixes=$(tr ',' ' ' <<< "${{ matrix.tags }}")
-
           # バージョン文字列付きのタグ名を steps.generate-docker-image-names.outputs.tags に改行区切りで格納する
           {
             echo "tags<<EOF"
 
-            # バージョン文字列付きのタグ名を改行区切りで出力する
-            for prefix in $prefixes; do
-              if [ -z "${prefix}"]; then
-                # prefixが空文字列の場合、"{バージョン文字列}"をタグにする
-                # 例1: "" -> "voicevox/voicevox_engine:latest"
-                # 例2: "" -> "voicevox/voicevox_engine:0.22.0"
-                echo "${{ env.IMAGE_NAME }}:${{ needs.config.outputs.version_or_latest }}"
-              else
-                # prefixが空文字列でない場合、"{prefix}-{バージョン文字列}"をタグにする
-                # 例1: "cpu" -> "voicevox/voicevox_engine:cpu-latest"
-                # 例2: "nvidia-ubuntu22.04" -> "voicevox/voicevox_engine:nvidia-ubuntu22.04-0.22.0"
-                echo "${{ env.IMAGE_NAME }}:${prefix}-${{ needs.config.outputs.version_or_latest }}"
-              fi
-            done
+            # Usage: $0 <repository> [version_or_latest] [comma_separated_prefixes]
+            bash tools/generate_docker_image_names.bash "${{ env.IMAGE_NAME }}" "${{ needs.config.outputs.version_or_latest }}" "${{ matrix.tags }}"
 
             echo "EOF"
           } >> $GITHUB_OUTPUT
