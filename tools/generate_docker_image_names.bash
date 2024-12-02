@@ -41,7 +41,7 @@ if [ ${#prefixes[@]} = 0 ]; then
   prefixes+=("")
 fi
 
-# バージョン文字列付きのタグ名を改行区切りで出力する
+# バージョン文字列付きのDockerイメージ名を改行区切りで出力する
 for prefix in "${prefixes[@]}"; do
   if [ -z "${prefix}" ]; then
     # prefixが空文字列の場合、"{バージョン文字列}"をタグにする
