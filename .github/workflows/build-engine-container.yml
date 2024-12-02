@@ -149,7 +149,7 @@ jobs:
             bash tools/generate_docker_image_names.bash "${{ env.IMAGE_NAME }}" "${{ needs.config.outputs.version_or_latest }}" "${{ matrix.tags }}"
 
             echo "EOF"
-          } >> $GITHUB_OUTPUT
+          } >> "$GITHUB_OUTPUT"
 
       # ビルドキャッシュ（docker build コマンドのオプション --cache-from と --cache-to）に指定するためのタグ名を生成する
       #
@@ -200,7 +200,7 @@ jobs:
             ONNXRUNTIME_VERSION=${{ matrix.onnxruntime_version }}
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ steps.generate-docker-image-names.outputs.generate-docker-image-names.tags }}
+          tags: ${{ steps.generate-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
