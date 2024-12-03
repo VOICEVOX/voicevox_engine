@@ -93,6 +93,7 @@ def main() -> None:
         "--repository",
         type=str,
         required=True,
+        help="Dockerリポジトリ名（例: voicevox/voicevox_engine）",
     )
     parser.add_argument(
         "--version",
