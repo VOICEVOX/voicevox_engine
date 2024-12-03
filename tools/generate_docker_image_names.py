@@ -99,7 +99,7 @@ def main() -> None:
         "--version",
         type=str,
         default="latest",
-        help="バージョン文字列。デフォルトブランチの場合、latest。",
+        help="バージョン文字列。デフォルトブランチの場合、latest",
     )
     parser.add_argument(
         "--prefix",
