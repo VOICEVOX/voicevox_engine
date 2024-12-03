@@ -22,7 +22,7 @@ TODO
 
 ### full-context label
 
-Data obtained from analyzing sentence structure, compiled for each phoneme, or a collection thereof.
+Data obtained from analyzing sentence structure, gathered for each phoneme, or a collection thereof.
 Contains information such as which phoneme, which mora position, which accent phrase position, etc.
 This is an HTS concept.
 
