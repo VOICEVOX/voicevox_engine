@@ -1,4 +1,3 @@
-
 """
 # Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
 # バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する
@@ -22,7 +21,9 @@
 from argparse import ArgumentParser
 
 
-def generate_docker_image_names(repository: str, version: str, comma_separated_prefix: str) -> list[str]:
+def generate_docker_image_names(
+    repository: str, version: str, comma_separated_prefix: str
+) -> list[str]:
     """
     Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
     バージョン文字列付きのDockerイメージ名を配列で返す
@@ -81,13 +82,13 @@ def main() -> None:
         "--version",
         type=str,
         default="latest",
-        help="バージョン文字列。デフォルトブランチの場合、latest。"
+        help="バージョン文字列。デフォルトブランチの場合、latest。",
     )
     parser.add_argument(
         "--prefix",
         type=str,
         default="",
-        help="Dockerイメージのタグのカンマ区切りのプレフィックス"
+        help="Dockerイメージのタグのカンマ区切りのプレフィックス",
     )
 
     args = parser.parse_args()
@@ -97,7 +98,9 @@ def main() -> None:
     comma_separated_prefix: str = args.prefix
 
     # Dockerイメージ名を生成
-    docker_image_names = generate_docker_image_names(repository, version, comma_separated_prefix)
+    docker_image_names = generate_docker_image_names(
+        repository, version, comma_separated_prefix
+    )
 
     # 標準出力に出力
     for docker_image_name in docker_image_names:
