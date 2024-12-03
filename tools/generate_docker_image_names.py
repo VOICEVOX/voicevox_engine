@@ -78,7 +78,7 @@ def generate_docker_image_names(
 
     for prefix in prefixes:
         if prefix:
-            # プレフィックスが空文字でない場合、末尾にハイフンを付ける
+            # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
             # 例: prefix="cpu" -> prefix="cpu-"
             prefix = f"{prefix}-"
 
