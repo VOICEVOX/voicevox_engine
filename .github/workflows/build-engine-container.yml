@@ -35,59 +35,44 @@ jobs:
 
   build-docker:
     needs: [config]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        tag:
-          - ""
-          - cpu
-          - cpu-ubuntu20.04
-          - nvidia
-          - nvidia-ubuntu20.04
-          - cpu-ubuntu22.04
-          - nvidia-ubuntu22.04
+        # 各変数の説明
+        # tags: カンマ区切りのタグ名（バージョン文字列の前のプレフィックス）。空文字列の場合、バージョン文字列のみのタグ名になる
+        # buildcache_tag: ビルドキャッシュのタグ名（latestの前のプレフィックス）。空文字列やカンマは使用不可
+        # target: Dockerfile のビルドステージ名
+        # base_image: Dockerfile のビルド変数 BASE_IMAGE に渡すベースイメージ
+        # base_runtime_image: Dockerfile のビルド変数 BASE_RUNTIME_IMAGE に渡す実行ステージ用のベースイメージ
+        # onnxruntime_version: Dockerfile のビルド変数 ONNXRUNTIME_VERSION に渡すONNX Runtimeのバージョン
+        # platforms: docker build コマンドのオプション --platform に渡すプラットフォーム
         include:
           # Ubuntu 20.04
-          - tag: ""
+          - tags: ",cpu,cpu-ubuntu20.04"
+            buildcache_tag: "cpu-ubuntu20.04"
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
-          - tag: cpu
-            target: runtime-env
-            base_image: ubuntu:20.04
-            base_runtime_image: ubuntu:20.04
-            onnxruntime_version: 1.13.1
-            platforms: linux/amd64,linux/arm64/v8
-          - tag: cpu-ubuntu20.04
-            target: runtime-env
-            base_image: ubuntu:20.04
-            base_runtime_image: ubuntu:20.04
-            onnxruntime_version: 1.13.1
-            platforms: linux/amd64,linux/arm64/v8
-          - tag: nvidia
-            target: runtime-nvidia-env
-            base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
-            onnxruntime_version: 1.13.1
-            platforms: linux/amd64
-          - tag: nvidia-ubuntu20.04
+          - tags: "nvidia,nvidia-ubuntu20.04"
+            buildcache_tag: "nvidia-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
           # Ubuntu 22.04
-          - tag: cpu-ubuntu22.04
+          - tags: "cpu-ubuntu22.04"
+            buildcache_tag: "cpu-ubuntu22.04"
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
-          - tag: nvidia-ubuntu22.04
+          - tags: "nvidia-ubuntu22.04"
+            buildcache_tag: "nvidia-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
@@ -137,32 +122,65 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
+      # Matrixのtags（カンマ区切りのタグ名）から、バージョン文字列付きのDockerイメージ名を生成する
+      #
+      # 例1: tags=",cpu,cpu-ubuntu22.04", version="0.22.0"
+      # voicevox/voicevox_engine:0.22.0
+      # voicevox/voicevox_engine:cpu-0.22.0
+      # voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0
+      #
+      # 例2: tags="nvidia,nvidia-ubuntu22.04", version="latest"
+      # voicevox/voicevox_engine:nvidia-latest
+      # voicevox/voicevox_engine:nvidia-ubuntu22.04-latest
+      - name: <Build> Generate Docker image names
+        id: generate-docker-image-names
+        run: |
+          # バージョン文字列付きのDockerイメージ名を steps.generate-docker-image-names.outputs.tags に改行区切りで格納する
+          {
+            echo "tags<<EOF"
+
+            # Usage: $0 <repository> [version_or_latest] [comma_separated_prefixes]
+            python3 tools/generate_docker_image_names.py \
+              --repository "${{ env.IMAGE_NAME }}" \
+              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --prefix "${{ matrix.tags }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # ビルドキャッシュ（docker build コマンドのオプション --cache-from と --cache-to）に指定するためのDockerイメージ名を生成する
+      #
+      # 例1: buildcache_tag="cpu-ubuntu22.04", version="latest"
+      # cache-from: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
+      # cache-to: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
+      #
+      # 例2: buildcache_tag="nvidia-ubuntu22.04", version="0.22.0"
+      # cache-from: type=registry,ref=voicevox/voicevox_engine:nvidia-ubuntu22.04-latest-buildcache
+      # cache-to: (空文字列)
+      - name: <Build> Generate Docker buildcache image names
+        id: generate-docker-buildcache-image-names
+        run: |
+          # --cache-from に指定するためのDockerイメージ名を steps.generate-docker-buildcache-image-names.outputs.cache-from に格納する
+          # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
+          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
+          echo "cache-from=type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache" >> "$GITHUB_OUTPUT"
+
+          # --cache-to に指定するためのDockerイメージ名を steps.generate-docker-buildcache-image-names.outputs.cache-to に格納する
+          # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
+          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
+          {
+            echo "cache-to<<EOF"
+
+            if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
+              # デフォルトブランチへのコミットの場合（ needs.config.outputs.version_or_latest = "latest" ）、ビルドキャッシュを作成する
+              echo "type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache,mode=max"
+            fi
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: <Build/Deploy> Build and Deploy Docker image
         uses: docker/build-push-action@v5
-        env:
-          IMAGE_TAG:
-            |- # If it's a release, add the version, otherwise add the `latest`
-            ${{ (
-              matrix.tag != '' && (
-                format('{0}:{1}-{2}', env.IMAGE_NAME, matrix.tag, needs.config.outputs.version_or_latest)
-              ) || format('{0}:{1}', env.IMAGE_NAME, needs.config.outputs.version_or_latest)
-            ) }}
-          IMAGE_CACHE_FROM:
-            |- # Always use the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
-            ${{ (
-              matrix.tag != '' && (
-                format('type=registry,ref={0}:{1}-latest-buildcache', env.IMAGE_NAME, matrix.tag)
-              ) || format('type=registry,ref={0}:latest-buildcache', env.IMAGE_NAME)
-            ) }}
-          IMAGE_CACHE_TO:
-            |- # If it's a release, do not create buildcache, otherwise create the `latest` buildcache. :latest-buildcache or :{tag}-latest-buildcache
-            ${{ (
-              needs.config.outputs.version_or_latest == 'latest' && (
-                matrix.tag != '' && (
-                  format('type=registry,ref={0}:{1}-latest-buildcache,mode=max', env.IMAGE_NAME, matrix.tag)
-                ) || format('type=registry,ref={0}:latest-buildcache,mode=max', env.IMAGE_NAME)
-              ) || ''
-            ) }}
         with:
           context: .
           builder: ${{ steps.buildx.outputs.name }}
@@ -178,9 +196,9 @@ jobs:
             ONNXRUNTIME_VERSION=${{ matrix.onnxruntime_version }}
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ env.IMAGE_TAG }}
-          cache-from: ${{ env.IMAGE_CACHE_FROM }}
-          cache-to: ${{ env.IMAGE_CACHE_TO }}
+          tags: ${{ steps.generate-docker-image-names.outputs.tags }}
+          cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
+          cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
 
   run-release-test-workflow:
