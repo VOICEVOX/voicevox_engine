@@ -12,7 +12,7 @@ We plan to add more terms over time. Feel free to send pull requests with additi
 
 ## Domain Terms
 
-TODO: Compile terms that are presented to users
+TODO: Explain terms that are presented to users
 
 ## Engine-related
 
