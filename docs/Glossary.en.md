@@ -36,7 +36,7 @@ This is a VOICEVOX-specific definition (within OpenJTalk, "label" refers to the 
 Refers to a single element within a full context.
 This is a VOICEVOX-specific definition.
 
-### Feature: feature
+### feature
 
 A label converted into a single-line string.
 This is an OpenJTalk concept.
