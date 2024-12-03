@@ -122,7 +122,7 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
-      # Matrixのtags（カンマ区切りのタグ名）から、バージョン文字列付きのタグ名を生成する
+      # Matrixのtags（カンマ区切りのタグ名）から、バージョン文字列付きのDockerイメージ名を生成する
       #
       # 例1: tags=",cpu,cpu-ubuntu22.04", version="0.22.0"
       # voicevox/voicevox_engine:0.22.0
