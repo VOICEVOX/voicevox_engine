@@ -41,7 +41,7 @@ jobs:
             target: linux-cpu
           - os: ubuntu-20.04
             target: linux-nvidia
-          - os: macos-12
+          - os: macos-13
             target: macos-x64
           - os: macos-14
             target: macos-arm64
