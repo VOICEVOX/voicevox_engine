@@ -140,7 +140,10 @@ jobs:
             echo "tags<<EOF"
 
             # Usage: $0 <repository> [version_or_latest] [comma_separated_prefixes]
-            bash tools/generate_docker_image_names.bash "${{ env.IMAGE_NAME }}" "${{ needs.config.outputs.version_or_latest }}" "${{ matrix.tags }}"
+            python3 tools/generate_docker_image_names.py \
+              --repository "${{ env.IMAGE_NAME }}" \
+              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --prefix "${{ matrix.tags }}"
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
