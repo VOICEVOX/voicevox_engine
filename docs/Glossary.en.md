@@ -1,6 +1,6 @@
 # Glossary
 
-This document compiles terms used within the engine.  
+This document explains terms used within VOICEVOX ENGINE.  
 We plan to add more terms over time. Feel free to send pull requests with additions!
 
 <!--
