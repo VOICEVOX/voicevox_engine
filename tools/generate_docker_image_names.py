@@ -4,27 +4,19 @@ Dockerリポジトリ名、バージョン文字列、カンマ区切りのプ�
 
 例1
 $ python3 ./tools/generate_docker_image_names.py \
-  --repository "voicevox/voicevox_engine" \
-  --version "0.22.0" \
-  --prefix ",cpu,cpu-ubuntu22.04"
-voicevox/voicevox_engine:0.22.0
-voicevox/voicevox_engine:cpu-0.22.0
-voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0
+  --repository "REPO" \
+  --version "VER" \
+  --prefix ",A,B"
+REPO:VER
+REPO:A-VER
+REPO:B-VER
 
 例2
 $ python3 ./tools/generate_docker_image_names.py \
-  --repository "voicevox/voicevox_engine" \
-  --version "latest" \
-  --prefix "nvidia,nvidia-ubuntu22.04"
-voicevox/voicevox_engine:nvidia-latest
-voicevox/voicevox_engine:nvidia-ubuntu22.04-latest
-
-例3
-$ python3 ./tools/generate_docker_image_names.py \
-  --repository "voicevox/voicevox_engine" \
-  --version "latest" \
+  --repository "REPO" \
+  --version "VER" \
   --prefix ""
-voicevox/voicevox_engine:latest
+REPO:VER
 """
 
 from argparse import ArgumentParser
