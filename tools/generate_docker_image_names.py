@@ -29,12 +29,13 @@ def generate_docker_image_names(
     Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
     バージョン文字列付きのDockerイメージ名を配列で返す
 
-    prefixが空文字列でない場合、"{prefix}-{バージョン文字列}"をタグにする
-    - 例: prefix="cpu", version="latest"
-           -> "voicevox/voicevox_engine:cpu-latest"
+    prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
 
-    prefixが空文字列の場合、"{バージョン文字列}"をタグにする
-    - 例: prefix="", version="0.22.0" -> "voicevox/voicevox_engine:0.22.0"
+    - 例: repository="REPO", version="VER", prefix="A" -> "REPO:A-VER"
+
+    prefixが空文字列の場合、"{version}"をタグにする
+
+    - 例: repository="REPO", version="VER",  prefix="" -> "REPO:VER"
 
     Parameters
     ----------
