@@ -138,36 +138,25 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # ビルドキャッシュ（docker build コマンドのオプション --cache-from と --cache-to）に指定するためのDockerイメージ名を生成する
-      #
-      # 例1: buildcache_tag="cpu-ubuntu22.04", version="latest"
-      # cache-from: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
-      # cache-to: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
-      #
-      # 例2: buildcache_tag="nvidia-ubuntu22.04", version="0.22.0"
-      # cache-from: type=registry,ref=voicevox/voicevox_engine:nvidia-ubuntu22.04-latest-buildcache
-      # cache-to: (空文字列)
+      # ビルドキャッシュに指定するためのDockerイメージ名を生成する
+      # NOTE: デフォルトブランチへのコミットの場合のみキャッシュを作成する
       - name: <Build> Generate Docker buildcache image names
         id: generate-docker-buildcache-image-names
         run: |
-          # --cache-from に指定するためのDockerイメージ名を steps.generate-docker-buildcache-image-names.outputs.cache-from に格納する
+          # --cache-from に指定するためのDockerイメージ名
           # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
-          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache
-          echo "cache-from=type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache" >> "$GITHUB_OUTPUT"
+          cache_from="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache"
 
-          # --cache-to に指定するためのDockerイメージ名を steps.generate-docker-buildcache-image-names.outputs.cache-to に格納する
+          # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
-          # 例: type=registry,ref=voicevox/voicevox_engine:cpu-ubuntu22.04-latest-buildcache,mode=max
-          {
-            echo "cache-to<<EOF"
+          cache_to=""
+          if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
+            cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache,mode=max"
+          fi
 
-            if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
-              # デフォルトブランチへのコミットの場合（ needs.config.outputs.version_or_latest = "latest" ）、ビルドキャッシュを作成する
-              echo "type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache,mode=max"
-            fi
-
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          # outputs に格納する
+          echo "cache-from=$cache_from" >> "$GITHUB_OUTPUT"
+          echo "cache-to=$cache_to" >> "$GITHUB_OUTPUT"
 
       - name: <Build/Deploy> Build and Deploy Docker image
         uses: docker/build-push-action@v5
