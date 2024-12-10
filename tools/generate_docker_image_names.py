@@ -44,7 +44,7 @@ def generate_docker_image_names(
     version : str
         バージョン文字列（例: "0.22.0", "latest"）
     comma_separated_prefix : str
-        カンマ区切りのプレフィックス（例: ",cpu,cpu-ubuntu22.04", "nvidia,nvidia-ubuntu22.04"
+        カンマ区切りのプレフィックス（例: ",cpu,cpu-ubuntu22.04", "nvidia,nvidia-ubuntu22.04"）
 
     Returns
     -------
