@@ -73,11 +73,9 @@ def generate_docker_image_names(
     docker_image_names: list[str] = []
 
     for prefix in prefixes:
+        # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
         if prefix:
-            # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
-            # 例: prefix="cpu" -> prefix="cpu-"
             prefix = f"{prefix}-"
-
         docker_image_names.append(f"{repository}:{prefix}{version}")
 
     return docker_image_names
