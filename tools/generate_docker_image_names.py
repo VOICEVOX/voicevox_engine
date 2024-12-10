@@ -83,13 +83,13 @@ def main() -> None:
         "--version",
         type=str,
         default="latest",
-        help="バージョン文字列。デフォルトブランチの場合、latest",
+        help="バージョン文字列（例: \"0.22.0\", \"latest\"）",
     )
     parser.add_argument(
         "--prefix",
         type=str,
         default="",
-        help="Dockerイメージのタグのカンマ区切りのプレフィックス",
+        help="カンマ区切りのプレフィックス（例: \",cpu,cpu-ubuntu22.04\", \"nvidia,nvidia-ubuntu22.04\"）",
     )
 
     args = parser.parse_args()
