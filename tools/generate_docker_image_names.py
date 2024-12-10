@@ -64,9 +64,6 @@ def generate_docker_image_names(
         ]）
     """
     # カンマ区切りのタグ名を配列に変換
-    # 例1: "" -> [""]
-    # 例2: ",cpu,cpu-ubuntu22.04" -> ["", "cpu", "cpu-ubuntu22.04"]
-    # 例3: "nvidia,nvidia-ubuntu22.04" -> ["nvidia", "nvidia-ubuntu22.04"]
     prefixes = comma_separated_prefix.split(",")
 
     # 戻り値の配列
