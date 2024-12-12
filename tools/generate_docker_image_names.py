@@ -39,21 +39,23 @@ def generate_docker_image_names(
     Parameters
     ----------
     repository : str
-        Dockerリポジトリ名（例: "voicevox/voicevox_engine"）
+        Dockerリポジトリ名
     version : str
-        バージョン文字列（例: "0.22.0", "latest"）
+        バージョン文字列
     comma_separated_prefix : str
-        カンマ区切りのプレフィックス（例: ",cpu,cpu-ubuntu22.04", "nvidia,nvidia-ubuntu22.04"）
+        カンマ区切りのプレフィックス
 
     Returns
     -------
     list[str]
-        Dockerイメージ名の配列
-        （例: [
-            "voicevox/voicevox_engine:0.22.0",
-            "voicevox/voicevox_engine:cpu-0.22.0",
-            "voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0"
-        ]）
+        Dockerイメージ名の配列。
+
+    Examples
+    --------
+    >>> generate_docker_image_names("voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04")
+    ['voicevox/voicevox_engine:0.22.0',
+     'voicevox/voicevox_engine:cpu-0.22.0',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0']
     """
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
