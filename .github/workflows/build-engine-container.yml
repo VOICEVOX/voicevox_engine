@@ -45,7 +45,7 @@ jobs:
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
-        # onnxruntime_version: ONNX Runtimeのバージョン（ https://github.com/microsoft/onnxruntime/releases ）
+        # onnxruntime_version: ONNX Runtimeのバージョン
         # platforms: Dockerfileのカンマ区切りのプラットフォームバリアント（ https://docs.docker.com/build/building/multi-platform/ ）
         include:
           # Ubuntu 20.04
