@@ -41,7 +41,7 @@ jobs:
       matrix:
         # 各変数の説明
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
-        # buildcache_tag: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
+        # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
@@ -50,14 +50,14 @@ jobs:
         include:
           # Ubuntu 20.04
           - prefixes: ",cpu,cpu-ubuntu20.04"
-            buildcache_tag: "cpu-ubuntu20.04"
+            buildcache_prefix: "cpu-ubuntu20.04"
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
           - prefixes: "nvidia,nvidia-ubuntu20.04"
-            buildcache_tag: "nvidia-ubuntu20.04"
+            buildcache_prefix: "nvidia-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
@@ -65,14 +65,14 @@ jobs:
             platforms: linux/amd64
           # Ubuntu 22.04
           - prefixes: "cpu-ubuntu22.04"
-            buildcache_tag: "cpu-ubuntu22.04"
+            buildcache_prefix: "cpu-ubuntu22.04"
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
           - prefixes: "nvidia-ubuntu22.04"
-            buildcache_tag: "nvidia-ubuntu22.04"
+            buildcache_prefix: "nvidia-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
@@ -145,13 +145,13 @@ jobs:
         run: |
           # --cache-from に指定するためのDockerイメージ名
           # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
-          cache_from="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache"
+          cache_from="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache"
 
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
           if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
-            cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_tag }}-latest-buildcache,mode=max"
+            cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
 
           # outputs に格納する
