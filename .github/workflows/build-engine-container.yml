@@ -46,7 +46,7 @@ jobs:
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
         # onnxruntime_version: ONNX Runtimeのバージョン
-        # platforms: Dockerfileのカンマ区切りのプラットフォームバリアント（ https://docs.docker.com/build/building/multi-platform/ ）
+        # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04
           - tags: ",cpu,cpu-ubuntu20.04"
