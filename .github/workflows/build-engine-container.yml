@@ -41,7 +41,7 @@ jobs:
       matrix:
         # 各変数の説明
         # tags: カンマ区切りのタグ名（バージョン文字列の前のプレフィックス）。空文字列の場合、バージョン文字列のみのタグ名になる
-        # buildcache_tag: ビルドキャッシュのタグ名（latestの前のプレフィックス）。空文字列やカンマは使用不可
+        # buildcache_tag: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
