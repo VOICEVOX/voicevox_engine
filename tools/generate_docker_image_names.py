@@ -22,7 +22,9 @@ from argparse import ArgumentParser
 
 
 def generate_docker_image_names(
-    repository: str, version: str, comma_separated_prefix: str
+    repository: str,
+    version: str,
+    comma_separated_prefix: str,
 ) -> list[str]:
     """
     Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
@@ -101,7 +103,9 @@ def main() -> None:
 
     # Dockerイメージ名を生成
     docker_image_names = generate_docker_image_names(
-        repository, version, comma_separated_prefix
+        repository=repository,
+        version=version,
+        comma_separated_prefix=comma_separated_prefix,
     )
 
     # 標準出力に出力
