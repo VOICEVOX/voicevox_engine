@@ -1,5 +1,22 @@
 [
   {
+    "version": "0.22.0",
+    "descriptions": [
+      "ソング対応モーラを追加",
+      "プリセットの保存先を変更",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "aoirint",
+      "Hiroshiba",
+      "rokujyushi",
+      "sabonerune",
+      "sevenc-nanashi",
+      "takana-v",
+      "tarepan"
+    ]
+  },
+  {
     "version": "0.21.1",
     "descriptions": ["キャラクター「Voidoll」を追加"],
     "contributors": []

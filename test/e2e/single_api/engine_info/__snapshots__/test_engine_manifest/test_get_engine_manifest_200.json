@@ -31,6 +31,23 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [
+        "aoirint",
+        "Hiroshiba",
+        "rokujyushi",
+        "sabonerune",
+        "sevenc-nanashi",
+        "takana-v",
+        "tarepan"
+      ],
+      "descriptions": [
+        "ソング対応モーラを追加",
+        "プリセットの保存先を変更",
+        "開発環境の向上"
+      ],
+      "version": "0.22.0"
+    },
+    {
       "contributors": [],
       "descriptions": [
         "キャラクター「Voidoll」を追加"
