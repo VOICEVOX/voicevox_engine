@@ -49,14 +49,14 @@ jobs:
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04
-          - prefixes: ",cpu,cpu-ubuntu20.04"
+          - prefixes: "cpu-ubuntu20.04"
             buildcache_prefix: "cpu-ubuntu20.04"
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
-          - prefixes: "nvidia,nvidia-ubuntu20.04"
+          - prefixes: "nvidia-ubuntu20.04"
             buildcache_prefix: "nvidia-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
@@ -64,14 +64,14 @@ jobs:
             onnxruntime_version: 1.13.1
             platforms: linux/amd64
           # Ubuntu 22.04
-          - prefixes: "cpu-ubuntu22.04"
+          - prefixes: ",cpu,cpu-ubuntu22.04"
             buildcache_prefix: "cpu-ubuntu22.04"
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
             onnxruntime_version: 1.13.1
             platforms: linux/amd64,linux/arm64/v8
-          - prefixes: "nvidia-ubuntu22.04"
+          - prefixes: "nvidia,nvidia-ubuntu22.04"
             buildcache_prefix: "nvidia-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
