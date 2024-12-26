@@ -31,6 +31,13 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「中部つるぎ」を追加"
+      ],
+      "version": "0.22.1"
+    },
+    {
       "contributors": [
         "aoirint",
         "Hiroshiba",
