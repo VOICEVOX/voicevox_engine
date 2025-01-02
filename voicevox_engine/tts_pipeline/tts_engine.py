@@ -654,6 +654,56 @@ class TTSEngine:
 
         return phoneme_data_list, f0s.tolist(), volumes.tolist()
 
+    def create_sing_f0_from_phoneme(
+        self,
+        score: Score,
+        phonemes: list[FramePhoneme],
+        style_id: StyleId,
+    ) -> list[float]:
+        """歌声合成用の音素・スタイルIDに基づいて基本周波数を生成する"""
+        notes = score.notes
+
+        (
+            _,
+            _,
+            _,
+            phonemes_array_from_notes,
+            phoneme_keys_array,
+            _,
+        ) = _notes_to_keys_and_phonemes(notes)
+
+        phonemes_array = np.array(
+            [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
+        )
+        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+
+        # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
+        # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
+        try:
+            all_equals = np.all(phonemes_array == phonemes_array_from_notes)
+        except ValueError:
+            # 長さが異なる場合はValueErrorが発生するので、Falseとする
+            # mypyを通すためにnp.bool_でラップする
+            all_equals = np.bool_(False)
+
+        if not all_equals:
+            msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
+            raise TalkSingInvalidInputError(msg)
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音高を生成する
+        f0s = self._core.safe_predict_sing_f0_forward(
+            frame_phonemes, frame_keys, style_id
+        )
+
+        # mypyの型チェックを通すために明示的に型を付ける
+        f0_list: list[float] = f0s.tolist()
+
+        return f0_list
+
     def create_sing_volume_from_phoneme_and_f0(
         self,
         score: Score,
