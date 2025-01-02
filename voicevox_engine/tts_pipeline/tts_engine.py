@@ -660,7 +660,7 @@ class TTSEngine:
         phonemes: list[FramePhoneme],
         style_id: StyleId,
     ) -> list[float]:
-        """歌声合成用の音素・スタイルIDに基づいて音高を生成する"""
+        """歌声合成用の音素・スタイルIDに基づいて基本周波数を生成する"""
         notes = score.notes
 
         (

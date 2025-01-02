@@ -414,7 +414,7 @@ def generate_tts_pipeline_router(
     @router.post(
         "/sing_frame_f0",
         tags=["クエリ編集"],
-        summary="楽譜・歌唱音声合成用のクエリからフレームごとの音高を得る",
+        summary="楽譜・歌唱音声合成用のクエリからフレームごとの基本周波数を得る",
     )
     def sing_frame_f0(
         score: Score,
