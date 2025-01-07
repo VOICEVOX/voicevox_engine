@@ -44,7 +44,6 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     user_dict = UserDictionary(
         default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
         user_dict_path=_generate_user_dict(tmp_path),
-        compiled_dict_path=tmp_path / "user.dic",
     )
 
     engine_manifest = load_manifest(engine_manifest_path())

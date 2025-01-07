@@ -50,7 +50,6 @@ if not save_dir.is_dir():
 # デフォルトのファイルパス
 DEFAULT_DICT_PATH: Final = resource_dir / "default.csv"  # VOICEVOXデフォルト辞書
 _USER_DICT_PATH: Final = save_dir / "user_dict.json"  # ユーザー辞書
-_COMPILED_DICT_PATH: Final = save_dir / "user.dic"  # コンパイル済み辞書
 
 
 # 同時書き込みの制御
@@ -60,6 +59,53 @@ mutex_openjtalk_dict = threading.Lock()
 
 _save_format_dict_adapter = TypeAdapter(dict[str, SaveFormatUserDictWord])
 
+if sys.platform == "win32":
+    import ctypes
+    from ctypes.wintypes import DWORD, HANDLE, LPCWSTR
+
+    _CreateFileW = ctypes.windll.kernel32.CreateFileW
+    _CreateFileW.argtypes = [
+        LPCWSTR,
+        DWORD,
+        DWORD,
+        ctypes.c_void_p,
+        DWORD,
+        DWORD,
+        HANDLE,
+    ]
+    _CreateFileW.restype = HANDLE
+    _CloseHandle = ctypes.windll.kernel32.CloseHandle
+    _CloseHandle.argtypes = [HANDLE]
+
+    _FILE_SHARE_DELETE = 0x00000004
+    _FILE_SHARE_READ = 0x00000001
+    _OPEN_EXISTING = 3
+    _FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
+    _INVALID_HANDLE_VALUE = HANDLE(-1).value
+
+    def _unlink_file_on_close(filename: str) -> None:
+        """
+        CreateFileW関数で`FILE_FLAG_DELETE_ON_CLOSE`付けてすぐに閉じる
+        これにより`FILE_SHARE_DELETE`を付けて開かれているファイルのハンドルが
+        全て閉じた時に自動的に削除することができる
+        """
+        h_file = _CreateFileW(
+            filename,
+            0,
+            _FILE_SHARE_DELETE | _FILE_SHARE_READ,
+            None,
+            _OPEN_EXISTING,
+            _FILE_FLAG_DELETE_ON_CLOSE,
+            None,
+        )
+        if h_file == _INVALID_HANDLE_VALUE:
+            error = ctypes.WinError()
+            error.filename = filename
+            raise error
+        result = _CloseHandle(h_file)
+        if result == 0:
+            raise ctypes.WinError()
+
 
 class UserDictionary:
     """ユーザー辞書"""
@@ -68,7 +114,6 @@ class UserDictionary:
         self,
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
-        compiled_dict_path: Path = _COMPILED_DICT_PATH,
     ) -> None:
         """
         Parameters
@@ -77,12 +122,9 @@ class UserDictionary:
             デフォルト辞書ファイルのパス
         user_dict_path : Path
             ユーザー辞書ファイルのパス
-        compiled_dict_path : Path
-            コンパイル済み辞書ファイルのパス
         """
         self._default_dict_path = default_dict_path
         self._user_dict_path = user_dict_path
-        self._compiled_dict_path = compiled_dict_path
         self.update_dict()
 
     @mutex_wrapper(mutex_user_dict)
@@ -99,14 +141,14 @@ class UserDictionary:
     def update_dict(self) -> None:
         """辞書を更新する。"""
         default_dict_path = self._default_dict_path
-        compiled_dict_path = self._compiled_dict_path
+        user_dict_path = self._user_dict_path
 
         random_string = uuid4()
-        tmp_csv_path = compiled_dict_path.with_suffix(
-            f".dict_csv-{random_string}.tmp"
+        tmp_csv_path = user_dict_path.with_name(
+            f"user.dict_csv-{random_string}.tmp"
         )  # csv形式辞書データの一時保存ファイル
-        tmp_compiled_path = compiled_dict_path.with_suffix(
-            f".dict_compiled-{random_string}.tmp"
+        tmp_compiled_path = user_dict_path.with_name(
+            f"user.dict_compiled-{random_string}.tmp"
         )  # コンパイル済み辞書データの一時保存ファイル
 
         try:
@@ -157,11 +199,8 @@ class UserDictionary:
             if not tmp_compiled_path.is_file():
                 raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
 
-            # コンパイル済み辞書の置き換え・読み込み
-            pyopenjtalk.unset_user_dict()
-            tmp_compiled_path.replace(compiled_dict_path)
-            if compiled_dict_path.is_file():
-                pyopenjtalk.set_user_dict(str(compiled_dict_path.resolve(strict=True)))
+            # コンパイル済み辞書の読み込み
+            pyopenjtalk.set_user_dict(str(tmp_compiled_path))
 
         except Exception as e:
             print("Error: Failed to update dictionary.", file=sys.stderr)
@@ -172,7 +211,10 @@ class UserDictionary:
             if tmp_csv_path.exists():
                 tmp_csv_path.unlink()
             if tmp_compiled_path.exists():
-                tmp_compiled_path.unlink()
+                if sys.platform == "win32":
+                    _unlink_file_on_close(str(tmp_compiled_path))
+                else:
+                    tmp_compiled_path.unlink()
 
     @mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
