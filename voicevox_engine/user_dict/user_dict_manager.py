@@ -59,38 +59,42 @@ mutex_openjtalk_dict = threading.Lock()
 
 _save_format_dict_adapter = TypeAdapter(dict[str, SaveFormatUserDictWord])
 
-if sys.platform == "win32":
-    import ctypes
-    from ctypes.wintypes import DWORD, HANDLE, LPCWSTR
 
-    _CreateFileW = ctypes.windll.kernel32.CreateFileW
-    _CreateFileW.argtypes = [
-        LPCWSTR,
-        DWORD,
-        DWORD,
-        ctypes.c_void_p,
-        DWORD,
-        DWORD,
-        HANDLE,
-    ]
-    _CreateFileW.restype = HANDLE
-    _CloseHandle = ctypes.windll.kernel32.CloseHandle
-    _CloseHandle.argtypes = [HANDLE]
+def _delete_file_on_close(file_path: Path) -> None:
+    """
+    ファイルのハンドルが全て閉じたときにファイルを削除する。OpenJTalk用のカスタム辞書用。
 
-    _FILE_SHARE_DELETE = 0x00000004
-    _FILE_SHARE_READ = 0x00000001
-    _OPEN_EXISTING = 3
-    _FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
-    _INVALID_HANDLE_VALUE = HANDLE(-1).value
+    WindowsではCreateFileW関数で`FILE_FLAG_DELETE_ON_CLOSE`を付けてすぐに閉じることで、
+    `FILE_SHARE_DELETE`を付けて開かれているファイルのハンドルが全て閉じた時に削除されるようにする。
 
-    def _unlink_file_on_close(filename: str) -> None:
-        """
-        CreateFileW関数で`FILE_FLAG_DELETE_ON_CLOSE`付けてすぐに閉じる
-        これにより`FILE_SHARE_DELETE`を付けて開かれているファイルのハンドルが
-        全て閉じた時に自動的に削除することができる
-        """
+    Windows以外では即座にファイルを削除する。
+    """
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes.wintypes import DWORD, HANDLE, LPCWSTR
+
+        _CreateFileW = ctypes.windll.kernel32.CreateFileW
+        _CreateFileW.argtypes = [
+            LPCWSTR,
+            DWORD,
+            DWORD,
+            ctypes.c_void_p,
+            DWORD,
+            DWORD,
+            HANDLE,
+        ]
+        _CreateFileW.restype = HANDLE
+        _CloseHandle = ctypes.windll.kernel32.CloseHandle
+        _CloseHandle.argtypes = [HANDLE]
+
+        _FILE_SHARE_DELETE = 0x00000004
+        _FILE_SHARE_READ = 0x00000001
+        _OPEN_EXISTING = 3
+        _FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
+        _INVALID_HANDLE_VALUE = HANDLE(-1).value
+
         h_file = _CreateFileW(
-            filename,
+            str(file_path),
             0,
             _FILE_SHARE_DELETE | _FILE_SHARE_READ,
             None,
@@ -99,12 +103,13 @@ if sys.platform == "win32":
             None,
         )
         if h_file == _INVALID_HANDLE_VALUE:
-            error = ctypes.WinError()
-            error.filename = filename
-            raise error
+            raise RuntimeError(f"Failed to CreateFileW for {file_path}")
+
         result = _CloseHandle(h_file)
         if result == 0:
-            raise ctypes.WinError()
+            raise RuntimeError(f"Failed to CloseHandle for {file_path}")
+    else:
+        file_path.unlink()
 
 
 class UserDictionary:
@@ -211,10 +216,7 @@ class UserDictionary:
             if tmp_csv_path.exists():
                 tmp_csv_path.unlink()
             if tmp_compiled_path.exists():
-                if sys.platform == "win32":
-                    _unlink_file_on_close(str(tmp_compiled_path))
-                else:
-                    tmp_compiled_path.unlink()
+                _delete_file_on_close(tmp_compiled_path)
 
     @mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
