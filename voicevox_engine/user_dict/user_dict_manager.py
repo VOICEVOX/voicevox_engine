@@ -209,7 +209,9 @@ class UserDictionary:
                 raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
 
             # コンパイル済み辞書の読み込み
-            pyopenjtalk.set_user_dict(str(tmp_compiled_path.resolve(strict=True)))
+            pyopenjtalk.set_user_dict(
+                str(tmp_compiled_path.resolve(strict=True))
+            )  # NOTE: resolveによりコンパイル実行時でも相対パスを正しく認識できる
 
         except Exception as e:
             print("Error: Failed to update dictionary.", file=sys.stderr)
