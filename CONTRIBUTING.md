@@ -324,11 +324,11 @@ python -m pytest --snapshot-update
 
 ### 脆弱性を診断する
 
-`safety` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
+`pip-audit` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
-safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
+pip-audit -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ## ビルド
