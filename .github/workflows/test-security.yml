@@ -1,5 +1,4 @@
 # Python 依存パッケージの脆弱性診断を定期的に行う
-# NOTE: 公式 Action は API key 等を必要とするため利用しない（https://github.com/pyupio/safety-action/tree/main）
 
 name: test-security
 
@@ -24,7 +23,9 @@ jobs:
           requirements-suffix: "-dev"
 
       - name: <Test> Check Python dependency security
-        run: safety check -r requirements.txt -r requirements-dev.txt -r requirements-build.txt -o bare
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          inputs: requirements.txt requirements-dev.txt requirements-build.txt
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1
