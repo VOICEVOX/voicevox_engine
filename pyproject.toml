@@ -73,9 +73,9 @@ poetry-plugin-export = "^1.8.0"
 httpx = "^0.27.0" # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
 syrupy = "^4.6.1"
 types-pyyaml = "^6.0.12"
-safety = "^3.1.0"
 pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
 pre-commit = "^4.0.1"
+pip-audit = "^2.7.3"
 
 [tool.poetry.group.build.dependencies]
 pyinstaller = "^5.13"
