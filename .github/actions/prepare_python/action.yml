@@ -31,7 +31,7 @@ runs:
 
     - name: <Setup> Install Python dependencies
       if: ${{ inputs.only-export-python-version == 'false' }}
-      run: pip install -r requirements${{ inputs.requirements-suffix }}.txt
+      run: python -m pip install -r requirements${{ inputs.requirements-suffix }}.txt
       shell: bash
 
     - name: <Deploy> Export Python version
