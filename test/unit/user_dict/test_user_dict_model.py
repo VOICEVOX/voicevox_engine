@@ -69,6 +69,20 @@ def test_convert_to_zenkaku() -> None:
     assert surface == true_surface
 
 
+def test_remove_newlines_and_null() -> None:
+    """UserDictWord は surface 内の改行や null 文字を削除する。"""
+    # Inputs
+    test_value = generate_model()
+    test_value["surface"] = "te\n\r\x00st"
+    # Expects
+    true_surface = "ｔｅｓｔ"
+    # Outputs
+    surface = UserDictWord(**test_value).surface
+
+    # Test
+    assert surface == true_surface
+
+
 def test_count_mora() -> None:
     """UserDictWord は mora_count=None を上書きする。"""
     # Inputs
@@ -120,6 +134,17 @@ def test_invalid_pronunciation_not_katakana() -> None:
     # Inputs
     test_value = generate_model()
     test_value["pronunciation"] = "ぼいぼ"
+
+    # Test
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value)
+
+
+def test_invalid_pronunciation_newlines_and_null() -> None:
+    """UserDictWord は改行や null 文字を含む pronunciation をエラーとする。"""
+    # Inputs
+    test_value = generate_model()
+    test_value["pronunciation"] = "ボイ\n\r\x00ボ"
 
     # Test
     with pytest.raises(ValidationError):

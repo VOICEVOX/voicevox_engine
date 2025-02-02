@@ -61,6 +61,11 @@ class UserDictWord(BaseModel):
             )
         )
 
+    @field_validator("surface")
+    @classmethod
+    def remove_newlines_and_null(cls, surface: str) -> str:
+        return surface.replace("\n", "").replace("\r", "").replace("\x00", "")
+
     @field_validator("pronunciation", mode="before")
     @classmethod
     def check_is_katakana(cls, pronunciation: str) -> str:
