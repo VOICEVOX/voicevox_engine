@@ -29,17 +29,17 @@ USER_DICT_MAX_PRIORITY = 10
 
 def check_newlines_and_null(text: str) -> str:
     if "\n" in text or "\r" in text:
-        raise ValueError("改行が含まれています。")
+        raise ValueError("ユーザー辞書データ内に改行が含まれています。")
     if "\x00" in text:
-        raise ValueError("Null文字が含まれています。")
+        raise ValueError("ユーザー辞書データ内にNull文字が含まれています。")
     return text
 
 
 def check_comma_and_double_quote(text: str) -> str:
     if "," in text:
-        raise ValueError("カンマが含まれています。")
+        raise ValueError("ユーザー辞書データ内にカンマが含まれています。")
     if '"' in text:
-        raise ValueError("ダブルクォートが含まれています。")
+        raise ValueError("ユーザー辞書データ内にダブルクォートが含まれています。")
     return text
 
 
