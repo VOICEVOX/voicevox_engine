@@ -141,14 +141,17 @@ def test_invalid_pronunciation_not_katakana() -> None:
 
 
 def test_invalid_pronunciation_newlines_and_null() -> None:
-    """UserDictWord は改行や null 文字を含む pronunciation をエラーとする。"""
+    """UserDictWord は pronunciation 内の改行や null 文字を削除する。"""
     # Inputs
     test_value = generate_model()
     test_value["pronunciation"] = "ボイ\n\r\x00ボ"
+    # Expects
+    true_pronunciation = "ボイボ"
+    # Outputs
+    pronunciation = UserDictWord(**test_value).pronunciation
 
     # Test
-    with pytest.raises(ValidationError):
-        UserDictWord(**test_value)
+    assert pronunciation == true_pronunciation
 
 
 def test_invalid_pronunciation_invalid_sutegana() -> None:
