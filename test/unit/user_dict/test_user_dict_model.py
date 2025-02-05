@@ -55,6 +55,43 @@ def test_valid_word() -> None:
     UserDictWord(**args)
 
 
+@pytest.mark.parametrize(
+    "field",
+    [
+        "part_of_speech",
+        "part_of_speech_detail_1",
+        "part_of_speech_detail_2",
+        "part_of_speech_detail_3",
+        "inflectional_type",
+        "inflectional_form",
+        "stem",
+        "yomi",
+        "accent_associative_rule",
+    ],
+)
+def test_invalid_csv_safe_str(field: str) -> None:
+    """UserDictWord の文字列 CSV で許可されない文字をエラーとする。"""
+    # Inputs
+    test_value_newlines = generate_model()
+    test_value_newlines[field] = "te\r\nst"
+    test_value_null = generate_model()
+    test_value_null[field] = "te\x00st"
+    test_value_comma = generate_model()
+    test_value_comma[field] = "te,st"
+    test_value_double_quote = generate_model()
+    test_value_double_quote[field] = 'te"st'
+
+    # Test
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_newlines)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_null)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_comma)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_double_quote)
+
+
 def test_convert_to_zenkaku() -> None:
     """UserDictWord は surface を全角にする。"""
     # Inputs
@@ -67,21 +104,6 @@ def test_convert_to_zenkaku() -> None:
 
     # Test
     assert surface == true_surface
-
-
-def test_remove_newlines_and_null() -> None:
-    """UserDictWord は surface 内の改行や null 文字をエラーとする。"""
-    # Inputs
-    test_value_newlines = generate_model()
-    test_value_newlines["surface"] = "te\r\nst"
-    test_value_null = generate_model()
-    test_value_null["surface"] = "te\x00st"
-
-    # Test
-    with pytest.raises(ValidationError):
-        UserDictWord(**test_value_newlines)
-    with pytest.raises(ValidationError):
-        UserDictWord(**test_value_null)
 
 
 def test_count_mora() -> None:
