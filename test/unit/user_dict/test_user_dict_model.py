@@ -1,6 +1,6 @@
 """UserDictWord のテスト"""
 
-from typing import TypedDict
+from typing import Literal, TypedDict, get_args
 
 import pytest
 from pydantic import ValidationError
@@ -55,21 +55,24 @@ def test_valid_word() -> None:
     UserDictWord(**args)
 
 
+CsvSafeStrFields = Literal[
+    "part_of_speech",
+    "part_of_speech_detail_1",
+    "part_of_speech_detail_2",
+    "part_of_speech_detail_3",
+    "inflectional_type",
+    "inflectional_form",
+    "stem",
+    "yomi",
+    "accent_associative_rule",
+]
+
+
 @pytest.mark.parametrize(
     "field",
-    [
-        "part_of_speech",
-        "part_of_speech_detail_1",
-        "part_of_speech_detail_2",
-        "part_of_speech_detail_3",
-        "inflectional_type",
-        "inflectional_form",
-        "stem",
-        "yomi",
-        "accent_associative_rule",
-    ],
+    get_args(CsvSafeStrFields),
 )
-def test_invalid_csv_safe_str(field: str) -> None:
+def test_invalid_csv_safe_str(field: CsvSafeStrFields) -> None:
     """UserDictWord の文字列 CSV で許可されない文字をエラーとする。"""
     # Inputs
     test_value_newlines = generate_model()
