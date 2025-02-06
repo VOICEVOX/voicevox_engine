@@ -27,7 +27,7 @@ USER_DICT_MIN_PRIORITY = 0
 USER_DICT_MAX_PRIORITY = 10
 
 
-def check_newlines_and_null(text: str) -> str:
+def _check_newlines_and_null(text: str) -> str:
     if "\n" in text or "\r" in text:
         raise ValueError("ユーザー辞書データ内に改行が含まれています。")
     if "\x00" in text:
@@ -35,7 +35,7 @@ def check_newlines_and_null(text: str) -> str:
     return text
 
 
-def check_comma_and_double_quote(text: str) -> str:
+def _check_comma_and_double_quote(text: str) -> str:
     if "," in text:
         raise ValueError("ユーザー辞書データ内にカンマが含まれています。")
     if '"' in text:
@@ -43,7 +43,7 @@ def check_comma_and_double_quote(text: str) -> str:
     return text
 
 
-def convert_to_zenkaku(surface: str) -> str:
+def _convert_to_zenkaku(surface: str) -> str:
     return surface.translate(
         str.maketrans(
             "".join(chr(0x21 + i) for i in range(94)),
@@ -52,7 +52,7 @@ def convert_to_zenkaku(surface: str) -> str:
     )
 
 
-def check_is_katakana(pronunciation: str) -> str:
+def _check_is_katakana(pronunciation: str) -> str:
     if not fullmatch(r"[ァ-ヴー]+", pronunciation):
         raise ValueError("発音は有効なカタカナでなくてはいけません。")
     sutegana = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ャ", "ュ", "ョ", "ヮ", "ッ"]
@@ -76,8 +76,8 @@ def check_is_katakana(pronunciation: str) -> str:
 
 CsvSafeStr = Annotated[
     str,
-    AfterValidator(check_newlines_and_null),
-    AfterValidator(check_comma_and_double_quote),
+    AfterValidator(_check_newlines_and_null),
+    AfterValidator(_check_comma_and_double_quote),
 ]
 
 
@@ -90,8 +90,8 @@ class UserDictWord(BaseModel):
 
     surface: Annotated[
         str,
-        AfterValidator(convert_to_zenkaku),
-        AfterValidator(check_newlines_and_null),
+        AfterValidator(_convert_to_zenkaku),
+        AfterValidator(_check_newlines_and_null),
     ] = Field(description="表層形")
     priority: int = Field(
         description="優先度", ge=USER_DICT_MIN_PRIORITY, le=USER_DICT_MAX_PRIORITY
@@ -105,7 +105,7 @@ class UserDictWord(BaseModel):
     inflectional_form: CsvSafeStr = Field(description="活用形")
     stem: CsvSafeStr = Field(description="原形")
     yomi: CsvSafeStr = Field(description="読み")
-    pronunciation: Annotated[CsvSafeStr, AfterValidator(check_is_katakana)] = Field(
+    pronunciation: Annotated[CsvSafeStr, AfterValidator(_check_is_katakana)] = Field(
         description="発音"
     )
     accent_type: int = Field(description="アクセント型")
