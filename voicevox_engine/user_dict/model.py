@@ -31,7 +31,7 @@ def _check_newlines_and_null(text: str) -> str:
     if "\n" in text or "\r" in text:
         raise ValueError("ユーザー辞書データ内に改行が含まれています。")
     if "\x00" in text:
-        raise ValueError("ユーザー辞書データ内にNull文字が含まれています。")
+        raise ValueError("ユーザー辞書データ内にnull文字が含まれています。")
     return text
 
 
