@@ -55,7 +55,7 @@ def test_valid_word() -> None:
     UserDictWord(**args)
 
 
-CsvSafeStrFields = Literal[
+CsvSafeStrFieldName = Literal[
     "part_of_speech",
     "part_of_speech_detail_1",
     "part_of_speech_detail_2",
@@ -70,9 +70,9 @@ CsvSafeStrFields = Literal[
 
 @pytest.mark.parametrize(
     "field",
-    get_args(CsvSafeStrFields),
+    get_args(CsvSafeStrFieldName),
 )
-def test_invalid_csv_safe_str(field: CsvSafeStrFields) -> None:
+def test_invalid_csv_safe_str(field: CsvSafeStrFieldName) -> None:
     """UserDictWord の文字列 CSV で許可されない文字をエラーとする。"""
     # Inputs
     test_value_newlines = generate_model()
