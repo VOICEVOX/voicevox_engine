@@ -236,10 +236,10 @@ def _query_to_decoder_feature(
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
-    moras = _apply_prepost_silence(moras, query)
     moras = _apply_pause_length(moras, query)
     moras = _apply_pause_length_scale(moras, query)
     moras = _apply_speed_scale(moras, query)
+    moras = _apply_prepost_silence(moras, query)
     moras = _apply_pitch_scale(moras, query)
     moras = _apply_intonation_scale(moras, query)
 
