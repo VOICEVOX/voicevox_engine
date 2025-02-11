@@ -24,6 +24,11 @@ def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
     # 起動
     process = None
     if not skip_run_process:
+        manifest_file = dist_dir / "engine_manifest.json"
+        assert manifest_file.is_file()
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+        assert "manifest_version" in manifest
+
         process = Popen([run_file.absolute()], cwd=dist_dir)
 
     # 起動待機
