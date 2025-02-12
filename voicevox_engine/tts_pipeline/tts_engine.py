@@ -756,7 +756,7 @@ class TTSEngine:
 
         return volume_list
 
-    def frame_synthsize_wave(
+    def frame_synthesize_wave(
         self,
         query: FrameAudioQuery,
         style_id: StyleId,
