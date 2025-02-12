@@ -310,7 +310,7 @@ def test_mocked_synthesize_wave_from_score_output(
 ) -> None:
     """
     モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
-    `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である
+    `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である
     """
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -333,7 +333,7 @@ def test_mocked_synthesize_wave_from_score_output(
         outputStereo=False,
     )
     # Outputs
-    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    result_wave = tts_engine.frame_synthesize_wave(doremi_query, StyleId(1))
     # Tests
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2
