@@ -171,18 +171,21 @@ class MockCoreWrapper(CoreWrapper):
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         style_id: NDArray[np.int64],
-    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
+    ) -> NDArray[np.float32]:
         """音素系列・ノート系列・スタイルIDから音高系列を生成する"""
-        result = np.zeros(length, dtype=np.float32)
+        result = []
         # mockとしての適当な処理。大体MIDIノートに従う周波数になるように調整
         for i in range(length):
             if note[0, i] == -1:
-                result[i] = 0
+                result.append(0)
                 continue
-            result[i] = (
-                2 ** ((note[0, i] - 69) / 12) * (440 + phoneme[0, i] / 10 + style_id)
-            ).item()
-        return result
+            result.append(
+                (
+                    2 ** ((note[0, i] - 69) / 12)
+                    * (440 + phoneme[0, i] / 10 + style_id)
+                ).item()
+            )
+        return np.array(result, dtype=np.float32)
 
     def predict_sing_volume_forward(
         self,
@@ -191,22 +194,24 @@ class MockCoreWrapper(CoreWrapper):
         note: NDArray[np.int64],
         f0: NDArray[np.float32],
         style_id: NDArray[np.int64],
-    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
+    ) -> NDArray[np.float32]:
         """音素系列・ノート系列・音高系列・スタイルIDから音量系列を生成する"""
-        result = np.zeros(length, dtype=np.float32)
+        result = []
         # mockとしての適当な処理。大体0~10の範囲になるように調整
         for i in range(length):
             if note[0, i] == -1:
-                result[i] = 0
+                result.append(0)
                 continue
-            result[i] = (
-                (phoneme[0, i] / 40)
-                * (note[0, i] / 88)
-                * (f0[0, i] / 440)
-                * ((1 / 2) ** style_id)
-                * 10
-            ).item()
-        return result
+            result.append(
+                (
+                    (phoneme[0, i] / 40)
+                    * (note[0, i] / 88)
+                    * (f0[0, i] / 440)
+                    * ((1 / 2) ** style_id)
+                    * 10
+                ).item()
+            )
+        return np.array(result, dtype=np.float32)
 
     def sf_decode_forward(
         self,
