@@ -217,7 +217,7 @@ class CoreAdapter:
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         style_id: StyleId,
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -237,7 +237,7 @@ class CoreAdapter:
         note: NDArray[np.int64],
         f0: NDArray[np.float32],
         style_id: StyleId,
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 

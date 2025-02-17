@@ -537,7 +537,7 @@ def generate_tts_pipeline_router(
         },
     )
     async def validate_kana(
-        text: Annotated[str, Query(description="判定する対象の文字列")]
+        text: Annotated[str, Query(description="判定する対象の文字列")],
     ) -> bool:
         """
         テキストがAquesTalk 風記法に従っているかどうかを判定します。

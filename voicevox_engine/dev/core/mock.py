@@ -134,7 +134,7 @@ class MockCoreWrapper(CoreWrapper):
         result: list[NDArray[np.float32]] = []
         for i in range(length):
             result += [
-                (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
+                f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id
             ] * 256
         return np.array(result, dtype=np.float32)
 
@@ -171,21 +171,18 @@ class MockCoreWrapper(CoreWrapper):
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         style_id: NDArray[np.int64],
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         """音素系列・ノート系列・スタイルIDから音高系列を生成する"""
-        result = []
+        result = np.zeros(length, dtype=np.float32)
         # mockとしての適当な処理。大体MIDIノートに従う周波数になるように調整
         for i in range(length):
             if note[0, i] == -1:
-                result.append(0)
+                result[i] = 0
                 continue
-            result.append(
-                (
-                    2 ** ((note[0, i] - 69) / 12)
-                    * (440 + phoneme[0, i] / 10 + style_id)
-                ).item()
-            )
-        return np.array(result, dtype=np.float32)
+            result[i] = (
+                2 ** ((note[0, i] - 69) / 12) * (440 + phoneme[0, i] / 10 + style_id)
+            ).item()
+        return result
 
     def predict_sing_volume_forward(
         self,
@@ -194,24 +191,22 @@ class MockCoreWrapper(CoreWrapper):
         note: NDArray[np.int64],
         f0: NDArray[np.float32],
         style_id: NDArray[np.int64],
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         """音素系列・ノート系列・音高系列・スタイルIDから音量系列を生成する"""
-        result = []
+        result = np.zeros(length, dtype=np.float32)
         # mockとしての適当な処理。大体0~10の範囲になるように調整
         for i in range(length):
             if note[0, i] == -1:
-                result.append(0)
+                result[i] = 0
                 continue
-            result.append(
-                (
-                    (phoneme[0, i] / 40)
-                    * (note[0, i] / 88)
-                    * (f0[0, i] / 440)
-                    * ((1 / 2) ** style_id)
-                    * 10
-                ).item()
-            )
-        return np.array(result, dtype=np.float32)
+            result[i] = (
+                (phoneme[0, i] / 40)
+                * (note[0, i] / 88)
+                * (f0[0, i] / 440)
+                * ((1 / 2) ** style_id)
+                * 10
+            ).item()
+        return result
 
     def sf_decode_forward(
         self,

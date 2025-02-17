@@ -779,7 +779,7 @@ class CoreWrapper:
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         style_id: NDArray[np.int64],
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         """
         フレームごとの音素列とノート列から、フレームごとのF0を求める関数
         Parameters
@@ -818,7 +818,7 @@ class CoreWrapper:
         note: NDArray[np.int64],
         f0: NDArray[np.float32],
         style_id: NDArray[np.int64],
-    ) -> NDArray[np.float32]:
+    ) -> np.ndarray[tuple[int], np.dtype[np.float32]]:
         """
         フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
         Parameters

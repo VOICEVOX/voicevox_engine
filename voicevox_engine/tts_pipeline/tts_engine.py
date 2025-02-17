@@ -58,7 +58,7 @@ def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     for mora in moras:
         if mora.consonant:
             phonemes += [Phoneme(mora.consonant)]
-        phonemes += [(Phoneme(mora.vowel))]
+        phonemes += [Phoneme(mora.vowel)]
     return phonemes
 
 
@@ -69,8 +69,8 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
     """
     onehot = np.zeros(len(accent_phrase.moras))
     onehot[index] = 1
-    onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
-    return onehot.astype(np.int64)
+    _onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+    return _onehot.astype(np.int64)
 
 
 def _generate_silence_mora(length: float) -> Mora:
