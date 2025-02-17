@@ -27,7 +27,7 @@ jobs:
 
       - name: <Test> Validate poetry.lock
         run: |
-          poetry lock --no-update
+          poetry lock
           git diff --exit-code
 
       - name: <Test> Check dependency lists
