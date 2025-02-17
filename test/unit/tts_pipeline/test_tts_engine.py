@@ -454,7 +454,7 @@ def test_upspeak_voiced_last_mora() -> None:
             consonant_length=None,
             vowel="a",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
     # Outputs
@@ -527,7 +527,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
             consonant_length=None,
             vowel="N",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
     # Outputs
