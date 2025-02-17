@@ -67,10 +67,10 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
     アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
     長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
     """
-    onehot = np.zeros(len(accent_phrase.moras))
-    onehot[index] = 1
-    _onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
-    return _onehot.astype(np.int64)
+    accent_onehot = np.zeros(len(accent_phrase.moras))
+    accent_onehot[index] = 1
+    onehot = np.append(accent_onehot, [0] if accent_phrase.pause_mora else [])
+    return onehot.astype(np.int64)
 
 
 def _generate_silence_mora(length: float) -> Mora:
