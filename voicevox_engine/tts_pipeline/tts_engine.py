@@ -652,7 +652,11 @@ class TTSEngine:
             )
         ]
 
-        return phoneme_data_list, f0s.tolist(), volumes.tolist()
+        # mypyの型チェックを通すために明示的に型を付ける
+        f0_list: list[float] = f0s.tolist()  # type: ignore
+        volume_list: list[float] = volumes.tolist()  # type: ignore
+
+        return phoneme_data_list, f0_list, volume_list
 
     def create_sing_f0_from_phoneme(
         self,
@@ -700,7 +704,7 @@ class TTSEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()
+        f0_list: list[float] = f0s.tolist()  # type: ignore
 
         return f0_list
 
@@ -752,7 +756,7 @@ class TTSEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        volume_list: list[float] = volumes.tolist()
+        volume_list: list[float] = volumes.tolist()  # type: ignore
 
         return volume_list
 
