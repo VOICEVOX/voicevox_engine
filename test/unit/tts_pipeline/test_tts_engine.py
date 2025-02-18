@@ -1,5 +1,6 @@
 """TTSEngine のテスト"""
 
+from typing import Any
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
 from unittest.mock import MagicMock
 
@@ -431,7 +432,7 @@ def create_synthesis_test_base(text: str) -> list[AccentPhrase]:
 def _assert_equeal_accent_phrases(
     expected: list[AccentPhrase], outputs: list[AccentPhrase]
 ) -> None:
-    def _to_native_and_round(x: list[AccentPhrase]):
+    def _to_native_and_round(x: list[AccentPhrase]) -> Any:
         return round_floats(pydantic_to_native_type(x), round_value=2)
 
     assert _to_native_and_round(expected) == _to_native_and_round(outputs)
