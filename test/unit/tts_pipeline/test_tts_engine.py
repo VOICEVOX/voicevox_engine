@@ -1,7 +1,7 @@
 """TTSEngine のテスト"""
 
-from typing import Any
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
+from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
