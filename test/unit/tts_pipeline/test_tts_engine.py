@@ -429,13 +429,12 @@ def create_synthesis_test_base(text: str) -> list[AccentPhrase]:
 
 
 def _assert_equeal_accent_phrases(
-    expected: list[AccentPhrase],
-    outputs: list[AccentPhrase],
-    message: str | None = None,
+    expected: list[AccentPhrase], outputs: list[AccentPhrase]
 ) -> None:
-    assert round_floats(
-        pydantic_to_native_type(expected), round_value=2
-    ) == round_floats(pydantic_to_native_type(outputs), round_value=2), message
+    def _to_native_and_round(x: list[AccentPhrase]):
+        return round_floats(pydantic_to_native_type(x), round_value=2)
+
+    assert _to_native_and_round(expected) == _to_native_and_round(outputs)
 
 
 def test_create_accent_phrases() -> None:
@@ -447,7 +446,7 @@ def test_create_accent_phrases() -> None:
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     actual = tts_engine.create_accent_phrases(text, StyleId(1))
-    _assert_equeal_accent_phrases(expected, actual, f"case(text:{text})")
+    _assert_equeal_accent_phrases(expected, actual)
 
 
 def test_upspeak_voiced_last_mora() -> None:
@@ -464,7 +463,7 @@ def test_upspeak_voiced_last_mora() -> None:
             consonant_length=None,
             vowel="a",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
     # Outputs
@@ -537,7 +536,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
             consonant_length=None,
             vowel="N",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
     # Outputs
