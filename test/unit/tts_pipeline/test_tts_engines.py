@@ -1,4 +1,4 @@
-""" `TTSEngineManager` クラスのテスト"""
+"""`TTSEngineManager` クラスのテスト"""
 
 import pytest
 from fastapi import HTTPException

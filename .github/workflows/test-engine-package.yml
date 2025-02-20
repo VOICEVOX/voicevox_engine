@@ -83,13 +83,5 @@ jobs:
         if: startsWith(matrix.target, 'linux') || startsWith(matrix.target, 'macos')
         run: chmod +x dist/run
 
-      # ref: https://github.com/VOICEVOX/voicevox_engine/pull/806
-      # ref: https://github.com/VOICEVOX/voicevox_engine/issues/1516
-      - name: <Setup> Install libsndfile1 for Linux arm64 architecture
-        if: startsWith(matrix.target, 'linux') && endsWith(matrix.target, 'arm64')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libsndfile1
-
       - name: <Test> Test ENGINE package
         run: python tools/check_release_build.py --dist_dir dist/

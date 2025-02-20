@@ -58,7 +58,7 @@ def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     for mora in moras:
         if mora.consonant:
             phonemes += [Phoneme(mora.consonant)]
-        phonemes += [(Phoneme(mora.vowel))]
+        phonemes += [Phoneme(mora.vowel)]
     return phonemes
 
 
@@ -67,9 +67,9 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
     アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
     長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
     """
-    onehot = np.zeros(len(accent_phrase.moras))
-    onehot[index] = 1
-    onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+    accent_onehot = np.zeros(len(accent_phrase.moras))
+    accent_onehot[index] = 1
+    onehot = np.append(accent_onehot, [0] if accent_phrase.pause_mora else [])
     return onehot.astype(np.int64)
 
 
@@ -652,7 +652,11 @@ class TTSEngine:
             )
         ]
 
-        return phoneme_data_list, f0s.tolist(), volumes.tolist()
+        # mypyの型チェックを通すために明示的に型を付ける
+        f0_list: list[float] = f0s.tolist()  # type: ignore
+        volume_list: list[float] = volumes.tolist()  # type: ignore
+
+        return phoneme_data_list, f0_list, volume_list
 
     def create_sing_f0_from_phoneme(
         self,
@@ -700,7 +704,7 @@ class TTSEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()
+        f0_list: list[float] = f0s.tolist()  # type: ignore
 
         return f0_list
 
@@ -752,7 +756,7 @@ class TTSEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        volume_list: list[float] = volumes.tolist()
+        volume_list: list[float] = volumes.tolist()  # type: ignore
 
         return volume_list
 

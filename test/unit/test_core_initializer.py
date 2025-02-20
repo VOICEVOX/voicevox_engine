@@ -1,4 +1,4 @@
-""" `core_initializer.py` のテスト"""
+"""`core_initializer.py` のテスト"""
 
 from unittest.mock import patch
 
