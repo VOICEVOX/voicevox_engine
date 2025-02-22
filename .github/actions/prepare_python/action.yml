@@ -7,7 +7,7 @@ inputs:
     required: false
     default: "false"
   requirements-suffix:
-    description: "依存パッケージインストール時に `rquirements` へ付ける接尾語"
+    description: "依存パッケージインストール時に `requirements` へ付ける接尾語"
     required: false
     default: ""
   python-version:
