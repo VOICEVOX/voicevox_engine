@@ -484,7 +484,7 @@ python run.py --help
 
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
-VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
@@ -533,13 +533,13 @@ Mac での libtorch 版コアのサポートはしていません。
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
 ```bash
-python run.py --voicevox_dir="/path/to/voicevox"
+python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 ##### 音声ライブラリを直接指定する
