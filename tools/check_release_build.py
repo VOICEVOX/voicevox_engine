@@ -16,10 +16,19 @@ import soundfile
 base_url = "http://127.0.0.1:50021/"
 
 
-def test_release_build(dist_dir: Path, skip_run_process: bool) -> None:
+def test_release_build(
+    dist_dir: Path, skip_run_process: bool, skip_check_manifest: bool
+) -> None:
     run_file = dist_dir / "run"
     if not run_file.exists():
         run_file = dist_dir / "run.exe"
+
+    # マニフェストファイルの確認
+    if not skip_check_manifest:
+        manifest_file = dist_dir / "engine_manifest.json"
+        assert manifest_file.is_file()
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+        assert "manifest_version" in manifest
 
     # 起動
     process = None
@@ -77,5 +86,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist_dir", type=Path, default=Path("dist/"))
     parser.add_argument("--skip_run_process", action="store_true")
+    parser.add_argument("--skip_check_manifest", action="store_true")
     args = parser.parse_args()
-    test_release_build(dist_dir=args.dist_dir, skip_run_process=args.skip_run_process)
+    test_release_build(
+        dist_dir=args.dist_dir,
+        skip_run_process=args.skip_run_process,
+        skip_check_manifest=args.skip_check_manifest,
+    )
