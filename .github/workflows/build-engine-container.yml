@@ -300,7 +300,7 @@ jobs:
 
           IFS=$'\n'
           for manifest_list_tag in $manifest_list_tags; do
-            # 既存のマニフェストリストのタグを除くイメージ名を取得
+            # build-dockerでビルドしたイメージのタグを除くイメージ名を取得
             amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
             arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
 
