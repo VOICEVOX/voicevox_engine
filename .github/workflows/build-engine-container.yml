@@ -221,14 +221,14 @@ jobs:
         include:
           # OS: Ubuntu 20.04
           # CPU: AMD64, ARM64
-          - manifest_prefixes: "cpu-ubuntu20.04"
-            amd64_prefix: "cpu-amd64-ubuntu20.04"
-            arm64_prefix: "cpu-arm64-ubuntu20.04"
+          - manifest_list_prefixes: "cpu-ubuntu20.04"
+            amd64_manifest_prefix: "cpu-amd64-ubuntu20.04"
+            arm64_manifest_prefix: "cpu-arm64-ubuntu20.04"
           # OS: Ubuntu 22.04
           # CPU: AMD64, ARM64
-          - manifest_prefixes: ",cpu,cpu-ubuntu22.04"
-            amd64_prefix: "cpu-amd64-ubuntu22.04"
-            arm64_prefix: "cpu-arm64-ubuntu22.04"
+          - manifest_list_prefixes: ",cpu,cpu-ubuntu22.04"
+            amd64_manifest_prefix: "cpu-amd64-ubuntu22.04"
+            arm64_manifest_prefix: "cpu-arm64-ubuntu22.04"
 
     steps:
       - name: <Setup> Check out the repository
@@ -253,80 +253,80 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build> Generate Manifest Docker image names
-        id: generate-manifest-docker-image-names
+      - name: <Build> Generate Docker manifest list names
+        id: generate-manifest-docker-manifest-list-names
         run: |
-          # Dockerイメージ名を outputs.manifest_tags に改行区切りで格納する
+          # Dockerイメージ名を outputs.manifest_list_tags に改行区切りで格納する
           {
-            echo "manifest_tags<<EOF"
+            echo "manifest_list_tags<<EOF"
 
             python3 tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.manifest_prefixes }}"
+              --prefix "${{ matrix.manifest_list_prefixes }}"
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: <Build> Generate AMD64 Docker image name
-        id: generate-amd64-docker-image-name
+      - name: <Build> Generate AMD64 Docker manifest name
+        id: generate-amd64-docker-manifest-name
         run: |
-          # Dockerイメージ名を outputs.amd64_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.amd64_manifest_tag に改行区切りで格納する
           {
-            echo "amd64_tag<<EOF"
+            echo "amd64_manifest_tag<<EOF"
 
             python3 tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.amd64_prefix }}"
+              --prefix "${{ matrix.amd64_manifest_prefix }}"
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   
-      - name: <Build> Generate ARM64 Docker image name
-        id: generate-arm64-docker-image-name
+      - name: <Build> Generate ARM64 Docker manifest name
+        id: generate-arm64-docker-manifest-name
         run: |
-          # Dockerイメージ名を outputs.arm64_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.arm64_manifest_tag に改行区切りで格納する
           {
-            echo "arm64_tag<<EOF"
+            echo "arm64_manifest_tag<<EOF"
 
             python3 tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.arm64_prefix }}"
+              --prefix "${{ matrix.arm64_manifest_prefix }}"
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   
       - name: <Build> Create Manifest Lists
         run: |
-          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
+          for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
             docker manifest create \
-              "${manifest_tag}" \
-              "${{ steps.generate-amd64-docker-image-name.outputs.amd64_tag }}" \
-              "${{ steps.generate-arm64-docker-image-name.outputs.arm64_tag }}"
+              "${manifest_list_tag}" \
+              "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" \
+              "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}"
           done
 
       - name: <Build> Annotate Manifests
         run: |
-          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
+          for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
             docker manifest annotate \
-              "${manifest_tag}" \
-              "${{ steps.generate-amd64-docker-image-name.outputs.amd64_tag }}" \
+              "${manifest_list_tag}" \
+              "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" \
               --os linux \
               --arch amd64
 
             docker manifest annotate \
-              "${manifest_tag}" \
-              "${{ steps.generate-arm64-docker-image-name.outputs.arm64_tag }}" \
+              "${manifest_list_tag}" \
+              "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" \
               --os linux \
               --arch arm64
           done
 
       - name: <Build/Deploy> Push Manifest Lists
         run: |
-          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
-            docker manifest push "${manifest_tag}"
+          for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
+            docker manifest push "${manifest_list_tag}"
           done
 
   run-release-test-workflow:
