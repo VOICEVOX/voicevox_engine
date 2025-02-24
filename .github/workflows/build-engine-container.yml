@@ -300,12 +300,13 @@ jobs:
 
           IFS=$'\n'
           for manifest_list_tag in $manifest_list_tags; do
-            # build-dockerでビルドしたイメージのタグを除くイメージ名を取得
+            # NOTE: amd64_image_tag, arm64_image_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
+
+            # build-dockerでビルドしたマニフェストリストのタグを除くイメージ名を取得
             amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
             arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
 
             # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
-            # NOTE: amd64_image_tag, arm64_image_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
             amd64_image_digest=$(docker manifest inspect "${amd64_image_tag}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
             if [ -z "${amd64_image_digest}" ]; then
               echo "::error::AMD64イメージのダイジェストを取得できませんでした"
