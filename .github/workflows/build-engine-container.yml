@@ -307,20 +307,14 @@ jobs:
 
             # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
             # NOTE: amd64_manifest_tag, arm64_manifest_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
-            amd64_digest=$(
-              docker manifest inspect "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" \
-              | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
-            )
-            if [ -z "$amd64_digest" ]; then
+            amd64_digest=$(docker manifest inspect "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
+            if [ -z "${amd64_digest}" ]; then
               echo "::error::AMD64イメージのダイジェストを取得できませんでした"
               exit 1
             fi
 
-            arm64_digest=$(
-              docker manifest inspect "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" \
-              | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
-            )
-            if [ -z "$arm64_digest" ]; then
+            arm64_digest=$(docker manifest inspect "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
+            if [ -z "${arm64_digest}" ]; then
               echo "::error::ARM64イメージのダイジェストを取得できませんでした"
               exit 1
             fi
