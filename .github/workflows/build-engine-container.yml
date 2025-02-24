@@ -213,7 +213,7 @@ jobs:
           platforms: ${{ matrix.platforms }}
 
   build-docker-manifest: # Dockerイメージを1つのタグにまとめる
-    needs: [build-docker]
+    needs: [config, build-docker]
     runs-on: ubuntu-latest
 
     strategy:
@@ -231,8 +231,103 @@ jobs:
             arm64_prefix: "cpu-arm64-ubuntu22.04"
 
     steps:
-      # TODO: 仮でログに出力
-      - run: echo "manifest_prefixes=${{ matrix.manifest_prefixes }}"
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Setup> Prepare Python version
+        id: prepare-python
+        uses: ./.github/actions/prepare_python
+        with:
+          only-export-python-version: true
+
+      - name: <Setup> Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: <Setup> Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: <Setup> Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: <Build> Generate Manifest Docker image names
+        id: generate-manifest-docker-image-names
+        run: |
+          # Dockerイメージ名を outputs.manifest_tags に改行区切りで格納する
+          {
+            echo "manifest_tags<<EOF"
+
+            python3 tools/generate_docker_image_names.py \
+              --repository "${{ env.IMAGE_NAME }}" \
+              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --prefix "${{ matrix.manifest_prefixes }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: <Build> Generate AMD64 Docker image name
+        id: generate-amd64-docker-image-name
+        run: |
+          # Dockerイメージ名を outputs.amd64_tag に改行区切りで格納する
+          {
+            echo "amd64_tag<<EOF"
+
+            python3 tools/generate_docker_image_names.py \
+              --repository "${{ env.IMAGE_NAME }}" \
+              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --prefix "${{ matrix.amd64_prefix }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+  
+      - name: <Build> Generate ARM64 Docker image name
+        id: generate-arm64-docker-image-name
+        run: |
+          # Dockerイメージ名を outputs.arm64_tag に改行区切りで格納する
+          {
+            echo "arm64_tag<<EOF"
+
+            python3 tools/generate_docker_image_names.py \
+              --repository "${{ env.IMAGE_NAME }}" \
+              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --prefix "${{ matrix.arm64_prefix }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+  
+      - name: <Build> Create Manifest Lists
+        run: |
+          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
+            docker manifest create \
+              "${manifest_tag}" \
+              "${{ steps.generate-amd64-docker-image-name.outputs.amd64_tag }}" \
+              "${{ steps.generate-arm64-docker-image-name.outputs.arm64_tag }}"
+          done
+
+      - name: <Build> Annotate Manifests
+        run: |
+          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
+            docker manifest annotate \
+              "${manifest_tag}" \
+              "${{ steps.generate-amd64-docker-image-name.outputs.amd64_tag }}" \
+              --os linux \
+              --arch amd64
+
+            docker manifest annotate \
+              "${manifest_tag}" \
+              "${{ steps.generate-arm64-docker-image-name.outputs.arm64_tag }}" \
+              --os linux \
+              --arch arm64
+          done
+
+      - name: <Build/Deploy> Push Manifest Lists
+        run: |
+          for manifest_tag in ${{ steps.generate-manifest-docker-image-names.outputs.manifest_tags }}; do
+            docker manifest push "${manifest_tag}"
+          done
 
   run-release-test-workflow:
     # version が指定されている場合のみ実行する
