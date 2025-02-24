@@ -321,6 +321,7 @@ jobs:
               "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" \
               --os linux \
               --arch arm64
+              --variant v8
           done
 
       - name: <Build/Deploy> Push Manifest Lists
