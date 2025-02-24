@@ -298,7 +298,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   
-      - name: <Build> Create Manifest Lists
+      - name: <Build> Create Manifest lists
         run: |
           manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
           amd64_manifest_tag="${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}"
@@ -345,7 +345,7 @@ jobs:
               --variant v8
           done
 
-      - name: <Deploy> Deploy Manifest Lists
+      - name: <Deploy> Deploy Manifest lists
         run: |
           manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
 
