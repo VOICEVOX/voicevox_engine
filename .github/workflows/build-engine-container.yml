@@ -320,7 +320,7 @@ jobs:
               "${manifest_list_tag}" \
               "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" \
               --os linux \
-              --arch arm64
+              --arch arm64 \
               --variant v8
           done
 
