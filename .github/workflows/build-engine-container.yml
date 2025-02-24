@@ -300,6 +300,8 @@ jobs:
   
       - name: <Build> Create Manifest Lists
         run: |
+          set -eux
+
           for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
             # 既存のマニフェストリストのタグを除くイメージ名を取得
             amd64_manifest_image=$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
