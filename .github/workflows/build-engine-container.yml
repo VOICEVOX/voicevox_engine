@@ -313,8 +313,8 @@ jobs:
             )
 
             # 既存のマニフェストリストのタグを除くイメージ名を取得
-            amd64_manifest_image-$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
-            arm64_manifest_image-$(echo "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | cut -d: -f1)
+            amd64_manifest_image=$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
+            arm64_manifest_image=$(echo "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | cut -d: -f1)
 
             # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
             docker manifest create \
