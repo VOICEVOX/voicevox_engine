@@ -122,9 +122,6 @@ jobs:
         with:
           only-export-python-version: true
 
-      - name: <Setup> Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: <Setup> Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
@@ -239,9 +236,6 @@ jobs:
         uses: ./.github/actions/prepare_python
         with:
           only-export-python-version: true
-
-      - name: <Setup> Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
