@@ -301,20 +301,29 @@ jobs:
       - name: <Build> Create Manifest Lists
         run: |
           for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
-            # 既存のマニフェストリストから、sha256:digest 形式の単一イメージのダイジェストを取得
-            # NOTE: amd64_manifest_tag, arm64_manifest_tagの指すイメージが単一プラットフォームイメージではなく、マニフェストリストであることを前提とする
+            # 既存のマニフェストリストのタグを除くイメージ名を取得
+            amd64_manifest_image=$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
+            arm64_manifest_image=$(echo "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | cut -d: -f1)
+
+            # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
+            # NOTE: amd64_manifest_tag, arm64_manifest_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
             amd64_digest=$(
               docker manifest inspect "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" \
-              | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
+              | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
             )
+            if [ -z "$amd64_digest" ]; then
+              echo "::error::AMD64イメージのダイジェストを取得できませんでした"
+              exit 1
+            fi
+
             arm64_digest=$(
               docker manifest inspect "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" \
               | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
             )
-
-            # 既存のマニフェストリストのタグを除くイメージ名を取得
-            amd64_manifest_image=$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
-            arm64_manifest_image=$(echo "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | cut -d: -f1)
+            if [ -z "$arm64_digest" ]; then
+              echo "::error::ARM64イメージのダイジェストを取得できませんでした"
+              exit 1
+            fi
 
             # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
             docker manifest create \
