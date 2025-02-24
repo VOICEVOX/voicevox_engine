@@ -262,12 +262,12 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: <Build> Generate AMD64 Docker manifest name
-        id: generate-amd64-docker-manifest-name
+      - name: <Build> Generate AMD64 Docker image name
+        id: generate-amd64-docker-image-name
         run: |
-          # Dockerイメージ名を outputs.amd64_manifest_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.amd64_image_tag に改行区切りで格納する
           {
-            echo "amd64_manifest_tag<<EOF"
+            echo "amd64_image_tag<<EOF"
 
             python3 tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
@@ -277,12 +277,12 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   
-      - name: <Build> Generate ARM64 Docker manifest name
-        id: generate-arm64-docker-manifest-name
+      - name: <Build> Generate ARM64 Docker image name
+        id: generate-arm64-docker-image-name
         run: |
-          # Dockerイメージ名を outputs.arm64_manifest_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.arm64_image_tag に改行区切りで格納する
           {
-            echo "arm64_manifest_tag<<EOF"
+            echo "arm64_image_tag<<EOF"
 
             python3 tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
@@ -295,25 +295,25 @@ jobs:
       - name: <Build> Create Manifest lists
         run: |
           manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
-          amd64_manifest_tag="${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}"
-          arm64_manifest_tag="${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}"
+          amd64_image_tag="${{ steps.generate-amd64-docker-image-name.outputs.amd64_image_tag }}"
+          arm64_image_tag="${{ steps.generate-arm64-docker-image-name.outputs.arm64_image_tag }}"
 
           IFS=$'\n'
           for manifest_list_tag in $manifest_list_tags; do
             # 既存のマニフェストリストのタグを除くイメージ名を取得
-            amd64_manifest_image=$(echo "${amd64_manifest_tag}" | cut -d: -f1)
-            arm64_manifest_image=$(echo "${arm64_manifest_tag}" | cut -d: -f1)
+            amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
+            arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
 
             # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
-            # NOTE: amd64_manifest_tag, arm64_manifest_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
-            amd64_digest=$(docker manifest inspect "${amd64_manifest_tag}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
-            if [ -z "${amd64_digest}" ]; then
+            # NOTE: amd64_image_tag, arm64_image_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
+            amd64_image_digest=$(docker manifest inspect "${amd64_image_tag}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
+            if [ -z "${amd64_image_digest}" ]; then
               echo "::error::AMD64イメージのダイジェストを取得できませんでした"
               exit 1
             fi
 
-            arm64_digest=$(docker manifest inspect "${arm64_manifest_tag}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
-            if [ -z "${arm64_digest}" ]; then
+            arm64_image_digest=$(docker manifest inspect "${arm64_image_tag}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
+            if [ -z "${arm64_image_digest}" ]; then
               echo "::error::ARM64イメージのダイジェストを取得できませんでした"
               exit 1
             fi
@@ -321,19 +321,19 @@ jobs:
             # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
             docker manifest create \
               "${manifest_list_tag}" \
-              "${amd64_manifest_image}@${amd64_digest}" \
-              "${arm64_manifest_image}@${arm64_digest}"
+              "${amd64_image_name}@${amd64_image_digest}" \
+              "${arm64_image_name}@${arm64_image_digest}"
 
             # マニフェストにプラットフォーム情報を追加
             docker manifest annotate \
               "${manifest_list_tag}" \
-              "${amd64_manifest_image}@${amd64_digest}" \
+              "${amd64_image_name}@${amd64_image_digest}" \
               --os linux \
               --arch amd64
 
             docker manifest annotate \
               "${manifest_list_tag}" \
-              "${arm64_manifest_image}@${arm64_digest}" \
+              "${arm64_image_name}@${arm64_image_digest}" \
               --os linux \
               --arch arm64 \
               --variant v8
