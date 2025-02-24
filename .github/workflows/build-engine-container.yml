@@ -300,22 +300,25 @@ jobs:
   
       - name: <Build> Create Manifest Lists
         run: |
-          set -eux
+          manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
+          amd64_manifest_tag="${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}"
+          arm64_manifest_tag="${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}"
 
-          for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
+          IFS=$'\n'
+          for manifest_list_tag in $manifest_list_tags; do
             # 既存のマニフェストリストのタグを除くイメージ名を取得
-            amd64_manifest_image=$(echo "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | cut -d: -f1)
-            arm64_manifest_image=$(echo "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | cut -d: -f1)
+            amd64_manifest_image=$(echo "${amd64_manifest_tag}" | cut -d: -f1)
+            arm64_manifest_image=$(echo "${arm64_manifest_tag}" | cut -d: -f1)
 
             # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
             # NOTE: amd64_manifest_tag, arm64_manifest_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
-            amd64_digest=$(docker manifest inspect "${{ steps.generate-amd64-docker-manifest-name.outputs.amd64_manifest_tag }}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
+            amd64_digest=$(docker manifest inspect "${amd64_manifest_tag}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
             if [ -z "${amd64_digest}" ]; then
               echo "::error::AMD64イメージのダイジェストを取得できませんでした"
               exit 1
             fi
 
-            arm64_digest=$(docker manifest inspect "${{ steps.generate-arm64-docker-manifest-name.outputs.arm64_manifest_tag }}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
+            arm64_digest=$(docker manifest inspect "${arm64_manifest_tag}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
             if [ -z "${arm64_digest}" ]; then
               echo "::error::ARM64イメージのダイジェストを取得できませんでした"
               exit 1
@@ -342,9 +345,12 @@ jobs:
               --variant v8
           done
 
-      - name: <Build/Deploy> Deploy Manifest Lists
+      - name: <Deploy> Deploy Manifest Lists
         run: |
-          for manifest_list_tag in ${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}; do
+          manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
+
+          IFS=$'\n'
+          for manifest_list_tag in ${manifest_list_tags}; do
             docker manifest push "${manifest_list_tag}"
           done
 
