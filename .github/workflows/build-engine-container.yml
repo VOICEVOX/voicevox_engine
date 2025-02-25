@@ -265,7 +265,7 @@ jobs:
       - name: <Build> Generate AMD64 Docker image name
         id: generate-amd64-docker-image-name
         run: |
-          # Dockerイメージ名を outputs.amd64_image_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.amd64_image_tag に格納する
           {
             echo "amd64_image_tag<<EOF"
 
@@ -280,7 +280,7 @@ jobs:
       - name: <Build> Generate ARM64 Docker image name
         id: generate-arm64-docker-image-name
         run: |
-          # Dockerイメージ名を outputs.arm64_image_tag に改行区切りで格納する
+          # Dockerイメージ名を outputs.arm64_image_tag に格納する
           {
             echo "arm64_image_tag<<EOF"
 
