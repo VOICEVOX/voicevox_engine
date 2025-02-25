@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
+from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
 from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
@@ -74,6 +75,25 @@ def app(app_params: dict) -> FastAPI:
 @pytest.fixture()
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture()
+def experimental_app(app_params: dict) -> FastAPI:
+    app_params["cancellable_engine"] = CancellableEngine(
+        init_processes=1,
+        use_gpu=False,
+        voicelib_dirs=None,
+        voicevox_dir=None,
+        runtime_dirs=None,
+        cpu_num_threads=None,
+        enable_mock=True,
+    )
+    return generate_app(**app_params)
+
+
+@pytest.fixture()
+def experimental_client(experimental_app: FastAPI) -> TestClient:
+    return TestClient(experimental_app)
 
 
 def _generate_preset(preset_path: Path) -> None:
