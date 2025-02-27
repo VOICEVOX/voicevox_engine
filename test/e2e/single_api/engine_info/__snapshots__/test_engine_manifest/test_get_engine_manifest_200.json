@@ -32,14 +32,14 @@
   "update_infos": [
     {
       "contributors": [
-        "takana-v",
+        "aoirint",
+        "Hiroshiba",
+        "HyodaKazuaki",
         "nanae772",
         "sabonerune",
-        "HyodaKazuaki",
-        "aoirint",
-        "sigprogramming",
         "shunjilin",
-        "Hiroshiba"
+        "sigprogramming",
+        "takana-v"
       ],
       "descriptions": [
         "ソング：ピッチ取得APIを追加",
