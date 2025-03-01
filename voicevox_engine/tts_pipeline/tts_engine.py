@@ -1,6 +1,7 @@
 """テキスト音声合成エンジン"""
 
 import copy
+from collections.abc import Generator
 import math
 from typing import Any, Final, Literal, TypeAlias
 
@@ -383,6 +384,30 @@ class TTSEngine:
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+    def synthesize_wave_stream(
+        self,
+        query: AudioQuery,
+        style_id: StyleId,
+        enable_interrogative_upspeak: bool = True,
+    ) -> Generator[NDArray[np.float32], None, None]:
+        valid_chunk_size = 94  # 1sec * 24000Hz / 256frame
+        query = copy.deepcopy(query)
+        query.accent_phrases = _apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
+
+        phoneme, f0 = _query_to_decoder_feature(query)
+        audio_feature = self._core.safe_generate_full_intermediate(phoneme, f0, style_id)
+        for render_start in range(0, len(audio_feature), valid_chunk_size):
+            render_end = min(render_start + valid_chunk_size, len(audio_feature))
+            slice_start = render_start
+            slice_end = render_end + 2 * self._core.margin_width
+            feature_segment = audio_feature[slice_start:slice_end, :]
+            raw_wave_with_margin, sr_raw_wave = self._core.safe_render_audio_segment(feature_segment, style_id)
+            raw_wave = raw_wave_with_margin[self._core.margin_width * 256:-self._core.margin_width * 256]
+            wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+            yield wave
 
     def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
         """指定されたスタイル ID に関する合成機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""
