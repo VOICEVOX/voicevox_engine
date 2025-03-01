@@ -1,9 +1,10 @@
 import json
-import os
 import subprocess
 import urllib.request
 from pathlib import Path
-from typing import Literal
+from shutil import which
+from sysconfig import get_path
+from typing import Literal, assert_never
 
 
 class LicenseError(Exception):
@@ -32,7 +33,7 @@ class License:
         elif license_text_type == "remote_address":
             self.license_text = get_license_text(license_text)
         else:
-            raise Exception("型で保護され実行されないはずのパスが実行されました")
+            assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def get_license_text(text_url: str) -> str:
@@ -46,18 +47,21 @@ def generate_licenses() -> list[License]:
     licenses: list[License] = []
 
     # pip
+    pip_licenses_path = which("pip-licenses", path=get_path("scripts"))
+    if pip_licenses_path is None:
+        raise Exception("pip-licensesが見つかりません")
     try:
         pip_licenses_output = subprocess.run(
-            "pip-licenses "
-            "--from=mixed "
-            "--format=json "
-            "--with-urls "
-            "--with-license-file "
-            "--no-license-path ",
-            shell=True,
+            [
+                pip_licenses_path,
+                "--from=mixed",
+                "--format=json",
+                "--with-urls",
+                "--with-license-file",
+                "--no-license-path",
+            ],
             capture_output=True,
             check=True,
-            env=os.environ,
         ).stdout.decode()
     except subprocess.CalledProcessError as err:
         raise Exception(
