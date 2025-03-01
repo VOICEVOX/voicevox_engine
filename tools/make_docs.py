@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 
+from fastapi import FastAPI
+from fastapi.routing import APIRoute
+
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import CoreManager
@@ -13,6 +16,7 @@ from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHa
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
+
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
     """

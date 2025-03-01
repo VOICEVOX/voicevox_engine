@@ -46,6 +46,7 @@ def use_route_names_as_operation_ids(app: FastAPI) -> None:
         if isinstance(route, APIRoute):
             route.operation_id = route.name  # in this case, 'read_items'
 
+
 def generate_app(
     tts_engines: TTSEngineManager,
     core_manager: CoreManager,
