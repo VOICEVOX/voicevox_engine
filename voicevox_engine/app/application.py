@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
@@ -33,6 +34,17 @@ from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.runtime_utility import is_development
 
+
+def use_route_names_as_operation_ids(app: FastAPI) -> None:
+    """
+    Simplify operation IDs so that generated API clients have simpler function
+    names.
+
+    Should be called only after all routes have been added.
+    """
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.name  # in this case, 'read_items'
 
 def generate_app(
     tts_engines: TTSEngineManager,
@@ -105,5 +117,6 @@ def generate_app(
     app = configure_openapi_schema(
         app, engine_manifest.supported_features.manage_library
     )
+    use_route_names_as_operation_ids(app)
 
     return app

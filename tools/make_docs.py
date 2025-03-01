@@ -14,6 +14,17 @@ from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
+def use_route_names_as_operation_ids(app: FastAPI) -> None:
+    """
+    Simplify operation IDs so that generated API clients have simpler function
+    names.
+
+    Should be called only after all routes have been added.
+    """
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.name  # in this case, 'read_items'
+
 
 def generate_api_docs_html(schema: str) -> str:
     """OpenAPI schema から API ドキュメント HTML を生成する"""
@@ -63,6 +74,7 @@ if __name__ == "__main__":
         engine_manifest=engine_manifest,
         library_manager=library_manager,
     )
+    use_route_names_as_operation_ids(app)
     api_schema = json.dumps(app.openapi())
 
     # API ドキュメント HTML を生成する
