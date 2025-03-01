@@ -1,5 +1,24 @@
 [
   {
+    "version": "0.23.0",
+    "descriptions": [
+      "ソング：ピッチ取得APIを追加",
+      "同一エンジンの複数同時稼働を可能に",
+      "ARM64版エンジンの提供",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "aoirint",
+      "Hiroshiba",
+      "HyodaKazuaki",
+      "nanae772",
+      "sabonerune",
+      "shunjilin",
+      "sigprogramming",
+      "takana-v"
+    ]
+  },
+  {
     "version": "0.22.2",
     "descriptions": ["キャラクター「ぞん子」を追加"],
     "contributors": []
