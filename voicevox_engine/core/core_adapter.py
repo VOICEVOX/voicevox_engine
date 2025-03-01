@@ -63,6 +63,10 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
+    def margin_width(self) -> int:
+        return self.core.margin_width
+
+    @property
     def characters(self) -> list[CoreCharacter]:
         """キャラクター情報"""
         metas: list[Any] = json.loads(self.core.metas())
@@ -186,6 +190,38 @@ class CoreAdapter:
                 phoneme_size=phoneme.shape[1],
                 f0=f0[:, np.newaxis],
                 phoneme=phoneme,
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+        sr_wave = self.default_sampling_rate
+        return wave, sr_wave
+
+    def safe_generate_full_intermediate(
+        self,
+        phoneme: NDArray[np.float32],
+        f0: NDArray[np.float32],
+        style_id: StyleId,
+    ) -> NDArray[np.float32]:
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        with self.mutex:
+            audio_feature = self.core.generate_full_intermediate(
+                length=phoneme.shape[0],
+                phoneme_size=phoneme.shape[1],
+                f0=f0[:, np.newaxis],
+                phoneme=phoneme,
+                style_id=np.array(style_id, dtype=np.int64).reshape(-1),
+            )
+        return audio_feature
+
+    def safe_render_audio_segment(
+        self,
+        audio_feature: NDArray[np.float32],
+        style_id: StyleId,
+    ) -> tuple[NDArray[np.float32], int]:
+        self.initialize_style_id_synthesis(style_id, skip_reinit=True)
+        with self.mutex:
+            wave = self.core.render_audio_segment(
+                length=audio_feature.shape[0],
+                audio_feature=audio_feature,
                 style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )
         sr_wave = self.default_sampling_rate
