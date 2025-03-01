@@ -246,10 +246,6 @@ RUN <<EOF
 
     cd /opt/voicevox_engine
 
-    # Define temporary env vars
-    # /home/user/.local/bin is required to use the commands installed by pip
-    export PATH="/home/user/.local/bin:${PATH:-}"
-
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
     # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
     gosu user /opt/python/bin/pip3 install "$(grep pip-licenses /tmp/requirements-dev.txt | cut -f 1 -d ';')"
