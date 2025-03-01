@@ -207,14 +207,6 @@ def generate_licenses() -> list[License]:
             license_text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
             license_text_type="remote_address",
         ),
-        # OpenBLAS
-        License(
-            package_name="OpenBLAS",
-            package_version=None,
-            license_name="BSD 3-clause license",
-            license_text="https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE",
-            license_text_type="remote_address",
-        ),
         License(
             package_name="libsndfile-binaries",
             package_version="1.2.0",
