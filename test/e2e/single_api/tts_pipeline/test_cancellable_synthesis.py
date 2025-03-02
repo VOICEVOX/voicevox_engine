@@ -5,12 +5,31 @@
 from test.e2e.single_api.utils import gen_mora
 from test.utility import hash_wave_floats_from_wav_bytes
 
+import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
+from voicevox_engine.app.application import generate_app
+from voicevox_engine.cancellable_engine import CancellableEngine
+
+
+@pytest.fixture()
+def cancellable_client(app_params: dict) -> TestClient:
+    app_params["cancellable_engine"] = CancellableEngine(
+        init_processes=1,
+        use_gpu=False,
+        voicelib_dirs=None,
+        voicevox_dir=None,
+        runtime_dirs=None,
+        cpu_num_threads=None,
+        enable_mock=True,
+    )
+    experimental_app = generate_app(**app_params)
+    return TestClient(experimental_app)
+
 
 def test_post_cancellable_synthesis_200(
-    experimental_client: TestClient, snapshot: SnapshotAssertion
+    cancellable_client: TestClient, snapshot: SnapshotAssertion
 ) -> None:
     query = {
         "accent_phrases": [
@@ -37,7 +56,7 @@ def test_post_cancellable_synthesis_200(
         "outputStereo": False,
         "kana": "テ'_スト",
     }
-    response = experimental_client.post(
+    response = cancellable_client.post(
         "/cancellable_synthesis", params={"speaker": 0}, json=query
     )
     assert response.status_code == 200
@@ -48,7 +67,7 @@ def test_post_cancellable_synthesis_200(
 
 
 def test_post_cancellable_synthesis_old_audio_query_200(
-    experimental_client: TestClient, snapshot: SnapshotAssertion
+    cancellable_client: TestClient, snapshot: SnapshotAssertion
 ) -> None:
     """古いバージョンの audio_query でもエラーなく合成できる"""
     query = {
@@ -73,7 +92,7 @@ def test_post_cancellable_synthesis_old_audio_query_200(
         "outputSamplingRate": 24000,
         "outputStereo": False,
     }
-    response = experimental_client.post(
+    response = cancellable_client.post(
         "/cancellable_synthesis", params={"speaker": 0}, json=query
     )
     assert response.status_code == 200
