@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, StreamingResponse
 
 from voicevox_engine.cancellable_engine import (
     CancellableEngine,
@@ -379,6 +379,51 @@ def generate_tts_pipeline_router(
             media_type="application/zip",
             background=BackgroundTask(try_delete_file, f.name),
         )
+
+    @router.post(
+        "/stream_synthesis",
+        response_class=StreamingResponse,
+        responses={
+            200: {
+                "content": {
+                    "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="ストリーミングで音声合成し、24kHz-モノラル-リトルエンディアン-符号付き16bitのlinear PCMバイナリを返す",
+    )
+    def stream_synthesis(
+        query: AudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> StreamingResponse:
+        if query.outputSamplingRate != 24000:
+            raise HTTPException(
+                status_code=422,
+                detail="24kHz以外のサンプリングレートはサポートされていません",
+            )
+        if query.outputStereo:
+            raise HTTPException(
+                status_code=422,
+                detail="ステレオ出力はサポートされていません",
+            )
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_engine(version)
+        wave_generator = engine.synthesize_wave_stream(
+            query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
+        )
+        def generate_pcm(wave_generator):
+            for wave in wave_generator:
+                wave = (wave.clip(-1, 1) * 32767).astype('<i2')
+                yield wave.tobytes()
+        return StreamingResponse(generate_pcm(wave_generator), media_type="application/octet-stream")
 
     @router.post(
         "/sing_frame_audio_query",
