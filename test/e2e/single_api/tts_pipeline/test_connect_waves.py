@@ -13,13 +13,10 @@ from syrupy.assertion import SnapshotAssertion
 def test_post_connect_waves_200(
     client: TestClient, snapshot: SnapshotAssertion
 ) -> None:
+    test_audio_dir = Path(__file__).parent / "test_audio"
     wavs = [
-        base64.b64encode(
-            Path("test/e2e/single_api/tts_pipeline/test_audio/sample1.wav").read_bytes()
-        ).decode(),
-        base64.b64encode(
-            Path("test/e2e/single_api/tts_pipeline/test_audio/sample2.wav").read_bytes()
-        ).decode(),
+        base64.b64encode((test_audio_dir / "sample1.wav").read_bytes()).decode(),
+        base64.b64encode((test_audio_dir / "sample2.wav").read_bytes()).decode(),
     ]
 
     response = client.post("/connect_waves", json=wavs)
