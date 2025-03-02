@@ -24,8 +24,8 @@ def cancellable_client(app_params: dict) -> TestClient:
         cpu_num_threads=None,
         enable_mock=True,
     )
-    experimental_app = generate_app(**app_params)
-    return TestClient(experimental_app)
+    cancellable_app = generate_app(**app_params)
+    return TestClient(cancellable_app)
 
 
 def test_post_cancellable_synthesis_200(
