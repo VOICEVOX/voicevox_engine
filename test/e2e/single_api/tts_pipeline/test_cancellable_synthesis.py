@@ -64,3 +64,6 @@ def test_post_cancellable_synthesis_200(
     # 音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
     assert snapshot == hash_wave_floats_from_wav_bytes(response.read())
+
+
+# TODO: キャンセルするテストを追加する
