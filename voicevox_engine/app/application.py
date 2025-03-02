@@ -3,13 +3,15 @@
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.routing import APIRoute
 
 from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
-from voicevox_engine.app.openapi_schema import configure_openapi_schema
+from voicevox_engine.app.openapi_schema import (
+    configure_openapi_schema,
+    simplify_operation_ids,
+)
 from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
@@ -33,18 +35,6 @@ from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.runtime_utility import is_development
-
-
-def use_route_names_as_operation_ids(app: FastAPI) -> None:
-    """
-    Simplify operation IDs so that generated API clients have simpler function
-    names.
-
-    Should be called only after all routes have been added.
-    """
-    for route in app.routes:
-        if isinstance(route, APIRoute):
-            route.operation_id = route.name  # in this case, 'read_items'
 
 
 def generate_app(
@@ -115,9 +105,9 @@ def generate_app(
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
 
+    app = simplify_operation_ids(app)
     app = configure_openapi_schema(
         app, engine_manifest.supported_features.manage_library
     )
-    use_route_names_as_operation_ids(app)
 
     return app
