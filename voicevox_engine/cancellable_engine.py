@@ -52,11 +52,11 @@ class CancellableEngine:
         self,
         init_processes: int,
         use_gpu: bool,
-        voicelib_dirs: list[Path] | None,
-        voicevox_dir: Path | None,
-        runtime_dirs: list[Path] | None,
-        cpu_num_threads: int | None,
-        enable_mock: bool,
+        voicelib_dirs: list[Path] | None = None,
+        voicevox_dir: Path | None = None,
+        runtime_dirs: list[Path] | None = None,
+        cpu_num_threads: int | None = None,
+        enable_mock: bool = True,
     ) -> None:
         """
         変数の初期化を行う
