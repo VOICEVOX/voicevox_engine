@@ -18,10 +18,6 @@ def cancellable_client(app_params: dict) -> TestClient:
     app_params["cancellable_engine"] = CancellableEngine(
         init_processes=1,
         use_gpu=False,
-        voicelib_dirs=None,
-        voicevox_dir=None,
-        runtime_dirs=None,
-        cpu_num_threads=None,
         enable_mock=True,
     )
     cancellable_app = generate_app(**app_params)
