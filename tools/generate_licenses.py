@@ -1,9 +1,8 @@
 import json
 import subprocess
+import sys
 import urllib.request
 from pathlib import Path
-from shutil import which
-from sysconfig import get_path
 from typing import Literal, assert_never
 
 
@@ -47,13 +46,12 @@ def generate_licenses() -> list[License]:
     licenses: list[License] = []
 
     # pip
-    pip_licenses_path = which("pip-licenses", path=get_path("scripts"))
-    if pip_licenses_path is None:
-        raise Exception("pip-licensesが見つかりません")
     try:
         pip_licenses_output = subprocess.run(
             [
-                pip_licenses_path,
+                sys.executable,
+                "-m",
+                "piplicenses",
                 "--from=mixed",
                 "--format=json",
                 "--with-urls",
@@ -294,7 +292,6 @@ def generate_licenses() -> list[License]:
 
 if __name__ == "__main__":
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output_path", type=str)
