@@ -386,12 +386,12 @@ def generate_tts_pipeline_router(
         responses={
             200: {
                 "content": {
-                    "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
                 },
             }
         },
         tags=["音声合成"],
-        summary="ストリーミングで音声合成し、24kHz-モノラル-リトルエンディアン-符号付き16bitのlinear PCMバイナリを返す",
+        summary="ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
     )
     def stream_synthesis(
         query: AudioQuery,
@@ -416,14 +416,35 @@ def generate_tts_pipeline_router(
             )
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
-        wave_generator = engine.synthesize_wave_stream(
+        frame_length, wave_generator = engine.synthesize_wave_stream(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
-        def generate_pcm(wave_generator):
+        def generate_wav():
+            data_size = frame_length * 2
+            file_size = data_size + 44
+            channel_size = 2 if query.outputStereo else 1
+            block_size = 16 * channel_size // 8
+            block_rate = query.outputSamplingRate * block_size
+            # yield wav header, fmt chunk, and data chunk header
+            yield (
+                b"RIFF"
+                + (file_size - 8).to_bytes(4, "little")
+                + b"WAVEfmt "
+                + (16).to_bytes(4, "little")  # fmt header length
+                + (1).to_bytes(2, "little")  # PCM
+                + channel_size.to_bytes(2, "little")
+                + query.outputSamplingRate.to_bytes(4, "little")
+                + block_rate.to_bytes(4, "little")
+                + block_size.to_bytes(2, "little")
+                + (16).to_bytes(2, "little")  # bit depth
+                + b"data"
+                + data_size.to_bytes(4, "little")
+            )
+            # yield data chunk body
             for wave in wave_generator:
-                wave = (wave.clip(-1, 1) * 32767).astype('<i2')
-                yield wave.tobytes()
-        return StreamingResponse(generate_pcm(wave_generator), media_type="application/octet-stream")
+                pcm = (wave.clip(-1, 1) * 32767).astype('<i2')
+                yield pcm.tobytes()
+        return StreamingResponse(generate_wav(), media_type="audio/wav")
 
     @router.post(
         "/sing_frame_audio_query",
