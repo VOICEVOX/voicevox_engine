@@ -459,7 +459,10 @@ jobs:
         run: |
           set -eux
 
-          jq '.version = "${{ needs.config.outputs.version_or_latest }}"' engine_manifest.json > engine_manifest.json.tmp
+          jq '.version = "${{ needs.config.outputs.version_or_latest }}"
+          | if ${{ startsWith(matrix.os, 'windows-') }} then .command += ".exe" else . end' \
+          engine_manifest.json > engine_manifest.json.tmp
+
           mv -f engine_manifest.json.tmp engine_manifest.json
 
           # Replace version & specify dynamic libraries

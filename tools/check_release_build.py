@@ -4,6 +4,7 @@
 
 import argparse
 import json
+import shlex
 import time
 from io import BytesIO
 from pathlib import Path
@@ -29,6 +30,8 @@ def test_release_build(
         assert manifest_file.is_file()
         manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
         assert "manifest_version" in manifest
+        command = shlex.split(manifest["command"])[0]
+        assert (dist_dir / command).exists()
 
     # 起動
     process = None
