@@ -732,7 +732,7 @@ class CoreWrapper:
             )
         )
         return output
-    
+
     def generate_full_intermediate(
         self,
         length: int,
@@ -760,7 +760,9 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声特徴量
         """
-        output = np.empty((length + 2 * self.margin_width, self.feature_dim), dtype=np.float32)
+        output = np.empty(
+            (length + 2 * self.margin_width, self.feature_dim), dtype=np.float32
+        )
         self.assert_core_success(
             self.core.generate_full_intermediate(
                 c_int(length),

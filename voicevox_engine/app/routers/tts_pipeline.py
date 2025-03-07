@@ -1,6 +1,7 @@
 """音声合成機能を提供する API Router"""
 
 import zipfile
+from collections.abc import Generator
 from tempfile import NamedTemporaryFile, TemporaryFile
 from typing import Annotated, Self
 
@@ -419,7 +420,8 @@ def generate_tts_pipeline_router(
         frame_length, wave_generator = engine.synthesize_wave_stream(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
-        def generate_wav():
+
+        def generate_wav() -> Generator[bytes, None, None]:
             data_size = frame_length * 2
             file_size = data_size + 44
             channel_size = 2 if query.outputStereo else 1
@@ -442,8 +444,9 @@ def generate_tts_pipeline_router(
             )
             # yield data chunk body
             for wave in wave_generator:
-                pcm = (wave.clip(-1, 1) * 32767).astype('<i2')
+                pcm = (wave.clip(-1, 1) * 32767).astype("<i2")
                 yield pcm.tobytes()
+
         return StreamingResponse(generate_wav(), media_type="audio/wav")
 
     @router.post(
