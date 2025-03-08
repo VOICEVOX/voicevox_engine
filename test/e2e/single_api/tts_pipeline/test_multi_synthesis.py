@@ -70,6 +70,7 @@ def test_post_multi_synthesis_200(
     response = client.post("/multi_synthesis", params={"speaker": 0}, json=queries)
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/zip"
+
     # zipに含まれる全てのwavの波形がスナップショットと一致することを確認
     zip_bytes = io.BytesIO(response.read())
     with zipfile.ZipFile(zip_bytes, "r") as zip_file:
