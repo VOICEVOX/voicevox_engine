@@ -71,7 +71,7 @@ def test_post_multi_synthesis_200(
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/zip"
 
-    # zipに含まれる全てのwavの波形がスナップショットと一致することを確認
+    # zip 内の全ての wav の波形がスナップショットと一致する
     zip_bytes = io.BytesIO(response.read())
     with zipfile.ZipFile(zip_bytes, "r") as zip_file:
         wav_files = (zip_file.read(name) for name in zip_file.namelist())
