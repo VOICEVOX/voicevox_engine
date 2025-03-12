@@ -373,7 +373,7 @@ c2k: e2k.C2K | None = None
 # e2kで変換するかどうか判断するルール
 # - 3文字以上
 # - 先頭が大文字/小文字、それ以降が小文字
-rule_convertable = re.compile(r"[a-zA-Z][a-z]{2,}")
+rule_convertible = re.compile(r"[a-zA-Z][a-z]{2,}")
 
 
 def extract_fullcontext_with_e2k(text: str) -> list[str]:
@@ -392,7 +392,7 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
         # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
         hankaku_string = _convert_to_hankaku(feature["string"])
 
-        if rule_convertable.fullmatch(hankaku_string):
+        if rule_convertible.fullmatch(hankaku_string):
             kana = c2k(hankaku_string.lower())
 
             # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
