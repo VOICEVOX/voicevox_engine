@@ -7,6 +7,7 @@ from typing import Final, Literal, TypeAlias
 import numpy as np
 from fastapi import HTTPException
 from numpy.typing import NDArray
+from pyopenjtalk import extract_fullcontext
 from soxr import resample
 
 from voicevox_engine.utility.core_version_utility import get_latest_version
@@ -28,7 +29,7 @@ from .model import (
 )
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
-from .text_analyzer import text_to_accent_phrases
+from .text_analyzer import extract_fullcontext_with_e2k, text_to_accent_phrases
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
@@ -559,9 +560,14 @@ class TTSEngine:
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self, text: str, style_id: StyleId, enable_e2k: bool = False
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        accent_phrases = text_to_accent_phrases(text)
+        if enable_e2k:
+            accent_phrases = text_to_accent_phrases(text, extract_fullcontext_with_e2k)
+        else:
+            accent_phrases = text_to_accent_phrases(text, extract_fullcontext)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
