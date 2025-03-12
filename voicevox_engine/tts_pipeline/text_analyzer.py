@@ -370,10 +370,36 @@ def _convert_to_hankaku(surface: str) -> str:
 
 c2k: e2k.C2K | None = None
 
-# e2kで変換するかどうか判断するルール
-# - 3文字以上
-# - 先頭が大文字/小文字、それ以降が小文字
-rule_convertible = re.compile(r"[a-zA-Z][a-z]{2,}")
+# OpenJTalkで使っているアルファベット→カタカナの対応表
+# https://github.com/VOICEVOX/open_jtalk/blob/b9b1bf6a0cba6bc9550b4521913b20334a218dfc/src/njd_set_pronunciation/njd_set_pronunciation_rule_utf_8.h#L397
+ojt_alphabet_kana_mapping = {
+    "A": "エー",
+    "B": "ビー",
+    "C": "シー",
+    "D": "ディー",
+    "E": "イー",
+    "F": "エフ",
+    "G": "ジー",
+    "H": "エイチ",
+    "I": "アイ",
+    "J": "ジェー",
+    "K": "ケー",
+    "L": "エル",
+    "M": "エム",
+    "N": "エヌ",
+    "O": "オー",
+    "P": "ピー",
+    "Q": "キュー",
+    "R": "アール",
+    "S": "エス",
+    "T": "ティー",
+    "U": "ユー",
+    "V": "ブイ",
+    "W": "ダブリュー",
+    "X": "エックス",
+    "Y": "ワイ",
+    "Z": "ズィー",
+}
 
 
 def extract_fullcontext_with_e2k(text: str) -> list[str]:
@@ -391,9 +417,19 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
 
         # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
         hankaku_string = _convert_to_hankaku(feature["string"])
-
-        if rule_convertible.fullmatch(hankaku_string):
-            kana = c2k(hankaku_string.lower())
+        # 全て大文字の場合は、e2kでの解析を行わない
+        if re.fullmatch("[a-zA-Z]+", hankaku_string) and not re.fullmatch(
+            "[A-Z]+", hankaku_string
+        ):
+            kana = ""
+            # キャメルケース的な単語に対応させるため、大文字で分割する
+            for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
+                # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
+                if word == word.upper() or len(word) < 3:
+                    for alphabet in word:
+                        kana += ojt_alphabet_kana_mapping[alphabet.upper()]
+                else:
+                    kana += c2k(word.lower())
 
             # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
             rule_others = (
