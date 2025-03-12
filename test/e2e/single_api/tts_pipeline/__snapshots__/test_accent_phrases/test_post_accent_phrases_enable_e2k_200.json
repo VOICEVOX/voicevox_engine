@@ -1,0 +1,33 @@
+[
+  {
+    "accent": 1,
+    "is_interrogative": false,
+    "moras": [
+      {
+        "consonant": "b",
+        "consonant_length": 0.5,
+        "pitch": 2.56,
+        "text": "ボ",
+        "vowel": "o",
+        "vowel_length": 1.88
+      },
+      {
+        "consonant": null,
+        "consonant_length": null,
+        "pitch": 1.25,
+        "text": "イ",
+        "vowel": "i",
+        "vowel_length": 1.31
+      },
+      {
+        "consonant": "b",
+        "consonant_length": 0.5,
+        "pitch": 2.44,
+        "text": "ボ",
+        "vowel": "o",
+        "vowel_length": 1.88
+      }
+    ],
+    "pause_mora": null
+  }
+]

@@ -103,6 +103,9 @@ def generate_licenses() -> list[License]:
             elif package_name == "webencodings":
                 text_url = "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"  # noqa: B950
                 license_json["LicenseText"] = get_license_text(text_url)
+            elif package_name == "e2k":
+                text_url = "https://raw.githubusercontent.com/Patchethium/e2k/refs/tags/0.3.0/LICENSE"  # noqa: B950
+                license_json["LicenseText"] = get_license_text(text_url)
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")

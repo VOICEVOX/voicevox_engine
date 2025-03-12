@@ -118,6 +118,7 @@ class SupportedFeatures(BaseModel):
     return_resource_url: bool | SkipJsonSchema[None] = Field(
         default=None, description="キャラクター情報のリソースをURLで返送"
     )
+    # TODO: 英語カタカナ化フラグを付ける場合はここに足す
 
 
 EngineName: TypeAlias = str

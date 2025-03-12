@@ -750,6 +750,21 @@ paramiko = ["paramiko"]
 pgp = ["gpg"]
 
 [[package]]
+name = "e2k"
+version = "0.3.0"
+description = "A tool for automatic English to Katakana conversion"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "e2k-0.3.0-py3-none-any.whl", hash = "sha256:67ae1a437d39d582def8c1dfec3634f61897d1b7dc49ce89e714d10b841c7c14"},
+    {file = "e2k-0.3.0.tar.gz", hash = "sha256:be7d40339aae8eb81f84db54183b34bd6914aad3f8396e4fe622f81b17ddb98b"},
+]
+
+[package.dependencies]
+numpy = ">=1.0,<3.0"
+
+[[package]]
 name = "fastapi-slim"
 version = "0.115.8"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -3120,4 +3135,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.11"
-content-hash = "72ffb0476157f1f95ac0f2af3807dbea5ea555915cf29128fcd482baffd3e0b2"
+content-hash = "550cf69a18689ca7e536747e089339d769094887b7506be5a5e210fce5a55f5e"
