@@ -99,7 +99,7 @@ def generate_tts_pipeline_router(
     def audio_query(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        enable_e2k: bool = False,
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """
@@ -131,7 +131,7 @@ def generate_tts_pipeline_router(
     def audio_query_from_preset(
         text: str,
         preset_id: int,
-        enable_e2k: bool = False,
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """
@@ -187,7 +187,7 @@ def generate_tts_pipeline_router(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         is_kana: bool = False,
-        enable_e2k: bool = False,
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         """
