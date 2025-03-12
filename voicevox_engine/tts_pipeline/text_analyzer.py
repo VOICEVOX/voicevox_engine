@@ -466,7 +466,9 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
 
 def text_to_accent_phrases(
     text: str,
-    text_to_features: Callable[[str], list[str]] = pyopenjtalk.extract_fullcontext,
+    text_to_features: Callable[
+        [str], list[str]
+    ] = pyopenjtalk.extract_fullcontext,  # TODO: 初期値をなくす？
 ) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する"""
     if len(text.strip()) == 0:
