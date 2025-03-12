@@ -198,7 +198,7 @@ def generate_tts_pipeline_router(
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
-        enable_e2kが`true`のとき、テキスト中の読みが不明な英単語を、e2kで解析します。デフォルトは`false`です。
+        enable_e2kが`true`のとき、テキスト中の読みが不明な英単語を、e2kで解析します。デフォルトは`true`です。
         is_kanaが`true`のとき、enable_e2kの値は無視されます。
         """
         version = core_version or LATEST_VERSION
