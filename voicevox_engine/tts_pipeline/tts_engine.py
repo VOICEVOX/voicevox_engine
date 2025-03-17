@@ -18,6 +18,7 @@ from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
 from .kana_converter import parse_kana
+from .katakana_english import extract_fullcontext_with_e2k
 from .model import (
     AccentPhrase,
     FrameAudioQuery,
@@ -29,7 +30,7 @@ from .model import (
 )
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
-from .text_analyzer import extract_fullcontext_with_e2k, text_to_accent_phrases
+from .text_analyzer import text_to_accent_phrases
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
