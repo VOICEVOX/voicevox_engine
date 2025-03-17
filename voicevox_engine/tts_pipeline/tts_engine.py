@@ -561,7 +561,10 @@ class TTSEngine:
         return accent_phrases
 
     def create_accent_phrases(
-        self, text: str, style_id: StyleId, enable_e2k: bool = False
+        self,
+        text: str,
+        style_id: StyleId,
+        enable_e2k: bool = False,  # TODO: 初期値をなくす？
     ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         if enable_e2k:
