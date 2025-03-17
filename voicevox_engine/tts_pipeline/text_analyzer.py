@@ -359,7 +359,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def _convert_to_hankaku(surface: str) -> str:
+def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
     return surface.translate(
         str.maketrans(
             "".join(chr(0xFF01 + i) for i in range(94)),
@@ -416,7 +416,7 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
             c2k = e2k.C2K()
 
         # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
-        hankaku_string = _convert_to_hankaku(feature["string"])
+        hankaku_string = _convert_zenkaku_alphabet_to_hankaku(feature["string"])
         # 全て大文字の場合は、e2kでの解析を行わない
         if re.fullmatch("[a-zA-Z]+", hankaku_string) and not re.fullmatch(
             "[A-Z]+", hankaku_string
