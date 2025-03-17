@@ -16,7 +16,16 @@ def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
     )
 
 
-c2k: e2k.C2K | None = None
+_global_c2k: e2k.C2K | None = None
+
+
+def _initialize_c2k() -> e2k.C2K:
+    global _global_c2k
+    if _global_c2k is None:
+        _global_c2k = e2k.C2K()
+
+    return _global_c2k
+
 
 # OpenJTalkで使っているアルファベット→カタカナの対応表
 # https://github.com/VOICEVOX/open_jtalk/blob/b9b1bf6a0cba6bc9550b4521913b20334a218dfc/src/njd_set_pronunciation/njd_set_pronunciation_rule_utf_8.h#L397
@@ -52,7 +61,6 @@ ojt_alphabet_kana_mapping = {
 
 def extract_fullcontext_with_e2k(text: str) -> list[str]:
     """e2kを用いて読みが不明な英単語をカタカナに変換し、フルコンテキストラベルを生成する"""
-    global c2k
     njd_features: list[dict[str, Any]] = pyopenjtalk.run_frontend(text)
     for i, feature in enumerate(njd_features):
         # Mecabの解析で未知語となった場合、読みは空となる
@@ -60,8 +68,7 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
         if feature["pos"] != "フィラー" or feature["chain_rule"] != "*":
             continue
 
-        if c2k is None:
-            c2k = e2k.C2K()
+        c2k = _initialize_c2k()
 
         # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
         hankaku_string = _convert_zenkaku_alphabet_to_hankaku(feature["string"])
