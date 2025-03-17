@@ -395,25 +395,18 @@ def test_extract_fullcontext_with_e2k_normal() -> None:
         for feature in extract_fullcontext_with_e2k("Voivo")
     ]
 
-    unexpected_phonemes = [
+    expected_phonemes = [
         "sil",
         "b",
-        "u",
-        "i",
         "o",
-        "o",
-        "a",
         "i",
         "b",
-        "u",
-        "i",
-        "o",
         "o",
         "sil",
     ]
 
-    # e2kの結果は変わる可能性があるため、「アルファベットそのままで読まない」ことのみをテストする
-    assert unexpected_phonemes != phonemes
+    # FIXME: e2kの結果が決定論的でない場合、テストが落ちる可能性がある
+    assert expected_phonemes == phonemes
 
 
 def test_extract_fullcontext_with_e2k_uppercase() -> None:
