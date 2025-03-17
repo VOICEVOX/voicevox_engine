@@ -417,49 +417,52 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
 
         # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
         hankaku_string = _convert_zenkaku_alphabet_to_hankaku(feature["string"])
-        # 全て大文字の場合は、e2kでの解析を行わない
-        if re.fullmatch("[a-zA-Z]+", hankaku_string) and not re.fullmatch(
+
+        # アルファベット以外の文字が含まれている場合や、全て大文字の場合は、e2kでの解析を行わない
+        if not re.fullmatch("[a-zA-Z]+", hankaku_string) or re.fullmatch(
             "[A-Z]+", hankaku_string
         ):
-            kana = ""
-            # キャメルケース的な単語に対応させるため、大文字で分割する
-            for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
-                # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
-                if word == word.upper() or len(word) < 3:
-                    for alphabet in word:
-                        kana += ojt_alphabet_kana_mapping[alphabet.upper()]
-                else:
-                    kana += c2k(word.lower())
+            continue
 
-            # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
-            rule_others = (
-                "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
-            )
-            rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-            rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-            rule_one_mora = "[ァ-ヴー]"
+        kana = ""
+        # キャメルケース的な単語に対応させるため、大文字で分割する
+        for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
+            # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
+            if word == word.upper() or len(word) < 3:
+                for alphabet in word:
+                    kana += ojt_alphabet_kana_mapping[alphabet.upper()]
+            else:
+                kana += c2k(word.lower())
 
-            njd_features[i] = {
-                "string": kana,
-                "pos": "名詞",
-                "pos_group1": "固有名詞",
-                "pos_group2": "一般",
-                "pos_group3": "*",
-                "ctype": "*",
-                "cform": "*",
-                "orig": feature["string"],
-                "read": kana,
-                "pron": kana,
-                "acc": 1,
-                "mora_size": len(
-                    re.findall(
-                        f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
-                        kana,
-                    )
-                ),
-                "chain_rule": "*",
-                "chain_flag": -1,
-            }
+        # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
+        rule_others = (
+            "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
+        )
+        rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
+        rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
+        rule_one_mora = "[ァ-ヴー]"
+
+        njd_features[i] = {
+            "string": kana,
+            "pos": "名詞",
+            "pos_group1": "固有名詞",
+            "pos_group2": "一般",
+            "pos_group3": "*",
+            "ctype": "*",
+            "cform": "*",
+            "orig": feature["string"],
+            "read": kana,
+            "pron": kana,
+            "acc": 1,
+            "mora_size": len(
+                re.findall(
+                    f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
+                    kana,
+                )
+            ),
+            "chain_rule": "*",
+            "chain_flag": -1,
+        }
 
     return pyopenjtalk.make_label(njd_features)  # type: ignore
 
