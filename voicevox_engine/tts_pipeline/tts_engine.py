@@ -7,6 +7,7 @@ from typing import Final, Literal, TypeAlias
 import numpy as np
 from fastapi import HTTPException
 from numpy.typing import NDArray
+from pyopenjtalk import extract_fullcontext
 from soxr import resample
 
 from voicevox_engine.utility.core_version_utility import get_latest_version
@@ -17,6 +18,7 @@ from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
 from .kana_converter import parse_kana
+from .katakana_english import extract_fullcontext_with_e2k
 from .model import (
     AccentPhrase,
     FrameAudioQuery,
@@ -559,9 +561,17 @@ class TTSEngine:
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self,
+        text: str,
+        style_id: StyleId,
+        enable_e2k: bool = False,  # TODO: 初期値をなくす？
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        accent_phrases = text_to_accent_phrases(text)
+        if enable_e2k:
+            accent_phrases = text_to_accent_phrases(text, extract_fullcontext_with_e2k)
+        else:
+            accent_phrases = text_to_accent_phrases(text, extract_fullcontext)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
