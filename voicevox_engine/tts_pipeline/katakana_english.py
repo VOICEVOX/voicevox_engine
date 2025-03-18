@@ -59,6 +59,25 @@ ojt_alphabet_kana_mapping = {
 }
 
 
+def _create_njd_feature(orig: str, kana: str, mora_size: int):
+    return {
+        "string": kana,
+        "pos": "名詞",
+        "pos_group1": "固有名詞",
+        "pos_group2": "一般",
+        "pos_group3": "*",
+        "ctype": "*",
+        "cform": "*",
+        "orig": orig,
+        "read": kana,
+        "pron": kana,
+        "acc": 1,
+        "mora_size": mora_size,
+        "chain_rule": "*",
+        "chain_flag": -1,
+    }
+
+
 def extract_fullcontext_with_e2k(text: str) -> list[str]:
     """e2kを用いて読みが不明な英単語をカタカナに変換し、フルコンテキストラベルを生成する"""
     njd_features: list[dict[str, Any]] = pyopenjtalk.run_frontend(text)
@@ -96,27 +115,14 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
         rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
         rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
         rule_one_mora = "[ァ-ヴー]"
+        mora_size = len(
+            re.findall(
+                f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})", kana
+            )
+        )
 
-        njd_features[i] = {
-            "string": kana,
-            "pos": "名詞",
-            "pos_group1": "固有名詞",
-            "pos_group2": "一般",
-            "pos_group3": "*",
-            "ctype": "*",
-            "cform": "*",
-            "orig": feature["string"],
-            "read": kana,
-            "pron": kana,
-            "acc": 1,
-            "mora_size": len(
-                re.findall(
-                    f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
-                    kana,
-                )
-            ),
-            "chain_rule": "*",
-            "chain_flag": -1,
-        }
+        njd_features[i] = _create_njd_feature(
+            orig=feature["string"], kana=kana, mora_size=mora_size
+        )
 
-    return pyopenjtalk.make_label(njd_features)  # type: ignore
+    return pyopenjtalk.make_label(njd_features)
