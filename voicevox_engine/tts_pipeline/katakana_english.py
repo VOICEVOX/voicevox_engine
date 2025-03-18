@@ -1,4 +1,4 @@
-"""アルファベット読み上げ処理"""
+"""英単語をカタカナ読みにする処理"""
 
 import re
 from typing import Any
