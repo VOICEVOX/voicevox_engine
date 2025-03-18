@@ -59,7 +59,7 @@ ojt_alphabet_kana_mapping = {
 }
 
 
-def _create_njd_feature(orig: str, kana: str, mora_size: int):
+def _create_njd_feature(orig: str, kana: str, mora_size: int) -> dict[str, Any]:
     return {
         "string": kana,
         "pos": "名詞",
