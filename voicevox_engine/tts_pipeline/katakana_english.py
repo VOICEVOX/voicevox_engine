@@ -125,4 +125,4 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
             orig=feature["string"], kana=kana, mora_size=mora_size
         )
 
-    return pyopenjtalk.make_label(njd_features)
+    return pyopenjtalk.make_label(njd_features)  # type: ignore
