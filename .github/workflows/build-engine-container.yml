@@ -16,6 +16,7 @@ env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
   VOICEVOX_CORE_VERSION: "0.15.7"
+  ONNXRUNTIME_VERSION: "1.13.1"
 
 defaults:
   run:
@@ -45,7 +46,6 @@ jobs:
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
-        # onnxruntime_version: ONNX Runtimeのバージョン
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04
@@ -54,7 +54,6 @@ jobs:
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
-            onnxruntime_version: 1.13.1
             # platforms: linux/amd64,linux/arm64/v8
             platforms: linux/amd64
           - prefixes: "nvidia-ubuntu20.04"
@@ -62,7 +61,6 @@ jobs:
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
-            onnxruntime_version: 1.13.1
             platforms: linux/amd64
           # Ubuntu 22.04
           - prefixes: ",cpu,cpu-ubuntu22.04"
@@ -70,7 +68,6 @@ jobs:
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
-            onnxruntime_version: 1.13.1
             # platforms: linux/amd64,linux/arm64/v8
             platforms: linux/amd64
           - prefixes: "nvidia,nvidia-ubuntu22.04"
@@ -78,7 +75,6 @@ jobs:
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
-            onnxruntime_version: 1.13.1
             platforms: linux/amd64
 
     steps:
@@ -173,7 +169,7 @@ jobs:
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-            ONNXRUNTIME_VERSION=${{ matrix.onnxruntime_version }}
+            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}
