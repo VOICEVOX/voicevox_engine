@@ -1815,22 +1815,6 @@ files = [
 ]
 
 [[package]]
-name = "poetry-plugin-export"
-version = "1.9.0"
-description = "Poetry plugin to export the dependencies to various formats"
-optional = false
-python-versions = "<4.0,>=3.9"
-groups = ["dev"]
-files = [
-    {file = "poetry_plugin_export-1.9.0-py3-none-any.whl", hash = "sha256:e2621dd8c260dd705a8227f076075246a7ff5c697e18ddb90ff68081f47ee642"},
-    {file = "poetry_plugin_export-1.9.0.tar.gz", hash = "sha256:6fc8755cfac93c74752f85510b171983e2e47d782d4ab5be4ffc4f6945be7967"},
-]
-
-[package.dependencies]
-poetry = ">=2.0.0,<3.0.0"
-poetry-core = ">=1.7.0,<3.0.0"
-
-[[package]]
 name = "pre-commit"
 version = "4.1.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
@@ -3120,4 +3104,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.11"
-content-hash = "72ffb0476157f1f95ac0f2af3807dbea5ea555915cf29128fcd482baffd3e0b2"
+content-hash = "74e997a29addaaca6ce0f835a137009f437051b44283d165d9c3c5098b872bab"
