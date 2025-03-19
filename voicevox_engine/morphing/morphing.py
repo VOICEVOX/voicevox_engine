@@ -78,6 +78,13 @@ def is_morphable(
     except KeyError:
         raise StyleIdNotFoundError(style_id_2)
 
+    sing_style_ids_1 = [sing_style.id for sing_style in character_1.sing_styles]
+    sing_style_ids_2 = [sing_style.id for sing_style in character_2.sing_styles]
+
+    # モーフィング機能はソングに対応していない
+    if style_id_1 in sing_style_ids_1 or style_id_2 in sing_style_ids_2:
+        return False
+
     morphable_1 = character_1.supported_features.permitted_synthesis_morphing
     morphable_2 = character_2.supported_features.permitted_synthesis_morphing
 
