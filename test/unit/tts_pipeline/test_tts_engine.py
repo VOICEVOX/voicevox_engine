@@ -206,7 +206,7 @@ def test_create_accent_phrases_toward_unknown() -> None:
 
     # NOTE: TTSEngine.create_accent_phrases() のコールで unknown feature を得ることが難しいため、疑似再現
     accent_phrases = text_to_accent_phrases(
-        "dummy", njd_features_to_full_context_label=stub_unknown_features_koxx
+        "dummy", njd_features_to_full_context_labels=stub_unknown_features_koxx
     )
     with pytest.raises(ValueError) as e:
         accent_phrases = engine.update_length_and_pitch(accent_phrases, StyleId(0))

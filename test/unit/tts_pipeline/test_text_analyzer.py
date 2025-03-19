@@ -383,7 +383,7 @@ def test_text_to_accent_phrases_unknown() -> None:
     ]
     # Outputs
     accent_phrases = text_to_accent_phrases(
-        "dummy", njd_features_to_full_context_label=stub_unknown_features_koxx
+        "dummy", njd_features_to_full_context_labels=stub_unknown_features_koxx
     )
     # Tests
     assert accent_phrases == true_accent_phrases

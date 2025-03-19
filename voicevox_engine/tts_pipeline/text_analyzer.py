@@ -362,7 +362,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
 def text_to_accent_phrases(
     text: str,
     enable_e2k: bool = False,
-    njd_features_to_full_context_label: Callable[
+    njd_features_to_full_context_labels: Callable[
         [dict[str, Any]], list[str]
     ] = pyopenjtalk.make_label,  # type: ignore
 ) -> list[AccentPhrase]:
@@ -374,9 +374,9 @@ def text_to_accent_phrases(
     njd_features = pyopenjtalk.run_frontend(text)
     if enable_e2k:
         njd_features = convert_english_in_njd_features_to_katakana(njd_features)
-    full_context_label = njd_features_to_full_context_label(njd_features)
+    full_context_labels = njd_features_to_full_context_labels(njd_features)
     utterance = UtteranceLabel.from_labels(
-        list(map(Label.from_feature, full_context_label))
+        list(map(Label.from_feature, full_context_labels))
     )
 
     # ドメインを変換する
