@@ -100,21 +100,25 @@ def generate_tts_pipeline_router(
         text: Annotated[
             str,
             Query(
+                title="テキスト",
+                description="クエリ生成を行いたい文章",
                 openapi_examples={
                     "example": {
-                        "summary": "クエリ生成を行いたい文章",
+                        "summary": "テスト文",
                         "value": "こんにちは、音声合成の世界へようこそ",
                     }
-                }
+                },
             ),
         ],
         style_id: Annotated[
             StyleId,
             Query(
                 alias="speaker",
+                title="スピーカー",
+                description="話者のID",
                 openapi_examples={
                     "example": {
-                        "summary": "話者のID",
+                        "summary": "四国めたん（あまあま）",
                         "value": 0,
                     }
                 },
