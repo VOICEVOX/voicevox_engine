@@ -1,62 +1,95 @@
-from voicevox_engine.tts_pipeline.katakana_english import extract_fullcontext_with_e2k
-from voicevox_engine.tts_pipeline.text_analyzer import Label
+from voicevox_engine.tts_pipeline.katakana_english import (
+    convert_english_in_njd_features_to_katakana,
+)
 
 
 def test_extract_fullcontext_with_e2k_normal() -> None:
     """`extract_fullcontext_with_e2k`は英単語をアルファベットそのままで読まない"""
-    phonemes = [
-        Label.from_feature(feature).phoneme
-        for feature in extract_fullcontext_with_e2k("Voivo")
+    features = [
+        {
+            "string": "Ｖｏｉｖｏ",
+            "pos": "フィラー",
+            "pos_group1": "*",
+            "pos_group2": "*",
+            "pos_group3": "*",
+            "ctype": "*",
+            "cform": "*",
+            "orig": "Ｖｏｉｖｏ",
+            "read": "ブイオーアイブイオー",
+            "pron": "ブイオーアイブイオー",
+            "acc": 0,
+            "mora_size": 10,
+            "chain_rule": "*",
+            "chain_flag": -1,
+        }
+    ]
+    prons = [
+        feature["pron"]
+        for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
-    expected_phonemes = [
-        "sil",
-        "b",
-        "o",
-        "i",
-        "b",
-        "o",
-        "sil",
-    ]
+    expected_prons = ["ボイボ"]
 
     # FIXME: e2kの結果が決定論的でない場合、テストが落ちる可能性がある
-    assert expected_phonemes == phonemes
+    assert expected_prons == prons
 
 
 def test_extract_fullcontext_with_e2k_uppercase() -> None:
     """`extract_fullcontext_with_e2k`は大文字のみの英単語をアルファベットそのままで読む"""
-    phonemes = [
-        Label.from_feature(feature).phoneme
-        for feature in extract_fullcontext_with_e2k("VOIVO")
+    features = [
+        {
+            "string": "ＶＯＩＶＯ",
+            "pos": "フィラー",
+            "pos_group1": "*",
+            "pos_group2": "*",
+            "pos_group3": "*",
+            "ctype": "*",
+            "cform": "*",
+            "orig": "ＶＯＩＶＯ",
+            "read": "ブイオーアイブイオー",
+            "pron": "ブイオーアイブイオー",
+            "acc": 0,
+            "mora_size": 10,
+            "chain_rule": "*",
+            "chain_flag": -1,
+        }
+    ]
+    prons = [
+        feature["pron"]
+        for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
-    expected_phonemes = [
-        "sil",
-        "b",
-        "u",
-        "i",
-        "o",
-        "o",
-        "a",
-        "i",
-        "b",
-        "u",
-        "i",
-        "o",
-        "o",
-        "sil",
-    ]
+    expected_prons = ["ブイオーアイブイオー"]
 
-    assert expected_phonemes == phonemes
+    assert expected_prons == prons
 
 
 def test_extract_fullcontext_with_e2k_short() -> None:
     """`extract_fullcontext_with_e2k`は2文字以下の英単語をアルファベットそのままで読む"""
-    phonemes = [
-        Label.from_feature(feature).phoneme
-        for feature in extract_fullcontext_with_e2k("Vo")
+    # NOTE: 実際の pyopenjtalk.run_frontend の出力とは異なる
+    features = [
+        {
+            "string": "Ｖｏ",
+            "pos": "フィラー",
+            "pos_group1": "*",
+            "pos_group2": "*",
+            "pos_group3": "*",
+            "ctype": "*",
+            "cform": "*",
+            "orig": "Ｖｏ",
+            "read": "ブイオー",
+            "pron": "ブイオー",
+            "acc": 0,
+            "mora_size": 4,
+            "chain_rule": "*",
+            "chain_flag": -1,
+        }
+    ]
+    prons = [
+        feature["pron"]
+        for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
-    expected_phonemes = ["sil", "b", "u", "i", "o", "o", "sil"]
+    expected_prons = ["ブイオー"]
 
-    assert expected_phonemes == phonemes
+    assert expected_prons == prons

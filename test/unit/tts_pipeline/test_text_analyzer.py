@@ -1,3 +1,5 @@
+from typing import Any
+
 from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
@@ -355,7 +357,7 @@ def test_text_to_accent_phrases_normal() -> None:
     assert accent_phrases == true_accent_phrases
 
 
-def stub_unknown_features_koxx(_: str) -> list[str]:
+def stub_unknown_features_koxx(_: dict[str, Any]) -> list[str]:
     """`sil-k-o-xx-sil` に相当する features を常に返す `text_to_features()` のStub"""
     return [
         ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
@@ -381,7 +383,7 @@ def test_text_to_accent_phrases_unknown() -> None:
     ]
     # Outputs
     accent_phrases = text_to_accent_phrases(
-        "dummy", text_to_features=stub_unknown_features_koxx
+        "dummy", njd_features_to_full_context_label=stub_unknown_features_koxx
     )
     # Tests
     assert accent_phrases == true_accent_phrases
