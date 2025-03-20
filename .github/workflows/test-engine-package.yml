@@ -37,11 +37,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             target: linux-cpu-x64
           - os: ubuntu-22.04-arm
             target: linux-cpu-arm64
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             target: linux-nvidia
           - os: macos-13
             target: macos-x64
