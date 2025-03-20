@@ -3,13 +3,13 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Callable, Literal, Self
+from typing import Any, Callable, Final, Literal, Self, TypeGuard
 
 import pyopenjtalk
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
-from .phoneme import Consonant, Vowel
+from .phoneme import Consonant, Sil, Vowel
 
 
 class NonOjtPhonemeError(Exception):
@@ -23,7 +23,7 @@ class OjtUnknownPhonemeError(Exception):
 
 
 # OpenJTalk が出力する音素の一覧。
-_OJT_VOWELS = (
+_OJT_VOWELS: Final[tuple[Vowel | Sil, ...]] = (
     "A",
     "E",
     "I",
@@ -39,7 +39,7 @@ _OJT_VOWELS = (
     "sil",
     "u",
 )
-_OJT_CONSONANTS = (
+_OJT_CONSONANTS: Final[tuple[Consonant, ...]] = (
     "b",
     "by",
     "ch",
@@ -73,8 +73,15 @@ _OJT_CONSONANTS = (
     "y",
     "z",
 )
-_OJT_UNKNOWNS = ("xx",)
-_OJT_PHONEMES = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
+_OJT_UNKNOWN = Literal["xx"]
+_OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
+_OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
+
+
+def is_ojt_phoneme(
+    p: str,
+) -> TypeGuard[Vowel | Sil | Consonant | _OJT_UNKNOWN]:
+    return p in _OJT_PHONEMES
 
 
 @dataclass
@@ -110,16 +117,16 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self) -> Vowel | Consonant | Literal["sil"]:
+    def phoneme(self) -> Vowel | Consonant | Sil:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
         p = self.contexts["p3"]
-        if p not in _OJT_PHONEMES:
-            raise NonOjtPhonemeError()
-        elif p == "xx":
-            raise OjtUnknownPhonemeError()
+        if is_ojt_phoneme(p):
+            if p == "xx":
+                raise OjtUnknownPhonemeError()
+            else:
+                return p
         else:
-            # NOTE: mypy が型推論に失敗。pyright の推論した型が返り値型と一致することをマニュアル確認済み @2024-01-10 tarepan
-            return p  # type: ignore
+            raise NonOjtPhonemeError()
 
     @property
     def mora_index(self) -> int:
