@@ -359,6 +359,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
+# TODO: クラス化するとかしてリファクタリングする
 def text_to_accent_phrases(
     text: str,
     enable_e2k: bool = False,
