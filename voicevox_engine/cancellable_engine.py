@@ -42,7 +42,7 @@ class CancellableEngine:
         enable_mock: bool = True,
     ) -> None:
         """
-        init_processesの数だけプロセスを起動し、procs_and_consに格納する。その他の引数はcore_initializerを参照。        
+        init_processesの数だけプロセスを起動し、procs_and_consに格納する。その他の引数はcore_initializerを参照。
         """
 
         self.use_gpu = use_gpu
