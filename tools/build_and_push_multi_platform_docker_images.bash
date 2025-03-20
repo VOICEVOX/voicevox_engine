@@ -79,29 +79,36 @@ if [ -z "${arm64_image_digest}" ]; then
   exit 1
 fi
 
-IFS=$'\n' for multi_platform_image_tag in $multi_platform_image_tags; do
-  # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
-  docker manifest create \
-    "${multi_platform_image_tag}" \
-    "${amd64_image_name}@${amd64_image_digest}" \
-    "${arm64_image_name}@${arm64_image_digest}"
+# マルチプラットフォームイメージのマニフェストリストを作成
+(
+  IFS=$'\n'
+  for multi_platform_image_tag in $multi_platform_image_tags; do
+    # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
+    docker manifest create \
+      "${multi_platform_image_tag}" \
+      "${amd64_image_name}@${amd64_image_digest}" \
+      "${arm64_image_name}@${arm64_image_digest}"
 
-  # マニフェストにプラットフォーム情報を追加
-  docker manifest annotate \
-    "${multi_platform_image_tag}" \
-    "${amd64_image_name}@${amd64_image_digest}" \
-    --os linux \
-    --arch amd64
+    # マニフェストにプラットフォーム情報を追加
+    docker manifest annotate \
+      "${multi_platform_image_tag}" \
+      "${amd64_image_name}@${amd64_image_digest}" \
+      --os linux \
+      --arch amd64
 
-  docker manifest annotate \
-    "${multi_platform_image_tag}" \
-    "${arm64_image_name}@${arm64_image_digest}" \
-    --os linux \
-    --arch arm64 \
-    --variant v8
-done
+    docker manifest annotate \
+      "${multi_platform_image_tag}" \
+      "${arm64_image_name}@${arm64_image_digest}" \
+      --os linux \
+      --arch arm64 \
+      --variant v8
+  done
+)
 
 # マルチプラットフォームイメージのマニフェストリストをpush
-IFS=$'\n' for multi_platform_image_tag in ${multi_platform_image_tags}; do
-  docker manifest push "${multi_platform_image_tag}"
-done
+(
+  IFS=$'\n'
+  for multi_platform_image_tag in ${multi_platform_image_tags}; do
+    docker manifest push "${multi_platform_image_tag}"
+  done
+)
