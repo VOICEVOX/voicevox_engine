@@ -1,40 +1,42 @@
 #!/bin/bash
 
+# 単一プラットフォームDockerイメージを組み合わせて、マルチプラットフォームDockerイメージを作成してpushする
+
 set -eu
 
 if [ ! -v IMAGE_NAME ]; then # Dockerイメージ名
-    echo "IMAGE_NAMEが未定義です"
+    echo "::error::IMAGE_NAMEが未定義です"
     exit 1
 fi
 
 if [ ! -v VERSION_OR_LATEST ]; then # バージョンまたはlatest
-    echo "VERSION_OR_LATESTが未定義です"
+    echo "::error::VERSION_OR_LATESTが未定義です"
     exit 1
 fi
 
-if [ ! -v MANIFEST_LIST_PREFIXES ]; then # pushするマルチプラットフォームマニフェストリストのプレフィックス（カンマ区切り）
-    echo "MANIFEST_LIST_PREFIXESが未定義です"
+if [ ! -v MULTI_PLATFORM_IMAGE_PREFIXES ]; then # pushするマルチプラットフォームイメージのプレフィックス（カンマ区切り）
+    echo "::error::MULTI_PLATFORM_IMAGE_PREFIXESが未定義です"
     exit 1
 fi
 
-if [ ! -v AMD64_MANIFEST_PREFIX ]; then # pullするAMD64マニフェストのプレフィックス
-    echo "AMD64_MANIFEST_PREFIXが未定義です"
+if [ ! -v AMD64_IMAGE_PREFIX ]; then # pullするAMD64イメージのプレフィックス
+    echo "::error::AMD64_IMAGE_PREFIXが未定義です"
     exit 1
 fi
 
-if [ ! -v ARM64_MANIFEST_PREFIX ]; then # pullするARM64マニフェストのプレフィックス
-    echo "ARM64_MANIFEST_PREFIXが未定義です"
+if [ ! -v ARM64_IMAGE_PREFIX ]; then # pullするARM64イメージのプレフィックス
+    echo "::error::ARM64_IMAGE_PREFIXが未定義です"
     exit 1
 fi
 
 script_dir=$(dirname "${0}")
 
 # ビルドするマルチプラットフォームDockerイメージ名のリスト
-manifest_list_tags=$(
+multi_platform_image_tags=$(
   python3 "${script_dir}/generate_docker_image_names.py" \
     --repository "${IMAGE_NAME}" \
     --version "${VERSION_OR_LATEST}" \
-    --prefix "${MANIFEST_LIST_PREFIXES}"
+    --prefix "${MULTI_PLATFORM_IMAGE_PREFIXES}"
 )
 
 # AMD64のDockerイメージ名
@@ -42,7 +44,7 @@ amd64_image_tag=$(
   python3 "${script_dir}/generate_docker_image_names.py" \
     --repository "${IMAGE_NAME}" \
     --version "${VERSION_OR_LATEST}" \
-    --prefix "${AMD64_MANIFEST_PREFIX}"
+    --prefix "${AMD64_IMAGE_PREFIX}"
 )
 
 # ARM64のDockerイメージ名
@@ -50,7 +52,7 @@ arm64_image_tag=$(
   python3 "${script_dir}/generate_docker_image_names.py" \
     --repository "${IMAGE_NAME}" \
     --version "${VERSION_OR_LATEST}" \
-    --prefix "${ARM64_MANIFEST_PREFIX}"
+    --prefix "${ARM64_IMAGE_PREFIX}"
 )
 
 # タグを除くイメージ名
@@ -58,6 +60,7 @@ amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
 arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
 
 # 単一プラットフォームイメージのダイジェスト（sha256:digest 形式）
+# NOTE: 単一プラットフォームイメージは、マニフェストリストである必要がある。マニフェストリストでないイメージを指定すると動作しない
 amd64_image_digest=$(
   docker manifest inspect "${amd64_image_tag}" \
   | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
@@ -77,30 +80,30 @@ if [ -z "${arm64_image_digest}" ]; then
 fi
 
 IFS=$'\n'
-for manifest_list_tag in $manifest_list_tags; do
+for multi_platform_image_tag in $multi_platform_image_tags; do
   # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
   docker manifest create \
-    "${manifest_list_tag}" \
+    "${multi_platform_image_tag}" \
     "${amd64_image_name}@${amd64_image_digest}" \
     "${arm64_image_name}@${arm64_image_digest}"
 
   # マニフェストにプラットフォーム情報を追加
   docker manifest annotate \
-    "${manifest_list_tag}" \
+    "${multi_platform_image_tag}" \
     "${amd64_image_name}@${amd64_image_digest}" \
     --os linux \
     --arch amd64
 
   docker manifest annotate \
-    "${manifest_list_tag}" \
+    "${multi_platform_image_tag}" \
     "${arm64_image_name}@${arm64_image_digest}" \
     --os linux \
     --arch arm64 \
     --variant v8
 done
 
-# マニフェストリストをpushする
+# マルチプラットフォームイメージのマニフェストリストをpush
 IFS=$'\n'
-for manifest_list_tag in ${manifest_list_tags}; do
-  docker manifest push "${manifest_list_tag}"
+for multi_platform_image_tag in ${multi_platform_image_tags}; do
+  docker manifest push "${multi_platform_image_tag}"
 done

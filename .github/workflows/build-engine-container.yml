@@ -209,7 +209,7 @@ jobs:
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
 
-  build-docker-manifest: # マルチプラットフォームDockerイメージをビルドする
+  build-docker-multi-platform: # マルチプラットフォームDockerイメージをビルドする
     needs: [config, build-docker]
     runs-on: ubuntu-latest
 
@@ -218,14 +218,14 @@ jobs:
         include:
           # OS: Ubuntu 20.04
           # CPU: AMD64, ARM64
-          - manifest_list_prefixes: "cpu-ubuntu20.04"
-            amd64_manifest_prefix: "cpu-amd64-ubuntu20.04"
-            arm64_manifest_prefix: "cpu-arm64-ubuntu20.04"
+          - multi_platform_image_prefixes: "cpu-ubuntu20.04"
+            amd64_image_prefix: "cpu-amd64-ubuntu20.04"
+            arm64_image_prefix: "cpu-arm64-ubuntu20.04"
           # OS: Ubuntu 22.04
           # CPU: AMD64, ARM64
-          - manifest_list_prefixes: ",cpu,cpu-ubuntu22.04"
-            amd64_manifest_prefix: "cpu-amd64-ubuntu22.04"
-            arm64_manifest_prefix: "cpu-arm64-ubuntu22.04"
+          - multi_platform_image_prefixes: ",cpu,cpu-ubuntu22.04"
+            amd64_image_prefix: "cpu-amd64-ubuntu22.04"
+            arm64_image_prefix: "cpu-arm64-ubuntu22.04"
 
     steps:
       - name: <Setup> Check out the repository
@@ -251,8 +251,8 @@ jobs:
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
-          MANIFEST_LIST_PREFIXES: ${{ matrix.manifest_list_prefixes }}
-          AMD64_MANIFEST_PREFIX: ${{ matrix.amd64_manifest_prefix }}
-          ARM64_MANIFEST_PREFIX: ${{ matrix.arm64_manifest_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
+          AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
+          ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
         run: |
           bash ./tools/build_and_push_multi_platform_docker_images.bash
