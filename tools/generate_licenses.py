@@ -1,9 +1,9 @@
 import json
-import os
 import subprocess
+import sys
 import urllib.request
 from pathlib import Path
-from typing import Literal
+from typing import Literal, assert_never
 
 
 class LicenseError(Exception):
@@ -32,7 +32,7 @@ class License:
         elif license_text_type == "remote_address":
             self.license_text = get_license_text(license_text)
         else:
-            raise Exception("型で保護され実行されないはずのパスが実行されました")
+            assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def get_license_text(text_url: str) -> str:
@@ -48,16 +48,18 @@ def generate_licenses() -> list[License]:
     # pip
     try:
         pip_licenses_output = subprocess.run(
-            "pip-licenses "
-            "--from=mixed "
-            "--format=json "
-            "--with-urls "
-            "--with-license-file "
-            "--no-license-path ",
-            shell=True,
+            [
+                sys.executable,
+                "-m",
+                "piplicenses",
+                "--from=mixed",
+                "--format=json",
+                "--with-urls",
+                "--with-license-file",
+                "--no-license-path",
+            ],
             capture_output=True,
             check=True,
-            env=os.environ,
         ).stdout.decode()
     except subprocess.CalledProcessError as err:
         raise Exception(
@@ -133,7 +135,7 @@ def generate_licenses() -> list[License]:
 
         licenses.append(license)
 
-    python_version = "3.11.3"
+    python_version = "3.11.9"
 
     licenses += [
         # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
@@ -205,14 +207,6 @@ def generate_licenses() -> list[License]:
             package_version=python_version,
             license_name="Python Software Foundation License",
             license_text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
-            license_text_type="remote_address",
-        ),
-        # OpenBLAS
-        License(
-            package_name="OpenBLAS",
-            package_version=None,
-            license_name="BSD 3-clause license",
-            license_text="https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE",
             license_text_type="remote_address",
         ),
         License(
@@ -298,7 +292,6 @@ def generate_licenses() -> list[License]:
 
 if __name__ == "__main__":
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output_path", type=str)

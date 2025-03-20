@@ -7,13 +7,13 @@ inputs:
     required: false
     default: "false"
   requirements-suffix:
-    description: "依存パッケージインストール時に `rquirements` へ付ける接尾語"
+    description: "依存パッケージインストール時に `requirements` へ付ける接尾語"
     required: false
     default: ""
   python-version:
     description: "インストールされる Python ランタイムのバージョン。デフォルト値はこのリポジトリが想定する Python バージョン。"
     required: false
-    default: "3.11.3"
+    default: "3.11.9"
 outputs:
   python-version:
     description: "Python version"
@@ -31,7 +31,7 @@ runs:
 
     - name: <Setup> Install Python dependencies
       if: ${{ inputs.only-export-python-version == 'false' }}
-      run: pip install -r requirements${{ inputs.requirements-suffix }}.txt
+      run: python -m pip install -r requirements${{ inputs.requirements-suffix }}.txt
       shell: bash
 
     - name: <Deploy> Export Python version

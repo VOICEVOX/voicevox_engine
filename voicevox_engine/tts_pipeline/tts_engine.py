@@ -2,22 +2,29 @@
 
 import copy
 import math
-from typing import Final, Literal, TypeAlias
+from typing import Any, Final, Literal, TypeAlias
 
 import numpy as np
-from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
 from voicevox_engine.utility.core_version_utility import get_latest_version
 
 from ..core.core_adapter import CoreAdapter, DeviceSupport
-from ..core.core_initializer import CoreManager
+from ..core.core_initializer import MOCK_VER, CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
 from .kana_converter import parse_kana
-from .model import AccentPhrase, FrameAudioQuery, FramePhoneme, Mora, Note, Score
+from .model import (
+    AccentPhrase,
+    FrameAudioQuery,
+    FramePhoneme,
+    Mora,
+    Note,
+    NoteId,
+    Score,
+)
 from .mora_mapping import mora_kana_to_mora_phonemes, mora_phonemes_to_mora_kana
 from .phoneme import Phoneme
 from .text_analyzer import text_to_accent_phrases
@@ -50,7 +57,7 @@ def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
     for mora in moras:
         if mora.consonant:
             phonemes += [Phoneme(mora.consonant)]
-        phonemes += [(Phoneme(mora.vowel))]
+        phonemes += [Phoneme(mora.vowel)]
     return phonemes
 
 
@@ -59,9 +66,9 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
     アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
     長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
     """
-    onehot = np.zeros(len(accent_phrase.moras))
-    onehot[index] = 1
-    onehot = np.append(onehot, [0] if accent_phrase.pause_mora else [])
+    accent_onehot = np.zeros(len(accent_phrase.moras))
+    accent_onehot[index] = 1
+    onehot = np.append(accent_onehot, [0] if accent_phrase.pause_mora else [])
     return onehot.astype(np.int64)
 
 
@@ -313,6 +320,7 @@ def _notes_to_keys_and_phonemes(
     NDArray[np.int64],
     NDArray[np.int64],
     NDArray[np.int64],
+    list[NoteId | None],
 ]:
     """
     ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
@@ -332,6 +340,8 @@ def _notes_to_keys_and_phonemes(
         音素列
     phoneme_keys : NDArray[np.int64]
         音素ごとのキー列
+    phoneme_note_ids : list[NoteId]
+        音素ごとのノートID列
     """
 
     note_lengths: list[int] = []
@@ -339,6 +349,7 @@ def _notes_to_keys_and_phonemes(
     note_vowels: list[int] = []
     phonemes: list[int] = []
     phoneme_keys: list[int] = []
+    phoneme_note_ids: list[NoteId | None] = []
 
     for note in notes:
         if note.lyric == "":
@@ -350,6 +361,7 @@ def _notes_to_keys_and_phonemes(
             note_vowels.append(0)  # pau
             phonemes.append(0)  # pau
             phoneme_keys.append(-1)
+            phoneme_note_ids.append(note.id)
         else:
             if note.key is None:
                 msg = "keyがnullの場合、lyricは空文字列である必要があります。"
@@ -378,8 +390,10 @@ def _notes_to_keys_and_phonemes(
             if consonant_id != -1:
                 phonemes.append(consonant_id)
                 phoneme_keys.append(note.key)
+                phoneme_note_ids.append(note.id)
             phonemes.append(vowel_id)
             phoneme_keys.append(note.key)
+            phoneme_note_ids.append(note.id)
 
     # 各データをnumpy配列に変換する
     note_lengths_array = np.array(note_lengths, dtype=np.int64)
@@ -394,6 +408,7 @@ def _notes_to_keys_and_phonemes(
         note_vowels_array,
         phonemes_array,
         phoneme_keys_array,
+        phoneme_note_ids,
     )
 
 
@@ -590,7 +605,7 @@ class TTSEngine:
         score: Score,
         style_id: StyleId,
     ) -> tuple[list[FramePhoneme], list[float], list[float]]:
-        """歌声合成用のスコア・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
+        """歌声合成用の楽譜・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
         (
@@ -599,6 +614,7 @@ class TTSEngine:
             note_vowels_array,
             phonemes_array,
             phoneme_keys_array,
+            phoneme_note_ids,
         ) = _notes_to_keys_and_phonemes(notes)
 
         # コアを用いて子音長を生成する
@@ -628,11 +644,68 @@ class TTSEngine:
             FramePhoneme(
                 phoneme=Phoneme._PHONEME_LIST[phoneme_id],
                 frame_length=phoneme_duration,
+                note_id=phoneme_note_id,
             )
-            for phoneme_id, phoneme_duration in zip(phonemes_array, phoneme_lengths)
+            for phoneme_id, phoneme_duration, phoneme_note_id in zip(
+                phonemes_array, phoneme_lengths, phoneme_note_ids
+            )
         ]
 
-        return phoneme_data_list, f0s.tolist(), volumes.tolist()
+        # mypyの型チェックを通すために明示的に型を付ける
+        f0_list: list[float] = f0s.tolist()  # type: ignore
+        volume_list: list[float] = volumes.tolist()  # type: ignore
+
+        return phoneme_data_list, f0_list, volume_list
+
+    def create_sing_f0_from_phoneme(
+        self,
+        score: Score,
+        phonemes: list[FramePhoneme],
+        style_id: StyleId,
+    ) -> list[float]:
+        """歌声合成用の音素・スタイルIDに基づいて基本周波数を生成する"""
+        notes = score.notes
+
+        (
+            _,
+            _,
+            _,
+            phonemes_array_from_notes,
+            phoneme_keys_array,
+            _,
+        ) = _notes_to_keys_and_phonemes(notes)
+
+        phonemes_array = np.array(
+            [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
+        )
+        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+
+        # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
+        # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
+        try:
+            all_equals = np.all(phonemes_array == phonemes_array_from_notes)
+        except ValueError:
+            # 長さが異なる場合はValueErrorが発生するので、Falseとする
+            # mypyを通すためにnp.bool_でラップする
+            all_equals = np.bool_(False)
+
+        if not all_equals:
+            msg = "Scoreから抽出した音素列とFrameAudioQueryから抽出した音素列が一致しません。"
+            raise TalkSingInvalidInputError(msg)
+
+        # 時間スケールを変更する（音素 → フレーム）
+        frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
+        frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        # コアを用いて音高を生成する
+        f0s = self._core.safe_predict_sing_f0_forward(
+            frame_phonemes, frame_keys, style_id
+        )
+
+        # mypyの型チェックを通すために明示的に型を付ける
+        f0_list: list[float] = f0s.tolist()  # type: ignore
+
+        return f0_list
 
     def create_sing_volume_from_phoneme_and_f0(
         self,
@@ -650,6 +723,7 @@ class TTSEngine:
             _,
             phonemes_array_from_notes,
             phoneme_keys_array,
+            _,
         ) = _notes_to_keys_and_phonemes(notes)
 
         phonemes_array = np.array(
@@ -681,11 +755,11 @@ class TTSEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        volume_list: list[float] = volumes.tolist()
+        volume_list: list[float] = volumes.tolist()  # type: ignore
 
         return volume_list
 
-    def frame_synthsize_wave(
+    def frame_synthesize_wave(
         self,
         query: FrameAudioQuery,
         style_id: StyleId,
@@ -698,6 +772,19 @@ class TTSEngine:
         )
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+
+class TTSEngineNotFound(Exception):
+    """TTSEngine が見つからないエラー"""
+
+    def __init__(self, *args: list[Any], version: str, **kwargs: dict[str, Any]):
+        """TTSEngine のバージョン番号を用いてインスタンス化する。"""
+        super().__init__(*args, **kwargs)
+        self.version = version
+
+
+class MockTTSEngineNotFound(Exception):
+    """モック TTSEngine が見つからないエラー"""
 
 
 LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
@@ -727,8 +814,10 @@ class TTSEngineManager:
             return self._engines[self._latest_version()]
         elif version in self._engines:
             return self._engines[version]
-
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+        elif version == MOCK_VER:
+            raise MockTTSEngineNotFound()
+        else:
+            raise TTSEngineNotFound(version=version)
 
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:

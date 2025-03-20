@@ -1,4 +1,4 @@
-from os import remove
+from os import environ, remove
 from pathlib import Path
 from shutil import copyfile
 
@@ -10,6 +10,7 @@ from voicevox_engine.preset.preset_manager import (
     PresetInternalError,
     PresetManager,
 )
+from voicevox_engine.utility.path_utility import engine_root
 
 presets_test_1_yaml_path = Path("test/unit/preset/presets-test-1.yaml")
 presets_test_2_yaml_path = Path("test/unit/preset/presets-test-2.yaml")
@@ -52,11 +53,10 @@ def test_empty_file() -> None:
         preset_manager.load_presets()
 
 
-def test_not_exist_file() -> None:
-    preset_manager = PresetManager(preset_path=Path("test/presets-dummy.yaml"))
-    true_msg = "プリセットの設定ファイルが見つかりません"
-    with pytest.raises(PresetInternalError, match=true_msg):
-        preset_manager.load_presets()
+def test_not_exist_file(tmp_path: Path) -> None:
+    preset_manager = PresetManager(preset_path=tmp_path / "presets-dummy.yaml")
+    presets = preset_manager.load_presets()
+    assert len(presets) == 0
 
 
 def test_add_preset(tmp_path: Path) -> None:
@@ -193,7 +193,7 @@ def test_add_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.add_preset(preset)
     assert len(preset_manager.presets) == 2
@@ -303,7 +303,7 @@ def test_update_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.update_preset(preset)
     assert len(preset_manager.presets) == 2
@@ -346,8 +346,26 @@ def test_delete_preset_write_failure(tmp_path: Path) -> None:
     preset_manager.load_presets()
     preset_manager._refresh_cache = lambda: None  # type:ignore[method-assign]
     preset_manager.preset_path = ""  # type: ignore[assignment]
-    true_msg = "プリセットの設定ファイルが見つかりません"
+    true_msg = "プリセットの書き込みに失敗しました"
     with pytest.raises(PresetInternalError, match=true_msg):
         preset_manager.delete_preset(1)
     assert len(preset_manager.presets) == 2
+    remove(preset_path)
+
+
+# テストのためにエンジン直下にファイルを作るため、念のためActions上のみで実行
+@pytest.mark.skipif(not environ.get("CI", False), reason="runs only on Github Actions")
+def test_migrate_default_preset_path(tmp_path: Path) -> None:
+    preset_path = tmp_path / "presets.yaml"
+    old_preset_path = engine_root() / "presets.yaml"
+    assert not preset_path.exists()
+    copyfile(presets_test_1_yaml_path, old_preset_path)
+    old_preset_manager = PresetManager(preset_path=preset_path)
+    migrated_presets = old_preset_manager.load_presets()
+    if old_preset_path.exists():
+        remove(old_preset_path)
+        raise AssertionError("The old preset file exists.")
+    preset_manager = PresetManager(preset_path=presets_test_1_yaml_path)
+    presets = preset_manager.load_presets()
+    assert migrated_presets == presets
     remove(preset_path)

@@ -33,34 +33,42 @@
   "phonemes": [
     {
       "frame_length": 2,
+      "note_id": "a",
       "phoneme": "pau"
     },
     {
       "frame_length": 8,
+      "note_id": "b",
       "phoneme": "t"
     },
     {
       "frame_length": 2,
+      "note_id": "b",
       "phoneme": "e"
     },
     {
       "frame_length": 1,
+      "note_id": "c",
       "phoneme": "s"
     },
     {
       "frame_length": 1,
+      "note_id": "c",
       "phoneme": "u"
     },
     {
       "frame_length": 2,
+      "note_id": "d",
       "phoneme": "t"
     },
     {
       "frame_length": 1,
+      "note_id": "d",
       "phoneme": "o"
     },
     {
       "frame_length": 10,
+      "note_id": "e",
       "phoneme": "pau"
     }
   ],

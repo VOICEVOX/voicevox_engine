@@ -81,7 +81,7 @@ def generate_library_router(
         dependencies=[Depends(verify_mutability)],
     )
     def uninstall_library(
-        library_uuid: Annotated[str, Path(description="音声ライブラリのID")]
+        library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
     ) -> None:
         """
         音声ライブラリをアンインストールします。

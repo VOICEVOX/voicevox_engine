@@ -8,7 +8,10 @@ from voicevox_engine import __version__
 from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
-from voicevox_engine.app.openapi_schema import configure_openapi_schema
+from voicevox_engine.app.openapi_schema import (
+    configure_openapi_schema,
+    simplify_operation_ids,
+)
 from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
 from voicevox_engine.app.routers.library import generate_library_router
@@ -94,9 +97,7 @@ def generate_app(
             generate_library_router(library_manager, verify_mutability_allowed)
         )
     app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
-    app.include_router(
-        generate_engine_info_router(core_version_list, tts_engines, engine_manifest)
-    )
+    app.include_router(generate_engine_info_router(core_version_list, engine_manifest))
     app.include_router(
         generate_setting_router(
             setting_loader, engine_manifest.brand_name, verify_mutability_allowed
@@ -104,6 +105,7 @@ def generate_app(
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
 
+    app = simplify_operation_ids(app)
     app = configure_openapi_schema(
         app, engine_manifest.supported_features.manage_library
     )

@@ -98,8 +98,7 @@ def test_create_word() -> None:
 def test_apply_word_without_json(tmp_path: Path) -> None:
 
     user_dict = UserDictionary(
-        user_dict_path=tmp_path / "test_apply_word_without_json.json",
-        compiled_dict_path=tmp_path / "test_apply_word_without_json.dic",
+        user_dict_path=tmp_path / "test_apply_word_without_json.json"
     )
     user_dict.apply_word(
         WordProperty(surface="test", pronunciation="テスト", accent_type=1)
@@ -119,10 +118,7 @@ def test_apply_word_with_json(tmp_path: Path) -> None:
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path,
-        compiled_dict_path=tmp_path / "test_apply_word_with_json.dic",
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.apply_word(
         WordProperty(surface="test2", pronunciation="テストツー", accent_type=3)
     )
@@ -141,10 +137,7 @@ def test_rewrite_word_invalid_id(tmp_path: Path) -> None:
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path,
-        compiled_dict_path=(tmp_path / "test_rewrite_word_invalid_id.dic"),
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     with pytest.raises(UserDictInputError):
         user_dict.rewrite_word(
             "c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
@@ -157,10 +150,7 @@ def test_rewrite_word_valid_id(tmp_path: Path) -> None:
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path,
-        compiled_dict_path=tmp_path / "test_rewrite_word_valid_id.dic",
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.rewrite_word(
         "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e",
         WordProperty(surface="test2", pronunciation="テストツー", accent_type=2),
@@ -178,10 +168,7 @@ def test_delete_word_invalid_id(tmp_path: Path) -> None:
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path,
-        compiled_dict_path=tmp_path / "test_delete_word_invalid_id.dic",
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     with pytest.raises(UserDictInputError):
         user_dict.delete_word(word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9")
 
@@ -191,10 +178,7 @@ def test_delete_word_valid_id(tmp_path: Path) -> None:
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path,
-        compiled_dict_path=tmp_path / "test_delete_word_valid_id.dic",
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.delete_word(word_uuid="aab7dda2-0d97-43c8-8cb7-3f440dab9b4e")
     assert len(user_dict.read_dict()) == 0
 
@@ -218,13 +202,10 @@ def test_priority() -> None:
 
 def test_import_dict(tmp_path: Path) -> None:
     user_dict_path = tmp_path / "test_import_dict.json"
-    compiled_dict_path = tmp_path / "test_import_dict.dic"
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.import_user_dict(
         {"b1affe2a-d5f0-4050-926c-f28e0c1d9a98": import_word}, override=False
     )
@@ -236,13 +217,10 @@ def test_import_dict(tmp_path: Path) -> None:
 
 def test_import_dict_no_override(tmp_path: Path) -> None:
     user_dict_path = tmp_path / "test_import_dict_no_override.json"
-    compiled_dict_path = tmp_path / "test_import_dict_no_override.dic"
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.import_user_dict(
         {"aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": import_word}, override=False
     )
@@ -253,13 +231,10 @@ def test_import_dict_no_override(tmp_path: Path) -> None:
 
 def test_import_dict_override(tmp_path: Path) -> None:
     user_dict_path = tmp_path / "test_import_dict_override.json"
-    compiled_dict_path = tmp_path / "test_import_dict_override.dic"
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.import_user_dict(
         {"aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": import_word}, override=True
     )
@@ -268,15 +243,12 @@ def test_import_dict_override(tmp_path: Path) -> None:
 
 def test_import_invalid_word(tmp_path: Path) -> None:
     user_dict_path = tmp_path / "test_import_invalid_dict.json"
-    compiled_dict_path = tmp_path / "test_import_invalid_dict.dic"
     invalid_accent_associative_rule_word = deepcopy(import_word)
     invalid_accent_associative_rule_word.accent_associative_rule = "invalid"
     user_dict_path.write_text(
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     with pytest.raises(AssertionError):
         user_dict.import_user_dict(
             {
@@ -299,10 +271,7 @@ def test_import_invalid_word(tmp_path: Path) -> None:
 
 def test_update_dict(tmp_path: Path) -> None:
     user_dict_path = tmp_path / "test_update_dict.json"
-    compiled_dict_path = tmp_path / "test_update_dict.dic"
-    user_dict = UserDictionary(
-        user_dict_path=user_dict_path, compiled_dict_path=compiled_dict_path
-    )
+    user_dict = UserDictionary(user_dict_path=user_dict_path)
     user_dict.update_dict()
     test_text = "テスト用の文字列"
     success_pronunciation = "デフォルトノジショデハゼッタイニセイセイサレナイヨミ"

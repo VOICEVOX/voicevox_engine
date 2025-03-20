@@ -116,7 +116,7 @@ class SupportedFeatures(BaseModel):
         default=None, description="音声ライブラリのインストール・アンインストール"
     )
     return_resource_url: bool | SkipJsonSchema[None] = Field(
-        default=None, description="speaker_info・singer_infoのリソースをURLで返送"
+        default=None, description="キャラクター情報のリソースをURLで返送"
     )
 
 

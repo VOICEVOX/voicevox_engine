@@ -25,7 +25,7 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.4
+ARG VOICEVOX_CORE_VERSION=0.15.7
 
 RUN <<EOF
     set -eux
@@ -150,8 +150,8 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG PYTHON_VERSION=3.11.3
-ARG PYENV_VERSION=v2.3.17
+ARG PYTHON_VERSION=3.11.9
+ARG PYENV_VERSION=v2.4.11
 ARG PYENV_ROOT=/tmp/.pyenv
 ARG PYBUILD_ROOT=/tmp/python-build
 RUN <<EOF
@@ -187,7 +187,6 @@ WORKDIR /opt/voicevox_engine
 
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
-# libsndfile1: soundfile shared object for arm64
 # ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
@@ -199,8 +198,7 @@ RUN <<EOF
         cmake \
         ca-certificates \
         build-essential \
-        gosu \
-        libsndfile1
+        gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
 
@@ -229,7 +227,7 @@ COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
-ADD ./run.py ./presets.yaml ./engine_manifest.json /opt/voicevox_engine/
+ADD ./run.py ./engine_manifest.json /opt/voicevox_engine/
 ADD ./resources /opt/voicevox_engine/resources
 ADD ./tools/generate_licenses.py /opt/voicevox_engine/tools/
 ADD ./tools/licenses /opt/voicevox_engine/tools/licenses
@@ -247,10 +245,6 @@ RUN <<EOF
     set -eux
 
     cd /opt/voicevox_engine
-
-    # Define temporary env vars
-    # /home/user/.local/bin is required to use the commands installed by pip
-    export PATH="/home/user/.local/bin:${PATH:-}"
 
     gosu user /opt/python/bin/pip3 install -r /tmp/requirements.txt
     # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
@@ -283,7 +277,7 @@ RUN <<EOF
 EOF
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.19.1
+ARG VOICEVOX_RESOURCE_VERSION=0.23.0
 RUN <<EOF
     set -eux
 

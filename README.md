@@ -43,15 +43,15 @@ VOICEVOX エンジンもしくはエディタを起動した状態で http://127
 #### CPU
 
 ```bash
-docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
-docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:cpu-latest
+docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-latest
 ```
 
 #### GPU
 
 ```bash
-docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
-docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:nvidia-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-latest
 ```
 
 ##### トラブルシューティング
@@ -249,7 +249,7 @@ curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 
 ### プリセット機能について
 
-`presets.yaml`を編集することでキャラクターや話速などのプリセットを使うことができます。
+ユーザーディレクトリにある`presets.yaml`を編集することでキャラクターや話速などのプリセットを使うことができます。
 
 ```bash
 echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
@@ -369,7 +369,7 @@ curl -s \
     > audio.wav
 ```
 
-スコアの`key`は MIDI 番号です。  
+楽譜の`key`は MIDI 番号です。  
 `lyric`は歌詞で、任意の文字列を指定できますが、エンジンによってはひらがな・カタカナ１モーラ以外の文字列はエラーになることがあります。  
 フレームレートはデフォルトが 93.75Hz で、エンジンマニフェストの`frame_rate`で取得できます。  
 １つ目のノートは無音である必要があります。
@@ -442,7 +442,7 @@ options:
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
-                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。
   --disable_mutable_api
                         辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API の値が使われます。VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0または空文字、値がない場合は無視されます。
 ```
@@ -463,7 +463,7 @@ VOICEVOX ENGINE は皆さんのコントリビューションをお待ちして�
 
 ### 環境構築
 
-`Python 3.11.3` を用いて開発されています。
+`Python 3.11.9` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
@@ -484,7 +484,7 @@ python run.py --help
 
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
-VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
@@ -533,13 +533,13 @@ Mac での libtorch 版コアのサポートはしていません。
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
 ```bash
-python run.py --voicevox_dir="/path/to/voicevox"
+python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 ##### 音声ライブラリを直接指定する
@@ -638,6 +638,7 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 また、`xxx.vvpp`は分割して連番を付けた`xxx.0.vvppp`ファイルとして配布することも可能です。
 これはファイル容量が大きくて配布が困難な場合に有用です。
+インストールに必要な`vvpp`および`vvppp`ファイルは`vvpp.txt`ファイルにリストアップしています。
 
 </details>
 
