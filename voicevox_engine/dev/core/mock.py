@@ -134,7 +134,7 @@ class MockCoreWrapper(CoreWrapper):
         result: list[NDArray[np.float32]] = []
         for i in range(length):
             result += [
-                (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
+                f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id
             ] * 256
         return np.array(result, dtype=np.float32)
 

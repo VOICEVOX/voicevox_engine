@@ -1,6 +1,5 @@
-"""話者情報と話者メタ情報"""
+"""キャラクター情報とキャラクターメタ情報"""
 
-from enum import Enum
 from typing import Literal, NewType
 
 from pydantic import BaseModel, Field
@@ -13,15 +12,13 @@ StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
 class SpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
+    """キャラクターのスタイル情報"""
 
-    name: str = Field(title="スタイル名")
-    id: StyleId = Field(title="スタイルID")
+    name: str = Field(description="スタイル名")
+    id: StyleId = Field(description="スタイルID")
     type: StyleType = Field(
         default="talk",
-        title=(
+        description=(
             "スタイルの種類。"
             "talk:音声合成クエリの作成と音声合成が可能。"
             "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
@@ -31,61 +28,51 @@ class SpeakerStyle(BaseModel):
     )
 
 
-class SpeakerSupportPermittedSynthesisMorphing(str, Enum):
-    ALL = "ALL"  # 全て許可
-    SELF_ONLY = "SELF_ONLY"  # 同じ話者内でのみ許可
-    NOTHING = "NOTHING"  # 全て禁止
-
-    @classmethod
-    def _missing_(cls, value: object) -> "SpeakerSupportPermittedSynthesisMorphing":
-        return SpeakerSupportPermittedSynthesisMorphing.ALL
-
-
 class SpeakerSupportedFeatures(BaseModel):
-    """
-    話者の対応機能の情報
-    """
+    """キャラクターの対応機能の情報"""
 
-    permitted_synthesis_morphing: SpeakerSupportPermittedSynthesisMorphing = Field(
-        title="モーフィング機能への対応",
-        default=SpeakerSupportPermittedSynthesisMorphing(None),
+    permitted_synthesis_morphing: Literal["ALL", "SELF_ONLY", "NOTHING"] = Field(
+        description=(
+            "モーフィング機能への対応。"
+            "'ALL' は「全て許可」、'SELF_ONLY' は「同じキャラクター内でのみ許可」、'NOTHING' は「全て禁止」"
+        ),
+        default="ALL",
     )
 
 
 class Speaker(BaseModel):
-    """
-    話者情報
-    """
+    """キャラクター情報"""
 
-    name: str = Field(title="名前")
-    speaker_uuid: str = Field(title="話者のUUID")
-    styles: list[SpeakerStyle] = Field(title="スタイルの一覧")
-    version: str = Field("話者のバージョン")
+    name: str = Field(description="名前")
+    speaker_uuid: str = Field(description="キャラクターのUUID")
+    styles: list[SpeakerStyle] = Field(description="スタイルの一覧")
+    version: str = Field(description="キャラクターのバージョン")
     supported_features: SpeakerSupportedFeatures = Field(
-        title="話者の対応機能", default_factory=SpeakerSupportedFeatures
+        description="キャラクターの対応機能", default_factory=SpeakerSupportedFeatures
     )
 
 
 class StyleInfo(BaseModel):
-    """
-    スタイルの追加情報
-    """
+    """スタイルの追加情報"""
 
-    id: StyleId = Field(title="スタイルID")
-    icon: str = Field(title="当該スタイルのアイコンをbase64エンコードしたもの")
+    id: StyleId = Field(description="スタイルID")
+    icon: str = Field(
+        description="このスタイルのアイコンをbase64エンコードしたもの、あるいはURL"
+    )
     portrait: str | SkipJsonSchema[None] = Field(
-        default=None, title="当該スタイルのportrait.pngをbase64エンコードしたもの"
+        default=None,
+        description="このスタイルの立ち絵画像をbase64エンコードしたもの、あるいはURL",
     )
     voice_samples: list[str] = Field(
-        title="voice_sampleのwavファイルをbase64エンコードしたもの"
+        description="サンプル音声をbase64エンコードしたもの、あるいはURL"
     )
 
 
 class SpeakerInfo(BaseModel):
-    """
-    話者の追加情報
-    """
+    """キャラクターの追加情報"""
 
-    policy: str = Field(title="policy.md")
-    portrait: str = Field(title="portrait.pngをbase64エンコードしたもの")
-    style_infos: list[StyleInfo] = Field(title="スタイルの追加情報")
+    policy: str = Field(description="policy.md")
+    portrait: str = Field(
+        description="立ち絵画像をbase64エンコードしたもの、あるいはURL"
+    )
+    style_infos: list[StyleInfo] = Field(description="スタイルの追加情報")

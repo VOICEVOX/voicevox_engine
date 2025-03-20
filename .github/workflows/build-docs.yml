@@ -15,10 +15,10 @@ env:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   upload-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
         uses: ./.github/actions/prepare_python
 
       - name: <Build> Make documents
-        run: PYTHONPATH=. python build_util/make_docs.py
+        run: PYTHONPATH=. python tools/make_docs.py
 
       - name: <Deploy> Deploy documents to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

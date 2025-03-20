@@ -1,10 +1,11 @@
-import json
+"""TTSEngine のテスト"""
+
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
-from unittest.mock import Mock
+from typing import Any
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
 from syrupy.assertion import SnapshotAssertion
 
 from voicevox_engine.dev.core.mock import MockCoreWrapper
@@ -20,153 +21,52 @@ from voicevox_engine.tts_pipeline.model import (
 from voicevox_engine.tts_pipeline.text_analyzer import text_to_accent_phrases
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
-    apply_interrogative_upspeak,
+    _apply_interrogative_upspeak,
+    _to_flatten_phonemes,
     to_flatten_moras,
-    to_flatten_phonemes,
 )
 
 from .test_text_analyzer import stub_unknown_features_koxx
-
-
-def yukarin_s_mock(
-    length: int, phoneme_list: NDArray[np.int64], style_id: NDArray[np.int64]
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(round((phoneme_list[i] * 0.0625 + style_id).item(), 2))
-    return np.array(result, dtype=np.float32)
-
-
-def yukarin_sa_mock(
-    length: int,
-    vowel_phoneme_list: NDArray[np.int64],
-    consonant_phoneme_list: NDArray[np.int64],
-    start_accent_list: NDArray[np.int64],
-    end_accent_list: NDArray[np.int64],
-    start_accent_phrase_list: NDArray[np.int64],
-    end_accent_phrase_list: NDArray[np.int64],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result.append(
-            round(
-                (
-                    (
-                        vowel_phoneme_list[0][i]
-                        + consonant_phoneme_list[0][i]
-                        + start_accent_list[0][i]
-                        + end_accent_list[0][i]
-                        + start_accent_phrase_list[0][i]
-                        + end_accent_phrase_list[0][i]
-                    )
-                    * 0.0625
-                    + style_id
-                ).item(),
-                2,
-            )
-        )
-    return np.array(result, dtype=np.float32)[np.newaxis]
-
-
-def decode_mock(
-    length: int,
-    phoneme_size: int,
-    f0: NDArray[np.float32],
-    phoneme: NDArray[np.float32],
-    style_id: NDArray[np.int64],
-) -> NDArray[np.float32]:
-    result = []
-    # mockとしての適当な処理、特に意味はない
-    for i in range(length):
-        result += [
-            (f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id)
-        ] * 256
-    return np.array(result, dtype=np.float32)
-
-
-class MockCore:
-    default_sampling_rate = 24000
-    yukarin_s_forward = Mock(side_effect=yukarin_s_mock)
-    yukarin_sa_forward = Mock(side_effect=yukarin_sa_mock)
-    decode_forward = Mock(side_effect=decode_mock)
-
-    def metas(self) -> str:
-        return ""
-
-    def supported_devices(self) -> str:
-        return json.dumps({"cpu": True, "cuda": False, "dml": False})
-
-    def is_model_loaded(self, style_id: str) -> bool:
-        return True
-
-
-def _gen_mora(
-    text: str,
-    consonant: str | None,
-    consonant_length: float | None,
-    vowel: str,
-    vowel_length: float,
-    pitch: float,
-) -> Mora:
-    """Generate Mora with positional arguments for test simplicity."""
-    return Mora(
-        text=text,
-        consonant=consonant,
-        consonant_length=consonant_length,
-        vowel=vowel,
-        vowel_length=vowel_length,
-        pitch=pitch,
-    )
+from .tts_utils import gen_mora, sec
 
 
 def test_to_flatten_phonemes() -> None:
-    """Test `to_flatten_phonemes`."""
+    """Test `_to_flatten_phonemes()`."""
     # Inputs
     moras = [
-        _gen_mora("　", None, None, "sil", 2 * 0.01067, 0.0),
-        _gen_mora("ヒ", "h", 2 * 0.01067, "i", 4 * 0.01067, 100.0),
-        _gen_mora("　", None, None, "sil", 6 * 0.01067, 0.0),
+        gen_mora("　", None, None, "sil", sec(2), 0.0),
+        gen_mora("ヒ", "h", sec(2), "i", sec(4), 5.0),
+        gen_mora("　", None, None, "sil", sec(6), 0.0),
     ]
-
     # Expects
-    true_phonemes = ["pau", "h", "i", "pau"]
-
+    true_phoneme_strs = ["pau", "h", "i", "pau"]
     # Outputs
-    phonemes = list(map(lambda p: p._phoneme, to_flatten_phonemes(moras)))
+    phonemes = _to_flatten_phonemes(moras)
+    phoneme_strs = list(map(lambda p: p._phoneme, phonemes))
 
-    assert true_phonemes == phonemes
-
-
-def _gen_hello_hiho_text() -> str:
-    return "こんにちは、ヒホです"
-
-
-def _gen_hello_hiho_kana() -> str:
-    return "コンニチワ'、ヒ'ホデ_ス"
+    # Test
+    assert true_phoneme_strs == phoneme_strs
 
 
 def _gen_hello_hiho_accent_phrases() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
-                _gen_mora("コ", "k", 0.0, "o", 0.0, 0.0),
-                _gen_mora("ン", None, None, "N", 0.0, 0.0),
-                _gen_mora("ニ", "n", 0.0, "i", 0.0, 0.0),
-                _gen_mora("チ", "ch", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ワ", "w", 0.0, "a", 0.0, 0.0),
+                gen_mora("コ", "k", 0.1, "o", 0.1, 5.0),
+                gen_mora("ン", None, None, "N", 0.1, 5.0),
+                gen_mora("ニ", "n", 0.1, "i", 0.1, 5.0),
+                gen_mora("チ", "ch", 0.1, "i", 0.1, 5.0),
+                gen_mora("ワ", "w", 0.1, "a", 0.1, 5.0),
             ],
             accent=5,
-            pause_mora=_gen_mora("、", None, None, "pau", 0.0, 0.0),
+            pause_mora=gen_mora("、", None, None, "pau", 0.1, 0.0),
         ),
         AccentPhrase(
             moras=[
-                _gen_mora("ヒ", "h", 0.0, "i", 0.0, 0.0),
-                _gen_mora("ホ", "h", 0.0, "o", 0.0, 0.0),
-                _gen_mora("デ", "d", 0.0, "e", 0.0, 0.0),
-                _gen_mora("ス", "s", 0.0, "U", 0.0, 0.0),
+                gen_mora("ヒ", "h", 0.1, "i", 0.1, 0.0),
+                gen_mora("ホ", "h", 0.1, "o", 0.1, 5.0),
+                gen_mora("デ", "d", 0.1, "e", 0.1, 5.0),
+                gen_mora("ス", "s", 0.1, "U", 0.1, 0.0),
             ],
             accent=1,
             pause_mora=None,
@@ -187,7 +87,7 @@ def _gen_hello_hiho_query() -> AudioQuery:
         pauseLengthScale=0.8,
         outputSamplingRate=12000,
         outputStereo=True,
-        kana=_gen_hello_hiho_kana(),
+        kana="コンニチワ'、ヒ'ホデ_ス",
     )
 
 
@@ -218,9 +118,10 @@ def test_to_flatten_moras() -> None:
 
 
 def test_update_length() -> None:
-    core = MockCore()
+    core = MockCoreWrapper()
+    core.yukarin_s_forward = MagicMock(wraps=core.yukarin_s_forward)  # type: ignore[method-assign]
     _yukarin_s_mock = core.yukarin_s_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+    tts_engine = TTSEngine(core=core)
     # Inputs
     hello_hiho = _gen_hello_hiho_accent_phrases()
     # Indirect Outputs（yukarin_sに渡される値）
@@ -246,9 +147,10 @@ def test_update_length() -> None:
 
 
 def test_update_pitch() -> None:
-    core = MockCore()
+    core = MockCoreWrapper()
+    core.yukarin_sa_forward = MagicMock(wraps=core.yukarin_sa_forward)  # type: ignore[method-assign]
     _yukarin_sa_mock = core.yukarin_sa_forward
-    tts_engine = TTSEngine(core=core)  # type: ignore[arg-type]
+    tts_engine = TTSEngine(core=core)
 
     # 空のリストでエラーを吐かないか
     # Inputs
@@ -352,7 +254,7 @@ def test_mocked_create_accent_phrases_output(
     """モックされた `TTSEngine.create_accent_phrases()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_text()
+    hello_hiho = "こんにちは、ヒホです"
     # Outputs
     result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
     # Tests
@@ -365,7 +267,7 @@ def test_mocked_create_accent_phrases_from_kana_output(
     """モックされた `TTSEngine.create_accent_phrases_from_kana()` の出力スナップショットが一定である"""
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
-    hello_hiho = _gen_hello_hiho_kana()
+    hello_hiho = "コンニチワ'、ヒ'ホデ_ス"
     # Outputs
     result = tts_engine.create_accent_phrases_from_kana(hello_hiho, StyleId(1))
     # Tests
@@ -409,7 +311,7 @@ def test_mocked_synthesize_wave_from_score_output(
 ) -> None:
     """
     モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
-    `TTSEngine.frame_synthsize_wave()` の出力スナップショットが一定である
+    `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である
     """
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
@@ -432,7 +334,7 @@ def test_mocked_synthesize_wave_from_score_output(
         outputStereo=False,
     )
     # Outputs
-    result_wave = tts_engine.frame_synthsize_wave(doremi_query, StyleId(1))
+    result_wave = tts_engine.frame_synthesize_wave(doremi_query, StyleId(1))
     # Tests
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2
@@ -446,26 +348,26 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
                 Mora(
                     text="コ",
                     consonant="k",
-                    consonant_length=np.float32(2.44),
+                    consonant_length=2.44,
                     vowel="o",
-                    vowel_length=np.float32(2.88),
-                    pitch=np.float32(4.38),
+                    vowel_length=2.88,
+                    pitch=4.38,
                 ),
                 Mora(
                     text="レ",
                     consonant="r",
-                    consonant_length=np.float32(3.06),
+                    consonant_length=3.06,
                     vowel="e",
-                    vowel_length=np.float32(1.88),
-                    pitch=np.float32(4.0),
+                    vowel_length=1.88,
+                    pitch=4.0,
                 ),
                 Mora(
                     text="ワ",
                     consonant="w",
-                    consonant_length=np.float32(3.62),
+                    consonant_length=3.62,
                     vowel="a",
-                    vowel_length=np.float32(1.44),
-                    pitch=np.float32(4.19),
+                    vowel_length=1.44,
+                    pitch=4.19,
                 ),
             ],
             accent=3,
@@ -479,40 +381,40 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
                     consonant=None,
                     consonant_length=None,
                     vowel="a",
-                    vowel_length=np.float32(1.44),
-                    pitch=np.float32(1.44),
+                    vowel_length=1.44,
+                    pitch=1.44,
                 ),
                 Mora(
                     text="リ",
                     consonant="r",
-                    consonant_length=np.float32(3.06),
+                    consonant_length=3.06,
                     vowel="i",
-                    vowel_length=np.float32(2.31),
-                    pitch=np.float32(4.44),
+                    vowel_length=2.31,
+                    pitch=4.44,
                 ),
                 Mora(
                     text="マ",
                     consonant="m",
-                    consonant_length=np.float32(2.62),
+                    consonant_length=2.62,
                     vowel="a",
-                    vowel_length=np.float32(1.44),
-                    pitch=np.float32(3.12),
+                    vowel_length=1.44,
+                    pitch=3.12,
                 ),
                 Mora(
                     text="ス",
                     consonant="s",
-                    consonant_length=np.float32(3.19),
+                    consonant_length=3.19,
                     vowel="U",
-                    vowel_length=np.float32(1.38),
-                    pitch=np.float32(0.0),
+                    vowel_length=1.38,
+                    pitch=0.0,
                 ),
                 Mora(
                     text="カ",
                     consonant="k",
-                    consonant_length=np.float32(2.44),
+                    consonant_length=2.44,
                     vowel="a",
-                    vowel_length=np.float32(1.44),
-                    pitch=np.float32(2.94),
+                    vowel_length=1.44,
+                    pitch=2.94,
                 ),
             ],
             accent=3,
@@ -522,16 +424,18 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     ]
 
 
-def create_synthesis_test_base(
-    text: str, expected: list[AccentPhrase], enable_interrogative_upspeak: bool
-) -> None:
-    """音声合成時に疑問文モーラ処理を行っているかどうかを検証
-    (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
-    """
+def create_synthesis_test_base(text: str) -> list[AccentPhrase]:
     tts_engine = TTSEngine(core=MockCoreWrapper())
-    inputs = tts_engine.create_accent_phrases(text, StyleId(1))
-    outputs = apply_interrogative_upspeak(inputs, enable_interrogative_upspeak)
-    assert expected == outputs, f"case(text:{text})"
+    return tts_engine.create_accent_phrases(text, StyleId(1))
+
+
+def _assert_equeal_accent_phrases(
+    expected: list[AccentPhrase], outputs: list[AccentPhrase]
+) -> None:
+    def _to_native_and_round(x: list[AccentPhrase]) -> Any:
+        return round_floats(pydantic_to_native_type(x), round_value=2)
+
+    assert _to_native_and_round(expected) == _to_native_and_round(outputs)
 
 
 def test_create_accent_phrases() -> None:
@@ -543,11 +447,14 @@ def test_create_accent_phrases() -> None:
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     actual = tts_engine.create_accent_phrases(text, StyleId(1))
-    assert expected == actual, f"case(text:{text})"
+    _assert_equeal_accent_phrases(expected, actual)
 
 
 def test_upspeak_voiced_last_mora() -> None:
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか？")
+    # Expects
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     expected[-1].moras += [
@@ -557,31 +464,34 @@ def test_upspeak_voiced_last_mora() -> None:
             consonant_length=None,
             vowel="a",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
-    create_synthesis_test_base(
-        text="これはありますか？",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか？")
+    # Expects
     expected = koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
-    create_synthesis_test_base(
-        text="これはありますか？",
-        expected=expected,
-        enable_interrogative_upspeak=False,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, False)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="これはありますか")
+    # Expects
     expected = koreha_arimasuka_base_expected()
-    create_synthesis_test_base(
-        text="これはありますか",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
 
 def test_upspeak_voiced_N_last_mora() -> None:
@@ -594,8 +504,8 @@ def test_upspeak_voiced_N_last_mora() -> None:
                         consonant=None,
                         consonant_length=None,
                         vowel="N",
-                        vowel_length=np.float32(1.25),
-                        pitch=np.float32(1.44),
+                        vowel_length=1.25,
+                        pitch=1.44,
                     )
                 ],
                 accent=1,
@@ -605,14 +515,19 @@ def test_upspeak_voiced_N_last_mora() -> None:
         ]
 
     # voiced + "" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん")
+    # Expects
     expected = nn_base_expected()
-    create_synthesis_test_base(
-        text="ん",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん？")
+    # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
     expected[-1].moras += [
@@ -622,23 +537,24 @@ def test_upspeak_voiced_N_last_mora() -> None:
             consonant_length=None,
             vowel="N",
             vowel_length=0.15,
-            pitch=np.float32(expected[-1].moras[-1].pitch) + 0.3,
+            pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
-    create_synthesis_test_base(
-        text="ん？",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="ん？")
+    # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
-    create_synthesis_test_base(
-        text="ん？",
-        expected=expected,
-        enable_interrogative_upspeak=False,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, False)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
 
 def test_upspeak_unvoiced_last_mora() -> None:
@@ -651,8 +567,8 @@ def test_upspeak_unvoiced_last_mora() -> None:
                         consonant=None,
                         consonant_length=None,
                         vowel="cl",
-                        vowel_length=np.float32(1.69),
-                        pitch=np.float32(0.0),
+                        vowel_length=1.69,
+                        pitch=0.0,
                     )
                 ],
                 accent=1,
@@ -662,30 +578,36 @@ def test_upspeak_unvoiced_last_mora() -> None:
         ]
 
     # unvoiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ")
+    # Expects
     expected = ltu_base_expected()
-    create_synthesis_test_base(
-        text="っ",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # unvoiced + "？" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ？")
+    # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
-    create_synthesis_test_base(
-        text="っ？",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # unvoiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="っ？")
+    # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
-    create_synthesis_test_base(
-        text="っ？",
-        expected=expected,
-        enable_interrogative_upspeak=False,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, False)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
 
 def test_upspeak_voiced_u_last_mora() -> None:
@@ -696,10 +618,10 @@ def test_upspeak_voiced_u_last_mora() -> None:
                     Mora(
                         text="ス",
                         consonant="s",
-                        consonant_length=np.float32(3.19),
+                        consonant_length=3.19,
                         vowel="u",
-                        vowel_length=np.float32(3.5),
-                        pitch=np.float32(5.94),
+                        vowel_length=3.5,
+                        pitch=5.94,
                     )
                 ],
                 accent=1,
@@ -709,14 +631,19 @@ def test_upspeak_voiced_u_last_mora() -> None:
         ]
 
     # voiced + "" + flagON -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す")
+    # Expects
     expected = su_base_expected()
-    create_synthesis_test_base(
-        text="す",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "？" + flagON -> upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す？")
+    # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True
     expected[-1].moras += [
@@ -729,17 +656,18 @@ def test_upspeak_voiced_u_last_mora() -> None:
             pitch=expected[-1].moras[-1].pitch + 0.3,
         )
     ]
-    create_synthesis_test_base(
-        text="す？",
-        expected=expected,
-        enable_interrogative_upspeak=True,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, True)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)
 
     # voiced + "？" + flagOFF -> non-upspeak
+    # Inputs
+    inputs = create_synthesis_test_base(text="す？")
+    # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True
-    create_synthesis_test_base(
-        text="す？",
-        expected=expected,
-        enable_interrogative_upspeak=False,
-    )
+    # Outputs
+    outputs = _apply_interrogative_upspeak(inputs, False)
+    # Test
+    _assert_equeal_accent_phrases(expected, outputs)

@@ -18,22 +18,25 @@ class AudioQuery(BaseModel):
     音声合成用のクエリ
     """
 
-    accent_phrases: list[AccentPhrase] = Field(title="アクセント句のリスト")
-    speedScale: float = Field(title="全体の話速")
-    pitchScale: float = Field(title="全体の音高")
-    intonationScale: float = Field(title="全体の抑揚")
-    volumeScale: float = Field(title="全体の音量")
-    prePhonemeLength: float = Field(title="音声の前の無音時間")
-    postPhonemeLength: float = Field(title="音声の後の無音時間")
-    pauseLength: float | SkipJsonSchema[None] = Field(
-        default=None, title="句読点などの無音時間"
+    accent_phrases: list[AccentPhrase] = Field(description="アクセント句のリスト")
+    speedScale: float = Field(description="全体の話速")
+    pitchScale: float = Field(description="全体の音高")
+    intonationScale: float = Field(description="全体の抑揚")
+    volumeScale: float = Field(description="全体の音量")
+    prePhonemeLength: float = Field(description="音声の前の無音時間")
+    postPhonemeLength: float = Field(description="音声の後の無音時間")
+    pauseLength: float | None = Field(
+        default=None,
+        description="句読点などの無音時間。nullのときは無視される。デフォルト値はnull",
     )
-    pauseLengthScale: float = Field(title="句読点などの無音時間（倍率）")
-    outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
-    outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
+    pauseLengthScale: float = Field(
+        default=1, description="句読点などの無音時間（倍率）。デフォルト値は1"
+    )
+    outputSamplingRate: int = Field(description="音声データの出力サンプリングレート")
+    outputStereo: bool = Field(description="音声データをステレオ出力するか否か")
     kana: str | SkipJsonSchema[None] = Field(
         default=None,
-        title="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
+        description="[読み取り専用]AquesTalk 風記法によるテキスト。音声合成用のクエリとしては無視される",
     )
 
     def __hash__(self) -> int:

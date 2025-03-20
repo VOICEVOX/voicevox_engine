@@ -1,9 +1,9 @@
 import json
-import os
 import subprocess
+import sys
 import urllib.request
 from pathlib import Path
-from typing import Literal
+from typing import Literal, assert_never
 
 
 class LicenseError(Exception):
@@ -32,7 +32,7 @@ class License:
         elif license_text_type == "remote_address":
             self.license_text = get_license_text(license_text)
         else:
-            raise Exception("型で保護され実行されないはずのパスが実行されました")
+            assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def get_license_text(text_url: str) -> str:
@@ -48,16 +48,18 @@ def generate_licenses() -> list[License]:
     # pip
     try:
         pip_licenses_output = subprocess.run(
-            "pip-licenses "
-            "--from=mixed "
-            "--format=json "
-            "--with-urls "
-            "--with-license-file "
-            "--no-license-path ",
-            shell=True,
+            [
+                sys.executable,
+                "-m",
+                "piplicenses",
+                "--from=mixed",
+                "--format=json",
+                "--with-urls",
+                "--with-license-file",
+                "--no-license-path",
+            ],
             capture_output=True,
             check=True,
-            env=os.environ,
         ).stdout.decode()
     except subprocess.CalledProcessError as err:
         raise Exception(
@@ -133,7 +135,7 @@ def generate_licenses() -> list[License]:
 
         licenses.append(license)
 
-    python_version = "3.11.3"
+    python_version = "3.11.9"
 
     licenses += [
         # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
@@ -141,21 +143,21 @@ def generate_licenses() -> list[License]:
             package_name="Open JTalk",
             package_version="1.11",
             license_name="Modified BSD license",
-            license_text="build_util/licenses/open_jtalk/COPYING",
+            license_text="tools/licenses/open_jtalk/COPYING",
             license_text_type="local_address",
         ),
         License(
             package_name="MeCab",
             package_version=None,
             license_name="Modified BSD license",
-            license_text="build_util/licenses/open_jtalk/mecab/COPYING",
+            license_text="tools/licenses/open_jtalk/mecab/COPYING",
             license_text_type="local_address",
         ),
         License(
             package_name="NAIST Japanese Dictionary",
             package_version=None,
             license_name="Modified BSD license",
-            license_text="build_util/licenses//open_jtalk/mecab-naist-jdic/COPYING",
+            license_text="tools/licenses//open_jtalk/mecab-naist-jdic/COPYING",
             license_text_type="local_address",
         ),
         License(
@@ -207,14 +209,6 @@ def generate_licenses() -> list[License]:
             license_text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
             license_text_type="remote_address",
         ),
-        # OpenBLAS
-        License(
-            package_name="OpenBLAS",
-            package_version=None,
-            license_name="BSD 3-clause license",
-            license_text="https://raw.githubusercontent.com/xianyi/OpenBLAS/develop/LICENSE",
-            license_text_type="remote_address",
-        ),
         License(
             package_name="libsndfile-binaries",
             package_version="1.2.0",
@@ -257,7 +251,7 @@ def generate_licenses() -> list[License]:
             package_name="mpg123",
             package_version="1.30.2",
             license_name="LGPL-2.1 license",
-            license_text="build_util/licenses/mpg123/COPYING",
+            license_text="tools/licenses/mpg123/COPYING",
             license_text_type="local_address",
         ),
         # liblame
@@ -277,7 +271,7 @@ def generate_licenses() -> list[License]:
             package_name="CUDA Toolkit",
             package_version="11.8.0",
             license_name=None,
-            license_text="build_util/licenses/cuda/EULA.txt",
+            license_text="tools/licenses/cuda/EULA.txt",
             license_text_type="local_address",
         ),
         # license text from cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows # noqa: B950
@@ -288,7 +282,7 @@ def generate_licenses() -> list[License]:
             package_name="cuDNN",
             package_version="8.9.2",
             license_name=None,
-            license_text="build_util/licenses/cudnn/LICENSE",
+            license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
     ]
@@ -298,7 +292,6 @@ def generate_licenses() -> list[License]:
 
 if __name__ == "__main__":
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output_path", type=str)

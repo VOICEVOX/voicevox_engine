@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -35,14 +36,14 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     setting_loader = SettingHandler(tmp_path / "not_exist.yaml")
 
     # テスト用に隔離されたプリセットを生成する
-    preset_path = Path("./presets.yaml")
-    preset_manager = PresetManager(_copy_under_dir(preset_path, tmp_path))
+    preset_path = tmp_path / "presets.yaml"
+    _generate_preset(preset_path)
+    preset_manager = PresetManager(preset_path)
 
     # テスト用に隔離されたユーザー辞書を生成する
     user_dict = UserDictionary(
         default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
         user_dict_path=_generate_user_dict(tmp_path),
-        compiled_dict_path=tmp_path / "user.dic",
     )
 
     engine_manifest = load_manifest(engine_manifest_path())
@@ -73,6 +74,28 @@ def app(app_params: dict) -> FastAPI:
 @pytest.fixture()
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
+
+
+def _generate_preset(preset_path: Path) -> None:
+    """指定パス下にプリセットファイルを生成する。"""
+    contents = [
+        {
+            "id": 1,
+            "name": "サンプルプリセット",
+            "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+            "style_id": 0,
+            "speedScale": 1,
+            "pitchScale": 0,
+            "intonationScale": 1,
+            "volumeScale": 1,
+            "prePhonemeLength": 0.1,
+            "postPhonemeLength": 0.1,
+            "pauseLength": None,
+            "pauseLengthScale": 1,
+        }
+    ]
+    with open(preset_path, mode="w", encoding="utf-8") as f:
+        yaml.safe_dump(contents, f, allow_unicode=True, sort_keys=False)
 
 
 def _generate_user_dict(dir_path: Path) -> Path:

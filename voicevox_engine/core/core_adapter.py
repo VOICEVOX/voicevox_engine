@@ -3,11 +3,11 @@
 import json
 import threading
 from dataclasses import dataclass
-from typing import Literal, NewType
+from typing import Any, Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import BaseModel, Field
+from pydantic import TypeAdapter
 
 from ..metas.Metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
@@ -16,25 +16,26 @@ CoreStyleId = NewType("CoreStyleId", int)
 CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
 
 
-class CoreSpeakerStyle(BaseModel):
-    """
-    話者のスタイル情報
-    """
+@dataclass(frozen=True)
+class CoreCharacterStyle:
+    """コアに含まれるキャラクターのスタイル情報"""
 
     name: str
     id: CoreStyleId
-    type: CoreStyleType | None = Field(default="talk")
+    type: CoreStyleType | None = "talk"
 
 
-class CoreSpeaker(BaseModel):
-    """
-    コアに含まれる話者情報
-    """
+@dataclass(frozen=True)
+class CoreCharacter:
+    """コアに含まれるキャラクター情報"""
 
     name: str
     speaker_uuid: str
-    styles: list[CoreSpeakerStyle]
-    version: str = Field("話者のバージョン")
+    styles: list[CoreCharacterStyle]
+    version: str  # キャラクターのバージョン
+
+
+_core_character_adapter = TypeAdapter(CoreCharacter)
 
 
 @dataclass(frozen=True)
@@ -62,10 +63,10 @@ class CoreAdapter:
         return self.core.default_sampling_rate
 
     @property
-    def speakers(self) -> list[CoreSpeaker]:
-        """話者情報"""
-        metas = self.core.metas()
-        return [CoreSpeaker(**speaker) for speaker in json.loads(metas)]
+    def characters(self) -> list[CoreCharacter]:
+        """キャラクター情報"""
+        metas: list[Any] = json.loads(self.core.metas())
+        return list(map(_core_character_adapter.validate_python, metas))
 
     @property
     def supported_devices(self) -> DeviceSupport | None:
@@ -93,13 +94,13 @@ class CoreAdapter:
         style_id : StyleId
             スタイルID
         skip_reinit : bool
-            True の場合, 既に初期化済みの話者の再初期化をスキップします
+            True の場合, 既に初期化済みのキャラクターの再初期化をスキップします
         """
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
                 # 1. 引数 skip_reinit が False の場合
-                # 2. 話者が初期化されていない場合
+                # 2. キャラクターが初期化されていない場合
                 if (not skip_reinit) or (not self.core.is_model_loaded(style_id)):
                     self.core.load_model(style_id)
         except OldCoreError:

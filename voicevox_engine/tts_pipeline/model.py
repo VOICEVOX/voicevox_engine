@@ -5,9 +5,12 @@
 """
 
 from enum import Enum
+from typing import NewType
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.json_schema import SkipJsonSchema
+
+NoteId = NewType("NoteId", str)
 
 
 class Mora(BaseModel):
@@ -17,15 +20,17 @@ class Mora(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True)
 
-    text: str = Field(title="文字")
-    consonant: str | SkipJsonSchema[None] = Field(default=None, title="子音の音素")
-    consonant_length: float | SkipJsonSchema[None] = Field(
-        default=None, title="子音の音長"
+    text: str = Field(description="文字")
+    consonant: str | SkipJsonSchema[None] = Field(
+        default=None, description="子音の音素"
     )
-    vowel: str = Field(title="母音の音素")
-    vowel_length: float = Field(title="母音の音長")
+    consonant_length: float | SkipJsonSchema[None] = Field(
+        default=None, description="子音の音長"
+    )
+    vowel: str = Field(description="母音の音素")
+    vowel_length: float = Field(description="母音の音長")
     pitch: float = Field(
-        title="音高"
+        description="音高"
     )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
     def __hash__(self) -> int:
@@ -41,12 +46,12 @@ class AccentPhrase(BaseModel):
     アクセント句ごとの情報
     """
 
-    moras: list[Mora] = Field(title="モーラのリスト")
-    accent: int = Field(title="アクセント箇所")
+    moras: list[Mora] = Field(description="モーラのリスト")
+    accent: int = Field(description="アクセント箇所")
     pause_mora: Mora | SkipJsonSchema[None] = Field(
-        default=None, title="後ろに無音を付けるかどうか"
+        default=None, description="後ろに無音を付けるかどうか"
     )
-    is_interrogative: bool = Field(default=False, title="疑問系かどうか")
+    is_interrogative: bool = Field(default=False, description="疑問系かどうか")
 
     def __hash__(self) -> int:
         items = [
@@ -61,9 +66,10 @@ class Note(BaseModel):
     音符ごとの情報
     """
 
-    key: int | SkipJsonSchema[None] = Field(default=None, title="音階")
-    frame_length: int = Field(title="音符のフレーム長")
-    lyric: str = Field(title="音符の歌詞")
+    id: NoteId | None = Field(default=None, description="ID")
+    key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
+    frame_length: int = Field(description="音符のフレーム長")
+    lyric: str = Field(description="音符の歌詞")
 
 
 class Score(BaseModel):
@@ -71,7 +77,7 @@ class Score(BaseModel):
     楽譜情報
     """
 
-    notes: list[Note] = Field(title="音符のリスト")
+    notes: list[Note] = Field(description="音符のリスト")
 
 
 class FramePhoneme(BaseModel):
@@ -79,8 +85,9 @@ class FramePhoneme(BaseModel):
     音素の情報
     """
 
-    phoneme: str = Field(title="音素")
-    frame_length: int = Field(title="音素のフレーム長")
+    phoneme: str = Field(description="音素")
+    frame_length: int = Field(description="音素のフレーム長")
+    note_id: NoteId | None = Field(default=None, description="音符のID")
 
 
 class FrameAudioQuery(BaseModel):
@@ -88,12 +95,12 @@ class FrameAudioQuery(BaseModel):
     フレームごとの音声合成用のクエリ
     """
 
-    f0: list[float] = Field(title="フレームごとの基本周波数")
-    volume: list[float] = Field(title="フレームごとの音量")
-    phonemes: list[FramePhoneme] = Field(title="音素のリスト")
-    volumeScale: float = Field(title="全体の音量")
-    outputSamplingRate: int = Field(title="音声データの出力サンプリングレート")
-    outputStereo: bool = Field(title="音声データをステレオ出力するか否か")
+    f0: list[float] = Field(description="フレームごとの基本周波数")
+    volume: list[float] = Field(description="フレームごとの音量")
+    phonemes: list[FramePhoneme] = Field(description="音素のリスト")
+    volumeScale: float = Field(description="全体の音量")
+    outputSamplingRate: int = Field(description="音声データの出力サンプリングレート")
+    outputStereo: bool = Field(description="音声データをステレオ出力するか否か")
 
 
 class ParseKanaErrorCode(Enum):

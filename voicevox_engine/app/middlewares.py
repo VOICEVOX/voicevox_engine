@@ -3,6 +3,7 @@
 import re
 import sys
 from collections.abc import Awaitable, Callable
+from traceback import print_exception
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,7 @@ def configure_middlewares(
     # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
     # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
     async def global_execution_handler(request: Request, exc: Exception) -> Response:
+        print_exception(exc)
         return JSONResponse(
             status_code=500,
             content="Internal Server Error",
@@ -28,7 +30,9 @@ def configure_middlewares(
     app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)
 
     # CORS用のヘッダを生成するミドルウェア
-    localhost_regex = "^https?://(localhost|127\\.0\\.0\\.1|\\[::1\\])(:[0-9]+)?$"
+    localhost_regex = (
+        r"^[a-zA-Z+\-\.]+://(([^/]+\.)?localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?$"
+    )
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
     if cors_policy_mode == "localapps":
@@ -38,7 +42,7 @@ def configure_middlewares(
             if "*" in allow_origin:
                 print(
                     'WARNING: Deprecated use of argument "*" in allow_origin. '
-                    'Use option "--cors_policy_mod all" instead. See "--help" for more.',
+                    'Use option "--cors_policy_mode all" instead. See "--help" for more.',
                     file=sys.stderr,
                 )
 

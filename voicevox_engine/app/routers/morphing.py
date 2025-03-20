@@ -10,7 +10,6 @@ from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.metas.MetasStore import MetasStore
 from voicevox_engine.model import AudioQuery
@@ -24,7 +23,7 @@ from voicevox_engine.morphing.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.morphing.morphing import synthesize_morphed_wave
-from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
 from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
@@ -34,32 +33,27 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    tts_engines: TTSEngineManager,
-    core_manager: CoreManager,
-    metas_store: MetasStore,
+    tts_engines: TTSEngineManager, metas_store: MetasStore
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
     router = APIRouter(tags=["音声合成"])
 
     @router.post(
         "/morphable_targets",
-        summary="指定したスタイルに対してエンジン内の話者がモーフィングが可能か判定する",
+        summary="指定したスタイルに対してエンジン内のキャラクターがモーフィングが可能か判定する",
     )
     def morphable_targets(
         base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
-        指定されたベーススタイルに対してエンジン内の各話者がモーフィング機能を利用可能か返します。
+        指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
         """
-        version = core_version or core_manager.latest_version()
-        core = core_manager.get_core(version)
-
-        speakers = metas_store.load_combined_metas(core.speakers)
+        characters = metas_store.characters(core_version)
         try:
-            morphable_targets = get_morphable_targets(speakers, base_style_ids)
+            morphable_targets = get_morphable_targets(characters, base_style_ids)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
             raise HTTPException(status_code=404, detail=msg)
@@ -92,14 +86,13 @@ def generate_morphing_router(
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        version = core_version or core_manager.latest_version()
+        version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
-        core = core_manager.get_core(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
-        speakers = metas_store.load_combined_metas(core.speakers)
+        characters = metas_store.characters(core_version)
         try:
-            morphable = is_morphable(speakers, base_style_id, target_style_id)
+            morphable = is_morphable(characters, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
             raise HTTPException(status_code=404, detail=msg)
@@ -110,7 +103,6 @@ def generate_morphing_router(
         # 生成したパラメータはキャッシュされる
         morph_param = synthesis_morphing_parameter(
             engine=engine,
-            core=core,
             query=query,
             base_style_id=base_style_id,
             target_style_id=target_style_id,

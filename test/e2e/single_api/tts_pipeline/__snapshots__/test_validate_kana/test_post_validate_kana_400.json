@@ -1,0 +1,9 @@
+{
+  "detail": {
+    "error_args": {
+      "text": "こんにちは"
+    },
+    "error_name": "UNKNOWN_TEXT",
+    "text": "判別できない読み仮名があります: こんにちは"
+  }
+}

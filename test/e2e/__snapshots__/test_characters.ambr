@@ -1,0 +1,157 @@
+# serializer version: 1
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_icon]
+  'MD5:1fe576e75458c752cfeecc1e93a29886'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_portrait]
+  'MD5:56b2cfc4a9118c40a999e151c0ac647e'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_0]
+  'MD5:62cce06e564276499df6014e7182368d'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_1]
+  'MD5:2164af6fc692d5b2117dfd845c880f81'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_8_voice_sample_2]
+  'MD5:4e81220a91745cf2ab7b632cd528ffbd'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[35b2c544-660e-401e-b503-0e14c635303a_portrait]
+  'MD5:bd6cf66dcc652f56892b14b423f6f37c'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_icon]
+  'MD5:becb1cc2aaf82623a13a1250a39d7393'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_0]
+  'MD5:a9bf75355816d858213cb116942fe499'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_1]
+  'MD5:0dc81612c1f305b6210ef325a4518e53'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_1_voice_sample_2]
+  'MD5:ba5694044d8e7e0bffa9578d22ba2ba8'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_icon]
+  'MD5:9a3690c368cd9a4ecb1940ff9eb2c955'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_portrait]
+  'MD5:0308b1a8e7a849e8be5ea699706f5097'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_0]
+  'MD5:0fd8a039030ea31560c84e91f955e4cd'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_1]
+  'MD5:c249264fa985fd4ab5e940c7e813db3e'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_3_voice_sample_2]
+  'MD5:6a0bc8b54543fe816f37cb286795ad07'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_portrait]
+  'MD5:27777cb0883c98cd9870707005bf1faf'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_icon]
+  'MD5:1f1da5f25968c638a783bf6ba9df9420'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_portrait]
+  'MD5:1724b3741e58978f5b9db25eb6575d9b'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_0]
+  'MD5:79d52a44a8dc8548616c300e49b37a94'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_1]
+  'MD5:d31e59cf938a46d156add0da486fe5e2'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_0_voice_sample_2]
+  'MD5:73d7e1f311263ab7e1b468318cb8575a'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_icon]
+  'MD5:0b158046338f60a53e9afdb7797c5864'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_portrait]
+  'MD5:593c75329b6531e5ae0266a708e5ebc0'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_0]
+  'MD5:8e917c07fe5d444eddd4b451b7dc8d83'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_1]
+  'MD5:0cf95e313bc5c3314be6a71e5021fad2'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_2_voice_sample_2]
+  'MD5:43f9f43e4607015e7ab3bd016bee5509'
+# ---
+# name: test_喋れるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_portrait]
+  'MD5:78228648fe527ee23597b66db59a4f94'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_icon]
+  'MD5:517ba089e0b03f8868af2ce956f7699d'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_0]
+  'MD5:d368ea4f7af3fba9f9f7fa862e50590f'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_1]
+  'MD5:a844eb96e25efd52dfee76d023eda0c8'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_5_voice_sample_2]
+  'MD5:4cd9a6ff5ac76ea1c267c99b2cfe925f'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_icon]
+  'MD5:562ad0f61ca6dd81e89a4479f97dcd9f'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_0]
+  'MD5:f214d07c3fb5332e429abb17921eecb5'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_1]
+  'MD5:46296628b586d968054cc43ad733dd4a'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_7_voice_sample_2]
+  'MD5:919e8e440b31b13fb0d2aae03061661f'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[388f246b-8c41-4ac1-8e2d-5d79f3ff56d9_portrait]
+  'MD5:27777cb0883c98cd9870707005bf1faf'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_icon]
+  'MD5:c6a8ddea789d8115372db31b4a76d2aa'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_portrait]
+  'MD5:2b339e97d7ae0b6b215de842ff12515e'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_0]
+  'MD5:5333edce35b3806f1818c407cd74b66b'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_1]
+  'MD5:720ab16616e8e3e8e15535c9f6fd1f03'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_4_voice_sample_2]
+  'MD5:444dd9f019828f3773192cca7d1099df'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_icon]
+  'MD5:d2c7c85a9919372ef62ad49786bd7fc4'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_portrait]
+  'MD5:6f7cd8ecb9d2d8de0ed410e05350ac72'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_0]
+  'MD5:4add3a1cf25c4b6ce6d35aaa1f760071'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_1]
+  'MD5:42d20380d8d6fc95916037e4da990aaa'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_6_voice_sample_2]
+  'MD5:af22bcd03f4959dc8f0e4ac1d04854e0'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff_portrait]
+  'MD5:78228648fe527ee23597b66db59a4f94'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_icon]
+  'MD5:1e3d0a6e88264b1b99839aeb7c7cbe1f'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_0]
+  'MD5:e8626456ba706690676639e61ad43b73'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_1]
+  'MD5:93e3d5c44bbad3ddfc43953f5c751670'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_9_voice_sample_2]
+  'MD5:765ff637563e64182ace61fb5ca7daf4'
+# ---
+# name: test_歌えるキャラクターの情報をURLで取得できる[b1a81618-b27b-40d2-b0ea-27a9ad408c4b_portrait]
+  'MD5:381ba07cbcad95f1c99109f5f6d096a8'
+# ---
