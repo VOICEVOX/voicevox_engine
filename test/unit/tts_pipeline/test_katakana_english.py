@@ -3,8 +3,8 @@ from voicevox_engine.tts_pipeline.katakana_english import (
 )
 
 
-def test_extract_fullcontext_with_e2k_normal() -> None:
-    """`extract_fullcontext_with_e2k`は英単語をアルファベットそのままで読まない"""
+def test_convert_english_in_njd_features_to_katakana_normal() -> None:
+    """`convert_english_in_njd_features_to_katakana`は英単語をアルファベットそのままで読まない"""
     features = [
         {
             "string": "Ｖｏｉｖｏ",
@@ -34,8 +34,8 @@ def test_extract_fullcontext_with_e2k_normal() -> None:
     assert expected_prons == prons
 
 
-def test_extract_fullcontext_with_e2k_uppercase() -> None:
-    """`extract_fullcontext_with_e2k`は大文字のみの英単語をアルファベットそのままで読む"""
+def test_convert_english_in_njd_features_to_katakana_uppercase() -> None:
+    """`convert_english_in_njd_features_to_katakana`は大文字のみの英単語をアルファベットそのままで読む"""
     features = [
         {
             "string": "ＶＯＩＶＯ",
@@ -64,8 +64,8 @@ def test_extract_fullcontext_with_e2k_uppercase() -> None:
     assert expected_prons == prons
 
 
-def test_extract_fullcontext_with_e2k_short() -> None:
-    """`extract_fullcontext_with_e2k`は2文字以下の英単語をアルファベットそのままで読む"""
+def test_convert_english_in_njd_features_to_katakana_short() -> None:
+    """`convert_english_in_njd_features_to_katakana`は2文字以下の英単語をアルファベットそのままで読む"""
     # NOTE: 実際の pyopenjtalk.run_frontend の出力とは異なる
     features = [
         {
