@@ -42,10 +42,7 @@ class CancellableEngine:
         enable_mock: bool = True,
     ) -> None:
         """
-        変数の初期化を行う
-        パラメータ use_gpu, voicelib_dirs, voicevox_dir,
-        runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
-        init_processesの数だけプロセスを起動し、procs_and_consに格納する
+        init_processesの数だけプロセスを起動し、procs_and_consに格納する。その他の引数はcore_initializerを参照。        
         """
 
         self.use_gpu = use_gpu
@@ -55,9 +52,9 @@ class CancellableEngine:
         self.cpu_num_threads = cpu_num_threads
         self.enable_mock = enable_mock
 
-        # Requestは接続の監視に使用され、Processは通信切断時のプロセスキルに使用される
+        # Requestは切断の監視に使用され、Processは切断時のプロセスキルに使用される
         # クライアントから接続があるとlistにtupleが追加される
-        # 接続が切断、もしくは音声合成が終了すると削除される
+        # 切断、もしくは音声合成が終了すると削除される
         self._watching_reqs_and_procs: list[tuple[Request, Process]] = []
 
         # 待機しているサブプロセスと、それと通信できるコネクション
@@ -67,7 +64,7 @@ class CancellableEngine:
         self._waiting_procs_and_cons = procs_and_cons
 
     def _start_new_process(self) -> tuple[Process, ConnectionType]:
-        """音声合成可能な新しいプロセスを開始し、そのプロセスとそこへのコネクションを返す。"""
+        """音声合成可能な新しいプロセスを開始し、そのプロセスと、プロセスへのコネクションを返す。"""
         connection_outer, connection_inner = Pipe(True)
         new_process = Process(
             target=start_synthesis_subprocess,
@@ -89,7 +86,7 @@ class CancellableEngine:
         self, req: Request, proc: Process, sub_proc_con: ConnectionType | None
     ) -> None:
         """
-        合成の後処理をおこなう。
+        プロセスの後処理をおこなう。
 
         Parameters
         ----------
@@ -126,7 +123,7 @@ class CancellableEngine:
         version: str | LatestVersion,
     ) -> str:
         """
-        サブプロセス上において、音声合成用のクエリ・スタイルIDに基づいて音声波形を生成し、音声ファイル名を返す。
+        サブプロセスで音声合成用のクエリ・スタイルIDから音声を生成し、音声ファイル名を返す。
 
         Parameters
         ----------
