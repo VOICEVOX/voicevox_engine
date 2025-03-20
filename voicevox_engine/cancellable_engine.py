@@ -75,7 +75,7 @@ class CancellableEngine:
                 "runtime_dirs": self.runtime_dirs,
                 "cpu_num_threads": self.cpu_num_threads,
                 "enable_mock": self.enable_mock,
-                "sub_proc_con": connection_inner,
+                "connection": connection_inner,
             },
             daemon=True,
         )
