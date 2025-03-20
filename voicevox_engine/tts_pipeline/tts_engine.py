@@ -2,17 +2,16 @@
 
 import copy
 import math
-from typing import Final, Literal, TypeAlias
+from typing import Any, Final, Literal, TypeAlias
 
 import numpy as np
-from fastapi import HTTPException
 from numpy.typing import NDArray
 from soxr import resample
 
 from voicevox_engine.utility.core_version_utility import get_latest_version
 
 from ..core.core_adapter import CoreAdapter, DeviceSupport
-from ..core.core_initializer import CoreManager
+from ..core.core_initializer import MOCK_VER, CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
@@ -775,6 +774,19 @@ class TTSEngine:
         return wave
 
 
+class TTSEngineNotFound(Exception):
+    """TTSEngine が見つからないエラー"""
+
+    def __init__(self, *args: list[Any], version: str, **kwargs: dict[str, Any]):
+        """TTSEngine のバージョン番号を用いてインスタンス化する。"""
+        super().__init__(*args, **kwargs)
+        self.version = version
+
+
+class MockTTSEngineNotFound(Exception):
+    """モック TTSEngine が見つからないエラー"""
+
+
 LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
 LATEST_VERSION: Final[LatestVersion] = "LATEST_VERSION"
 
@@ -802,8 +814,10 @@ class TTSEngineManager:
             return self._engines[self._latest_version()]
         elif version in self._engines:
             return self._engines[version]
-
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
+        elif version == MOCK_VER:
+            raise MockTTSEngineNotFound()
+        else:
+            raise TTSEngineNotFound(version=version)
 
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
