@@ -1,12 +1,12 @@
 [tool.pysen]
-version = "0.10.5"
+version = "0.11.0"
 
 [tool.pysen.lint]
 enable_black = true
 enable_flake8 = true
 enable_isort = true
 enable_mypy = true
-mypy_preset = "entry" # TODO: "strict"
+mypy_preset = "strict"
 mypy_plugins = [
   { function = "numpy.typing.mypy_plugin" },
   { function = "pydantic.mypy" },
@@ -36,48 +36,49 @@ line_length = 88
 multi_line_output = 3
 use_parentheses = true
 
+[tool.typos.default.extend-words]
+datas = "datas" # PyInstaller's argument
+
 [tool.poetry]
-name = "voicevox_engine"
-version = "0.0.0"
-description = ""
-authors = ["Hiroshiba <hihokaruta@gmail.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.11"
-numpy = "^1.20.0"
-fastapi = "^0.103.2"
-python-multipart = "^0.0.5"
-uvicorn = "^0.15.0"
-soundfile = "^0.12.1"
-pyyaml = "^6.0"
-pyworld = "^0.3.0"
-jinja2 = "^3.1.2"
-pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "b35fc89fe42948a28e33aed886ea145a51113f88" }
+numpy = "^2.2.3"
+fastapi-slim = "^0.115.5"
+jinja2 = "^3.1.3" # NOTE: required by fastapi.templating.Jinja2Templates (fastapi-slim's unmanaged dependency)
+python-multipart = "^0.0.20" # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
+uvicorn = "^0.34.0"
+soundfile = "^0.13.1"
+pyyaml = "^6.0.1"
+pyworld = "^0.3.5"
+pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "0fcb731c94555e8d160d18e7f1a4d005b2e8e852" }
 semver = "^3.0.0"
-platformdirs = "^3.10.0"
-soxr = "^0.3.6"
+platformdirs = "^4.2.0"
+soxr = "^0.5.0"
+pydantic = "^2.7.3"
+starlette = "^0.45.3"
 
 [tool.poetry.group.dev.dependencies]
+pysen = "^0.11.0"
+black = "^25.1.0"
+flake8-bugbear = "^24.4.26"
+flake8 = "^7.0.0"
+isort = "^5.13.0"
+mypy = "^1.10.0"
+pytest = "^8.2.0"
+coveralls = "^4.0.1"
+poetry = "2.1.1"
+poetry-plugin-export = "^1.8.0"
+httpx = "^0.28.1" # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
+syrupy = "^4.6.1"
+types-pyyaml = "^6.0.12"
+pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
+pre-commit = "^4.0.1"
+pip-audit = "^2.7.3"
+
+[tool.poetry.group.build.dependencies]
 pyinstaller = "^5.13"
-pre-commit = "^2.16.0"
-poetry = "^1.3.1"
-
-[tool.poetry.group.test.dependencies]
-pysen = "~0.10.5"
-black = "^22.12.0"
-flake8-bugbear = "^23.1.0"
-flake8 = "^6.0.0"
-isort = "^5.12.0"
-mypy = "^1.8.0"
-pytest = "^7.4.3"
-coveralls = "^3.2.0"
-poetry = "^1.3.1"
-httpx = "^0.25.0"          # NOTE: required by fastapi.testclient.TestClient
-syrupy = "^4.6.0"
-types-pyyaml = "^6.0"
-
-[tool.poetry.group.license.dependencies]
-pip-licenses = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core"]

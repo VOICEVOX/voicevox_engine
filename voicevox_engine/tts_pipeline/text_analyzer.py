@@ -1,13 +1,26 @@
+"""テキスト解析"""
+
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Literal, Self
+from typing import Any, Callable, Literal, Self
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora, NonOjtPhonemeError, OjtUnknownPhonemeError
+from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
 from .phoneme import Consonant, Vowel
+
+
+class NonOjtPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
+
+
+class OjtUnknownPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
+
 
 # OpenJTalk が出力する音素の一覧。
 _OJT_VOWELS = (
@@ -136,7 +149,7 @@ class Label:
         """BreathGroupのインデックス"""
         return self.contexts["i3"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Label phoneme='{self.phoneme}'>"
 
 
@@ -231,7 +244,9 @@ class BreathGroupLabel:
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[Label] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
+        accent_labels: list[Label] = (
+            []
+        )  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
         for label, next_label in zip(labels, labels[1:] + [None]):
             # 区切りまでラベル系列を一時保存する
@@ -279,7 +294,9 @@ class UtteranceLabel:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[Label] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
+        group_labels: list[Label] = (
+            []
+        )  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する

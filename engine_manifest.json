@@ -7,12 +7,12 @@
     "url": "https://github.com/VOICEVOX/voicevox_engine",
     "command": "run",
     "port": 50021,
-    "icon": "engine_manifest_assets/icon.png",
+    "icon": "resources/engine_manifest_assets/icon.png",
     "default_sampling_rate": 24000,
     "frame_rate": 93.75,
-    "terms_of_service": "engine_manifest_assets/terms_of_service.md",
-    "update_infos": "engine_manifest_assets/update_infos.json",
-    "dependency_licenses": "engine_manifest_assets/dependency_licenses.json",
+    "terms_of_service": "resources/engine_manifest_assets/terms_of_service.md",
+    "update_infos": "resources/engine_manifest_assets/update_infos.json",
+    "dependency_licenses": "resources/engine_manifest_assets/dependency_licenses.json",
     "supported_features": {
         "adjust_mora_pitch": {
             "type": "bool",
@@ -44,6 +44,11 @@
             "value": true,
             "name": "全体の音量の調整"
         },
+        "adjust_pause_length": {
+            "type": "bool",
+            "value": true,
+            "name": "句読点などの無音時間の調整"
+        },
         "interrogative_upspeak": {
             "type": "bool",
             "value": true,
@@ -63,6 +68,11 @@
             "type": "bool",
             "value": true,
             "name": "音声ライブラリのインストール・アンインストール"
+        },
+        "return_resource_url":{
+            "type":"bool",
+            "value":true,
+            "name": "キャラクター情報のリソースをURLで返送"
         }
     }
 }

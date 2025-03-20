@@ -1,0 +1,16 @@
+{
+  "detail": [
+    {
+      "ctx": {
+        "le": 10
+      },
+      "input": "100",
+      "loc": [
+        "query",
+        "priority"
+      ],
+      "msg": "Input should be less than or equal to 10",
+      "type": "less_than_equal"
+    }
+  ]
+}
