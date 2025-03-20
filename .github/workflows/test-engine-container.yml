@@ -27,7 +27,7 @@ defaults:
 
 jobs:
   test:
-    runs-on: [ ubuntu-20.04 ]
+    runs-on: [ubuntu-22.04]
     strategy:
       fail-fast: false
       matrix:
@@ -35,6 +35,7 @@ jobs:
           - ""
           - cpu
           - cpu-ubuntu20.04
+          - cpu-ubuntu22.04
 
     steps:
       - name: <Setup> Check out the repository
@@ -67,11 +68,11 @@ jobs:
       - name: <Setup> Warm up ENGINE server by waiting
         run: |
           set +e # curlのエラーを無視する
-          
+
           url="http://127.0.0.1:50021/version"
           max_attempts=10
           sleep_interval=5
-          
+
           for i in $(seq 1 "$max_attempts"); do
             status=$(curl -o /dev/null -s -w '%{http_code}\n' "$url")
             if [ "$status" -eq 200 ]; then
@@ -85,4 +86,4 @@ jobs:
           exit 1
 
       - name: <Test> Test ENGINE application docker container
-        run: python tools/check_release_build.py --skip_run_process --dist_dir dist/
+        run: python tools/check_release_build.py --skip_run_process --skip_check_manifest --dist_dir dist/

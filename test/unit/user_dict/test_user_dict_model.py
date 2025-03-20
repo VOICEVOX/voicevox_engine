@@ -1,6 +1,6 @@
 """UserDictWord のテスト"""
 
-from typing import TypedDict
+from typing import Literal, TypedDict, get_args
 
 import pytest
 from pydantic import ValidationError
@@ -53,6 +53,46 @@ def test_valid_word() -> None:
 
     # Test
     UserDictWord(**args)
+
+
+CsvSafeStrFieldName = Literal[
+    "part_of_speech",
+    "part_of_speech_detail_1",
+    "part_of_speech_detail_2",
+    "part_of_speech_detail_3",
+    "inflectional_type",
+    "inflectional_form",
+    "stem",
+    "yomi",
+    "accent_associative_rule",
+]
+
+
+@pytest.mark.parametrize(
+    "field",
+    get_args(CsvSafeStrFieldName),
+)
+def test_invalid_csv_safe_str(field: CsvSafeStrFieldName) -> None:
+    """UserDictWord の文字列 CSV で許可されない文字をエラーとする。"""
+    # Inputs
+    test_value_newlines = generate_model()
+    test_value_newlines[field] = "te\r\nst"
+    test_value_null = generate_model()
+    test_value_null[field] = "te\x00st"
+    test_value_comma = generate_model()
+    test_value_comma[field] = "te,st"
+    test_value_double_quote = generate_model()
+    test_value_double_quote[field] = 'te"st'
+
+    # Test
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_newlines)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_null)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_comma)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_double_quote)
 
 
 def test_convert_to_zenkaku() -> None:
@@ -124,6 +164,21 @@ def test_invalid_pronunciation_not_katakana() -> None:
     # Test
     with pytest.raises(ValidationError):
         UserDictWord(**test_value)
+
+
+def test_invalid_pronunciation_newlines_and_null() -> None:
+    """UserDictWord は pronunciation 内の改行や null 文字をエラーとする。"""
+    # Inputs
+    test_value_newlines = generate_model()
+    test_value_newlines["pronunciation"] = "ボイ\r\nボ"
+    test_value_null = generate_model()
+    test_value_null["pronunciation"] = "ボイ\x00ボ"
+
+    # Test
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_newlines)
+    with pytest.raises(ValidationError):
+        UserDictWord(**test_value_null)
 
 
 def test_invalid_pronunciation_invalid_sutegana() -> None:

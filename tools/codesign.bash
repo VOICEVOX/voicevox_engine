@@ -27,7 +27,7 @@ target_file_glob="$1"
 # eSignerCKAのセットアップ
 INSTALL_DIR='..\eSignerCKA'
 if [ ! -d "$INSTALL_DIR" ]; then
-    curl -LO "https://github.com/SSLcom/eSignerCKA/releases/download/v1.0.6/SSL.COM-eSigner-CKA_1.0.6.zip"
+    curl -LO --retry 3 --retry-delay 5 "https://github.com/SSLcom/eSignerCKA/releases/download/v1.0.6/SSL.COM-eSigner-CKA_1.0.6.zip"
     unzip -o SSL.COM-eSigner-CKA_1.0.6.zip
     mv ./*eSigner*CKA_*.exe eSigner_CKA_Installer.exe
     powershell "

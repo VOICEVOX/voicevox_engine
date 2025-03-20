@@ -47,7 +47,7 @@ def generate_preset_router(
             Body(
                 description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
             ),
-        ]
+        ],
     ) -> int:
         """
         新しいプリセットを追加します
@@ -71,7 +71,7 @@ def generate_preset_router(
             Body(
                 description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
             ),
-        ]
+        ],
     ) -> int:
         """
         既存のプリセットを更新します
@@ -90,7 +90,7 @@ def generate_preset_router(
         dependencies=[Depends(verify_mutability)],
     )
     def delete_preset(
-        id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
+        id: Annotated[int, Query(description="削除するプリセットのプリセットID")],
     ) -> None:
         """
         既存のプリセットを削除します

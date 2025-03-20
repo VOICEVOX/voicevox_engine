@@ -1,10 +1,13 @@
 """プリセット関連の処理"""
 
+import shutil
+import warnings
 from pathlib import Path
 
 import yaml
 from pydantic import TypeAdapter, ValidationError
 
+from ..utility.path_utility import engine_root
 from .model import Preset
 
 
@@ -29,10 +32,25 @@ class PresetManager:
     """
 
     def __init__(self, preset_path: Path):
-        """プリセットの設定ファイルへのパスからプリセットマネージャーを生成する"""
+        """プリセットマネージャーを生成する。プリセットファイルが存在しない場合は新規作成する。"""
+
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
+        if not self.preset_path.exists():
+            # エンジンのディレクトリ内に`presets.yaml`があった場合、マイグレーションする
+            old_preset_path = engine_root() / "presets.yaml"
+            if old_preset_path.exists():
+                try:
+                    shutil.move(old_preset_path, self.preset_path)
+                except OSError:
+                    warnings.warn(
+                        "プリセットファイルのマイグレーションに失敗しました",
+                        stacklevel=1,
+                    )
+                    self.preset_path.write_text("[]")
+            else:
+                self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
@@ -43,14 +61,17 @@ class PresetManager:
             if _last_modified_time == self.last_modified_time:
                 # 更新無し
                 return
-        except OSError:
-            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
 
-        # データベースの読み込み
-        with open(self.preset_path, mode="r", encoding="utf-8") as f:
-            obj = yaml.safe_load(f)
-            if obj is None:
-                raise PresetInternalError("プリセットの設定ファイルが空の内容です")
+            # データベースの読み込み
+            with open(self.preset_path, mode="r", encoding="utf-8") as f:
+                obj = yaml.safe_load(f)
+        except OSError:
+            raise PresetInternalError("プリセットの読み込みに失敗しました")
+        except yaml.YAMLError:
+            raise PresetInternalError("プリセットのパースに失敗しました")
+        if obj is None:
+            raise PresetInternalError("プリセットの設定ファイルが空の内容です")
+
         try:
             preset_list_adapter = TypeAdapter(list[Preset])
             _presets = preset_list_adapter.validate_python(obj)
@@ -84,8 +105,8 @@ class PresetManager:
             self._write_on_file()
         except Exception as err:
             self.presets.pop()
-            if isinstance(err, FileNotFoundError):
-                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            if isinstance(err, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました")
             else:
                 raise err
 
@@ -120,8 +141,8 @@ class PresetManager:
             self._write_on_file()
         except Exception as err:
             self.presets[prev_preset[0]] = prev_preset[1]
-            if isinstance(err, FileNotFoundError):
-                raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            if isinstance(err, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました")
             else:
                 raise err
 
@@ -147,9 +168,9 @@ class PresetManager:
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
-        except FileNotFoundError:
+        except OSError:
             self.presets.insert(buf_index, buf)
-            raise PresetInternalError("プリセットの設定ファイルが見つかりません")
+            raise PresetInternalError("プリセットの書き込みに失敗しました")
 
         return id
 

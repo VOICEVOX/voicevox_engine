@@ -8,29 +8,29 @@ repos:
         entry: pysen run lint
         language: python
         types: [file, python]
-        stages: [push]
+        stages: [pre-push]
         pass_filenames: false
       - id: poetry-check # `pyproject.toml` と `poetry.lock` が整合する
         name: poetry-check
         entry: poetry check
         language: python
-        stages: [push]
+        stages: [pre-push]
         pass_filenames: false
       - id: poetry-export
         name: poetry-export
         entry: poetry export --without-hashes -o requirements.txt
         language: python
-        stages: [push]
+        stages: [pre-push]
         pass_filenames: false
       - id: poetry-export-dev
         name: poetry-export-dev
         entry: poetry export --without-hashes --with dev -o requirements-dev.txt
         language: python
-        stages: [push]
+        stages: [pre-push]
         pass_filenames: false
       - id: poetry-export-build
         name: poetry-export-build
         entry: poetry export --without-hashes --with build -o requirements-build.txt
         language: python
-        stages: [push]
+        stages: [pre-push]
         pass_filenames: false

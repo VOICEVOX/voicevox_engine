@@ -275,7 +275,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
         default=None,
         help=(
             "プリセットファイルを指定できます。"
-            "指定がない場合、環境変数 VV_PRESET_FILE、実行ファイルのディレクトリのpresets.yamlを順に探します。"
+            "指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。"
         ),
     )
 
@@ -360,11 +360,10 @@ def main() -> None:
         env_preset_path = Path(envs.env_preset_path)
     else:
         env_preset_path = None
-    root_preset_path = engine_root() / "presets.yaml"
+    default_preset_path = get_save_dir() / "presets.yaml"
     preset_path = select_first_not_none(
-        [args.preset_file, env_preset_path, root_preset_path]
+        [args.preset_file, env_preset_path, default_preset_path]
     )
-    # ファイルの存在に関わらず指定されたパスをプリセットファイルとして使用する
     preset_manager = PresetManager(preset_path)
 
     use_dict = UserDictionary()
@@ -408,11 +407,7 @@ def main() -> None:
 
     # VOICEVOX ENGINE サーバーを起動
     # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
-    try:
-        uvicorn.run(app, host=args.host, port=args.port)
-    except KeyboardInterrupt:
-        print("`KeyboardInterrupt` の検出によりエンジンを停止しました。")
-        pass
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

@@ -2,54 +2,67 @@
   [
     {
       "frame_length": 4,
+      "note_id": null,
       "phoneme": "pau"
     },
     {
       "frame_length": 6,
+      "note_id": null,
       "phoneme": "d"
     },
     {
       "frame_length": 4,
+      "note_id": null,
       "phoneme": "o"
     },
     {
       "frame_length": 8,
+      "note_id": null,
       "phoneme": "r"
     },
     {
       "frame_length": 13,
+      "note_id": null,
       "phoneme": "e"
     },
     {
       "frame_length": 4,
+      "note_id": null,
       "phoneme": "m"
     },
     {
       "frame_length": 21,
+      "note_id": null,
       "phoneme": "i"
     },
     {
       "frame_length": 3,
+      "note_id": null,
       "phoneme": "pau"
     },
     {
       "frame_length": 2,
+      "note_id": null,
       "phoneme": "f"
     },
     {
       "frame_length": 6,
+      "note_id": null,
       "phoneme": "a"
     },
     {
       "frame_length": 6,
+      "note_id": null,
       "phoneme": "s"
     },
     {
       "frame_length": 17,
+      "note_id": null,
       "phoneme": "o"
     },
     {
       "frame_length": 10,
+      "note_id": null,
       "phoneme": "pau"
     }
   ],

@@ -24,11 +24,7 @@
             "type": "array"
           },
           "pause_mora": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Mora"
-              }
-            ],
+            "$ref": "#/components/schemas/Mora",
             "description": "後ろに無音を付けるかどうか",
             "title": "Pause Mora"
           }
@@ -193,6 +189,22 @@
         "title": "Body_setting_post_setting_post",
         "type": "object"
       },
+      "Body_sing_frame_f0_sing_frame_f0_post": {
+        "properties": {
+          "frame_audio_query": {
+            "$ref": "#/components/schemas/FrameAudioQuery"
+          },
+          "score": {
+            "$ref": "#/components/schemas/Score"
+          }
+        },
+        "required": [
+          "score",
+          "frame_audio_query"
+        ],
+        "title": "Body_sing_frame_f0_sing_frame_f0_post",
+        "type": "object"
+      },
       "Body_sing_frame_volume_sing_frame_volume_post": {
         "properties": {
           "frame_audio_query": {
@@ -308,11 +320,7 @@
             "type": "string"
           },
           "supported_features": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SupportedFeatures"
-              }
-            ],
+            "$ref": "#/components/schemas/SupportedFeatures",
             "description": "エンジンが持つ機能"
           },
           "supported_vvlib_manifest_version": {
@@ -422,6 +430,18 @@
             "description": "音素のフレーム長",
             "title": "Frame Length",
             "type": "integer"
+          },
+          "note_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "音符のID",
+            "title": "Note Id"
           },
           "phoneme": {
             "description": "音素",
@@ -616,6 +636,18 @@
             "title": "Frame Length",
             "type": "integer"
           },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ID",
+            "title": "Id"
+          },
           "key": {
             "description": "音階",
             "title": "Key",
@@ -783,11 +815,7 @@
             "type": "array"
           },
           "supported_features": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SpeakerSupportedFeatures"
-              }
-            ],
+            "$ref": "#/components/schemas/SpeakerSupportedFeatures",
             "description": "キャラクターの対応機能"
           },
           "version": {
@@ -997,7 +1025,7 @@
             "type": "boolean"
           },
           "return_resource_url": {
-            "description": "speaker_info・singer_infoのリソースをURLで返送",
+            "description": "キャラクター情報のリソースをURLで返送",
             "title": "Return Resource Url",
             "type": "boolean"
           },
@@ -1265,7 +1293,7 @@
     "/": {
       "get": {
         "description": "ポータルページを返します。",
-        "operationId": "get_portal_page__get",
+        "operationId": "get_portal_page",
         "responses": {
           "200": {
             "content": {
@@ -1287,7 +1315,7 @@
     "/accent_phrases": {
       "post": {
         "description": "テキストからアクセント句を得ます。\nis_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。\n* 全てのカナはカタカナで記述される\n* アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。\n* カナの手前に`_`を入れるとそのカナは無声化される\n* アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。\n* アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。",
-        "operationId": "accent_phrases_accent_phrases_post",
+        "operationId": "accent_phrases",
         "parameters": [
           {
             "in": "query",
@@ -1372,18 +1400,13 @@
     "/add_preset": {
       "post": {
         "description": "新しいプリセットを追加します",
-        "operationId": "add_preset_add_preset_post",
+        "operationId": "add_preset",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/Preset"
-                  }
-                ],
-                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。",
-                "title": "Preset"
+                "$ref": "#/components/schemas/Preset",
+                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
               }
             }
           },
@@ -1421,7 +1444,7 @@
     "/audio_query": {
       "post": {
         "description": "音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
-        "operationId": "audio_query_audio_query_post",
+        "operationId": "audio_query",
         "parameters": [
           {
             "in": "query",
@@ -1482,7 +1505,7 @@
     "/audio_query_from_preset": {
       "post": {
         "description": "音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
-        "operationId": "audio_query_from_preset_audio_query_from_preset_post",
+        "operationId": "audio_query_from_preset",
         "parameters": [
           {
             "in": "query",
@@ -1542,7 +1565,7 @@
     },
     "/cancellable_synthesis": {
       "post": {
-        "operationId": "cancellable_synthesis_cancellable_synthesis_post",
+        "operationId": "cancellable_synthesis",
         "parameters": [
           {
             "in": "query",
@@ -1605,7 +1628,7 @@
     "/connect_waves": {
       "post": {
         "description": "base64エンコードされたwavデータを一纏めにし、wavファイルで返します。",
-        "operationId": "connect_waves_connect_waves_post",
+        "operationId": "connect_waves",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1652,7 +1675,7 @@
     "/core_versions": {
       "get": {
         "description": "利用可能なコアのバージョン一覧を取得します。",
-        "operationId": "core_versions_core_versions_get",
+        "operationId": "core_versions",
         "responses": {
           "200": {
             "content": {
@@ -1678,7 +1701,7 @@
     "/delete_preset": {
       "post": {
         "description": "既存のプリセットを削除します",
-        "operationId": "delete_preset_delete_preset_post",
+        "operationId": "delete_preset",
         "parameters": [
           {
             "description": "削除するプリセットのプリセットID",
@@ -1716,7 +1739,7 @@
     "/downloadable_libraries": {
       "get": {
         "description": "ダウンロード可能な音声ライブラリの情報を返します。",
-        "operationId": "downloadable_libraries_downloadable_libraries_get",
+        "operationId": "downloadable_libraries",
         "responses": {
           "200": {
             "content": {
@@ -1742,7 +1765,7 @@
     "/engine_manifest": {
       "get": {
         "description": "エンジンマニフェストを取得します。",
-        "operationId": "engine_manifest_engine_manifest_get",
+        "operationId": "engine_manifest",
         "responses": {
           "200": {
             "content": {
@@ -1764,7 +1787,7 @@
     "/frame_synthesis": {
       "post": {
         "description": "歌唱音声合成を行います。",
-        "operationId": "frame_synthesis_frame_synthesis_post",
+        "operationId": "frame_synthesis",
         "parameters": [
           {
             "in": "query",
@@ -1827,7 +1850,7 @@
     "/import_user_dict": {
       "post": {
         "description": "他のユーザー辞書をインポートします。",
-        "operationId": "import_user_dict_words_import_user_dict_post",
+        "operationId": "import_user_dict_words",
         "parameters": [
           {
             "description": "重複したエントリがあった場合、上書きするかどうか",
@@ -1880,7 +1903,7 @@
     "/initialize_speaker": {
       "post": {
         "description": "指定されたスタイルを初期化します。\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
-        "operationId": "initialize_speaker_initialize_speaker_post",
+        "operationId": "initialize_speaker",
         "parameters": [
           {
             "in": "query",
@@ -1937,7 +1960,7 @@
     "/install_library/{library_uuid}": {
       "post": {
         "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。",
-        "operationId": "install_library_install_library__library_uuid__post",
+        "operationId": "install_library",
         "parameters": [
           {
             "description": "音声ライブラリのID",
@@ -1975,7 +1998,7 @@
     "/installed_libraries": {
       "get": {
         "description": "インストールした音声ライブラリの情報を返します。",
-        "operationId": "installed_libraries_installed_libraries_get",
+        "operationId": "installed_libraries",
         "responses": {
           "200": {
             "content": {
@@ -2001,7 +2024,7 @@
     "/is_initialized_speaker": {
       "get": {
         "description": "指定されたスタイルが初期化されているかどうかを返します。",
-        "operationId": "is_initialized_speaker_is_initialized_speaker_get",
+        "operationId": "is_initialized_speaker",
         "parameters": [
           {
             "in": "query",
@@ -2053,7 +2076,7 @@
     },
     "/mora_data": {
       "post": {
-        "operationId": "mora_data_mora_data_post",
+        "operationId": "mora_data",
         "parameters": [
           {
             "in": "query",
@@ -2122,7 +2145,7 @@
     },
     "/mora_length": {
       "post": {
-        "operationId": "mora_length_mora_length_post",
+        "operationId": "mora_length",
         "parameters": [
           {
             "in": "query",
@@ -2191,7 +2214,7 @@
     },
     "/mora_pitch": {
       "post": {
-        "operationId": "mora_pitch_mora_pitch_post",
+        "operationId": "mora_pitch",
         "parameters": [
           {
             "in": "query",
@@ -2261,7 +2284,7 @@
     "/morphable_targets": {
       "post": {
         "description": "指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
-        "operationId": "morphable_targets_morphable_targets_post",
+        "operationId": "morphable_targets",
         "parameters": [
           {
             "in": "query",
@@ -2324,7 +2347,7 @@
     },
     "/multi_synthesis": {
       "post": {
-        "operationId": "multi_synthesis_multi_synthesis_post",
+        "operationId": "multi_synthesis",
         "parameters": [
           {
             "in": "query",
@@ -2391,7 +2414,7 @@
     "/presets": {
       "get": {
         "description": "エンジンが保持しているプリセットの設定を返します",
-        "operationId": "get_presets_presets_get",
+        "operationId": "get_presets",
         "responses": {
           "200": {
             "content": {
@@ -2417,7 +2440,7 @@
     "/setting": {
       "get": {
         "description": "設定ページを返します。",
-        "operationId": "setting_get_setting_get",
+        "operationId": "setting_get",
         "responses": {
           "200": {
             "description": "Successful Response"
@@ -2430,7 +2453,7 @@
       },
       "post": {
         "description": "設定を更新します。",
-        "operationId": "setting_post_setting_post",
+        "operationId": "setting_post",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -2465,7 +2488,7 @@
     "/sing_frame_audio_query": {
       "post": {
         "description": "歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。",
-        "operationId": "sing_frame_audio_query_sing_frame_audio_query_post",
+        "operationId": "sing_frame_audio_query",
         "parameters": [
           {
             "in": "query",
@@ -2524,9 +2547,74 @@
         ]
       }
     },
+    "/sing_frame_f0": {
+      "post": {
+        "operationId": "sing_frame_f0",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_sing_frame_f0_sing_frame_f0_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "title": "Response Sing Frame F0 Sing Frame F0 Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "楽譜・歌唱音声合成用のクエリからフレームごとの基本周波数を得る",
+        "tags": [
+          "クエリ編集"
+        ]
+      }
+    },
     "/sing_frame_volume": {
       "post": {
-        "operationId": "sing_frame_volume_sing_frame_volume_post",
+        "operationId": "sing_frame_volume",
         "parameters": [
           {
             "in": "query",
@@ -2583,7 +2671,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "スコア・歌唱音声合成用のクエリからフレームごとの音量を得る",
+        "summary": "楽譜・歌唱音声合成用のクエリからフレームごとの音量を得る",
         "tags": [
           "クエリ編集"
         ]
@@ -2592,7 +2680,7 @@
     "/singer_info": {
       "get": {
         "description": "UUID で指定された歌えるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
-        "operationId": "singer_info_singer_info_get",
+        "operationId": "singer_info",
         "parameters": [
           {
             "in": "query",
@@ -2658,7 +2746,7 @@
     "/singers": {
       "get": {
         "description": "歌えるキャラクターの情報の一覧を返します。",
-        "operationId": "singers_singers_get",
+        "operationId": "singers",
         "parameters": [
           {
             "in": "query",
@@ -2705,7 +2793,7 @@
     "/speaker_info": {
       "get": {
         "description": "UUID で指定された喋れるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
-        "operationId": "speaker_info_speaker_info_get",
+        "operationId": "speaker_info",
         "parameters": [
           {
             "in": "query",
@@ -2771,7 +2859,7 @@
     "/speakers": {
       "get": {
         "description": "喋れるキャラクターの情報の一覧を返します。",
-        "operationId": "speakers_speakers_get",
+        "operationId": "speakers",
         "parameters": [
           {
             "in": "query",
@@ -2818,7 +2906,7 @@
     "/supported_devices": {
       "get": {
         "description": "対応デバイスの一覧を取得します。",
-        "operationId": "supported_devices_supported_devices_get",
+        "operationId": "supported_devices",
         "parameters": [
           {
             "in": "query",
@@ -2860,7 +2948,7 @@
     },
     "/synthesis": {
       "post": {
-        "operationId": "synthesis_synthesis_post",
+        "operationId": "synthesis",
         "parameters": [
           {
             "in": "query",
@@ -2935,7 +3023,7 @@
     "/synthesis_morphing": {
       "post": {
         "description": "指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。\nモーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。",
-        "operationId": "_synthesis_morphing_synthesis_morphing_post",
+        "operationId": "_synthesis_morphing",
         "parameters": [
           {
             "in": "query",
@@ -3018,7 +3106,7 @@
     "/uninstall_library/{library_uuid}": {
       "post": {
         "description": "音声ライブラリをアンインストールします。",
-        "operationId": "uninstall_library_uninstall_library__library_uuid__post",
+        "operationId": "uninstall_library",
         "parameters": [
           {
             "description": "音声ライブラリのID",
@@ -3056,18 +3144,13 @@
     "/update_preset": {
       "post": {
         "description": "既存のプリセットを更新します",
-        "operationId": "update_preset_update_preset_post",
+        "operationId": "update_preset",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/Preset"
-                  }
-                ],
-                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。",
-                "title": "Preset"
+                "$ref": "#/components/schemas/Preset",
+                "description": "更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
               }
             }
           },
@@ -3105,7 +3188,7 @@
     "/user_dict": {
       "get": {
         "description": "ユーザー辞書に登録されている単語の一覧を返します。\n単語の表層形(surface)は正規化済みの物を返します。",
-        "operationId": "get_user_dict_words_user_dict_get",
+        "operationId": "get_user_dict_words",
         "responses": {
           "200": {
             "content": {
@@ -3131,7 +3214,7 @@
     "/user_dict_word": {
       "post": {
         "description": "ユーザー辞書に言葉を追加します。",
-        "operationId": "add_user_dict_word_user_dict_word_post",
+        "operationId": "add_user_dict_word",
         "parameters": [
           {
             "description": "言葉の表層形",
@@ -3172,13 +3255,8 @@
             "name": "word_type",
             "required": false,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/WordTypes"
-                }
-              ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
-              "title": "Word Type"
+              "$ref": "#/components/schemas/WordTypes",
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
@@ -3227,7 +3305,7 @@
     "/user_dict_word/{word_uuid}": {
       "delete": {
         "description": "ユーザー辞書に登録されている言葉を削除します。",
-        "operationId": "delete_user_dict_word_user_dict_word__word_uuid__delete",
+        "operationId": "delete_user_dict_word",
         "parameters": [
           {
             "description": "削除する言葉のUUID",
@@ -3263,7 +3341,7 @@
       },
       "put": {
         "description": "ユーザー辞書に登録されている言葉を更新します。",
-        "operationId": "rewrite_user_dict_word_user_dict_word__word_uuid__put",
+        "operationId": "rewrite_user_dict_word",
         "parameters": [
           {
             "description": "更新する言葉のUUID",
@@ -3315,13 +3393,8 @@
             "name": "word_type",
             "required": false,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/WordTypes"
-                }
-              ],
-              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか",
-              "title": "Word Type"
+              "$ref": "#/components/schemas/WordTypes",
+              "description": "PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
             }
           },
           {
@@ -3362,7 +3435,7 @@
     "/validate_kana": {
       "post": {
         "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n従っていない場合はエラーが返ります。",
-        "operationId": "validate_kana_validate_kana_post",
+        "operationId": "validate_kana",
         "parameters": [
           {
             "description": "判定する対象の文字列",
@@ -3418,7 +3491,7 @@
     "/version": {
       "get": {
         "description": "エンジンのバージョンを取得します。",
-        "operationId": "version_version_get",
+        "operationId": "version",
         "responses": {
           "200": {
             "content": {

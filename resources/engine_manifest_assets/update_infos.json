@@ -1,5 +1,77 @@
 [
   {
+    "version": "0.23.0",
+    "descriptions": [
+      "ソング：ピッチ取得APIを追加",
+      "同一エンジンの複数同時稼働を可能に",
+      "ARM64版エンジンの提供",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "aoirint",
+      "Hiroshiba",
+      "HyodaKazuaki",
+      "nanae772",
+      "sabonerune",
+      "shunjilin",
+      "sigprogramming",
+      "takana-v"
+    ]
+  },
+  {
+    "version": "0.22.2",
+    "descriptions": ["キャラクター「ぞん子」を追加"],
+    "contributors": []
+  },
+  {
+    "version": "0.22.1",
+    "descriptions": ["キャラクター「中部つるぎ」を追加"],
+    "contributors": []
+  },
+  {
+    "version": "0.22.0",
+    "descriptions": [
+      "ソング対応モーラを追加",
+      "プリセットの保存先を変更",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "aoirint",
+      "Hiroshiba",
+      "rokujyushi",
+      "sabonerune",
+      "sevenc-nanashi",
+      "takana-v",
+      "tarepan"
+    ]
+  },
+  {
+    "version": "0.21.1",
+    "descriptions": ["キャラクター「Voidoll」を追加"],
+    "contributors": []
+  },
+  {
+    "version": "0.21.0",
+    "descriptions": ["開発環境の向上"],
+    "contributors": ["Hiroshiba", "naga-na", "sabonerune"]
+  },
+  {
+    "version": "0.20.0",
+    "descriptions": [
+      "句読点などの無音時間の調整パラメータを追加",
+      "キャラクター情報のリソースをURLで返す機能追加",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "Hiroshiba",
+      "nix6839",
+      "sabonerune",
+      "tarepan",
+      "weweweok",
+      "X-20A"
+    ]
+  },
+  {
     "version": "0.19.1",
     "descriptions": ["キャラクター「後鬼」のスタイルを追加"],
     "contributors": []
