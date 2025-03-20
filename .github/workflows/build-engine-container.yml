@@ -34,7 +34,7 @@ jobs:
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
 
-  build-docker: # 単一プラットフォームDockerイメージをビルドする
+  build-docker:
     needs: [config]
     runs-on: ${{ matrix.os }}
 
@@ -197,7 +197,7 @@ jobs:
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
 
-  build-docker-multi-platform: # マルチプラットフォームDockerイメージをビルドする
+  build-docker-multi-platform:
     needs: [config, build-docker]
     runs-on: ubuntu-latest
 
@@ -233,7 +233,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build/Deploy> Build and Deploy Multi-platform Docker image
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
