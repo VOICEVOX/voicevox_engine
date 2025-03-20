@@ -5,6 +5,7 @@ name: test-security
 on:
   schedule:
     - cron: "00 04 15 * *" # 毎月15日 13:00 JST
+  workflow_dispatch:
 
 defaults:
   run:
