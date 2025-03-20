@@ -4,7 +4,6 @@ import re
 from typing import Any
 
 import e2k
-import pyopenjtalk
 
 
 def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
@@ -78,9 +77,10 @@ def _create_njd_feature(orig: str, kana: str, mora_size: int) -> dict[str, Any]:
     }
 
 
-def extract_fullcontext_with_e2k(text: str) -> list[str]:
-    """e2kを用いて読みが不明な英単語をカタカナに変換し、フルコンテキストラベルを生成する"""
-    njd_features: list[dict[str, Any]] = pyopenjtalk.run_frontend(text)
+def convert_english_in_njd_features_to_katakana(
+    njd_features: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """e2kを用いて、NJD Features内の読みが不明な英単語をカタカナに変換する"""
     for i, feature in enumerate(njd_features):
         # Mecabの解析で未知語となった場合、読みは空となる
         # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
@@ -125,4 +125,4 @@ def extract_fullcontext_with_e2k(text: str) -> list[str]:
             orig=feature["string"], kana=kana, mora_size=mora_size
         )
 
-    return pyopenjtalk.make_label(njd_features)  # type: ignore
+    return njd_features
