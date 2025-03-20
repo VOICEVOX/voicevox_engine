@@ -83,13 +83,13 @@ fi
 (
     IFS=$'\n'
     for multi_platform_image_tag in $multi_platform_image_tags; do
-        # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
+        # マニフェストリストを作成
         docker manifest create \
             "${multi_platform_image_tag}" \
             "${amd64_image_name}@${amd64_image_digest}" \
             "${arm64_image_name}@${arm64_image_digest}"
 
-        # マニフェストにプラットフォーム情報を追加
+        # プラットフォーム情報を追加
         docker manifest annotate \
             "${multi_platform_image_tag}" \
             "${amd64_image_name}@${amd64_image_digest}" \
@@ -105,7 +105,7 @@ fi
     done
 )
 
-# マルチプラットフォームイメージのマニフェストリストをpush
+# push
 (
     IFS=$'\n'
     for multi_platform_image_tag in ${multi_platform_image_tags}; do
