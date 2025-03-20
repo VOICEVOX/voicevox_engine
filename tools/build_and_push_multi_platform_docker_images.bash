@@ -27,8 +27,6 @@ if [ ! -v ARM64_MANIFEST_PREFIX ]; then # pullするARM64マニフェストの�
     exit 1
 fi
 
-is_signed
-
 script_dir=$(dirname "${0}")
 
 # ビルドするマルチプラットフォームDockerイメージ名のリスト

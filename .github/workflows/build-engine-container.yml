@@ -33,7 +33,7 @@ jobs:
           : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
 
-  build-docker: # 各CPU/GPU環境向けのDockerイメージを個別にビルドする
+  build-docker: # 単一プラットフォームDockerイメージをビルドする
     needs: [config]
     runs-on: ${{ matrix.os }}
 
@@ -209,7 +209,7 @@ jobs:
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
 
-  build-docker-manifest: # Dockerイメージを1つのタグにまとめる
+  build-docker-manifest: # マルチプラットフォームDockerイメージをビルドする
     needs: [config, build-docker]
     runs-on: ubuntu-latest
 
@@ -247,112 +247,12 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build> Generate Docker manifest list names
-        id: generate-manifest-docker-manifest-list-names
+      - name: <Build/Deploy> Build and Deploy Multi-platform Docker image
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
+          MANIFEST_LIST_PREFIXES: ${{ matrix.manifest_list_prefixes }}
+          AMD64_MANIFEST_PREFIX: ${{ matrix.amd64_manifest_prefix }}
+          ARM64_MANIFEST_PREFIX: ${{ matrix.arm64_manifest_prefix }}
         run: |
-          # Dockerイメージ名を outputs.manifest_list_tags に改行区切りで格納する
-          {
-            echo "manifest_list_tags<<EOF"
-
-            python3 tools/generate_docker_image_names.py \
-              --repository "${{ env.IMAGE_NAME }}" \
-              --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.manifest_list_prefixes }}"
-
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: <Build> Generate AMD64 Docker image name
-        id: generate-amd64-docker-image-name
-        run: |
-          # Dockerイメージ名を outputs.amd64_image_tag に格納する
-          {
-            echo "amd64_image_tag<<EOF"
-
-            python3 tools/generate_docker_image_names.py \
-              --repository "${{ env.IMAGE_NAME }}" \
-              --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.amd64_manifest_prefix }}"
-
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-  
-      - name: <Build> Generate ARM64 Docker image name
-        id: generate-arm64-docker-image-name
-        run: |
-          # Dockerイメージ名を outputs.arm64_image_tag に格納する
-          {
-            echo "arm64_image_tag<<EOF"
-
-            python3 tools/generate_docker_image_names.py \
-              --repository "${{ env.IMAGE_NAME }}" \
-              --version "${{ needs.config.outputs.version_or_latest }}" \
-              --prefix "${{ matrix.arm64_manifest_prefix }}"
-
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-  
-      - name: <Build> Create Manifest lists
-        run: |
-          # NOTE: amd64_image_tag, arm64_image_tagの指すイメージが、単一プラットフォームイメージ1つを含むマニフェストリストであることを前提とする
-          manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
-          amd64_image_tag="${{ steps.generate-amd64-docker-image-name.outputs.amd64_image_tag }}"
-          arm64_image_tag="${{ steps.generate-arm64-docker-image-name.outputs.arm64_image_tag }}"
-
-          # build-dockerでビルドしたマニフェストリストのタグを除くイメージ名を取得
-          amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
-          arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
-
-          # build-dockerでビルドしたマニフェストリストから、sha256:digest 形式の単一プラットフォームイメージのダイジェストを取得
-          amd64_image_digest=$(docker manifest inspect "${amd64_image_tag}" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
-          if [ -z "${amd64_image_digest}" ]; then
-            echo "::error::AMD64イメージのダイジェストを取得できませんでした"
-            exit 1
-          fi
-
-          arm64_image_digest=$(docker manifest inspect "${arm64_image_tag}" | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
-          if [ -z "${arm64_image_digest}" ]; then
-            echo "::error::ARM64イメージのダイジェストを取得できませんでした"
-            exit 1
-          fi
-
-          IFS=$'\n'
-          for manifest_list_tag in $manifest_list_tags; do
-            # イメージ名とダイジェストを指定して、新規のマニフェストリストを作成
-            docker manifest create \
-              "${manifest_list_tag}" \
-              "${amd64_image_name}@${amd64_image_digest}" \
-              "${arm64_image_name}@${arm64_image_digest}"
-
-            # マニフェストにプラットフォーム情報を追加
-            docker manifest annotate \
-              "${manifest_list_tag}" \
-              "${amd64_image_name}@${amd64_image_digest}" \
-              --os linux \
-              --arch amd64
-
-            docker manifest annotate \
-              "${manifest_list_tag}" \
-              "${arm64_image_name}@${arm64_image_digest}" \
-              --os linux \
-              --arch arm64 \
-              --variant v8
-          done
-
-      - name: <Deploy> Deploy Manifest lists
-        run: |
-          manifest_list_tags="${{ steps.generate-manifest-docker-manifest-list-names.outputs.manifest_list_tags }}"
-
-          IFS=$'\n'
-          for manifest_list_tag in ${manifest_list_tags}; do
-            docker manifest push "${manifest_list_tag}"
-          done
-
-  run-release-test-workflow:
-    # version が指定されている場合のみ実行する
-    if: needs.config.outputs.version_or_latest != 'latest'
-    needs: [config, build-docker, build-docker-manifest]
-    uses: ./.github/workflows/test-engine-container.yml
-    with:
-      version: ${{ needs.config.outputs.version_or_latest }}
-      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+          bash ./tools/build_and_push_multi_platform_docker_images.bash
