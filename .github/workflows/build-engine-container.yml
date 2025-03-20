@@ -49,8 +49,7 @@ jobs:
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
-          # OS: Ubuntu 20.04
-          # CPU: AMD64
+          # Ubuntu 20.04 / AMD64
           - os: ubuntu-latest
             prefixes: "cpu-amd64-ubuntu20.04"
             buildcache_prefix: "cpu-amd64-ubuntu20.04"
@@ -58,8 +57,7 @@ jobs:
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             platforms: linux/amd64
-          # OS: Ubuntu 20.04
-          # CPU: ARM64
+          # Ubuntu 20.04 / ARM64
           - os: ubuntu-24.04-arm
             prefixes: "cpu-arm64-ubuntu20.04"
             buildcache_prefix: "cpu-arm64-ubuntu20.04"
@@ -68,9 +66,7 @@ jobs:
             base_runtime_image: ubuntu:20.04
             onnxruntime_version: 1.13.1
             platforms: linux/arm64/v8
-          # OS: Ubuntu 20.04
-          # CPU: AMD64
-          # GPU: NVIDIA
+          # Ubuntu 20.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
             prefixes: "nvidia-ubuntu20.04,nvidia-amd64-ubuntu20.04"
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
@@ -78,8 +74,7 @@ jobs:
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
             platforms: linux/amd64
-          # OS: Ubuntu 22.04
-          # CPU: AMD64
+          # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
             prefixes: "cpu-amd64,cpu-amd64-ubuntu22.04"
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
@@ -87,8 +82,7 @@ jobs:
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
             platforms: linux/amd64
-          # OS: Ubuntu 22.04
-          # CPU: ARM64
+          # Ubuntu 22.04 / ARM64
           - os: ubuntu-24.04-arm
             prefixes: "cpu-arm64,cpu-arm64-ubuntu22.04"
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
@@ -97,9 +91,7 @@ jobs:
             base_runtime_image: ubuntu:22.04
             onnxruntime_version: 1.13.1
             platforms: linux/arm64/v8
-          # OS: Ubuntu 22.04
-          # CPU: AMD64
-          # GPU: NVIDIA
+          # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
             prefixes: "nvidia,nvidia-amd64,nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
@@ -212,13 +204,11 @@ jobs:
     strategy:
       matrix:
         include:
-          # OS: Ubuntu 20.04
-          # CPU: AMD64, ARM64
+          # Ubuntu 20.04 / AMD64, ARM64
           - multi_platform_image_prefixes: "cpu-ubuntu20.04"
             amd64_image_prefix: "cpu-amd64-ubuntu20.04"
             arm64_image_prefix: "cpu-arm64-ubuntu20.04"
-          # OS: Ubuntu 22.04
-          # CPU: AMD64, ARM64
+          # Ubuntu 22.04 / AMD64, ARM64
           - multi_platform_image_prefixes: ",cpu,cpu-ubuntu22.04"
             amd64_image_prefix: "cpu-amd64-ubuntu22.04"
             arm64_image_prefix: "cpu-arm64-ubuntu22.04"
@@ -247,9 +237,9 @@ jobs:
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
-          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
         run: |
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 

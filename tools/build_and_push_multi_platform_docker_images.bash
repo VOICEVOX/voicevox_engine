@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# 事前にビルドされた単一プラットフォームDockerイメージを組み合わせて、マルチプラットフォームDockerイメージを作成してpushする
+# 事前にビルドされた単一プラットフォームDockerイメージを組み合わせて、
+# マルチプラットフォームDockerイメージを作成してpushする
+# NOTE: 単一プラットフォームイメージはマニフェストリストである必要がある
 
 set -eu
 
@@ -14,11 +16,6 @@ if [ ! -v VERSION_OR_LATEST ]; then # バージョンまたはlatest
     exit 1
 fi
 
-if [ ! -v MULTI_PLATFORM_IMAGE_PREFIXES ]; then # pushするマルチプラットフォームイメージのプレフィックス（カンマ区切り）
-    echo "::error::MULTI_PLATFORM_IMAGE_PREFIXESが未定義です"
-    exit 1
-fi
-
 if [ ! -v AMD64_IMAGE_PREFIX ]; then # pullするAMD64イメージのプレフィックス
     echo "::error::AMD64_IMAGE_PREFIXが未定義です"
     exit 1
@@ -26,6 +23,11 @@ fi
 
 if [ ! -v ARM64_IMAGE_PREFIX ]; then # pullするARM64イメージのプレフィックス
     echo "::error::ARM64_IMAGE_PREFIXが未定義です"
+    exit 1
+fi
+
+if [ ! -v MULTI_PLATFORM_IMAGE_PREFIXES ]; then # pushするマルチプラットフォームイメージのプレフィックス（カンマ区切り）
+    echo "::error::MULTI_PLATFORM_IMAGE_PREFIXESが未定義です"
     exit 1
 fi
 
@@ -59,11 +61,10 @@ arm64_image_tag=$(
 amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
 arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
 
-# 単一プラットフォームイメージのダイジェスト（sha256:digest 形式）
-# NOTE: 単一プラットフォームイメージは、マニフェストリストである必要がある。マニフェストリストでないイメージを指定すると動作しない
+# 単一プラットフォームイメージのダイジェスト
 amd64_image_digest=$(
-    docker manifest inspect "${amd64_image_tag}" \
-    | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
+    docker manifest inspect "${amd64_image_tag}" |
+        jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
 )
 if [ -z "${amd64_image_digest}" ]; then
     echo "::error::AMD64イメージのダイジェストを取得できませんでした"
@@ -71,8 +72,8 @@ if [ -z "${amd64_image_digest}" ]; then
 fi
 
 arm64_image_digest=$(
-    docker manifest inspect "${arm64_image_tag}" \
-    | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
+    docker manifest inspect "${arm64_image_tag}" |
+        jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
 )
 if [ -z "${arm64_image_digest}" ]; then
     echo "::error::ARM64イメージのダイジェストを取得できませんでした"
