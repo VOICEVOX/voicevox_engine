@@ -8,6 +8,8 @@ import pyopenjtalk
 
 @dataclass
 class NJDFeature:
+    """NJDのFeature"""
+
     string: str
     pos: str
     pos_group1: str
@@ -25,6 +27,7 @@ class NJDFeature:
 
     @classmethod
     def from_english_kana(cls, english: str, kana: str) -> "NJDFeature":
+        """英語のカタカナ読みからNJDFeatureを作成する"""
         # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
         rule_others = (
             "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
@@ -56,6 +59,7 @@ class NJDFeature:
 
 
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
+    """日本語文からフルコンテキストラベルを生成する"""
     if len(text.strip()) == 0:
         return []
 
