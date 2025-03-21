@@ -55,13 +55,13 @@ class CancellableEngine:
         # Requestは切断の監視に使用され、Processは切断時のプロセスキルに使用される
         # クライアントから接続があるとlistにtupleが追加される
         # 切断、もしくは音声合成が終了すると削除される
-        self._watching_reqs_and_procs: list[tuple[Request, Process]] = []
+        self._actives_pool: list[tuple[Request, Process]] = []
 
         # 待機しているサブプロセスと、それと通信できるコネクション
         procs_and_cons: Queue[tuple[Process, ConnectionType]] = Queue()
         for _ in range(init_processes):
             procs_and_cons.put(self._start_new_process())
-        self._waiting_procs_and_cons = procs_and_cons
+        self._idles_pool = procs_and_cons
 
     def _start_new_process(self) -> tuple[Process, ConnectionType]:
         """音声合成可能な新しいプロセスを開始し、そのプロセスと、プロセスへのコネクションを返す。"""
@@ -100,7 +100,7 @@ class CancellableEngine:
         """
         # 監視対象リストから除外する
         try:
-            self._watching_reqs_and_procs.remove((req, proc))
+            self._actives_pool.remove((req, proc))
         except ValueError:
             pass
 
@@ -110,10 +110,10 @@ class CancellableEngine:
                 proc.close()
                 raise ValueError
             # プロセスが死んでいない場合は再利用する
-            self._waiting_procs_and_cons.put((proc, sub_proc_con))
+            self._idles_pool.put((proc, sub_proc_con))
         except ValueError:
             # プロセスが死んでいるので新しく作り直す
-            self._waiting_procs_and_cons.put(self._start_new_process())
+            self._idles_pool.put(self._start_new_process())
 
     def synthesize_wave(
         self,
@@ -133,8 +133,8 @@ class CancellableEngine:
             合成に用いる TTSEngine のバージョン
         """
         # 待機中のプロセスとそのコネクションを取得し、監視対象リストへ登録する
-        synth_process, synth_connection = self._waiting_procs_and_cons.get()
-        self._watching_reqs_and_procs.append((request, synth_process))
+        synth_process, synth_connection = self._idles_pool.get()
+        self._actives_pool.append((request, synth_process))
 
         # サブプロセスへ入力を渡して音声を合成する
         try:
@@ -159,7 +159,7 @@ class CancellableEngine:
         """
         while True:
             await asyncio.sleep(1)
-            for con in self._watching_reqs_and_procs:
+            for con in self._actives_pool:
                 req, proc = con
                 if await req.is_disconnected():
                     try:
