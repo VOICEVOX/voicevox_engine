@@ -206,7 +206,6 @@ def start_synthesis_subprocess(
     tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
 
-    # 「キュー入力待機 → キュー入力受付 → 音声合成 → ファイル名送信」をループする
     while True:
         try:
             # キューへ入力が来たらそれを受け取る
