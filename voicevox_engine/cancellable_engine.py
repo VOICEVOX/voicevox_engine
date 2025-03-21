@@ -209,7 +209,7 @@ def start_synthesis_subprocess(
 
     while True:
         try:
-            # キューへ入力が来たらそれを受け取る
+            # キューの入力を受け取る
             query, style_id, version = connection.recv()
 
             # 音声を合成しファイルへ保存する
