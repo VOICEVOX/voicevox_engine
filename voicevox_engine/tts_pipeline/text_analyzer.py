@@ -3,11 +3,8 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Callable, Final, Literal, Self, TypeGuard
+from typing import Any, Final, Literal, Self, TypeGuard
 
-import pyopenjtalk
-
-from .katakana_english import convert_english_in_njd_features_to_katakana
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
 from .phoneme import Consonant, Sil, Vowel
@@ -399,23 +396,13 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-# TODO: クラス化するとかしてリファクタリングする
-def text_to_accent_phrases(
-    text: str,
-    enable_e2k: bool = False,
-    njd_features_to_full_context_labels: Callable[
-        [dict[str, Any]], list[str]
-    ] = pyopenjtalk.make_label,  # type: ignore
+def full_context_labels_to_accent_phrases(
+    full_context_labels: list[str],
 ) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する"""
-    if len(text.strip()) == 0:
+    if len(full_context_labels) == 0:
         return []
 
-    # 日本語文からUtteranceLabelを抽出する
-    njd_features = pyopenjtalk.run_frontend(text)
-    if enable_e2k:
-        njd_features = convert_english_in_njd_features_to_katakana(njd_features)
-    full_context_labels = njd_features_to_full_context_labels(njd_features)
     utterance = UtteranceLabel.from_labels(
         list(map(Label.from_feature, full_context_labels))
     )
