@@ -399,7 +399,7 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
-    """日本語文からアクセント句系列を生成する"""
+    """フルコンテキストラベルからアクセント句系列を生成する"""
     if len(full_context_labels) == 0:
         return []
 
