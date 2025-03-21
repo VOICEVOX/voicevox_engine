@@ -87,7 +87,7 @@ class CancellableEngine:
         self, req: Request, proc: Process, sub_proc_con: ConnectionType | None
     ) -> None:
         """
-        プロセスの後処理をおこなう。
+        プロセスを後処理する
 
         Parameters
         ----------
