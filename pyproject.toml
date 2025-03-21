@@ -60,11 +60,6 @@ pydantic = "^2.7.3"
 starlette = "^0.45.3"
 
 [tool.poetry.group.dev.dependencies]
-pysen = "^0.11.0"
-black = "^25.1.0"
-flake8-bugbear = "^24.4.26"
-flake8 = "^7.0.0"
-isort = "^5.13.0"
 mypy = "^1.10.0"
 pytest = "^8.2.0"
 coveralls = "^4.0.1"
