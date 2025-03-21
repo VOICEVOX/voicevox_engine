@@ -53,7 +53,7 @@ class CancellableEngine:
         self.enable_mock = enable_mock
 
         # 実行中プール
-        # 「実行されているリクエスト」と「そのリクエストを実行しているプロセス」のペアのリスト
+        # 「実行されているリクエスト」と「そのリクエストを処理しているプロセス」のペアのリスト
         self._actives_pool: list[tuple[Request, Process]] = []
 
         # 待機中プール
