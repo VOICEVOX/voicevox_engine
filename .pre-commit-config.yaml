@@ -12,8 +12,8 @@ repos:
         pass_filenames: false
       - id: check-typing
         name: check-typing
-        entry: mypy --explicit-package-bases .
-        language: system
+        entry: mypy .
+        language: python
         types: [file, python]
         stages: [pre-push]
         pass_filenames: false
