@@ -42,7 +42,7 @@ class CancellableEngine:
         enable_mock: bool = True,
     ) -> None:
         """
-        init_processesの数だけプロセスを起動し、procs_and_consに格納する。その他の引数はcore_initializerを参照。
+        init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。
         """
 
         self.use_gpu = use_gpu
@@ -52,13 +52,15 @@ class CancellableEngine:
         self.cpu_num_threads = cpu_num_threads
         self.enable_mock = enable_mock
 
-        # Requestは切断の監視に使用され、Processは切断時のプロセスキルに使用される
-        # クライアントから接続があるとlistにtupleが追加される
-        # 切断、もしくは音声合成が終了すると削除される
+        # 実行中プール
+        # 「実行されているリクエスト」と「そのリクエストを実行しているプロセス」のペアのリスト
         self._actives_pool: list[tuple[Request, Process]] = []
 
-        # 待機しているサブプロセスと、それと通信できるコネクション
+        # 待機中プール
+        # 「待機しているプロセス」と「そのプロセスへのコネクション」のペアのキュー
         self._idles_pool: Queue[tuple[Process, ConnectionType]] = Queue()
+
+        # 指定された数のプロセスを起動し待機中プールへ移動する
         for _ in range(init_processes):
             self._idles_pool.put(self._start_new_process())
 
@@ -97,18 +99,18 @@ class CancellableEngine:
             音声合成を行っていたプロセスとのコネクション
             指定されていない場合、プロセスは再利用されず終了される
         """
-        # 監視対象リストから除外する
+        # ペアを実行中プールから除外する
         try:
             self._actives_pool.remove((req, proc))
         except ValueError:
             pass
 
-        # 待機中リストへ再登録する
+        # ペアを待機中プールへ移動する
         try:
             if not proc.is_alive() or sub_proc_con is None:
                 proc.close()
                 raise ValueError
-            # プロセスが死んでいない場合は再利用する
+            # プロセスが死んでいないので再利用する
             self._idles_pool.put((proc, sub_proc_con))
         except ValueError:
             # プロセスが死んでいるので新しく作り直す
@@ -131,11 +133,11 @@ class CancellableEngine:
         version:
             合成に用いる TTSEngine のバージョン
         """
-        # 待機中のプロセスとそのコネクションを取得し、監視対象リストへ登録する
+        # 待機中プールのペアを実行中プールへ移動する
         synth_process, synth_connection = self._idles_pool.get()
         self._actives_pool.append((request, synth_process))
 
-        # サブプロセスへ入力を渡して音声を合成する
+        # プロセスへ入力を渡して音声を合成する
         try:
             synth_connection.send((query, style_id, version))
             audio_file_name = synth_connection.recv()
