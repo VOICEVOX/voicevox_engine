@@ -371,7 +371,7 @@ def stub_unknown_features_koxx(_: str) -> list[str]:
 
 
 def test_label_non_ojt_phoneme() -> None:
-    """`Label` は OJT で想定されない音素をパース失敗する"""
+    """`Label` は OpenJTalk で想定されない音素をパース失敗する"""
     non_ojt_phoneme = "G"
     non_ojt_feature = f".^.-{non_ojt_phoneme}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-."  # noqa: B950
     with pytest.raises(NonOjtPhonemeError):
