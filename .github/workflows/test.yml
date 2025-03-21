@@ -44,8 +44,11 @@ jobs:
             exit 1
           fi
 
-      - name: <Test> Lint
+      - name: <Test> Check Linting
         run: ruff check
+
+      - name: <Test> Check Formatting
+        run: ruff format --check
 
       - name: <Test> Check Typing
         run: mypy .
