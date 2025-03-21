@@ -29,7 +29,7 @@ class CancellableEngineInternalError(Exception):
 
 
 class CancellableEngine:
-    """マルチプロセスでの合成・キャンセル可能な合成をサポートする音声合成エンジン"""
+    """キャンセル可能な合成をサポートする音声合成エンジン"""
 
     def __init__(
         self,
