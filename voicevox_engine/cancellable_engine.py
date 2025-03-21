@@ -185,7 +185,7 @@ def start_synthesis_subprocess(
     connection: ConnectionType,
 ) -> None:
     """
-    コネクションへの入力に応答して音声合成をおこなうループを実行する
+    コネクションへの入力に応答して音声合成するループを実行する
 
     引数 use_gpu, voicelib_dirs, voicevox_dir,
     runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
