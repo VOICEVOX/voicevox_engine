@@ -44,8 +44,11 @@ jobs:
             exit 1
           fi
 
-      - name: <Test> Check format
-        run: pysen run lint
+      - name: <Test> Lint
+        run: ruff check
+
+      - name: <Test> Check Typing
+        run: mypy .
 
       - name: <Test> Test codes and coverage
         run: coverage run --omit=test/* -m pytest
