@@ -5,6 +5,8 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 
+Sil = Literal["sil"]
+
 # NOTE: `Vowel` は母音 (a/i/u/e/o の有声・無声) + 無音 pau + 撥音 N ("ん") + 促音 cl ("っ")
 # NOTE: 型の名称は暫定的
 BaseVowel = Literal["pau", "N", "a", "cl", "e", "i", "o", "u"]

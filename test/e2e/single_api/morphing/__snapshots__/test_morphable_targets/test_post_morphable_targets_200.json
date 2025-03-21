@@ -13,13 +13,13 @@
       "is_morphable": false
     },
     "4": {
-      "is_morphable": true
+      "is_morphable": false
     },
     "5": {
       "is_morphable": false
     },
     "6": {
-      "is_morphable": true
+      "is_morphable": false
     },
     "7": {
       "is_morphable": false
@@ -28,7 +28,7 @@
       "is_morphable": false
     },
     "9": {
-      "is_morphable": true
+      "is_morphable": false
     }
   }
 ]
