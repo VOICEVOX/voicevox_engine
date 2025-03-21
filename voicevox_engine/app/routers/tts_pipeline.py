@@ -97,8 +97,33 @@ def generate_tts_pipeline_router(
         summary="音声合成用のクエリを作成する",
     )
     def audio_query(
-        text: str,
-        style_id: Annotated[StyleId, Query(alias="speaker")],
+        text: Annotated[
+            str,
+            Query(
+                title="テキスト",
+                description="クエリ生成を行いたい文章",
+                openapi_examples={
+                    "example": {
+                        "summary": "テスト文",
+                        "value": "こんにちは、音声合成の世界へようこそ",
+                    }
+                },
+            ),
+        ],
+        style_id: Annotated[
+            StyleId,
+            Query(
+                alias="speaker",
+                title="スピーカー",
+                description="話者のID",
+                openapi_examples={
+                    "example": {
+                        "summary": "四国めたん（あまあま）",
+                        "value": 0,
+                    }
+                },
+            ),
+        ],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """
