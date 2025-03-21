@@ -15,10 +15,10 @@ env:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   upload-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4

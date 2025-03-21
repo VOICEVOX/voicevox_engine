@@ -16,6 +16,7 @@ env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
   VOICEVOX_CORE_VERSION: "0.15.7"
+  ONNXRUNTIME_VERSION: "1.13.1"
 
 defaults:
   run:
@@ -35,50 +36,68 @@ jobs:
 
   build-docker:
     needs: [config]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         # 各変数の説明
+        # os: ビルド環境のOS
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのビルド用ステージのベースイメージ
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
-        # onnxruntime_version: ONNX Runtimeのバージョン
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
-          # Ubuntu 20.04
-          - prefixes: "cpu-ubuntu20.04"
-            buildcache_prefix: "cpu-ubuntu20.04"
+          # Ubuntu 20.04 / AMD64
+          - os: ubuntu-latest
+            prefixes: "cpu-amd64-ubuntu20.04"
+            buildcache_prefix: "cpu-amd64-ubuntu20.04"
+            target: runtime-env
+            base_image: ubuntu:20.04
+            base_runtime_image: ubuntu:20.04
+            platforms: linux/amd64
+          # Ubuntu 20.04 / ARM64
+          - os: ubuntu-24.04-arm
+            prefixes: "cpu-arm64-ubuntu20.04"
+            buildcache_prefix: "cpu-arm64-ubuntu20.04"
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
             onnxruntime_version: 1.13.1
-            # platforms: linux/amd64,linux/arm64/v8
-            platforms: linux/amd64
-          - prefixes: "nvidia-ubuntu20.04"
-            buildcache_prefix: "nvidia-ubuntu20.04"
+            platforms: linux/arm64/v8
+          # Ubuntu 20.04 / AMD64 / NVIDIA
+          - os: ubuntu-latest
+            prefixes: "nvidia-ubuntu20.04,nvidia-amd64-ubuntu20.04"
+            buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: ubuntu:20.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
-            onnxruntime_version: 1.13.1
             platforms: linux/amd64
-          # Ubuntu 22.04
-          - prefixes: ",cpu,cpu-ubuntu22.04"
-            buildcache_prefix: "cpu-ubuntu22.04"
+          # Ubuntu 22.04 / AMD64
+          - os: ubuntu-latest
+            prefixes: "cpu-amd64,cpu-amd64-ubuntu22.04"
+            buildcache_prefix: "cpu-amd64-ubuntu22.04"
+            target: runtime-env
+            base_image: ubuntu:22.04
+            base_runtime_image: ubuntu:22.04
+            platforms: linux/amd64
+          # Ubuntu 22.04 / ARM64
+          - os: ubuntu-24.04-arm
+            prefixes: "cpu-arm64,cpu-arm64-ubuntu22.04"
+            buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
             onnxruntime_version: 1.13.1
-            # platforms: linux/amd64,linux/arm64/v8
-            platforms: linux/amd64
-          - prefixes: "nvidia,nvidia-ubuntu22.04"
-            buildcache_prefix: "nvidia-ubuntu22.04"
+            platforms: linux/arm64/v8
+          # Ubuntu 22.04 / AMD64 / NVIDIA
+          - os: ubuntu-latest
+            prefixes: "nvidia,nvidia-amd64,nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
+            buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
             base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
-            onnxruntime_version: 1.13.1
             platforms: linux/amd64
 
     steps:
@@ -90,9 +109,6 @@ jobs:
         uses: ./.github/actions/prepare_python
         with:
           only-export-python-version: true
-
-      # - name: <Setup> Set up QEMU
-      #   uses: docker/setup-qemu-action@v3
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
@@ -173,7 +189,7 @@ jobs:
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-            ONNXRUNTIME_VERSION=${{ matrix.onnxruntime_version }}
+            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}
@@ -181,10 +197,56 @@ jobs:
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
 
+  build-docker-multi-platform:
+    needs: [config, build-docker]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          # Ubuntu 20.04 / AMD64, ARM64
+          - multi_platform_image_prefixes: "cpu-ubuntu20.04"
+            amd64_image_prefix: "cpu-amd64-ubuntu20.04"
+            arm64_image_prefix: "cpu-arm64-ubuntu20.04"
+          # Ubuntu 22.04 / AMD64, ARM64
+          - multi_platform_image_prefixes: ",cpu,cpu-ubuntu22.04"
+            amd64_image_prefix: "cpu-amd64-ubuntu22.04"
+            arm64_image_prefix: "cpu-arm64-ubuntu22.04"
+
+    steps:
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Setup> Prepare Python version
+        id: prepare-python
+        uses: ./.github/actions/prepare_python
+        with:
+          only-export-python-version: true
+
+      - name: <Setup> Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: <Setup> Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
+          AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
+          ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
+        run: |
+          bash ./tools/build_and_push_multi_platform_docker_images.bash
+
   run-release-test-workflow:
     # version が指定されている場合のみ実行する
     if: needs.config.outputs.version_or_latest != 'latest'
-    needs: [config, build-docker]
+    needs: [config, build-docker, build-docker-multi-platform]
     uses: ./.github/workflows/test-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version_or_latest }}

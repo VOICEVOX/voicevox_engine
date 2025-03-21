@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   test-security:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -35,6 +35,5 @@ jobs:
           username: GitHub Actions
           title: "依存パッケージ脆弱性診断の結果"
           status: ${{ job.status }}
-          color: ${{ job.status == 'success' && '0x00FF00' || '0xFF0000' }} 
+          color: ${{ job.status == 'success' && '0x00FF00' || '0xFF0000' }}
           url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
