@@ -3,9 +3,16 @@
 repos:
   - repo: local
     hooks:
-      - id: ruff-lint
-        name: ruff-lint
+      - id: check-linting
+        name: check-linting
         entry: ruff check
+        language: python
+        types: [file, python]
+        stages: [pre-push]
+        pass_filenames: false
+      - id: check-formatting
+        name: check-formatting
+        entry: ruff format --check
         language: python
         types: [file, python]
         stages: [pre-push]
