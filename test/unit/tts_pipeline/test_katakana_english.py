@@ -1,30 +1,31 @@
 from voicevox_engine.tts_pipeline.katakana_english import (
     convert_english_in_njd_features_to_katakana,
 )
+from voicevox_engine.tts_pipeline.njd_feature_processor import NJDFeature
 
 
 def test_convert_english_in_njd_features_to_katakana_normal() -> None:
     """`convert_english_in_njd_features_to_katakana`は英単語をアルファベットそのままで読まない"""
     features = [
-        {
-            "string": "Ｖｏｉｖｏ",
-            "pos": "フィラー",
-            "pos_group1": "*",
-            "pos_group2": "*",
-            "pos_group3": "*",
-            "ctype": "*",
-            "cform": "*",
-            "orig": "Ｖｏｉｖｏ",
-            "read": "ブイオーアイブイオー",
-            "pron": "ブイオーアイブイオー",
-            "acc": 0,
-            "mora_size": 10,
-            "chain_rule": "*",
-            "chain_flag": -1,
-        }
+        NJDFeature(
+            string="Ｖｏｉｖｏ",
+            pos="フィラー",
+            pos_group1="*",
+            pos_group2="*",
+            pos_group3="*",
+            ctype="*",
+            cform="*",
+            orig="Ｖｏｉｖｏ",
+            read="ブイオーアイブイオー",
+            pron="ブイオーアイブイオー",
+            acc=0,
+            mora_size=10,
+            chain_rule="*",
+            chain_flag=-1,
+        ),
     ]
     prons = [
-        feature["pron"]
+        feature.pron
         for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
@@ -37,25 +38,25 @@ def test_convert_english_in_njd_features_to_katakana_normal() -> None:
 def test_convert_english_in_njd_features_to_katakana_uppercase() -> None:
     """`convert_english_in_njd_features_to_katakana`は大文字のみの英単語をアルファベットそのままで読む"""
     features = [
-        {
-            "string": "ＶＯＩＶＯ",
-            "pos": "フィラー",
-            "pos_group1": "*",
-            "pos_group2": "*",
-            "pos_group3": "*",
-            "ctype": "*",
-            "cform": "*",
-            "orig": "ＶＯＩＶＯ",
-            "read": "ブイオーアイブイオー",
-            "pron": "ブイオーアイブイオー",
-            "acc": 0,
-            "mora_size": 10,
-            "chain_rule": "*",
-            "chain_flag": -1,
-        }
+        NJDFeature(
+            string="ＶＯＩＶＯ",
+            pos="フィラー",
+            pos_group1="*",
+            pos_group2="*",
+            pos_group3="*",
+            ctype="*",
+            cform="*",
+            orig="ＶＯＩＶＯ",
+            read="ブイオーアイブイオー",
+            pron="ブイオーアイブイオー",
+            acc=0,
+            mora_size=10,
+            chain_rule="*",
+            chain_flag=-1,
+        ),
     ]
     prons = [
-        feature["pron"]
+        feature.pron
         for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
@@ -68,25 +69,25 @@ def test_convert_english_in_njd_features_to_katakana_short() -> None:
     """`convert_english_in_njd_features_to_katakana`は2文字以下の英単語をアルファベットそのままで読む"""
     # NOTE: 実際の pyopenjtalk.run_frontend の出力とは異なる
     features = [
-        {
-            "string": "Ｖｏ",
-            "pos": "フィラー",
-            "pos_group1": "*",
-            "pos_group2": "*",
-            "pos_group3": "*",
-            "ctype": "*",
-            "cform": "*",
-            "orig": "Ｖｏ",
-            "read": "ブイオー",
-            "pron": "ブイオー",
-            "acc": 0,
-            "mora_size": 4,
-            "chain_rule": "*",
-            "chain_flag": -1,
-        }
+        NJDFeature(
+            string="Ｖｏ",
+            pos="フィラー",
+            pos_group1="*",
+            pos_group2="*",
+            pos_group3="*",
+            ctype="*",
+            cform="*",
+            orig="Ｖｏ",
+            read="ブイオー",
+            pron="ブイオー",
+            acc=0,
+            mora_size=4,
+            chain_rule="*",
+            chain_flag=-1,
+        ),
     ]
     prons = [
-        feature["pron"]
+        feature.pron
         for feature in convert_english_in_njd_features_to_katakana(features)
     ]
 
