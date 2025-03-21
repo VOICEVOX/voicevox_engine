@@ -2,11 +2,11 @@
 /mora_data API のテスト
 """
 
-from test.e2e.single_api.utils import gen_mora
-from test.utility import round_floats
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.e2e.single_api.utils import gen_mora
+from test.utility import round_floats
 
 
 def test_post_mora_data_200(

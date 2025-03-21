@@ -2,11 +2,11 @@
 /synthesis API のテスト
 """
 
-from test.e2e.single_api.utils import gen_mora
-from test.utility import hash_wave_floats_from_wav_bytes
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.e2e.single_api.utils import gen_mora
+from test.utility import hash_wave_floats_from_wav_bytes
 
 
 def test_post_synthesis_200(client: TestClient, snapshot: SnapshotAssertion) -> None:
