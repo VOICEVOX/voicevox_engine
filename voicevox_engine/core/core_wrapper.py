@@ -384,7 +384,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
+        except OSError as err:  # noqa: F841
             if model_type == "libtorch":
                 core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
                 if core_name:
