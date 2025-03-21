@@ -58,10 +58,9 @@ class CancellableEngine:
         self._actives_pool: list[tuple[Request, Process]] = []
 
         # 待機しているサブプロセスと、それと通信できるコネクション
-        procs_and_cons: Queue[tuple[Process, ConnectionType]] = Queue()
+        self._idles_pool: Queue[tuple[Process, ConnectionType]] = Queue()
         for _ in range(init_processes):
-            procs_and_cons.put(self._start_new_process())
-        self._idles_pool = procs_and_cons
+            self._idles_pool.put(self._start_new_process())
 
     def _start_new_process(self) -> tuple[Process, ConnectionType]:
         """音声合成可能な新しいプロセスを開始し、そのプロセスと、プロセスへのコネクションを返す。"""
