@@ -3,17 +3,45 @@
 import re
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Literal, Self
+from typing import Any, Callable, Final, Literal, Self, TypeGuard
 
 import pyopenjtalk
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .phoneme import Consonant, Sil, Vowel
 
-OjtVowel = Literal[
-    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
-]
-OjtConsonant = Literal[
+
+class NonOjtPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
+
+
+class OjtUnknownPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
+
+
+_OJT_UNKNOWN = Literal["xx"]
+
+# OpenJTalk が出力する音素の一覧。
+_OJT_VOWELS: Final[tuple[Vowel | Sil, ...]] = (
+    "A",
+    "E",
+    "I",
+    "N",
+    "O",
+    "U",
+    "a",
+    "cl",
+    "e",
+    "i",
+    "o",
+    "pau",
+    "sil",
+    "u",
+)
+_OJT_CONSONANTS: Final[tuple[Consonant, ...]] = (
     "b",
     "by",
     "ch",
@@ -46,9 +74,15 @@ OjtConsonant = Literal[
     "w",
     "y",
     "z",
-]
-OjtUnknown = Literal["xx"]
-OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
+)
+_OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
+_OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
+
+
+def is_ojt_phoneme(
+    p: str,
+) -> TypeGuard[Vowel | Sil | Consonant | _OJT_UNKNOWN]:
+    return p in _OJT_PHONEMES
 
 
 @dataclass
@@ -84,10 +118,16 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self) -> OjtPhoneme:
+    def phoneme(self) -> Vowel | Consonant | Sil:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        # FIXME: バリデーションする
-        return self.contexts["p3"]  # type: ignore
+        p = self.contexts["p3"]
+        if is_ojt_phoneme(p):
+            if p == "xx":
+                raise OjtUnknownPhonemeError()
+            else:
+                return p
+        else:
+            raise NonOjtPhonemeError()
 
     @property
     def mora_index(self) -> int:
