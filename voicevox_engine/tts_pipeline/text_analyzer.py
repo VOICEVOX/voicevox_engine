@@ -22,6 +22,8 @@ class OjtUnknownPhonemeError(Exception):
         self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
 
 
+_OJT_UNKNOWN = Literal["xx"]
+
 # OpenJTalk が出力する音素の一覧。
 _OJT_VOWELS: Final[tuple[Vowel | Sil, ...]] = (
     "A",
@@ -73,7 +75,6 @@ _OJT_CONSONANTS: Final[tuple[Consonant, ...]] = (
     "y",
     "z",
 )
-_OJT_UNKNOWN = Literal["xx"]
 _OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
 _OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
 
