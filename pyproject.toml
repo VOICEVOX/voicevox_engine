@@ -3,7 +3,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
-ignore = ["E501", "B9"]
+ignore = ["E501", "B9"] # TODO: 有効化する
 
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
