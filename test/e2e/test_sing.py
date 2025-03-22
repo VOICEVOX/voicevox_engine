@@ -2,10 +2,10 @@
 歌唱のテスト
 """
 
-from test.utility import hash_wave_floats_from_wav_bytes
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import hash_wave_floats_from_wav_bytes
 
 
 def test_楽譜とキャラクターIDから音声を合成できる(

@@ -2,10 +2,10 @@
 TTSのテスト
 """
 
-from test.utility import hash_wave_floats_from_wav_bytes
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import hash_wave_floats_from_wav_bytes
 
 
 def test_テキストとキャラクターIDから音声を合成できる(

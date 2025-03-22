@@ -74,41 +74,45 @@ def generate_licenses() -> list[License]:
             if package_name == "core" and license_json["Version"] == "0.0.0":
                 continue
             elif package_name == "future":
-                text_url = "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "pefile":
-                text_url = "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE"  # noqa: B950
+                text_url = (
+                    "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE"
+                )
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "pyopenjtalk":
-                text_url = "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "python-multipart":
-                text_url = "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "romkan":
-                text_url = "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "distlib":
-                text_url = "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt"  # noqa: B950
+                text_url = "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "jsonschema":
-                text_url = "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "lockfile":
-                text_url = "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE"  # noqa: B950
+                text_url = (
+                    "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE"
+                )
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "platformdirs":
-                text_url = "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE"
                 license_json["LicenseText"] = get_license_text(text_url)
             elif package_name == "webencodings":
-                text_url = "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"  # noqa: B950
+                text_url = "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"
                 license_json["LicenseText"] = get_license_text(text_url)
             else:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
         # soxr
         if package_name == "soxr":
-            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"  # noqa: B950
+            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
             license_json["LicenseText"] = get_license_text(text_url)
 
         license = License(
@@ -164,7 +168,7 @@ def generate_licenses() -> list[License]:
             package_name='HTS Voice "Mei"',
             package_version=None,
             license_name="Creative Commons Attribution 3.0 license",
-            license_text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",  # noqa: B950
+            license_text="https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/pyopenjtalk/htsvoice/LICENSE_mei_normal.htsvoice",
             license_text_type="remote_address",
         ),
         License(
@@ -213,7 +217,7 @@ def generate_licenses() -> list[License]:
             package_name="libsndfile-binaries",
             package_version="1.2.0",
             license_name="LGPL-2.1 license",
-            license_text="https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING",  # noqa: B950
+            license_text="https://raw.githubusercontent.com/bastibe/libsndfile-binaries/d9887ef926bb11cf1a2526be4ab6f9dc690234c0/COPYING",
             license_text_type="remote_address",
         ),
         License(
@@ -264,8 +268,8 @@ def generate_licenses() -> list[License]:
             license_text_type="remote_address",
         ),
         # license text from CUDA 11.8.0
-        # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local # noqa: B950
-        # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe # noqa: B950
+        # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local
+        # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe
         # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
         License(
             package_name="CUDA Toolkit",
@@ -274,10 +278,10 @@ def generate_licenses() -> list[License]:
             license_text="tools/licenses/cuda/EULA.txt",
             license_text_type="local_address",
         ),
-        # license text from cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows # noqa: B950
-        # https://developer.nvidia.com/rdp/cudnn-archive # noqa: B950
-        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip # noqa: B950
-        # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE) # noqa: B950
+        # license text from cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows
+        # https://developer.nvidia.com/rdp/cudnn-archive
+        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip
+        # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE)
         License(
             package_name="cuDNN",
             package_version="8.9.2",
