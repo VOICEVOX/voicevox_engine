@@ -78,21 +78,23 @@ def is_morphable(
     except KeyError:
         raise StyleIdNotFoundError(style_id_2)
 
-    uuid_1 = character_1.uuid
-    uuid_2 = character_2.uuid
+    sing_style_ids_1 = [sing_style.id for sing_style in character_1.sing_styles]
+    sing_style_ids_2 = [sing_style.id for sing_style in character_2.sing_styles]
+
+    # モーフィング機能はソングに対応していない
+    if style_id_1 in sing_style_ids_1 or style_id_2 in sing_style_ids_2:
+        return False
+
     morphable_1 = character_1.supported_features.permitted_synthesis_morphing
     morphable_2 = character_2.supported_features.permitted_synthesis_morphing
 
     # 禁止されている場合はFalse
-    if morphable_1 == "NOTHING":
+    if morphable_1 == "NOTHING" or morphable_2 == "NOTHING":
         return False
-    elif morphable_2 == "NOTHING":
-        return False
+
     # 同一キャラクターのみの場合は同一キャラクター判定
-    elif morphable_1 == "SELF_ONLY":
-        return uuid_1 == uuid_2
-    elif morphable_2 == "SELF_ONLY":
-        return uuid_1 == uuid_2
+    if morphable_1 == "SELF_ONLY" or morphable_2 == "SELF_ONLY":
+        return character_1.uuid == character_2.uuid
 
     # 念のため許可されているかチェック
     return morphable_1 == "ALL" and morphable_2 == "ALL"
