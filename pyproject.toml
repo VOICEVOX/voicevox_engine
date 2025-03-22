@@ -4,6 +4,10 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I"]
 ignore = ["E501", "B9"] # TODO: 有効化する
+unfixable = [
+    "F401", # unused-import
+    "F841"  # unused-variable
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
