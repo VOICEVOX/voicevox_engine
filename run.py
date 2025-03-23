@@ -399,7 +399,7 @@ def main() -> None:
         character_info_dir,
         cors_policy_mode,
         allow_origin,
-        disable_mutable_api,
+        disable_mutable_api=disable_mutable_api,
     )
 
     # VOICEVOX ENGINE サーバーを起動
