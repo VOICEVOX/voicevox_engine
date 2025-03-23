@@ -366,7 +366,7 @@ def main() -> None:
     )
     preset_manager = PresetManager(preset_path)
 
-    use_dict = UserDictionary()
+    user_dict = UserDictionary()
 
     engine_manifest = load_manifest(engine_manifest_path())
 
@@ -395,7 +395,7 @@ def main() -> None:
         core_manager,
         setting_loader,
         preset_manager,
-        use_dict,
+        user_dict,
         engine_manifest,
         library_manager,
         cancellable_engine,
