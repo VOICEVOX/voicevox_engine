@@ -366,7 +366,7 @@ def main() -> None:
     )
     preset_manager = PresetManager(preset_path)
 
-    use_dict = UserDictionary()
+    user_dict = UserDictionary()
 
     engine_manifest = load_manifest(engine_manifest_path())
 
@@ -378,16 +378,13 @@ def main() -> None:
         engine_manifest.uuid,
     )
 
-    if args.disable_mutable_api:
-        disable_mutable_api = True
-    else:
-        disable_mutable_api = envs.disable_mutable_api
-
     root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
     character_info_dir = root_dir / "resources" / "character_info"
     # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
     if not character_info_dir.exists():
         character_info_dir = root_dir / "speaker_info"
+
+    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
@@ -395,7 +392,7 @@ def main() -> None:
         core_manager,
         setting_loader,
         preset_manager,
-        use_dict,
+        user_dict,
         engine_manifest,
         library_manager,
         cancellable_engine,
