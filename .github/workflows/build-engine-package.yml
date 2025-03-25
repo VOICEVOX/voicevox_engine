@@ -166,10 +166,8 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
-          # NOTE 1: actionlint による GitHub Actions 文法の暗示的 `________________` 置換が SchellCheck の `never be equal` エラーを起こさないように、変数代入する
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
             # remove CUDA to reduce disk usage
@@ -218,9 +216,7 @@ jobs:
         run: |
           set -eux
 
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+          if [[ ${{ runner.os }} == Windows ]]; then
             curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
@@ -368,6 +364,7 @@ jobs:
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
+          # NOTE 1: actionlint による GitHub Actions 文法の暗示的 `________________` 置換が SchellCheck の `never be equal` エラーを起こさないように、変数代入する
           # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
           TARGET=${{ matrix.target }}
           if [[ $TARGET != *-directml ]]; then
@@ -432,9 +429,7 @@ jobs:
         run: |
           curl -L --retry 3 --retry-delay 5 \
             "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == mac-* ]]; then
+          if [[ ${{ runner.os }} == macOS ]]; then
             ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
           else
             unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
@@ -468,12 +463,11 @@ jobs:
 
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows  ]]; then
             LIBCORE_PATH=download/core/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
-          elif [[ $OS == macos-* ]]; then
+          elif [[ ${{ runner.os }} == macOS ]]; then
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
