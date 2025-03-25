@@ -51,7 +51,7 @@ jobs:
         run: coverage run --omit=test/* -m pytest
 
       - name: <Deploy> Submit coverage results to Coveralls
-        if: matrix.os == 'ubuntu-22.04'
+        if: runner.os == 'Linux'
         run: coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,7 +60,7 @@ jobs:
         run: OUTPUT_LICENSE_JSON_PATH=/dev/null bash tools/create_venv_and_generate_licenses.bash
 
       - name: <Test> Test names by checking typo
-        if: matrix.os == 'ubuntu-22.04'
+        if: runner.os == 'Linux'
         uses: crate-ci/typos@v1.21.0
 
   lint-builders:
