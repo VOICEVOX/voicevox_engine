@@ -364,10 +364,7 @@ jobs:
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
-          # NOTE 1: actionlint による GitHub Actions 文法の暗示的 `________________` 置換が SchellCheck の `never be equal` エラーを起こさないように、変数代入する
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET != *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == false ]]; then
             unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
             mv download/onnxruntime-* download/onnxruntime
           else
@@ -516,9 +513,7 @@ jobs:
           fi
 
           # Windows DirectML
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET == *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == true ]]; then
             # DirectML
             mv download/directml/DirectML.dll dist/run/
 
