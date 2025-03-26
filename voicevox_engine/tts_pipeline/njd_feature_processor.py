@@ -5,6 +5,8 @@ from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
+from .katakana_english import convert_english_to_katakana, is_convertible_to_katakana
+
 
 @dataclass
 class NJDFeature:
@@ -66,9 +68,14 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     njd_features = list(map(lambda f: NJDFeature(**f), pyopenjtalk.run_frontend(text)))
 
     if enable_e2k:
-        # FIXME: トップレベルでimportすると循環importになるため、関数内で遅延importする形になっている
-        from .katakana_english import convert_english_in_njd_features_to_katakana
-
-        convert_english_in_njd_features_to_katakana(njd_features)
+        for i, feature in enumerate(njd_features):
+            if is_convertible_to_katakana(
+                feature.pos, feature.chain_rule, feature.string
+            ):
+                new_pron = convert_english_to_katakana(feature.string)
+                njd_features[i] = NJDFeature.from_english_kana(
+                    feature.string,
+                    new_pron,
+                )
 
     return pyopenjtalk.make_label(list(map(asdict, njd_features)))  # type: ignore

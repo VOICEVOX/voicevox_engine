@@ -4,7 +4,7 @@ import re
 
 import e2k
 
-from .njd_feature_processor import NJDFeature
+MIN_CONVERTIBLE_LENGTH = 3
 
 
 def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
@@ -59,37 +59,43 @@ ojt_alphabet_kana_mapping = {
 }
 
 
-def convert_english_in_njd_features_to_katakana(
-    njd_features: list[NJDFeature],
-) -> list[NJDFeature]:
-    """e2kを用いて、NJD Features内の読みが不明な英単語をカタカナに変換する"""
-    for i, feature in enumerate(njd_features):
-        # Mecabの解析で未知語となった場合、読みは空となる
-        # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
-        if feature.pos != "フィラー" or feature.chain_rule != "*":
-            continue
+def is_convertible_to_katakana(pos: str, chain_rule: str, string: str) -> bool:
+    """e2kを用いて、読みが不明な英単語をカタカナに変換するか否かを判定する"""
+    # Mecabの解析で未知語となった場合、読みは空となる
+    # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
+    if pos != "フィラー" or chain_rule != "*":
+        return False
 
-        c2k = _initialize_c2k()
+    if len(string) < MIN_CONVERTIBLE_LENGTH:
+        return False
 
-        # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
-        hankaku_string = _convert_zenkaku_alphabet_to_hankaku(feature.string)
+    # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
+    hankaku_string = _convert_zenkaku_alphabet_to_hankaku(string)
 
-        # アルファベット以外の文字が含まれている場合や、全て大文字の場合は、e2kでの解析を行わない
-        if not re.fullmatch("[a-zA-Z]+", hankaku_string) or re.fullmatch(
-            "[A-Z]+", hankaku_string
-        ):
-            continue
+    # アルファベット以外の文字が含まれている場合や、全て大文字の場合は、e2kでの解析を行わない
+    if not re.fullmatch("[a-zA-Z]+", hankaku_string) or re.fullmatch(
+        "[A-Z]+", hankaku_string
+    ):
+        return False
 
-        kana = ""
-        # キャメルケース的な単語に対応させるため、大文字で分割する
-        for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
-            # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
-            if word == word.upper() or len(word) < 3:
-                for alphabet in word:
-                    kana += ojt_alphabet_kana_mapping[alphabet.upper()]
-            else:
-                kana += c2k(word.lower())
+    return True
 
-        njd_features[i] = NJDFeature.from_english_kana(feature.string, kana)
 
-    return njd_features
+def convert_english_to_katakana(string: str) -> str:
+    """e2kを用いて、読みが不明な英単語をカタカナに変換する"""
+    c2k = _initialize_c2k()
+
+    # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
+    hankaku_string = _convert_zenkaku_alphabet_to_hankaku(string)
+
+    kana = ""
+    # キャメルケース的な単語に対応させるため、大文字で分割する
+    for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
+        # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
+        if word == word.upper() or len(word) < MIN_CONVERTIBLE_LENGTH:
+            for alphabet in word:
+                kana += ojt_alphabet_kana_mapping[alphabet.upper()]
+        else:
+            kana += c2k(word.lower())
+
+    return kana
