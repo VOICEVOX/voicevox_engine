@@ -9,7 +9,7 @@ from .katakana_english import convert_english_to_katakana, is_convertible_to_kat
 
 
 @dataclass
-class NJDFeature:
+class NjdFeature:
     """NJDのFeature"""
 
     string: str
@@ -28,8 +28,8 @@ class NJDFeature:
     chain_flag: int
 
     @classmethod
-    def from_english_kana(cls, english: str, kana: str) -> "NJDFeature":
-        """英語のカタカナ読みからNJDFeatureを作成する"""
+    def from_english_kana(cls, english: str, kana: str) -> "NjdFeature":
+        """英語のカタカナ読みからNjdFeatureを作成する"""
         # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
         rule_others = (
             "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
@@ -65,7 +65,7 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     if len(text.strip()) == 0:
         return []
 
-    njd_features = list(map(lambda f: NJDFeature(**f), pyopenjtalk.run_frontend(text)))
+    njd_features = list(map(lambda f: NjdFeature(**f), pyopenjtalk.run_frontend(text)))
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
@@ -73,7 +73,7 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
                 feature.pos, feature.chain_rule, feature.string
             ):
                 new_pron = convert_english_to_katakana(feature.string)
-                njd_features[i] = NJDFeature.from_english_kana(
+                njd_features[i] = NjdFeature.from_english_kana(
                     feature.string,
                     new_pron,
                 )
