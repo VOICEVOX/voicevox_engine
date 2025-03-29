@@ -2,13 +2,12 @@
 /cancellable_synthesis API のテスト
 """
 
-from test.e2e.single_api.utils import gen_mora
-from test.utility import hash_wave_floats_from_wav_bytes
-
 import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
+from test.e2e.single_api.utils import gen_mora
+from test.utility import hash_wave_floats_from_wav_bytes
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 

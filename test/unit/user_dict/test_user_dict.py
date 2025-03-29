@@ -96,7 +96,6 @@ def test_create_word() -> None:
 
 
 def test_apply_word_without_json(tmp_path: Path) -> None:
-
     user_dict = UserDictionary(
         user_dict_path=tmp_path / "test_apply_word_without_json.json"
     )

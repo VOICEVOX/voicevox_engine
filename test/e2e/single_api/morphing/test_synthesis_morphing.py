@@ -2,9 +2,9 @@
 /synthesis_morphing API のテスト
 """
 
-from test.e2e.single_api.utils import gen_mora
-
 from fastapi.testclient import TestClient
+
+from test.e2e.single_api.utils import gen_mora
 
 
 def test_post_synthesis_morphing_200(client: TestClient) -> None:

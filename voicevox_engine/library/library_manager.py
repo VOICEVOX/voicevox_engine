@@ -73,7 +73,7 @@ class LibraryManager:
 
         # == ダウンロード情報をjsonファイルから取得する場合
         # with open(
-        #     self.root_dir / "resources" / "engine_manifest_assets" / "downloadable_libraries.json", # noqa: B950
+        #     self.root_dir / "resources" / "engine_manifest_assets" / "downloadable_libraries.json",
         #     encoding="utf-8",
         # ) as f:
         #     return list(map(DownloadableLibrary.parse_obj, json.load(f)))

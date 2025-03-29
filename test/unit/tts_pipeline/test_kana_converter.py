@@ -453,9 +453,9 @@ def test_interrogative_accent_phrase_marks() -> None:
         expected_accent_phrases=expected_accent_phrases,
     )
 
-    def a_pause_a_question_pause_a_question_a_question_mark_accent_phrases() -> (
-        list[AccentPhrase]
-    ):
+    def a_pause_a_question_pause_a_question_a_question_mark_accent_phrases() -> list[
+        AccentPhrase
+    ]:
         return [
             AccentPhrase(
                 moras=[
