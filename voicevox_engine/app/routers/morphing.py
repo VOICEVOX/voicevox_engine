@@ -87,7 +87,7 @@ def generate_morphing_router(
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
