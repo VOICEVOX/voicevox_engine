@@ -36,7 +36,14 @@ def configure_middlewares(
     compiled_localhost_regex = re.compile(localhost_regex)
     allowed_origins = ["*"]
     if cors_policy_mode == "localapps":
-        allowed_origins = ["app://."]
+        allowed_origins = [
+            "app://.",
+            "chrome-extension://*",
+            "moz-extension://*",
+            "ms-browser-extension://*",
+            "safari-extension://*",
+            "safari-web-extension://*",
+        ]
         if allow_origin is not None:
             allowed_origins += allow_origin
             if "*" in allow_origin:
