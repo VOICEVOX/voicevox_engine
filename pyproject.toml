@@ -4,12 +4,12 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "W"]
 ignore = [
-    "E501", # line-too-long
-    "B9"    # TODO: 一時期に除外、あとで有効化する
+  "E501", # line-too-long
+  "B9"    # TODO: 一時期に除外、あとで有効化する
 ]
 unfixable = [
-    "F401", # unused-import
-    "F841"  # unused-variable
+  "F401", # unused-import
+  "F841"  # unused-variable
 ]
 
 [tool.ruff.lint.isort]
