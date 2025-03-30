@@ -52,8 +52,8 @@ jobs:
 
       - name: <Deploy> Submit coverage results to Coveralls
         if: runner.os == 'Linux'
-        # Coveralls にアップロード失敗してもCIは継続させる
-        run: coveralls --service=github || echo "::warning::Coveralls upload failed, but continuing"
+        # Coveralls へのアップロードが失敗しても CI は継続させる
+        run: coveralls --service=github || echo "::warning::Coveralls failed, but continuing"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
