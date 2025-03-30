@@ -61,7 +61,7 @@ def configure_middlewares(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response | JSONResponse:
         isValidOrigin: bool = False
-        browserExtentions = [
+        browserExtensions = [
             "chrome-extension://",
             "moz-extension://",
             "ms-browser-extension://",
@@ -79,7 +79,7 @@ def configure_middlewares(
         ):  # localhostの場合
             isValidOrigin = True
         elif any(
-            request.headers["Origin"].startswith(ext) for ext in browserExtentions
+            request.headers["Origin"].startswith(ext) for ext in browserExtensions
         ):
             # ブラウザ拡張の場合
             isValidOrigin = True
