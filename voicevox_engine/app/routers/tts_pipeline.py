@@ -315,7 +315,7 @@ def generate_tts_pipeline_router(
             )
         try:
             version = core_version or LATEST_VERSION
-            f_name = cancellable_engine._synthesis_impl(
+            f_name = cancellable_engine.synthesize_wave(
                 query, style_id, request, version=version
             )
         except CancellableEngineInternalError as e:

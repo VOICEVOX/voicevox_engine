@@ -1892,7 +1892,7 @@ setuptools = ">=42.0.0"
 
 [[package]]
 name = "pyopenjtalk"
-version = "0.3.2+0fcb731"
+version = "0.3.2+5b70b94"
 description = "A python wrapper for OpenJTalk"
 optional = false
 python-versions = "*"
@@ -1907,15 +1907,15 @@ tqdm = "*"
 
 [package.extras]
 dev = ["black (>=19.19b0,<=20.8)", "click (<8.1.0)", "cython (>=0.21.0,<3.0.0)", "flake8 (>=3.7,<4)", "flake8-bugbear", "importlib-metadata (<5.0)", "isort (>=4.3,<5.2.0)", "mypy (<=0.910)", "pysen", "types-decorator", "types-setuptools"]
-docs = ["Jinja2 (>=3.0.1)", "ipython", "jupyter", "nbsphinx (>=0.8.6)", "pandoc", "sphinx_rtd_theme"]
+docs = ["Jinja2 (>=3.0.1)", "ipython", "jupyter", "nbsphinx (>=0.8.6)", "pandoc", "sphinx-rtd-theme"]
 marine = ["marine (>=0.0.5)"]
 test = ["pytest", "scipy"]
 
 [package.source]
 type = "git"
 url = "https://github.com/VOICEVOX/pyopenjtalk"
-reference = "0fcb731c94555e8d160d18e7f1a4d005b2e8e852"
-resolved_reference = "0fcb731c94555e8d160d18e7f1a4d005b2e8e852"
+reference = "5b70b94f3460ece07ea183227db088ce8d5212a6"
+resolved_reference = "5b70b94f3460ece07ea183227db088ce8d5212a6"
 
 [[package]]
 name = "pyparsing"

@@ -48,14 +48,19 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             "torch_cuda.dll",
             "DirectML.dll",
             "onnxruntime.dll",
+            "voicevox_onnxruntime.dll",
         ]
-        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
+        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Linux":
-        lib_file_names = ["libtorch.so", "libonnxruntime.so"]
-        lib_names = ["torch", "onnxruntime"]
+        lib_file_names = [
+            "libtorch.so",
+            "libonnxruntime.so",
+            "libvoicevox_onnxruntime.so",
+        ]
+        lib_names = ["torch", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Darwin":
-        lib_file_names = ["libonnxruntime.dylib"]
-        lib_names = ["onnxruntime"]
+        lib_file_names = ["libonnxruntime.dylib", "libvoicevox_onnxruntime.dylib"]
+        lib_names = ["onnxruntime", "voicevox_onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
 
