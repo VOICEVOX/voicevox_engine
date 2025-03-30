@@ -99,7 +99,7 @@ def set_output_log_utf8() -> None:
                 return stdio
 
     # NOTE:
-    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )
     # これは Python インタープリタが標準入出力へ接続されていないことを意味するため、設定不要とみなす
 
     if sys.stdout is None:
