@@ -78,7 +78,9 @@ def configure_middlewares(
             request.headers["Origin"]
         ):  # localhostの場合
             isValidOrigin = True
-        elif any(request.headers["Origin"].startswith(ext) for ext in browserExtentions):
+        elif any(
+            request.headers["Origin"].startswith(ext) for ext in browserExtentions
+        ):
             # ブラウザ拡張の場合
             isValidOrigin = True
 
