@@ -44,7 +44,7 @@ jobs:
             exit 1
           fi
 
-      - name: <Test> Check ;inting
+      - name: <Test> Check linting
         run: ruff check
 
       - name: <Test> Check formatting
