@@ -2,8 +2,11 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I"]
-ignore = ["E501", "B9"] # TODO: 有効化する
+select = ["E", "F", "B", "I", "W"]
+ignore = [
+    "E501", # line-too-long
+    "B9"    # TODO: 一時期に除外、あとで有効化する
+]
 unfixable = [
     "F401", # unused-import
     "F841"  # unused-variable
