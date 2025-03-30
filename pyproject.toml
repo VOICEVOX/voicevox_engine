@@ -52,7 +52,7 @@ uvicorn = "^0.34.0"
 soundfile = "^0.13.1"
 pyyaml = "^6.0.1"
 pyworld = "^0.3.5"
-pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "0fcb731c94555e8d160d18e7f1a4d005b2e8e852" }
+pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "5b70b94f3460ece07ea183227db088ce8d5212a6" }
 semver = "^3.0.0"
 platformdirs = "^4.2.0"
 soxr = "^0.5.0"
