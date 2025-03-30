@@ -247,7 +247,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
-            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
             "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
