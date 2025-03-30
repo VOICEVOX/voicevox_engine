@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+
 from test.benchmark.engine_preparation import ServerType, generate_client
 from test.benchmark.speed.utility import benchmark_time
 

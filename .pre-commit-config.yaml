@@ -3,9 +3,23 @@
 repos:
   - repo: local
     hooks:
-      - id: pysen-lint
-        name: pysen-lint
-        entry: pysen run lint
+      - id: check-linting
+        name: check-linting
+        entry: ruff check
+        language: python
+        types: [file, python]
+        stages: [pre-push]
+        pass_filenames: false
+      - id: check-formatting
+        name: check-formatting
+        entry: ruff format --check
+        language: python
+        types: [file, python]
+        stages: [pre-push]
+        pass_filenames: false
+      - id: check-typing
+        name: check-typing
+        entry: mypy .
         language: python
         types: [file, python]
         stages: [pre-push]

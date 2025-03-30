@@ -2,10 +2,10 @@
 /singer_info API のテスト
 """
 
-from test.utility import hash_long_string
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import hash_long_string
 
 
 def test_get_singer_info_200(
