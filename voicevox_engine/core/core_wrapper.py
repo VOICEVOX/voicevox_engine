@@ -2,8 +2,16 @@
 
 import os
 import platform
-from ctypes import _Pointer  # noqa: F401
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
+from ctypes import (
+    CDLL,
+    POINTER,
+    _Pointer,  # noqa: F401
+    c_bool,
+    c_char_p,
+    c_float,
+    c_int,
+    c_long,
+)
 from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -40,14 +48,19 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             "torch_cuda.dll",
             "DirectML.dll",
             "onnxruntime.dll",
+            "voicevox_onnxruntime.dll",
         ]
-        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
+        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Linux":
-        lib_file_names = ["libtorch.so", "libonnxruntime.so"]
-        lib_names = ["torch", "onnxruntime"]
+        lib_file_names = [
+            "libtorch.so",
+            "libonnxruntime.so",
+            "libvoicevox_onnxruntime.so",
+        ]
+        lib_names = ["torch", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Darwin":
-        lib_file_names = ["libonnxruntime.dylib"]
-        lib_names = ["onnxruntime"]
+        lib_file_names = ["libonnxruntime.dylib", "libvoicevox_onnxruntime.dylib"]
+        lib_names = ["onnxruntime", "voicevox_onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
 
@@ -384,7 +397,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
+        except OSError as err:  # noqa: F841
             if model_type == "libtorch":
                 core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
                 if core_name:

@@ -99,7 +99,7 @@ def set_output_log_utf8() -> None:
                 return stdio
 
     # NOTE:
-    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )
     # これは Python インタープリタが標準入出力へ接続されていないことを意味するため、設定不要とみなす
 
     if sys.stdout is None:
@@ -247,7 +247,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
-            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
             "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
@@ -366,7 +366,7 @@ def main() -> None:
     )
     preset_manager = PresetManager(preset_path)
 
-    use_dict = UserDictionary()
+    user_dict = UserDictionary()
 
     engine_manifest = load_manifest(engine_manifest_path())
 
@@ -378,16 +378,13 @@ def main() -> None:
         engine_manifest.uuid,
     )
 
-    if args.disable_mutable_api:
-        disable_mutable_api = True
-    else:
-        disable_mutable_api = envs.disable_mutable_api
-
     root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
     character_info_dir = root_dir / "resources" / "character_info"
     # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
     if not character_info_dir.exists():
         character_info_dir = root_dir / "speaker_info"
+
+    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
@@ -395,7 +392,7 @@ def main() -> None:
         core_manager,
         setting_loader,
         preset_manager,
-        use_dict,
+        user_dict,
         engine_manifest,
         library_manager,
         cancellable_engine,

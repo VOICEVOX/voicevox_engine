@@ -2,10 +2,10 @@
 /sing_frame_audio_query API のテスト
 """
 
-from test.utility import round_floats
-
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import round_floats
 
 
 def test_post_sing_frame_volume_200(

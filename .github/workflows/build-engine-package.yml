@@ -127,12 +127,12 @@ jobs:
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
       #       so you need to install GNU 'sed' and 'split'.
       - name: <Setup> Install dependencies (macOS)
-        if: startsWith(matrix.os, 'macos-')
+        if: runner.os == 'macOS'
         run: brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        if: runner.os == 'Linux' && endsWith(matrix.target, 'nvidia')
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
@@ -166,10 +166,8 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
-          # NOTE 1: actionlint による GitHub Actions 文法の暗示的 `________________` 置換が SchellCheck の `never be equal` エラーを起こさないように、変数代入する
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
             # remove CUDA to reduce disk usage
@@ -218,9 +216,7 @@ jobs:
         run: |
           set -eux
 
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+          if [[ ${{ runner.os }} == Windows ]]; then
             curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
@@ -286,7 +282,7 @@ jobs:
           path: download/zlib
 
       - name: <Setup> Set up MSVC
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
@@ -295,7 +291,7 @@ jobs:
           requirements-suffix: "-build"
 
       - name: <Setup> Prepare custom PyInstaller
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         run: ./tools/modify_pyinstaller.bash
 
       - name: <Setup> Download pyopenjtalk dictionary
@@ -363,14 +359,12 @@ jobs:
           path: download/onnxruntime
 
       - name: <Setup> Download ONNX Runtime (Windows)
-        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Windows'
         run: |
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET != *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == false ]]; then
             unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
             mv download/onnxruntime-* download/onnxruntime
           else
@@ -383,7 +377,7 @@ jobs:
           rm download/onnxruntime.zip
 
       - name: <Setup> Download ONNX Runtime (Mac/Linux)
-        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
@@ -432,13 +426,7 @@ jobs:
         run: |
           curl -L --retry 3 --retry-delay 5 \
             "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == mac-* ]]; then
-            ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
-          else
-            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          fi
+          unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
@@ -461,19 +449,18 @@ jobs:
 
           jq '
             .version = "${{ needs.config.outputs.version_or_latest }}" |
-            if ${{ startsWith(matrix.os, 'windows-') }} then .command += ".exe" else . end
+            if ${{ runner.os == 'Windows' }} then .command += ".exe" else . end
           ' engine_manifest.json > engine_manifest.json.tmp
 
           mv -f engine_manifest.json.tmp engine_manifest.json
 
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows  ]]; then
             LIBCORE_PATH=download/core/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
-          elif [[ $OS == macos-* ]]; then
+          elif [[ ${{ runner.os }} == macOS ]]; then
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
@@ -490,7 +477,7 @@ jobs:
       # manually move DLL dependencies into `dist/run/` (cache already saved)
 
       - name: <Build> Gather DLL dependencies (Windows)
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         run: |
           set -eux
 
@@ -522,9 +509,7 @@ jobs:
           fi
 
           # Windows DirectML
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET == *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == true ]]; then
             # DirectML
             mv download/directml/DirectML.dll dist/run/
 
@@ -533,7 +518,7 @@ jobs:
           fi
 
       - name: <Build> Gather DLL dependencies (Linux CUDA)
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        if: runner.os == 'Linux' && endsWith(matrix.target, 'nvidia')
         run: |
           set -eux
 
@@ -560,7 +545,7 @@ jobs:
           rm -rf download/cudnn
 
       - name: <Build> Code signing
-        if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
+        if: github.event.inputs.code_signing == 'true' && runner.os == 'Windows'
         run: bash tools/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
