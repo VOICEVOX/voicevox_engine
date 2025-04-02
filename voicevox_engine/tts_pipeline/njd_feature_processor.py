@@ -5,7 +5,14 @@ from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
-from .katakana_english import convert_english_to_katakana, is_convertible_to_katakana
+from ..utility.character_width_utility import (
+    convert_zenkaku_alphabet_to_hankaku,
+    is_hankaku_alphabet,
+)
+from .katakana_english import (
+    convert_english_to_katakana,
+    should_convert_english_to_katakana,
+)
 
 
 @dataclass
@@ -60,6 +67,13 @@ class NjdFeature:
         )
 
 
+def is_unknown_reading_word(pos: str, chain_rule: str) -> bool:
+    """e2kを用いて、読みが不明な英単語をカタカナに変換するか否かを判定する"""
+    # Mecabの解析で未知語となった場合、読みは空となる
+    # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
+    return pos == "フィラー" and chain_rule == "*"
+
+
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     """日本語文からフルコンテキストラベルを生成する"""
     if len(text.strip()) == 0:
@@ -69,13 +83,17 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
-            if is_convertible_to_katakana(
-                feature.pos, feature.chain_rule, feature.string
-            ):
-                new_pron = convert_english_to_katakana(feature.string)
-                njd_features[i] = NjdFeature.from_english_kana(
-                    feature.string,
-                    new_pron,
-                )
+            if not is_unknown_reading_word(feature.pos, feature.chain_rule):
+                continue
+            hankaku_string = convert_zenkaku_alphabet_to_hankaku(feature.string)
+            if not is_hankaku_alphabet(hankaku_string):
+                continue
+            if not should_convert_english_to_katakana(hankaku_string):
+                continue
+            new_pron = convert_english_to_katakana(hankaku_string)
+            njd_features[i] = NjdFeature.from_english_kana(
+                feature.string,
+                new_pron,
+            )
 
     return pyopenjtalk.make_label(list(map(asdict, njd_features)))  # type: ignore

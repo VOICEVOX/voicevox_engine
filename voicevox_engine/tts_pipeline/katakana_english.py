@@ -4,17 +4,9 @@ import re
 
 import e2k
 
+from ..utility.character_width_utility import HankakuAlphabet
+
 MIN_CONVERTIBLE_LENGTH = 3
-
-
-def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
-    return surface.translate(
-        str.maketrans(
-            "".join(chr(0xFF01 + i) for i in range(94)),
-            "".join(chr(0x21 + i) for i in range(94)),
-        )
-    )
-
 
 _global_c2k: e2k.C2K | None = None
 
@@ -59,38 +51,25 @@ ojt_alphabet_kana_mapping = {
 }
 
 
-def is_convertible_to_katakana(pos: str, chain_rule: str, string: str) -> bool:
-    """e2kを用いて、読みが不明な英単語をカタカナに変換するか否かを判定する"""
-    # Mecabの解析で未知語となった場合、読みは空となる
-    # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
-    if pos != "フィラー" or chain_rule != "*":
-        return False
-
+def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
+    """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
     if len(string) < MIN_CONVERTIBLE_LENGTH:
         return False
 
-    # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
-    hankaku_string = _convert_zenkaku_alphabet_to_hankaku(string)
-
-    # アルファベット以外の文字が含まれている場合や、全て大文字の場合は、e2kでの解析を行わない
-    if not re.fullmatch("[a-zA-Z]+", hankaku_string) or re.fullmatch(
-        "[A-Z]+", hankaku_string
-    ):
+    # 全て大文字の場合は、e2kでの解析を行わない
+    if string == string.upper():
         return False
 
     return True
 
 
-def convert_english_to_katakana(string: str) -> str:
+def convert_english_to_katakana(string: HankakuAlphabet) -> str:
     """e2kを用いて、読みが不明な英単語をカタカナに変換する"""
     c2k = _initialize_c2k()
 
-    # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
-    hankaku_string = _convert_zenkaku_alphabet_to_hankaku(string)
-
     kana = ""
     # キャメルケース的な単語に対応させるため、大文字で分割する
-    for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
+    for word in re.findall("[a-zA-Z][a-z]*", string):
         # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
         if word == word.upper() or len(word) < MIN_CONVERTIBLE_LENGTH:
             for alphabet in word:
