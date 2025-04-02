@@ -76,6 +76,8 @@ def is_unknown_reading_word(pos: str, chain_rule: str) -> bool:
 
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     """日本語文からフルコンテキストラベルを生成する"""
+    # TODO: この関数のテストについて検討する
+    # https://github.com/VOICEVOX/voicevox_engine/pull/1562/files#r2014009618
     if len(text.strip()) == 0:
         return []
 
