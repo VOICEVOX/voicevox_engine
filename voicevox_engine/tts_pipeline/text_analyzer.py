@@ -1,9 +1,10 @@
 """テキスト解析"""
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Callable, Final, Literal, Self, TypeGuard
+from typing import Any, Final, Literal, Self, TypeGuard
 
 import pyopenjtalk
 

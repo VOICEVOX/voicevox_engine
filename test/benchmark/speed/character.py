@@ -80,13 +80,13 @@ if __name__ == "__main__":
 
     result_speakers_fakeserve = benchmark_get_speakers("fake", root_dir)
     result_speakers_localhost = benchmark_get_speakers("localhost", root_dir)
-    print("`GET /speakers` fakeserve: {:.4f} sec".format(result_speakers_fakeserve))
-    print("`GET /speakers` localhost: {:.4f} sec".format(result_speakers_localhost))
+    print(f"`GET /speakers` fakeserve: {result_speakers_fakeserve:.4f} sec")
+    print(f"`GET /speakers` localhost: {result_speakers_localhost:.4f} sec")
 
     _result_spk_infos_fakeserve = benchmark_get_speaker_info_all("fake", root_dir)
     _result_spk_infos_localhost = benchmark_get_speaker_info_all("localhost", root_dir)
-    result_spk_infos_fakeserve = "{:.3f}".format(_result_spk_infos_fakeserve)
-    result_spk_infos_localhost = "{:.3f}".format(_result_spk_infos_localhost)
+    result_spk_infos_fakeserve = f"{_result_spk_infos_fakeserve:.3f}"
+    result_spk_infos_localhost = f"{_result_spk_infos_localhost:.3f}"
     print(
         f"全ての喋れるキャラクター `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec"
     )
@@ -99,12 +99,8 @@ if __name__ == "__main__":
         "localhost", root_dir
     )
     print(
-        "全ての喋れるキャラクター `GET /` fakeserve: {:.3f} sec".format(
-            req_time_all_fake
-        )
+        f"全ての喋れるキャラクター `GET /` fakeserve: {req_time_all_fake:.3f} sec"
     )
     print(
-        "全ての喋れるキャラクター `GET /` localhost: {:.3f} sec".format(
-            req_time_all_local
-        )
+        f"全ての喋れるキャラクター `GET /` localhost: {req_time_all_local:.3f} sec"
     )

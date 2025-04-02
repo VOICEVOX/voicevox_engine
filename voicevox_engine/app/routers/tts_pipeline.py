@@ -53,7 +53,7 @@ class ParseKanaBadRequest(BaseModel):
         "|name|description|\n|---|---|\n"
         + "\n".join(
             [
-                "| {} | {} |".format(err.name, err.value)
+                f"| {err.name} | {err.value} |"
                 for err in list(ParseKanaErrorCode)
             ]
         ),
