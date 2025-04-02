@@ -98,9 +98,5 @@ if __name__ == "__main__":
     req_time_all_local = benchmark_request_time_for_all_talk_characters(
         "localhost", root_dir
     )
-    print(
-        f"全ての喋れるキャラクター `GET /` fakeserve: {req_time_all_fake:.3f} sec"
-    )
-    print(
-        f"全ての喋れるキャラクター `GET /` localhost: {req_time_all_local:.3f} sec"
-    )
+    print(f"全ての喋れるキャラクター `GET /` fakeserve: {req_time_all_fake:.3f} sec")
+    print(f"全ての喋れるキャラクター `GET /` localhost: {req_time_all_local:.3f} sec")
