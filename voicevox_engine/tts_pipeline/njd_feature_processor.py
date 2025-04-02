@@ -68,7 +68,7 @@ class NjdFeature:
 
 
 def is_unknown_reading_word(pos: str, chain_rule: str) -> bool:
-    """e2kを用いて、読みが不明な英単語をカタカナに変換するか否かを判定する"""
+    """読みが不明な単語であるか否かを判定する"""
     # Mecabの解析で未知語となった場合、読みは空となる
     # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
     return pos == "フィラー" and chain_rule == "*"
