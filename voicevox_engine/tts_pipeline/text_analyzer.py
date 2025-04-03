@@ -195,7 +195,7 @@ class AccentPhraseLabel:
         moras: list[MoraLabel] = []  # モーラ系列
         mora_labels: list[Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
             if label.mora_index == 49:
@@ -257,7 +257,7 @@ class BreathGroupLabel:
             Label
         ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # 区切りまでラベル系列を一時保存する
             accent_labels.append(label)
 

@@ -647,7 +647,7 @@ class TTSEngine:
                 note_id=phoneme_note_id,
             )
             for phoneme_id, phoneme_duration, phoneme_note_id in zip(
-                phonemes_array, phoneme_lengths, phoneme_note_ids
+                phonemes_array, phoneme_lengths, phoneme_note_ids, strict=True
             )
         ]
 
