@@ -18,8 +18,7 @@ from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_
 def generate_api_docs_html(schema: str) -> str:
     """OpenAPI schema から API ドキュメント HTML を生成する"""
 
-    return (
-        """<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
     <title>voicevox_engine API Document</title>
@@ -30,12 +29,10 @@ def generate_api_docs_html(schema: str) -> str:
     <div id="redoc-container"></div>
     <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
     <script>
-        Redoc.init(%s, {"hideHostname": true}, document.getElementById("redoc-container"));
+        Redoc.init({schema}, {"hideHostname": true}, document.getElementById("redoc-container"));
     </script>
 </body>
 </html>"""
-        % schema
-    )
 
 
 if __name__ == "__main__":

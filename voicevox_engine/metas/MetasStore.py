@@ -1,8 +1,9 @@
 """キャラクター情報とキャラクターメタ情報の管理"""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Final, Literal, TypeAlias
+from typing import Final, Literal, TypeAlias
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field

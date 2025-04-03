@@ -52,10 +52,7 @@ class ParseKanaBadRequest(BaseModel):
         description="エラー名\n\n"
         "|name|description|\n|---|---|\n"
         + "\n".join(
-            [
-                "| {} | {} |".format(err.name, err.value)
-                for err in list(ParseKanaErrorCode)
-            ]
+            [f"| {err.name} | {err.value} |" for err in list(ParseKanaErrorCode)]
         ),
     )
     error_args: dict[str, str] = Field(description="エラーを起こした箇所")
