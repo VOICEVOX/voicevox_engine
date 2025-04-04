@@ -67,7 +67,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
 
 
 @pytest.fixture()
-def app(app_params: dict) -> FastAPI:
+def app(app_params: dict[str, Any]) -> FastAPI:
     return generate_app(**app_params)
 
 

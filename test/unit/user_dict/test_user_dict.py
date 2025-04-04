@@ -5,10 +5,13 @@ from pathlib import Path
 import pytest
 from pyopenjtalk import g2p, unset_user_dict
 
-from voicevox_engine.user_dict.model import UserDictWord, WordTypes
+from voicevox_engine.user_dict.model import (
+    USER_DICT_MAX_PRIORITY,
+    UserDictWord,
+    WordTypes,
+)
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    USER_DICT_MAX_PRIORITY,
     UserDictInputError,
     WordProperty,
     create_word,
