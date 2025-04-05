@@ -25,16 +25,16 @@ EOF
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.7
+ARG VOICEVOX_CORE_VERSION=0.16.0
 
 RUN <<EOF
     set -eux
 
     # Processing Switch
     if [ "${USE_GPU}" = "true" ]; then
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="gpu"
+        VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX="-gpu"
     else
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="cpu"
+        VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX=
     fi
 
     # TARGETARCH Switch
@@ -44,7 +44,7 @@ RUN <<EOF
         VOICEVOX_CORE_ASSET_TARGETARCH="arm64"
     fi
 
-    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}-${VOICEVOX_CORE_ASSET_ASSET_PROCESSING}"
+    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}${VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX}"
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
@@ -60,14 +60,14 @@ RUN <<EOF
     mv ./core/* /opt/voicevox_core/
 
     # Add /opt/voicevox_core to dynamic library search path
-    echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
+    echo "/opt/voicevox_core/lib" > /etc/ld.so.conf.d/voicevox_core.conf
 
     # Update dynamic library search cache
     ldconfig
 EOF
 
 
-# Download ONNX Runtime
+# Download VOICEVOX ONNX Runtime
 FROM ${BASE_IMAGE} AS download-onnxruntime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -86,7 +86,7 @@ EOF
 
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG ONNXRUNTIME_VERSION=1.13.1
+ARG ONNXRUNTIME_VERSION=1.17.3
 RUN <<EOF
     set -eux
 
@@ -104,7 +104,7 @@ RUN <<EOF
         ONNXRUNTIME_TARGETARCH=aarch64
     fi
     
-    ONNXRUNTIME_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-${ONNXRUNTIME_TARGETARCH}-${ONNXRUNTIME_PROCESSING}${ONNXRUNTIME_VERSION}.tgz"
+    ONNXRUNTIME_URL="https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-${ONNXRUNTIME_VERSION}/voicevox_onnxruntime-linux-${ONNXRUNTIME_TARGETARCH}-${ONNXRUNTIME_PROCESSING}${ONNXRUNTIME_VERSION}.tgz"
 
     # Download ONNX Runtime
     wget -nv --show-progress -c -O "./onnxruntime.tgz" "${ONNXRUNTIME_URL}"
