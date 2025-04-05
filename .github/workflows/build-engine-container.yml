@@ -64,7 +64,6 @@ jobs:
             target: runtime-env
             base_image: ubuntu:20.04
             base_runtime_image: ubuntu:20.04
-            onnxruntime_version: 1.13.1
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -89,7 +88,6 @@ jobs:
             target: runtime-env
             base_image: ubuntu:22.04
             base_runtime_image: ubuntu:22.04
-            onnxruntime_version: 1.13.1
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
