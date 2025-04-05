@@ -86,8 +86,8 @@ def convert_english_to_katakana(string: HankakuAlphabet) -> str:
     kana = ""
     # キャメルケース的な単語に対応させるため、大文字で分割する
     for word in re.findall("[a-zA-Z][a-z]*", string):
-        if not is_hankaku_alphabet(word):
-            continue
+        word = HankakuAlphabet(word)
+
         # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
         if not should_convert_english_to_katakana(word):
             for alphabet in word:
