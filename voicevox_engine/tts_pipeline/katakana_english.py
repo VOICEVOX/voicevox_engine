@@ -4,9 +4,7 @@ import re
 
 import e2k
 
-from ..utility.character_width_utility import HankakuAlphabet
-
-MIN_CONVERTIBLE_LENGTH = 3
+from ..utility.character_width_utility import HankakuAlphabet, is_hankaku_alphabet
 
 _global_c2k: e2k.C2K | None = None
 
@@ -53,7 +51,7 @@ ojt_alphabet_kana_mapping = {
 
 def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
     """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
-    if len(string) < MIN_CONVERTIBLE_LENGTH:
+    if len(string) < 3:
         return False
 
     # 全て大文字の場合は、e2kでの解析を行わない
@@ -70,8 +68,10 @@ def convert_english_to_katakana(string: HankakuAlphabet) -> str:
     kana = ""
     # キャメルケース的な単語に対応させるため、大文字で分割する
     for word in re.findall("[a-zA-Z][a-z]*", string):
+        if not is_hankaku_alphabet(word):
+            continue
         # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
-        if word == word.upper() or len(word) < MIN_CONVERTIBLE_LENGTH:
+        if not should_convert_english_to_katakana(word):
             for alphabet in word:
                 kana += ojt_alphabet_kana_mapping[alphabet.upper()]
         else:
