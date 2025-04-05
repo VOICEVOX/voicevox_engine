@@ -1,19 +1,12 @@
 """英単語をカタカナ読みにする処理"""
 
 import re
-from typing import Any
+from typing import NewType, TypeGuard
 
 import e2k
 
-
-def _convert_zenkaku_alphabet_to_hankaku(surface: str) -> str:
-    return surface.translate(
-        str.maketrans(
-            "".join(chr(0xFF01 + i) for i in range(94)),
-            "".join(chr(0x21 + i) for i in range(94)),
-        )
-    )
-
+# 半角アルファベット文字列を示す型
+HankakuAlphabet = NewType("HankakuAlphabet", str)
 
 _global_c2k: e2k.C2K | None = None
 
@@ -58,71 +51,48 @@ ojt_alphabet_kana_mapping = {
 }
 
 
-def _create_njd_feature(orig: str, kana: str, mora_size: int) -> dict[str, Any]:
-    return {
-        "string": kana,
-        "pos": "名詞",
-        "pos_group1": "固有名詞",
-        "pos_group2": "一般",
-        "pos_group3": "*",
-        "ctype": "*",
-        "cform": "*",
-        "orig": orig,
-        "read": kana,
-        "pron": kana,
-        "acc": 1,
-        "mora_size": mora_size,
-        "chain_rule": "*",
-        "chain_flag": -1,
-    }
+def is_hankaku_alphabet(text: str) -> TypeGuard[HankakuAlphabet]:
+    """文字列が半角アルファベットのみで構成されているかを判定する"""
+    return bool(re.fullmatch("[a-zA-Z]+", text))
 
 
-def convert_english_in_njd_features_to_katakana(
-    njd_features: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    """e2kを用いて、NJD Features内の読みが不明な英単語をカタカナに変換する"""
-    for i, feature in enumerate(njd_features):
-        # Mecabの解析で未知語となった場合、読みは空となる
-        # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
-        if feature["pos"] != "フィラー" or feature["chain_rule"] != "*":
-            continue
-
-        c2k = _initialize_c2k()
-
-        # OpenJTalkはアルファベットを全角に変換するので、半角に戻す
-        hankaku_string = _convert_zenkaku_alphabet_to_hankaku(feature["string"])
-
-        # アルファベット以外の文字が含まれている場合や、全て大文字の場合は、e2kでの解析を行わない
-        if not re.fullmatch("[a-zA-Z]+", hankaku_string) or re.fullmatch(
-            "[A-Z]+", hankaku_string
-        ):
-            continue
-
-        kana = ""
-        # キャメルケース的な単語に対応させるため、大文字で分割する
-        for word in re.findall("[a-zA-Z][a-z]*", hankaku_string):
-            # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
-            if word == word.upper() or len(word) < 3:
-                for alphabet in word:
-                    kana += ojt_alphabet_kana_mapping[alphabet.upper()]
-            else:
-                kana += c2k(word.lower())
-
-        # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
-        rule_others = (
-            "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
+def convert_zenkaku_alphabet_to_hankaku(text: str) -> str:
+    """全角アルファベットを半角に変換する"""
+    # TODO: ユーザー辞書にも似た関数があるため、共通化を検討する
+    return text.translate(
+        str.maketrans(
+            "".join(chr(0xFF01 + i) for i in range(94)),
+            "".join(chr(0x21 + i) for i in range(94)),
         )
-        rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-        rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-        rule_one_mora = "[ァ-ヴー]"
-        mora_size = len(
-            re.findall(
-                f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})", kana
-            )
-        )
+    )
 
-        njd_features[i] = _create_njd_feature(
-            orig=feature["string"], kana=kana, mora_size=mora_size
-        )
 
-    return njd_features
+def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
+    """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
+    if len(string) < 3:
+        return False
+
+    # 全て大文字の場合は、e2kでの解析を行わない
+    if string == string.upper():
+        return False
+
+    return True
+
+
+def convert_english_to_katakana(string: HankakuAlphabet) -> str:
+    """e2kを用いて、読みが不明な英単語をカタカナに変換する"""
+    c2k = _initialize_c2k()
+
+    kana = ""
+    # キャメルケース的な単語に対応させるため、大文字で分割する
+    for word in re.findall("[a-zA-Z][a-z]*", string):
+        word = HankakuAlphabet(word)
+
+        # 大文字のみ、もしくは短いワードの場合は、e2kでの解析を行わない
+        if not should_convert_english_to_katakana(word):
+            for alphabet in word:
+                kana += ojt_alphabet_kana_mapping[alphabet.upper()]
+        else:
+            kana += c2k(word.lower())
+
+    return kana
