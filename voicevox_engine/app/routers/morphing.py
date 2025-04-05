@@ -18,11 +18,11 @@ from voicevox_engine.morphing.morphing import (
     StyleIdNotFoundError,
     get_morphable_targets,
     is_morphable,
+    synthesize_morphed_wave,
 )
 from voicevox_engine.morphing.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.morphing.morphing import synthesize_morphed_wave
 from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
 from voicevox_engine.utility.file_utility import try_delete_file
 

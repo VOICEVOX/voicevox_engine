@@ -60,19 +60,30 @@ def configure_middlewares(
     async def block_origin_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response | JSONResponse:
-        isValidOrigin: bool = False
+        is_valid_origin: bool = False
+        browser_extensions = [
+            "chrome-extension://",
+            "moz-extension://",
+            "ms-browser-extension://",
+            "safari-extension://",
+            "safari-web-extension://",
+        ]
         if "Origin" not in request.headers:  # Originのない純粋なリクエストの場合
-            isValidOrigin = True
+            is_valid_origin = True
         elif "*" in allowed_origins:  # すべてを許可する設定の場合
-            isValidOrigin = True
+            is_valid_origin = True
         elif request.headers["Origin"] in allowed_origins:  # Originが許可されている場合
-            isValidOrigin = True
+            is_valid_origin = True
         elif compiled_localhost_regex.fullmatch(
             request.headers["Origin"]
         ):  # localhostの場合
-            isValidOrigin = True
+            is_valid_origin = True
+        elif any(
+            request.headers["Origin"].startswith(ext) for ext in browser_extensions
+        ):  # ブラウザ拡張の場合
+            is_valid_origin = True
 
-        if isValidOrigin:
+        if is_valid_origin:
             return await call_next(request)
         else:
             return JSONResponse(

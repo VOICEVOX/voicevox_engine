@@ -6,11 +6,10 @@
 
 from enum import Enum
 from re import findall, fullmatch
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
-from typing_extensions import Annotated
 
 
 class WordTypes(str, Enum):
@@ -130,8 +129,6 @@ class UserDictWord(BaseModel):
 
         if not 0 <= self.accent_type <= self.mora_count:
             raise ValueError(
-                "誤ったアクセント型です({})。 expect: 0 <= accent_type <= {}".format(
-                    self.accent_type, self.mora_count
-                )
+                f"誤ったアクセント型です({self.accent_type})。 expect: 0 <= accent_type <= {self.mora_count}"
             )
         return self
