@@ -67,11 +67,11 @@ class NjdFeature:
         )
 
 
-def is_unknown_reading_word(pos: str, chain_rule: str) -> bool:
+def is_unknown_reading_word(feature: NjdFeature) -> bool:
     """読みが不明な単語であるか否かを判定する"""
     # Mecabの解析で未知語となった場合、読みは空となる
     # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
-    return pos == "フィラー" and chain_rule == "*"
+    return feature.pos == "フィラー" and feature.chain_rule == "*"
 
 
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
@@ -85,7 +85,7 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
-            if not is_unknown_reading_word(feature.pos, feature.chain_rule):
+            if not is_unknown_reading_word(feature):
                 continue
             hankaku_string = convert_zenkaku_alphabet_to_hankaku(feature.string)
             if not is_hankaku_alphabet(hankaku_string):
