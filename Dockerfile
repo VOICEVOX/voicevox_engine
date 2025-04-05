@@ -24,18 +24,10 @@ EOF
 
 # assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
 ARG TARGETPLATFORM
-ARG USE_GPU=false
 ARG VOICEVOX_CORE_VERSION=0.16.0
 
 RUN <<EOF
     set -eux
-
-    # Processing Switch
-    if [ "${USE_GPU}" = "true" ]; then
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX="-gpu"
-    else
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX=
-    fi
 
     # TARGETARCH Switch
     if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
@@ -44,7 +36,7 @@ RUN <<EOF
         VOICEVOX_CORE_ASSET_TARGETARCH="arm64"
     fi
 
-    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}${VOICEVOX_CORE_ASSET_ASSET_PROCESSING_SUFFIX}"
+    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}"
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
@@ -92,7 +84,7 @@ RUN <<EOF
 
     # Processing Switch
     if [ "${USE_GPU}" = "true" ]; then
-        ONNXRUNTIME_PROCESSING="gpu-"
+        ONNXRUNTIME_PROCESSING="cuda-"
     else
         ONNXRUNTIME_PROCESSING=""
     fi
