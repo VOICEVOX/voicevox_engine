@@ -1,8 +1,8 @@
 """テストユーティリティ `summarize_big_ndarray()` のテスト"""
 
-from test.utility import summarize_big_ndarray
-
 import numpy as np
+
+from test.utility import summarize_big_ndarray
 
 
 def test_summarize_big_ndarray_raw_small_array() -> None:

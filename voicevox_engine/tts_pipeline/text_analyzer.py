@@ -93,7 +93,7 @@ class Label:
     def from_feature(cls, feature: str) -> Self:
         """OpenJTalk feature から Label インスタンスを生成する"""
         # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
-        # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx  # noqa: B950
+        # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx
         result = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
             r"/A\:(?P<a1>.+?)\+(?P<a2>.+?)\+(?P<a3>.+?)"
@@ -192,7 +192,7 @@ class AccentPhraseLabel:
         moras: list[MoraLabel] = []  # モーラ系列
         mora_labels: list[Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
             if label.mora_index == 49:
@@ -250,11 +250,11 @@ class BreathGroupLabel:
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[Label] = (
-            []
-        )  # アクセント句ごとのラベル系列を一時保存するコンテナ
+        accent_labels: list[
+            Label
+        ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # 区切りまでラベル系列を一時保存する
             accent_labels.append(label)
 
@@ -300,9 +300,9 @@ class UtteranceLabel:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[Label] = (
-            []
-        )  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
+        group_labels: list[
+            Label
+        ] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する

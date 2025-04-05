@@ -52,10 +52,7 @@ class ParseKanaBadRequest(BaseModel):
         description="エラー名\n\n"
         "|name|description|\n|---|---|\n"
         + "\n".join(
-            [
-                "| {} | {} |".format(err.name, err.value)
-                for err in list(ParseKanaErrorCode)
-            ]
+            [f"| {err.name} | {err.value} |" for err in list(ParseKanaErrorCode)]
         ),
     )
     error_args: dict[str, str] = Field(description="エラーを起こした箇所")
@@ -322,7 +319,7 @@ def generate_tts_pipeline_router(
             )
         try:
             version = core_version or LATEST_VERSION
-            f_name = cancellable_engine._synthesis_impl(
+            f_name = cancellable_engine.synthesize_wave(
                 query, style_id, request, version=version
             )
         except CancellableEngineInternalError as e:

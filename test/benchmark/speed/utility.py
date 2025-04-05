@@ -1,7 +1,7 @@
 """速度ベンチマーク用のユーティリティ"""
 
 import time
-from typing import Callable
+from collections.abc import Callable
 
 
 def benchmark_time(

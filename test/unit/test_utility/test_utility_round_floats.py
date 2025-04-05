@@ -1,8 +1,8 @@
 """テストユーティリティ `round_floats()` のテスト"""
 
-from test.utility import round_floats
-
 import numpy as np
+
+from test.utility import round_floats
 
 
 def test_round_floats_raw_float() -> None:

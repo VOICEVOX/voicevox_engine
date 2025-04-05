@@ -63,7 +63,7 @@ class PresetManager:
                 return
 
             # データベースの読み込み
-            with open(self.preset_path, mode="r", encoding="utf-8") as f:
+            with open(self.preset_path, encoding="utf-8") as f:
                 obj = yaml.safe_load(f)
         except OSError:
             raise PresetInternalError("プリセットの読み込みに失敗しました")
