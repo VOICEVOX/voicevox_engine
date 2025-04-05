@@ -5,12 +5,10 @@ from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
-from ..utility.character_width_utility import (
-    convert_zenkaku_alphabet_to_hankaku,
-    is_hankaku_alphabet,
-)
 from .katakana_english import (
     convert_english_to_katakana,
+    convert_zenkaku_alphabet_to_hankaku,
+    is_hankaku_alphabet,
     should_convert_english_to_katakana,
 )
 

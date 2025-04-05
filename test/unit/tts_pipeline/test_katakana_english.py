@@ -1,8 +1,8 @@
 from voicevox_engine.tts_pipeline.katakana_english import (
     convert_english_to_katakana,
+    is_hankaku_alphabet,
     should_convert_english_to_katakana,
 )
-from voicevox_engine.utility.character_width_utility import is_hankaku_alphabet
 
 
 def test_should_convert_english_to_katakana_normal() -> None:
