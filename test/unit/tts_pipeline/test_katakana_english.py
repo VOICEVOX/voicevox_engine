@@ -10,9 +10,9 @@ def test_should_convert_english_to_katakana_normal() -> None:
     string = "Voivo"
     assert is_hankaku_alphabet(string)
 
-    is_should_convert = should_convert_english_to_katakana(string)
+    should_convert = should_convert_english_to_katakana(string)
 
-    assert is_should_convert
+    assert should_convert
 
 
 def test_should_convert_english_to_katakana_uppercase() -> None:
@@ -20,9 +20,9 @@ def test_should_convert_english_to_katakana_uppercase() -> None:
     string = "VOIVO"
     assert is_hankaku_alphabet(string)
 
-    is_should_convert = should_convert_english_to_katakana(string)
+    should_convert = should_convert_english_to_katakana(string)
 
-    assert not is_should_convert
+    assert not should_convert
 
 
 def test_should_convert_english_to_katakana_short() -> None:
@@ -30,9 +30,9 @@ def test_should_convert_english_to_katakana_short() -> None:
     string = "Vo"
     assert is_hankaku_alphabet(string)
 
-    is_should_convert = should_convert_english_to_katakana(string)
+    should_convert = should_convert_english_to_katakana(string)
 
-    assert not is_should_convert
+    assert not should_convert
 
 
 def test_convert_english_to_katakana() -> None:
