@@ -77,7 +77,7 @@ def _remove_full_width_space(features: list[NjdFeature]) -> list[NjdFeature]:
     return [
         feature
         for feature in features
-        if feature.string != "　" or feature.pron != "、"
+        if not (feature.string == "　" and feature.pron == "、")
     ]
 
 
