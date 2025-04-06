@@ -72,6 +72,15 @@ def _is_unknown_reading_word(feature: NjdFeature) -> bool:
     return feature.pos == "フィラー" and feature.chain_rule == "*"
 
 
+def _remove_full_width_space(features: list[NjdFeature]) -> list[NjdFeature]:
+    """pauとして扱われる全角スペースを削除した、featuresのコピーを返す"""
+    return [
+        feature
+        for feature in features
+        if feature.string != "　" or feature.pron != "、"
+    ]
+
+
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     """日本語文からフルコンテキストラベルを生成する"""
     # TODO: この関数のテストについて検討する
@@ -80,6 +89,9 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
         return []
 
     njd_features = list(map(lambda f: NjdFeature(**f), pyopenjtalk.run_frontend(text)))
+
+    # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
+    njd_features = _remove_full_width_space(njd_features)
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
