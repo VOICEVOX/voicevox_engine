@@ -9,14 +9,14 @@ def test_remove_full_width_space_normal() -> None:
     input_features = [
         NjdFeature(
             string="　",
-            pos="フィラー",
-            pos_group1="*",
+            pos="記号",
+            pos_group1="空白",
             pos_group2="*",
             pos_group3="*",
             ctype="*",
             cform="*",
-            orig="",
-            read="",
+            orig="　",
+            read="、",
             pron="、",
             acc=0,
             mora_size=0,
