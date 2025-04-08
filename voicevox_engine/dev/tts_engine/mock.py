@@ -5,6 +5,7 @@ from typing import Final
 
 import numpy as np
 from numpy.typing import NDArray
+
 from pyopenjtalk import tts
 
 from ...metas.Metas import StyleId

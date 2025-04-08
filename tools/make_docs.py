@@ -10,6 +10,7 @@ from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import SongEngineManager
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     core_manager = CoreManager()
     core_manager.register_core(CoreAdapter(MockCoreWrapper()), "mock")
     tts_engines = TTSEngineManager()
+    song_engines = SongEngineManager()
     tts_engines.register_engine(MockTTSEngine(), "mock")
     preset_path = get_save_dir() / "presets.yaml"
     engine_manifest = load_manifest(engine_manifest_path())
@@ -53,6 +55,7 @@ if __name__ == "__main__":
     # FastAPI の機能を用いて OpenAPI schema を生成する
     app = generate_app(
         tts_engines=tts_engines,
+        song_engines=song_engines,
         core_manager=core_manager,
         setting_loader=SettingHandler(USER_SETTING_PATH),
         preset_manager=PresetManager(preset_path),
