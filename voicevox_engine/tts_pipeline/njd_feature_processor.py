@@ -113,9 +113,6 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     njd_features = list(map(lambda f: NjdFeature(**f), pyopenjtalk.run_frontend(text)))
 
-    # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
-    njd_features = _remove_pau_space_between_alphabet(njd_features)
-
     if enable_e2k:
         for i, feature in enumerate(njd_features):
             if not _is_unknown_reading_word(feature):
@@ -130,5 +127,8 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
                 feature.string,
                 new_pron,
             )
+
+        # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
+        njd_features = _remove_pau_space_between_alphabet(njd_features)
 
     return pyopenjtalk.make_label(list(map(asdict, njd_features)))  # type: ignore
