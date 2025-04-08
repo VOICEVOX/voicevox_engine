@@ -1,5 +1,3 @@
-import re
-
 from voicevox_engine.tts_pipeline.njd_feature_processor import (
     NjdFeature,
     _remove_full_width_space,
