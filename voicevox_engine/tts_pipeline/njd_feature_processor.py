@@ -48,7 +48,7 @@ class NjdFeature:
             )
         )
         return cls(
-            string=kana,
+            string=english,
             pos="名詞",
             pos_group1="固有名詞",
             pos_group2="一般",
