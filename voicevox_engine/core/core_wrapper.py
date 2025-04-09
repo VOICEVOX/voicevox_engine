@@ -374,7 +374,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
             #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
         except OSError as err:
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+            raise RuntimeError(f"コアの読み込みに失敗しました：{err}") from err
 
     # Core<0.12
     model_type = _check_core_type(core_dir)
@@ -405,7 +405,7 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
                         return CDLL(str((core_dir / core_name).resolve(strict=True)))
                     except OSError as err_:
                         err = err_
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+            raise RuntimeError(f"コアの読み込みに失敗しました：{err}") from err
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
