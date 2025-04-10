@@ -70,15 +70,15 @@ def generate_licenses() -> list[License]:
     licenses_json = json.loads(pip_licenses_output)
 
     package_to_license_url = {
+        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
         "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
+        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
+        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
         "pefile": "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE",
+        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
         "pyopenjtalk": "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md",
         "python-multipart": "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt",
         "romkan": "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE",
-        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
-        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
-        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
-        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
         "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
     }
 
