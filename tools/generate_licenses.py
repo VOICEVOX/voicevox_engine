@@ -75,6 +75,70 @@ def generate_licenses() -> list[License]:
     return licenses
 
 
+def generate_licenses_from_licenses_json(licenses_json: dict) -> list[License]:
+    package_to_license_url = {
+        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
+        "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
+        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
+        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
+        "pefile": "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE",
+        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
+        "pyopenjtalk": "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md",
+        "python-multipart": "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt",
+        "romkan": "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE",
+        "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
+    }
+
+    licenses = []
+
+    for license_json in licenses_json:
+        package_name: str = license_json["Name"].lower()
+
+        if license_json["LicenseText"] == "UNKNOWN":
+            if package_name == "core" and license_json["Version"] == "0.0.0":
+                continue
+            if package_name not in package_to_license_url:
+                # ライセンスがpypiに無い
+                raise Exception(f"No License info provided for {package_name}")
+            # ライセンス文を pip 外で取得されたもので上書きする
+            text_url = package_to_license_url[package_name]
+            license_json["LicenseText"] = get_license_text(text_url)
+
+        # soxr
+        if package_name == "soxr":
+            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
+            license_json["LicenseText"] = get_license_text(text_url)
+
+        licenses.append(
+            License(
+                package_name=license_json["Name"],
+                package_version=license_json["Version"],
+                license_name=license_json["License"],
+                license_text=license_json["LicenseText"],
+                license_text_type="raw",
+            )
+        )
+
+    return licenses
+
+
+def validate_license_compliance(licenses: list[License]) -> None:
+    for license in licenses:
+        # ライセンスを確認する
+        license_names_str = license.license_name or ""
+        license_names = license_names_str.split("; ")
+        for license_name in license_names:
+            if license_name in [
+                "GNU General Public License v2 (GPLv2)",
+                "GNU General Public License (GPL)",
+                "GNU General Public License v3 (GPLv3)",
+                "GNU Affero General Public License v3 (AGPL-3)",
+            ]:
+                raise LicenseError(
+                    f"ライセンス違反: {license.package_name} is {license.license_name}"
+                )
+
+
 def add_licenses_manually(licenses: list[License]) -> None:
     python_version = "3.11.9"
 
@@ -227,70 +291,6 @@ def add_licenses_manually(licenses: list[License]) -> None:
             license_text_type="local_address",
         ),
     ]
-
-
-def validate_license_compliance(licenses: list[License]) -> None:
-    for license in licenses:
-        # ライセンスを確認する
-        license_names_str = license.license_name or ""
-        license_names = license_names_str.split("; ")
-        for license_name in license_names:
-            if license_name in [
-                "GNU General Public License v2 (GPLv2)",
-                "GNU General Public License (GPL)",
-                "GNU General Public License v3 (GPLv3)",
-                "GNU Affero General Public License v3 (AGPL-3)",
-            ]:
-                raise LicenseError(
-                    f"ライセンス違反: {license.package_name} is {license.license_name}"
-                )
-
-
-def generate_licenses_from_licenses_json(licenses_json: dict) -> list[License]:
-    package_to_license_url = {
-        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
-        "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
-        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
-        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
-        "pefile": "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE",
-        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
-        "pyopenjtalk": "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md",
-        "python-multipart": "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt",
-        "romkan": "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE",
-        "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
-    }
-
-    licenses = []
-
-    for license_json in licenses_json:
-        package_name: str = license_json["Name"].lower()
-
-        if license_json["LicenseText"] == "UNKNOWN":
-            if package_name == "core" and license_json["Version"] == "0.0.0":
-                continue
-            if package_name not in package_to_license_url:
-                # ライセンスがpypiに無い
-                raise Exception(f"No License info provided for {package_name}")
-            # ライセンス文を pip 外で取得されたもので上書きする
-            text_url = package_to_license_url[package_name]
-            license_json["LicenseText"] = get_license_text(text_url)
-
-        # soxr
-        if package_name == "soxr":
-            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            license_json["LicenseText"] = get_license_text(text_url)
-
-        licenses.append(
-            License(
-                package_name=license_json["Name"],
-                package_version=license_json["Version"],
-                license_name=license_json["License"],
-                license_text=license_json["LicenseText"],
-                license_text_type="raw",
-            )
-        )
-
-    return licenses
 
 
 if __name__ == "__main__":
