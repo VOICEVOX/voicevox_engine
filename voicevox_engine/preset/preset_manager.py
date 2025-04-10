@@ -76,9 +76,7 @@ class PresetManager:
             preset_list_adapter = TypeAdapter(list[Preset])
             _presets = preset_list_adapter.validate_python(obj)
         except ValidationError as e:
-            raise PresetInternalError(
-                "プリセットの設定ファイルにミスがあります"
-            ) from e
+            raise PresetInternalError("プリセットの設定ファイルにミスがあります") from e
 
         # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(

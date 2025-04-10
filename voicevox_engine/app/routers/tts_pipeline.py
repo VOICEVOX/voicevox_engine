@@ -51,9 +51,7 @@ class ParseKanaBadRequest(BaseModel):
     error_name: str = Field(
         description="エラー名\n\n"
         "|name|description|\n|---|---|\n"
-        + "\n".join(
-            [f"| {e.name} | {e.value} |" for e in list(ParseKanaErrorCode)]
-        ),
+        + "\n".join([f"| {e.name} | {e.value} |" for e in list(ParseKanaErrorCode)]),
     )
     error_args: dict[str, str] = Field(description="エラーを起こした箇所")
 
