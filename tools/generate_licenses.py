@@ -44,8 +44,6 @@ def get_license_text(text_url: str) -> str:
 
 
 def generate_licenses() -> list[License]:
-    licenses: list[License] = []
-
     # pip
     try:
         pip_licenses_output = subprocess.run(
