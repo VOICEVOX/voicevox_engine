@@ -68,10 +68,14 @@ def generate_licenses() -> list[License]:
         ) from err
 
     licenses_json = json.loads(pip_licenses_output)
-
     licenses = generate_licenses_from_licenses_json(licenses_json)
     validate_license_compliance(licenses)
+    add_licenses_manually(licenses)
 
+    return licenses
+
+
+def add_licenses_manually(licenses: list[License]) -> None:
     python_version = "3.11.9"
 
     licenses += [
@@ -224,8 +228,6 @@ def generate_licenses() -> list[License]:
         ),
     ]
 
-    return licenses
-
 
 def validate_license_compliance(licenses: list[License]) -> None:
     for license in licenses:
@@ -261,14 +263,15 @@ def generate_licenses_from_licenses_json(licenses_json: dict) -> list[License]:
     licenses = []
 
     for license_json in licenses_json:
-        # ライセンス文を pip 外で取得されたもので上書きする
         package_name: str = license_json["Name"].lower()
+
         if license_json["LicenseText"] == "UNKNOWN":
             if package_name == "core" and license_json["Version"] == "0.0.0":
                 continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
+            # ライセンス文を pip 外で取得されたもので上書きする
             text_url = package_to_license_url[package_name]
             license_json["LicenseText"] = get_license_text(text_url)
 
