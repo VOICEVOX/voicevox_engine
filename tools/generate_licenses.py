@@ -24,15 +24,16 @@ class License:
         self.package_version = package_version
         self.license_name = license_name
 
-        if license_text_type == "raw":
-            self.license_text = license_text
-        elif license_text_type == "local_address":
-            # ライセンステキストをローカルのライセンスファイルから抽出する
-            self.license_text = Path(license_text).read_text(encoding="utf8")
-        elif license_text_type == "remote_address":
-            self.license_text = get_license_text(license_text)
-        else:
-            assert_never("型で保護され実行されないはずのパスが実行されました")
+        match license_text_type:
+            case "raw":
+                self.license_text = license_text
+            case "local_address":
+                # ライセンステキストをローカルのライセンスファイルから抽出する
+                self.license_text = Path(license_text).read_text(encoding="utf8")
+            case "remote_address":
+                self.license_text = get_license_text(license_text)
+            case _:
+                assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def get_license_text(text_url: str) -> str:
