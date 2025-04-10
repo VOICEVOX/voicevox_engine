@@ -166,21 +166,21 @@ class LibraryManager:
                     zf.read("vvlib_manifest.json").decode("utf-8")
                 )
             # マニフェストファイルをもたないライブラリはインストールを拒否する
-            except KeyError as err:
+            except KeyError as e:
                 msg = (
                     f"音声ライブラリ {library_id} にvvlib_manifest.jsonが存在しません。"
                 )
-                raise LibraryFormatInvalidError(msg) from err
-            except Exception as err:
+                raise LibraryFormatInvalidError(msg) from e
+            except Exception as e:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonは不正です。"
-                raise LibraryFormatInvalidError(msg) from err
+                raise LibraryFormatInvalidError(msg) from e
 
             # 不正な形式のマニフェストファイルをもつライブラリはインストールを拒否する
             try:
                 VvlibManifest.model_validate(vvlib_manifest)
-            except ValidationError as err:
+            except ValidationError as e:
                 msg = f"音声ライブラリ {library_id} のvvlib_manifest.jsonが不正な形式です。"
-                raise LibraryFormatInvalidError(msg) from err
+                raise LibraryFormatInvalidError(msg) from e
 
             # 不正な `version` 形式のマニフェストファイルもつライブラリはインストールを拒否する
             if not Version.is_valid(vvlib_manifest["version"]):
@@ -190,9 +190,9 @@ class LibraryManager:
             # 不正な形式あるいは対応範囲外のマニフェストバージョンをもつライブラリはインストールを拒否する
             try:
                 manifest_version = Version.parse(vvlib_manifest["manifest_version"])
-            except ValueError as err:
+            except ValueError as e:
                 msg = f"音声ライブラリ {library_id} のmanifest_version形式が不正です。"
-                raise LibraryFormatInvalidError(msg) from err
+                raise LibraryFormatInvalidError(msg) from e
             if manifest_version > self.supported_vvlib_version:
                 msg = f"音声ライブラリ {library_id} は未対応です。"
                 raise LibraryUnsupportedError(msg)
@@ -225,6 +225,6 @@ class LibraryManager:
         try:
             # NOTE: 当該ライブラリのディレクトリを削除してアンインストールする
             shutil.rmtree(self.library_root_dir / library_id)
-        except Exception as err:
+        except Exception as e:
             msg = f"音声ライブラリ {library_id} の削除に失敗しました。"
-            raise LibraryInternalError(msg) from err
+            raise LibraryInternalError(msg) from e

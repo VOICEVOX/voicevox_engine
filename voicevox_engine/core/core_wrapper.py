@@ -373,8 +373,8 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
             # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
             #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}") from err
+        except OSError as e:
+            raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
 
     # Core<0.12
     model_type = _check_core_type(core_dir)
@@ -397,15 +397,15 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:  # noqa: F841
+        except OSError as e:  # noqa: F841
             if model_type == "libtorch":
                 core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
                 if core_name:
                     try:
                         return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                    except OSError as err_:
-                        err = err_
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}") from err
+                    except OSError as _e:
+                        e = _e
+            raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"

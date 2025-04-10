@@ -61,10 +61,10 @@ def generate_licenses() -> list[License]:
             capture_output=True,
             check=True,
         ).stdout.decode()
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError as e:
         raise Exception(
-            f"command output:\n{err.stderr and err.stderr.decode()}"
-        ) from err
+            f"command output:\n{e.stderr and e.stderr.decode()}"
+        ) from e
 
     licenses_json = json.loads(pip_licenses_output)
     for license_json in licenses_json:

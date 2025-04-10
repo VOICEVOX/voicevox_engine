@@ -206,10 +206,10 @@ class MetasStore:
                         "voice_samples": voice_samples,
                     }
                 )
-        except (FileNotFoundError, ResourceManagerError) as err:
+        except (FileNotFoundError, ResourceManagerError) as e:
             # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
             msg = "追加情報が見つかりませんでした"
-            raise HTTPException(status_code=500, detail=msg) from err
+            raise HTTPException(status_code=500, detail=msg) from e
 
         character_info = SpeakerInfo(
             policy=policy, portrait=portrait, style_infos=style_infos

@@ -52,13 +52,13 @@ class ParseKanaBadRequest(BaseModel):
         description="エラー名\n\n"
         "|name|description|\n|---|---|\n"
         + "\n".join(
-            [f"| {err.name} | {err.value} |" for err in list(ParseKanaErrorCode)]
+            [f"| {e.name} | {e.value} |" for e in list(ParseKanaErrorCode)]
         ),
     )
     error_args: dict[str, str] = Field(description="エラーを起こした箇所")
 
-    def __init__(self, err: ParseKanaError):
-        super().__init__(text=err.text, error_name=err.errname, error_args=err.kwargs)
+    def __init__(self, e: ParseKanaError):
+        super().__init__(text=e.text, error_name=e.errname, error_args=e.kwargs)
 
 
 class SupportedDevicesInfo(BaseModel):
@@ -136,10 +136,10 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_engine(version)
         try:
             presets = preset_manager.load_presets()
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err)) from err
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -196,10 +196,10 @@ def generate_tts_pipeline_router(
         if is_kana:
             try:
                 return engine.create_accent_phrases_from_kana(text, style_id)
-            except ParseKanaError as err:
+            except ParseKanaError as e:
                 raise HTTPException(
-                    status_code=400, detail=ParseKanaBadRequest(err).model_dump()
-                ) from err
+                    status_code=400, detail=ParseKanaBadRequest(e).model_dump()
+                ) from e
         else:
             return engine.create_accent_phrases(text, style_id)
 
@@ -505,8 +505,8 @@ def generate_tts_pipeline_router(
         """
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
-        except ConnectBase64WavesException as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
+        except ConnectBase64WavesException as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -543,11 +543,11 @@ def generate_tts_pipeline_router(
         try:
             parse_kana(text)
             return True
-        except ParseKanaError as err:
+        except ParseKanaError as e:
             raise HTTPException(
                 status_code=400,
-                detail=ParseKanaBadRequest(err).model_dump(),
-            ) from err
+                detail=ParseKanaBadRequest(e).model_dump(),
+            ) from e
 
     @router.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(
