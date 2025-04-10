@@ -99,14 +99,17 @@ def generate_licenses() -> list[License]:
             text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
             license_json["LicenseText"] = get_license_text(text_url)
 
-        license = License(
-            package_name=license_json["Name"],
-            package_version=license_json["Version"],
-            license_name=license_json["License"],
-            license_text=license_json["LicenseText"],
-            license_text_type="raw",
+        licenses.append(
+            License(
+                package_name=license_json["Name"],
+                package_version=license_json["Version"],
+                license_name=license_json["License"],
+                license_text=license_json["LicenseText"],
+                license_text_type="raw",
+            )
         )
 
+    for license in licenses:
         # ライセンスを確認する
         license_names_str = license.license_name or ""
         license_names = license_names_str.split("; ")
@@ -120,8 +123,6 @@ def generate_licenses() -> list[License]:
                 raise LicenseError(
                     f"ライセンス違反: {license.package_name} is {license.license_name}"
                 )
-
-        licenses.append(license)
 
     python_version = "3.11.9"
 
