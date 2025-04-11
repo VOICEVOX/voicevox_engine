@@ -123,12 +123,14 @@ class LibraryManager:
     def install_library(self, library_id: str, file: BinaryIO) -> Path:
         """
         音声ライブラリ (`.vvlib`) をインストールする。
+
         Parameters
         ----------
         library_id : str
             インストール対象ライブラリID
         file : BytesIO
             ライブラリファイルBlob
+
         Returns
         -------
         library_dir : Path
@@ -210,7 +212,6 @@ class LibraryManager:
 
     def uninstall_library(self, library_id: str) -> None:
         """ID で指定されたインストール済み音声ライブラリをアンインストールする。"""
-
         # 未インストールライブラリのアンインストールは不可能なので拒否する
         if library_id not in self.installed_libraries().keys():
             msg = f"音声ライブラリ {library_id} はインストールされていません。"

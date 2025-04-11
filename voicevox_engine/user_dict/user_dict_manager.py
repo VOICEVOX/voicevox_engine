@@ -1,4 +1,4 @@
-"ユーザー辞書関連の処理"
+"""ユーザー辞書関連の処理"""
 
 import json
 import sys
@@ -243,6 +243,7 @@ class UserDictionary:
     ) -> None:
         """
         ユーザー辞書をインポートする。
+
         Parameters
         ----------
         dict_data : dict[str, UserDictWord]
