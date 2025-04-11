@@ -22,7 +22,11 @@ from ..dependencies import VerifyMutabilityAllowed
 def generate_library_router(
     library_manager: LibraryManager, verify_mutability: VerifyMutabilityAllowed
 ) -> APIRouter:
-    """音声ライブラリ API Router を生成する"""
+    """
+    音声ライブラリ API Router を生成する
+
+    NOTE: 製品版 VOICEVOX ENGINE では音声ライブラリ機能をオフにしている
+    """
     router = APIRouter(tags=["音声ライブラリ管理"])
 
     @router.get(
