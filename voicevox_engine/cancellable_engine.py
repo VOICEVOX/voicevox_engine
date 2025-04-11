@@ -145,8 +145,10 @@ class CancellableEngine:
             if not isinstance(audio_file_name, str):
                 # ここには来ないはず
                 raise CancellableEngineInternalError("不正な値が生成されました")
-        except EOFError:
-            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
+        except EOFError as err:
+            raise CancellableEngineInternalError(
+                "既にサブプロセスは終了されています"
+            ) from err
         except Exception:
             self._finalize_con(request, synth_process, synth_connection)
             raise
