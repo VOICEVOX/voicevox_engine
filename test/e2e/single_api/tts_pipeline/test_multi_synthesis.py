@@ -1,6 +1,4 @@
-"""
-/multi_synthesis API のテスト
-"""
+"""/multi_synthesis API のテスト。"""
 
 import io
 import zipfile

@@ -11,7 +11,7 @@ from voicevox_engine.library.model import BaseLibraryInfo, VvlibManifest
 
 
 def simplify_operation_ids(app: FastAPI) -> FastAPI:
-    """operation ID を簡略化してAPIクライアントで生成される関数名をシンプルにする。"""
+    """Operation ID を簡略化してAPIクライアントで生成される関数名をシンプルにする。"""
     for route in app.routes:
         if isinstance(route, APIRoute):
             route.operation_id = route.name

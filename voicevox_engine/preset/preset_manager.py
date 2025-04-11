@@ -33,7 +33,6 @@ class PresetManager:
 
     def __init__(self, preset_path: Path):
         """プリセットマネージャーを生成する。プリセットファイルが存在しない場合は新規作成する。"""
-
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
@@ -54,7 +53,6 @@ class PresetManager:
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
-
         # データベース更新の確認（タイムスタンプベース）
         try:
             _last_modified_time = self.preset_path.stat().st_mtime
@@ -90,7 +88,6 @@ class PresetManager:
 
     def add_preset(self, preset: Preset) -> int:
         """新規プリセットを追加し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -114,7 +111,6 @@ class PresetManager:
 
     def load_presets(self) -> list[Preset]:
         """全てのプリセットを取得する"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -122,7 +118,6 @@ class PresetManager:
 
     def update_preset(self, preset: Preset) -> int:
         """指定されたプリセットを更新し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -150,7 +145,6 @@ class PresetManager:
 
     def delete_preset(self, id: int) -> int:
         """ID で指定されたプリセットを削除し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 

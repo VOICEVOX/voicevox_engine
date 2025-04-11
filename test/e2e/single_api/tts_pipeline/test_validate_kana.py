@@ -1,6 +1,4 @@
-"""
-/validate_kana API のテスト
-"""
+"""/validate_kana API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

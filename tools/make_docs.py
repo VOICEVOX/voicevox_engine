@@ -17,7 +17,6 @@ from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_
 
 def generate_api_docs_html(schema: str) -> str:
     """OpenAPI schema から API ドキュメント HTML を生成する"""
-
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>

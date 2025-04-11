@@ -241,8 +241,7 @@ _CORENAME_DICT = {
 
 
 def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
-    """
-    `core_dir`直下に存在する コア Version 0.12 以降の共有ライブラリ名（None: 不在）
+    """`core_dir`直下に存在する コア Version 0.12 以降の共有ライブラリ名（None: 不在）。
 
     Version 0.12 以降と判定する条件は、
 
@@ -263,9 +262,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
 
 
 def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
-    """
-    実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）
-    """
+    """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
     machine = platform.machine()
     # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
     if machine == "x86_64" or machine == "x64" or machine == "AMD64":
@@ -288,9 +285,10 @@ def _get_core_name(
     model_type: Literal["libtorch", "onnxruntime"],
     gpu_type: GPUType,
 ) -> str | None:
-    """
-    設定値を満たすCoreの名前（None: サポート外）。
+    """設定値を満たすCoreの名前（None: サポート外）。
+
     macOSの場合はarch_nameをuniversalにする。
+
     Parameters
     ----------
     arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
@@ -299,6 +297,7 @@ def _get_core_name(
         実行中マシンのシステム名
     model_type: Literal["libtorch", "onnxruntime"]
     gpu_type: GPUType
+
     Returns
     -------
     name : str | None
@@ -356,11 +355,13 @@ def _check_core_type(core_dir: Path) -> Literal["libtorch", "onnxruntime"] | Non
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     """
     `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLのロード
+
     Parameters
     ----------
     core_dir : Path
         直下にコア（共有ライブラリ）が存在するディレクトリ
     use_gpu
+
     Returns
     -------
     core : CDLL
@@ -539,10 +540,12 @@ _CORE_API_TYPES = {
 def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
     """
     コアDLLの各関数を（その関数があれば）型付けする。APIの有無の情報を辞書として返す
+
     Parameters
     ----------
     core_cdll : CDLL
         コアDLL
+
     Returns
     -------
     api_exists : dict[str, bool]
@@ -622,6 +625,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         音素列から、音素ごとの長さを求める関数
+
         Parameters
         ----------
         length : int
@@ -630,6 +634,7 @@ class CoreWrapper:
             音素列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -659,6 +664,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+
         Parameters
         ----------
         length : int
@@ -677,6 +683,7 @@ class CoreWrapper:
             アクセント句の終了位置
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -714,6 +721,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
+
         Parameters
         ----------
         length : int
@@ -726,12 +734,12 @@ class CoreWrapper:
             フレームごとの音素
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
             音声波形
         """
-
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
             self.core.decode_forward(
@@ -755,6 +763,7 @@ class CoreWrapper:
     ) -> NDArray[np.int64]:
         """
         子音・母音列から、音素ごとの長さを求める関数
+
         Parameters
         ----------
         length : int
@@ -767,6 +776,7 @@ class CoreWrapper:
             ノート列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.int64]
@@ -796,6 +806,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素列とノート列から、フレームごとのF0を求める関数
+
         Parameters
         ----------
         length : int
@@ -806,6 +817,7 @@ class CoreWrapper:
             フレームごとのノート
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -835,6 +847,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
+
         Parameters
         ----------
         length : int
@@ -847,6 +860,7 @@ class CoreWrapper:
             フレームごとの音高
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -877,6 +891,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
+
         Parameters
         ----------
         length : int
@@ -889,6 +904,7 @@ class CoreWrapper:
             フレームごとの音量
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -910,9 +926,7 @@ class CoreWrapper:
         raise OldCoreError
 
     def supported_devices(self) -> str:
-        """
-        coreから取得した対応デバイスに関するjsonデータの文字列
-        """
+        """coreから取得した対応デバイスに関するjsonデータの文字列。"""
         if self.api_exists["supported_devices"]:
             supported_devices_byte: bytes = self.core.supported_devices()
             return supported_devices_byte.decode("utf-8")

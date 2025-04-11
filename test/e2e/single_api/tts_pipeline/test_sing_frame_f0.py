@@ -1,6 +1,4 @@
-"""
-/sing_frame_f0 API のテスト
-"""
+"""/sing_frame_f0 API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

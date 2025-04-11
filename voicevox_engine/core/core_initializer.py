@@ -122,6 +122,7 @@ def initialize_cores(
         def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
             指定されたコアをロードし `core_manager` へ登録する。
+
             Parameters
             ----------
             core_dir : Path

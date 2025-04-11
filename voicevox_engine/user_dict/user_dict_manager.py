@@ -1,4 +1,4 @@
-"ユーザー辞書関連の処理"
+"""ユーザー辞書関連の処理"""
 
 import json
 import sys
@@ -124,7 +124,8 @@ class UserDictionary:
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
-        """
+        """初期化。 # TODO: fix comment
+
         Parameters
         ----------
         default_dict_path : Path
@@ -243,6 +244,7 @@ class UserDictionary:
     ) -> None:
         """
         ユーザー辞書をインポートする。
+
         Parameters
         ----------
         dict_data : dict[str, UserDictWord]

@@ -1,6 +1,4 @@
-"""
-/engine_manifest API のテスト
-"""
+"""/engine_manifest API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

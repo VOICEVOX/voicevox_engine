@@ -1,6 +1,4 @@
-"""
-/is_initialized_speaker API のテスト
-"""
+"""/is_initialized_speaker API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

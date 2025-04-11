@@ -13,16 +13,14 @@ _speaker_list_adapter = TypeAdapter(list[Speaker])
 
 
 def _hash_bytes(value: bytes) -> str:
-    """バイト列をハッシュ化する"""
+    """バイト列をハッシュ化する。"""
     return "MD5:" + hashlib.md5(value).hexdigest()
 
 
 def _assert_resource_url(
     client: TestClient, snapshot: SnapshotAssertion, url: str, name: str
 ) -> None:
-    """
-    URLからデータが正しく取得できるかスナップショットテストをする
-    """
+    """URLからデータが正しく取得できるかスナップショットテストをする。"""
     response = client.get(url)
     assert response.status_code == 200
     assert snapshot(name=name) == _hash_bytes(response.content)

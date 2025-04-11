@@ -1,6 +1,4 @@
-"""
-/core_versions API のテスト
-"""
+"""/core_versions API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

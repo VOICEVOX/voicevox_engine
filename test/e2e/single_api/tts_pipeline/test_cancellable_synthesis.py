@@ -1,6 +1,4 @@
-"""
-/cancellable_synthesis API のテスト
-"""
+"""/cancellable_synthesis API のテスト。"""
 
 from typing import Any
 

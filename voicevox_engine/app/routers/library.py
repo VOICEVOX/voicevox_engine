@@ -34,9 +34,7 @@ def generate_library_router(
         response_description="ダウンロード可能な音声ライブラリの情報リスト",
     )
     def downloadable_libraries() -> list[DownloadableLibraryInfo]:
-        """
-        ダウンロード可能な音声ライブラリの情報を返します。
-        """
+        """ダウンロード可能な音声ライブラリの情報を返します。"""
         return library_manager.downloadable_libraries()
 
     @router.get(
@@ -44,9 +42,7 @@ def generate_library_router(
         response_description="インストールした音声ライブラリの情報",
     )
     def installed_libraries() -> dict[str, InstalledLibraryInfo]:
-        """
-        インストールした音声ライブラリの情報を返します。
-        """
+        """インストールした音声ライブラリの情報を返します。"""
         return library_manager.installed_libraries()
 
     @router.post(
@@ -58,8 +54,8 @@ def generate_library_router(
         library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
         request: Request,
     ) -> None:
-        """
-        音声ライブラリをインストールします。
+        """音声ライブラリをインストールします。
+
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
         """
         archive = BytesIO(await request.body())
@@ -87,9 +83,7 @@ def generate_library_router(
     def uninstall_library(
         library_uuid: Annotated[str, Path(description="音声ライブラリのID")],
     ) -> None:
-        """
-        音声ライブラリをアンインストールします。
-        """
+        """音声ライブラリをアンインストールします。"""
         try:
             library_manager.uninstall_library(library_uuid)
         except LibraryNotFoundError as e:

@@ -95,7 +95,7 @@ def acquire_licenses_of_pip_managed_libraries() -> list[PipLicense]:
 
 
 def update_licenses(raw_licenses: list[PipLicense]) -> list[License]:
-    """pip から取得したライセンス情報を更新する。"""
+    """Pip から取得したライセンス情報を更新する。"""
     package_to_license_url = {
         "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
         "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",

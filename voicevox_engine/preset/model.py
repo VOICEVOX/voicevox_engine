@@ -11,9 +11,7 @@ from voicevox_engine.metas.Metas import StyleId
 
 
 class Preset(BaseModel):
-    """
-    プリセット情報
-    """
+    """プリセット情報。"""
 
     id: int = Field(description="プリセットID")
     name: str = Field(description="プリセット名")

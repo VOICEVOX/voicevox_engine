@@ -1,6 +1,4 @@
-"""
-/supported_devices API のテスト
-"""
+"""/supported_devices API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

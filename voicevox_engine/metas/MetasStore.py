@@ -45,9 +45,7 @@ _SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
 class _EngineCharacter(BaseModel):
-    """
-    エンジンに含まれるキャラクター情報
-    """
+    """エンジンに含まれるキャラクター情報。"""
 
     supported_features: SpeakerSupportedFeatures = Field(
         default_factory=SpeakerSupportedFeatures
@@ -90,7 +88,6 @@ class MetasStore:
 
     def characters(self, core_version: str | None) -> list[Character]:
         """キャラクターの情報の一覧を取得する。"""
-
         # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
         for core_character in self._get_core_characters(core_version):

@@ -1,6 +1,4 @@
-"""
-/mora_length API のテスト
-"""
+"""/mora_length API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

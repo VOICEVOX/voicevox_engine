@@ -62,8 +62,8 @@ def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
 
 
 def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64]:
-    """
-    アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+    """アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+
     長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
     """
     accent_onehot = np.zeros(len(accent_phrase.moras))
@@ -126,10 +126,12 @@ def _count_frame_per_unit(
 ) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
     音素あたり・モーラあたりのフレーム長を算出する
+
     Parameters
     ----------
     moras : list[Mora]
         モーラ系列
+
     Returns
     -------
     frame_per_phoneme : NDArray[np.int64]
@@ -273,8 +275,8 @@ def _calc_phoneme_lengths(
     consonant_lengths: NDArray[np.int64],
     note_durations: NDArray[np.int64],
 ) -> NDArray[np.int64]:
-    """
-    子音長と音符長から音素長を計算する
+    """子音長と音符長から音素長を計算する。
+
     ただし、母音はノートの頭にくるようにするため、
     予測された子音長は前のノートの長さを超えないように調整される
     """
@@ -324,10 +326,12 @@ def _notes_to_keys_and_phonemes(
 ]:
     """
     ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
+
     Parameters
     ----------
     notes : list[Note]
         ノート列
+
     Returns
     -------
     note_lengths : NDArray[np.int64]
@@ -343,7 +347,6 @@ def _notes_to_keys_and_phonemes(
     phoneme_note_ids : list[NoteId]
         音素ごとのノートID列
     """
-
     note_lengths: list[int] = []
     note_consonants: list[int] = []
     note_vowels: list[int] = []
@@ -416,7 +419,6 @@ def _frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
 ) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
     """歌声合成用のクエリからフレームごとの音素・音高・音量を得る"""
-
     # 各データを分解・numpy配列に変換する
     phonemes = []
     phoneme_lengths = []
@@ -765,7 +767,6 @@ class TTSEngine:
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
-
         phoneme, f0, volume = _frame_query_to_sf_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
             phoneme, f0, volume, style_id

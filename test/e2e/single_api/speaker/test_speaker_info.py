@@ -1,6 +1,4 @@
-"""
-/speaker_info API のテスト
-"""
+"""/speaker_info API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

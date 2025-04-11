@@ -1,6 +1,4 @@
-"""
-ビルド結果をテストする
-"""
+"""ビルド結果をテストする。"""
 
 import argparse
 import json

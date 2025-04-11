@@ -32,7 +32,6 @@ def engine_manifest_path() -> Path:
 
 def get_save_dir() -> Path:
     """ファイルの保存先ディレクトリを指すパスを取得する。"""
-
     # FIXME: ファイル保存場所をエンジン固有のIDが入ったものにする
     # FIXME: Windowsは`voicevox-engine/voicevox-engine`ディレクトリに保存されているので
     # `VOICEVOX/voicevox-engine`に変更する

@@ -1,6 +1,4 @@
-"""
-/sing_frame_audio_query API のテスト
-"""
+"""/sing_frame_audio_query API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

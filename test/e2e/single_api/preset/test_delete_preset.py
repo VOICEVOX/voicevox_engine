@@ -1,6 +1,4 @@
-"""
-/delete_preset API のテスト
-"""
+"""/delete_preset API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

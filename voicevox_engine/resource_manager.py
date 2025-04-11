@@ -1,6 +1,4 @@
-"""
-リソースファイルを管理する。
-"""
+"""リソースファイルを管理する。"""
 
 import base64
 import json
@@ -27,7 +25,8 @@ class ResourceManager:
     """
 
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
-        """
+        """初期化。 # TODO: fix comment
+
         Parameters
         ----------
         create_filemap_if_not_exist : bool

@@ -81,9 +81,7 @@ CsvSafeStr = Annotated[
 
 
 class UserDictWord(BaseModel):
-    """
-    辞書のコンパイルに使われる情報
-    """
+    """辞書のコンパイルに使われる情報。"""
 
     model_config = ConfigDict(validate_assignment=True)
 

@@ -17,10 +17,12 @@ class ConnectBase64WavesException(Exception):
 def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int]]:
     """
     base64エンコードされた複数のwavデータをデコードする
+
     Parameters
     ----------
     waves: list[str]
         base64エンコードされたwavデータのリスト
+
     Returns
     -------
     waves_nparray_sr: list[tuple[NDArray[np.float64], int]]

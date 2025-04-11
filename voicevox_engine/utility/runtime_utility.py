@@ -6,6 +6,7 @@ import sys
 def is_development() -> bool:
     """
     動作環境が開発版であるか否かを返す。
+
     Pyinstallerでコンパイルされていない場合は開発環境とする。
     """
     # pyinstallerでビルドをした際はsys.frozenが設定される

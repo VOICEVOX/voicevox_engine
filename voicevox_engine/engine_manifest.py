@@ -67,9 +67,7 @@ _manifest_json_adapter = TypeAdapter(EngineManifestJson)
 
 
 class UpdateInfo(BaseModel):
-    """
-    エンジンのアップデート情報
-    """
+    """エンジンのアップデート情報。"""
 
     version: str = Field(description="エンジンのバージョン名")
     descriptions: list[str] = Field(description="アップデートの詳細についての説明")
@@ -79,9 +77,7 @@ class UpdateInfo(BaseModel):
 
 
 class LicenseInfo(BaseModel):
-    """
-    依存ライブラリのライセンス情報
-    """
+    """依存ライブラリのライセンス情報。"""
 
     name: str = Field(description="依存ライブラリ名")
     version: str | SkipJsonSchema[None] = Field(
@@ -94,9 +90,7 @@ class LicenseInfo(BaseModel):
 
 
 class SupportedFeatures(BaseModel):
-    """
-    エンジンが持つ機能の一覧
-    """
+    """エンジンが持つ機能の一覧。"""
 
     adjust_mora_pitch: bool = Field(description="モーラごとの音高の調整")
     adjust_phoneme_length: bool = Field(description="音素ごとの長さの調整")
@@ -125,9 +119,7 @@ BrandName: TypeAlias = str
 
 
 class EngineManifest(BaseModel):
-    """
-    エンジン自体に関する情報
-    """
+    """エンジン自体に関する情報。"""
 
     manifest_version: str = Field(description="マニフェストのバージョン")
     name: EngineName = Field(description="エンジン名")
@@ -150,7 +142,6 @@ class EngineManifest(BaseModel):
 
 def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
-
     root_dir = manifest_path.parent
     manifest = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
     return EngineManifest(
