@@ -298,7 +298,8 @@ typos
 ```bash
 ## 一括でチェックのみをおこなう
 mypy . && ruff check && ruff format --check
-## 一括でチェックと（可能な範囲の）自動修正をおこなう
+
+## 一括でチェックと可能な範囲の自動修正をおこなう
 mypy . && ruff check --fix && ruff format
 ```
 
