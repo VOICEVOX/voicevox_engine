@@ -97,8 +97,8 @@ def generate_character_router(
         """
         try:
             resource_path = resource_manager.resource_path(resource_hash)
-        except ResourceManagerError as err:
-            raise HTTPException(status_code=404) from err
+        except ResourceManagerError as e:
+            raise HTTPException(status_code=404) from e
         return FileResponse(
             resource_path,
             headers={"Cache-Control": "max-age=2592000"},  # 30日
