@@ -325,6 +325,14 @@ python -m pytest
 python -m pytest --snapshot-update
 ```
 
+### カバレッジを取る
+
+以下のコマンドを実行することでカバレッジを取ることができます。
+
+```bash
+coverage run --omit=test/* -m pytest && coverage report -m
+```
+
 ### 脆弱性を診断する
 
 `pip-audit` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
