@@ -8,8 +8,8 @@ JsonValue = str | int | float
 
 
 def merge_json_string(src: str, dst: str) -> str:
-    src_json: dict[str, JsonValue | dict[str, dict]] = json.loads(src)
-    dst_json: dict[str, JsonValue | dict[str, dict]] = json.loads(dst)
+    src_json: dict[str, JsonValue | dict[str, dict[str, JsonValue]]] = json.loads(src)
+    dst_json: dict[str, JsonValue | dict[str, dict[str, JsonValue]]] = json.loads(dst)
 
     for key, dst_value in dst_json.items():
         assert key in src_json, f"Key {key} is not found in src_json"
@@ -17,7 +17,6 @@ def merge_json_string(src: str, dst: str) -> str:
         # `manage_library` のみdictなので特別に処理
         if key == "supported_features":
             assert isinstance(dst_value, dict)
-
             src_value = src_json[key]
             assert isinstance(src_value, dict)
             src_value.update(dst_value)

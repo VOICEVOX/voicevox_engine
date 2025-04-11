@@ -1,5 +1,7 @@
 """/cancellable_synthesis API のテスト。"""
 
+from typing import Any
+
 import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -11,7 +13,7 @@ from voicevox_engine.cancellable_engine import CancellableEngine
 
 
 @pytest.fixture()
-def cancellable_client(app_params: dict) -> TestClient:
+def cancellable_client(app_params: dict[str, Any]) -> TestClient:
     app_params["cancellable_engine"] = CancellableEngine(
         init_processes=1,
         use_gpu=False,
