@@ -352,11 +352,6 @@ coverage run --omit=test/* -m pytest
 coverage report -m
 ```
 
-VSCodeであれば、以下の手順を行うとエディタ上で各ファイルの行ごとに色がつき、テストの網羅率が一目で分かるようになります。
-
-1. [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters)という拡張機能をインストールする
-2. `coverage xml`を実行して`coverage.xml`を生成する
-
 ### 脆弱性を診断する
 
 `pip-audit` を用いた脆弱性診断により依存パッケージの安全性を確保しています。  
