@@ -45,7 +45,7 @@ def test_tts_engines_get_engine_existing() -> None:
     # Expects
     true_acquired_tts_engine = tts_engine2
     # Outputs
-    acquired_tts_engine = tts_engines.get_engine("0.0.2")
+    acquired_tts_engine = tts_engines.get_tts_engine("0.0.2")
 
     # Test
     assert true_acquired_tts_engine == acquired_tts_engine
@@ -64,7 +64,7 @@ def test_tts_engines_get_engine_latest() -> None:
     # Expects
     true_acquired_tts_engine = tts_engine3
     # Outputs
-    acquired_tts_engine = tts_engines.get_engine(LATEST_VERSION)
+    acquired_tts_engine = tts_engines.get_tts_engine(LATEST_VERSION)
 
     # Test
     assert true_acquired_tts_engine == acquired_tts_engine
@@ -80,4 +80,4 @@ def test_tts_engines_get_engine_missing() -> None:
     tts_engines.register_engine(tts_engine2, "0.0.2")
     # Test
     with pytest.raises(TTSEngineNotFound):
-        tts_engines.get_engine("0.0.3")
+        tts_engines.get_tts_engine("0.0.3")

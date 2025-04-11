@@ -216,7 +216,7 @@ def start_synthesis_subprocess(
 
             # 音声を合成しファイルへ保存する
             try:
-                _engine = tts_engines.get_engine(version)
+                _engine = tts_engines.get_tts_engine(version)
             except Exception:
                 # コネクションを介して「バージョンが見つからないエラー」を送信する
                 connection.send("")  # `""` をエラーして扱う

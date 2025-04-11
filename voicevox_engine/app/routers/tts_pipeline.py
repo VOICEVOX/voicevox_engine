@@ -38,9 +38,12 @@ from voicevox_engine.tts_pipeline.model import (
     ParseKanaErrorCode,
     Score,
 )
+from voicevox_engine.tts_pipeline.song_engine import (
+    SongEngineManager,
+    SongInvalidInputError,
+)
 from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
-    TalkSingInvalidInputError,
     TTSEngineManager,
 )
 from voicevox_engine.utility.file_utility import try_delete_file
@@ -80,6 +83,7 @@ class SupportedDevicesInfo(BaseModel):
 
 def generate_tts_pipeline_router(
     tts_engines: TTSEngineManager,
+    song_engines: SongEngineManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
 ) -> APIRouter:
@@ -100,7 +104,7 @@ def generate_tts_pipeline_router(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
         return AudioQuery(
             accent_phrases=accent_phrases,
@@ -131,7 +135,7 @@ def generate_tts_pipeline_router(
         音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         try:
             presets = preset_manager.load_presets()
         except PresetInputError as e:
@@ -190,7 +194,7 @@ def generate_tts_pipeline_router(
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         if is_kana:
             try:
                 return engine.create_accent_phrases_from_kana(text, style_id)
@@ -212,7 +216,7 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         return engine.update_length_and_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -226,7 +230,7 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         return engine.update_length(accent_phrases, style_id)
 
     @router.post(
@@ -240,7 +244,7 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         return engine.update_pitch(accent_phrases, style_id)
 
     @router.post(
@@ -268,7 +272,7 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
@@ -346,7 +350,7 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         sampling_rate = queries[0].outputSamplingRate
 
         with NamedTemporaryFile(delete=False) as f:
@@ -389,12 +393,12 @@ def generate_tts_pipeline_router(
         歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = song_engines.get_song_engine(version)
         try:
-            phonemes, f0, volume = engine.create_sing_phoneme_and_f0_and_volume(
+            phonemes, f0, volume = engine.create_phoneme_and_f0_and_volume(
                 score, style_id
             )
-        except TalkSingInvalidInputError as e:
+        except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         return FrameAudioQuery(
@@ -418,12 +422,12 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[float]:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = song_engines.get_song_engine(version)
         try:
-            return engine.create_sing_f0_from_phoneme(
+            return engine.create_f0_from_phoneme(
                 score, frame_audio_query.phonemes, style_id
             )
-        except TalkSingInvalidInputError as e:
+        except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
     @router.post(
@@ -438,12 +442,12 @@ def generate_tts_pipeline_router(
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[float]:
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = song_engines.get_song_engine(version)
         try:
-            return engine.create_sing_volume_from_phoneme_and_f0(
+            return engine.create_volume_from_phoneme_and_f0(
                 score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
             )
-        except TalkSingInvalidInputError as e:
+        except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
     @router.post(
@@ -467,10 +471,10 @@ def generate_tts_pipeline_router(
         歌唱音声合成を行います。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = song_engines.get_song_engine(version)
         try:
             wave = engine.frame_synthesize_wave(query, style_id)
-        except TalkSingInvalidInputError as e:
+        except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
         with NamedTemporaryFile(delete=False) as f:
@@ -563,7 +567,7 @@ def generate_tts_pipeline_router(
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         engine.initialize_synthesis(style_id, skip_reinit=skip_reinit)
 
     @router.get("/is_initialized_speaker", tags=["その他"])
@@ -575,7 +579,7 @@ def generate_tts_pipeline_router(
         指定されたスタイルが初期化されているかどうかを返します。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         return engine.is_synthesis_initialized(style_id)
 
     @router.get("/supported_devices", tags=["その他"])
@@ -584,7 +588,7 @@ def generate_tts_pipeline_router(
     ) -> SupportedDevicesInfo:
         """対応デバイスの一覧を取得します。"""
         version = core_version or LATEST_VERSION
-        supported_devices = tts_engines.get_engine(version).supported_devices
+        supported_devices = tts_engines.get_tts_engine(version).supported_devices
         if supported_devices is None:
             raise HTTPException(status_code=422, detail="非対応の機能です。")
         return SupportedDevicesInfo.generate_from(supported_devices)

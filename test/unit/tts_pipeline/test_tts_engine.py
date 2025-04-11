@@ -17,6 +17,9 @@ from voicevox_engine.tts_pipeline.model import (
     Note,
     Score,
 )
+from voicevox_engine.tts_pipeline.song_engine import (
+    SongEngine,
+)
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
     _apply_interrogative_upspeak,
@@ -277,13 +280,13 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
     NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
     """
     # Inputs
-    tts_engine = TTSEngine(MockCoreWrapper())
+    tts_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
-    phonemes, f0s, _ = tts_engine.create_sing_phoneme_and_f0_and_volume(
+    phonemes, f0s, _ = tts_engine.create_phoneme_and_f0_and_volume(
         doremi_srore, StyleId(1)
     )
     # Outputs
-    result = tts_engine.create_sing_volume_from_phoneme_and_f0(
+    result = tts_engine.create_volume_from_phoneme_and_f0(
         doremi_srore, phonemes, f0s, StyleId(1)
     )
     # Tests
@@ -298,10 +301,10 @@ def test_mocked_synthesize_wave_from_score_output(
     `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である
     """
     # Inputs
-    tts_engine = TTSEngine(MockCoreWrapper())
+    tts_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     # Outputs
-    result = tts_engine.create_sing_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    result = tts_engine.create_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
     # Tests
     assert snapshot_json(name="query") == round_floats(
         pydantic_to_native_type(result), round_value=2
