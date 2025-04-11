@@ -343,13 +343,7 @@ python -m pytest --snapshot-update
 以下のコマンドを実行することでカバレージを取ることができます。
 
 ```bash
-coverage run --omit=test/* -m pytest
-```
-
-カバレージを取った後、以下のコマンドを実行することで各ファイルのカバレージ率をターミナル上で見ることができます。
-
-```bash
-coverage report -m
+coverage run --omit=test/* -m pytest && coverage report -m
 ```
 
 ### 脆弱性を診断する
