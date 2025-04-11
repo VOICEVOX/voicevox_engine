@@ -43,8 +43,8 @@ def benchmark_get_speaker_info_all(
 def benchmark_request_time_for_all_talk_characters(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
-    """
-    喋れるキャラクターの数と同じ回数の `GET /` にかかる時間を測定する。
+    """喋れるキャラクターの数と同じ回数の `GET /` にかかる時間を測定する。
+
     `GET /` はエンジン内部処理が最小であるため、全ての喋れるキャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
     client = generate_client(server, root_dir)

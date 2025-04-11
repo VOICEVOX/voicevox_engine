@@ -5,6 +5,13 @@ target-version = "py311"
 select = ["E", "F", "B", "I", "W", "UP", "D"]
 ignore = [
   "E501", # line-too-long
+  "D400", # missing-trailing-period, 日本語の「。」に対応していないため
+  "D100", # FIXME: 有効化する
+  "D101", # FIXME: 有効化する
+  "D102", # FIXME: 有効化する
+  "D103", # FIXME: 有効化する
+  "D104", # FIXME: 有効化する
+  "D105", # FIXME: 有効化する
 ]
 unfixable = [
   "F401", # unused-import

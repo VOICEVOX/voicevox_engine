@@ -48,8 +48,8 @@ class DeviceSupport:
 
 
 class CoreAdapter:
-    """
-    コアのアダプター。
+    """コアのアダプター。
+
     ついでにコア内部で推論している処理をプロセスセーフにする。
     """
 
@@ -86,8 +86,8 @@ class CoreAdapter:
     def initialize_style_id_synthesis(
         self, style_id: StyleId, skip_reinit: bool
     ) -> None:
-        """
-        指定したスタイルでの音声合成を初期化する。
+        """指定したスタイルでの音声合成を初期化する。
+
         何度も実行可能。未実装の場合は何もしない。
 
         Parameters

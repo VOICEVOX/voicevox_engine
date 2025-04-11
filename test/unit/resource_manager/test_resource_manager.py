@@ -14,10 +14,7 @@ def b64encode_str(s: bytes) -> str:
 
 
 def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
-    """
-    `input_path`で指定したファイルから正しくbase64が取得できるか確認する
-    また、ハッシュを取得し、対応するファイルから同じバイト列が取得できるか確認する
-    """
+    """`input_path`で指定したファイルから正しくbase64が取得できるか確認する。また、ハッシュを取得し、対応するファイルから同じバイト列が取得できるか確認する。"""
     true_bytes = input_path.read_bytes()
 
     assert manager.resource_str(input_path, "base64") == b64encode_str(true_bytes)
@@ -28,8 +25,8 @@ def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
 
 
 def test_with_filemap() -> None:
-    """
-    "filemap.json"があるディレクトリでのテスト
+    """`filemap.json` があるディレクトリでのテスト。
+
     （fimemapの生成コマンド）
     `python tools/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
     """
@@ -61,18 +58,14 @@ def test_with_filemap() -> None:
 
 
 def test_without_filemap_when_production() -> None:
-    """
-    "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする
-    """
+    """`create_filemap_if_not_exist` がFalseで `filemap.json` が無い場合エラーにする。"""
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError):
         manager.register_dir(without_filemap_dir)
 
 
 def test_without_filemap() -> None:
-    """
-    "create_filemap_if_not_exist"がTrueで"filemap.json"が無い場合は登録時にfilemapを生成する
-    """
+    """`create_filemap_if_not_exist` がTrueで `filemap.json` が無い場合は登録時にfilemapを生成する。"""
     manager = ResourceManager(True)
     manager.register_dir(without_filemap_dir)
 

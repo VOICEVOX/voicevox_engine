@@ -53,8 +53,8 @@ ServerType = Literal["localhost", "fake"]
 def generate_client(
     server: ServerType, root_dir: Path | None
 ) -> TestClient | httpx.Client:
-    """
-    VOICEVOX ENGINE へアクセス可能なクライアントを生成する。
+    """VOICEVOX ENGINE へアクセス可能なクライアントを生成する。
+
     `server=localhost` では http://localhost:50021 へのクライアントを生成する。
     `server=fake` ではネットワークを介さずレスポンスを返す疑似サーバーを生成する。
     """

@@ -1,6 +1,4 @@
-"""
-/cancellable_synthesis API のテスト
-"""
+"""/cancellable_synthesis API のテスト。"""
 
 import pytest
 from fastapi.testclient import TestClient

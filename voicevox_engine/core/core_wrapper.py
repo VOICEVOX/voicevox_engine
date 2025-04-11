@@ -241,8 +241,7 @@ _CORENAME_DICT = {
 
 
 def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
-    """
-    `core_dir`直下に存在する コア Version 0.12 以降の共有ライブラリ名（None: 不在）
+    """`core_dir`直下に存在する コア Version 0.12 以降の共有ライブラリ名（None: 不在）。
 
     Version 0.12 以降と判定する条件は、
 
@@ -263,9 +262,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
 
 
 def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
-    """
-    実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）
-    """
+    """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
     machine = platform.machine()
     # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
     if machine == "x86_64" or machine == "x64" or machine == "AMD64":
@@ -288,8 +285,8 @@ def _get_core_name(
     model_type: Literal["libtorch", "onnxruntime"],
     gpu_type: GPUType,
 ) -> str | None:
-    """
-    設定値を満たすCoreの名前（None: サポート外）。
+    """設定値を満たすCoreの名前（None: サポート外）。
+
     macOSの場合はarch_nameをuniversalにする。
 
     Parameters
@@ -929,9 +926,7 @@ class CoreWrapper:
         raise OldCoreError
 
     def supported_devices(self) -> str:
-        """
-        coreから取得した対応デバイスに関するjsonデータの文字列
-        """
+        """coreから取得した対応デバイスに関するjsonデータの文字列。"""
         if self.api_exists["supported_devices"]:
             supported_devices_byte: bytes = self.core.supported_devices()
             return supported_devices_byte.decode("utf-8")

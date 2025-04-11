@@ -124,7 +124,8 @@ class UserDictionary:
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
-        """
+        """初期化。 # TODO: fix comment
+
         Parameters
         ----------
         default_dict_path : Path

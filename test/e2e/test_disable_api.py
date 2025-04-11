@@ -1,6 +1,4 @@
-"""
-APIを無効化するテスト
-"""
+"""APIを無効化するテスト。"""
 
 from typing import Literal
 

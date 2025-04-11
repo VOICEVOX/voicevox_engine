@@ -60,9 +60,7 @@ class ParseKanaBadRequest(BaseModel):
 
 
 class SupportedDevicesInfo(BaseModel):
-    """
-    対応しているデバイスの情報
-    """
+    """対応しているデバイスの情報。"""
 
     cpu: bool = Field(description="CPUに対応しているか")
     cuda: bool = Field(description="CUDA(Nvidia GPU)に対応しているか")
@@ -96,9 +94,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
-        """
-        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
@@ -127,9 +123,7 @@ def generate_tts_pipeline_router(
         preset_id: int,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
-        """
-        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         try:
@@ -180,8 +174,8 @@ def generate_tts_pipeline_router(
         is_kana: bool = False,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
-        """
-        テキストからアクセント句を得ます。
+        """テキストからアクセント句を得ます。
+
         is_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。
         * 全てのカナはカタカナで記述される
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
@@ -385,9 +379,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FrameAudioQuery:
-        """
-        歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         try:
@@ -463,9 +455,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
-        """
-        歌唱音声合成を行います。
-        """
+        """歌唱音声合成を行います。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         try:
@@ -498,9 +488,7 @@ def generate_tts_pipeline_router(
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
     def connect_waves(waves: list[str]) -> FileResponse:
-        """
-        base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
-        """
+        """base64エンコードされたwavデータを一纏めにし、wavファイルで返します。"""
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as e:
@@ -534,8 +522,8 @@ def generate_tts_pipeline_router(
     async def validate_kana(
         text: Annotated[str, Query(description="判定する対象の文字列")],
     ) -> bool:
-        """
-        テキストがAquesTalk 風記法に従っているかどうかを判定します。
+        """テキストがAquesTalk 風記法に従っているかどうかを判定します。
+
         従っていない場合はエラーが返ります。
         """
         try:
@@ -558,8 +546,8 @@ def generate_tts_pipeline_router(
         ] = False,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> None:
-        """
-        指定されたスタイルを初期化します。
+        """指定されたスタイルを初期化します。
+
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         version = core_version or LATEST_VERSION
@@ -571,9 +559,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
+        """指定されたスタイルが初期化されているかどうかを返します。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_engine(version)
         return engine.is_synthesis_initialized(style_id)
