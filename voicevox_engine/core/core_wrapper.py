@@ -399,14 +399,14 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
         except OSError as e:
             _e = e
-            if model_type == "libtorch":
-                core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-                if core_name:
-                    try:
-                        return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                    except OSError as e_retry:
-                        _e = e_retry
-            raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
+        if model_type == "libtorch":
+            core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
+            if core_name:
+                try:
+                    return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                except OSError as e:
+                    _e = e
+        raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
