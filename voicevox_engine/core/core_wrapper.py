@@ -5,7 +5,7 @@ import platform
 from ctypes import (
     CDLL,
     POINTER,
-    _Pointer,  # noqa: F401
+    _Pointer,
     c_bool,
     c_char_p,
     c_float,
@@ -397,15 +397,16 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as e:  # noqa: F841
+        except OSError as e:
+            _e = e
             if model_type == "libtorch":
                 core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
                 if core_name:
                     try:
                         return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                    except OSError as _e:
-                        e = _e
-            raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
+                    except OSError as e_retry:
+                        _e = e_retry
+            raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
