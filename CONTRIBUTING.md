@@ -338,9 +338,9 @@ python -m pytest
 python -m pytest --snapshot-update
 ```
 
-### カバレージを取る
+### カバレッジを取る
 
-以下のコマンドを実行することでカバレージを取ることができます。
+以下のコマンドを実行することでカバレッジを取ることができます。
 
 ```bash
 coverage run --omit=test/* -m pytest && coverage report -m
