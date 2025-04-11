@@ -376,7 +376,7 @@ def test_label_non_ojt_phoneme() -> None:
     non_ojt_feature = f".^.-{non_ojt_phoneme}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-."
     unknown_label = Label.from_feature(non_ojt_feature)
     with pytest.raises(NonOjtPhonemeError):
-        unknown_label.phoneme  # noqa: B018
+        _ = unknown_label.phoneme
 
 
 def test_label_unknown_phoneme() -> None:
@@ -384,7 +384,7 @@ def test_label_unknown_phoneme() -> None:
     unknown_feature = stub_unknown_features_koxx("dummy")[3]
     with pytest.raises(OjtUnknownPhonemeError):
         unknown_label = Label.from_feature(unknown_feature)
-        unknown_label.phoneme  # noqa: B018
+        _ = unknown_label.phoneme
 
 
 def test_text_to_accent_phrases_unknown() -> None:
