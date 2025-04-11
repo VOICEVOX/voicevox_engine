@@ -36,5 +36,5 @@ if __name__ == "__main__":
 
     result_fakeserve = benchmark_request(server="fake", root_dir=root_dir)
     result_localhost = benchmark_request(server="localhost", root_dir=root_dir)
-    print("`GET /` fakeserve: {:.4f} sec".format(result_fakeserve))
-    print("`GET /` localhost: {:.4f} sec".format(result_localhost))
+    print(f"`GET /` fakeserve: {result_fakeserve:.4f} sec")
+    print(f"`GET /` localhost: {result_localhost:.4f} sec")

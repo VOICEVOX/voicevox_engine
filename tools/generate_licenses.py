@@ -2,8 +2,11 @@ import json
 import subprocess
 import sys
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, assert_never
+
+from pydantic import TypeAdapter
 
 
 class LicenseError(Exception):
@@ -24,15 +27,16 @@ class License:
         self.package_version = package_version
         self.license_name = license_name
 
-        if license_text_type == "raw":
-            self.license_text = license_text
-        elif license_text_type == "local_address":
-            # ライセンステキストをローカルのライセンスファイルから抽出する
-            self.license_text = Path(license_text).read_text(encoding="utf8")
-        elif license_text_type == "remote_address":
-            self.license_text = get_license_text(license_text)
-        else:
-            assert_never("型で保護され実行されないはずのパスが実行されました")
+        match license_text_type:
+            case "raw":
+                self.license_text = license_text
+            case "local_address":
+                # ライセンステキストをローカルのライセンスファイルから抽出する
+                self.license_text = Path(license_text).read_text(encoding="utf8")
+            case "remote_address":
+                self.license_text = get_license_text(license_text)
+            case _:
+                assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def get_license_text(text_url: str) -> str:
@@ -43,11 +47,33 @@ def get_license_text(text_url: str) -> str:
 
 
 def generate_licenses() -> list[License]:
-    licenses: list[License] = []
+    raw_licenses = acquire_licenses_of_pip_managed_libraries()
+    licenses = update_licenses(raw_licenses)
+    validate_license_compliance(licenses)
+    add_licenses_manually(licenses)
 
-    # pip
+    return licenses
+
+
+@dataclass
+class PipLicense:
+    """`pip-license` により得られる依存ライブラリの情報"""
+
+    License: str
+    Name: str
+    URL: str
+    Version: str
+    LicenseText: str
+
+
+_pip_licenses_adapter = TypeAdapter(list[PipLicense])
+
+
+def acquire_licenses_of_pip_managed_libraries() -> list[PipLicense]:
+    """Pipで管理されている依存ライブラリのライセンス情報を取得する。"""
+    # ライセンス一覧を取得する
     try:
-        pip_licenses_output = subprocess.run(
+        pip_licenses_json = subprocess.run(
             [
                 sys.executable,
                 "-m",
@@ -61,68 +87,63 @@ def generate_licenses() -> list[License]:
             capture_output=True,
             check=True,
         ).stdout.decode()
-    except subprocess.CalledProcessError as err:
-        raise Exception(
-            f"command output:\n{err.stderr and err.stderr.decode()}"
-        ) from err
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"command output:\n{e.stderr and e.stderr.decode()}") from e
+    # ライセンス情報の形式をチェックする
+    licenses = _pip_licenses_adapter.validate_json(pip_licenses_json)
+    return licenses
 
-    licenses_json = json.loads(pip_licenses_output)
-    for license_json in licenses_json:
-        # ライセンス文を pip 外で取得されたもので上書きする
-        package_name: str = license_json["Name"].lower()
-        if license_json["LicenseText"] == "UNKNOWN":
-            if package_name == "core" and license_json["Version"] == "0.0.0":
+
+def update_licenses(raw_licenses: list[PipLicense]) -> list[License]:
+    """pip から取得したライセンス情報を更新する。"""
+    package_to_license_url = {
+        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
+        "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
+        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
+        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
+        "pefile": "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE",
+        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
+        "pyopenjtalk": "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md",
+        "python-multipart": "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt",
+        "romkan": "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE",
+        "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
+    }
+
+    updated_licenses = []
+
+    for raw_license in raw_licenses:
+        package_name = raw_license.Name.lower()
+
+        # ライセンス文が pip から取得できていない場合、pip 外から補う
+        if raw_license.LicenseText == "UNKNOWN":
+            if package_name == "core" and raw_license.Version == "0.0.0":
                 continue
-            elif package_name == "future":
-                text_url = "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "pefile":
-                text_url = (
-                    "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE"
-                )
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "pyopenjtalk":
-                text_url = "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "python-multipart":
-                text_url = "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "romkan":
-                text_url = "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "distlib":
-                text_url = "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "jsonschema":
-                text_url = "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "lockfile":
-                text_url = (
-                    "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE"
-                )
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "platformdirs":
-                text_url = "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE"
-                license_json["LicenseText"] = get_license_text(text_url)
-            elif package_name == "webencodings":
-                text_url = "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE"
-                license_json["LicenseText"] = get_license_text(text_url)
-            else:
+            if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
+            text_url = package_to_license_url[package_name]
+            raw_license.LicenseText = get_license_text(text_url)
+
         # soxr
         if package_name == "soxr":
             text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            license_json["LicenseText"] = get_license_text(text_url)
+            raw_license.LicenseText = get_license_text(text_url)
 
-        license = License(
-            package_name=license_json["Name"],
-            package_version=license_json["Version"],
-            license_name=license_json["License"],
-            license_text=license_json["LicenseText"],
-            license_text_type="raw",
+        updated_licenses.append(
+            License(
+                package_name=raw_license.Name,
+                package_version=raw_license.Version,
+                license_name=raw_license.License,
+                license_text=raw_license.LicenseText,
+                license_text_type="raw",
+            )
         )
 
+    return updated_licenses
+
+
+def validate_license_compliance(licenses: list[License]) -> None:
+    for license in licenses:
         # ライセンスを確認する
         license_names_str = license.license_name or ""
         license_names = license_names_str.split("; ")
@@ -137,8 +158,8 @@ def generate_licenses() -> list[License]:
                     f"ライセンス違反: {license.package_name} is {license.license_name}"
                 )
 
-        licenses.append(license)
 
+def add_licenses_manually(licenses: list[License]) -> None:
     python_version = "3.11.9"
 
     licenses += [
@@ -290,8 +311,6 @@ def generate_licenses() -> list[License]:
             license_text_type="local_address",
         ),
     ]
-
-    return licenses
 
 
 if __name__ == "__main__":
