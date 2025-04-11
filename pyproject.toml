@@ -2,7 +2,7 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP"]
+select = ["E", "F", "B", "I", "W", "UP", "D"]
 ignore = [
   "E501", # line-too-long
 ]
@@ -14,6 +14,12 @@ unfixable = [
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
 known-third-party = ["numpy"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument
