@@ -33,14 +33,14 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
     for wave in waves:
         try:
             wav_bin = base64.standard_b64decode(wave)
-        except ValueError as err:
-            raise ConnectBase64WavesException("base64デコードに失敗しました") from err
+        except ValueError as e:
+            raise ConnectBase64WavesException("base64デコードに失敗しました") from e
         try:
             _data = soundfile.read(io.BytesIO(wav_bin))
-        except Exception as err:
+        except Exception as e:
             raise ConnectBase64WavesException(
                 "wavファイルを読み込めませんでした"
-            ) from err
+            ) from e
         waves_nparray_sr.append(_data)
 
     return waves_nparray_sr

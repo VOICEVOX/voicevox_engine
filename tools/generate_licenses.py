@@ -2,8 +2,11 @@ import json
 import subprocess
 import sys
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, assert_never
+
+from pydantic import TypeAdapter
 
 
 class LicenseError(Exception):
@@ -44,9 +47,33 @@ def get_license_text(text_url: str) -> str:
 
 
 def generate_licenses() -> list[License]:
-    # pip
+    raw_licenses = acquire_licenses_of_pip_managed_libraries()
+    licenses = update_licenses(raw_licenses)
+    validate_license_compliance(licenses)
+    add_licenses_manually(licenses)
+
+    return licenses
+
+
+@dataclass
+class PipLicense:
+    """`pip-license` により得られる依存ライブラリの情報"""
+
+    License: str
+    Name: str
+    URL: str
+    Version: str
+    LicenseText: str
+
+
+_pip_licenses_adapter = TypeAdapter(list[PipLicense])
+
+
+def acquire_licenses_of_pip_managed_libraries() -> list[PipLicense]:
+    """Pipで管理されている依存ライブラリのライセンス情報を取得する。"""
+    # ライセンス一覧を取得する
     try:
-        pip_licenses_output = subprocess.run(
+        pip_licenses_json = subprocess.run(
             [
                 sys.executable,
                 "-m",
@@ -60,20 +87,15 @@ def generate_licenses() -> list[License]:
             capture_output=True,
             check=True,
         ).stdout.decode()
-    except subprocess.CalledProcessError as err:
-        raise Exception(
-            f"command output:\n{err.stderr and err.stderr.decode()}"
-        ) from err
-
-    licenses_json = json.loads(pip_licenses_output)
-    licenses = generate_licenses_from_licenses_json(licenses_json)
-    validate_license_compliance(licenses)
-    add_licenses_manually(licenses)
-
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"command output:\n{e.stderr and e.stderr.decode()}") from e
+    # ライセンス情報の形式をチェックする
+    licenses = _pip_licenses_adapter.validate_json(pip_licenses_json)
     return licenses
 
 
-def generate_licenses_from_licenses_json(licenses_json: dict) -> list[License]:
+def update_licenses(raw_licenses: list[PipLicense]) -> list[License]:
+    """pip から取得したライセンス情報を更新する。"""
     package_to_license_url = {
         "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
         "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
@@ -87,37 +109,37 @@ def generate_licenses_from_licenses_json(licenses_json: dict) -> list[License]:
         "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
     }
 
-    licenses = []
+    updated_licenses = []
 
-    for license_json in licenses_json:
-        package_name: str = license_json["Name"].lower()
+    for raw_license in raw_licenses:
+        package_name = raw_license.Name.lower()
 
-        if license_json["LicenseText"] == "UNKNOWN":
-            if package_name == "core" and license_json["Version"] == "0.0.0":
+        # ライセンス文が pip から取得できていない場合、pip 外から補う
+        if raw_license.LicenseText == "UNKNOWN":
+            if package_name == "core" and raw_license.Version == "0.0.0":
                 continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
-            # ライセンス文を pip 外で取得されたもので上書きする
             text_url = package_to_license_url[package_name]
-            license_json["LicenseText"] = get_license_text(text_url)
+            raw_license.LicenseText = get_license_text(text_url)
 
         # soxr
         if package_name == "soxr":
             text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            license_json["LicenseText"] = get_license_text(text_url)
+            raw_license.LicenseText = get_license_text(text_url)
 
-        licenses.append(
+        updated_licenses.append(
             License(
-                package_name=license_json["Name"],
-                package_version=license_json["Version"],
-                license_name=license_json["License"],
-                license_text=license_json["LicenseText"],
+                package_name=raw_license.Name,
+                package_version=raw_license.Version,
+                license_name=raw_license.License,
+                license_text=raw_license.LicenseText,
                 license_text_type="raw",
             )
         )
 
-    return licenses
+    return updated_licenses
 
 
 def validate_license_compliance(licenses: list[License]) -> None:

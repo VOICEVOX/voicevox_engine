@@ -6,14 +6,14 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
 from pydantic import ValidationError
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.user_dict.model import UserDictWord, WordTypes
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
-from voicevox_engine.user_dict.user_dict_word import (
+from voicevox_engine.user_dict.model import (
     USER_DICT_MAX_PRIORITY,
     USER_DICT_MIN_PRIORITY,
-    UserDictInputError,
-    WordProperty,
+    UserDictWord,
+    WordTypes,
 )
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_word import UserDictInputError, WordProperty
 
 from ..dependencies import VerifyMutabilityAllowed
 
@@ -35,12 +35,12 @@ def generate_user_dict_router(
         """
         try:
             return user_dict.read_dict()
-        except UserDictInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except Exception as err:
+        except UserDictInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except Exception as e:
             raise HTTPException(
                 status_code=500, detail="辞書の読み込みに失敗しました。"
-            ) from err
+            ) from e
 
     # TODO: CsvSafeStrを使う
     @router.post("/user_dict_word", dependencies=[Depends(verify_mutability)])
@@ -90,12 +90,12 @@ def generate_user_dict_router(
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
             ) from e
-        except UserDictInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except Exception as err:
+        except UserDictInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except Exception as e:
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書への追加に失敗しました。"
-            ) from err
+            ) from e
 
     @router.put(
         "/user_dict_word/{word_uuid}",
@@ -149,12 +149,12 @@ def generate_user_dict_router(
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
             ) from e
-        except UserDictInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except Exception as err:
+        except UserDictInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except Exception as e:
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
-            ) from err
+            ) from e
 
     @router.delete(
         "/user_dict_word/{word_uuid}",
@@ -169,12 +169,12 @@ def generate_user_dict_router(
         """
         try:
             user_dict.delete_word(word_uuid=word_uuid)
-        except UserDictInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except Exception as err:
+        except UserDictInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except Exception as e:
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書の更新に失敗しました。"
-            ) from err
+            ) from e
 
     @router.post(
         "/import_user_dict",
@@ -195,11 +195,11 @@ def generate_user_dict_router(
         """
         try:
             user_dict.import_user_dict(dict_data=import_dict_data, override=override)
-        except UserDictInputError as err:
-            raise HTTPException(status_code=422, detail=str(err)) from err
-        except Exception as err:
+        except UserDictInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except Exception as e:
             raise HTTPException(
                 status_code=500, detail="ユーザー辞書のインポートに失敗しました。"
-            ) from err
+            ) from e
 
     return router

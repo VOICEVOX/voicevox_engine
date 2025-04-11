@@ -71,12 +71,12 @@ def is_morphable(
 
     try:
         character_1 = style_id_to_character[style_id_1]
-    except KeyError as err:
-        raise StyleIdNotFoundError(style_id_1) from err
+    except KeyError as e:
+        raise StyleIdNotFoundError(style_id_1) from e
     try:
         character_2 = style_id_to_character[style_id_2]
-    except KeyError as err:
-        raise StyleIdNotFoundError(style_id_2) from err
+    except KeyError as e:
+        raise StyleIdNotFoundError(style_id_2) from e
 
     sing_style_ids_1 = [sing_style.id for sing_style in character_1.sing_styles]
     sing_style_ids_2 = [sing_style.id for sing_style in character_2.sing_styles]

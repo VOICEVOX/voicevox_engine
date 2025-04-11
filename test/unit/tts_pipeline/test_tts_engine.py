@@ -154,11 +154,11 @@ def test_update_pitch() -> None:
 
     # 空のリストでエラーを吐かないか
     # Inputs
-    phrases: list = []
+    phrases: list[AccentPhrase] = []
     # Outputs
     result = tts_engine.update_pitch(phrases, StyleId(1))
     # Expects
-    true_result: list = []
+    true_result: list[AccentPhrase] = []
     # Tests
     assert result == true_result
 
