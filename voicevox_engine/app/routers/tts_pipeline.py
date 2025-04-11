@@ -141,9 +141,9 @@ def generate_tts_pipeline_router(
         try:
             presets = preset_manager.load_presets()
         except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
+            raise HTTPException(status_code=422, detail=str(err)) from err
         except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
+            raise HTTPException(status_code=500, detail=str(err)) from err
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -203,7 +203,7 @@ def generate_tts_pipeline_router(
             except ParseKanaError as err:
                 raise HTTPException(
                     status_code=400, detail=ParseKanaBadRequest(err).model_dump()
-                )
+                ) from err
         else:
             return engine.create_accent_phrases(text, style_id)
 
@@ -320,7 +320,7 @@ def generate_tts_pipeline_router(
                 query, style_id, request, version=version
             )
         except CancellableEngineInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
@@ -401,7 +401,7 @@ def generate_tts_pipeline_router(
                 score, style_id
             )
         except SongInvalidInputError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         return FrameAudioQuery(
             f0=f0,
@@ -430,7 +430,7 @@ def generate_tts_pipeline_router(
                 score, frame_audio_query.phonemes, style_id
             )
         except SongInvalidInputError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     @router.post(
         "/sing_frame_volume",
@@ -450,7 +450,7 @@ def generate_tts_pipeline_router(
                 score, frame_audio_query.phonemes, frame_audio_query.f0, style_id
             )
         except SongInvalidInputError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     @router.post(
         "/frame_synthesis",
@@ -477,7 +477,7 @@ def generate_tts_pipeline_router(
         try:
             wave = engine.frame_synthesize_wave(query, style_id)
         except SongInvalidInputError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -510,7 +510,7 @@ def generate_tts_pipeline_router(
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as err:
-            raise HTTPException(status_code=422, detail=str(err))
+            raise HTTPException(status_code=422, detail=str(err)) from err
 
         with NamedTemporaryFile(delete=False) as f:
             soundfile.write(
@@ -551,7 +551,7 @@ def generate_tts_pipeline_router(
             raise HTTPException(
                 status_code=400,
                 detail=ParseKanaBadRequest(err).model_dump(),
-            )
+            ) from err
 
     @router.post("/initialize_speaker", status_code=204, tags=["その他"])
     def initialize_speaker(

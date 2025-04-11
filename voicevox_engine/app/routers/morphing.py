@@ -56,7 +56,7 @@ def generate_morphing_router(
             morphable_targets = get_morphable_targets(characters, base_style_ids)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=404, detail=msg) from e
         # NOTE: jsonはint型のキーを持てないので、string型に変換する
         return [
             {str(k): v for k, v in morphable_target.items()}
@@ -95,7 +95,7 @@ def generate_morphing_router(
             morphable = is_morphable(characters, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=404, detail=msg) from e
         if not morphable:
             msg = "指定されたスタイルペアでのモーフィングはできません"
             raise HTTPException(status_code=400, detail=msg)

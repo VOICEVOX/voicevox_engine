@@ -293,27 +293,14 @@ typos
 
 ### 静的解析を一括実行する
 
-シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）が実行されます。  
-この際、可能な範囲で自動修正がおこなわれます。
-
-<!-- TODO: 実態に合わせてドキュメントを変える -->
-
-#### 型検査の実行
+シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）が一括実行されます。  
 
 ```bash
-mypy .
-```
+## 一括でチェックのみをおこなう
+mypy . && ruff check && ruff format --check
 
-#### リンターの実行
-
-```bash
-ruff check
-```
-
-#### フォーマッタの実行
-
-```bash
-ruff check --fix && ruff format
+## 一括でチェックと可能な範囲の自動修正をおこなう
+mypy . && ruff check --fix && ruff format
 ```
 
 ## テスト
@@ -336,6 +323,14 @@ python -m pytest
 
 ```bash
 python -m pytest --snapshot-update
+```
+
+### カバレッジを取る
+
+以下のコマンドを実行することでカバレッジを取ることができます。
+
+```bash
+coverage run --omit=test/* -m pytest && coverage report -m
 ```
 
 ### 脆弱性を診断する
