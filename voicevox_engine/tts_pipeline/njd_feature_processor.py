@@ -78,7 +78,7 @@ def _is_pau_space(feature: NjdFeature) -> bool:
 
 
 def _is_between_alphabet(features: list[NjdFeature], index: int) -> bool:
-    """指定されたインデックスのfeatureが半角アルファベットのfeatureに挟まれているか判定する"""
+    """指定されたインデックスのfeatureがアルファベットのfeatureに挟まれているか判定する"""
     if index <= 0 or index >= len(features) - 1:
         return False
 
