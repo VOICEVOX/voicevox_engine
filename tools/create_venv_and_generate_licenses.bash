@@ -1,4 +1,5 @@
 # 仮想環境を作ってrequirements.txtをインストールし、ライセンス一覧を生成する
+# TODO: このスクリプトもuvに対応させる
 
 set -eux
 

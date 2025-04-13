@@ -288,7 +288,7 @@ jobs:
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-build"
+          requirements-suffix: "build"
 
       - name: <Setup> Prepare custom PyInstaller
         if: runner.os == 'Windows'
@@ -299,7 +299,7 @@ jobs:
           # try 5 times, sleep 5 seconds before retry
           for _ in $(seq 5); do
             EXIT_CODE=0
-            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+            uv run python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
 
             if [ "$EXIT_CODE" = "0" ]; then
               break
@@ -441,7 +441,7 @@ jobs:
           cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: <Build> Generate filemap.json
-        run: python tools/generate_filemap.py --target_dir resources/character_info
+        run: uv run tools/generate_filemap.py --target_dir resources/character_info
 
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
@@ -471,7 +471,7 @@ jobs:
           CORE_MODEL_DIR_PATH="download/core/model" \
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec
+          uv run pyinstaller --noconfirm run.spec
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
