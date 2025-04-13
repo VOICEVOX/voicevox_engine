@@ -36,7 +36,7 @@ runs:
     - name: <Setup> Install Python dependencies
       if: ${{ inputs.only-export-python-version == 'false' }}
       run: |
-        if [[ -n ${{ inputs.requirements-suffix }} ]]; then
+        if [[ -n "${{ inputs.requirements-suffix }}" ]]; then
           uv sync --group ${{ inputs.requirements-suffix }}
         else
           uv sync
