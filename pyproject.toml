@@ -15,6 +15,7 @@ dependencies = [
   "pyworld>=0.3.5,<1.0.0",
   "pyyaml>=6.0.1,<7.0.0",
   "semver>=3.0.0,<4.0.0",
+  "setuptools>=78.1.0",
   "soundfile>=0.13.1,<1.0.0",
   "soxr>=0.5.0,<1.0.0",
   "starlette>=0.45.3,<1.0.0",
