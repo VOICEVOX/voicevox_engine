@@ -96,7 +96,7 @@ def _is_between_alphabet(features: list[NjdFeature], index: int) -> bool:
 
 
 def _remove_pau_space_between_alphabet(features: list[NjdFeature]) -> list[NjdFeature]:
-    """半角アルファベットのfeatureに挟まれている、pauとして扱われる全角スペースを削除した、featuresのコピーを返す"""
+    """アルファベットのfeatureに挟まれている、pauとして扱われる全角スペースを削除した、featuresのコピーを返す"""
     return [
         feature
         for i, feature in enumerate(features)
