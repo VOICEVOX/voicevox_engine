@@ -24,6 +24,8 @@ runs:
     - name: <Setup> Install uv
       if: ${{ inputs.only-export-python-version == 'false' }}
       uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
 
     - name: <Setup> Set up Python
       if: ${{ inputs.only-export-python-version == 'false' }}
