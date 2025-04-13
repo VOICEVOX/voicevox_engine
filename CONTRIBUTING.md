@@ -250,9 +250,9 @@ uv update # 全部更新
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
 ```bash
-uv export --no-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
-uv export --no-hashes --group dev -o requirements-dev.txt
-uv export --no-hashes --group build -o requirements-build.txt
+uv export --no-annotate --no-hashes --no-header -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
+uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt
+uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt
 ```
 
 ## 静的解析
