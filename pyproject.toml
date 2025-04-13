@@ -1,67 +1,40 @@
-[tool.ruff]
-target-version = "py311"
-
-[tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP"]
-ignore = [
-  "E501", # line-too-long
+[project]
+name = "voicevox_engine"
+version = "0.24.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11.9"
+dependencies = [
+  "fastapi-slim>=0.115.5,<1.0.0",
+  "jinja2>=3.1.3,<4.0.0",
+  "numpy>=2.2.3,<3.0.0",
+  "platformdirs>=4.2.0,<5.0.0",
+  "pydantic>=2.7.3,<3.0.0",
+  "pyopenjtalk",
+  "python-multipart>=0.0.20,<1.0.0",
+  "pyworld>=0.3.5,<1.0.0",
+  "pyyaml>=6.0.1,<7.0.0",
+  "semver>=3.0.0,<4.0.0",
+  "soundfile>=0.13.1,<1.0.0",
+  "soxr>=0.5.0,<1.0.0",
+  "starlette>=0.45.3,<1.0.0",
+  "uvicorn>=0.34.0,<1.0.0",
 ]
-unfixable = [
-  "F401", # unused-import
-  "F841"  # unused-variable
-]
 
-[tool.ruff.lint.isort]
-known-first-party = ["voicevox_engine"]
-known-third-party = ["numpy"]
-
-[tool.mypy]
-strict = true
-plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
-python_version = "3.11"
-ignore_missing_imports = true
-warn_unreachable = true
-
-[tool.typos.default.extend-words]
-datas = "datas" # PyInstaller's argument
-
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "~3.11"
-numpy = "^2.2.3"
-fastapi-slim = "^0.115.5"
-jinja2 = "^3.1.3" # NOTE: required by fastapi.templating.Jinja2Templates (fastapi-slim's unmanaged dependency)
-python-multipart = "^0.0.20" # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
-uvicorn = "^0.34.0"
-soundfile = "^0.13.1"
-pyyaml = "^6.0.1"
-pyworld = "^0.3.5"
+[tool.uv.sources]
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "5b70b94f3460ece07ea183227db088ce8d5212a6" }
-semver = "^3.0.0"
-platformdirs = "^4.2.0"
-soxr = "^0.5.0"
-pydantic = "^2.7.3"
-starlette = "^0.45.3"
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.10.0"
-pytest = "^8.2.0"
-coveralls = "^4.0.1"
-poetry = "2.1.1"
-poetry-plugin-export = "^1.8.0"
-httpx = "^0.28.1" # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
-syrupy = "^4.6.1"
-types-pyyaml = "^6.0.12"
-pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
-pre-commit = "^4.0.1"
-pip-audit = "^2.7.3"
-ruff = "^0.11.1"
-
-[tool.poetry.group.build.dependencies]
-pyinstaller = "^5.13"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+build = ["pyinstaller>=5.13,<6.0.0"]
+dev = [
+  "coveralls>=4.0.1,<5.0.0",
+  "httpx>=0.28.1,<1.0.0",
+  "mypy>=1.10.0,<2.0.0",
+  "pip-audit>=2.7.3,<3.0.0",
+  "pip-licenses==5.0.0",
+  "pre-commit>=4.0.1,<5.0.0",
+  "pytest>=8.2.0,<9.0.0",
+  "ruff>=0.11.1,<1.0.0",
+  "syrupy>=4.6.1,<5.0.0",
+  "types-pyyaml>=6.0.12,<7.0.0",
+]
