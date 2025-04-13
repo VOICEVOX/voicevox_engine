@@ -24,3 +24,9 @@ repos:
         types: [file, python]
         stages: [pre-push]
         pass_filenames: false
+      - id: uv-check # `pyproject.toml` と `uv.lock` が整合する
+        name: uv-check
+        entry: uv lock --check
+        language: python
+        stages: [pre-push]
+        pass_filenames: false
