@@ -38,3 +38,30 @@ dev = [
   "syrupy>=4.6.1,<5.0.0",
   "types-pyyaml>=6.0.12,<7.0.0",
 ]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "W", "UP"]
+ignore = [
+  "E501", # line-too-long
+]
+unfixable = [
+  "F401", # unused-import
+  "F841", # unused-variable
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["voicevox_engine"]
+known-third-party = ["numpy"]
+
+[tool.mypy]
+strict = true
+plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unreachable = true
+
+[tool.typos.default.extend-words]
+datas = "datas" # PyInstaller's argument
