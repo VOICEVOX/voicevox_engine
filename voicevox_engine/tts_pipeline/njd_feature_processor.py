@@ -72,6 +72,38 @@ def _is_unknown_reading_word(feature: NjdFeature) -> bool:
     return feature.pos == "フィラー" and feature.chain_rule == "*"
 
 
+def _is_pau_space(feature: NjdFeature) -> bool:
+    """pauとして扱われる全角スペースか否かを判定する"""
+    return feature.string == "　" and feature.pron == "、"
+
+
+def _is_between_alphabet(features: list[NjdFeature], index: int) -> bool:
+    """指定されたインデックスのfeatureがアルファベットのfeatureに挟まれているか判定する"""
+    if index <= 0 or index >= len(features) - 1:
+        return False
+
+    prev_feature = features[index - 1]
+    next_feature = features[index + 1]
+
+    prev_is_alphabet = is_hankaku_alphabet(
+        convert_zenkaku_alphabet_to_hankaku(prev_feature.string)
+    )
+    next_is_alphabet = is_hankaku_alphabet(
+        convert_zenkaku_alphabet_to_hankaku(next_feature.string)
+    )
+
+    return prev_is_alphabet and next_is_alphabet
+
+
+def _remove_pau_space_between_alphabet(features: list[NjdFeature]) -> list[NjdFeature]:
+    """アルファベットのfeatureに挟まれている、pauとして扱われる全角スペースを削除した、featuresのコピーを返す"""
+    return [
+        feature
+        for i, feature in enumerate(features)
+        if not (_is_pau_space(feature) and _is_between_alphabet(features, i))
+    ]
+
+
 def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
     """日本語文からフルコンテキストラベルを生成する"""
     # TODO: この関数のテストについて検討する
@@ -95,5 +127,8 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
                 feature.string,
                 new_pron,
             )
+
+        # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
+        njd_features = _remove_pau_space_between_alphabet(njd_features)
 
     return pyopenjtalk.make_label(list(map(asdict, njd_features)))  # type: ignore
