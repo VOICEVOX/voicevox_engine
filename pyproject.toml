@@ -22,6 +22,9 @@ dependencies = [
   "uvicorn>=0.34.0,<1.0.0",
 ]
 
+[tool.uv]
+default-groups = []
+
 [tool.uv.sources]
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "5b70b94f3460ece07ea183227db088ce8d5212a6" }
 
