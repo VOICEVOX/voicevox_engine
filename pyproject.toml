@@ -5,7 +5,7 @@ target-version = "py311"
 select = ["E", "F", "B", "I", "W", "UP", "D"]
 ignore = [
   "E501", # line-too-long
-  "D400", # missing-trailing-period, 日本語の「。」に対応していないため
+  "D400", # missing-trailing-period。日本語の「。」に対応していないため
   "D100", # NOTE: 段階的に有効化する可能性がある。
   "D101", # NOTE: 段階的に有効化する可能性がある。
   "D102", # NOTE: 段階的に有効化する可能性がある。
