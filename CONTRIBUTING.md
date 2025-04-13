@@ -280,7 +280,6 @@ poetry export --without-hashes --with build -o requirements-build.txt
 
 タイポ検査を採用しています。  
 目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `pyproject.toml` を編集してください。  
-ローカルへの `typos` 導入は各自の環境に合わせて公式ドキュメントを参照してください。ローカルへの導入が難しい場合、プルリクエスト時に GitHub Actions で自動実行される `typos` の結果を参照してください。
 
 タイポ検査の実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。
 
