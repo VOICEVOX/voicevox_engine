@@ -125,6 +125,7 @@ GitHub Issues を用いて機能向上を一元管理しています。
 ## 環境構築
 
 `Python 3.11.9` を用いて開発されています。
+また、パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ### 依存ライブラリをインストールする
@@ -133,10 +134,10 @@ GitHub Issues を用いて機能向上を一元管理しています。
 
 ```bash
 # 実行・開発・テスト環境のインストール
-python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
+uv sync --group dev --group build
 
 # git hook のインストール
-pre-commit install -t pre-push
+uv run pre-commit install -t pre-push
 ```
 
 ## 音声ライブラリ
@@ -184,7 +185,7 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+uv run run.py --help
 ```
 
 ### 音声ライブラリ無しで実行
@@ -192,36 +193,36 @@ python run.py --help
 音声ライブラリを導入しなかった場合あるいは軽量のモック版音声合成を利用したい場合、シェルで以下のコマンドを実行することでエンジンが実行されます。
 
 ```bash
-python run.py --enable_mock
+uv run run.py --enable_mock
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
 VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+uv run run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
-python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
+uv run run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
 ### ログを UTF8 に変更
 
 ```bash
-python run.py --output_log_utf8
+uv run run.py --output_log_utf8
 # もしくは
-VV_OUTPUT_LOG_UTF8=1 python run.py
+VV_OUTPUT_LOG_UTF8=1 uv run run.py
 ```
 
 ## コードを編集する
 
 ### パッケージ
 
-`poetry` によってパッケージを管理しています。また `pip` ユーザー向けに `requirements-*.txt` を生成しています。  
+`uv` によってパッケージを管理しています。また `pip` ユーザー向けに `requirements-*.txt` を生成しています。  
 依存パッケージは「ビルドにより音声ライブラリと一体化しても、音声ライブラリのライセンスと衝突しない」ライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
 
@@ -232,24 +233,26 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 #### パッケージを追加する
 
 ```bash
-poetry add `パッケージ名`
-poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group build `パッケージ名` # ビルド依存の追加
+uv add `パッケージ名`
+uv add --group dev `パッケージ名` # 開発依存の追加
+uv add --group build `パッケージ名` # ビルド依存の追加
 ```
 
 #### パッケージを更新する
 
+TODO: あとでちゃんとやり方調べる
+
 ```bash
-poetry update `パッケージ名`
-poetry update # 全部更新
+uv update `パッケージ名`
+uv update # 全部更新
 ```
 
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
 ```bash
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with build -o requirements-build.txt
+uv export --no-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
+uv export --no-hashes --group dev -o requirements-dev.txt
+uv export --no-hashes --group build -o requirements-build.txt
 ```
 
 ## 静的解析
@@ -297,10 +300,10 @@ typos
 
 ```bash
 ## 一括でチェックのみをおこなう
-mypy . && ruff check && ruff format --check
+uv run mypy . && uv run ruff check && uv run ruff format --check
 
 ## 一括でチェックと可能な範囲の自動修正をおこなう
-mypy . && ruff check --fix && ruff format
+uv run mypy . && uv run ruff check --fix && uv run ruff format
 ```
 
 ## テスト
@@ -313,7 +316,7 @@ mypy . && ruff check --fix && ruff format
 シェルで以下のコマンドを実行することでテストが走ります。
 
 ```bash
-python -m pytest
+uv run pytest
 ```
 
 ### スナップショットを更新する
@@ -322,7 +325,7 @@ python -m pytest
 シェルで以下のコマンドを実行することでスナップショットが更新されます。
 
 ```bash
-python -m pytest --snapshot-update
+uv run pytest --snapshot-update
 ```
 
 ### カバレッジを取る
@@ -330,7 +333,7 @@ python -m pytest --snapshot-update
 以下のコマンドを実行することでカバレッジを取ることができます。
 
 ```bash
-coverage run --omit=test/* -m pytest && coverage report -m
+uv run coverage run --omit=test/* -m pytest && coverage report -m
 ```
 
 ### 脆弱性を診断する
@@ -339,7 +342,7 @@ coverage run --omit=test/* -m pytest && coverage report -m
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
-pip-audit -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
+uv run pip-audit .
 ```
 
 ## ビルド
@@ -351,13 +354,13 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash tools/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
-pyinstaller --noconfirm run.spec
+uv run pyinstaller --noconfirm run.spec
 
 # 製品版でビルドする場合
 CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
+uv run pyinstaller --noconfirm run.spec
 ```
 
 TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
