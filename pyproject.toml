@@ -2,9 +2,24 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP"]
+select = ["E", "F", "B", "I", "W", "UP", "D"]
 ignore = [
   "E501", # line-too-long
+  "D400", # missing-trailing-period。日本語の「。」に対応していないため
+  "D100", # NOTE: 段階的に有効化する可能性がある。
+  "D101", # NOTE: 段階的に有効化する可能性がある。
+  "D102", # NOTE: 段階的に有効化する可能性がある。
+  "D103", # NOTE: 段階的に有効化する可能性がある。
+  "D104", # NOTE: 段階的に有効化する可能性がある。
+  "D105", # NOTE: 段階的に有効化する可能性がある。
+  "D200", # NOTE: 段階的に有効化する可能性がある。
+  "D202", # NOTE: 段階的に有効化する可能性がある。
+  "D205", # NOTE: 段階的に有効化する可能性がある。
+  "D300", # NOTE: 段階的に有効化する可能性がある。
+  "D403", # NOTE: 段階的に有効化する可能性がある。
+  "D409", # NOTE: 段階的に有効化する可能性がある。
+  "D410", # NOTE: 段階的に有効化する可能性がある。
+  "D411", # NOTE: 段階的に有効化する可能性がある。
 ]
 unfixable = [
   "F401", # unused-import
@@ -14,6 +29,12 @@ unfixable = [
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
 known-third-party = ["numpy"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.mypy]
 strict = true

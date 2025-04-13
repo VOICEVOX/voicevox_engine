@@ -54,7 +54,9 @@ def generate_docker_image_names(
 
     Examples
     --------
-    >>> generate_docker_image_names("voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04")
+    >>> generate_docker_image_names(
+    ...     "voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04"
+    ... )
     ['voicevox/voicevox_engine:0.22.0',
      'voicevox/voicevox_engine:cpu-0.22.0',
      'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0']
