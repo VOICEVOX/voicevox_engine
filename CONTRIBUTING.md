@@ -243,7 +243,7 @@ uv add --group build `パッケージ名` # ビルド依存の追加
 #### パッケージを更新する
 
 ```bash
-uv lock --upgrade-package <package>
+uv lock --upgrade-package `パッケージ名`
 uv lock --upgrade # 全部更新
 ```
 
