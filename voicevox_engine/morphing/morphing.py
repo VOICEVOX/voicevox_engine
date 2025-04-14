@@ -22,6 +22,7 @@ from ..tts_pipeline.tts_engine import TTSEngine
 
 class StyleIdNotFoundError(LookupError):
     """モーフィング可能なスタイルIDが見つからなかった。"""
+
     # FIXME: クラス名を機能に合わせてリネーム
 
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
