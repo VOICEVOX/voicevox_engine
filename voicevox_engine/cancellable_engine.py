@@ -44,7 +44,6 @@ class CancellableEngine:
         """
         init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。
         """
-
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
