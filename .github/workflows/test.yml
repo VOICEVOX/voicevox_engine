@@ -36,9 +36,9 @@ jobs:
           uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt.check
           uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt.check
 
-          diff -q requirements.txt requirements.txt.check || \
-          diff -q requirements-dev.txt requirements-dev.txt.check || \
-          diff -q requirements-build.txt requirements-build.txt.check > /dev/null
+          diff -q --strip-trailing-cr requirements.txt requirements.txt.check || \
+          diff -q --strip-trailing-cr requirements-dev.txt requirements-dev.txt.check || \
+          diff -q --strip-trailing-cr requirements-build.txt requirements-build.txt.check > /dev/null
           if [ $? = 1 ]; then
             echo "uv export has some diff"
             exit 1
