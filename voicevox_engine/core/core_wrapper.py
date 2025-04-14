@@ -290,6 +290,7 @@ def _get_core_name(
 ) -> str | None:
     """
     設定値を満たすCoreの名前（None: サポート外）。
+
     macOSの場合はarch_nameをuniversalにする。
 
     Parameters

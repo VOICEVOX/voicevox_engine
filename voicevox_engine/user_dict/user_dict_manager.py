@@ -125,6 +125,8 @@ class UserDictionary:
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
         """
+        ユーザー辞書を立ち上げる。
+
         Parameters
         ----------
         default_dict_path : Path

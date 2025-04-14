@@ -66,7 +66,8 @@ class ParseKanaError(Exception):
 
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
-    単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成
+    単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成する。
+
     longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
 
     Parameters
