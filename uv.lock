@@ -1027,6 +1027,23 @@ wheels = [
 ]
 
 [[package]]
+name = "typos"
+version = "1.31.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/a5/e6e7b2debda93cb68430bae67297d82fdf8a0e06a4ac5ae590f9844fb91b/typos-1.31.1.tar.gz", hash = "sha256:089e2f0a266f00214c2b4726dd3947c904c978937c0635ce38134103d1a171b9", size = 1499507 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/41/0e/156a6411986d5d4e7c48f0a740db17628f777851337b45c4a4a164842a66/typos-1.31.1-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:03187da0c68e0613e6d743b1e5aa48a1a0b02bdfe8bfda8ed785927931713d64", size = 3127222 },
+    { url = "https://files.pythonhosted.org/packages/77/f1/d0e4af5636f9bac8996a1fbc6b498d6392c112df16d8e650d110be4d9d34/typos-1.31.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:f19c54bab4ec5cf6912e50dda5f2edc0d31014f7788baddcdae830f6bfd73341", size = 3008343 },
+    { url = "https://files.pythonhosted.org/packages/93/0e/8f4bc7fe8947b70565cd6dd9e66ac5c4fd04014761212d4231a87a958d2f/typos-1.31.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a57e4fb7f00e60408b00989d7c57ed81ebaf56a14bafbb75c003dbb82b0b5b74", size = 7589311 },
+    { url = "https://files.pythonhosted.org/packages/d8/80/04ba90f53e607babc85aea3cf366b5ceadf8c55ad34b678b5065adc94a7e/typos-1.31.1-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7ddc6aa57710881e1a2e9998f3efd47f454b23ab60765f507bba277d0bb8686f", size = 6779237 },
+    { url = "https://files.pythonhosted.org/packages/1b/f8/5aa0bde621e20c1b3e524f8103106a64cc00e8c6de22041f32a7f7adb946/typos-1.31.1-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6641a3231b29edbac1a35394b0822bc218bd8f70caea233b90e382cbeb58731f", size = 7485234 },
+    { url = "https://files.pythonhosted.org/packages/ad/cd/0f7ae6aea34990e4fca989903d0818c9f2c866559156acfb66c752cad921/typos-1.31.1-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:1bc524b335d637f6c1b78b5396b997aa9c9ac7ed0361686209f5b88525fbb248", size = 6712666 },
+    { url = "https://files.pythonhosted.org/packages/20/25/812861c0f7895e35e307a2a6a2a63869e0c57af4c5d3f790f7eec569669d/typos-1.31.1-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:bd5031c8a8480640328c2cc2c4defc54471feeaae8201aefff94e16b6ca87f22", size = 7576357 },
+    { url = "https://files.pythonhosted.org/packages/ce/23/7e71bfcf40978eb2595c959bc8222c4350a30280c15d78c68a89dd57a188/typos-1.31.1-py3-none-win32.whl", hash = "sha256:07cf79739059c4f74e0c02a5e1c80b9adf70797a76ea4a4ebab3fce134935d60", size = 2749337 },
+    { url = "https://files.pythonhosted.org/packages/45/93/a7c3af7cf52e24d55fbd6fe6e43068ab2bd7647dc9a8a3e813f5247fec5e/typos-1.31.1-py3-none-win_amd64.whl", hash = "sha256:2a0c3a46894aa8e5f2dddd240439c8f537e5b3b084f37fd127dfdb0494f3ccf2", size = 2899374 },
+]
+
+[[package]]
 name = "urllib3"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1099,6 +1116,7 @@ dev = [
     { name = "ruff" },
     { name = "syrupy" },
     { name = "types-pyyaml" },
+    { name = "typos" },
 ]
 
 [package.metadata]
@@ -1133,6 +1151,7 @@ dev = [
     { name = "ruff", specifier = ">=0.11.1,<0.12.0" },
     { name = "syrupy", specifier = ">=4.6.1,<5.0.0" },
     { name = "types-pyyaml", specifier = ">=6.0.12,<7.0.0" },
+    { name = "typos", specifier = ">=1.31.1,<2.0.0" },
 ]
 
 [[package]]
