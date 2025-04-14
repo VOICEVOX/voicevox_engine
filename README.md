@@ -472,7 +472,7 @@ VOICEVOX ENGINE は皆さんのコントリビューションをお待ちして�
 uv sync
 
 # 開発環境・テスト環境・ビルド環境のインストール
-uv sync --group dev --group build
+uv sync --all-groups
 ```
 
 ### 実行
