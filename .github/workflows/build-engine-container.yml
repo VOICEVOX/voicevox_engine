@@ -105,8 +105,6 @@ jobs:
       - name: <Setup> Prepare Python version
         id: prepare-python
         uses: ./.github/actions/prepare_python
-        with:
-          only-export-python-version: true
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
