@@ -326,7 +326,7 @@ uv run pytest --snapshot-update
 以下のコマンドを実行することでカバレッジを取ることができます。
 
 ```bash
-uv run coverage run --omit=test/* -m pytest && coverage report -m
+uv run coverage run --omit=test/* -m pytest && uv run coverage report -m
 ```
 
 ### 脆弱性を診断する
