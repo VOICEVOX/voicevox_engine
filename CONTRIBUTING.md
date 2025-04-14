@@ -124,8 +124,10 @@ GitHub Issues を用いて機能向上を一元管理しています。
 ## 環境構築
 
 `Python 3.11.9` を用いて開発されています。
-また、パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+
+また、パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
+uv のインストール方法については[公式ドキュメント](https://docs.astral.sh/uv/getting-started/installation/)を参考にしてください。
 
 ### 依存ライブラリをインストールする
 
