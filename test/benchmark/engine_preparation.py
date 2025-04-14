@@ -61,7 +61,6 @@ def generate_client(
     `server=localhost` では http://localhost:50021 へのクライアントを生成する。
     `server=fake` ではネットワークを介さずレスポンスを返す疑似サーバーを生成する。
     """
-
     if server == "fake":
         if root_dir is None:
             warn_msg = "root_dirが未指定であるため、自動的に `VOICEVOX/vv-engine` を `root_dir` に設定します。"

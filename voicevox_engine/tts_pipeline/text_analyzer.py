@@ -189,7 +189,6 @@ class AccentPhraseLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
-
         # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         moras: list[MoraLabel] = []  # モーラ系列
@@ -249,7 +248,6 @@ class BreathGroupLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
@@ -298,7 +296,6 @@ class UtteranceLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
-
         # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
 
         pauses: list[Label] = []  # ポーズラベルのリスト
