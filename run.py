@@ -82,7 +82,6 @@ def set_output_log_utf8() -> None:
     # NOTE: for 文で回せないため関数内関数で実装している
     def _prepare_utf8_stdio(stdio: TextIO) -> TextIO:
         """UTF-8 ベースの標準入出力インターフェイスを用意する"""
-
         CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
         ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
 
@@ -306,7 +305,6 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
 
 def main() -> None:
     """VOICEVOX ENGINE を実行する"""
-
     multiprocessing.freeze_support()
 
     envs = read_environment_variables()

@@ -150,7 +150,6 @@ class EngineManifest(BaseModel):
 
 def load_manifest(manifest_path: Path) -> EngineManifest:
     """エンジンマニフェストを指定ファイルから読み込む。"""
-
     root_dir = manifest_path.parent
     manifest = _manifest_json_adapter.validate_json(manifest_path.read_bytes())
     return EngineManifest(
