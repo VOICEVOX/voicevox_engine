@@ -134,7 +134,7 @@ GitHub Issues を用いて機能向上を一元管理しています。
 
 ```bash
 # 実行・開発・テスト環境のインストール
-uv sync --group dev --group build
+uv sync --all-groups
 
 # git hook のインストール
 uv run pre-commit install -t pre-push
