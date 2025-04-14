@@ -241,11 +241,9 @@ uv add --group build `パッケージ名` # ビルド依存の追加
 
 #### パッケージを更新する
 
-TODO: あとでちゃんとやり方調べる
-
 ```bash
-uv update `パッケージ名`
-uv update # 全部更新
+uv lock --upgrade-package <package>
+uv lock --upgrade # 全部更新
 ```
 
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
