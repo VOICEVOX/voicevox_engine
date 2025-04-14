@@ -80,7 +80,7 @@ _OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
 _OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
 
 
-def is_ojt_phoneme(
+def _is_ojt_phoneme(
     p: str,
 ) -> TypeGuard[Vowel | Sil | Consonant | _OJT_UNKNOWN]:
     return p in _OJT_PHONEMES
@@ -122,7 +122,7 @@ class Label:
     def phoneme(self) -> Vowel | Consonant | Sil:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
         p = self.contexts["p3"]
-        if is_ojt_phoneme(p):
+        if _is_ojt_phoneme(p):
             if p == "xx":
                 raise OjtUnknownPhonemeError()
             else:

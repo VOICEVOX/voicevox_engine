@@ -13,7 +13,7 @@ from .core_wrapper import CoreWrapper, load_runtime_lib
 MOCK_VER = "0.0.0"
 
 
-def get_half_logical_cores() -> int:
+def _get_half_logical_cores() -> int:
     logical_cores = os.cpu_count()
     if logical_cores is None:
         return 0
@@ -96,7 +96,7 @@ def initialize_cores(
             + "Setting it to half of the logical cores.",
             file=sys.stderr,
         )
-        cpu_num_threads = get_half_logical_cores()
+        cpu_num_threads = _get_half_logical_cores()
 
     root_dir = engine_root()
 
