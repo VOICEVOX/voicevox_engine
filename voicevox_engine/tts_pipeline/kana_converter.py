@@ -11,12 +11,12 @@
 - `？` で疑問文
 - アクセント位置はちょうど１つ
 
-NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
+NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法`
 """
 
-from typing import List, Optional
+from typing import Any
 
-from ..model import AccentPhrase, Mora, ParseKanaError, ParseKanaErrorCode
+from .model import AccentPhrase, Mora, ParseKanaErrorCode
 from .mora_mapping import mora_kana_to_mora_phonemes
 from .phoneme import Vowel
 
@@ -55,14 +55,25 @@ for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
         )
 
 
+class ParseKanaError(Exception):
+    def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
+        self.errcode = errcode
+        self.errname = errcode.name
+        self.kwargs = kwargs
+        err_fmt: str = errcode.value
+        self.text = err_fmt.format(**kwargs)
+
+
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成
     longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
+
     Parameters
     ----------
     phrase : str
         単一アクセント句に相当するAquesTalk 風記法テキスト
+
     Returns
     -------
     accent_phrase : AccentPhrase
@@ -70,12 +81,12 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     # NOTE: ポーズと疑問形はこの関数内で処理しない
 
-    accent_index: Optional[int] = None
-    moras: List[Mora] = []
+    accent_index: int | None = None
+    moras: list[Mora] = []
 
     base_index = 0  # パース開始位置。ここから右の文字列をstackに詰めていく。
     stack = ""  # 保留中の文字列
-    matched_text: Optional[str] = None  # 保留中の文字列内で最後にマッチした仮名
+    matched_text: str | None = None  # 保留中の文字列内で最後にマッチした仮名
 
     outer_loop = 0
     while base_index < len(phrase):
@@ -107,7 +118,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
             raise ParseKanaError(ParseKanaErrorCode.UNKNOWN_TEXT, text=stack)
         # push mora
         else:
-            moras.append(_kana2mora[matched_text].copy(deep=True))
+            moras.append(_kana2mora[matched_text].model_copy(deep=True))
             base_index += len(matched_text)
             stack = ""
             matched_text = None
@@ -119,20 +130,22 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
         return AccentPhrase(moras=moras, accent=accent_index, pause_mora=None)
 
 
-def parse_kana(text: str) -> List[AccentPhrase]:
+def parse_kana(text: str) -> list[AccentPhrase]:
     """
     AquesTalk 風記法テキストからアクセント句系列を生成
+
     Parameters
     ----------
     text : str
         AquesTalk 風記法テキスト
+
     Returns
     -------
-    parsed_results : List[AccentPhrase]
+    parsed_results : list[AccentPhrase]
         アクセント句（音素・モーラ音高 0初期化）系列を生成
     """
 
-    parsed_results: List[AccentPhrase] = []
+    parsed_results: list[AccentPhrase] = []
     phrase_base = 0
     if len(text) == 0:
         raise ParseKanaError(ParseKanaErrorCode.EMPTY_PHRASE, position=1)
@@ -177,13 +190,15 @@ def parse_kana(text: str) -> List[AccentPhrase]:
     return parsed_results
 
 
-def create_kana(accent_phrases: List[AccentPhrase]) -> str:
+def create_kana(accent_phrases: list[AccentPhrase]) -> str:
     """
     アクセント句系列からAquesTalk 風記法テキストを生成
+
     Parameters
     ----------
-    accent_phrases : List[AccentPhrase]
+    accent_phrases : list[AccentPhrase]
         アクセント句系列
+
     Returns
     -------
     text : str

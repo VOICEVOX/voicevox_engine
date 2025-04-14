@@ -1,0 +1,16 @@
+{
+  "policy": "dummy3 policy\n\nhttps://voicevox.hiroshiba.jp/\n",
+  "portrait": "http://testserver/_resources/06112cbb75adcee7173751694dafd9d05edd90d5f230445290cb51a34caea8d1",
+  "style_infos": [
+    {
+      "icon": "http://testserver/_resources/759b5b5565e369741809631fcb3bc574c16da011b07d2d8dd9ceaa149d9e139b",
+      "id": 8,
+      "portrait": "http://testserver/_resources/9ecaf2beed142fdf6a48b4a8c3726fa2864ef5c1ada4884df2b94fb07685fb14",
+      "voice_samples": [
+        "http://testserver/_resources/7a6a56cb9d571cfb774ac2c3ca8b873e25f68624ede21d6bf2ff625b44245ab5",
+        "http://testserver/_resources/83fadd140b6b53938654825fa9b8ccd08f235b07de98ddec8c653fc9652f31f6",
+        "http://testserver/_resources/9a243a14f9b4e20193708598cb76da5dba3a42ebd1f0ad008e0f3205da95bc33"
+      ]
+    }
+  ]
+}

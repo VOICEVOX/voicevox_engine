@@ -17,6 +17,14 @@
 コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
 全体構成は [こちら](https://github.com/VOICEVOX/voicevox/blob/main/docs/%E5%85%A8%E4%BD%93%E6%A7%8B%E6%88%90.md) に詳細があります。）
 
+## 目次
+
+目的に合わせたガイドはこちらです。
+
+- [ユーザーガイド](#ユーザーガイド): 音声合成をしたい方向け
+- [貢献者ガイド](#貢献者ガイド): コントリビュートしたい方向け
+- [開発者ガイド](#開発者ガイド): コードを利用したい方向け
+
 ## ユーザーガイド
 
 ### ダウンロード
@@ -35,15 +43,15 @@ VOICEVOX エンジンもしくはエディタを起動した状態で http://127
 #### CPU
 
 ```bash
-docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
-docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:cpu-latest
+docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-latest
 ```
 
 #### GPU
 
 ```bash
-docker pull voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
-docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-ubuntu20.04-latest
+docker pull voicevox/voicevox_engine:nvidia-latest
+docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-latest
 ```
 
 ##### トラブルシューティング
@@ -241,7 +249,7 @@ curl -s -X DELETE "127.0.0.1:50021/user_dict_word/$word_uuid"
 
 ### プリセット機能について
 
-`presets.yaml`を編集することで話者や話速などのプリセットを使うことができます。
+ユーザーディレクトリにある`presets.yaml`を編集することでキャラクターや話速などのプリセットを使うことができます。
 
 ```bash
 echo -n "プリセットをうまく活用すれば、サードパーティ間で同じ設定を使うことができます" >text.txt
@@ -314,7 +322,7 @@ curl -s \
     > audio.wav
 ```
 
-### 話者の追加情報を取得するサンプルコード
+### キャラクターの追加情報を取得するサンプルコード
 
 追加情報の中の portrait.png を取得するコードです。  
 （[jq](https://stedolan.github.io/jq/)を使用して json をパースしています。）
@@ -361,7 +369,7 @@ curl -s \
     > audio.wav
 ```
 
-スコアの`key`は MIDI 番号です。  
+楽譜の`key`は MIDI 番号です。  
 `lyric`は歌詞で、任意の文字列を指定できますが、エンジンによってはひらがな・カタカナ１モーラ以外の文字列はエラーになることがあります。  
 フレームレートはデフォルトが 93.75Hz で、エンジンマニフェストの`frame_rate`で取得できます。  
 １つ目のノートは無音である必要があります。
@@ -374,7 +382,7 @@ curl -s \
 
 ### CORS 設定
 
-VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・Origin なし以外の Origin からリクエストを受け入れないようになっています。
+VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app://`・ブラウザ拡張 URI・Origin なし以外の Origin からリクエストを受け入れないようになっています。
 そのため、一部のサードパーティアプリからのレスポンスを受け取れない可能性があります。  
 これを回避する方法として、エンジンから設定できる UI を用意しています。
 
@@ -402,7 +410,7 @@ $ python run.py -h
 
 usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
               [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
-              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE]
+              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE] [--disable_mutable_api]
 
 VOICEVOX のエンジンです。
 
@@ -410,58 +418,60 @@ options:
   -h, --help            show this help message and exit
   --host HOST           接続を受け付けるホストアドレスです。
   --port PORT           接続を受け付けるポート番号です。
-  --use_gpu             指定するとGPUを使って音声合成するようになります。
+  --use_gpu             GPUを使って音声合成するようになります。
   --voicevox_dir VOICEVOX_DIR
                         VOICEVOXのディレクトリパスです。
   --voicelib_dir VOICELIB_DIR
                         VOICEVOX COREのディレクトリパスです。
   --runtime_dir RUNTIME_DIR
                         VOICEVOX COREで使用するライブラリのディレクトリパスです。
-  --enable_mock         指定するとVOICEVOX COREを使わずモックで音声合成を行います。
+  --enable_mock         VOICEVOX COREを使わずモックで音声合成を行います。
   --enable_cancellable_synthesis
-                        指定すると音声合成を途中でキャンセルできるようになります。
+                        音声合成を途中でキャンセルできるようになります。
   --init_processes INIT_PROCESSES
                         cancellable_synthesis機能の初期化時に生成するプロセス数です。
-  --load_all_models     指定すると起動時に全ての音声合成モデルを読み込みます。
+  --load_all_models     起動時に全ての音声合成モデルを読み込みます。
   --cpu_num_threads CPU_NUM_THREADS
-                        音声合成を行うスレッド数です。指定しないと、代わりに環境変数VV_CPU_NUM_THREADSの値が使われます。VV_CPU_NUM_THREADSが空文字列でなく数値でもない場合はエラー終了します。
-  --output_log_utf8     指定するとログ出力をUTF-8でおこないます。指定しないと、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
+                        音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。
+  --output_log_utf8     ログ出力をUTF-8でおこないます。指定しない場合、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
   --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
-                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。
-                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
+                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。このオプションは--
+                        setting_fileで指定される設定ファイルよりも優先されます。
   --allow_origin [ALLOW_ORIGIN ...]
-                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。
-                        このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
+                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
-                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、実行ファイルのディレクトリのpresets.yamlを順に探します。
+                        プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。
+  --disable_mutable_api
+                        辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API の値が使われます。VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0または空文字、値がない場合は無視されます。
 ```
 
 ### アップデート
 
 エンジンディレクトリ内にあるファイルを全て消去し、新しいものに置き換えてください。
 
-## 開発者・貢献者向けガイド
+## 貢献者ガイド
 
-### 貢献者の方へ
+VOICEVOX ENGINE は皆さんのコントリビューションをお待ちしています！  
+詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。  
+また [VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
 
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+なお、Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成することを推奨しています。
 
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+## 開発者ガイド
 
 ### 環境構築
 
-`Python 3.11.3` を用いて開発されています。
+`Python 3.11.9` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
 ```bash
 # 実行環境のインストール
 python -m pip install -r requirements.txt
 
-# 開発環境・テスト環境のインストール
-python -m pip install -r requirements-dev.txt -r requirements-test.txt
+# 開発環境・テスト環境・ビルド環境のインストール
+python -m pip install -r requirements-dev.txt -r requirements-build.txt
 ```
 
 ### 実行
@@ -474,7 +484,7 @@ python run.py --help
 
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
-VOICEVOX_DIR="C:/path/to/voicevox" # 製品版 VOICEVOX ディレクトリのパス
+VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
 python run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
@@ -523,13 +533,13 @@ Mac での libtorch 版コアのサポートはしていません。
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
 ```bash
-python run.py --voicevox_dir="/path/to/voicevox"
+python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/voicevox"
+DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 ##### 音声ライブラリを直接指定する
@@ -565,103 +575,23 @@ DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevo
 
 ### ビルド
 
-この方法でビルドしたものは、リリースで公開されているものとは異なります。
-また、GPU で利用するには cuDNN や CUDA、DirectML などのライブラリが追加で必要となります。
+`pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりローカルでビルドが可能です。  
+手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。
 
-```bash
-python -m pip install -r requirements-dev.txt
-
-OUTPUT_LICENSE_JSON_PATH=licenses.json \
-bash build_util/create_venv_and_generate_licenses.bash
-
-# モックでビルドする場合
-pyinstaller --noconfirm run.spec
-
-# 製品版でビルドする場合
-CORE_MODEL_DIR_PATH="/path/to/core_model" \
-LIBCORE_PATH="/path/to/libcore" \
-LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
-```
-
-#### Github Actions でビルド
-
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
+GitHub を用いる場合、fork したリポジトリで GitHub Actions によるビルドが可能です。  
+Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
+ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。
 
-### コードフォーマット
+### テスト・静的解析
 
-このソフトウェアでは、リモートにプッシュする前にコードフォーマットを確認する仕組み(静的解析ツール)を利用できます。
-利用するには、開発に必要なライブラリのインストールに加えて、以下のコマンドを実行してください。
-プルリクエストを作成する際は、利用することを推奨します。
-
-```bash
-pre-commit install -t pre-push
-```
-
-エラーが出た際は、以下のコマンドで修正することが可能です。なお、完全に修正できるわけではないので注意してください。
-
-```bash
-pysen run format lint
-```
-
-### テスト
-
-```bash
-python -m pytest
-```
-
-#### スナップショットの更新
-
-```bash
-python -m pytest --snapshot-update
-```
-
-### タイポチェック
-
-[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
-[typos をインストール](https://github.com/crate-ci/typos#install) した後
-
-```bash
-typos
-```
-
-でタイポチェックを行えます。
-もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
+`pytest` を用いたテストと各種リンターを用いた静的解析が可能です。  
+手順の詳細は [貢献者ガイド#テスト](./CONTRIBUTING.md#テスト), [貢献者ガイド#静的解析](./CONTRIBUTING.md#静的解析) を御覧ください。
 
 ### 依存関係
 
-#### 更新
-
-[Poetry](https://python-poetry.org/) を用いて依存ライブラリのバージョンを固定しています。
-以下のコマンドで操作できます:
-
-```bash
-# パッケージを追加する場合
-poetry add `パッケージ名`
-poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group test `パッケージ名` # テスト依存の追加
-
-# パッケージをアップデートする場合
-poetry update `パッケージ名`
-poetry update # 全部更新
-
-# requirements.txtの更新
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下３つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with test -o requirements-test.txt
-poetry export --without-hashes --with license -o requirements-license.txt
-```
-
-#### ライセンス
-
-依存ライブラリは「コアビルド時にリンクして一体化しても、コア部のコード非公開 OK」なライセンスを持つ必要があります。  
-主要ライセンスの可否は以下の通りです。
-
-- MIT/Apache/BSD-3: OK
-- LGPL: OK （コアと動的分離されているため）
-- GPL: NG （全関連コードの公開が必要なため）
+依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
+詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。
 
 ### マルチエンジン機能に関して
 
@@ -684,12 +614,13 @@ VOICEVOX ENGINE リポジトリを fork し、一部の機能を改造するの�
 
 改造すべき点はエンジン情報・キャラクター情報・音声合成の３点です。
 
-エンジンの情報はエンジンマニフェスト（`engine_manifest.json`）で管理されています。
+エンジンの情報はルート直下のマニフェストファイル（`engine_manifest.json`）で管理されています。
+この形式のマニフェストファイルは VOICEVOX API 準拠エンジンに必須です。
 マニフェストファイル内の情報を見て適宜変更してください。
 音声合成手法によっては、例えばモーフィング機能など、VOICEVOX と同じ機能を持つことができない場合があります。
 その場合はマニフェストファイル内の`supported_features`内の情報を適宜変更してください。
 
-キャラクター情報は`speaker_info`ディレクトリ内のファイルで管理されています。
+キャラクター情報は`resources/character_info`ディレクトリ内のファイルで管理されています。
 ダミーのアイコンなどが用意されているので適宜変更してください。
 
 音声合成は`voicevox_engine/tts_pipeline/tts_engine.py`で行われています。
@@ -707,31 +638,9 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 
 また、`xxx.vvpp`は分割して連番を付けた`xxx.0.vvppp`ファイルとして配布することも可能です。
 これはファイル容量が大きくて配布が困難な場合に有用です。
+インストールに必要な`vvpp`および`vvppp`ファイルは`vvpp.txt`ファイルにリストアップしています。
 
 </details>
-
-### API ドキュメントの確認
-
-[API ドキュメント](https://voicevox.github.io/voicevox_engine/api/)（実体は`docs/api/index.html`）は自動で更新されます。  
-次のコマンドで API ドキュメントを手動で作成することができます。
-
-```bash
-PYTHONPATH=. python build_util/make_docs.py
-```
-
-### GitHub Actions
-
-#### Variables
-
-| name               | description         |
-| :----------------- | :------------------ |
-| DOCKERHUB_USERNAME | Docker Hub ユーザ名 |
-
-#### Secrets
-
-| name            | description                                                             |
-| :-------------- | :---------------------------------------------------------------------- |
-| DOCKERHUB_TOKEN | [Docker Hub アクセストークン](https://hub.docker.com/settings/security) |
 
 ## 事例紹介
 

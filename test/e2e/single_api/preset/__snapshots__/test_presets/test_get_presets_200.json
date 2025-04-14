@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "intonationScale": 1.0,
+    "name": "サンプルプリセット",
+    "pauseLength": null,
+    "pauseLengthScale": 1.0,
+    "pitchScale": 0.0,
+    "postPhonemeLength": 0.1,
+    "prePhonemeLength": 0.1,
+    "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
+    "speedScale": 1.0,
+    "style_id": 0,
+    "volumeScale": 1.0
+  }
+]
