@@ -1,5 +1,4 @@
 # 仮想環境を作ってrequirements.txtをインストールし、ライセンス一覧を生成する
-# TODO: このスクリプトもuvに対応させる
 
 set -eux
 
@@ -10,20 +9,10 @@ fi
 
 VENV_PATH="licenses_venv"
 
-python -m venv $VENV_PATH
-if [ -d "$VENV_PATH/Scripts" ]; then
-    # shellcheck disable=SC1091,SC1090
-    source $VENV_PATH/Scripts/activate
-else
-    # shellcheck disable=SC1091,SC1090
-    source $VENV_PATH/bin/activate
-fi
-
-pip install -r requirements.txt
+uv venv $VENV_PATH
+uv sync
 # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
-pip install "$(grep pip-licenses requirements-dev.txt | cut -f 1 -d ';')"
-python tools/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
-
-deactivate
+uv pip install "$(grep pip-licenses requirements-dev.txt | cut -f 1 -d ';')"
+uv run tools/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 rm -rf $VENV_PATH
