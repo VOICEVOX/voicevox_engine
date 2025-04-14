@@ -369,7 +369,7 @@ fork したリポジトリで Actions を ON にし、workflow_dispatch で`buil
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-PYTHONPATH=. python tools/make_docs.py
+PYTHONPATH=. uv run tools/make_docs.py
 ```
 
 ## GitHub Actions
