@@ -21,6 +21,7 @@ from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import (
@@ -326,7 +327,9 @@ def main() -> None:
         load_all_models=args.load_all_models,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
+    song_engines = make_song_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    assert len(song_engines.versions()) != 0, "音声合成エンジンがありません。"
 
     cancellable_engine: CancellableEngine | None = None
     if args.enable_cancellable_synthesis:
@@ -389,6 +392,7 @@ def main() -> None:
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
+        song_engines,
         core_manager,
         setting_loader,
         preset_manager,

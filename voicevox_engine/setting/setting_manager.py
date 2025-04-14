@@ -30,6 +30,7 @@ class SettingHandler:
     def __init__(self, setting_file_path: Path) -> None:
         """
         設定ファイルの管理
+
         Parameters
         ----------
         setting_file_path : Path

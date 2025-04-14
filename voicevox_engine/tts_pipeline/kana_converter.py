@@ -68,10 +68,12 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成
     longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
+
     Parameters
     ----------
     phrase : str
         単一アクセント句に相当するAquesTalk 風記法テキスト
+
     Returns
     -------
     accent_phrase : AccentPhrase
@@ -131,10 +133,12 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 def parse_kana(text: str) -> list[AccentPhrase]:
     """
     AquesTalk 風記法テキストからアクセント句系列を生成
+
     Parameters
     ----------
     text : str
         AquesTalk 風記法テキスト
+
     Returns
     -------
     parsed_results : list[AccentPhrase]
@@ -189,10 +193,12 @@ def parse_kana(text: str) -> list[AccentPhrase]:
 def create_kana(accent_phrases: list[AccentPhrase]) -> str:
     """
     アクセント句系列からAquesTalk 風記法テキストを生成
+
     Parameters
     ----------
     accent_phrases : list[AccentPhrase]
         アクセント句系列
+
     Returns
     -------
     text : str

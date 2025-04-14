@@ -89,6 +89,7 @@ class CoreAdapter:
         """
         指定したスタイルでの音声合成を初期化する。
         何度も実行可能。未実装の場合は何もしない。
+
         Parameters
         ----------
         style_id : StyleId
