@@ -161,7 +161,7 @@ def synthesize_morphed_wave(
         モーフィングした音声
 
     Raises
-    -------
+    ------
     ValueError
         morph_rate ∈ [0, 1]
     """
