@@ -68,10 +68,12 @@ def _notes_to_keys_and_phonemes(
 ]:
     """
     ノート単位の長さ・モーラ情報や、音素列・音素ごとのキー列を作成する
+
     Parameters
     ----------
     notes : list[Note]
         ノート列
+
     Returns
     -------
     note_lengths : NDArray[np.int64]
