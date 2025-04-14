@@ -72,6 +72,7 @@ tqdm==4.67.1
 types-pyyaml==6.0.12.20250402
 typing-extensions==4.13.2
 typing-inspection==0.4.0
+typos==1.31.1
 urllib3==2.4.0
 uvicorn==0.34.0
 virtualenv==20.30.0
