@@ -10,6 +10,8 @@ from soxr import resample
 
 
 class ConnectBase64WavesException(Exception):
+    """Base64 エンコードされた音声波形の結合に失敗した。"""
+
     def __init__(self, message: str):
         self.message = message
 

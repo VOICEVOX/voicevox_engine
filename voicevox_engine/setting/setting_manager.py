@@ -27,6 +27,8 @@ USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
 class SettingHandler:
+    """設定ファイルの読み書きを管理する。"""
+
     def __init__(self, setting_file_path: Path) -> None:
         """
         設定ファイルの管理

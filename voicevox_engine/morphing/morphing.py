@@ -21,6 +21,8 @@ from ..tts_pipeline.tts_engine import TTSEngine
 
 
 class StyleIdNotFoundError(LookupError):
+    """モーフィング可能なスタイルIDが見つからなかった。"""
+
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.style_id = style_id
         super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)

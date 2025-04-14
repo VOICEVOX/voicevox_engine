@@ -542,6 +542,8 @@ def test_interrogative_accent_phrase_marks() -> None:
 
 
 class TestParseKanaException(TestCase):
+    """AquesTalk 風記法のパースをテストする。"""
+
     def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
         with self.assertRaises(ParseKanaError) as e:
             parse_kana(kana)

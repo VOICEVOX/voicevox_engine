@@ -138,6 +138,8 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
 
 @dataclass(frozen=True)
 class CLIArgs:
+    """CLI引数。"""
+
     host: str
     port: int
     use_gpu: bool

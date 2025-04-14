@@ -10,6 +10,8 @@ from typing import Literal
 
 
 class ResourceManagerError(Exception):
+    """リソースファイルの管理に失敗した。"""
+
     def __init__(self, message: str):
         self.message = message
 

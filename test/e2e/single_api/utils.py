@@ -2,6 +2,8 @@ from typing import TypedDict
 
 
 class MoraForTest(TypedDict):
+    """モーラ。"""
+
     text: str
     consonant: str
     consonant_length: float

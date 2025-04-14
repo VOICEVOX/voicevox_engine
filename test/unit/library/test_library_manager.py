@@ -48,6 +48,8 @@ def append_any_as_manifest_to_vvlib(obj: Any, vvlib_path: str) -> None:
 
 
 class TestLibraryManager(TestCase):
+    """LibraryManager のテスト。"""
+
     def setUp(self) -> None:
         super().setUp()
         self.tmp_dir = TemporaryDirectory()
