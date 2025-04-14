@@ -121,10 +121,12 @@ def _count_frame_per_unit(
 ) -> tuple[NDArray[np.int64], NDArray[np.int64]]:
     """
     音素あたり・モーラあたりのフレーム長を算出する
+
     Parameters
     ----------
     moras : list[Mora]
         モーラ系列
+
     Returns
     -------
     frame_per_phoneme : NDArray[np.int64]

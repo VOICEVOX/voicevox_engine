@@ -243,6 +243,7 @@ class UserDictionary:
     ) -> None:
         """
         ユーザー辞書をインポートする。
+
         Parameters
         ----------
         dict_data : dict[str, UserDictWord]
