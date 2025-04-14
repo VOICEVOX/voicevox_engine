@@ -68,7 +68,7 @@ jobs:
 
       - name: <Test> Test names by checking typo
         if: runner.os == 'Linux'
-        run: typos
+        run: uv run typos
 
   lint-builders:
     runs-on: ubuntu-22.04
