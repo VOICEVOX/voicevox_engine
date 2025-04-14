@@ -6,8 +6,8 @@ inputs:
     description: "Python バージョンの出力のみをおこなうか否か"
     required: false
     default: "false"
-  requirements-suffix: # FIXME: 後で適切な名前にする
-    description: "依存パッケージインストール時に `requirements` へ付ける接尾語"
+  uv-group:
+    description: "uv で依存パッケージインストール時に指定するグループ"
     required: false
   python-version:
     description: "インストールされる Python ランタイムのバージョン。デフォルト値はこのリポジトリが想定する Python バージョン。"
@@ -36,8 +36,8 @@ runs:
     - name: <Setup> Install Python dependencies
       if: ${{ inputs.only-export-python-version == 'false' }}
       run: |
-        if [[ -n "${{ inputs.requirements-suffix }}" ]]; then
-          uv sync --group ${{ inputs.requirements-suffix }}
+        if [[ -n "${{ inputs.uv-group }}" ]]; then
+          uv sync --group ${{ inputs.uv-group }}
         else
           uv sync
         fi
