@@ -21,7 +21,6 @@ def test_post_import_user_dict_contents(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     """辞書インポートは内容が正しく反映されている。"""
-
     user_dict: dict[str, dict[str, str | int]] = {
         "a11196ad-caa8-4f4e-8eb3-3d2261c798fd": {
             "accent_associative_rule": "*",

@@ -118,7 +118,6 @@ class TestLibraryManager(TestCase):
 
     def test_install_broken_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
-
         # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = "test"
@@ -136,7 +135,6 @@ class TestLibraryManager(TestCase):
 
     def test_install_invalid_type_manifest_library(self) -> None:
         """不正な形式の vvlib_manifest.json をもつ ZIP ファイルは音声ライブラリとしてインストールできない。"""
-
         # Inputs
         invalid_vvlib_name = "test/invalid.vvlib"
         invalid_vvlib_manifest = create_vvlib_manifest(

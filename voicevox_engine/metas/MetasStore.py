@@ -90,7 +90,6 @@ class MetasStore:
 
     def characters(self, core_version: str | None) -> list[Character]:
         """キャラクターの情報の一覧を取得する。"""
-
         # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
         for core_character in self._get_core_characters(core_version):
