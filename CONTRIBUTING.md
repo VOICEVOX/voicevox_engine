@@ -335,7 +335,7 @@ uv run coverage run --omit=test/* -m pytest && uv run coverage report -m
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
-uv run pip-audit .
+uv run pip-audit
 ```
 
 ## ビルド
