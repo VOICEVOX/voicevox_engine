@@ -9,6 +9,7 @@ datas = [
     ('licenses.json', '.'),
 ]
 datas += collect_data_files('pyopenjtalk')
+datas += collect_data_files('e2k')
 
 core_model_dir_path = os.environ.get('CORE_MODEL_DIR_PATH')
 if core_model_dir_path:
