@@ -28,7 +28,7 @@ class ResourceManager:
 
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
         """
-        リソースマネージャーを立ち上げる。
+        リソースマネージャーインスタンスを作る。
 
         Parameters
         ----------
