@@ -7,9 +7,8 @@ if [ ! -v OUTPUT_LICENSE_JSON_PATH ]; then
     exit 1
 fi
 
+uv venv "licenses_venv"
 export VIRTUAL_ENV="licenses_venv"
-
-uv venv $VIRTUAL_ENV
 uv sync --active
 # requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
 uv pip install "$(grep pip-licenses requirements-dev.txt | cut -f 1 -d ';')"
