@@ -25,7 +25,7 @@ jobs:
       - name: <Test> Check Python dependency security
         uses: pypa/gh-action-pip-audit@v1.1.0
         with:
-          inputs: . # pyproject.toml から脆弱性診断を行う
+          inputs: requirements.txt requirements-dev.txt requirements-build.txt
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1
