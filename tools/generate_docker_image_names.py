@@ -1,6 +1,7 @@
 """
-Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
-バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する
+Dockerイメージ名を生成する。
+
+Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する。
 
 例
 $ python3 ./tools/generate_docker_image_names.py \
@@ -27,9 +28,9 @@ def generate_docker_image_names(
     comma_separated_prefix: str,
 ) -> list[str]:
     """
-    Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
-    バージョン文字列付きのDockerイメージ名を配列で返す
+    Dockerイメージ名を生成する。
 
+    Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を配列で返す。
     prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
 
     - 例: repository="REPO", version="VER", prefix="A" -> "REPO:A-VER"

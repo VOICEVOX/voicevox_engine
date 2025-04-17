@@ -28,6 +28,8 @@ class ResourceManager:
 
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
         """
+        リソースマネージャーインスタンスを作る。
+
         Parameters
         ----------
         create_filemap_if_not_exist : bool

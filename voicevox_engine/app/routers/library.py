@@ -60,6 +60,7 @@ def generate_library_router(
     ) -> None:
         """
         音声ライブラリをインストールします。
+
         音声ライブラリのZIPファイルをリクエストボディとして送信してください。
         """
         archive = BytesIO(await request.body())

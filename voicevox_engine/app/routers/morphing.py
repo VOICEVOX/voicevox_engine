@@ -47,6 +47,7 @@ def generate_morphing_router(
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
+
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
@@ -84,6 +85,7 @@ def generate_morphing_router(
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
+
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         version = core_version or LATEST_VERSION
