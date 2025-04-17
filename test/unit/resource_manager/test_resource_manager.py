@@ -14,15 +14,7 @@ def _b64encode_str(s: bytes) -> str:
 
 
 def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
-    """指定されたファイルの中身を base64 文字列およびハッシュ値として取得できる。
-
-    Parameters
-    ----------
-    manager:
-        リソースマネージャー
-    input_path:
-        ファイルを指定するパス
-    """
+    """指定されたファイルの中身を base64 文字列およびハッシュ値として取得できる。"""
     true_bytes = input_path.read_bytes()
     assert manager.resource_str(input_path, "base64") == _b64encode_str(true_bytes)
 

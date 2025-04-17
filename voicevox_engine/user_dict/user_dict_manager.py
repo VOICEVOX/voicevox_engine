@@ -119,13 +119,14 @@ def _delete_file_on_close(file_path: Path) -> None:
 class UserDictionary:
     """ユーザー辞書"""
 
+    # FIXME: OpenJTalk 用辞書の管理機能を備えているため、このクラスは Manager としても捉えられる。クラス名変更や役割分割等を検討。
     def __init__(
         self,
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
         """
-        ユーザー辞書を立ち上げる。
+        ユーザー辞書を利用可能にする。
 
         Parameters
         ----------
