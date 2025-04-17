@@ -35,7 +35,7 @@ script_dir=$(dirname "${0}")
 
 # ビルドするマルチプラットフォームDockerイメージ名のリスト
 multi_platform_image_tags=$(
-    python3 "${script_dir}/generate_docker_image_names.py" \
+    uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${IMAGE_NAME}" \
         --version "${VERSION_OR_LATEST}" \
         --prefix "${MULTI_PLATFORM_IMAGE_PREFIXES}"
@@ -43,7 +43,7 @@ multi_platform_image_tags=$(
 
 # AMD64のDockerイメージ名
 amd64_image_tag=$(
-    python3 "${script_dir}/generate_docker_image_names.py" \
+    uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${IMAGE_NAME}" \
         --version "${VERSION_OR_LATEST}" \
         --prefix "${AMD64_IMAGE_PREFIX}"
@@ -51,7 +51,7 @@ amd64_image_tag=$(
 
 # ARM64のDockerイメージ名
 arm64_image_tag=$(
-    python3 "${script_dir}/generate_docker_image_names.py" \
+    uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${IMAGE_NAME}" \
         --version "${VERSION_OR_LATEST}" \
         --prefix "${ARM64_IMAGE_PREFIX}"
