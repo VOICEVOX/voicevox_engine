@@ -1,4 +1,4 @@
-"""リソース管理の単体テスト。"""
+"""リソースマネージャーの単体テスト。"""
 
 import base64
 from pathlib import Path
