@@ -49,6 +49,12 @@ def _generate_mock_app() -> FastAPI:
     return app
 
 
+def _get_openapi_schema(app: FastAPI) -> str:
+    """OpenAPI スキーマを取得する。"""
+    # FastAPI の機能を用いる
+    return json.dumps(app.openapi())
+
+
 def _generate_api_docs_html(schema: str) -> str:
     """OpenAPI schema から API ドキュメント HTML を生成する"""
     return f"""<!DOCTYPE html>
@@ -68,19 +74,19 @@ def _generate_api_docs_html(schema: str) -> str:
 </html>"""
 
 
-def _generate_api_docs() -> None:
-    app = _generate_mock_app()
-
-    # FastAPI の機能を用いて OpenAPI schema を生成する
-    api_schema = json.dumps(app.openapi())
-
-    api_docs_html = _generate_api_docs_html(api_schema)
-
-    # HTML ファイルとして保存する
+def _save_as_html_file(api_docs_str: str) -> None:
+    """HTML 文字列を HTML ファイルとして保存する。"""
     api_docs_root = Path("docs/api")  # 'upload-docs' workflow の対象
     output_path = api_docs_root / "index.html"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(api_docs_html)
+    output_path.write_text(api_docs_str)
+
+
+def _generate_api_docs() -> None:
+    app = _generate_mock_app()
+    api_schema = _get_openapi_schema(app)
+    api_docs_html = _generate_api_docs_html(api_schema)
+    _save_as_html_file(api_docs_html)
 
 
 def main() -> None:
