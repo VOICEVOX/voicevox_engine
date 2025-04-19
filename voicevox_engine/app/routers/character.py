@@ -54,6 +54,7 @@ def generate_character_router(
     ) -> SpeakerInfo:
         """
         UUID で指定された喋れるキャラクターの情報を返します。
+
         画像や音声はresource_formatで指定した形式で返されます。
         """
         return metas_store.character_info(
@@ -79,6 +80,7 @@ def generate_character_router(
     ) -> SpeakerInfo:
         """
         UUID で指定された歌えるキャラクターの情報を返します。
+
         画像や音声はresource_formatで指定した形式で返されます。
         """
         return metas_store.character_info(

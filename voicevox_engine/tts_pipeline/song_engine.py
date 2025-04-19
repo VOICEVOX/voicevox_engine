@@ -166,9 +166,9 @@ def _calc_phoneme_lengths(
     note_durations: NDArray[np.int64],
 ) -> NDArray[np.int64]:
     """
-    子音長と音符長から音素長を計算する
-    ただし、母音はノートの頭にくるようにするため、
-    予測された子音長は前のノートの長さを超えないように調整される
+    子音長と音符長から音素長を計算する。
+
+    母音はノートの頭にくるようにするため、予測された子音長は前のノートの長さを超えないように調整される。
     """
     phoneme_durations = []
     for i in range(len(consonant_lengths)):

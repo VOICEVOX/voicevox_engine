@@ -59,6 +59,7 @@ def _to_flatten_phonemes(moras: list[Mora]) -> list[Phoneme]:
 def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64]:
     """
     アクセント句から指定インデックスのみが 1 の配列 (onehot) を生成する。
+
     長さ `len(moras)` な配列の指定インデックスを 1 とし、pause_mora を含む場合は末尾に 0 が付加される。
     """
     accent_onehot = np.zeros(len(accent_phrase.moras))

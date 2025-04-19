@@ -1,5 +1,6 @@
 """
-WORLDを使ってモーフィングするためのモジュール。
+WORLDを使ってモーフィングする。
+
 pyworldの入出力はnp.doubleやnp.float64なので注意。
 """
 
@@ -46,6 +47,7 @@ def get_morphable_targets(
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     キャラクターごとにモーフィングできるスタイルの一覧を生成する。
+
     指定されたベースキャラクターそれぞれに対し、引数のキャラクターリスト全体をチェックする。
     """
     morphable_targets_arr = []

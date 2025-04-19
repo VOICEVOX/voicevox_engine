@@ -10,7 +10,8 @@ from pathlib import Path
 
 def merge_json_string(src: str, dst: str) -> str:
     """
-    バージョンが同じ場合は要素を結合する
+    バージョンが同じ場合は要素を結合する。
+
     >>> src = '[{"version": "0.0.1", "a": ["a1"], "b": ["b1", "b2"]}]'
     >>> dst = '[{"version": "0.0.1", "a": ["a2"], "b": ["b1", "b3"]}]'
     >>> merge_json_string(src, dst)

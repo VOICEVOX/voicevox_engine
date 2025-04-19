@@ -276,7 +276,8 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
     """
-    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である。
+
     NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
     """
     # Inputs
@@ -297,9 +298,9 @@ def test_mocked_synthesize_wave_from_score_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
     """
-    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
-    `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である。
     """
+    # FIXME: 2つのスナップショットテストをそれぞれ独立したテストとして実装する
     # Inputs
     tts_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
@@ -426,7 +427,8 @@ def _assert_equeal_accent_phrases(
 
 
 def test_create_accent_phrases() -> None:
-    """accent_phrasesの作成時では疑問文モーラ処理を行わない
+    """accent_phrasesの作成時では疑問文モーラ処理を行わない。
+
     (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
     """
     tts_engine = TTSEngine(core=MockCoreWrapper())
