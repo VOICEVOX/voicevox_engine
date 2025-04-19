@@ -81,7 +81,7 @@ class _License:
                 assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
-def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
+def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
     """pip から取得したライセンス情報を更新する。"""
     package_to_license_url = {
         "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
@@ -98,30 +98,30 @@ def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
 
     updated_licenses = []
 
-    for raw_license in raw_licenses:
-        package_name = raw_license.Name.lower()
+    for pip_license in pip_licenses:
+        package_name = pip_license.Name.lower()
 
         # ライセンス文が pip から取得できていない場合、pip 外から補う
-        if raw_license.LicenseText == "UNKNOWN":
-            if package_name == "core" and raw_license.Version == "0.0.0":
+        if pip_license.LicenseText == "UNKNOWN":
+            if package_name == "core" and pip_license.Version == "0.0.0":
                 continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
             text_url = package_to_license_url[package_name]
-            raw_license.LicenseText = _get_license_text(text_url)
+            pip_license.LicenseText = _get_license_text(text_url)
 
         # soxr
         if package_name == "soxr":
             text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            raw_license.LicenseText = _get_license_text(text_url)
+            pip_license.LicenseText = _get_license_text(text_url)
 
         updated_licenses.append(
             _License(
-                package_name=raw_license.Name,
-                package_version=raw_license.Version,
-                license_name=raw_license.License,
-                license_text=raw_license.LicenseText,
+                package_name=pip_license.Name,
+                package_version=pip_license.Version,
+                license_name=pip_license.License,
+                license_text=pip_license.LicenseText,
                 license_text_type="raw",
             )
         )
