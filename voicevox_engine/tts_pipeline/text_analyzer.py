@@ -163,6 +163,7 @@ class Label:
         return self.contexts["i3"]
 
     def __repr__(self) -> str:
+        """Label クラス共通の文字列にこのインスタンスが持つ音素を含めて表示する。"""
         return f"<Label phoneme='{self.phoneme}'>"
 
 
