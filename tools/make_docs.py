@@ -1,4 +1,5 @@
 """ドキュメントファイルを生成する。"""
+# TODO: 目的を「ドキュメント生成」から「API ドキュメント生成」へ変更し、ファイル名等をそれに合わせられるか検討
 
 import json
 from pathlib import Path
