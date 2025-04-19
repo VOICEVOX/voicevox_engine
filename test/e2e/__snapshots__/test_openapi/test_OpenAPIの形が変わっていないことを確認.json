@@ -615,6 +615,7 @@
         "type": "object"
       },
       "MorphableTargetInfo": {
+        "description": "モーフィング相手としての情報。",
         "properties": {
           "is_morphable": {
             "description": "指定したキャラクターに対してモーフィングの可否",
@@ -667,6 +668,7 @@
         "type": "object"
       },
       "ParseKanaBadRequest": {
+        "description": "読み仮名のパースに失敗した。",
         "properties": {
           "error_args": {
             "additionalProperties": {

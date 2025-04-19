@@ -50,6 +50,8 @@ from voicevox_engine.utility.file_utility import try_delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
+    """読み仮名のパースに失敗した。"""
+
     text: str = Field(description="エラーメッセージ")
     error_name: str = Field(
         description="エラー名\n\n"

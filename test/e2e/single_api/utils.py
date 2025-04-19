@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class MoraForTest(TypedDict):
+class _MoraForTest(TypedDict):
     text: str
     consonant: str
     consonant_length: float
@@ -17,7 +17,7 @@ def gen_mora(
     vowel: str,
     vowel_length: float,
     pitch: float,
-) -> MoraForTest:
+) -> _MoraForTest:
     return {
         "text": text,
         "consonant": consonant,

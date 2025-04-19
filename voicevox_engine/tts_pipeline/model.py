@@ -104,6 +104,10 @@ class FrameAudioQuery(BaseModel):
 
 
 class ParseKanaErrorCode(Enum):
+    """AquesTalk 風記法のパースエラーメッセージ。"""
+
+    # TODO: クラス名がこの機能に最適か検討
+
     UNKNOWN_TEXT = "判別できない読み仮名があります: {text}"
     ACCENT_TOP = "句頭にアクセントは置けません: {text}"
     ACCENT_TWICE = "1つのアクセント句に二つ以上のアクセントは置けません: {text}"

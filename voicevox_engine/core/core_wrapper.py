@@ -81,6 +81,8 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
 
 
 class GPUType(Enum):
+    """アクセラレーターの種別。"""
+
     # NONEはCPUしか対応していないことを示す
     NONE = auto()
     CUDA = auto()
@@ -573,6 +575,8 @@ def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
 
 
 class CoreWrapper:
+    """VOICEVOX CORE の Python ラッパー。"""
+
     def __init__(
         self,
         use_gpu: bool,

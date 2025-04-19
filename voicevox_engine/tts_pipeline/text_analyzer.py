@@ -14,11 +14,15 @@ from .phoneme import Consonant, Sil, Vowel
 
 
 class NonOjtPhonemeError(Exception):
+    """OpenJTalk で想定されていない音素が検出された。"""
+
     def __init__(self, **kwargs: Any) -> None:
         self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
 
 
 class OjtUnknownPhonemeError(Exception):
+    """OpenJTalk の unknown 音素 `xx` が検出された。"""
+
     def __init__(self, **kwargs: Any) -> None:
         self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
 
