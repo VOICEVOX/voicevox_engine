@@ -1,3 +1,5 @@
+"""VOICEVOX ENGINE が依存する全ライブラリのライセンスをファイルへ出力する。"""
+
 import json
 import subprocess
 import sys

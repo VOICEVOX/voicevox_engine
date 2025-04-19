@@ -1,3 +1,5 @@
+"""設定管理の単体テスト。"""
+
 from pathlib import Path
 
 from voicevox_engine.setting.model import CorsPolicyMode

@@ -1,3 +1,5 @@
+"""キャラクターメタ情報の単体テスト。"""
+
 import uuid
 
 from voicevox_engine.metas.Metas import (

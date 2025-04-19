@@ -1,3 +1,5 @@
+"""ドキュメントファイルを生成する。"""
+
 import json
 from pathlib import Path
 
