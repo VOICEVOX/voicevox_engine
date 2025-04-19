@@ -33,9 +33,7 @@ def generate_setting_router(
 
     @router.get("/setting", response_class=Response)
     def setting_get(request: Request) -> Response:
-        """
-        設定ページを返します。
-        """
+        """設定ページを返します。"""
         settings = setting_loader.load()
 
         cors_policy_mode = settings.cors_policy_mode
@@ -59,9 +57,7 @@ def generate_setting_router(
         cors_policy_mode: Annotated[CorsPolicyMode, Form()],
         allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
     ) -> None:
-        """
-        設定を更新します。
-        """
+        """設定を更新します。"""
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,

@@ -1,6 +1,4 @@
-"""
-/audio_query_from_preset API のテスト
-"""
+"""/audio_query_from_preset API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

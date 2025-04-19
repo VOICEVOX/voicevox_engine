@@ -1,6 +1,4 @@
-"""
-/setting API のテスト
-"""
+"""/setting API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

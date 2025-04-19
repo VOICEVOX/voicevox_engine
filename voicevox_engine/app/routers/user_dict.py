@@ -73,9 +73,7 @@ def generate_user_dict_router(
             ),
         ] = None,
     ) -> str:
-        """
-        ユーザー辞書に言葉を追加します。
-        """
+        """ユーザー辞書に言葉を追加します。"""
         try:
             word_uuid = user_dict.apply_word(
                 WordProperty(
@@ -132,9 +130,7 @@ def generate_user_dict_router(
             ),
         ] = None,
     ) -> None:
-        """
-        ユーザー辞書に登録されている言葉を更新します。
-        """
+        """ユーザー辞書に登録されている言葉を更新します。"""
         try:
             user_dict.rewrite_word(
                 word_uuid,
@@ -165,9 +161,7 @@ def generate_user_dict_router(
     def delete_user_dict_word(
         word_uuid: Annotated[str, Path(description="削除する言葉のUUID")],
     ) -> None:
-        """
-        ユーザー辞書に登録されている言葉を削除します。
-        """
+        """ユーザー辞書に登録されている言葉を削除します。"""
         try:
             user_dict.delete_word(word_uuid=word_uuid)
         except UserDictInputError as e:
@@ -191,9 +185,7 @@ def generate_user_dict_router(
             bool, Query(description="重複したエントリがあった場合、上書きするかどうか")
         ],
     ) -> None:
-        """
-        他のユーザー辞書をインポートします。
-        """
+        """他のユーザー辞書をインポートします。"""
         try:
             user_dict.import_user_dict(dict_data=import_dict_data, override=override)
         except UserDictInputError as e:
