@@ -34,6 +34,7 @@ class Mora(BaseModel):
     )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
     def __hash__(self) -> int:
+        """タプルの入れ子としてハッシュ化する。"""
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
@@ -54,6 +55,7 @@ class AccentPhrase(BaseModel):
     is_interrogative: bool = Field(default=False, description="疑問系かどうか")
 
     def __hash__(self) -> int:
+        """タプルの入れ子としてハッシュ化する。"""
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
