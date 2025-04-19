@@ -242,13 +242,13 @@ class MockCoreWrapper(CoreWrapper):
         pass
 
     def load_model(self, style_id: int) -> None:
-        """コアにモデルをロードする。"""
-        # 「モデルのロードが常に成功する」として扱う
+        """コアにモデルを読み込む。"""
+        # 「モデルの読み込みが常に成功する」として扱う
         pass
 
     def is_model_loaded(self, style_id: int) -> bool:
-        """コアに指定されたモデルがロードされているか確認する。"""
-        # 「モデルが常にロードされている」として扱う
+        """コアに指定されたモデルが読み込まれているか確認する。"""
+        # 「モデルが常に読み込まれている」として扱う
         return True
 
     def assert_core_success(self, result: bool) -> None:

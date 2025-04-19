@@ -952,13 +952,13 @@ class CoreWrapper:
         raise OldCoreError
 
     def load_model(self, style_id: int) -> None:
-        """コアにモデルをロードする。"""
+        """コアにモデルを読み込む。"""
         if self.api_exists["load_model"]:
             self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:
-        """コアに指定されたモデルがロードされているか確認する。"""
+        """コアに指定されたモデルが読み込まれているか確認する。"""
         if self.api_exists["is_model_loaded"]:
             loaded_bool: bool = self.core.is_model_loaded(c_long(style_id))
             return loaded_bool
