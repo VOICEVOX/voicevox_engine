@@ -1,3 +1,5 @@
+"""WordTypes オブジェクトの単体テスト。"""
+
 from voicevox_engine.user_dict.model import WordTypes
 from voicevox_engine.user_dict.user_dict_word import part_of_speech_data
 

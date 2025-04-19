@@ -1,3 +1,5 @@
+"""全テスト共通の pytest 用 fixtures。"""
+
 import pytest
 from syrupy.assertion import SnapshotAssertion
 from syrupy.extensions.json import JSONSnapshotExtension

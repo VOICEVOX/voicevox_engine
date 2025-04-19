@@ -1,3 +1,5 @@
+"""MockTTSEngine クラスの単体テスト。"""
+
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
 from voicevox_engine.metas.Metas import StyleId
 from voicevox_engine.model import AudioQuery

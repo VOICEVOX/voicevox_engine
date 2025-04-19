@@ -1,3 +1,5 @@
+"""プリセット管理の単体テスト。"""
+
 from os import environ, remove
 from pathlib import Path
 from shutil import copyfile

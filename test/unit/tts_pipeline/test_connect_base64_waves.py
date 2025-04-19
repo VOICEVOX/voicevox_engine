@@ -1,3 +1,5 @@
+"""connect_base64_waves 関数の単体テスト。"""
+
 import base64
 import io
 

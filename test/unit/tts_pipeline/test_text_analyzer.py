@@ -1,3 +1,5 @@
+"""テキスト分析の単体テスト。"""
+
 import pytest
 
 from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora

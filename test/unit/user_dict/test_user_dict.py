@@ -1,3 +1,5 @@
+"""ユーザー辞書の単体テスト。"""
+
 import json
 from copy import deepcopy
 from pathlib import Path

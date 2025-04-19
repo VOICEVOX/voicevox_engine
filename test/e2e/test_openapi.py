@@ -1,3 +1,5 @@
+"""OpenAPI スキーマのテスト。"""
+
 from typing import Any
 
 from fastapi import FastAPI

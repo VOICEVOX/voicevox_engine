@@ -1,3 +1,5 @@
+"""単独 API に対する E2E テスト共通のユーティリティ。"""
+
 from typing import TypedDict
 
 

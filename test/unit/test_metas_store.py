@@ -1,3 +1,6 @@
+"""キャラクターメタ情報の単体テスト。"""
+# TODO: モジュール/ファイル名とモジュール docstring の一貫性を検証
+
 import uuid
 
 from voicevox_engine.metas.Metas import (

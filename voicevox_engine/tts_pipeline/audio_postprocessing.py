@@ -1,3 +1,5 @@
+"""音声波形を加工する。"""
+
 import numpy as np
 from numpy.typing import NDArray
 from soxr import resample

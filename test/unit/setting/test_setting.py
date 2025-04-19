@@ -1,3 +1,6 @@
+"""設定管理の単体テスト。"""
+# TODO: モジュール/ファイル名とモジュール docstring の一貫性を検証
+
 from pathlib import Path
 
 from voicevox_engine.setting.model import CorsPolicyMode
