@@ -32,7 +32,7 @@ class CoreError(Exception):
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     """
-    コアの実行に必要な依存 DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
+    コアの実行に必要な依存 DLL を読み込む。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
 
     Args:
         runtime_dirs - 直下に DLL が存在するディレクトリの一覧
@@ -64,7 +64,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     else:
         raise RuntimeError("不明なOSです")
 
-    # 引数指定ディレクトリ直下の DLL をロードする
+    # 引数指定ディレクトリ直下の DLL を読み込む
     for runtime_dir in runtime_dirs:
         for lib_file_name in lib_file_names:
             try:
@@ -72,7 +72,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             except OSError:
                 pass
 
-    # システム検索ディレクトリ直下の DLL をロードする
+    # システム検索ディレクトリ直下の DLL を読み込む
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
@@ -360,7 +360,7 @@ def _check_core_type(core_dir: Path) -> Literal["libtorch", "onnxruntime"] | Non
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     """
-    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLのロード
+    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLを読み込む。
 
     Parameters
     ----------
