@@ -111,6 +111,7 @@ def synthesis_morphing_parameter(
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> _MorphingParameter:
+    """音声を合成しモーフィング用パラメータへ変換する。"""
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する

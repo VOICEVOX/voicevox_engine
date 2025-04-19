@@ -152,6 +152,7 @@ def _cost2priority(context_id: int, cost: int) -> int:
 
 
 def priority2cost(context_id: int, priority: int) -> int:
+    """優先度をコストへ変換する。"""
     assert USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY
     cost_candidates = _search_cost_candidates(context_id)
     return cost_candidates[USER_DICT_MAX_PRIORITY - priority]
