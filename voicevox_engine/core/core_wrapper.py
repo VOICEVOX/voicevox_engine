@@ -965,7 +965,7 @@ class CoreWrapper:
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:
-        """コアの失敗を表すコードが現れた場合にそれを Python 例外へ変換する。"""
+        """コアの失敗を表すコードが現れた場合に Python 例外へ変換する。"""
         if not result:
             raise CoreError(
                 self.core.last_error_message().decode("utf-8", "backslashreplace")
