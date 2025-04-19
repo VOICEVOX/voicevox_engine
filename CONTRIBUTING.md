@@ -124,15 +124,14 @@ GitHub Issues を用いて機能向上を一元管理しています。
 ## 環境構築
 
 `Python 3.11.9` を用いて開発されています。
-インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+依存ライブラリをインストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
-また、パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
+パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
 uv のインストール方法については[公式ドキュメント](https://docs.astral.sh/uv/getting-started/installation/)を参考にしてください。
 
 ### 依存ライブラリをインストールする
 
 シェルで以下のコマンドを実行することで依存ライブラリがインストールされます。
-また、システムに `Python 3.11.9` が無い場合は uv に自動的にインストールされます。
 
 ```bash
 # 実行・開発・テスト環境のインストール
@@ -248,6 +247,8 @@ uv lock --upgrade # 全部更新
 ```
 
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
+
+Docker 用に requirements.txt ファイルを用意しています。
 
 ```bash
 uv export --no-annotate --no-hashes --no-header -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
