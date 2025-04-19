@@ -69,13 +69,11 @@ def _generate_api_docs_html(schema: str) -> str:
 
 
 def _generate_api_docs() -> None:
-    # app インスタンスをモック設定で生成する
     app = _generate_mock_app()
 
     # FastAPI の機能を用いて OpenAPI schema を生成する
     api_schema = json.dumps(app.openapi())
 
-    # API ドキュメント HTML を生成する
     api_docs_html = _generate_api_docs_html(api_schema)
 
     # HTML ファイルとして保存する
@@ -87,7 +85,6 @@ def _generate_api_docs() -> None:
 
 def main() -> None:
     """ドキュメントファイルを生成する。"""
-    # API ドキュメント HTML ファイルを生成する
     _generate_api_docs()
 
 
