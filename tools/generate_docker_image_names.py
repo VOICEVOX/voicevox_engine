@@ -22,7 +22,7 @@ REPO:VER
 from argparse import ArgumentParser
 
 
-def generate_docker_image_names(
+def _generate_docker_image_names(
     repository: str,
     version: str,
     comma_separated_prefix: str,
@@ -55,7 +55,7 @@ def generate_docker_image_names(
 
     Examples
     --------
-    >>> generate_docker_image_names(
+    >>> _generate_docker_image_names(
     ...     "voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04"
     ... )
     ['voicevox/voicevox_engine:0.22.0',
@@ -78,6 +78,7 @@ def generate_docker_image_names(
 
 
 def main() -> None:
+    """CLI引数からDockerイメージ名を生成し標準出力へ出力する。"""
     parser = ArgumentParser()
     parser.add_argument(
         "--repository",
@@ -105,7 +106,7 @@ def main() -> None:
     comma_separated_prefix: str = args.prefix
 
     # Dockerイメージ名を生成
-    docker_image_names = generate_docker_image_names(
+    docker_image_names = _generate_docker_image_names(
         repository=repository,
         version=version,
         comma_separated_prefix=comma_separated_prefix,
