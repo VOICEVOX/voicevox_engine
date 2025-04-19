@@ -222,7 +222,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         ),
         _License(
             package_name="ONNX Runtime",
-            package_version="1.13.1",
+            package_version="1.17.3",
             license_name="MIT license",
             license_text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
             license_text_type="remote_address",
@@ -288,6 +288,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING",
             license_text_type="remote_address",
         ),
+        # FIXME
         # license text from CUDA 11.8.0
         # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local
         # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe
