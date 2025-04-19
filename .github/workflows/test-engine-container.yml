@@ -44,7 +44,7 @@ jobs:
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-dev"
+          dependency-group: dev
 
       - name: <Setup> Declare variables
         id: docker_vars
@@ -86,4 +86,4 @@ jobs:
           exit 1
 
       - name: <Test> Test ENGINE application docker container
-        run: python tools/check_release_build.py --skip_run_process --skip_check_manifest --dist_dir dist/
+        run: uv run tools/check_release_build.py --skip_run_process --skip_check_manifest --dist_dir dist/

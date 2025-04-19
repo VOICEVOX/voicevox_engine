@@ -406,7 +406,7 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
 
 ```bash
-$ python run.py -h
+$ uv run run.py -h
 
 usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock] [--enable_cancellable_synthesis]
               [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}]
@@ -466,12 +466,15 @@ VOICEVOX ENGINE は皆さんのコントリビューションをお待ちして�
 `Python 3.11.9` を用いて開発されています。
 インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
 
+パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
+uv のインストール方法については[公式ドキュメント](https://docs.astral.sh/uv/getting-started/installation/)を参考にしてください。
+
 ```bash
 # 実行環境のインストール
-python -m pip install -r requirements.txt
+uv sync
 
 # 開発環境・テスト環境・ビルド環境のインストール
-python -m pip install -r requirements-dev.txt -r requirements-build.txt
+uv sync --all-groups
 ```
 
 ### 実行
@@ -479,32 +482,32 @@ python -m pip install -r requirements-dev.txt -r requirements-build.txt
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+uv run run.py --help
 ```
 
 ```bash
 # 製品版 VOICEVOX でサーバーを起動
 VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+uv run run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
 <!-- 差し替え可能な音声ライブラリまたはその仕様が公開されたらコメントを外す
 ```bash
 # 音声ライブラリを差し替える
 VOICELIB_DIR="C:/path/to/your/tts-model"
-python run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
+uv run run.py --voicevox_dir=$VOICEVOX_DIR --voicelib_dir=$VOICELIB_DIR
 ```
 -->
 
 ```bash
 # モックでサーバー起動
-python run.py --enable_mock
+uv run run.py --enable_mock
 ```
 
 ```bash
 # ログをUTF8に変更
-python run.py --output_log_utf8
-# もしくは VV_OUTPUT_LOG_UTF8=1 python run.py
+uv run run.py --output_log_utf8
+# もしくは VV_OUTPUT_LOG_UTF8=1 uv run run.py
 ```
 
 #### CPU スレッド数を指定する
@@ -515,12 +518,12 @@ CPU スレッド数が未指定の場合は、論理コア数の半分が使わ�
 
 - 実行時引数で指定する
   ```bash
-  python run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
+  uv run run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
   ```
 - 環境変数で指定する
   ```bash
   export VV_CPU_NUM_THREADS=4
-  python run.py --voicevox_dir=$VOICEVOX_DIR
+  uv run run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
 #### 過去のバージョンのコアを使う
@@ -533,13 +536,13 @@ Mac での libtorch 版コアのサポートはしていません。
 製品版 VOICEVOX もしくはコンパイル済みエンジンのディレクトリを`--voicevox_dir`引数で指定すると、そのバージョンのコアが使用されます。
 
 ```bash
-python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
+uv run run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 Mac では、`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
+DYLD_LIBRARY_PATH="/path/to/voicevox" uv run run.py --voicevox_dir="/path/to/VOICEVOX/vv-engine"
 ```
 
 ##### 音声ライブラリを直接指定する
@@ -551,13 +554,13 @@ DYLD_LIBRARY_PATH="/path/to/voicevox" python run.py --voicevox_dir="/path/to/VOI
 API エンドポイントでコアのバージョンを指定する場合は`core_version`引数を指定してください。（未指定の場合は最新のコアが使用されます）
 
 ```bash
-python run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
+uv run run.py --voicelib_dir="/path/to/voicevox_core" --runtime_dir="/path/to/libtorch_or_onnx"
 ```
 
 Mac では、`--runtime_dir`引数の代わりに`DYLD_LIBRARY_PATH`の指定が必要です。
 
 ```bash
-DYLD_LIBRARY_PATH="/path/to/onnx" python run.py --voicelib_dir="/path/to/voicevox_core"
+DYLD_LIBRARY_PATH="/path/to/onnx" uv run run.py --voicelib_dir="/path/to/voicevox_core"
 ```
 
 ##### ユーザーディレクトリに配置する
@@ -590,7 +593,7 @@ Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動
 
 ### 依存関係
 
-依存関係は `poetry` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
+依存関係は `uv` で管理されています。また、導入可能な依存ライブラリにはライセンス上の制約があります。  
 詳細は [貢献者ガイド#パッケージ](./CONTRIBUTING.md#パッケージ) を御覧ください。
 
 ### マルチエンジン機能に関して
