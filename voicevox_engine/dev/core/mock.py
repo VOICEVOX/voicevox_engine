@@ -19,9 +19,11 @@ class MockCoreWrapper(CoreWrapper):
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
+        """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
 
     def metas(self) -> str:
+        """キャラクターメタ情報を文字列として取得する。"""
         return json.dumps(
             [
                 # トーク２つ・ハミング２つ
@@ -231,16 +233,25 @@ class MockCoreWrapper(CoreWrapper):
         return np.array(result, dtype=np.float32)
 
     def supported_devices(self) -> str:
+        """コアが対応するデバイスの情報をJSON文字列として取得する。"""
         return json.dumps({"cpu": True, "cuda": False, "dml": False})
 
     def finalize(self) -> None:
+        """コアをファイナライズする。"""
+        # 「コアのファイナライズが常に成功する」として扱う
         pass
 
     def load_model(self, style_id: int) -> None:
+        """コアにモデルを読み込む。"""
+        # 「モデルの読み込みが常に成功する」として扱う
         pass
 
     def is_model_loaded(self, style_id: int) -> bool:
+        """コアに指定されたモデルが読み込まれているか確認する。"""
+        # 「モデルが常に読み込まれている」として扱う
         return True
 
     def assert_core_success(self, result: bool) -> None:
+        """コアの失敗を表すコードが現れた場合にそれを Python 例外へ変換する。"""
+        # 「コアが常に成功する」として扱う
         pass
