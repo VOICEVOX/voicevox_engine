@@ -113,6 +113,8 @@ class UserDictWord(BaseModel):
 
     @model_validator(mode="after")
     def check_mora_count_and_accent_type(self) -> Self:
+        """モーラ数を補完し、アクセント型をチェックする。"""
+        # モーラ数を補完する
         if self.mora_count is None:
             rule_others = (
                 "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
@@ -126,7 +128,7 @@ class UserDictWord(BaseModel):
                     self.pronunciation,
                 )
             )
-
+        # アクセント型をチェックする
         if not 0 <= self.accent_type <= self.mora_count:
             raise ValueError(
                 f"誤ったアクセント型です({self.accent_type})。 expect: 0 <= accent_type <= {self.mora_count}"
