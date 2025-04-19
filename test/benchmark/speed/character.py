@@ -9,7 +9,6 @@ from test.benchmark.speed.utility import benchmark_time
 
 def benchmark_get_speakers(server: ServerType, root_dir: Path | None = None) -> float:
     """`GET /speakers` にかかる時間を測定する。"""
-
     client = generate_client(server, root_dir)
 
     def execute() -> None:
@@ -24,7 +23,6 @@ def benchmark_get_speaker_info_all(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
     """全ての喋れるキャラクターへの `GET /speaker_info` にかかる時間を測定する。"""
-
     client = generate_client(server, root_dir)
 
     # speaker_uuid 一覧を準備
@@ -47,9 +45,9 @@ def benchmark_request_time_for_all_talk_characters(
 ) -> float:
     """
     喋れるキャラクターの数と同じ回数の `GET /` にかかる時間を測定する。
+
     `GET /` はエンジン内部処理が最小であるため、全ての喋れるキャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
-
     client = generate_client(server, root_dir)
 
     # speaker_uuid 一覧を準備

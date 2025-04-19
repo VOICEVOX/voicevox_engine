@@ -290,6 +290,7 @@ def _get_core_name(
 ) -> str | None:
     """
     設定値を満たすCoreの名前（None: サポート外）。
+
     macOSの場合はarch_nameをuniversalにする。
 
     Parameters
@@ -743,7 +744,6 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声波形
         """
-
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
             self.core.decode_forward(

@@ -14,7 +14,7 @@ class ResourceManagerError(Exception):
         self.message = message
 
 
-def b64encode_str(s: bytes) -> str:
+def _b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
@@ -28,6 +28,8 @@ class ResourceManager:
 
     def __init__(self, create_filemap_if_not_exist: bool) -> None:
         """
+        リソースマネージャーインスタンスを作る。
+
         Parameters
         ----------
         create_filemap_if_not_exist : bool
@@ -66,7 +68,7 @@ class ResourceManager:
             raise ResourceManagerError(f"{resource_path}がfilemapに登録されていません")
 
         if resource_format == "base64":
-            return b64encode_str(resource_path.read_bytes())
+            return _b64encode_str(resource_path.read_bytes())
         return filehash
 
     def resource_path(self, filehash: str) -> Path:

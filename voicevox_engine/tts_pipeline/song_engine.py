@@ -33,7 +33,6 @@ def _frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
 ) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
     """歌声合成用のクエリからフレームごとの音素・音高・音量を得る"""
-
     # 各データを分解・numpy配列に変換する
     phonemes = []
     phoneme_lengths = []
@@ -89,7 +88,6 @@ def _notes_to_keys_and_phonemes(
     phoneme_note_ids : list[NoteId]
         音素ごとのノートID列
     """
-
     note_lengths: list[int] = []
     note_consonants: list[int] = []
     note_vowels: list[int] = []
@@ -168,9 +166,9 @@ def _calc_phoneme_lengths(
     note_durations: NDArray[np.int64],
 ) -> NDArray[np.int64]:
     """
-    子音長と音符長から音素長を計算する
-    ただし、母音はノートの頭にくるようにするため、
-    予測された子音長は前のノートの長さを超えないように調整される
+    子音長と音符長から音素長を計算する。
+
+    母音はノートの頭にくるようにするため、予測された子音長は前のノートの長さを超えないように調整される。
     """
     phoneme_durations = []
     for i in range(len(consonant_lengths)):
@@ -388,7 +386,6 @@ class SongEngine:
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """歌声合成用のクエリ・スタイルIDに基づいて音声波形を生成する"""
-
         phoneme, f0, volume = _frame_query_to_sf_decoder_feature(query)
         raw_wave, sr_raw_wave = self._core.safe_sf_decode_forward(
             phoneme, f0, volume, style_id

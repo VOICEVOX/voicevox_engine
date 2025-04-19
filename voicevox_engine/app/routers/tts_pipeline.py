@@ -186,6 +186,7 @@ def generate_tts_pipeline_router(
     ) -> list[AccentPhrase]:
         """
         テキストからアクセント句を得ます。
+
         is_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。
         * 全てのカナはカタカナで記述される
         * アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。
@@ -540,6 +541,7 @@ def generate_tts_pipeline_router(
     ) -> bool:
         """
         テキストがAquesTalk 風記法に従っているかどうかを判定します。
+
         従っていない場合はエラーが返ります。
         """
         try:
@@ -564,6 +566,7 @@ def generate_tts_pipeline_router(
     ) -> None:
         """
         指定されたスタイルを初期化します。
+
         実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。
         """
         version = core_version or LATEST_VERSION

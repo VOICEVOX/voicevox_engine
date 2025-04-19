@@ -9,18 +9,14 @@ with_filemap_dir = Path(__file__).parent / "with_filemap"
 without_filemap_dir = Path(__file__).parent / "without_filemap"
 
 
-def b64encode_str(s: bytes) -> str:
+def _b64encode_str(s: bytes) -> str:
     return base64.b64encode(s).decode("utf-8")
 
 
 def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
-    """
-    `input_path`で指定したファイルから正しくbase64が取得できるか確認する
-    また、ハッシュを取得し、対応するファイルから同じバイト列が取得できるか確認する
-    """
+    """指定されたファイルの中身を base64 文字列およびハッシュ値として取得できる。"""
     true_bytes = input_path.read_bytes()
-
-    assert manager.resource_str(input_path, "base64") == b64encode_str(true_bytes)
+    assert manager.resource_str(input_path, "base64") == _b64encode_str(true_bytes)
 
     result_filehash = manager.resource_str(input_path, "hash")
     result_path = manager.resource_path(result_filehash)
@@ -29,7 +25,8 @@ def _assert_resource(manager: ResourceManager, input_path: Path) -> None:
 
 def test_with_filemap() -> None:
     """
-    "filemap.json"があるディレクトリでのテスト
+    "filemap.json"があるディレクトリでのテスト。
+
     （fimemapの生成コマンド）
     `python tools/generate_filemap.py --target_dir test/unit/resource_manager/with_filemap`
     """

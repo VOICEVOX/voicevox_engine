@@ -276,7 +276,8 @@ def test_mocked_create_sing_volume_from_phoneme_and_f0_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
     """
-    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` の出力スナップショットが一定である。
+
     NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
     """
     # Inputs
@@ -297,9 +298,9 @@ def test_mocked_synthesize_wave_from_score_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
     """
-    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と
-    `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である
+    モックされた `TTSEngine.create_sing_phoneme_and_f0_and_volume()` と `TTSEngine.frame_synthesize_wave()` の出力スナップショットが一定である。
     """
+    # FIXME: 2つのスナップショットテストをそれぞれ独立したテストとして実装する
     # Inputs
     tts_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
@@ -328,7 +329,7 @@ def test_mocked_synthesize_wave_from_score_output(
     )
 
 
-def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
+def _koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     return [
         AccentPhrase(
             moras=[
@@ -411,7 +412,7 @@ def koreha_arimasuka_base_expected() -> list[AccentPhrase]:
     ]
 
 
-def create_synthesis_test_base(text: str) -> list[AccentPhrase]:
+def _create_synthesis_test_base(text: str) -> list[AccentPhrase]:
     tts_engine = TTSEngine(core=MockCoreWrapper())
     return tts_engine.create_accent_phrases(text, StyleId(1))
 
@@ -426,12 +427,13 @@ def _assert_equeal_accent_phrases(
 
 
 def test_create_accent_phrases() -> None:
-    """accent_phrasesの作成時では疑問文モーラ処理を行わない
+    """accent_phrasesの作成時では疑問文モーラ処理を行わない。
+
     (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
     """
     tts_engine = TTSEngine(core=MockCoreWrapper())
     text = "これはありますか？"
-    expected = koreha_arimasuka_base_expected()
+    expected = _koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     actual = tts_engine.create_accent_phrases(text, StyleId(1))
     _assert_equeal_accent_phrases(expected, actual)
@@ -440,9 +442,9 @@ def test_create_accent_phrases() -> None:
 def test_upspeak_voiced_last_mora() -> None:
     # voiced + "？" + flagON -> upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="これはありますか？")
+    inputs = _create_synthesis_test_base(text="これはありますか？")
     # Expects
-    expected = koreha_arimasuka_base_expected()
+    expected = _koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     expected[-1].moras += [
         Mora(
@@ -461,9 +463,9 @@ def test_upspeak_voiced_last_mora() -> None:
 
     # voiced + "？" + flagOFF -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="これはありますか？")
+    inputs = _create_synthesis_test_base(text="これはありますか？")
     # Expects
-    expected = koreha_arimasuka_base_expected()
+    expected = _koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
     # Outputs
     outputs = _apply_interrogative_upspeak(inputs, False)
@@ -472,9 +474,9 @@ def test_upspeak_voiced_last_mora() -> None:
 
     # voiced + "" + flagON -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="これはありますか")
+    inputs = _create_synthesis_test_base(text="これはありますか")
     # Expects
-    expected = koreha_arimasuka_base_expected()
+    expected = _koreha_arimasuka_base_expected()
     # Outputs
     outputs = _apply_interrogative_upspeak(inputs, True)
     # Test
@@ -503,7 +505,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
 
     # voiced + "" + flagON -> upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="ん")
+    inputs = _create_synthesis_test_base(text="ん")
     # Expects
     expected = nn_base_expected()
     # Outputs
@@ -513,7 +515,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
 
     # voiced + "？" + flagON -> upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="ん？")
+    inputs = _create_synthesis_test_base(text="ん？")
     # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
@@ -534,7 +536,7 @@ def test_upspeak_voiced_N_last_mora() -> None:
 
     # voiced + "？" + flagOFF -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="ん？")
+    inputs = _create_synthesis_test_base(text="ん？")
     # Expects
     expected = nn_base_expected()
     expected[-1].is_interrogative = True
@@ -566,7 +568,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
 
     # unvoiced + "" + flagON -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="っ")
+    inputs = _create_synthesis_test_base(text="っ")
     # Expects
     expected = ltu_base_expected()
     # Outputs
@@ -576,7 +578,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
 
     # unvoiced + "？" + flagON -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="っ？")
+    inputs = _create_synthesis_test_base(text="っ？")
     # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
@@ -587,7 +589,7 @@ def test_upspeak_unvoiced_last_mora() -> None:
 
     # unvoiced + "？" + flagOFF -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="っ？")
+    inputs = _create_synthesis_test_base(text="っ？")
     # Expects
     expected = ltu_base_expected()
     expected[-1].is_interrogative = True
@@ -619,7 +621,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
 
     # voiced + "" + flagON -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="す")
+    inputs = _create_synthesis_test_base(text="す")
     # Expects
     expected = su_base_expected()
     # Outputs
@@ -629,7 +631,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
 
     # voiced + "？" + flagON -> upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="す？")
+    inputs = _create_synthesis_test_base(text="す？")
     # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True
@@ -650,7 +652,7 @@ def test_upspeak_voiced_u_last_mora() -> None:
 
     # voiced + "？" + flagOFF -> non-upspeak
     # Inputs
-    inputs = create_synthesis_test_base(text="す？")
+    inputs = _create_synthesis_test_base(text="す？")
     # Expects
     expected = su_base_expected()
     expected[-1].is_interrogative = True

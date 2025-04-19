@@ -139,7 +139,7 @@ def _search_cost_candidates(context_id: int) -> list[int]:
     raise UserDictInputError("品詞IDが不正です")
 
 
-def cost2priority(context_id: int, cost: int) -> int:
+def _cost2priority(context_id: int, cost: int) -> int:
     assert -32768 <= cost <= 32767
     cost_candidates = _search_cost_candidates(context_id)
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
@@ -207,7 +207,7 @@ def convert_from_save_format(word: SaveFormatUserDictWord) -> UserDictWord:
     # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
     # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
     context_id = context_id_p_noun if word.context_id is None else word.context_id
-    priority = cost2priority(context_id, word.cost)
+    priority = _cost2priority(context_id, word.cost)
     return UserDictWord(
         surface=word.surface,
         priority=priority,

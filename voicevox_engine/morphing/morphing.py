@@ -1,5 +1,6 @@
 """
-WORLDを使ってモーフィングするためのモジュール。
+WORLDを使ってモーフィングする。
+
 pyworldの入出力はnp.doubleやnp.float64なので注意。
 """
 
@@ -42,6 +43,7 @@ def get_morphable_targets(
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     キャラクターごとにモーフィングできるスタイルの一覧を生成する。
+
     指定されたベースキャラクターそれぞれに対し、引数のキャラクターリスト全体をチェックする。
     """
     morphable_targets_arr = []
@@ -62,7 +64,6 @@ def is_morphable(
     characters: list[Character], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
     """指定された２つのスタイル ID がモーフィング可能か判定する。"""
-
     # スタイル ID にキャラクターを紐付ける対応表を生成する。
     style_id_to_character: dict[StyleId, Character] = {}
     for character in characters:
@@ -165,7 +166,6 @@ def synthesize_morphed_wave(
     ValueError
         morph_rate ∈ [0, 1]
     """
-
     if morph_rate < 0.0 or morph_rate > 1.0:
         raise ValueError("morph_rateは0.0から1.0の範囲で指定してください")
 

@@ -1,4 +1,4 @@
-"ユーザー辞書関連の処理"
+"""ユーザー辞書関連の処理"""
 
 import json
 import sys
@@ -27,7 +27,7 @@ from .user_dict_word import (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
+def _mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
     def wrap(f: F) -> F:
         def func(*args: Any, **kw: Any) -> Any:
             lock.acquire()
@@ -119,12 +119,15 @@ def _delete_file_on_close(file_path: Path) -> None:
 class UserDictionary:
     """ユーザー辞書"""
 
+    # FIXME: OpenJTalk 用辞書の管理機能を備えているため、このクラスは Manager としても捉えられる。クラス名変更や役割分割等を検討。
     def __init__(
         self,
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
         """
+        ユーザー辞書を利用可能にする。
+
         Parameters
         ----------
         default_dict_path : Path
@@ -136,7 +139,7 @@ class UserDictionary:
         self._user_dict_path = user_dict_path
         self.update_dict()
 
-    @mutex_wrapper(mutex_user_dict)
+    @_mutex_wrapper(mutex_user_dict)
     def _write_to_json(self, user_dict: dict[str, UserDictWord]) -> None:
         """ユーザー辞書データをファイルへ書き込む。"""
         save_format_user_dict: dict[str, SaveFormatUserDictWord] = {}
@@ -146,7 +149,7 @@ class UserDictionary:
         user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
         self._user_dict_path.write_bytes(user_dict_json)
 
-    @mutex_wrapper(mutex_openjtalk_dict)
+    @_mutex_wrapper(mutex_openjtalk_dict)
     def update_dict(self) -> None:
         """辞書を更新する。"""
         default_dict_path = self._default_dict_path
@@ -224,7 +227,7 @@ class UserDictionary:
             if tmp_compiled_path.exists():
                 _delete_file_on_close(tmp_compiled_path)
 
-    @mutex_wrapper(mutex_user_dict)
+    @_mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
         """ユーザー辞書を読み出す。"""
         # 指定ユーザー辞書が存在しない場合、空辞書を返す

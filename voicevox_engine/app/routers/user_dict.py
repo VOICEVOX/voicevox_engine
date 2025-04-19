@@ -31,6 +31,7 @@ def generate_user_dict_router(
     def get_user_dict_words() -> dict[str, UserDictWord]:
         """
         ユーザー辞書に登録されている単語の一覧を返します。
+
         単語の表層形(surface)は正規化済みの物を返します。
         """
         try:
