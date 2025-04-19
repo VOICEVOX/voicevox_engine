@@ -10,7 +10,7 @@ from typing import Literal
 
 
 class ResourceManagerError(Exception):
-    """リソースマネージャー関連に問題が起きた。"""
+    """リソースマネージャー関連で問題が起きた。"""
 
     def __init__(self, message: str):
         self.message = message
