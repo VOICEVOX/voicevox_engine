@@ -131,6 +131,7 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
 
 class _LicenseError(Exception):
     """License違反が検出された。"""
+
     pass
 
 
