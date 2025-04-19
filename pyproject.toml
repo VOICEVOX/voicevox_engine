@@ -8,7 +8,6 @@ ignore = [
   "D400", # missing-trailing-period。日本語の「。」に対応していないため
   "D100", # NOTE: 段階的に有効化する可能性がある。
   "D102", # NOTE: 段階的に有効化する可能性がある。
-  "D103", # NOTE: 段階的に有効化する可能性がある。
   "D104", # NOTE: 段階的に有効化する可能性がある。
   "D105", # NOTE: 段階的に有効化する可能性がある。
   "D200", # NOTE: 段階的に有効化する可能性がある。
@@ -18,6 +17,9 @@ unfixable = [
   "F401", # unused-import
   "F841"  # unused-variable
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"test/*" = ["D103"] # undocumented-public-function。pytest がテスト対象関数に `test_*()` の public 名を強制するため。
 
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
