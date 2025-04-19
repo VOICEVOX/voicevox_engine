@@ -1,3 +1,4 @@
+import argparse
 import json
 import subprocess
 import sys
@@ -9,50 +10,11 @@ from typing import Literal, assert_never
 from pydantic import TypeAdapter
 
 
-class _LicenseError(Exception):
-    # License違反があった場合、このエラーを出します。
-    pass
-
-
-class _License:
-    def __init__(
-        self,
-        package_name: str,
-        package_version: str | None,
-        license_name: str | None,
-        license_text: str,
-        license_text_type: Literal["raw", "local_address", "remote_address"],
-    ):
-        self.package_name = package_name
-        self.package_version = package_version
-        self.license_name = license_name
-
-        match license_text_type:
-            case "raw":
-                self.license_text = license_text
-            case "local_address":
-                # ライセンステキストをローカルのライセンスファイルから抽出する
-                self.license_text = Path(license_text).read_text(encoding="utf8")
-            case "remote_address":
-                self.license_text = _get_license_text(license_text)
-            case _:
-                assert_never("型で保護され実行されないはずのパスが実行されました")
-
-
 def _get_license_text(text_url: str) -> str:
     """URL が指すテキストを取得する。"""
     with urllib.request.urlopen(text_url) as res:
         # NOTE: `urlopen` 返り値の型が貧弱なため型チェックを無視する
         return res.read().decode()  # type: ignore
-
-
-def _generate_licenses() -> list[_License]:
-    raw_licenses = _acquire_licenses_of_pip_managed_libraries()
-    licenses = _update_licenses(raw_licenses)
-    _validate_license_compliance(licenses)
-    _add_licenses_manually(licenses)
-
-    return licenses
 
 
 @dataclass
@@ -92,6 +54,31 @@ def _acquire_licenses_of_pip_managed_libraries() -> list[_PipLicense]:
     # ライセンス情報の形式をチェックする
     licenses = _pip_licenses_adapter.validate_json(pip_licenses_json)
     return licenses
+
+
+class _License:
+    def __init__(
+        self,
+        package_name: str,
+        package_version: str | None,
+        license_name: str | None,
+        license_text: str,
+        license_text_type: Literal["raw", "local_address", "remote_address"],
+    ):
+        self.package_name = package_name
+        self.package_version = package_version
+        self.license_name = license_name
+
+        match license_text_type:
+            case "raw":
+                self.license_text = license_text
+            case "local_address":
+                # ライセンステキストをローカルのライセンスファイルから抽出する
+                self.license_text = Path(license_text).read_text(encoding="utf8")
+            case "remote_address":
+                self.license_text = _get_license_text(license_text)
+            case _:
+                assert_never("型で保護され実行されないはずのパスが実行されました")
 
 
 def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
@@ -140,6 +127,11 @@ def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
         )
 
     return updated_licenses
+
+
+class _LicenseError(Exception):
+    """License違反が検出された。"""
+    pass
 
 
 def _validate_license_compliance(licenses: list[_License]) -> None:
@@ -313,9 +305,16 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
     ]
 
 
-if __name__ == "__main__":
-    import argparse
+def _generate_licenses() -> list[_License]:
+    pip_licenses = _acquire_licenses_of_pip_managed_libraries()
+    licenses = _update_licenses(pip_licenses)
+    _validate_license_compliance(licenses)
+    _add_licenses_manually(licenses)
 
+    return licenses
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output_path", type=str)
     args = parser.parse_args()
