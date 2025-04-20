@@ -45,9 +45,7 @@ _SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
 class _EngineCharacter(BaseModel):
-    """
-    エンジンに含まれるキャラクター情報
-    """
+    """エンジンに含まれるキャラクター情報。"""
 
     supported_features: SpeakerSupportedFeatures = Field(
         default_factory=SpeakerSupportedFeatures

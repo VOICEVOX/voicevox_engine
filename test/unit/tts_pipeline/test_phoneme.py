@@ -1,3 +1,5 @@
+"""Phoneme クラスの単体テスト。"""
+
 import pytest
 
 from voicevox_engine.tts_pipeline.phoneme import Phoneme

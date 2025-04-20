@@ -32,7 +32,7 @@ class CoreError(Exception):
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     """
-    コアの実行に必要な依存 DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
+    コアの実行に必要な依存 DLL を読み込む。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
 
     Args:
         runtime_dirs - 直下に DLL が存在するディレクトリの一覧
@@ -64,7 +64,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     else:
         raise RuntimeError("不明なOSです")
 
-    # 引数指定ディレクトリ直下の DLL をロードする
+    # 引数指定ディレクトリ直下の DLL を読み込む
     for runtime_dir in runtime_dirs:
         for lib_file_name in lib_file_names:
             try:
@@ -72,7 +72,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             except OSError:
                 pass
 
-    # システム検索ディレクトリ直下の DLL をロードする
+    # システム検索ディレクトリ直下の DLL を読み込む
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
@@ -265,9 +265,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
 
 
 def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
-    """
-    実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）
-    """
+    """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
     machine = platform.machine()
     # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
     if machine == "x86_64" or machine == "x64" or machine == "AMD64":
@@ -360,7 +358,7 @@ def _check_core_type(core_dir: Path) -> Literal["libtorch", "onnxruntime"] | Non
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     """
-    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLのロード
+    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLを読み込む。
 
     Parameters
     ----------
@@ -936,9 +934,7 @@ class CoreWrapper:
         raise OldCoreError
 
     def supported_devices(self) -> str:
-        """
-        コアが対応するデバイスの情報をJSON文字列として取得する。
-        """
+        """コアが対応するデバイスの情報をJSON文字列として取得する。"""
         if self.api_exists["supported_devices"]:
             supported_devices_byte: bytes = self.core.supported_devices()
             return supported_devices_byte.decode("utf-8")

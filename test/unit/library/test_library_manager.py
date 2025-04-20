@@ -1,3 +1,5 @@
+"""ライブラリ管理の単体テスト。"""
+
 import copy
 import glob
 import json

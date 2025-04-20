@@ -14,9 +14,7 @@ NoteId = NewType("NoteId", str)
 
 
 class Mora(BaseModel):
-    """
-    モーラ（子音＋母音）ごとの情報
-    """
+    """モーラ（子音＋母音）ごとの情報。"""
 
     model_config = ConfigDict(validate_assignment=True)
 
@@ -34,6 +32,8 @@ class Mora(BaseModel):
     )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
 
     def __hash__(self) -> int:
+        """内容に対して一意なハッシュ値を返す。"""
+        # NOTE: lru_cache がユースケースのひとつ
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
@@ -42,9 +42,7 @@ class Mora(BaseModel):
 
 
 class AccentPhrase(BaseModel):
-    """
-    アクセント句ごとの情報
-    """
+    """アクセント句ごとの情報。"""
 
     moras: list[Mora] = Field(description="モーラのリスト")
     accent: int = Field(description="アクセント箇所")
@@ -54,6 +52,8 @@ class AccentPhrase(BaseModel):
     is_interrogative: bool = Field(default=False, description="疑問系かどうか")
 
     def __hash__(self) -> int:
+        """内容に対して一意なハッシュ値を返す。"""
+        # NOTE: lru_cache がユースケースのひとつ
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
@@ -62,9 +62,7 @@ class AccentPhrase(BaseModel):
 
 
 class Note(BaseModel):
-    """
-    音符ごとの情報
-    """
+    """音符ごとの情報。"""
 
     id: NoteId | None = Field(default=None, description="ID")
     key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
@@ -73,17 +71,13 @@ class Note(BaseModel):
 
 
 class Score(BaseModel):
-    """
-    楽譜情報
-    """
+    """楽譜情報。"""
 
     notes: list[Note] = Field(description="音符のリスト")
 
 
 class FramePhoneme(BaseModel):
-    """
-    音素の情報
-    """
+    """音素の情報。"""
 
     phoneme: str = Field(description="音素")
     frame_length: int = Field(description="音素のフレーム長")
@@ -91,9 +85,7 @@ class FramePhoneme(BaseModel):
 
 
 class FrameAudioQuery(BaseModel):
-    """
-    フレームごとの音声合成用のクエリ
-    """
+    """フレームごとの音声合成用のクエリ。"""
 
     f0: list[float] = Field(description="フレームごとの基本周波数")
     volume: list[float] = Field(description="フレームごとの音量")

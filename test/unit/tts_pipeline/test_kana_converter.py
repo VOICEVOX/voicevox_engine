@@ -1,3 +1,5 @@
+"""AquesTalk 風記法パーサーの単体テスト。"""
+
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline import kana_converter
