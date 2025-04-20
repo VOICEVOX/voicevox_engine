@@ -2,19 +2,36 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP"]
+select = ["E", "F", "B", "I", "W", "UP", "D"]
 ignore = [
   "E501", # line-too-long
-  "B904"  # TODO: 一時期に除外、あとで有効化する
+  "D400", # missing-trailing-period。日本語の「。」に対応していないため。
+  "D403", # first-word-uncapitalized。日本語とは無関係であるため。日英混合時の挙動に一貫性が無いため。
 ]
 unfixable = [
   "F401", # unused-import
   "F841"  # unused-variable
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"test/**/test_*.py" = ["D103"] # undocumented-public-function。pytest の対象 test_*() が D103 の対象になり、関数名から内容が自明でも docstring を強制されるため。
+
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
 known-third-party = ["numpy"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.mypy]
+strict = true
+plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unreachable = true
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument
@@ -52,6 +69,7 @@ pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
 pre-commit = "^4.0.1"
 pip-audit = "^2.7.3"
 ruff = "^0.11.1"
+typos = "^1.31.1"
 
 [tool.poetry.group.build.dependencies]
 pyinstaller = "^5.13"

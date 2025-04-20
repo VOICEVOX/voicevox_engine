@@ -68,7 +68,7 @@ jobs:
 
       - name: <Test> Test names by checking typo
         if: runner.os == 'Linux'
-        uses: crate-ci/typos@v1.21.0
+        run: typos
 
   lint-builders:
     runs-on: ubuntu-22.04

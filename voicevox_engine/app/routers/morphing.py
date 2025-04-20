@@ -47,6 +47,7 @@ def generate_morphing_router(
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
+
         モーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。
         プロパティが存在しない場合は、モーフィングが許可されているとみなします。
         返り値のスタイルIDはstring型なので注意。
@@ -56,7 +57,7 @@ def generate_morphing_router(
             morphable_targets = get_morphable_targets(characters, base_style_ids)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=404, detail=msg) from e
         # NOTE: jsonはint型のキーを持てないので、string型に変換する
         return [
             {str(k): v for k, v in morphable_target.items()}
@@ -84,10 +85,11 @@ def generate_morphing_router(
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
+
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
 
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
@@ -95,7 +97,7 @@ def generate_morphing_router(
             morphable = is_morphable(characters, base_style_id, target_style_id)
         except StyleIdNotFoundError as e:
             msg = f"該当するスタイル(style_id={e.style_id})が見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise HTTPException(status_code=404, detail=msg) from e
         if not morphable:
             msg = "指定されたスタイルペアでのモーフィングはできません"
             raise HTTPException(status_code=400, detail=msg)

@@ -14,11 +14,15 @@ from .phoneme import Consonant, Sil, Vowel
 
 
 class NonOjtPhonemeError(Exception):
+    """OpenJTalk で想定されていない音素が検出された。"""
+
     def __init__(self, **kwargs: Any) -> None:
         self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
 
 
 class OjtUnknownPhonemeError(Exception):
+    """OpenJTalk の unknown 音素 `xx` が検出された。"""
+
     def __init__(self, **kwargs: Any) -> None:
         self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
 
@@ -80,7 +84,7 @@ _OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
 _OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
 
 
-def is_ojt_phoneme(
+def _is_ojt_phoneme(
     p: str,
 ) -> TypeGuard[Vowel | Sil | Consonant | _OJT_UNKNOWN]:
     return p in _OJT_PHONEMES
@@ -95,7 +99,7 @@ class Label:
     @classmethod
     def from_feature(cls, feature: str) -> Self:
         """OpenJTalk feature から Label インスタンスを生成する"""
-        # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
+        # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。
         # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx
         result = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
@@ -104,10 +108,10 @@ class Label:
             r"/C\:(?P<c1>.+?)\_(?P<c2>.+?)\+(?P<c3>.+?)"
             r"/D\:(?P<d1>.+?)\+(?P<d2>.+?)\_(?P<d3>.+?)"
             r"/E\:(?P<e1>.+?)\_(?P<e2>.+?)\!(?P<e3>.+?)\_(?P<e4>.+?)\-(?P<e5>.+?)"
-            r"/F\:(?P<f1>.+?)\_(?P<f2>.+?)\#(?P<f3>.+?)\_(?P<f4>.+?)\@(?P<f5>.+?)\_(?P<f6>.+?)\|(?P<f7>.+?)\_(?P<f8>.+?)"  # noqa
+            r"/F\:(?P<f1>.+?)\_(?P<f2>.+?)\#(?P<f3>.+?)\_(?P<f4>.+?)\@(?P<f5>.+?)\_(?P<f6>.+?)\|(?P<f7>.+?)\_(?P<f8>.+?)"
             r"/G\:(?P<g1>.+?)\_(?P<g2>.+?)\%(?P<g3>.+?)\_(?P<g4>.+?)\_(?P<g5>.+?)"
             r"/H\:(?P<h1>.+?)\_(?P<h2>.+?)"
-            r"/I\:(?P<i1>.+?)\-(?P<i2>.+?)\@(?P<i3>.+?)\+(?P<i4>.+?)\&(?P<i5>.+?)\-(?P<i6>.+?)\|(?P<i7>.+?)\+(?P<i8>.+?)"  # noqa
+            r"/I\:(?P<i1>.+?)\-(?P<i2>.+?)\@(?P<i3>.+?)\+(?P<i4>.+?)\&(?P<i5>.+?)\-(?P<i6>.+?)\|(?P<i7>.+?)\+(?P<i8>.+?)"
             r"/J\:(?P<j1>.+?)\_(?P<j2>.+?)"
             r"/K\:(?P<k1>.+?)\+(?P<k2>.+?)\-(?P<k3>.+?)$",
             feature,
@@ -122,7 +126,7 @@ class Label:
     def phoneme(self) -> Vowel | Consonant | Sil:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
         p = self.contexts["p3"]
-        if is_ojt_phoneme(p):
+        if _is_ojt_phoneme(p):
             if p == "xx":
                 raise OjtUnknownPhonemeError()
             else:
@@ -159,6 +163,7 @@ class Label:
         return self.contexts["i3"]
 
     def __repr__(self) -> str:
+        """Label クラス共通の文字列にこのインスタンスが持つ音素を含めて表示する。"""
         return f"<Label phoneme='{self.phoneme}'>"
 
 
@@ -189,7 +194,6 @@ class AccentPhraseLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
-
         # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         moras: list[MoraLabel] = []  # モーラ系列
@@ -249,7 +253,6 @@ class BreathGroupLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
@@ -298,7 +301,6 @@ class UtteranceLabel:
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
         """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
-
         # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
 
         pauses: list[Label] = []  # ポーズラベルのリスト

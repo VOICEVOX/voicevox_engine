@@ -1,6 +1,7 @@
 """
-Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
-バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する
+Dockerイメージ名を生成する。
+
+Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する。
 
 例
 $ python3 ./tools/generate_docker_image_names.py \
@@ -21,15 +22,15 @@ REPO:VER
 from argparse import ArgumentParser
 
 
-def generate_docker_image_names(
+def _generate_docker_image_names(
     repository: str,
     version: str,
     comma_separated_prefix: str,
 ) -> list[str]:
     """
-    Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、
-    バージョン文字列付きのDockerイメージ名を配列で返す
+    Dockerイメージ名を生成する。
 
+    Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を配列で返す。
     prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
 
     - 例: repository="REPO", version="VER", prefix="A" -> "REPO:A-VER"
@@ -54,7 +55,9 @@ def generate_docker_image_names(
 
     Examples
     --------
-    >>> generate_docker_image_names("voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04")
+    >>> _generate_docker_image_names(
+    ...     "voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04"
+    ... )
     ['voicevox/voicevox_engine:0.22.0',
      'voicevox/voicevox_engine:cpu-0.22.0',
      'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0']
@@ -75,6 +78,7 @@ def generate_docker_image_names(
 
 
 def main() -> None:
+    """コマンドライン引数からDockerイメージ名を生成し標準出力へ出力する。"""
     parser = ArgumentParser()
     parser.add_argument(
         "--repository",
@@ -102,7 +106,7 @@ def main() -> None:
     comma_separated_prefix: str = args.prefix
 
     # Dockerイメージ名を生成
-    docker_image_names = generate_docker_image_names(
+    docker_image_names = _generate_docker_image_names(
         repository=repository,
         version=version,
         comma_separated_prefix=comma_separated_prefix,

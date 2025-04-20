@@ -1,6 +1,4 @@
-"""
-/singers API のテスト
-"""
+"""/singers API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

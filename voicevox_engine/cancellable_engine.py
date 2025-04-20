@@ -41,10 +41,7 @@ class CancellableEngine:
         cpu_num_threads: int | None = None,
         enable_mock: bool = True,
     ) -> None:
-        """
-        init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。
-        """
-
+        """init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。"""
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
@@ -145,8 +142,10 @@ class CancellableEngine:
             if not isinstance(audio_file_name, str):
                 # ここには来ないはず
                 raise CancellableEngineInternalError("不正な値が生成されました")
-        except EOFError:
-            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
+        except EOFError as e:
+            raise CancellableEngineInternalError(
+                "既にサブプロセスは終了されています"
+            ) from e
         except Exception:
             self._finalize_con(request, synth_process, synth_connection)
             raise
@@ -155,9 +154,7 @@ class CancellableEngine:
         return audio_file_name
 
     async def catch_disconnection(self) -> None:
-        """
-        接続監視を行うコルーチン
-        """
+        """接続監視を行うコルーチン。"""
         while True:
             await asyncio.sleep(1)
             for con in self._actives_pool:
@@ -214,7 +211,7 @@ def start_synthesis_subprocess(
 
             # 音声を合成しファイルへ保存する
             try:
-                _engine = tts_engines.get_engine(version)
+                _engine = tts_engines.get_tts_engine(version)
             except Exception:
                 # コネクションを介して「バージョンが見つからないエラー」を送信する
                 connection.send("")  # `""` をエラーして扱う

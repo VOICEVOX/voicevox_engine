@@ -1,3 +1,5 @@
+"""全テスト共通のユーティリティ。"""
+
 import hashlib
 import io
 from typing import Any
@@ -5,6 +7,7 @@ from typing import Any
 import numpy as np
 import soundfile as sf
 from fastapi.encoders import jsonable_encoder
+from numpy.typing import NDArray
 
 
 def round_floats(value: Any, round_value: int) -> Any:
@@ -45,7 +48,7 @@ def hash_long_string(value: Any) -> Any:
 def summarize_big_ndarray(value: Any) -> Any:
     """要素数が100を超える NDArray を、ハッシュ値と shape からなる文字列へ要約する"""
 
-    def to_hash(value: np.ndarray) -> str:
+    def to_hash(value: NDArray[Any]) -> str:
         return "MD5:" + hashlib.md5(value.tobytes()).hexdigest()
 
     if isinstance(value, np.ndarray):

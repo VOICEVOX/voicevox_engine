@@ -1,5 +1,6 @@
 """
-WORLDを使ってモーフィングするためのモジュール。
+WORLDを使ってモーフィングする。
+
 pyworldの入出力はnp.doubleやnp.float64なので注意。
 """
 
@@ -21,6 +22,10 @@ from ..tts_pipeline.tts_engine import TTSEngine
 
 
 class StyleIdNotFoundError(LookupError):
+    """モーフィング可能なスタイルIDが見つからなかった。"""
+
+    # FIXME: クラス名を機能に合わせてリネーム
+
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.style_id = style_id
         super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
@@ -42,6 +47,7 @@ def get_morphable_targets(
 ) -> list[dict[StyleId, MorphableTargetInfo]]:
     """
     キャラクターごとにモーフィングできるスタイルの一覧を生成する。
+
     指定されたベースキャラクターそれぞれに対し、引数のキャラクターリスト全体をチェックする。
     """
     morphable_targets_arr = []
@@ -62,7 +68,6 @@ def is_morphable(
     characters: list[Character], style_id_1: StyleId, style_id_2: StyleId
 ) -> bool:
     """指定された２つのスタイル ID がモーフィング可能か判定する。"""
-
     # スタイル ID にキャラクターを紐付ける対応表を生成する。
     style_id_to_character: dict[StyleId, Character] = {}
     for character in characters:
@@ -71,12 +76,12 @@ def is_morphable(
 
     try:
         character_1 = style_id_to_character[style_id_1]
-    except KeyError:
-        raise StyleIdNotFoundError(style_id_1)
+    except KeyError as e:
+        raise StyleIdNotFoundError(style_id_1) from e
     try:
         character_2 = style_id_to_character[style_id_2]
-    except KeyError:
-        raise StyleIdNotFoundError(style_id_2)
+    except KeyError as e:
+        raise StyleIdNotFoundError(style_id_2) from e
 
     sing_style_ids_1 = [sing_style.id for sing_style in character_1.sing_styles]
     sing_style_ids_2 = [sing_style.id for sing_style in character_2.sing_styles]
@@ -106,6 +111,7 @@ def synthesis_morphing_parameter(
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> _MorphingParameter:
+    """音声を合成しモーフィング用パラメータへ変換する。"""
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
@@ -161,11 +167,10 @@ def synthesize_morphed_wave(
         モーフィングした音声
 
     Raises
-    -------
+    ------
     ValueError
         morph_rate ∈ [0, 1]
     """
-
     if morph_rate < 0.0 or morph_rate > 1.0:
         raise ValueError("morph_rateは0.0から1.0の範囲で指定してください")
 
