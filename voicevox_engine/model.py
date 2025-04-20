@@ -40,7 +40,8 @@ class AudioQuery(BaseModel):
     )
 
     def __hash__(self) -> int:
-        """タプルの入れ子としてハッシュ化する。"""
+        """内容に対して一意なハッシュ値を返す。"""
+        # NOTE: lru_cache がユースケースのひとつ
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()
