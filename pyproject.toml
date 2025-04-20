@@ -7,7 +7,6 @@ ignore = [
   "E501", # line-too-long
   "D400", # missing-trailing-period。日本語の「。」に対応していないため。
   "D403", # first-word-uncapitalized。日本語とは無関係であるため。日英混合時の挙動に一貫性が無いため。
-  "D102", # NOTE: 段階的に有効化する可能性がある。
 ]
 unfixable = [
   "F401", # unused-import

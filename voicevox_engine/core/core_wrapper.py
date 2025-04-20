@@ -582,6 +582,7 @@ class CoreWrapper:
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
+        """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
 
         self.core = load_core(core_dir, use_gpu)
@@ -620,6 +621,7 @@ class CoreWrapper:
             os.chdir(cwd)
 
     def metas(self) -> str:
+        """キャラクターメタ情報を文字列として取得する。"""
         metas_bytes: bytes = self.core.metas()
         return metas_bytes.decode("utf-8")
 
@@ -630,7 +632,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        音素列から、音素ごとの長さを求める関数
+        音素列から音素ごとの長さを求める。
 
         Parameters
         ----------
@@ -669,7 +671,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+        モーラごとの音素列とアクセント情報からモーラごとの音高を求める。
 
         Parameters
         ----------
@@ -726,7 +728,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素と音高から波形を求める関数
+        フレームごとの音素と音高から波形を求める。
 
         Parameters
         ----------
@@ -768,7 +770,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.int64]:
         """
-        子音・母音列から、音素ごとの長さを求める関数
+        子音・母音列から音素ごとの長さを求める。
 
         Parameters
         ----------
@@ -811,7 +813,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素列とノート列から、フレームごとのF0を求める関数
+        フレームごとの音素列とノート列からフレームごとのF0を求める。
 
         Parameters
         ----------
@@ -852,7 +854,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
+        フレームごとの音素列とノート列からフレームごとの音量を求める。
 
         Parameters
         ----------
@@ -896,7 +898,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素と音高から波形を求める関数
+        フレームごとの音素と音高から波形を求める。
 
         Parameters
         ----------
@@ -932,30 +934,34 @@ class CoreWrapper:
         raise OldCoreError
 
     def supported_devices(self) -> str:
-        """coreから取得した対応デバイスに関するjsonデータの文字列。"""
+        """コアが対応するデバイスの情報をJSON文字列として取得する。"""
         if self.api_exists["supported_devices"]:
             supported_devices_byte: bytes = self.core.supported_devices()
             return supported_devices_byte.decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
+        """コアをファイナライズする。"""
         if self.api_exists["finalize"]:
             self.core.finalize()
             return
         raise OldCoreError
 
     def load_model(self, style_id: int) -> None:
+        """コアにモデルを読み込む。"""
         if self.api_exists["load_model"]:
             self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:
+        """コアに指定されたモデルが読み込まれているか確認する。"""
         if self.api_exists["is_model_loaded"]:
             loaded_bool: bool = self.core.is_model_loaded(c_long(style_id))
             return loaded_bool
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:
+        """コアの失敗を表すコードが現れた場合に Python 例外へ変換する。"""
         if not result:
             raise CoreError(
                 self.core.last_error_message().decode("utf-8", "backslashreplace")
