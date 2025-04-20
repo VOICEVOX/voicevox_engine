@@ -78,7 +78,7 @@ def _generate_docker_image_names(
 
 
 def main() -> None:
-    """CLI引数からDockerイメージ名を生成し標準出力へ出力する。"""
+    """コマンドライン引数からDockerイメージ名を生成し標準出力へ出力する。"""
     parser = ArgumentParser()
     parser.add_argument(
         "--repository",
