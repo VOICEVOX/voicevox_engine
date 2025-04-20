@@ -114,7 +114,7 @@ class UserDictWord(BaseModel):
     @model_validator(mode="after")
     def check_mora_count_and_accent_type(self) -> Self:
         """モーラ数が None であれば計算し、アクセント型を検証する。"""
-        # TODO: 2つの機能を単一関数に入れるのが正しいか検討
+        # TODO: 2つの機能を２つの関数に分けるのが正しいか検討
         # モーラ数を計算し代入する
         if self.mora_count is None:
             rule_others = (
