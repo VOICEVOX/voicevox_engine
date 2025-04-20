@@ -274,9 +274,7 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
 def test_mocked_create_phoneme_and_f0_and_volume_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
-    """
-    モックされた `SongEngine.create_phoneme_and_f0_and_volume()` の出力スナップショットが一定である。
-    """
+    """モックされた `SongEngine.create_phoneme_and_f0_and_volume()` の出力スナップショットが一定である。"""
     # Inputs
     song_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
@@ -291,9 +289,7 @@ def test_mocked_create_phoneme_and_f0_and_volume_output(
 def test_mocked_create_volume_from_phoneme_and_f0_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
-    """
-    モックされた `SongEngine.create_volume_from_phoneme_and_f0()` の出力スナップショットが一定である。
-    """
+    """モックされた `SongEngine.create_volume_from_phoneme_and_f0()` の出力スナップショットが一定である。"""
     # NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
     # Inputs
     song_engine = SongEngine(MockCoreWrapper())
