@@ -1,6 +1,4 @@
-"""
-'ResourceManager'が参照するfilemapを予め生成する。
-"""
+"""'ResourceManager'が参照するfilemapを予め生成する。"""
 
 import json
 import os

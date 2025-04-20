@@ -41,9 +41,7 @@ class CancellableEngine:
         cpu_num_threads: int | None = None,
         enable_mock: bool = True,
     ) -> None:
-        """
-        init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。
-        """
+        """init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。"""
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
@@ -156,9 +154,7 @@ class CancellableEngine:
         return audio_file_name
 
     async def catch_disconnection(self) -> None:
-        """
-        接続監視を行うコルーチン
-        """
+        """接続監視を行うコルーチン。"""
         while True:
             await asyncio.sleep(1)
             for con in self._actives_pool:

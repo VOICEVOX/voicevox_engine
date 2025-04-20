@@ -14,9 +14,7 @@ from voicevox_engine.tts_pipeline.model import AccentPhrase
 
 
 class AudioQuery(BaseModel):
-    """
-    音声合成用のクエリ
-    """
+    """音声合成用のクエリ。"""
 
     accent_phrases: list[AccentPhrase] = Field(description="アクセント句のリスト")
     speedScale: float = Field(description="全体の話速")
