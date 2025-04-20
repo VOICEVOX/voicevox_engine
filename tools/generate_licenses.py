@@ -1,3 +1,11 @@
+"""
+VOICEVOX ENGINE の実行に必要なライブラリのライセンス一覧を作成する。
+
+実行環境にインストールされている Python ライブラリのライセンス一覧を取得する。
+一覧に対し、ハードコードされたライセンス一覧を追加する。
+ライセンス一覧をファイルとして出力する。
+"""
+
 import argparse
 import json
 import subprocess
