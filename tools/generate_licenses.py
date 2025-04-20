@@ -82,7 +82,7 @@ class _License:
 
 
 def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
-    """pip から取得したライセンス情報を更新する。"""
+    """pip から取得したライセンス情報の抜けを補完する。"""
     package_to_license_url = {
         "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
         "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
