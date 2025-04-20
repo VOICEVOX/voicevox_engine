@@ -2,10 +2,6 @@ name: "Prepare Python"
 description: "Python ランタイムと依存パッケージをインストールし、Python バージョンを出力する"
 
 inputs:
-  only-export-python-version:
-    description: "Python バージョンの出力のみをおこなうか否か"
-    required: false
-    default: "false"
   dependency-group:
     description: "uv で依存パッケージインストール時に指定するグループ"
     required: false
@@ -22,13 +18,11 @@ runs:
   using: "composite"
   steps:
     - name: <Setup> Install uv
-      if: ${{ inputs.only-export-python-version == 'false' }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
 
     - name: <Setup> Install Python dependencies
-      if: ${{ inputs.only-export-python-version == 'false' }}
       run: |
         if [[ -n "${{ inputs.dependency-group }}" ]]; then
           uv sync --group ${{ inputs.dependency-group }}
