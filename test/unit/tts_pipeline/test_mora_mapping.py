@@ -1,4 +1,4 @@
-"""mora_phonemes_to_mora_kana 辞書オブジェクトの単体テスト。"""
+"""モーラと音素の対応付けの単体テスト。"""
 
 from voicevox_engine.tts_pipeline.mora_mapping import mora_phonemes_to_mora_kana
 
