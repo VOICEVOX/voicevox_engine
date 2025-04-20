@@ -1,6 +1,4 @@
-"""
-コアバージョンに関する utilities のテスト
-"""
+"""コアバージョンに関する utilities のテスト。"""
 
 from voicevox_engine.utility.core_version_utility import get_latest_version
 

@@ -10,18 +10,14 @@ from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
 
 
 class LibrarySpeaker(BaseModel):
-    """
-    音声ライブラリに含まれるキャラクターの情報
-    """
+    """音声ライブラリに含まれるキャラクターの情報。"""
 
     speaker: Speaker = Field(description="キャラクター情報")
     speaker_info: SpeakerInfo = Field(description="キャラクターの追加情報")
 
 
 class BaseLibraryInfo(BaseModel):
-    """
-    音声ライブラリの情報
-    """
+    """音声ライブラリの情報。"""
 
     name: str = Field(description="音声ライブラリの名前")
     uuid: str = Field(description="音声ライブラリのUUID")
@@ -35,25 +31,19 @@ class BaseLibraryInfo(BaseModel):
 
 # 今後InstalledLibraryInfo同様に拡張する可能性を考え、モデルを分けている
 class DownloadableLibraryInfo(BaseLibraryInfo):
-    """
-    ダウンロード可能な音声ライブラリの情報
-    """
+    """ダウンロード可能な音声ライブラリの情報。"""
 
     pass
 
 
 class InstalledLibraryInfo(BaseLibraryInfo):
-    """
-    インストール済み音声ライブラリの情報
-    """
+    """インストール済み音声ライブラリの情報。"""
 
     uninstallable: bool = Field(description="アンインストール可能かどうか")
 
 
 class VvlibManifest(BaseModel):
-    """
-    vvlib(VOICEVOX Library)に関する情報
-    """
+    """vvlib(VOICEVOX Library)に関する情報。"""
 
     manifest_version: StrictStr = Field(description="マニフェストバージョン")
     name: StrictStr = Field(description="音声ライブラリ名")

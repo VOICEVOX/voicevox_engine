@@ -1,6 +1,4 @@
-"""
-更新履歴をマージする。
-"""
+"""更新履歴をマージする。"""
 
 import argparse
 import json
