@@ -1,3 +1,5 @@
+"""E2E テスト共通の pytest 用 fixtures。"""
+
 import json
 import shutil
 from pathlib import Path
