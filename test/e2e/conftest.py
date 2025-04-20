@@ -34,6 +34,7 @@ def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
 
 @pytest.fixture()
 def app_params(tmp_path: Path) -> dict[str, Any]:
+    """`generate_app` の全ての引数を生成する。"""
     core_manager = initialize_cores(use_gpu=False, enable_mock=True)
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
@@ -73,11 +74,13 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
 
 @pytest.fixture()
 def app(app_params: dict[str, Any]) -> FastAPI:
+    """app インスタンスを生成する。"""
     return generate_app(**app_params)
 
 
 @pytest.fixture()
 def client(app: FastAPI) -> TestClient:
+    """HTTP リクエストを VOICEVOX ENGINE へ送信するクライアントを生成する。"""
     return TestClient(app)
 
 

@@ -20,6 +20,7 @@ def gen_mora(
     vowel_length: float,
     pitch: float,
 ) -> _MoraForTest:
+    """モーラを生成する。"""
     return {
         "text": text,
         "consonant": consonant,
