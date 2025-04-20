@@ -1,6 +1,4 @@
-"""
-/connect_waves API のテスト
-"""
+"""/connect_waves API のテスト。"""
 
 import base64
 from pathlib import Path

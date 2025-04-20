@@ -6,6 +6,7 @@ VOICEVOX ENGINE の実行に必要なライブラリのライセンス一覧を�
 ライセンス一覧をファイルとして出力する。
 """
 
+import argparse
 import json
 import subprocess
 import sys
@@ -17,50 +18,11 @@ from typing import Literal, assert_never
 from pydantic import TypeAdapter
 
 
-class _LicenseError(Exception):
-    # License違反があった場合、このエラーを出します。
-    pass
-
-
-class _License:
-    def __init__(
-        self,
-        package_name: str,
-        package_version: str | None,
-        license_name: str | None,
-        license_text: str,
-        license_text_type: Literal["raw", "local_address", "remote_address"],
-    ):
-        self.package_name = package_name
-        self.package_version = package_version
-        self.license_name = license_name
-
-        match license_text_type:
-            case "raw":
-                self.license_text = license_text
-            case "local_address":
-                # ライセンステキストをローカルのライセンスファイルから抽出する
-                self.license_text = Path(license_text).read_text(encoding="utf8")
-            case "remote_address":
-                self.license_text = _get_license_text(license_text)
-            case _:
-                assert_never("型で保護され実行されないはずのパスが実行されました")
-
-
 def _get_license_text(text_url: str) -> str:
     """URL が指すテキストを取得する。"""
     with urllib.request.urlopen(text_url) as res:
         # NOTE: `urlopen` 返り値の型が貧弱なため型チェックを無視する
         return res.read().decode()  # type: ignore
-
-
-def _generate_licenses() -> list[_License]:
-    raw_licenses = _acquire_licenses_of_pip_managed_libraries()
-    licenses = _update_licenses(raw_licenses)
-    _validate_license_compliance(licenses)
-    _add_licenses_manually(licenses)
-
-    return licenses
 
 
 @dataclass
@@ -102,8 +64,33 @@ def _acquire_licenses_of_pip_managed_libraries() -> list[_PipLicense]:
     return licenses
 
 
-def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
-    """pip から取得したライセンス情報を更新する。"""
+class _License:
+    def __init__(
+        self,
+        package_name: str,
+        package_version: str | None,
+        license_name: str | None,
+        license_text: str,
+        license_text_type: Literal["raw", "local_address", "remote_address"],
+    ):
+        self.package_name = package_name
+        self.package_version = package_version
+        self.license_name = license_name
+
+        match license_text_type:
+            case "raw":
+                self.license_text = license_text
+            case "local_address":
+                # ライセンステキストをローカルのライセンスファイルから抽出する
+                self.license_text = Path(license_text).read_text(encoding="utf8")
+            case "remote_address":
+                self.license_text = _get_license_text(license_text)
+            case _:
+                assert_never("型で保護され実行されないはずのパスが実行されました")
+
+
+def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
+    """pip から取得したライセンス情報の抜けを補完する。"""
     package_to_license_url = {
         "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
         "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
@@ -119,35 +106,41 @@ def _update_licenses(raw_licenses: list[_PipLicense]) -> list[_License]:
 
     updated_licenses = []
 
-    for raw_license in raw_licenses:
-        package_name = raw_license.Name.lower()
+    for pip_license in pip_licenses:
+        package_name = pip_license.Name.lower()
 
         # ライセンス文が pip から取得できていない場合、pip 外から補う
-        if raw_license.LicenseText == "UNKNOWN":
-            if package_name == "core" and raw_license.Version == "0.0.0":
+        if pip_license.LicenseText == "UNKNOWN":
+            if package_name == "core" and pip_license.Version == "0.0.0":
                 continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
             text_url = package_to_license_url[package_name]
-            raw_license.LicenseText = _get_license_text(text_url)
+            pip_license.LicenseText = _get_license_text(text_url)
 
         # soxr
         if package_name == "soxr":
             text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            raw_license.LicenseText = _get_license_text(text_url)
+            pip_license.LicenseText = _get_license_text(text_url)
 
         updated_licenses.append(
             _License(
-                package_name=raw_license.Name,
-                package_version=raw_license.Version,
-                license_name=raw_license.License,
-                license_text=raw_license.LicenseText,
+                package_name=pip_license.Name,
+                package_version=pip_license.Version,
+                license_name=pip_license.License,
+                license_text=pip_license.LicenseText,
                 license_text_type="raw",
             )
         )
 
     return updated_licenses
+
+
+class _LicenseError(Exception):
+    """License違反が検出された。"""
+
+    pass
 
 
 def _validate_license_compliance(licenses: list[_License]) -> None:
@@ -321,9 +314,16 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
     ]
 
 
-if __name__ == "__main__":
-    import argparse
+def _generate_licenses() -> list[_License]:
+    pip_licenses = _acquire_licenses_of_pip_managed_libraries()
+    licenses = _update_licenses(pip_licenses)
+    _validate_license_compliance(licenses)
+    _add_licenses_manually(licenses)
 
+    return licenses
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output_path", type=str)
     args = parser.parse_args()
