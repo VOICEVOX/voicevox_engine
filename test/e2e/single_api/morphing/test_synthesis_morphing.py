@@ -1,6 +1,4 @@
-"""
-/synthesis_morphing API のテスト
-"""
+"""/synthesis_morphing API のテスト。"""
 
 from fastapi.testclient import TestClient
 
