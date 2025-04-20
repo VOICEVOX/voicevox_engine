@@ -18,7 +18,7 @@ unfixable = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"test/*" = ["D103"] # undocumented-public-function。pytest がテスト対象関数に `test_*()` の public 名を強制するため。
+"test/**/test_*.py" = ["D103"] # undocumented-public-function。pytest がテスト対象関数に `test_*()` の public 名を強制するため。
 
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
