@@ -81,12 +81,12 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
-        # enable_interrogative_upspeak: Annotated[
-        #     bool,
-        #     Query(
-        #         description="疑問系のテキストが与えられたら語尾を自動調整する",
-        #     ),
-        # ] = True,
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
@@ -96,9 +96,6 @@ def generate_morphing_router(
         """
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-
-        # TODO: `enable_interrogative_upspeak` を API の引数へ追加する (voicevox engine #534)
-        enable_interrogative_upspeak = True
 
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
