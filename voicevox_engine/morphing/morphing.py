@@ -108,6 +108,7 @@ def is_morphable(
 def synthesis_morphing_parameter(
     engine: TTSEngine,
     query: AudioQuery,
+    enable_interrogative_upspeak: bool,
     base_style_id: StyleId,
     target_style_id: StyleId,
 ) -> _MorphingParameter:
@@ -120,8 +121,14 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
-    target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
+    base_wave = engine.synthesize_wave(
+        query, base_style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
+    ).astype(np.double)
+    target_wave = engine.synthesize_wave(
+        query,
+        target_style_id,
+        enable_interrogative_upspeak=enable_interrogative_upspeak,
+    ).astype(np.double)
 
     fs = query.outputSamplingRate
     frame_period = 1.0

@@ -91,6 +91,9 @@ def generate_morphing_router(
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
 
+        # TODO: `enable_interrogative_upspeak` を API の引数へ追加する (voicevox engine #534)
+        enable_interrogative_upspeak = True
+
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
         try:
@@ -106,6 +109,7 @@ def generate_morphing_router(
         morph_param = synthesis_morphing_parameter(
             engine=engine,
             query=query,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
             base_style_id=base_style_id,
             target_style_id=target_style_id,
         )
