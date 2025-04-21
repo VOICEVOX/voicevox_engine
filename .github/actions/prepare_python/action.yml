@@ -3,7 +3,7 @@ description: "Python ランタイムと依存パッケージをインストー�
 
 inputs:
   dependency-group:
-    description: "uv で依存パッケージインストール時に指定するグループ"
+    description: "uv の依存パッケージインストール時に指定するグループ"
     required: false
 outputs:
   python-version:
