@@ -111,8 +111,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
 
         # ライセンス文が pip から取得できていない場合、pip 外から補う
         if pip_license.LicenseText == "UNKNOWN":
-            if package_name == "core" and pip_license.Version == "0.0.0":
-                continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
