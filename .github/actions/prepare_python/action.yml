@@ -30,7 +30,6 @@ runs:
           uv-${{ runner.os }}
 
     - name: <Setup> Install Python dependencies
-      if: steps.uv-cache.outputs.cache-hit != 'true'
       run: |
         if [[ -n "${{ inputs.dependency-group }}" ]]; then
           uv sync --group ${{ inputs.dependency-group }}
