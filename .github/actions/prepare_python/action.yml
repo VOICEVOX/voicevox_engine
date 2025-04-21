@@ -15,8 +15,8 @@ runs:
   steps:
     - name: <Setup> Install uv
       uses: astral-sh/setup-uv@v5
-      env:
-        UV_CACHE_DIR: /tmp/.uv-cache
+      with:
+        cache-local-path: /tmp/.uv-cache
 
     - name: <Setup> Restore uv cache
       id: uv-cache
@@ -37,8 +37,6 @@ runs:
           uv sync
         fi
       shell: bash
-      env:
-        UV_CACHE_DIR: /tmp/.uv-cache
 
     - name: <Deploy> Export Python version
       id: export-python-version
@@ -52,5 +50,3 @@ runs:
     - name: Minimize uv cache
       run: uv cache prune --ci
       shell: bash
-      env:
-        UV_CACHE_DIR: /tmp/.uv-cache
