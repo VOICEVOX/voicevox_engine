@@ -120,7 +120,8 @@ class MetasStore:
         resource_baseurl: str,
         resource_format: ResourceFormat,
     ) -> SpeakerInfo:
-        """指定されたキャラクターの情報を取得する。
+        """
+        指定されたキャラクターの情報を取得する。
 
         Parameters
         ----------
