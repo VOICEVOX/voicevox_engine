@@ -17,7 +17,7 @@ runs:
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: false
-        cache-local-path: /tmp/.uv-cache
+        cache-local-path: ${{ runner.os == 'Windows' && "C:\tmp\.uv-cache" || "/tmp/.uv-cache" }}
 
     - name: <Setup> Restore uv cache
       id: uv-cache
