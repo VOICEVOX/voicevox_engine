@@ -108,9 +108,9 @@ def is_morphable(
 def synthesis_morphing_parameter(
     engine: TTSEngine,
     query: AudioQuery,
-    enable_interrogative_upspeak: bool,
     base_style_id: StyleId,
     target_style_id: StyleId,
+    enable_interrogative_upspeak: bool,
 ) -> _MorphingParameter:
     """音声を合成しモーフィング用パラメータへ変換する。"""
     query = deepcopy(query)
