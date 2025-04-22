@@ -112,9 +112,9 @@ def generate_morphing_router(
         morph_param = synthesis_morphing_parameter(
             engine=engine,
             query=query,
-            enable_interrogative_upspeak=enable_interrogative_upspeak,
             base_style_id=base_style_id,
             target_style_id=target_style_id,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
 
         morph_wave = synthesize_morphed_wave(
