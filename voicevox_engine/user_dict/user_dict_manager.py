@@ -207,12 +207,12 @@ class UserDictionary:
             tmp_csv_path.write_text(csv_text, encoding="utf-8")
 
             # 辞書.csvをOpenJTalk用にコンパイル
-            pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
+            pyopenjtalk.mecab_dict_index(str(tmp_csv_path), str(tmp_compiled_path))
             if not tmp_compiled_path.is_file():
                 raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
 
             # コンパイル済み辞書の読み込み
-            pyopenjtalk.set_user_dict(
+            pyopenjtalk.update_global_jtalk_with_user_dict(
                 str(tmp_compiled_path.resolve(strict=True))
             )  # NOTE: resolveによりコンパイル実行時でも相対パスを正しく認識できる
 
