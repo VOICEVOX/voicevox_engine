@@ -1892,30 +1892,29 @@ setuptools = ">=42.0.0"
 
 [[package]]
 name = "pyopenjtalk"
-version = "0.3.2+5b70b94"
+version = "0.1.dev251+g74703b0"
 description = "A python wrapper for OpenJTalk"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 groups = ["main"]
 files = []
 develop = false
 
 [package.dependencies]
 numpy = ">=1.20.0"
-six = "*"
 tqdm = "*"
 
 [package.extras]
-dev = ["black (>=19.19b0,<=20.8)", "click (<8.1.0)", "cython (>=0.21.0,<3.0.0)", "flake8 (>=3.7,<4)", "flake8-bugbear", "importlib-metadata (<5.0)", "isort (>=4.3,<5.2.0)", "mypy (<=0.910)", "pysen", "types-decorator", "types-setuptools"]
-docs = ["Jinja2 (>=3.0.1)", "ipython", "jupyter", "nbsphinx (>=0.8.6)", "pandoc", "sphinx-rtd-theme"]
+dev = ["black (>=19.19b0,<=20.8)", "click (<8.1.0)", "cython (>=0.29.16)", "flake8 (>=3.7,<4)", "flake8-bugbear", "importlib-metadata (<5.0)", "isort (>=4.3,<5.2.0)", "mypy (<=0.910)", "pysen", "types-decorator", "types-setuptools"]
+docs = ["Jinja2 (>=3.0.1)", "ipython", "jupyter", "nbsphinx (>=0.8.6)", "pandoc", "sphinx_rtd_theme"]
 marine = ["marine (>=0.0.5)"]
 test = ["pytest", "scipy"]
 
 [package.source]
 type = "git"
-url = "https://github.com/VOICEVOX/pyopenjtalk"
-reference = "5b70b94f3460ece07ea183227db088ce8d5212a6"
-resolved_reference = "5b70b94f3460ece07ea183227db088ce8d5212a6"
+url = "https://github.com/VOICEVOX/pyopenjtalk.git"
+reference = "74703b034dd90a1f199f49bb70bf3b66b1728a86"
+resolved_reference = "74703b034dd90a1f199f49bb70bf3b66b1728a86"
 
 [[package]]
 name = "pyparsing"
@@ -2326,18 +2325,6 @@ groups = ["dev"]
 files = [
     {file = "shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"},
     {file = "shellingham-1.5.4.tar.gz", hash = "sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de"},
-]
-
-[[package]]
-name = "six"
-version = "1.17.0"
-description = "Python 2 and 3 compatibility utilities"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-groups = ["main"]
-files = [
-    {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
-    {file = "six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"},
 ]
 
 [[package]]
@@ -2894,4 +2881,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.11"
-content-hash = "533861a126da1e334ab157d7edf21bb78efff4a0a105a888e5b2e22093ca593b"
+content-hash = "15919cc4ae4b6313fde4a0f7588645a3e52d69cdc845cffeece92de904806098"
