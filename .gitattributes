@@ -1,6 +1,5 @@
 test/**/__snapshots__/**/*.json linguist-generated=true
-requirements*.txt text eol=lf
 
-* text=auto
+* text=auto eol=lf
 *.png -text
 *.wav -text
