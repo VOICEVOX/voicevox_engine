@@ -2,7 +2,7 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP", "D"]
+select = ["E", "F", "B", "I", "W", "UP", "D", "S101"]
 ignore = [
   "E501", # line-too-long
   "D400", # missing-trailing-period。日本語の「。」に対応していないため。
@@ -15,6 +15,7 @@ unfixable = [
 
 [tool.ruff.lint.per-file-ignores]
 "test/**/test_*.py" = ["D103"] # undocumented-public-function。pytest の対象 test_*() が D103 の対象になり、関数名から内容が自明でも docstring を強制されるため。
+"test/*" = ["S101"] # assert。テスト環境では assert が除去されないため。
 
 [tool.ruff.lint.isort]
 known-first-party = ["voicevox_engine"]
