@@ -259,23 +259,33 @@ class UserDictionary:
             UUID(word_uuid)
             for pos_detail in part_of_speech_data.values():
                 if word.context_id == pos_detail.context_id:
-                    assert word.part_of_speech == pos_detail.part_of_speech
-                    assert (
+                    if word.part_of_speech != pos_detail.part_of_speech:
+                        msg = f"単語 {word.surface} の part_of_speech 属性が不正です。"
+                        raise UserDictInputError(msg)
+                    if (
                         word.part_of_speech_detail_1
-                        == pos_detail.part_of_speech_detail_1
-                    )
-                    assert (
+                        != pos_detail.part_of_speech_detail_1
+                    ):
+                        msg = f"単語 {word.surface} の part_of_speech_detail_1 属性が不正です。"
+                        raise UserDictInputError(msg)
+                    if (
                         word.part_of_speech_detail_2
-                        == pos_detail.part_of_speech_detail_2
-                    )
-                    assert (
+                        != pos_detail.part_of_speech_detail_2
+                    ):
+                        msg = f"単語 {word.surface} の part_of_speech_detail_2 属性が不正です。"
+                        raise UserDictInputError(msg)
+                    if (
                         word.part_of_speech_detail_3
-                        == pos_detail.part_of_speech_detail_3
-                    )
-                    assert (
+                        != pos_detail.part_of_speech_detail_3
+                    ):
+                        msg = f"単語 {word.surface} の part_of_speech_detail_3 属性が不正です。"
+                        raise UserDictInputError(msg)
+                    if (
                         word.accent_associative_rule
-                        in pos_detail.accent_associative_rules
-                    )
+                        not in pos_detail.accent_associative_rules
+                    ):
+                        msg = f"単語 {word.surface} の accent_associative_rule 属性が不正です。"
+                        raise UserDictInputError(msg)
                     break
             else:
                 raise ValueError("対応していない品詞です")

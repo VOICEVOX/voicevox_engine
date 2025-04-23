@@ -253,7 +253,7 @@ def test_import_invalid_word(tmp_path: Path) -> None:
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
     user_dict = UserDictionary(user_dict_path=user_dict_path)
-    with pytest.raises(AssertionError):
+    with pytest.raises(UserDictInputError):
         user_dict.import_user_dict(
             {
                 "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e": invalid_accent_associative_rule_word

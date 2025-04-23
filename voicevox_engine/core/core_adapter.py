@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from pydantic import TypeAdapter
 
 from ..metas.Metas import StyleId
-from .core_wrapper import CoreWrapper, OldCoreError
+from .core_wrapper import CoreError, CoreWrapper, OldCoreError
 
 CoreStyleId = NewType("CoreStyleId", int)
 CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
@@ -75,7 +75,8 @@ class CoreAdapter:
         """デバイスサポート情報（None: 情報無し）"""
         try:
             supported_devices = json.loads(self.core.supported_devices())
-            assert isinstance(supported_devices, dict)
+            if not isinstance(supported_devices, dict):
+                raise CoreError()
             device_support = DeviceSupport(
                 cpu=supported_devices["cpu"],
                 cuda=supported_devices["cuda"],

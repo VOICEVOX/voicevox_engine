@@ -25,11 +25,14 @@ def _test_release_build(
     # マニフェストファイルの確認
     if not skip_check_manifest:
         manifest_file = dist_dir / "engine_manifest.json"
-        assert manifest_file.is_file()
+        if not manifest_file.is_file():
+            raise Exception
         manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
-        assert "manifest_version" in manifest
+        if "manifest_version" not in manifest:
+            raise Exception
         command_filename = shlex.split(manifest["command"])[0]
-        assert (dist_dir / command_filename).exists()
+        if not (dist_dir / command_filename).exists():
+            raise Exception
 
     # 起動
     process = None
@@ -72,12 +75,15 @@ def _test_release_build(
     req = Request(base_url + "engine_manifest", method="GET")
     with urlopen(req) as res:
         manifest = json.loads(res.read().decode("utf-8"))
-        assert "uuid" in manifest
+        if "uuid" not in manifest:
+            raise Exception
 
     if not skip_run_process:
         # プロセスが稼働中であることを確認
-        assert process is not None
-        assert process.poll() is None
+        if process is None:
+            raise Exception
+        if process.poll() is not None:
+            raise Exception
 
         # 停止
         process.terminate()

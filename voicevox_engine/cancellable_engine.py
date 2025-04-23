@@ -202,7 +202,8 @@ def start_synthesis_subprocess(
         enable_mock=enable_mock,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
-    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    if len(tts_engines.versions()) == 0:
+        raise CancellableEngineInternalError("音声合成エンジンがありません。")
 
     while True:
         try:

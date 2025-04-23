@@ -327,8 +327,10 @@ def main() -> None:
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
-    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
-    assert len(song_engines.versions()) != 0, "音声合成エンジンがありません。"
+    if len(tts_engines.versions()) == 0:
+        raise Exception("音声合成エンジンがありません。")
+    if len(song_engines.versions()) == 0:
+        raise Exception("音声合成エンジンがありません。")
 
     cancellable_engine: CancellableEngine | None = None
     if args.enable_cancellable_synthesis:
