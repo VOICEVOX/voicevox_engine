@@ -143,7 +143,7 @@ class PresetManager:
 
         return preset.id
 
-    def delete_preset(self, id: int) -> int:
+    def delete_preset(self, preset_id: int) -> int:
         """ID で指定されたプリセットを削除し、その ID を取得する。"""
         # データベース更新の反映
         self._refresh_cache()
@@ -152,7 +152,7 @@ class PresetManager:
         buf = None
         buf_index = -1
         for i in range(len(self.presets)):
-            if self.presets[i].id == id:
+            if self.presets[i].id == preset_id:
                 buf = self.presets.pop(i)
                 buf_index = i
                 break
@@ -166,7 +166,7 @@ class PresetManager:
             self.presets.insert(buf_index, buf)
             raise PresetInternalError("プリセットの書き込みに失敗しました") from e
 
-        return id
+        return preset_id
 
     def _write_on_file(self) -> None:
         """プリセット情報のファイル（簡易データベース）書き込み"""

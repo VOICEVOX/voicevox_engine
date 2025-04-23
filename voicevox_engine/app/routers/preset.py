@@ -49,12 +49,12 @@ def generate_preset_router(
     ) -> int:
         """新しいプリセットを追加します。"""
         try:
-            id = preset_manager.add_preset(preset)
+            preset_id = preset_manager.add_preset(preset)
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
-        return id
+        return preset_id
 
     @router.post(
         "/update_preset",
@@ -71,12 +71,12 @@ def generate_preset_router(
     ) -> int:
         """既存のプリセットを更新します。"""
         try:
-            id = preset_manager.update_preset(preset)
+            preset_id = preset_manager.update_preset(preset)
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
-        return id
+        return preset_id
 
     @router.post(
         "/delete_preset",
@@ -84,7 +84,7 @@ def generate_preset_router(
         dependencies=[Depends(verify_mutability)],
     )
     def delete_preset(
-        id: Annotated[int, Query(description="削除するプリセットのプリセットID")],
+        id: Annotated[int, Query(description="削除するプリセットのプリセットID")],  # noqa: A002 - API を優先
     ) -> None:
         """既存のプリセットを削除します。"""
         try:
