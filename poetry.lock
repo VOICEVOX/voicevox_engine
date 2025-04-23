@@ -1912,7 +1912,7 @@ test = ["pytest", "scipy"]
 
 [package.source]
 type = "git"
-url = "https://github.com/VOICEVOX/pyopenjtalk.git"
+url = "https://github.com/VOICEVOX/pyopenjtalk"
 reference = "74703b034dd90a1f199f49bb70bf3b66b1728a86"
 resolved_reference = "74703b034dd90a1f199f49bb70bf3b66b1728a86"
 
