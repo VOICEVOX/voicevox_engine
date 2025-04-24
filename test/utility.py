@@ -1,3 +1,5 @@
+"""全テスト共通のユーティリティ。"""
+
 import hashlib
 import io
 from typing import Any

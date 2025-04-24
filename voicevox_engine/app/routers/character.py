@@ -94,9 +94,7 @@ def generate_character_router(
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_hash}}", include_in_schema=False)
     async def resources(resource_hash: str) -> FileResponse:
-        """
-        ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
-        """
+        """ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す。"""
         try:
             resource_path = resource_manager.resource_path(resource_hash)
         except ResourceManagerError as e:

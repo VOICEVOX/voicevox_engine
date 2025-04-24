@@ -1,3 +1,5 @@
+"""AquesTalk 風記法パーサーの単体テスト。"""
+
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline import kana_converter
@@ -541,7 +543,7 @@ def test_interrogative_accent_phrase_marks() -> None:
     )
 
 
-class TestParseKanaException(TestCase):
+class _TestParseKanaException(TestCase):
     def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
         with self.assertRaises(ParseKanaError) as e:
             parse_kana(kana)

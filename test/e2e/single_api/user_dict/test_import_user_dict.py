@@ -1,6 +1,4 @@
-"""
-/import_user_dict APIのテスト
-"""
+"""/import_user_dict APIのテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

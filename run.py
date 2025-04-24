@@ -136,7 +136,7 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
 
 
 @dataclass(frozen=True)
-class CLIArgs:
+class _CLIArgs:
     host: str
     port: int
     use_gpu: bool
@@ -156,10 +156,11 @@ class CLIArgs:
     disable_mutable_api: bool
 
 
-_cli_args_adapter = TypeAdapter(CLIArgs)
+_cli_args_adapter = TypeAdapter(_CLIArgs)
 
 
-def read_cli_arguments(envs: Envs) -> CLIArgs:
+def read_cli_arguments(envs: Envs) -> _CLIArgs:
+    """コマンドライン引数を読み込む。"""
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
     # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.

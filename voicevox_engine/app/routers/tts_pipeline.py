@@ -50,6 +50,8 @@ from voicevox_engine.utility.file_utility import try_delete_file
 
 
 class ParseKanaBadRequest(BaseModel):
+    """読み仮名のパースに失敗した。"""
+
     text: str = Field(description="エラーメッセージ")
     error_name: str = Field(
         description="エラー名\n\n"
@@ -63,9 +65,7 @@ class ParseKanaBadRequest(BaseModel):
 
 
 class SupportedDevicesInfo(BaseModel):
-    """
-    対応しているデバイスの情報
-    """
+    """対応しているデバイスの情報。"""
 
     cpu: bool = Field(description="CPUに対応しているか")
     cuda: bool = Field(description="CUDA(Nvidia GPU)に対応しているか")
@@ -100,9 +100,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
-        """
-        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         accent_phrases = engine.create_accent_phrases(text, style_id)
@@ -131,9 +129,7 @@ def generate_tts_pipeline_router(
         preset_id: int,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
-        """
-        音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         try:
@@ -390,9 +386,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FrameAudioQuery:
-        """
-        歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。
-        """
+        """歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = song_engines.get_song_engine(version)
         try:
@@ -468,9 +462,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
-        """
-        歌唱音声合成を行います。
-        """
+        """歌唱音声合成を行います。"""
         version = core_version or LATEST_VERSION
         engine = song_engines.get_song_engine(version)
         try:
@@ -503,9 +495,7 @@ def generate_tts_pipeline_router(
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
     def connect_waves(waves: list[str]) -> FileResponse:
-        """
-        base64エンコードされたwavデータを一纏めにし、wavファイルで返します。
-        """
+        """base64エンコードされたwavデータを一纏めにし、wavファイルで返します。"""
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as e:
@@ -578,9 +568,7 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
     ) -> bool:
-        """
-        指定されたスタイルが初期化されているかどうかを返します。
-        """
+        """指定されたスタイルが初期化されているかどうかを返します。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         return engine.is_synthesis_initialized(style_id)

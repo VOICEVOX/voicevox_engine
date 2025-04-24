@@ -10,6 +10,8 @@ from soxr import resample
 
 
 class ConnectBase64WavesException(Exception):
+    """Base64 エンコードされた音声波形の結合に失敗した。"""
+
     def __init__(self, message: str):
         self.message = message
 
@@ -49,6 +51,7 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
 
 
 def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
+    """複数の base64 エンコードされた音声波形を1つに結合する。"""
     waves_nparray_sr = decode_base64_waves(waves)
 
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])

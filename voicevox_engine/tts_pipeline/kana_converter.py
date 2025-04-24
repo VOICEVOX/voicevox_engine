@@ -56,6 +56,8 @@ for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
 
 
 class ParseKanaError(Exception):
+    """AquesTalk 風記法のパースが失敗した。"""
+
     def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name

@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from test.unit.tts_pipeline.tts_utils import gen_mora, sec
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.audio_postprocessing import (
     _apply_output_sampling_rate,
@@ -18,8 +19,6 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     _count_frame_per_unit,
     _query_to_decoder_feature,
 )
-
-from .tts_utils import gen_mora, sec
 
 TRUE_NUM_PHONEME = 45
 

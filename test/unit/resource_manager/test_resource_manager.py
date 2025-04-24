@@ -1,3 +1,5 @@
+"""リソースマネージャーの単体テスト。"""
+
 import base64
 from pathlib import Path
 
@@ -58,18 +60,14 @@ def test_with_filemap() -> None:
 
 
 def test_without_filemap_when_production() -> None:
-    """
-    "create_filemap_if_not_exist"がFalseで"filemap.json"が無い場合エラーにする
-    """
+    """`create_filemap_if_not_exist` がFalseで"filemap.json"が無い場合エラーにする。"""
     manager = ResourceManager(False)
     with pytest.raises(ResourceManagerError):
         manager.register_dir(without_filemap_dir)
 
 
 def test_without_filemap() -> None:
-    """
-    "create_filemap_if_not_exist"がTrueで"filemap.json"が無い場合は登録時にfilemapを生成する
-    """
+    """`create_filemap_if_not_exist` がTrueで"filemap.json"が無い場合は登録時にfilemapを生成する。"""
     manager = ResourceManager(True)
     manager.register_dir(without_filemap_dir)
 

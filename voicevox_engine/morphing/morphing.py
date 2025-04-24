@@ -22,6 +22,10 @@ from ..tts_pipeline.tts_engine import TTSEngine
 
 
 class StyleIdNotFoundError(LookupError):
+    """モーフィング可能なスタイルIDが見つからなかった。"""
+
+    # FIXME: クラス名を機能に合わせてリネーム
+
     def __init__(self, style_id: int, *args: object, **kywrds: object) -> None:
         self.style_id = style_id
         super().__init__(f"style_id {style_id} is not found.", *args, **kywrds)
@@ -106,7 +110,9 @@ def synthesis_morphing_parameter(
     query: AudioQuery,
     base_style_id: StyleId,
     target_style_id: StyleId,
+    enable_interrogative_upspeak: bool,
 ) -> _MorphingParameter:
+    """音声を合成しモーフィング用パラメータへ変換する。"""
     query = deepcopy(query)
 
     # 不具合回避のためデフォルトのサンプリングレートでWORLDに掛けた後に指定のサンプリングレートに変換する
@@ -115,8 +121,14 @@ def synthesis_morphing_parameter(
     # WORLDに掛けるため合成はモノラルで行う
     query.outputStereo = False
 
-    base_wave = engine.synthesize_wave(query, base_style_id).astype(np.double)
-    target_wave = engine.synthesize_wave(query, target_style_id).astype(np.double)
+    base_wave = engine.synthesize_wave(
+        query, base_style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
+    ).astype(np.double)
+    target_wave = engine.synthesize_wave(
+        query,
+        target_style_id,
+        enable_interrogative_upspeak=enable_interrogative_upspeak,
+    ).astype(np.double)
 
     fs = query.outputSamplingRate
     frame_period = 1.0
