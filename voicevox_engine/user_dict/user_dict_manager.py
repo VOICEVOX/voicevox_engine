@@ -3,11 +3,11 @@
 import json
 import sys
 import threading
+import warnings
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
-import warnings
 
 import pyopenjtalk
 from pydantic import TypeAdapter
@@ -170,7 +170,7 @@ class UserDictionary:
 
             # デフォルト辞書データの追加
             if not default_dict_path.is_file():
-                warnings.warn("Cannot find default dictionary.")
+                warnings.warn("Cannot find default dictionary.", stacklevel=1)
                 return
             default_dict = default_dict_path.read_text(encoding="utf-8")
             if default_dict == default_dict.rstrip():
