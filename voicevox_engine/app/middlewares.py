@@ -4,6 +4,7 @@ import re
 import sys
 from collections.abc import Awaitable, Callable
 from traceback import print_exception
+import warnings
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,11 +41,8 @@ def configure_middlewares(
         if allow_origin is not None:
             allowed_origins += allow_origin
             if "*" in allow_origin:
-                print(
-                    'WARNING: Deprecated use of argument "*" in allow_origin. '
-                    'Use option "--cors_policy_mode all" instead. See "--help" for more.',
-                    file=sys.stderr,
-                )
+                msg = 'Deprecated use of argument "*" in allow_origin. Use option "--cors_policy_mode all" instead.'
+                warnings.warn(msg)
 
     app.add_middleware(
         CORSMiddleware,

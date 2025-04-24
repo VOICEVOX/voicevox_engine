@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
 from uuid import UUID, uuid4
+import warnings
 
 import pyopenjtalk
 from pydantic import TypeAdapter
@@ -169,7 +170,7 @@ class UserDictionary:
 
             # デフォルト辞書データの追加
             if not default_dict_path.is_file():
-                print("Warning: Cannot find default dictionary.", file=sys.stderr)
+                warnings.warn("Cannot find default dictionary.")
                 return
             default_dict = default_dict_path.read_text(encoding="utf-8")
             if default_dict == default_dict.rstrip():
@@ -217,7 +218,6 @@ class UserDictionary:
             )  # NOTE: resolveによりコンパイル実行時でも相対パスを正しく認識できる
 
         except Exception as e:
-            print("Error: Failed to update dictionary.", file=sys.stderr)
             raise e
 
         finally:
