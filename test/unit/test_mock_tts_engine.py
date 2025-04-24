@@ -76,4 +76,5 @@ def test_synthesize_wave() -> None:
             kana=create_kana(_gen_accent_phrases()),
         ),
         StyleId(0),
+        enable_interrogative_upspeak=True,
     )

@@ -365,7 +365,10 @@ def generate_tts_pipeline_router(
                         )
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesize_wave(queries[i], style_id)
+                        # TODO: enable_interrogative_upspeak を API 引数化する。
+                        wave = engine.synthesize_wave(
+                            queries[i], style_id, enable_interrogative_upspeak=True
+                        )
                         soundfile.write(
                             file=wav_file,
                             data=wave,
