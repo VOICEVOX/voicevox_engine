@@ -384,7 +384,8 @@ def _load_core_version_0_12_or_later(core_path: Path) -> CDLL:
     try:
         return _load_core_dll(core_path)
     except OSError as e:
-        raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
+        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{e}"
+        raise RuntimeError(msg) from e
 
 
 def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
@@ -392,19 +393,19 @@ def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
     model_type = _check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
+
+    # GPU 版を読み込む
     if use_gpu or model_type == "onnxruntime":
-        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-        if core_name:
-            try:
-                return _load_core_dll(core_dir / core_name)
-            except OSError:
-                pass
-        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.DIRECT_ML)
-        if core_name:
-            try:
-                return _load_core_dll(core_dir / core_name)
-            except OSError:
-                pass
+        for gpu_type in [GPUType.CUDA, GPUType.DIRECT_ML]:
+            core_name = _get_suitable_core_name(model_type, gpu_type)
+            if core_name:
+                try:
+                    return _load_core_dll(core_dir / core_name)
+                except OSError:
+                    pass
+
+    # CPU 版を読み込む
+    # NOTE: GPU 版の読み込みが全て失敗した場合は CPU 版へフォールバックする
     core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.NONE)
     if core_name:
         try:
@@ -412,17 +413,18 @@ def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
         except OSError as e:
             _e = e
         if model_type == "libtorch":
+            # TODO: libtorch CUDA 版へのフォールバックにみえるが、意図通りか確認する
             core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
             if core_name:
                 try:
                     return _load_core_dll(core_dir / core_name)
                 except OSError as e:
                     _e = e
-        raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
+        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{_e}"
+        raise RuntimeError(msg) from _e
     else:
-        raise RuntimeError(
-            f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
-        )
+        msg = f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません。"
+        raise RuntimeError(msg)
 
 
 _C_TYPE = (
