@@ -302,6 +302,7 @@ def generate_tts_pipeline_router(
         query: AudioQuery,
         request: Request,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         if cancellable_engine is None:
@@ -312,7 +313,11 @@ def generate_tts_pipeline_router(
         try:
             version = core_version or LATEST_VERSION
             f_name = cancellable_engine.synthesize_wave(
-                query, style_id, request, version=version
+                query,
+                style_id,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+                request=request,
+                version=version,
             )
         except CancellableEngineInternalError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e

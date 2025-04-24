@@ -1580,6 +1580,16 @@
           },
           {
             "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
             "name": "core_version",
             "required": false,
             "schema": {
