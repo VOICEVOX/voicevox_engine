@@ -26,7 +26,7 @@ dependencies = [
 default-groups = []
 
 [tool.uv.sources]
-pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "5b70b94f3460ece07ea183227db088ce8d5212a6" }
+pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
 
 [dependency-groups]
 build = ["pyinstaller>=5.13"]
