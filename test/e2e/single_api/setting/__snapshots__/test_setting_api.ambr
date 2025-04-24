@@ -267,7 +267,7 @@
               };
   
               // 表示用の情報
-              const brandName = ref("DUMMY");
+              const brandName = ref("VOICEVOX OSS");
   
               // Vueの準備が完了したら表示・非表示を切り替える
               onMounted(() => {

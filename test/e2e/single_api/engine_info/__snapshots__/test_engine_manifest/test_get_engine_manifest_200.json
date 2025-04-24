@@ -1,5 +1,5 @@
 {
-  "brand_name": "DUMMY",
+  "brand_name": "VOICEVOX OSS",
   "default_sampling_rate": 24000,
   "dependency_licenses": [
     {
@@ -12,7 +12,7 @@
   "frame_rate": 93.75,
   "icon": "MD5:f957eb4f5daedccb4eb6a5170f384bf4",
   "manifest_version": "0.13.1",
-  "name": "DUMMY Engine",
+  "name": "VOICEVOX ENGINE OSS",
   "supported_features": {
     "adjust_intonation_scale": true,
     "adjust_mora_pitch": true,
