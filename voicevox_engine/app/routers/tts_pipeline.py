@@ -349,6 +349,12 @@ def generate_tts_pipeline_router(
     def multi_synthesis(
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         version = core_version or LATEST_VERSION
@@ -359,15 +365,14 @@ def generate_tts_pipeline_router(
             with zipfile.ZipFile(f, mode="a") as zip_file:
                 for i in range(len(queries)):
                     if queries[i].outputSamplingRate != sampling_rate:
-                        raise HTTPException(
-                            status_code=422,
-                            detail="サンプリングレートが異なるクエリがあります",
-                        )
+                        msg = "サンプリングレートが異なるクエリがあります"
+                        raise HTTPException(status_code=422, detail=msg)
 
                     with TemporaryFile() as wav_file:
-                        # TODO: enable_interrogative_upspeak を API 引数化する。
                         wave = engine.synthesize_wave(
-                            queries[i], style_id, enable_interrogative_upspeak=True
+                            queries[i],
+                            style_id,
+                            enable_interrogative_upspeak=enable_interrogative_upspeak,
                         )
                         soundfile.write(
                             file=wav_file,
