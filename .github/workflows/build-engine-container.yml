@@ -106,8 +106,6 @@ jobs:
       - name: <Setup> Prepare Python version
         id: prepare-python
         uses: ./.github/actions/prepare_python
-        with:
-          only-export-python-version: true
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
@@ -155,7 +153,7 @@ jobs:
           {
             echo "tags<<EOF"
 
-            python3 tools/generate_docker_image_names.py \
+            uv run tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
               --prefix "${{ matrix.prefixes }}"
@@ -228,8 +226,6 @@ jobs:
       - name: <Setup> Prepare Python version
         id: prepare-python
         uses: ./.github/actions/prepare_python
-        with:
-          only-export-python-version: true
 
       - name: <Setup> Set up Docker Buildx
         id: buildx

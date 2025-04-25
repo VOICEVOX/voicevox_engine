@@ -81,6 +81,12 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
@@ -108,6 +114,7 @@ def generate_morphing_router(
             query=query,
             base_style_id=base_style_id,
             target_style_id=target_style_id,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
 
         morph_wave = synthesize_morphed_wave(

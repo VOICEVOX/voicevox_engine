@@ -23,43 +23,43 @@ jobs:
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-dev"
+          dependency-group: dev
 
-      - name: <Test> Validate poetry.lock
+      - name: <Test> Validate uv.lock
         run: |
-          poetry lock
+          uv lock
           git diff --exit-code
 
       - name: <Test> Check dependency lists
         run: |
-          poetry export --without-hashes -o requirements.txt.check
-          poetry export --without-hashes --with dev -o requirements-dev.txt.check
-          poetry export --without-hashes --with build -o requirements-build.txt.check
+          uv export --no-annotate --no-hashes --no-header -o requirements.txt.check
+          uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt.check
+          uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt.check
 
           diff -q requirements.txt requirements.txt.check || \
           diff -q requirements-dev.txt requirements-dev.txt.check || \
           diff -q requirements-build.txt requirements-build.txt.check > /dev/null
           if [ $? = 1 ]; then
-            echo "poetry export has some diff"
+            echo "uv export has some diff"
             exit 1
           fi
 
       - name: <Test> Check linting
-        run: ruff check
+        run: uv run ruff check
 
       - name: <Test> Check formatting
-        run: ruff format --check
+        run: uv run ruff format --check
 
       - name: <Test> Check typing
-        run: mypy .
+        run: uv run mypy .
 
       - name: <Test> Test codes and coverage
-        run: coverage run --omit=test/* -m pytest
+        run: uv run coverage run --omit=test/* -m pytest
 
       - name: <Deploy> Submit coverage results to Coveralls
         if: runner.os == 'Linux'
         # Coveralls へのアップロードが失敗しても CI は継続させる
-        run: coveralls --service=github || echo "::warning::Coveralls failed, but continuing"
+        run: uv run coveralls --service=github || echo "::warning::Coveralls failed, but continuing"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -68,7 +68,7 @@ jobs:
 
       - name: <Test> Test names by checking typo
         if: runner.os == 'Linux'
-        run: typos
+        run: uv run typos
 
   lint-builders:
     runs-on: ubuntu-22.04

@@ -362,7 +362,7 @@ class TTSEngine:
         self,
         query: AudioQuery,
         style_id: StyleId,
-        enable_interrogative_upspeak: bool = True,
+        enable_interrogative_upspeak: bool,
     ) -> NDArray[np.float32]:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない

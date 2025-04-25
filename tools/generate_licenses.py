@@ -91,17 +91,8 @@ class _License:
 
 def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
     """pip から取得したライセンス情報の抜けを補完する。"""
-    package_to_license_url = {
-        "distlib": "https://bitbucket.org/pypa/distlib/raw/7d93712134b28401407da27382f2b6236c87623a/LICENSE.txt",
-        "future": "https://raw.githubusercontent.com/PythonCharmers/python-future/master/LICENSE.txt",
-        "jsonschema": "https://raw.githubusercontent.com/python-jsonschema/jsonschema/dbc398245a583cb2366795dc529ae042d10c1577/COPYING",
-        "lockfile": "https://opendev.org/openstack/pylockfile/raw/tag/0.12.2/LICENSE",
-        "pefile": "https://raw.githubusercontent.com/erocarrera/pefile/master/LICENSE",
-        "platformdirs": "https://raw.githubusercontent.com/platformdirs/platformdirs/aa671aaa97913c7b948567f4d9c77d4f98bfa134/LICENSE",
-        "pyopenjtalk": "https://raw.githubusercontent.com/r9y9/pyopenjtalk/master/LICENSE.md",
-        "python-multipart": "https://raw.githubusercontent.com/andrew-d/python-multipart/master/LICENSE.txt",
-        "romkan": "https://raw.githubusercontent.com/soimort/python-romkan/master/LICENSE",
-        "webencodings": "https://raw.githubusercontent.com/gsnedders/python-webencodings/fa2cb5d75ab41e63ace691bc0825d3432ba7d694/LICENSE",
+    package_to_license_url: dict[str, str] = {
+        # "package_name": "https://license.adress.com/v0.0.0/LICENSE.txt",
     }
 
     updated_licenses = []
@@ -111,8 +102,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
 
         # ライセンス文が pip から取得できていない場合、pip 外から補う
         if pip_license.LicenseText == "UNKNOWN":
-            if package_name == "core" and pip_license.Version == "0.0.0":
-                continue
             if package_name not in package_to_license_url:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")

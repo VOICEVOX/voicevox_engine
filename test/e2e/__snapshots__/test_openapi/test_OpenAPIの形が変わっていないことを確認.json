@@ -1286,8 +1286,8 @@
     }
   },
   "info": {
-    "description": "DUMMY の音声合成エンジンです。",
-    "title": "DUMMY Engine",
+    "description": "VOICEVOX OSS の音声合成エンジンです。",
+    "title": "VOICEVOX ENGINE OSS",
     "version": "latest"
   },
   "openapi": "3.1.0",
@@ -1576,6 +1576,16 @@
             "schema": {
               "title": "Speaker",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
             }
           },
           {
@@ -2361,6 +2371,18 @@
             }
           },
           {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
             "in": "query",
             "name": "core_version",
             "required": false,
@@ -3054,6 +3076,18 @@
               "minimum": 0.0,
               "title": "Morph Rate",
               "type": "number"
+            }
+          },
+          {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
             }
           },
           {

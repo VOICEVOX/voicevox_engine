@@ -3,6 +3,7 @@
 import json
 import sys
 import threading
+import warnings
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
@@ -169,7 +170,7 @@ class UserDictionary:
 
             # デフォルト辞書データの追加
             if not default_dict_path.is_file():
-                print("Warning: Cannot find default dictionary.", file=sys.stderr)
+                warnings.warn("Cannot find default dictionary.", stacklevel=1)
                 return
             default_dict = default_dict_path.read_text(encoding="utf-8")
             if default_dict == default_dict.rstrip():
@@ -207,17 +208,16 @@ class UserDictionary:
             tmp_csv_path.write_text(csv_text, encoding="utf-8")
 
             # 辞書.csvをOpenJTalk用にコンパイル
-            pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
+            pyopenjtalk.mecab_dict_index(str(tmp_csv_path), str(tmp_compiled_path))
             if not tmp_compiled_path.is_file():
                 raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
 
             # コンパイル済み辞書の読み込み
-            pyopenjtalk.set_user_dict(
+            pyopenjtalk.update_global_jtalk_with_user_dict(
                 str(tmp_compiled_path.resolve(strict=True))
             )  # NOTE: resolveによりコンパイル実行時でも相対パスを正しく認識できる
 
         except Exception as e:
-            print("Error: Failed to update dictionary.", file=sys.stderr)
             raise e
 
         finally:

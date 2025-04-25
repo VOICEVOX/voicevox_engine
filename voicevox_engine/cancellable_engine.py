@@ -117,6 +117,7 @@ class CancellableEngine:
         self,
         query: AudioQuery,
         style_id: StyleId,
+        enable_interrogative_upspeak: bool,
         request: Request,
         version: str | LatestVersion,
     ) -> str:
@@ -136,7 +137,9 @@ class CancellableEngine:
 
         # プロセスへ入力を渡して音声を合成する
         try:
-            synth_connection.send((query, style_id, version))
+            synth_connection.send(
+                (query, style_id, enable_interrogative_upspeak, version)
+            )
             audio_file_name = synth_connection.recv()
 
             if not isinstance(audio_file_name, str):
@@ -207,7 +210,7 @@ def start_synthesis_subprocess(
     while True:
         try:
             # キューの入力を受け取る
-            query, style_id, version = connection.recv()
+            query, style_id, enable_interrogative_upspeak, version = connection.recv()
 
             # 音声を合成しファイルへ保存する
             try:
@@ -216,9 +219,10 @@ def start_synthesis_subprocess(
                 # コネクションを介して「バージョンが見つからないエラー」を送信する
                 connection.send("")  # `""` をエラーして扱う
                 continue
-            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
             wave = _engine.synthesize_wave(
-                query, style_id, enable_interrogative_upspeak=False
+                query,
+                style_id,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
             )
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(
