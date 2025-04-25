@@ -55,20 +55,20 @@ jobs:
       matrix:
         include:
           # Windows CPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64
             onnxruntime_url: https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-win-x64-1.17.3.tgz
             target: windows-cpu
           # Windows DirectML
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64
             onnxruntime_url: https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-win-x64-dml-1.17.3.tgz
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.13.1
             target: windows-directml
           # Windows NVIDIA GPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64
             onnxruntime_url: https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.17.3/voicevox_onnxruntime-win-x64-cuda-1.17.3.tgz
