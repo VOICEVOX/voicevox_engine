@@ -54,7 +54,7 @@ jobs:
             prefixes: "cpu-amd64-ubuntu20.04"
             buildcache_prefix: "cpu-amd64-ubuntu20.04"
             target: runtime-env
-            base_image: ubuntu:20.04
+            base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/ubuntu:20.04
             platforms: linux/amd64
           # Ubuntu 20.04 / ARM64
@@ -62,7 +62,7 @@ jobs:
             prefixes: "cpu-arm64-ubuntu20.04"
             buildcache_prefix: "cpu-arm64-ubuntu20.04"
             target: runtime-env
-            base_image: ubuntu:20.04
+            base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/ubuntu:20.04
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
@@ -70,7 +70,7 @@ jobs:
             prefixes: "nvidia-ubuntu20.04,nvidia-amd64-ubuntu20.04"
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
-            base_image: ubuntu:20.04
+            base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
@@ -78,7 +78,7 @@ jobs:
             prefixes: "cpu-amd64,cpu-amd64-ubuntu22.04"
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
             target: runtime-env
-            base_image: ubuntu:22.04
+            base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/ubuntu:22.04
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
@@ -86,7 +86,7 @@ jobs:
             prefixes: "cpu-arm64,cpu-arm64-ubuntu22.04"
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
-            base_image: ubuntu:22.04
+            base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/ubuntu:22.04
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
@@ -94,7 +94,7 @@ jobs:
             prefixes: "nvidia,nvidia-amd64,nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
-            base_image: ubuntu:22.04
+            base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
             platforms: linux/amd64
 
