@@ -110,20 +110,19 @@ else
     push_image_repository_without_registry=$(echo "${PUSH_IMAGE_REPOSITORY}" | cut -d/ -f2-)
 fi
 
-# マニフェストリストに含まれるイメージをタグなしでpush
-# NOTE: レジストリが同じ場合、すでにイメージが存在するため、pushしない
-push_amd64_image_name="${push_image_registry}/${push_image_repository_without_registry}@${pull_amd64_image_digest}"
+# 仮のイメージ名を作成
+# NOTE: レジストリが異なるイメージをマニフェストリストに追加することはできないため、
+# レジストリが異なる場合、push先のリポジトリに仮のタグを作成する
+push_amd64_image_name="${push_image_registry}/${push_image_repository_without_registry}:temp-amd64"
 if [ "${pull_amd64_image_registry}" != "${push_image_registry}" ]; then
     docker pull "${pull_amd64_image_tag}"
     docker tag "${pull_amd64_image_tag}" "${push_amd64_image_name}"
-    docker push "${push_amd64_image_name}"
 fi
 
-push_arm64_image_name="${push_image_registry}/${push_image_repository_without_registry}@${pull_arm64_image_digest}"
+push_arm64_image_name="${push_image_registry}/${push_image_repository_without_registry}:temp-arm64"
 if [ "${pull_arm64_image_registry}" != "${push_image_registry}" ]; then
     docker pull "${pull_arm64_image_tag}"
     docker tag "${pull_arm64_image_tag}" "${push_arm64_image_name}"
-    docker push "${push_arm64_image_name}"
 fi
 
 # マルチプラットフォームイメージのマニフェストリストを作成してpush
