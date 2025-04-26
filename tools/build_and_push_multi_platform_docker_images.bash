@@ -6,8 +6,13 @@
 
 set -eu
 
-if [ ! -v IMAGE_NAME ]; then # Dockerイメージ名
-    echo "::error::IMAGE_NAMEが未定義です"
+if [ ! -v PULL_IMAGE_REPOSITORY ]; then # pullするDockerイメージリポジトリ
+    echo "::error::PULL_IMAGE_REPOSITORYが未定義です"
+    exit 1
+fi
+
+if [ ! -v PUSH_IMAGE_REPOSITORY ]; then # pushするDockerイメージリポジトリ
+    echo "::error::PUSH_IMAGE_REPOSITORYが未定義です"
     exit 1
 fi
 
@@ -16,18 +21,18 @@ if [ ! -v VERSION_OR_LATEST ]; then # バージョンまたはlatest
     exit 1
 fi
 
-if [ ! -v AMD64_IMAGE_PREFIX ]; then # pullするAMD64イメージのプレフィックス
-    echo "::error::AMD64_IMAGE_PREFIXが未定義です"
+if [ ! -v PULL_AMD64_IMAGE_PREFIX ]; then # pullするAMD64イメージのプレフィックス
+    echo "::error::PULL_AMD64_IMAGE_PREFIXが未定義です"
     exit 1
 fi
 
-if [ ! -v ARM64_IMAGE_PREFIX ]; then # pullするARM64イメージのプレフィックス
-    echo "::error::ARM64_IMAGE_PREFIXが未定義です"
+if [ ! -v PULL_ARM64_IMAGE_PREFIX ]; then # pullするARM64イメージのプレフィックス
+    echo "::error::PULL_ARM64_IMAGE_PREFIXが未定義です"
     exit 1
 fi
 
-if [ ! -v MULTI_PLATFORM_IMAGE_PREFIXES ]; then # pushするマルチプラットフォームイメージのプレフィックス（カンマ区切り）
-    echo "::error::MULTI_PLATFORM_IMAGE_PREFIXESが未定義です"
+if [ ! -v PUSH_MULTI_PLATFORM_IMAGE_PREFIXES ]; then # pushするマルチプラットフォームイメージのプレフィックス（カンマ区切り）
+    echo "::error::PUSH_MULTI_PLATFORM_IMAGE_PREFIXESが未定義です"
     exit 1
 fi
 
@@ -36,25 +41,25 @@ script_dir=$(dirname "${0}")
 # ビルドするマルチプラットフォームDockerイメージ名のリスト
 multi_platform_image_tags=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
-        --repository "${IMAGE_NAME}" \
+        --repository "${PUSH_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
-        --prefix "${MULTI_PLATFORM_IMAGE_PREFIXES}"
+        --prefix "${PUSH_MULTI_PLATFORM_IMAGE_PREFIXES}"
 )
 
 # AMD64のDockerイメージ名
 amd64_image_tag=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
-        --repository "${IMAGE_NAME}" \
+        --repository "${PULL_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
-        --prefix "${AMD64_IMAGE_PREFIX}"
+        --prefix "${PULL_AMD64_IMAGE_PREFIX}"
 )
 
 # ARM64のDockerイメージ名
 arm64_image_tag=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
-        --repository "${IMAGE_NAME}" \
+        --repository "${PULL_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
-        --prefix "${ARM64_IMAGE_PREFIX}"
+        --prefix "${PULL_ARM64_IMAGE_PREFIX}"
 )
 
 # タグを除くイメージ名
