@@ -275,9 +275,20 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build/Deploy> Build and Deploy multi-platform Docker image
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image for ghcr.io
         env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          IMAGE_NAME: ${{ needs.config.outputs.ghcr_image_repository }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
+          AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
+          ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
+        run: |
+          bash ./tools/build_and_push_multi_platform_docker_images.bash
+
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
+        if: needs.config.outputs.dockerhub_image_repository != ''
+        env:
+          IMAGE_NAME: ${{ needs.config.outputs.dockerhub_image_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
