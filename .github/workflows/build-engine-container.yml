@@ -51,6 +51,10 @@ jobs:
     needs: [config]
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: read
+      packages: write
+
     strategy:
       matrix:
         # 各変数の説明
@@ -236,6 +240,10 @@ jobs:
   build-docker-multi-platform:
     needs: [config, build-docker]
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
