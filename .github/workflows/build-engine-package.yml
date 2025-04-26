@@ -396,7 +396,7 @@ jobs:
         run: bash tools/process_voicevox_resource.bash
 
       # NOTE: you must agree to the ToU
-      # FIXME: なんか数分かかるみたいなのでgithubusercontentからの方がよさげだが、#709でやることにする。
+      # FIXME: 数分かかるみたいなようなのでgithubusercontentからの方がよさげだが、#709でやることにする。
       - name: <Setup> Check out VVM repository
         uses: actions/checkout@v4
         with:
