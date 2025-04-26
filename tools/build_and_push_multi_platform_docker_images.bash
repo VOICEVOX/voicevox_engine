@@ -39,7 +39,7 @@ fi
 script_dir=$(dirname "${0}")
 
 # ビルドするマルチプラットフォームDockerイメージ名のリスト
-multi_platform_image_tags=$(
+push_multi_platform_image_tags=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${PUSH_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
@@ -47,7 +47,7 @@ multi_platform_image_tags=$(
 )
 
 # AMD64のDockerイメージ名
-amd64_image_tag=$(
+pull_amd64_image_tag=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${PULL_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
@@ -55,66 +55,100 @@ amd64_image_tag=$(
 )
 
 # ARM64のDockerイメージ名
-arm64_image_tag=$(
+pull_arm64_image_tag=$(
     uv run "${script_dir}/generate_docker_image_names.py" \
         --repository "${PULL_IMAGE_REPOSITORY}" \
         --version "${VERSION_OR_LATEST}" \
         --prefix "${PULL_ARM64_IMAGE_PREFIX}"
 )
 
-# タグを除くイメージ名
-amd64_image_name=$(echo "${amd64_image_tag}" | cut -d: -f1)
-arm64_image_name=$(echo "${arm64_image_tag}" | cut -d: -f1)
+# Dockerリポジトリ名（タグを除くイメージ名）
+pull_amd64_repository=$(echo "${pull_amd64_image_tag}" | cut -d: -f1)
+pull_arm64_repository=$(echo "${pull_arm64_image_tag}" | cut -d: -f1)
 
 # 単一プラットフォームイメージのダイジェスト
-amd64_image_digest=$(
-    docker manifest inspect "${amd64_image_tag}" |
+pull_amd64_image_digest=$(
+    docker manifest inspect "${pull_amd64_image_tag}" |
         jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest'
 )
-if [ -z "${amd64_image_digest}" ]; then
+if [ -z "${pull_amd64_image_digest}" ]; then
     echo "::error::AMD64イメージのダイジェストを取得できませんでした"
     exit 1
 fi
 
-arm64_image_digest=$(
-    docker manifest inspect "${arm64_image_tag}" |
+pull_arm64_image_digest=$(
+    docker manifest inspect "${pull_arm64_image_tag}" |
         jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest'
 )
-if [ -z "${arm64_image_digest}" ]; then
+if [ -z "${pull_arm64_image_digest}" ]; then
     echo "::error::ARM64イメージのダイジェストを取得できませんでした"
     exit 1
 fi
 
-# マルチプラットフォームイメージのマニフェストリストを作成
+# レジストリ名・レジストリを除くリポジトリ名
+# NOTE: スラッシュ数が1つ以下の場合、レジストリはDocker Hub
+pull_amd64_repository_slash_count=$(grep --only-matching "/" <<< "${pull_amd64_repository}" | wc -l)
+if [ "${pull_amd64_repository_slash_count}" -le 1 ]; then
+    pull_amd64_image_registry=docker.io
+else
+    pull_amd64_image_registry=$(echo "${pull_amd64_repository}" | cut -d/ -f1)
+fi
+
+pull_arm64_repository_slash_count=$(grep --only-matching "/" <<< "${pull_arm64_repository}" | wc -l)
+if [ "${pull_arm64_repository_slash_count}" -le 1 ]; then
+    pull_arm64_image_registry=docker.io
+else
+    pull_arm64_image_registry=$(echo "${pull_arm64_repository}" | cut -d/ -f1)
+fi
+
+push_image_repository_slash_count=$(grep --only-matching "/" <<< "${PUSH_IMAGE_REPOSITORY}" | wc -l)
+if [ "${push_image_repository_slash_count}" -le 1 ]; then
+    push_image_registry=docker.io
+    push_image_repository_without_registry="${PUSH_IMAGE_REPOSITORY}"
+else
+    push_image_registry=$(echo "${PUSH_IMAGE_REPOSITORY}" | cut -d/ -f1)
+    push_image_repository_without_registry=$(echo "${PUSH_IMAGE_REPOSITORY}" | cut -d/ -f2-)
+fi
+
+# マニフェストリストに含まれるイメージをタグなしでpush
+# NOTE: レジストリが同じ場合、すでにイメージが存在するため、pushしない
+push_amd64_image_name="${push_image_registry}/${push_image_repository_without_registry}@${pull_amd64_image_digest}"
+if [ "${pull_amd64_image_registry}" != "${push_image_registry}" ]; then
+    docker pull "${pull_amd64_image_tag}"
+    docker tag "${pull_amd64_image_tag}" "${push_amd64_image_name}"
+    docker push "${push_amd64_image_name}"
+fi
+
+push_arm64_image_name="${push_image_registry}/${push_image_repository_without_registry}@${pull_arm64_image_digest}"
+if [ "${pull_arm64_image_registry}" != "${push_image_registry}" ]; then
+    docker pull "${pull_arm64_image_tag}"
+    docker tag "${pull_arm64_image_tag}" "${push_arm64_image_name}"
+    docker push "${push_arm64_image_name}"
+fi
+
+# マルチプラットフォームイメージのマニフェストリストを作成してpush
 (
     IFS=$'\n'
-    for multi_platform_image_tag in $multi_platform_image_tags; do
+    for push_multi_platform_image_tag in $push_multi_platform_image_tags; do
         # マニフェストリストを作成
-        docker manifest create \
-            "${multi_platform_image_tag}" \
-            "${amd64_image_name}@${amd64_image_digest}" \
-            "${arm64_image_name}@${arm64_image_digest}"
+        docker manifest create "${push_multi_platform_image_tag}" \
+            "${push_amd64_image_name}" \
+            "${push_arm64_image_name}"
 
         # プラットフォーム情報を追加
         docker manifest annotate \
-            "${multi_platform_image_tag}" \
-            "${amd64_image_name}@${amd64_image_digest}" \
+            "${push_multi_platform_image_tag}" \
+            "${push_amd64_image_name}" \
             --os linux \
             --arch amd64
 
         docker manifest annotate \
-            "${multi_platform_image_tag}" \
-            "${arm64_image_name}@${arm64_image_digest}" \
+            "${push_multi_platform_image_tag}" \
+            "${push_arm64_image_name}" \
             --os linux \
             --arch arm64 \
             --variant v8
-    done
-)
 
-# push
-(
-    IFS=$'\n'
-    for multi_platform_image_tag in ${multi_platform_image_tags}; do
-        docker manifest push "${multi_platform_image_tag}"
+        docker manifest push "${push_multi_platform_image_tag}"
     done
 )
