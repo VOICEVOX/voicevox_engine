@@ -25,6 +25,10 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   test:
     runs-on: [ubuntu-22.04]
