@@ -187,7 +187,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       
       - name: <Build> Generate Docker image names for Docker Hub
-        id: generate-docker-hub-docker-image-names
+        id: generate-dockerhub-docker-image-names
         if: needs.config.outputs.dockerhub_enabled == 'true'
         run: |
           # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
@@ -242,7 +242,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.generate-ghcr-docker-image-names.outputs.tags }}
-            ${{ steps.generate-docker-hub-docker-image-names.outputs.tags }}
+            ${{ steps.generate-dockerhub-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
