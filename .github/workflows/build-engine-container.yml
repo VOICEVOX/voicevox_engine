@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
-      ghcr_image_repository: ${{ steps.vars.outputs.ghcr_image_repository }}
+      ghcr_repository: ${{ steps.vars.outputs.ghcr_repository }}
       dockerhub_enabled: ${{ steps.vars.outputs.dockerhub_enabled }}
       dockerhub_username: ${{ steps.vars.outputs.dockerhub_username }}
-      dockerhub_image_repository: ${{ steps.vars.outputs.dockerhub_image_repository }}
+      dockerhub_repository: ${{ steps.vars.outputs.dockerhub_repository }}
     steps:
       - name: <Setup> Declare variables
         id: vars
@@ -42,18 +42,18 @@ jobs:
           echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
 
           : # GitHub Container RegistryのDockerイメージリポジトリ
-          echo "ghcr_image_repository=ghcr.io/${{ github.repository_owner }}/voicevox_engine" >> "$GITHUB_OUTPUT"
+          echo "ghcr_repository=ghcr.io/${{ github.repository_owner }}/voicevox_engine" >> "$GITHUB_OUTPUT"
 
           : # Docker Hubの設定
           {
             if [[ -n "${{ vars.DOCKERHUB_USERNAME }}" && "${{ github.event.inputs.force_dockerhub_disabled }}" != 'true' ]]; then
               echo "dockerhub_enabled=true"
               echo "dockerhub_username=${{ vars.DOCKERHUB_USERNAME }}"
-              echo "dockerhub_image_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine"
+              echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine"
             else
               echo "dockerhub_enabled=false"
               echo "dockerhub_username="
-              echo "dockerhub_image_repository="
+              echo "dockerhub_repository="
             fi
           } >> "$GITHUB_OUTPUT"
 
@@ -179,7 +179,7 @@ jobs:
             echo "tags<<EOF"
 
             uv run tools/generate_docker_image_names.py \
-              --repository "${{ needs.config.outputs.ghcr_image_repository }}" \
+              --repository "${{ needs.config.outputs.ghcr_repository }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
               --prefix "${{ matrix.prefixes }}"
 
@@ -195,7 +195,7 @@ jobs:
             echo "tags<<EOF"
 
             uv run tools/generate_docker_image_names.py \
-              --repository "${{ needs.config.outputs.dockerhub_image_repository }}" \
+              --repository "${{ needs.config.outputs.dockerhub_repository }}" \
               --version "${{ needs.config.outputs.version_or_latest }}" \
               --prefix "${{ matrix.prefixes }}"
 
@@ -210,13 +210,13 @@ jobs:
         run: |
           # --cache-from に指定するためのDockerイメージ名
           # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
-          cache_from="type=registry,ref=${{ needs.config.outputs.ghcr_image_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache"
+          cache_from="type=registry,ref=${{ needs.config.outputs.ghcr_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache"
 
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
           if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
-            cache_to="type=registry,ref=${{ needs.config.outputs.ghcr_image_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
+            cache_to="type=registry,ref=${{ needs.config.outputs.ghcr_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
 
           # outputs に格納する
@@ -295,7 +295,7 @@ jobs:
 
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for ghcr.io
         env:
-          IMAGE_NAME: ${{ needs.config.outputs.ghcr_image_repository }}
+          IMAGE_NAME: ${{ needs.config.outputs.ghcr_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
@@ -308,7 +308,7 @@ jobs:
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
         if: needs.config.outputs.dockerhub_enabled == 'true'
         env:
-          IMAGE_NAME: ${{ needs.config.outputs.dockerhub_image_repository }}
+          IMAGE_NAME: ${{ needs.config.outputs.dockerhub_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
