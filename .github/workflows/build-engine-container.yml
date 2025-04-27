@@ -11,6 +11,10 @@ on:
       version:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
+      force_dockerhub_disabled:
+        description: "Docker Hubへのプッシュを強制的に無効化"
+        type: boolean
+        default: false
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
@@ -27,6 +31,8 @@ jobs:
     outputs:
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
       ghcr_image_repository: ${{ steps.vars.outputs.ghcr_image_repository }}
+      dockerhub_enabled: ${{ steps.vars.outputs.dockerhub_enabled }}
+      dockerhub_username: ${{ steps.vars.outputs.dockerhub_username }}
       dockerhub_image_repository: ${{ steps.vars.outputs.dockerhub_image_repository }}
     steps:
       - name: <Setup> Declare variables
@@ -38,14 +44,18 @@ jobs:
           : # GitHub Container RegistryのDockerイメージリポジトリ
           echo "ghcr_image_repository=ghcr.io/${{ github.repository_owner }}/voicevox_engine" >> "$GITHUB_OUTPUT"
 
-          : # Docker HubのDockerイメージリポジトリ
-          if [ -n "${{ vars.DOCKERHUB_USERNAME }}" ]; then
-            # Docker Hubのユーザ名が指定されている場合、リポジトリ名
-            echo "dockerhub_image_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine" >> "$GITHUB_OUTPUT"
-          else
-            # Docker Hubのユーザ名が指定されていない場合、空文字列
-            echo "dockerhub_image_repository=" >> "$GITHUB_OUTPUT"
-          fi
+          : # Docker Hubの設定
+          {
+            if [[ -n "${{ vars.DOCKERHUB_USERNAME }}" && "${{ github.event.inputs.force_dockerhub_disabled }}" != 'true' ]]; then
+              echo "dockerhub_enabled=true"
+              echo "dockerhub_username=${{ vars.DOCKERHUB_USERNAME }}"
+              echo "dockerhub_image_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine"
+            else
+              echo "dockerhub_enabled=false"
+              echo "dockerhub_username="
+              echo "dockerhub_image_repository="
+            fi
+          } >> "$GITHUB_OUTPUT"
 
   build-docker:
     needs: [config]
@@ -135,10 +145,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: needs.config.outputs.dockerhub_image_repository != ''
+        if: needs.config.outputs.dockerhub_enabled == 'true'
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ needs.config.outputs.dockerhub_username }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: <Setup> Prepare VOICEVOX RESOURCE cache
@@ -178,7 +188,7 @@ jobs:
       
       - name: <Build> Generate Docker image names for Docker Hub
         id: generate-docker-hub-docker-image-names
-        if: needs.config.outputs.dockerhub_image_repository != ''
+        if: needs.config.outputs.dockerhub_enabled == 'true'
         run: |
           # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
           {
@@ -277,10 +287,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: needs.config.outputs.dockerhub_image_repository != ''
+        if: needs.config.outputs.dockerhub_enabled == 'true'
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ needs.config.outputs.dockerhub_username }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for ghcr.io
@@ -296,7 +306,7 @@ jobs:
       # TODO: Docker Hubに単一プラットフォームイメージのタグを作成しないようにしたい
       # そのためには、宛先レジストリにタグを作成せずに、レジストリ間でマニフェストリストをコピーする必要があり、難しいので保留
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
-        if: needs.config.outputs.dockerhub_image_repository != ''
+        if: needs.config.outputs.dockerhub_enabled == 'true'
         env:
           IMAGE_NAME: ${{ needs.config.outputs.dockerhub_image_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
