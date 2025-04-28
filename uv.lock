@@ -1129,7 +1129,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-build = [{ name = "pyinstaller", specifier = ">=5.13" }]
+build = [{ name = "pyinstaller", specifier = "<6" }]
 dev = [
     { name = "coveralls", specifier = ">=4.0.1" },
     { name = "httpx", specifier = ">=0.28.1" },
