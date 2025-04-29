@@ -4,7 +4,7 @@ Dockerイメージ名を生成する。
 Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する。
 
 例
-$ python3 ./tools/generate_docker_image_names.py \
+$ uv run ./tools/generate_docker_image_names.py \
   --repository "REPO" \
   --version "VER" \
   --prefix ",A,B"
@@ -12,7 +12,7 @@ REPO:VER
 REPO:A-VER
 REPO:B-VER
 
-$ python3 ./tools/generate_docker_image_names.py \
+$ uv run ./tools/generate_docker_image_names.py \
   --repository "REPO" \
   --version "VER" \
   --prefix ""

@@ -266,7 +266,9 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_query()
     # Outputs
-    result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
+    result = tts_engine.synthesize_wave(
+        hello_hiho, StyleId(1), enable_interrogative_upspeak=True
+    )
     # Tests
     assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 

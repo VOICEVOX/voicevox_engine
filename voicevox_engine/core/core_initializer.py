@@ -2,7 +2,7 @@
 
 import json
 import os
-import sys
+import warnings
 from pathlib import Path
 
 from ..utility.core_version_utility import get_latest_version
@@ -91,11 +91,8 @@ def initialize_cores(
         起動時に全てのモデルを読み込むかどうか
     """
     if cpu_num_threads == 0 or cpu_num_threads is None:
-        print(
-            "Warning: cpu_num_threads is set to 0. "
-            + "Setting it to half of the logical cores.",
-            file=sys.stderr,
-        )
+        msg = "cpu_num_threads is set to 0. Setting it to half of the logical cores."
+        warnings.warn(msg, stacklevel=1)
         cpu_num_threads = _get_half_logical_cores()
 
     root_dir = engine_root()
@@ -137,12 +134,9 @@ def initialize_cores(
                 # コアを登録する
                 metas = json.loads(core.metas())
                 core_version: str = metas[0]["version"]
-                print(f"Info: Loading core {core_version}.")
                 if core_manager.has_core(core_version):
-                    print(
-                        "Warning: Core loading is skipped because of version duplication.",
-                        file=sys.stderr,
-                    )
+                    msg = "Core loading is skipped because of version duplication."
+                    warnings.warn(msg, stacklevel=1)
                 else:
                     core_manager.register_core(CoreAdapter(core), core_version)
             except Exception:
@@ -173,7 +167,6 @@ def initialize_cores(
         from ..dev.core.mock import MockCoreWrapper
 
         if not core_manager.has_core(MOCK_VER):
-            print("Info: Loading mock.")
             core = MockCoreWrapper()
             core_manager.register_core(CoreAdapter(core), MOCK_VER)
 

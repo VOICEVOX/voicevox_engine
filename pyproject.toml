@@ -1,3 +1,49 @@
+[project]
+name = "voicevox_engine"
+version = "0.24.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.11.9"
+dependencies = [
+  "fastapi-slim>=0.115.5",
+  "jinja2>=3.1.3", # NOTE: required by fastapi.templating.Jinja2Templates (fastapi-slim's unmanaged dependency)
+  "numpy>=2.2.3",
+  "platformdirs>=4.2.0",
+  "pydantic>=2.7.3",
+  "pyopenjtalk",
+  "python-multipart>=0.0.20", # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
+  "pyworld>=0.3.5",
+  "pyyaml>=6.0.1",
+  "semver>=3.0.0",
+  "setuptools>=78.1.0", # NOTE: pyworldがpkg_resourcesを使っている。
+  "soundfile>=0.13.1",
+  "soxr>=0.5.0",
+  "starlette>=0.45.3",
+  "uvicorn>=0.34.0",
+]
+
+[tool.uv]
+default-groups = []
+
+[tool.uv.sources]
+pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
+
+[dependency-groups]
+build = ["pyinstaller<6"] # NOTE: PyInstaller6ではmacOSのエディタにバンドルすると動作しなくなる (c.f. #1022)
+dev = [
+  "coveralls>=4.0.1",
+  "httpx>=0.28.1", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
+  "mypy>=1.10.0",
+  "pip-audit>=2.7.3",
+  "pip-licenses==5.0.0", # NOTE: must be specified exactly (c.f. #1281)
+  "pre-commit>=4.0.1",
+  "pytest>=8.2.0",
+  "ruff>=0.11.1",
+  "syrupy>=4.6.1",
+  "types-pyyaml>=6.0.12",
+  "typos>=1.31.1",
+]
+
 [tool.ruff]
 target-version = "py311"
 
@@ -10,7 +56,7 @@ ignore = [
 ]
 unfixable = [
   "F401", # unused-import
-  "F841"  # unused-variable
+  "F841", # unused-variable
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -35,45 +81,3 @@ warn_unreachable = true
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument
-
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "~3.11"
-numpy = "^2.2.3"
-fastapi-slim = "^0.115.5"
-jinja2 = "^3.1.3" # NOTE: required by fastapi.templating.Jinja2Templates (fastapi-slim's unmanaged dependency)
-python-multipart = "^0.0.20" # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
-uvicorn = "^0.34.0"
-soundfile = "^0.13.1"
-pyyaml = "^6.0.1"
-pyworld = "^0.3.5"
-pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
-semver = "^3.0.0"
-platformdirs = "^4.2.0"
-soxr = "^0.5.0"
-pydantic = "^2.7.3"
-starlette = "^0.45.3"
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.10.0"
-pytest = "^8.2.0"
-coveralls = "^4.0.1"
-poetry = "2.1.1"
-poetry-plugin-export = "^1.8.0"
-httpx = "^0.28.1" # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
-syrupy = "^4.6.1"
-types-pyyaml = "^6.0.12"
-pip-licenses = "5.0.0" # NOTE: must be specified exactly (c.f. #1281)
-pre-commit = "^4.0.1"
-pip-audit = "^2.7.3"
-ruff = "^0.11.1"
-typos = "^1.31.1"
-
-[tool.poetry.group.build.dependencies]
-pyinstaller = "^5.13"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
