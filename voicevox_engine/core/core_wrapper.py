@@ -394,6 +394,9 @@ def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
 
+    # 最新の読み込みエラーを記録する
+    latest_e: OSError | None = None
+
     # GPU 版を読み込む
     if use_gpu or model_type == "onnxruntime":
         for gpu_type in [GPUType.CUDA, GPUType.DIRECT_ML]:
@@ -401,8 +404,8 @@ def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
             if core_name:
                 try:
                     return _load_core_dll(core_dir / core_name)
-                except OSError:
-                    pass
+                except OSError as e:
+                    latest_e = e
 
     # CPU 版を読み込む
     # NOTE: GPU 版の読み込みが全て失敗した場合は CPU 版へフォールバックする
@@ -411,17 +414,21 @@ def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
         try:
             return _load_core_dll(core_dir / core_name)
         except OSError as e:
-            _e = e
-        if model_type == "libtorch":
-            # TODO: libtorch CUDA 版へのフォールバックにみえるが、意図通りか確認する
-            core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-            if core_name:
-                try:
-                    return _load_core_dll(core_dir / core_name)
-                except OSError as e:
-                    _e = e
-        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{_e}"
-        raise RuntimeError(msg) from _e
+            latest_e = e
+
+    # libtorch CUDA 版を CPU モードで読み込む
+    # NOTE: libtorch は CUDA 版 のみが存在するため、CUDA 版の CPU モードへフォールバックする
+    if model_type == "libtorch":
+        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
+        if core_name:
+            try:
+                return _load_core_dll(core_dir / core_name)
+            except OSError as e:
+                latest_e = e
+
+    if latest_e is not None:
+        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{latest_e}"
+        raise RuntimeError(msg)
     else:
         msg = f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません。"
         raise RuntimeError(msg)
