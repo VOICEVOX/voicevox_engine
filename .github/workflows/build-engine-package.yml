@@ -55,6 +55,7 @@ jobs:
       matrix:
         include:
           # ONNX Runtimeを**GHAの**`windows-2019`でビルドするのが困難であるため、Windowsのビルドは`windows-2022`で行い、そのテストは`windows-2019`で行う。
+          # ただし`windows-2019`での動作保証が困難になるか、`windows-2019`自体が消滅するならば一律で`windows-2022`に引き上げる。
 
           # Windows CPU
           - os: windows-2022
