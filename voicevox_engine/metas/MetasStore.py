@@ -196,14 +196,14 @@ class MetasStore:
             # スタイル情報を取得する
             style_infos = []
             for style in character.talk_styles + character.sing_styles:
-                id = style.id
+                sid = style.id
 
                 # style icon
-                style_icon_path = character_path / "icons" / f"{id}.png"
+                style_icon_path = character_path / "icons" / f"{sid}.png"
                 icon = _resource_str(style_icon_path)
 
                 # style portrait
-                style_portrait_path = character_path / "portraits" / f"{id}.png"
+                style_portrait_path = character_path / "portraits" / f"{sid}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = _resource_str(style_portrait_path)
@@ -212,12 +212,12 @@ class MetasStore:
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
-                    voice_path = character_path / "voice_samples" / f"{id}_{num}.wav"
+                    voice_path = character_path / "voice_samples" / f"{sid}_{num}.wav"
                     voice_samples.append(_resource_str(voice_path))
 
                 style_infos.append(
                     {
-                        "id": id,
+                        "id": sid,
                         "icon": icon,
                         "portrait": style_portrait,
                         "voice_samples": voice_samples,

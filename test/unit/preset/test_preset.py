@@ -81,11 +81,11 @@ def test_add_preset(tmp_path: Path) -> None:
             "pauseLengthScale": 1.0,
         }
     )
-    id = preset_manager.add_preset(preset)
-    assert id == 10
+    preset_id = preset_manager.add_preset(preset)
+    assert preset_id == 10
     assert len(preset_manager.presets) == 3
     for _preset in preset_manager.presets:
-        if _preset.id == id:
+        if _preset.id == preset_id:
             assert _preset == preset
     remove(preset_path)
 
@@ -134,11 +134,11 @@ def test_add_preset_conflict_id(tmp_path: Path) -> None:
             "pauseLengthScale": 1.0,
         }
     )
-    id = preset_manager.add_preset(preset)
-    assert id == 3
+    preset_id = preset_manager.add_preset(preset)
+    assert preset_id == 3
     assert len(preset_manager.presets) == 3
     for _preset in preset_manager.presets:
-        if _preset.id == id:
+        if _preset.id == preset_id:
             assert _preset == preset
     remove(preset_path)
 
@@ -163,11 +163,11 @@ def test_add_preset_conflict_id2(tmp_path: Path) -> None:
             "pauseLengthScale": 1.0,
         }
     )
-    id = preset_manager.add_preset(preset)
-    assert id == 3
+    preset_id = preset_manager.add_preset(preset)
+    assert preset_id == 3
     assert len(preset_manager.presets) == 3
     for _preset in preset_manager.presets:
-        if _preset.id == id:
+        if _preset.id == preset_id:
             assert _preset == preset
     remove(preset_path)
 
@@ -222,11 +222,11 @@ def test_update_preset(tmp_path: Path) -> None:
             "pauseLengthScale": 1.0,
         }
     )
-    id = preset_manager.update_preset(preset)
-    assert id == 1
+    preset_id = preset_manager.update_preset(preset)
+    assert preset_id == 1
     assert len(preset_manager.presets) == 2
     for _preset in preset_manager.presets:
-        if _preset.id == id:
+        if _preset.id == preset_id:
             assert _preset == preset
     remove(preset_path)
 
@@ -317,8 +317,8 @@ def test_delete_preset(tmp_path: Path) -> None:
     preset_path = tmp_path / "presets.yaml"
     copyfile(presets_test_1_yaml_path, preset_path)
     preset_manager = PresetManager(preset_path=preset_path)
-    id = preset_manager.delete_preset(1)
-    assert id == 1
+    preset_id = preset_manager.delete_preset(1)
+    assert preset_id == 1
     assert len(preset_manager.presets) == 1
     remove(preset_path)
 

@@ -133,9 +133,9 @@ class _LicenseError(Exception):
 
 
 def _validate_license_compliance(licenses: list[_License]) -> None:
-    for license in licenses:
+    for _license in licenses:
         # ライセンスを確認する
-        license_names_str = license.license_name or ""
+        license_names_str = _license.license_name or ""
         license_names = license_names_str.split("; ")
         for license_name in license_names:
             if license_name in [
@@ -145,7 +145,7 @@ def _validate_license_compliance(licenses: list[_License]) -> None:
                 "GNU Affero General Public License v3 (AGPL-3)",
             ]:
                 raise _LicenseError(
-                    f"ライセンス違反: {license.package_name} is {license.license_name}"
+                    f"ライセンス違反: {_license.package_name} is {_license.license_name}"
                 )
 
 
@@ -326,12 +326,12 @@ if __name__ == "__main__":
     json.dump(
         [
             {
-                "name": license.package_name,
-                "version": license.package_version,
-                "license": license.license_name,
-                "text": license.license_text,
+                "name": _license.package_name,
+                "version": _license.package_version,
+                "license": _license.license_name,
+                "text": _license.license_text,
             }
-            for license in licenses
+            for _license in licenses
         ],
         out,
     )
