@@ -385,8 +385,7 @@ def test_label_unknown_phoneme() -> None:
     """`Label` は unknown 音素 `xx` をパース失敗する"""
     unknown_feature = stub_unknown_features_koxx("dummy")[3]
     with pytest.raises(OjtUnknownPhonemeError):
-        unknown_label = Label.from_feature(unknown_feature)
-        _ = unknown_label.phoneme
+        _ = Label.from_feature(unknown_feature).phoneme
 
 
 def test_text_to_accent_phrases_unknown() -> None:
