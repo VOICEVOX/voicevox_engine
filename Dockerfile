@@ -22,7 +22,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
+# assert VOICEVOX_CORE_VERSION >= 0.16.0 (ONNX)
 ARG TARGETPLATFORM
 ARG VOICEVOX_CORE_VERSION=0.16.0
 
@@ -113,6 +113,38 @@ RUN <<EOF
     ldconfig
 EOF
 
+FROM ${BASE_IMAGE} AS download-models-env
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /work
+
+RUN <<EOF
+    set -eux
+
+    apt-get update
+    apt-get install -y \
+        git
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+ARG TARGETPLATFORM
+ARG VOICEVOX_VVM_VERSION=0.1.0
+
+RUN <<EOF
+    set -eux
+
+    git init ./voicevox_vvm
+    cd ./voicevox_vvm
+    git remote add origin https://github.com/VOICEVOX/voicevox_vvm
+    git fetch --depth 1 origin "refs/tags/$VOICEVOX_VVM_VERSION"
+    git switch -d FETCH_HEAD
+    rm -rf ./.git
+
+    mkdir /opt/voicevox_vvm
+    mv ./* /opt/voicevox_vvm/
+EOF
 
 # Compile Python (version locked)
 FROM ${BASE_IMAGE} AS compile-python-env
@@ -216,6 +248,9 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 # COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
+# COPY VOICEVOX VVM
+COPY --from=download-models-env /opt/voicevox_vvm /opt/voicevox_vvm
+
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
@@ -289,8 +324,8 @@ exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "env", "VV_MODELS_ROOT_DIR=/opt/voicevox_vvm/vvms", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/lib/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "env", "VV_MODELS_ROOT_DIR=/opt/voicevox_vvm/vvms", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/lib/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
