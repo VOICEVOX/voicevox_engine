@@ -187,7 +187,7 @@ WORKDIR /opt/voicevox_engine
 
 # ca-certificates: pyopenjtalk dictionary download
 # build-essential: pyopenjtalk local build
-# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
+# ref: voicevox_engine#770
 RUN <<EOF
     set -eux
 

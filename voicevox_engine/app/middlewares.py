@@ -19,7 +19,7 @@ def configure_middlewares(
     """FastAPI のミドルウェアを設定する。"""
 
     # 未処理の例外が発生するとCORSMiddlewareが適用されない問題に対するワークアラウンド
-    # ref: https://github.com/VOICEVOX/voicevox_engine/issues/91
+    # ref: voicevox_engine#91
     async def global_execution_handler(request: Request, exc: Exception) -> Response:
         print_exception(exc)
         return JSONResponse(
