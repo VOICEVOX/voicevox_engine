@@ -606,7 +606,8 @@ class CoreWrapper:
             model_type = "onnxruntime"
         else:
             model_type = _check_core_type(core_dir)
-        assert model_type is not None
+        if model_type is None:
+            raise CoreError
 
         if model_type == "onnxruntime":
             exist_cpu_num_threads = True

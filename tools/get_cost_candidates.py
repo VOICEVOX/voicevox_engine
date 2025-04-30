@@ -58,7 +58,8 @@ def _get_candidates(
                 pos_detail_3,
             ):
                 costs.append(int(_cost))
-    assert len(costs) > 0
+    if len(costs) <= 0:
+        raise Exception
     cost_min = min(costs) - 1
     cost_1per = np.quantile(costs, 0.01).astype(np.int64)
     cost_mode = statistics.mode(costs)

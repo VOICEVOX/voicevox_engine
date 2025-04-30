@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
-from ...core.core_wrapper import CoreWrapper
+from ...core.core_wrapper import CoreError, CoreWrapper
 
 
 class MockCoreWrapper(CoreWrapper):
@@ -95,7 +95,8 @@ class MockCoreWrapper(CoreWrapper):
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """モーラ系列サイズ・母音系列・子音系列・アクセント位置・アクセント句区切り・スタイルIDからモーラ音高系列を生成する"""
-        assert length > 1, "前後無音を必ず付与しなければならない"
+        if length <= 1:
+            raise CoreError("前後無音を必ず付与しなければならない")
 
         # TODO: トークスタイル以外はエラーにする
 

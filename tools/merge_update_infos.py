@@ -35,8 +35,10 @@ def merge_json_string(src: str, dst: str) -> str:
 
                     src_value = src_item[key]
                     dst_value = dst_item[key]
-                    assert isinstance(src_value, list)
-                    assert isinstance(dst_value, list)
+                    if not isinstance(src_value, list):
+                        raise Exception("src_value が list 以外である。")
+                    if not isinstance(dst_value, list):
+                        raise Exception("dst_value が list 以外である。")
 
                     # 異なるものがあった場合だけ後ろに付け足す
                     src_item[key] = list(OrderedDict.fromkeys(src_value + dst_value))

@@ -140,7 +140,9 @@ def _search_cost_candidates(context_id: int) -> list[int]:
 
 
 def _cost2priority(context_id: int, cost: int) -> int:
-    assert -32768 <= cost <= 32767
+    if not -32768 <= cost <= 32767:
+        raise UserDictInputError(f"コスト {cost} は正常範囲を超えています。")
+
     cost_candidates = _search_cost_candidates(context_id)
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
     # 参考: https://qiita.com/Krypf/items/2eada91c37161d17621d
@@ -153,7 +155,9 @@ def _cost2priority(context_id: int, cost: int) -> int:
 
 def priority2cost(context_id: int, priority: int) -> int:
     """優先度をコストへ変換する。"""
-    assert USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY
+    if not USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY:
+        raise UserDictInputError(f"優先度 {priority} は正常範囲を超えています。")
+
     cost_candidates = _search_cost_candidates(context_id)
     return cost_candidates[USER_DICT_MAX_PRIORITY - priority]
 

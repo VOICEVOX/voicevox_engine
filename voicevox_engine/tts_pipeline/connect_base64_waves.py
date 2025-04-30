@@ -56,7 +56,9 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
 
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
     max_channels = max([x.ndim for x, _ in waves_nparray_sr])
-    assert 0 < max_channels <= 2
+    if not 0 < max_channels <= 2:
+        msg = "音声波形のチャンネル数が正常範囲を超えています。"
+        raise ConnectBase64WavesException(msg)
 
     waves_nparray_list = []
     for nparray, sr in waves_nparray_sr:

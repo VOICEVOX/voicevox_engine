@@ -12,19 +12,24 @@ def _merge_json_string(src: str, dst: str) -> str:
     dst_json: dict[str, JsonValue | dict[str, dict[str, JsonValue]]] = json.loads(dst)
 
     for key, dst_value in dst_json.items():
-        assert key in src_json, f"Key {key} is not found in src_json"
+        if key not in src_json:
+            raise Exception(f"Key {key} is not found in src_json")
 
         # `manage_library` のみdictなので特別に処理
         if key == "supported_features":
-            assert isinstance(dst_value, dict)
+            if not isinstance(dst_value, dict):
+                raise Exception("dst_value が dict 以外である。")
             src_value = src_json[key]
-            assert isinstance(src_value, dict)
+            if not isinstance(src_value, dict):
+                raise Exception("src_value が dict 以外である。")
             src_value.update(dst_value)
 
         else:
             src_value = src_json[key]
-            assert isinstance(src_value, JsonValue)
-            assert isinstance(dst_value, JsonValue)
+            if not isinstance(src_value, JsonValue):
+                raise Exception("src_value が JsonValue 以外である。")
+            if not isinstance(dst_value, JsonValue):
+                raise Exception("dst_value が JsonValue 以外である。")
             src_json[key] = dst_value
 
     return json.dumps(src_json, ensure_ascii=False)
