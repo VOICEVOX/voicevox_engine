@@ -50,30 +50,6 @@ jobs:
         # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
-          # Ubuntu 20.04 / AMD64
-          - os: ubuntu-latest
-            prefixes: "cpu-amd64-ubuntu20.04"
-            buildcache_prefix: "cpu-amd64-ubuntu20.04"
-            target: runtime-env
-            base_image: ubuntu:20.04
-            base_runtime_image: ubuntu:20.04
-            platforms: linux/amd64
-          # Ubuntu 20.04 / ARM64
-          - os: ubuntu-24.04-arm
-            prefixes: "cpu-arm64-ubuntu20.04"
-            buildcache_prefix: "cpu-arm64-ubuntu20.04"
-            target: runtime-env
-            base_image: ubuntu:20.04
-            base_runtime_image: ubuntu:20.04
-            platforms: linux/arm64/v8
-          # Ubuntu 20.04 / AMD64 / NVIDIA
-          - os: ubuntu-latest
-            prefixes: "nvidia-ubuntu20.04,nvidia-amd64-ubuntu20.04"
-            buildcache_prefix: "nvidia-amd64-ubuntu20.04"
-            target: runtime-nvidia-env
-            base_image: ubuntu:20.04
-            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
-            platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
             prefixes: "cpu-amd64,cpu-amd64-ubuntu22.04"
@@ -96,7 +72,7 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: ubuntu:22.04
-            base_runtime_image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+            base_runtime_image: nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
             platforms: linux/amd64
 
     steps:
@@ -136,15 +112,6 @@ jobs:
         env:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
-
-      # NOTE: you must agree to the ToU
-      # FIXME: 数分かかるみたいなようなのでgithubusercontentからの方がよさげだが、#709でやることにする。
-      - name: <Setup> Check out VVM repository
-        uses: actions/checkout@v4
-        with:
-          repository: VOICEVOX/voicevox_vvm
-          ref: ${{ env.VOICEVOX_VVM_VERSION }}
-          path: download/vvm
 
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
@@ -193,6 +160,7 @@ jobs:
             PYTHON_VERSION=${{ steps.prepare-python.outputs.python-version }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
             VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
+            VOICEVOX_VVM_VERSION=${{ env.VOICEVOX_VVM_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
             ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
@@ -210,10 +178,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # Ubuntu 20.04 / AMD64, ARM64
-          - multi_platform_image_prefixes: "cpu-ubuntu20.04"
-            amd64_image_prefix: "cpu-amd64-ubuntu20.04"
-            arm64_image_prefix: "cpu-arm64-ubuntu20.04"
           # Ubuntu 22.04 / AMD64, ARM64
           - multi_platform_image_prefixes: ",cpu,cpu-ubuntu22.04"
             amd64_image_prefix: "cpu-amd64-ubuntu22.04"
