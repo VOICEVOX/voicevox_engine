@@ -2,7 +2,7 @@
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
-ARG BASE_IMAGE=ubuntu:20.04
+ARG BASE_IMAGE=mirror.gcr.io/ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
 # Download VOICEVOX Core shared object
