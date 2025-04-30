@@ -362,7 +362,6 @@ jobs:
           key: ${{ matrix.os }}-onnxruntime-${{ hashFiles('download/onnxruntime_url.txt') }}-v1
           path: download/onnxruntime
 
-      # NOTE: you must agree to the ToU
       - name: <Setup> Download VOICEVOX ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true'
         run: |
@@ -398,7 +397,6 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
-      # NOTE: you must agree to the ToU
       # FIXME: 数分かかるみたいなようなのでgithubusercontentからの方がよさげだが、#709でやることにする。
       - name: <Setup> Check out VVM repository
         uses: actions/checkout@v4
