@@ -252,7 +252,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
     - コアライブラリの名前が CORENAME_DICT の定義に従っている
 
     の両方が真のときである。
-    cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
+    ref: https://github.com/VOICEVOX/voicevox_engine/issues/385
     """
     if (core_dir / "metas.json").exists():
         return None
