@@ -51,17 +51,17 @@ RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
     esac
 
     if [ "$VOICEVOX_ENGINE_VERSION" = latest ]; then
-        TAG=$(gh release view -R VOICEVOX/voicevox_engine --json tagName -q .tagName)
+        tag=$(gh release view -R VOICEVOX/voicevox_engine --json tagName -q .tagName)
     else
-        TAG=$VOICEVOX_ENGINE_VERSION
+        tag=$VOICEVOX_ENGINE_VERSION
     fi
 
-    LIST_NAME=voicevox_engine-$TARGET-$TAG.7z.txt
+    LIST_NAME=voicevox_engine-$TARGET-$tag.7z.txt
 
-    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$TAG/$LIST_NAME"
+    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$tag/$LIST_NAME"
 
     awk \
-        -v "tag=${TAG}" \
+        -v "tag=$tag" \
         '{
              print \
                  "url = \"https://github.com/VOICEVOX/voicevox_engine/releases/download/" tag "/" $0 "\"\n" \
