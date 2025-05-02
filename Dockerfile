@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.11
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
@@ -15,8 +15,9 @@ RUN <<EOF
 
     apt-get update
     apt-get install -y \
-        parallel \
+        gh \
         wget \
+        curl \
         p7zip
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -26,40 +27,55 @@ ARG TARGETPLATFORM
 ARG VOICEVOX_ENGINE_VERSION=latest
 ARG USE_GPU=false
 
-RUN <<EOF
+RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
     set -eux
 
-    # Processing Switch
-    if [ "${USE_GPU}" = "true" ]; then
-        ASSET_PROCESSING="gpu"
+    case "$USE_GPU" in
+        true)
+            TARGET=linux-nvidia ;;
+        false)
+            case "$TARGETPLATFORM" in
+                linux/amd64)
+                    TARGET=linux-cpu-x64 ;;
+                linux/arm64/v8)
+                    TARGET=linux-cpu-arm64 ;;
+                *)
+                    # shellcheck disable=SC2016
+                    echo 'Unexpected value for `$TARGETPLATFORM`' >&2
+                    exit 1
+            esac ;;
+        *)
+            # shellcheck disable=SC2016
+            echo 'Invalid value for `$USE_GPU`' >&2
+            exit 1
+    esac
+
+    if [ "$VOICEVOX_ENGINE_VERSION" = latest ]; then
+        TAG=$(gh release view -R VOICEVOX/voicevox_engine --json tagName -q .tagName)
     else
-        ASSET_PROCESSING="cpu"
+        TAG=$VOICEVOX_ENGINE_VERSION
     fi
 
-    # TARGETARCH Switch
-    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
-        ASSET_TARGETARCH="x64"
-    else
-        ASSET_TARGETARCH="arm64"
-    fi
+    LIST_NAME=voicevox_engine-$TARGET-$TAG.7z.txt
 
-    ASSET_NAME=voicevox_engine-linux-${ASSET_PROCESSING}-${ASSET_TARGETARCH}-${VOICEVOX_ENGINE_VERSION}
+    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$TAG/$LIST_NAME"
 
-    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/${VOICEVOX_ENGINE_VERSION}/${ASSET_NAME}.7z.txt"
+    awk \
+        -v "tag=${TAG}" \
+        '{
+             print \
+                 "url = \"https://github.com/VOICEVOX/voicevox_engine/releases/download/" tag "/" $0 "\"\n" \
+                 "output = \"" $0 "\""
+        }' \
+        "$LIST_NAME" \
+        > ./curl.txt
 
-    # shellcheck disable=SC2016
-    parallel \
-        -a "./${ASSET_NAME}.7z.txt" \
-        'wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/${VOICEVOX_ENGINE_VERSION}/"{}'
+    curl -fL --parallel --config ./curl.txt
 
-    p7zip x "$(head -1 "./${ASSET_NAME}.7z.txt")"
+    7zr x "$(head -1 "./$LIST_NAME")"
 
-    engine_dir=$(find . -type d -maxdepth 1)
-
-    pwd
-    ls -l
-    echo "$engine_dir"
-    #rm -r "./${ASSET_NAME}.7z."* "./$engine_dir"
+    mv ./$TARGET /opt/voicevox_engine
+    rm ./*
 EOF
 
 # Download VOICEVOX Core shared object
