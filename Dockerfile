@@ -56,9 +56,9 @@ RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
         tag=$VOICEVOX_ENGINE_VERSION
     fi
 
-    LIST_NAME=voicevox_engine-$TARGET-$tag.7z.txt
+    list_name=voicevox_engine-$TARGET-$tag.7z.txt
 
-    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$tag/$LIST_NAME"
+    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$tag/$list_name"
 
     awk \
         -v "tag=$tag" \
@@ -67,12 +67,12 @@ RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
                  "url = \"https://github.com/VOICEVOX/voicevox_engine/releases/download/" tag "/" $0 "\"\n" \
                  "output = \"" $0 "\""
         }' \
-        "$LIST_NAME" \
+        "$list_name" \
         > ./curl.txt
 
     curl -fL --parallel --config ./curl.txt
 
-    7zr x "$(head -1 "./$LIST_NAME")"
+    7zr x "$(head -1 "./$list_name")"
 
     mv ./$TARGET /opt/voicevox_engine
     rm ./*
