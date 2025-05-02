@@ -5,6 +5,63 @@
 ARG BASE_IMAGE=mirror.gcr.io/ubuntu:20.04
 ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
+FROM ${BASE_IMAGE} AS download-engine-env
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /work
+
+RUN <<EOF
+    set -eux
+
+    apt-get update
+    apt-get install -y \
+        parallel \
+        wget \
+        p7zip
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+ARG TARGETPLATFORM
+ARG VOICEVOX_ENGINE_VERSION=latest
+ARG USE_GPU=false
+
+RUN <<EOF
+    set -eux
+
+    # Processing Switch
+    if [ "${USE_GPU}" = "true" ]; then
+        ASSET_PROCESSING="gpu"
+    else
+        ASSET_PROCESSING="cpu"
+    fi
+
+    # TARGETARCH Switch
+    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
+        ASSET_TARGETARCH="x64"
+    else
+        ASSET_TARGETARCH="arm64"
+    fi
+
+    ASSET_NAME=voicevox_engine-linux-${ASSET_PROCESSING}-${ASSET_TARGETARCH}-${VOICEVOX_ENGINE_VERSION}
+
+    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/${VOICEVOX_ENGINE_VERSION}/${ASSET_NAME}.7z.txt"
+
+    # shellcheck disable=SC2016
+    parallel \
+        -a "./${ASSET_NAME}.7z.txt" \
+        'wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/${VOICEVOX_ENGINE_VERSION}/"{}'
+
+    p7zip x "$(head -1 "./${ASSET_NAME}.7z.txt")"
+
+    engine_dir=$(find . -type d -maxdepth 1)
+
+    pwd
+    ls -l
+    echo "$engine_dir"
+    #rm -r "./${ASSET_NAME}.7z."* "./$engine_dir"
+EOF
+
 # Download VOICEVOX Core shared object
 FROM ${BASE_IMAGE} AS download-core-env
 ARG DEBIAN_FRONTEND=noninteractive
