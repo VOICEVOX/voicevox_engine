@@ -41,10 +41,7 @@ class CancellableEngine:
         cpu_num_threads: int | None = None,
         enable_mock: bool = True,
     ) -> None:
-        """
-        init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。
-        """
-
+        """init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。"""
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
@@ -120,6 +117,7 @@ class CancellableEngine:
         self,
         query: AudioQuery,
         style_id: StyleId,
+        enable_interrogative_upspeak: bool,
         request: Request,
         version: str | LatestVersion,
     ) -> str:
@@ -139,14 +137,18 @@ class CancellableEngine:
 
         # プロセスへ入力を渡して音声を合成する
         try:
-            synth_connection.send((query, style_id, version))
+            synth_connection.send(
+                (query, style_id, enable_interrogative_upspeak, version)
+            )
             audio_file_name = synth_connection.recv()
 
             if not isinstance(audio_file_name, str):
                 # ここには来ないはず
                 raise CancellableEngineInternalError("不正な値が生成されました")
-        except EOFError:
-            raise CancellableEngineInternalError("既にサブプロセスは終了されています")
+        except EOFError as e:
+            raise CancellableEngineInternalError(
+                "既にサブプロセスは終了されています"
+            ) from e
         except Exception:
             self._finalize_con(request, synth_process, synth_connection)
             raise
@@ -155,9 +157,7 @@ class CancellableEngine:
         return audio_file_name
 
     async def catch_disconnection(self) -> None:
-        """
-        接続監視を行うコルーチン
-        """
+        """接続監視を行うコルーチン。"""
         while True:
             await asyncio.sleep(1)
             for con in self._actives_pool:
@@ -210,18 +210,19 @@ def start_synthesis_subprocess(
     while True:
         try:
             # キューの入力を受け取る
-            query, style_id, version = connection.recv()
+            query, style_id, enable_interrogative_upspeak, version = connection.recv()
 
             # 音声を合成しファイルへ保存する
             try:
-                _engine = tts_engines.get_engine(version)
+                _engine = tts_engines.get_tts_engine(version)
             except Exception:
                 # コネクションを介して「バージョンが見つからないエラー」を送信する
                 connection.send("")  # `""` をエラーして扱う
                 continue
-            # FIXME: enable_interrogative_upspeakフラグをWebAPIから受け渡してくる
             wave = _engine.synthesize_wave(
-                query, style_id, enable_interrogative_upspeak=False
+                query,
+                style_id,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
             )
             with NamedTemporaryFile(delete=False) as f:
                 soundfile.write(

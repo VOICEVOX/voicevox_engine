@@ -9,9 +9,9 @@ from pyopenjtalk import tts
 
 from ...metas.Metas import StyleId
 from ...model import AudioQuery
+from ...tts_pipeline.audio_postprocessing import raw_wave_to_output_wave
 from ...tts_pipeline.tts_engine import (
     TTSEngine,
-    raw_wave_to_output_wave,
     to_flatten_moras,
 )
 from ..core.mock import MockCoreWrapper
@@ -27,7 +27,7 @@ class MockTTSEngine(TTSEngine):
         self,
         query: AudioQuery,
         style_id: StyleId,
-        enable_interrogative_upspeak: bool = True,
+        enable_interrogative_upspeak: bool,
     ) -> NDArray[np.float32]:
         """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する。モーラごとの調整は反映されない。"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない

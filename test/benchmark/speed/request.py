@@ -10,9 +10,9 @@ from test.benchmark.speed.utility import benchmark_time
 def benchmark_request(server: ServerType, root_dir: Path | None = None) -> float:
     """
     エンジンへのリクエストにかかる時間を測定する。
+
     `GET /` はエンジン内部処理が最小であるため、全キャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
-
     client = generate_client(server, root_dir)
 
     def execute() -> None:

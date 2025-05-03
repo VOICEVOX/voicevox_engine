@@ -1,3 +1,5 @@
+"""AquesTalk 風記法パーサーの単体テスト。"""
+
 from unittest import TestCase
 
 from voicevox_engine.tts_pipeline import kana_converter
@@ -541,11 +543,11 @@ def test_interrogative_accent_phrase_marks() -> None:
     )
 
 
-class TestParseKanaException(TestCase):
+class _TestParseKanaException(TestCase):
     def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
-        with self.assertRaises(ParseKanaError) as err:
+        with self.assertRaises(ParseKanaError) as e:
             parse_kana(kana)
-        self.assertEqual(err.exception.errcode, code)
+        self.assertEqual(e.exception.errcode, code)
 
     def test_exceptions(self) -> None:
         self._assert_error_code("アクセント", ParseKanaErrorCode.ACCENT_NOTFOUND)
@@ -557,20 +559,20 @@ class TestParseKanaException(TestCase):
         self._assert_error_code("/ア'", ParseKanaErrorCode.EMPTY_PHRASE)
         self._assert_error_code("", ParseKanaErrorCode.EMPTY_PHRASE)
 
-        with self.assertRaises(ParseKanaError) as err:
+        with self.assertRaises(ParseKanaError) as e:
             parse_kana("ヒト'ツメ/フタツメ")
-        self.assertEqual(err.exception.errcode, ParseKanaErrorCode.ACCENT_NOTFOUND)
-        self.assertEqual(err.exception.kwargs, {"text": "フタツメ"})
+        self.assertEqual(e.exception.errcode, ParseKanaErrorCode.ACCENT_NOTFOUND)
+        self.assertEqual(e.exception.kwargs, {"text": "フタツメ"})
 
-        with self.assertRaises(ParseKanaError) as err:
+        with self.assertRaises(ParseKanaError) as e:
             parse_kana("ア'/")
-        self.assertEqual(err.exception.errcode, ParseKanaErrorCode.EMPTY_PHRASE)
-        self.assertEqual(err.exception.kwargs, {"position": "2"})
+        self.assertEqual(e.exception.errcode, ParseKanaErrorCode.EMPTY_PHRASE)
+        self.assertEqual(e.exception.kwargs, {"position": "2"})
 
-        with self.assertRaises(ParseKanaError) as err:
+        with self.assertRaises(ParseKanaError) as e:
             kana_converter.parse_kana("ア？ア'")
         self.assertEqual(
-            err.exception.errcode, ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
+            e.exception.errcode, ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
         )
 
 

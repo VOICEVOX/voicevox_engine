@@ -20,7 +20,7 @@ class _PartOfSpeechDetail:
     part_of_speech_detail_1: str  # 品詞細分類1
     part_of_speech_detail_2: str  # 品詞細分類2
     part_of_speech_detail_3: str  # 品詞細分類3
-    context_id: int  # 辞書の左・右文脈ID。https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def # noqa
+    context_id: int  # 辞書の左・右文脈ID。https://github.com/VOICEVOX/open_jtalk/blob/427cfd761b78efb6094bea3c5bb8c968f0d711ab/src/mecab-naist-jdic/_left-id.def
     cost_candidates: list[int]  # コストのパーセンタイル
     accent_associative_rules: list[str]  # アクセント結合規則の一覧
 
@@ -139,7 +139,7 @@ def _search_cost_candidates(context_id: int) -> list[int]:
     raise UserDictInputError("品詞IDが不正です")
 
 
-def cost2priority(context_id: int, cost: int) -> int:
+def _cost2priority(context_id: int, cost: int) -> int:
     assert -32768 <= cost <= 32767
     cost_candidates = _search_cost_candidates(context_id)
     # cost_candidatesの中にある値で最も近い値を元にpriorityを返す
@@ -152,6 +152,7 @@ def cost2priority(context_id: int, cost: int) -> int:
 
 
 def priority2cost(context_id: int, priority: int) -> int:
+    """優先度をコストへ変換する。"""
     assert USER_DICT_MIN_PRIORITY <= priority <= USER_DICT_MAX_PRIORITY
     cost_candidates = _search_cost_candidates(context_id)
     return cost_candidates[USER_DICT_MAX_PRIORITY - priority]
@@ -207,7 +208,7 @@ def convert_from_save_format(word: SaveFormatUserDictWord) -> UserDictWord:
     # 0.12以前の辞書は、context_idがハードコーディングされていたためにユーザー辞書内に保管されていない
     # ハードコーディングされていたcontext_idは固有名詞を意味するものなので、固有名詞のcontext_idを補完する
     context_id = context_id_p_noun if word.context_id is None else word.context_id
-    priority = cost2priority(context_id, word.cost)
+    priority = _cost2priority(context_id, word.cost)
     return UserDictWord(
         surface=word.surface,
         priority=priority,

@@ -1,6 +1,4 @@
-"""
-歌唱のテスト
-"""
+"""歌唱のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

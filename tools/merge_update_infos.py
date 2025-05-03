@@ -1,6 +1,4 @@
-"""
-更新履歴をマージする。
-"""
+"""更新履歴をマージする。"""
 
 import argparse
 import json
@@ -10,7 +8,8 @@ from pathlib import Path
 
 def merge_json_string(src: str, dst: str) -> str:
     """
-    バージョンが同じ場合は要素を結合する
+    バージョンが同じ場合は要素を結合する。
+
     >>> src = '[{"version": "0.0.1", "a": ["a1"], "b": ["b1", "b2"]}]'
     >>> dst = '[{"version": "0.0.1", "a": ["a2"], "b": ["b1", "b3"]}]'
     >>> merge_json_string(src, dst)
@@ -45,7 +44,7 @@ def merge_json_string(src: str, dst: str) -> str:
     return json.dumps(src_json, ensure_ascii=False)
 
 
-def merge_update_infos(src_path: Path, dst_path: Path, output_path: Path) -> None:
+def _merge_update_infos(src_path: Path, dst_path: Path, output_path: Path) -> None:
     src = src_path.read_text(encoding="utf-8")
     dst = dst_path.read_text(encoding="utf-8")
     merged = merge_json_string(src, dst)
@@ -58,4 +57,4 @@ if __name__ == "__main__":
     parser.add_argument("dst_path", type=Path)
     parser.add_argument("output_path", type=Path)
     args = parser.parse_args()
-    merge_update_infos(args.src_path, args.dst_path, args.output_path)
+    _merge_update_infos(args.src_path, args.dst_path, args.output_path)

@@ -1,6 +1,4 @@
-"""
-/mora_pitch API のテスト
-"""
+"""/mora_pitch API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

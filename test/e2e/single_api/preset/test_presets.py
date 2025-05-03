@@ -1,6 +1,4 @@
-"""
-/presets API のテスト
-"""
+"""/presets API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field
 
 
 class MorphableTargetInfo(BaseModel):
+    """モーフィング相手としての情報。"""
+
     is_morphable: bool = Field(
         description="指定したキャラクターに対してモーフィングの可否"
     )

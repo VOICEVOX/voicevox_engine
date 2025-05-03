@@ -25,15 +25,13 @@ def generate_preset_router(
         response_description="プリセットのリスト",
     )
     def get_presets() -> list[Preset]:
-        """
-        エンジンが保持しているプリセットの設定を返します
-        """
+        """エンジンが保持しているプリセットの設定を返します。"""
         try:
             presets = preset_manager.load_presets()
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return presets
 
     @router.post(
@@ -49,15 +47,13 @@ def generate_preset_router(
             ),
         ],
     ) -> int:
-        """
-        新しいプリセットを追加します
-        """
+        """新しいプリセットを追加します。"""
         try:
             id = preset_manager.add_preset(preset)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return id
 
     @router.post(
@@ -73,15 +69,13 @@ def generate_preset_router(
             ),
         ],
     ) -> int:
-        """
-        既存のプリセットを更新します
-        """
+        """既存のプリセットを更新します。"""
         try:
             id = preset_manager.update_preset(preset)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return id
 
     @router.post(
@@ -92,14 +86,12 @@ def generate_preset_router(
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")],
     ) -> None:
-        """
-        既存のプリセットを削除します
-        """
+        """既存のプリセットを削除します。"""
         try:
             preset_manager.delete_preset(id)
-        except PresetInputError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        except PresetInternalError as err:
-            raise HTTPException(status_code=500, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     return router
