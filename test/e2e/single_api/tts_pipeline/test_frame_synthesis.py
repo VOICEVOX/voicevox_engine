@@ -1,6 +1,4 @@
-"""
-/frame_synthesis API のテスト
-"""
+"""/frame_synthesis API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion

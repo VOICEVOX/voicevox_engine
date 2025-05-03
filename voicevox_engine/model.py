@@ -14,9 +14,7 @@ from voicevox_engine.tts_pipeline.model import AccentPhrase
 
 
 class AudioQuery(BaseModel):
-    """
-    音声合成用のクエリ
-    """
+    """音声合成用のクエリ。"""
 
     accent_phrases: list[AccentPhrase] = Field(description="アクセント句のリスト")
     speedScale: float = Field(description="全体の話速")
@@ -40,6 +38,8 @@ class AudioQuery(BaseModel):
     )
 
     def __hash__(self) -> int:
+        """内容に対して一意なハッシュ値を返す。"""
+        # NOTE: lru_cache がユースケースのひとつ
         items = [
             (k, tuple(v)) if isinstance(v, list) else (k, v)
             for k, v in self.__dict__.items()

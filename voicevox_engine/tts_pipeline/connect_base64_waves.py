@@ -10,6 +10,8 @@ from soxr import resample
 
 
 class ConnectBase64WavesException(Exception):
+    """Base64 エンコードされた音声波形の結合に失敗した。"""
+
     def __init__(self, message: str):
         self.message = message
 
@@ -17,10 +19,12 @@ class ConnectBase64WavesException(Exception):
 def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int]]:
     """
     base64エンコードされた複数のwavデータをデコードする
+
     Parameters
     ----------
     waves: list[str]
         base64エンコードされたwavデータのリスト
+
     Returns
     -------
     waves_nparray_sr: list[tuple[NDArray[np.float64], int]]
@@ -33,18 +37,21 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
     for wave in waves:
         try:
             wav_bin = base64.standard_b64decode(wave)
-        except ValueError:
-            raise ConnectBase64WavesException("base64デコードに失敗しました")
+        except ValueError as e:
+            raise ConnectBase64WavesException("base64デコードに失敗しました") from e
         try:
             _data = soundfile.read(io.BytesIO(wav_bin))
-        except Exception:
-            raise ConnectBase64WavesException("wavファイルを読み込めませんでした")
+        except Exception as e:
+            raise ConnectBase64WavesException(
+                "wavファイルを読み込めませんでした"
+            ) from e
         waves_nparray_sr.append(_data)
 
     return waves_nparray_sr
 
 
 def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
+    """複数の base64 エンコードされた音声波形を1つに結合する。"""
     waves_nparray_sr = decode_base64_waves(waves)
 
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])

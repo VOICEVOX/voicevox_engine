@@ -1,3 +1,5 @@
+"""connect_base64_waves 関数の単体テスト。"""
+
 import base64
 import io
 
@@ -14,7 +16,7 @@ from voicevox_engine.tts_pipeline.connect_base64_waves import (
 )
 
 
-def generate_sine_wave_ndarray(
+def _generate_sine_wave_ndarray(
     seconds: float, samplerate: int, frequency: float
 ) -> NDArray[np.float32]:
     x = np.linspace(0, seconds, int(seconds * samplerate), endpoint=False)
@@ -23,7 +25,7 @@ def generate_sine_wave_ndarray(
     return wave
 
 
-def encode_bytes(wave_ndarray: NDArray[np.float32], samplerate: int) -> bytes:
+def _encode_bytes(wave_ndarray: NDArray[np.float32], samplerate: int) -> bytes:
     wave_bio = io.BytesIO()
     soundfile.write(
         file=wave_bio,
@@ -37,27 +39,29 @@ def encode_bytes(wave_ndarray: NDArray[np.float32], samplerate: int) -> bytes:
     return wave_bio.getvalue()
 
 
-def generate_sine_wave_bytes(
+def _generate_sine_wave_bytes(
     seconds: float, samplerate: int, frequency: float
 ) -> bytes:
-    wave_ndarray = generate_sine_wave_ndarray(seconds, samplerate, frequency)
-    return encode_bytes(wave_ndarray, samplerate)
+    wave_ndarray = _generate_sine_wave_ndarray(seconds, samplerate, frequency)
+    return _encode_bytes(wave_ndarray, samplerate)
 
 
-def encode_base64(wave_bytes: bytes) -> str:
+def _encode_base64(wave_bytes: bytes) -> str:
     return base64.standard_b64encode(wave_bytes).decode("utf-8")
 
 
-def generate_sine_wave_base64(seconds: float, samplerate: int, frequency: float) -> str:
-    wave_bytes = generate_sine_wave_bytes(seconds, samplerate, frequency)
-    wave_base64 = encode_base64(wave_bytes)
+def _generate_sine_wave_base64(
+    seconds: float, samplerate: int, frequency: float
+) -> str:
+    wave_bytes = _generate_sine_wave_bytes(seconds, samplerate, frequency)
+    wave_base64 = _encode_base64(wave_bytes)
     return wave_base64
 
 
 def test_connect() -> None:
     samplerate = 1000
-    wave = generate_sine_wave_ndarray(seconds=2, samplerate=samplerate, frequency=10)
-    wave_base64 = encode_base64(encode_bytes(wave, samplerate=samplerate))
+    wave = _generate_sine_wave_ndarray(seconds=2, samplerate=samplerate, frequency=10)
+    wave_base64 = _encode_base64(_encode_bytes(wave, samplerate=samplerate))
 
     wave_x2_ref = np.concatenate([wave, wave])
 
@@ -74,7 +78,7 @@ def test_no_wave_error() -> None:
 
 
 def test_invalid_base64_error() -> None:
-    wave_1000hz = generate_sine_wave_base64(seconds=2, samplerate=1000, frequency=10)
+    wave_1000hz = _generate_sine_wave_base64(seconds=2, samplerate=1000, frequency=10)
     wave_1000hz_broken = wave_1000hz[1:]  # remove head 1 char
 
     with pytest.raises(ConnectBase64WavesException):
@@ -82,19 +86,21 @@ def test_invalid_base64_error() -> None:
 
 
 def test_invalid_wave_file_error() -> None:
-    wave_1000hz = generate_sine_wave_bytes(seconds=2, samplerate=1000, frequency=10)
+    wave_1000hz = _generate_sine_wave_bytes(seconds=2, samplerate=1000, frequency=10)
     wave_1000hz_broken_bytes = wave_1000hz[1:]  # remove head 1 byte
-    wave_1000hz_broken = encode_base64(wave_1000hz_broken_bytes)
+    wave_1000hz_broken = _encode_base64(wave_1000hz_broken_bytes)
 
     with pytest.raises(ConnectBase64WavesException):
         connect_base64_waves(waves=[wave_1000hz_broken])
 
 
 def test_different_frequency() -> None:
-    wave_24000hz = generate_sine_wave_ndarray(seconds=1, samplerate=24000, frequency=10)
-    wave_1000hz = generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
-    wave_24000_base64 = encode_base64(encode_bytes(wave_24000hz, samplerate=24000))
-    wave_1000_base64 = encode_base64(encode_bytes(wave_1000hz, samplerate=1000))
+    wave_24000hz = _generate_sine_wave_ndarray(
+        seconds=1, samplerate=24000, frequency=10
+    )
+    wave_1000hz = _generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
+    wave_24000_base64 = _encode_base64(_encode_bytes(wave_24000hz, samplerate=24000))
+    wave_1000_base64 = _encode_base64(_encode_bytes(wave_1000hz, samplerate=1000))
 
     wave_1000hz_to24000hz = resample(wave_1000hz, 1000, 24000)
     wave_x2_ref = np.concatenate([wave_24000hz, wave_1000hz_to24000hz])
@@ -106,10 +112,10 @@ def test_different_frequency() -> None:
 
 
 def test_different_channels() -> None:
-    wave_1000hz = generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
+    wave_1000hz = _generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
     wave_2ch_1000hz = np.array([wave_1000hz, wave_1000hz]).T
-    wave_1ch_base64 = encode_base64(encode_bytes(wave_1000hz, samplerate=1000))
-    wave_2ch_base64 = encode_base64(encode_bytes(wave_2ch_1000hz, samplerate=1000))
+    wave_1ch_base64 = _encode_base64(_encode_bytes(wave_1000hz, samplerate=1000))
+    wave_2ch_base64 = _encode_base64(_encode_bytes(wave_2ch_1000hz, samplerate=1000))
 
     wave_x2_ref = np.concatenate([wave_2ch_1000hz, wave_2ch_1000hz])
 

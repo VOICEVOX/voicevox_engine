@@ -1,3 +1,5 @@
+"""NJD Feature処理の単体テスト。"""
+
 import pytest
 
 from voicevox_engine.tts_pipeline.njd_feature_processor import (

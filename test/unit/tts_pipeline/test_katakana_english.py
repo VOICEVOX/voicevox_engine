@@ -1,3 +1,5 @@
+"""英単語のカタカナ変換機能の単体テスト。"""
+
 from voicevox_engine.tts_pipeline.katakana_english import (
     convert_english_to_katakana,
     is_hankaku_alphabet,

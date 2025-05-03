@@ -1,8 +1,9 @@
-"ユーザー辞書関連の処理"
+"""ユーザー辞書関連の処理"""
 
 import json
 import sys
 import threading
+import warnings
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final, TypeVar
@@ -27,7 +28,7 @@ from .user_dict_word import (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
+def _mutex_wrapper(lock: threading.Lock) -> Callable[[F], F]:
     def wrap(f: F) -> F:
         def func(*args: Any, **kw: Any) -> Any:
             lock.acquire()
@@ -119,12 +120,15 @@ def _delete_file_on_close(file_path: Path) -> None:
 class UserDictionary:
     """ユーザー辞書"""
 
+    # FIXME: OpenJTalk 用辞書の管理機能を備えているため、このクラスは Manager としても捉えられる。クラス名変更や役割分割等を検討。
     def __init__(
         self,
         default_dict_path: Path = DEFAULT_DICT_PATH,
         user_dict_path: Path = _USER_DICT_PATH,
     ) -> None:
         """
+        ユーザー辞書を利用可能にする。
+
         Parameters
         ----------
         default_dict_path : Path
@@ -136,7 +140,7 @@ class UserDictionary:
         self._user_dict_path = user_dict_path
         self.update_dict()
 
-    @mutex_wrapper(mutex_user_dict)
+    @_mutex_wrapper(mutex_user_dict)
     def _write_to_json(self, user_dict: dict[str, UserDictWord]) -> None:
         """ユーザー辞書データをファイルへ書き込む。"""
         save_format_user_dict: dict[str, SaveFormatUserDictWord] = {}
@@ -146,7 +150,7 @@ class UserDictionary:
         user_dict_json = _save_format_dict_adapter.dump_json(save_format_user_dict)
         self._user_dict_path.write_bytes(user_dict_json)
 
-    @mutex_wrapper(mutex_openjtalk_dict)
+    @_mutex_wrapper(mutex_openjtalk_dict)
     def update_dict(self) -> None:
         """辞書を更新する。"""
         default_dict_path = self._default_dict_path
@@ -166,7 +170,7 @@ class UserDictionary:
 
             # デフォルト辞書データの追加
             if not default_dict_path.is_file():
-                print("Warning: Cannot find default dictionary.", file=sys.stderr)
+                warnings.warn("Cannot find default dictionary.", stacklevel=1)
                 return
             default_dict = default_dict_path.read_text(encoding="utf-8")
             if default_dict == default_dict.rstrip():
@@ -204,17 +208,16 @@ class UserDictionary:
             tmp_csv_path.write_text(csv_text, encoding="utf-8")
 
             # 辞書.csvをOpenJTalk用にコンパイル
-            pyopenjtalk.create_user_dict(str(tmp_csv_path), str(tmp_compiled_path))
+            pyopenjtalk.mecab_dict_index(str(tmp_csv_path), str(tmp_compiled_path))
             if not tmp_compiled_path.is_file():
                 raise RuntimeError("辞書のコンパイル時にエラーが発生しました。")
 
             # コンパイル済み辞書の読み込み
-            pyopenjtalk.set_user_dict(
+            pyopenjtalk.update_global_jtalk_with_user_dict(
                 str(tmp_compiled_path.resolve(strict=True))
             )  # NOTE: resolveによりコンパイル実行時でも相対パスを正しく認識できる
 
         except Exception as e:
-            print("Error: Failed to update dictionary.", file=sys.stderr)
             raise e
 
         finally:
@@ -224,7 +227,7 @@ class UserDictionary:
             if tmp_compiled_path.exists():
                 _delete_file_on_close(tmp_compiled_path)
 
-    @mutex_wrapper(mutex_user_dict)
+    @_mutex_wrapper(mutex_user_dict)
     def read_dict(self) -> dict[str, UserDictWord]:
         """ユーザー辞書を読み出す。"""
         # 指定ユーザー辞書が存在しない場合、空辞書を返す
@@ -243,6 +246,7 @@ class UserDictionary:
     ) -> None:
         """
         ユーザー辞書をインポートする。
+
         Parameters
         ----------
         dict_data : dict[str, UserDictWord]

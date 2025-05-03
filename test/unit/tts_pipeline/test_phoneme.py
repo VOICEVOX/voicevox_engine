@@ -1,3 +1,5 @@
+"""Phoneme クラスの単体テスト。"""
+
 import pytest
 
 from voicevox_engine.tts_pipeline.phoneme import Phoneme
@@ -12,7 +14,7 @@ def test_unknown_phoneme() -> None:
 
     # Tests
     with pytest.raises(ValueError):
-        unknown_phoneme.id  # noqa: B018
+        _ = unknown_phoneme.id
 
 
 # list_idx      0 1 2 3 4 5  6 7 8 9  10 1 2 3 4 5 6 7 8   9

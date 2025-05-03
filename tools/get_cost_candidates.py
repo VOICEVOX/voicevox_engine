@@ -1,5 +1,6 @@
 """
 voicevox_engine/user_dict/part_of_speech_data.pyのcost_candidatesを計算するプログラムです。
+
 引数のnaist_jdic_pathには、open_jtalkのsrc/mecab-naist-jdic/naist-jdic.csvを指定してください。
 
 実行例:
@@ -23,7 +24,7 @@ from pathlib import Path
 import numpy as np
 
 
-def get_candidates(
+def _get_candidates(
     naist_jdic_path: Path,
     pos: str,
     pos_detail_1: str,
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     parser.add_argument("--pos_detail_3", type=str)
     args = parser.parse_args()
     print(
-        get_candidates(
+        _get_candidates(
             naist_jdic_path=args.naist_jdic_path,
             pos=args.pos,
             pos_detail_1=args.pos_detail_1,

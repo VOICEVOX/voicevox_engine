@@ -5,7 +5,7 @@ import platform
 from ctypes import (
     CDLL,
     POINTER,
-    _Pointer,  # noqa: F401
+    _Pointer,
     c_bool,
     c_char_p,
     c_float,
@@ -32,7 +32,7 @@ class CoreError(Exception):
 
 def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     """
-    コアの実行に必要な依存 DLL をロードする。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
+    コアの実行に必要な依存 DLL を読み込む。検索対象ディレクトリは引数 `runtime_dirs` およびシステム検索対象ディレクトリ。
 
     Args:
         runtime_dirs - 直下に DLL が存在するディレクトリの一覧
@@ -64,7 +64,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     else:
         raise RuntimeError("不明なOSです")
 
-    # 引数指定ディレクトリ直下の DLL をロードする
+    # 引数指定ディレクトリ直下の DLL を読み込む
     for runtime_dir in runtime_dirs:
         for lib_file_name in lib_file_names:
             try:
@@ -72,7 +72,7 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             except OSError:
                 pass
 
-    # システム検索ディレクトリ直下の DLL をロードする
+    # システム検索ディレクトリ直下の DLL を読み込む
     for lib_name in lib_names:
         try:
             CDLL(find_library(lib_name))
@@ -81,6 +81,8 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
 
 
 class GPUType(Enum):
+    """アクセラレーターの種別。"""
+
     # NONEはCPUしか対応していないことを示す
     NONE = auto()
     CUDA = auto()
@@ -250,7 +252,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
     - コアライブラリの名前が CORENAME_DICT の定義に従っている
 
     の両方が真のときである。
-    cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
+    ref: https://github.com/VOICEVOX/voicevox_engine/issues/385
     """
     if (core_dir / "metas.json").exists():
         return None
@@ -263,18 +265,14 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
 
 
 def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
-    """
-    実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）
-    """
+    """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
     machine = platform.machine()
     # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
-    if machine == "x86_64" or machine == "x64" or machine == "AMD64":
+    if machine in ["x86_64", "x64", "AMD64"]:
         return "x64"
-    elif machine == "i386" or machine == "x86":
+    elif machine in ["i386", "x86"]:
         return "x86"
-    elif machine == "arm64":
-        return "aarch64"
-    elif machine == "aarch64":
+    elif machine in ["arm64", "aarch64"]:
         return "aarch64"
     elif machine == "armv7l":
         return "armv7l"
@@ -290,18 +288,19 @@ def _get_core_name(
 ) -> str | None:
     """
     設定値を満たすCoreの名前（None: サポート外）。
+
     macOSの場合はarch_nameをuniversalにする。
+
     Parameters
     ----------
-    arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
+    arch_name:
         実行中マシンのアーキテクチャ
-    platform_name : str
+    platform_name:
         実行中マシンのシステム名
-    model_type: Literal["libtorch", "onnxruntime"]
-    gpu_type: GPUType
+
     Returns
     -------
-    name : str | None
+    name:
         Core名（None: サポート外）
     """
     if platform_name == "Darwin":
@@ -355,28 +354,41 @@ def _check_core_type(core_dir: Path) -> Literal["libtorch", "onnxruntime"] | Non
 
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     """
-    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLのロード
+    `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLを読み込む。
+
     Parameters
     ----------
-    core_dir : Path
+    core_dir:
         直下にコア（共有ライブラリ）が存在するディレクトリ
-    use_gpu
+
     Returns
     -------
-    core : CDLL
-        コアDLL
+    コアDLL
     """
-    # Core>=0.12
     core_name = _find_version_0_12_core_or_later(core_dir)
     if core_name:
-        try:
-            # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
-            #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
-            return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+        return _load_core_version_0_12_or_later(core_dir / core_name)
+    else:
+        return _load_core_version_earlier_than_0_12(core_dir, use_gpu=use_gpu)
 
-    # Core<0.12
+
+def _load_core_dll(core_path: Path) -> CDLL:
+    """コア共有ライブラリを読み込む。"""
+    # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
+    #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
+    return CDLL(str(core_path.resolve(strict=True)))
+
+
+def _load_core_version_0_12_or_later(core_path: Path) -> CDLL:
+    """v0.12以降のコア共有ライブラリを読み込む。"""
+    try:
+        return _load_core_dll(core_path)
+    except OSError as e:
+        raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
+
+
+def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
+    """v0.12以前のコア共有ライブラリを読み込む。"""
     model_type = _check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
@@ -384,28 +396,29 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
         core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
         if core_name:
             try:
-                return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                return _load_core_dll(core_dir / core_name)
             except OSError:
                 pass
         core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.DIRECT_ML)
         if core_name:
             try:
-                return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                return _load_core_dll(core_dir / core_name)
             except OSError:
                 pass
     core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.NONE)
     if core_name:
         try:
-            return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:  # noqa: F841
-            if model_type == "libtorch":
-                core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-                if core_name:
-                    try:
-                        return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                    except OSError as err_:
-                        err = err_
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+            return _load_core_dll(core_dir / core_name)
+        except OSError as e:
+            _e = e
+        if model_type == "libtorch":
+            core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
+            if core_name:
+                try:
+                    return _load_core_dll(core_dir / core_name)
+                except OSError as e:
+                    _e = e
+        raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
@@ -538,10 +551,12 @@ _CORE_API_TYPES = {
 def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
     """
     コアDLLの各関数を（その関数があれば）型付けする。APIの有無の情報を辞書として返す
+
     Parameters
     ----------
     core_cdll : CDLL
         コアDLL
+
     Returns
     -------
     api_exists : dict[str, bool]
@@ -565,6 +580,8 @@ def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
 
 
 class CoreWrapper:
+    """VOICEVOX CORE の Python ラッパー。"""
+
     def __init__(
         self,
         use_gpu: bool,
@@ -572,6 +589,7 @@ class CoreWrapper:
         cpu_num_threads: int = 0,
         load_all_models: bool = False,
     ) -> None:
+        """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
 
         self.core = load_core(core_dir, use_gpu)
@@ -610,6 +628,7 @@ class CoreWrapper:
             os.chdir(cwd)
 
     def metas(self) -> str:
+        """キャラクターメタ情報を文字列として取得する。"""
         metas_bytes: bytes = self.core.metas()
         return metas_bytes.decode("utf-8")
 
@@ -620,7 +639,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        音素列から、音素ごとの長さを求める関数
+        音素列から音素ごとの長さを求める。
+
         Parameters
         ----------
         length : int
@@ -629,6 +649,7 @@ class CoreWrapper:
             音素列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -657,7 +678,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+        モーラごとの音素列とアクセント情報からモーラごとの音高を求める。
+
         Parameters
         ----------
         length : int
@@ -676,6 +698,7 @@ class CoreWrapper:
             アクセント句の終了位置
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -712,7 +735,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素と音高から波形を求める関数
+        フレームごとの音素と音高から波形を求める。
+
         Parameters
         ----------
         length : int
@@ -725,12 +749,12 @@ class CoreWrapper:
             フレームごとの音素
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
             音声波形
         """
-
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
             self.core.decode_forward(
@@ -753,7 +777,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.int64]:
         """
-        子音・母音列から、音素ごとの長さを求める関数
+        子音・母音列から音素ごとの長さを求める。
+
         Parameters
         ----------
         length : int
@@ -766,6 +791,7 @@ class CoreWrapper:
             ノート列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.int64]
@@ -794,7 +820,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素列とノート列から、フレームごとのF0を求める関数
+        フレームごとの音素列とノート列からフレームごとのF0を求める。
+
         Parameters
         ----------
         length : int
@@ -805,6 +832,7 @@ class CoreWrapper:
             フレームごとのノート
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -833,7 +861,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
+        フレームごとの音素列とノート列からフレームごとの音量を求める。
+
         Parameters
         ----------
         length : int
@@ -846,6 +875,7 @@ class CoreWrapper:
             フレームごとの音高
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -875,7 +905,8 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素と音高から波形を求める関数
+        フレームごとの音素と音高から波形を求める。
+
         Parameters
         ----------
         length : int
@@ -888,6 +919,7 @@ class CoreWrapper:
             フレームごとの音量
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -909,32 +941,34 @@ class CoreWrapper:
         raise OldCoreError
 
     def supported_devices(self) -> str:
-        """
-        coreから取得した対応デバイスに関するjsonデータの文字列
-        """
+        """コアが対応するデバイスの情報をJSON文字列として取得する。"""
         if self.api_exists["supported_devices"]:
             supported_devices_byte: bytes = self.core.supported_devices()
             return supported_devices_byte.decode("utf-8")
         raise OldCoreError
 
     def finalize(self) -> None:
+        """コアをファイナライズする。"""
         if self.api_exists["finalize"]:
             self.core.finalize()
             return
         raise OldCoreError
 
     def load_model(self, style_id: int) -> None:
+        """コアにモデルを読み込む。"""
         if self.api_exists["load_model"]:
             self.assert_core_success(self.core.load_model(c_long(style_id)))
         raise OldCoreError
 
     def is_model_loaded(self, style_id: int) -> bool:
+        """コアに指定されたモデルが読み込まれているか確認する。"""
         if self.api_exists["is_model_loaded"]:
             loaded_bool: bool = self.core.is_model_loaded(c_long(style_id))
             return loaded_bool
         raise OldCoreError
 
     def assert_core_success(self, result: bool) -> None:
+        """コアの失敗を表すコードが現れた場合に Python 例外へ変換する。"""
         if not result:
             raise CoreError(
                 self.core.last_error_message().decode("utf-8", "backslashreplace")

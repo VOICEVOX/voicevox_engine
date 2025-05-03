@@ -1,7 +1,9 @@
+"""単独 API に対する E2E テスト共通のユーティリティ。"""
+
 from typing import TypedDict
 
 
-class MoraForTest(TypedDict):
+class _MoraForTest(TypedDict):
     text: str
     consonant: str
     consonant_length: float
@@ -17,7 +19,8 @@ def gen_mora(
     vowel: str,
     vowel_length: float,
     pitch: float,
-) -> MoraForTest:
+) -> _MoraForTest:
+    """モーラを生成する。"""
     return {
         "text": text,
         "consonant": consonant,
