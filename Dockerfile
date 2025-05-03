@@ -38,7 +38,7 @@ RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
             case "$TARGETPLATFORM" in
                 linux/amd64)
                     TARGET=linux-cpu-x64 ;;
-                linux/arm64/v8)
+                linux/arm64)
                     TARGET=linux-cpu-arm64 ;;
                 *)
                     # shellcheck disable=SC2016
