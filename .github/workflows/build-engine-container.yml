@@ -64,6 +64,7 @@ jobs:
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 20.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -72,6 +73,7 @@ jobs:
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -80,6 +82,7 @@ jobs:
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:20.04
             base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
@@ -88,6 +91,7 @@ jobs:
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -96,6 +100,7 @@ jobs:
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -104,6 +109,7 @@ jobs:
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
             base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
 
     steps:
@@ -168,8 +174,8 @@ jobs:
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
+            VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
-            USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}

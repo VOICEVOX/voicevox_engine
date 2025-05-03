@@ -24,34 +24,13 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-ARG TARGETPLATFORM
 ARG VOICEVOX_ENGINE_VERSION
-ARG USE_GPU=false
+ARG VOICEVOX_ENGINE_TARGET
 
 RUN <<EOF
     set -eux
 
-    case "$USE_GPU" in
-        true)
-            TARGET=linux-nvidia ;;
-        false)
-            case "$TARGETPLATFORM" in
-                linux/amd64)
-                    TARGET=linux-cpu-x64 ;;
-                linux/arm64)
-                    TARGET=linux-cpu-arm64 ;;
-                *)
-                    # shellcheck disable=SC2016
-                    echo 'Unexpected value for `$TARGETPLATFORM`' >&2
-                    exit 1
-            esac ;;
-        *)
-            # shellcheck disable=SC2016
-            echo 'Invalid value for `$USE_GPU`' >&2
-            exit 1
-    esac
-
-    LIST_NAME=voicevox_engine-$TARGET-$VOICEVOX_ENGINE_VERSION.7z.txt
+    LIST_NAME=voicevox_engine-$VOICEVOX_ENGINE_TARGET-$VOICEVOX_ENGINE_VERSION.7z.txt
 
     wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
 
@@ -69,7 +48,7 @@ RUN <<EOF
 
     7zr x "$(head -1 "./$LIST_NAME")"
 
-    mv ./$TARGET /opt/voicevox_engine
+    mv ./$VOICEVOX_ENGINE_TARGET /opt/voicevox_engine
     rm ./*
 EOF
 
