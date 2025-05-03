@@ -432,7 +432,8 @@ def _assert_equeal_accent_phrases(
 
 
 def test_create_accent_phrases() -> None:
-    """accent_phrasesの作成時では疑問文モーラ処理を行わない。
+    """
+    accent_phrasesの作成時では疑問文モーラ処理を行わない。
 
     (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
     """
