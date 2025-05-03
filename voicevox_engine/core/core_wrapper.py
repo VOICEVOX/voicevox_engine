@@ -1,7 +1,17 @@
+"""VOICEVOX CORE の Python ラッパー"""
+
 import os
 import platform
-from ctypes import _Pointer  # noqa: F401
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_float, c_int, c_long
+from ctypes import (
+    CDLL,
+    POINTER,
+    _Pointer,
+    c_bool,
+    c_char_p,
+    c_float,
+    c_int,
+    c_long,
+)
 from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -38,14 +48,19 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
             "torch_cuda.dll",
             "DirectML.dll",
             "onnxruntime.dll",
+            "voicevox_onnxruntime.dll",
         ]
-        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime"]
+        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Linux":
-        lib_file_names = ["libtorch.so", "libonnxruntime.so"]
-        lib_names = ["torch", "onnxruntime"]
+        lib_file_names = [
+            "libtorch.so",
+            "libonnxruntime.so",
+            "libvoicevox_onnxruntime.so",
+        ]
+        lib_names = ["torch", "onnxruntime", "voicevox_onnxruntime"]
     elif platform.system() == "Darwin":
-        lib_file_names = ["libonnxruntime.dylib"]
-        lib_names = ["onnxruntime"]
+        lib_file_names = ["libonnxruntime.dylib", "libvoicevox_onnxruntime.dylib"]
+        lib_names = ["onnxruntime", "voicevox_onnxruntime"]
     else:
         raise RuntimeError("不明なOSです")
 
@@ -276,6 +291,7 @@ def _get_core_name(
     """
     設定値を満たすCoreの名前（None: サポート外）。
     macOSの場合はarch_nameをuniversalにする。
+
     Parameters
     ----------
     arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
@@ -284,6 +300,7 @@ def _get_core_name(
         実行中マシンのシステム名
     model_type: Literal["libtorch", "onnxruntime"]
     gpu_type: GPUType
+
     Returns
     -------
     name : str | None
@@ -341,11 +358,13 @@ def _check_core_type(core_dir: Path) -> Literal["libtorch", "onnxruntime"] | Non
 def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     """
     `core_dir` 直下に存在し実行中マシンでサポートされるコアDLLのロード
+
     Parameters
     ----------
     core_dir : Path
         直下にコア（共有ライブラリ）が存在するディレクトリ
     use_gpu
+
     Returns
     -------
     core : CDLL
@@ -358,8 +377,8 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
             # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
             #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+        except OSError as e:
+            raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
 
     # Core<0.12
     model_type = _check_core_type(core_dir)
@@ -382,15 +401,16 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
     if core_name:
         try:
             return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as err:
-            if model_type == "libtorch":
-                core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-                if core_name:
-                    try:
-                        return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                    except OSError as err_:
-                        err = err_
-            raise RuntimeError(f"コアの読み込みに失敗しました：{err}")
+        except OSError as e:
+            _e = e
+        if model_type == "libtorch":
+            core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
+            if core_name:
+                try:
+                    return CDLL(str((core_dir / core_name).resolve(strict=True)))
+                except OSError as e:
+                    _e = e
+        raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
     else:
         raise RuntimeError(
             f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
@@ -523,10 +543,12 @@ _CORE_API_TYPES = {
 def _check_and_type_apis(core_cdll: CDLL) -> dict[str, bool]:
     """
     コアDLLの各関数を（その関数があれば）型付けする。APIの有無の情報を辞書として返す
+
     Parameters
     ----------
     core_cdll : CDLL
         コアDLL
+
     Returns
     -------
     api_exists : dict[str, bool]
@@ -606,6 +628,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         音素列から、音素ごとの長さを求める関数
+
         Parameters
         ----------
         length : int
@@ -614,6 +637,7 @@ class CoreWrapper:
             音素列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -643,6 +667,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         モーラごとの音素列とアクセント情報から、モーラごとの音高を求める関数
+
         Parameters
         ----------
         length : int
@@ -661,6 +686,7 @@ class CoreWrapper:
             アクセント句の終了位置
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -698,6 +724,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
+
         Parameters
         ----------
         length : int
@@ -710,6 +737,7 @@ class CoreWrapper:
             フレームごとの音素
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -739,6 +767,7 @@ class CoreWrapper:
     ) -> NDArray[np.int64]:
         """
         子音・母音列から、音素ごとの長さを求める関数
+
         Parameters
         ----------
         length : int
@@ -751,6 +780,7 @@ class CoreWrapper:
             ノート列
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.int64]
@@ -780,6 +810,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素列とノート列から、フレームごとのF0を求める関数
+
         Parameters
         ----------
         length : int
@@ -790,6 +821,7 @@ class CoreWrapper:
             フレームごとのノート
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -819,6 +851,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素列とノート列から、フレームごとのvolumeを求める関数
+
         Parameters
         ----------
         length : int
@@ -831,6 +864,7 @@ class CoreWrapper:
             フレームごとの音高
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -861,6 +895,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から波形を求める関数
+
         Parameters
         ----------
         length : int
@@ -873,6 +908,7 @@ class CoreWrapper:
             フレームごとの音量
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]

@@ -2,24 +2,27 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
-from voicevox_engine.preset.Preset import Preset
-from voicevox_engine.preset.PresetError import PresetError
-from voicevox_engine.preset.PresetManager import PresetManager
+from voicevox_engine.preset.model import Preset
+from voicevox_engine.preset.preset_manager import (
+    PresetInputError,
+    PresetInternalError,
+    PresetManager,
+)
 
-from ..dependencies import check_disabled_mutable_api
+from ..dependencies import VerifyMutabilityAllowed
 
 
-def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
+def generate_preset_router(
+    preset_manager: PresetManager, verify_mutability: VerifyMutabilityAllowed
+) -> APIRouter:
     """プリセット API Router を生成する"""
-    router = APIRouter()
+    router = APIRouter(tags=["その他"])
 
     @router.get(
         "/presets",
-        response_model=list[Preset],
         response_description="プリセットのリスト",
-        tags=["その他"],
     )
     def get_presets() -> list[Preset]:
         """
@@ -27,16 +30,16 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
         """
         try:
             presets = preset_manager.load_presets()
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return presets
 
     @router.post(
         "/add_preset",
-        response_model=int,
         response_description="追加したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def add_preset(
         preset: Annotated[
@@ -44,23 +47,23 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
             Body(
                 description="新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
             ),
-        ]
+        ],
     ) -> int:
         """
         新しいプリセットを追加します
         """
         try:
             id = preset_manager.add_preset(preset)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return id
 
     @router.post(
         "/update_preset",
-        response_model=int,
         response_description="更新したプリセットのプリセットID",
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def update_preset(
         preset: Annotated[
@@ -68,33 +71,35 @@ def generate_preset_router(preset_manager: PresetManager) -> APIRouter:
             Body(
                 description="更新するプリセット。プリセットIDが更新対象と一致している必要があります。"
             ),
-        ]
+        ],
     ) -> int:
         """
         既存のプリセットを更新します
         """
         try:
             id = preset_manager.update_preset(preset)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
         return id
 
     @router.post(
         "/delete_preset",
         status_code=204,
-        tags=["その他"],
-        dependencies=[Depends(check_disabled_mutable_api)],
+        dependencies=[Depends(verify_mutability)],
     )
     def delete_preset(
-        id: Annotated[int, Query(description="削除するプリセットのプリセットID")]
-    ) -> Response:
+        id: Annotated[int, Query(description="削除するプリセットのプリセットID")],
+    ) -> None:
         """
         既存のプリセットを削除します
         """
         try:
             preset_manager.delete_preset(id)
-        except PresetError as err:
-            raise HTTPException(status_code=422, detail=str(err))
-        return Response(status_code=204)
+        except PresetInputError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        except PresetInternalError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     return router

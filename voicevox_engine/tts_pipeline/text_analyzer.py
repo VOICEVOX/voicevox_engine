@@ -1,17 +1,48 @@
+"""テキスト解析"""
+
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Literal, Self
+from typing import Any, Final, Literal, Self, TypeGuard
 
 import pyopenjtalk
 
-from ..model import AccentPhrase, Mora
+from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .phoneme import Consonant, Sil, Vowel
 
-OjtVowel = Literal[
-    "A", "E", "I", "N", "O", "U", "a", "cl", "e", "i", "o", "pau", "sil", "u"
-]
-OjtConsonant = Literal[
+
+class NonOjtPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk で想定されていない音素が生成されたため処理できません。"
+
+
+class OjtUnknownPhonemeError(Exception):
+    def __init__(self, **kwargs: Any) -> None:
+        self.text = "OpenJTalk の unknown 音素 `xx` は非対応です。"
+
+
+_OJT_UNKNOWN = Literal["xx"]
+
+# OpenJTalk が出力する音素の一覧。
+_OJT_VOWELS: Final[tuple[Vowel | Sil, ...]] = (
+    "A",
+    "E",
+    "I",
+    "N",
+    "O",
+    "U",
+    "a",
+    "cl",
+    "e",
+    "i",
+    "o",
+    "pau",
+    "sil",
+    "u",
+)
+_OJT_CONSONANTS: Final[tuple[Consonant, ...]] = (
     "b",
     "by",
     "ch",
@@ -44,9 +75,15 @@ OjtConsonant = Literal[
     "w",
     "y",
     "z",
-]
-OjtUnknown = Literal["xx"]
-OjtPhoneme = OjtVowel | OjtConsonant | OjtUnknown
+)
+_OJT_UNKNOWNS: Final[tuple[_OJT_UNKNOWN]] = ("xx",)
+_OJT_PHONEMES: Final = _OJT_VOWELS + _OJT_CONSONANTS + _OJT_UNKNOWNS
+
+
+def _is_ojt_phoneme(
+    p: str,
+) -> TypeGuard[Vowel | Sil | Consonant | _OJT_UNKNOWN]:
+    return p in _OJT_PHONEMES
 
 
 @dataclass
@@ -58,8 +95,8 @@ class Label:
     @classmethod
     def from_feature(cls, feature: str) -> Self:
         """OpenJTalk feature から Label インスタンスを生成する"""
-        # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。 # noqa
-        # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx  # noqa: B950
+        # フルコンテキストラベルの仕様は、http://hts.sp.nitech.ac.jp/?Download の HTS-2.3のJapanese tar.bz2 (126 MB)をダウンロードして、data/lab_format.pdfを見るとリストが見つかります。
+        # VOICEVOX ENGINE で利用されている属性: p3 phoneme / a2 moraIdx / f1 n_mora / f2 pos_accent / f3 疑問形 / f5 アクセント句Idx / i3 BreathGroupIdx
         result = re.search(
             r"^(?P<p1>.+?)\^(?P<p2>.+?)\-(?P<p3>.+?)\+(?P<p4>.+?)\=(?P<p5>.+?)"
             r"/A\:(?P<a1>.+?)\+(?P<a2>.+?)\+(?P<a3>.+?)"
@@ -67,10 +104,10 @@ class Label:
             r"/C\:(?P<c1>.+?)\_(?P<c2>.+?)\+(?P<c3>.+?)"
             r"/D\:(?P<d1>.+?)\+(?P<d2>.+?)\_(?P<d3>.+?)"
             r"/E\:(?P<e1>.+?)\_(?P<e2>.+?)\!(?P<e3>.+?)\_(?P<e4>.+?)\-(?P<e5>.+?)"
-            r"/F\:(?P<f1>.+?)\_(?P<f2>.+?)\#(?P<f3>.+?)\_(?P<f4>.+?)\@(?P<f5>.+?)\_(?P<f6>.+?)\|(?P<f7>.+?)\_(?P<f8>.+?)"  # noqa
+            r"/F\:(?P<f1>.+?)\_(?P<f2>.+?)\#(?P<f3>.+?)\_(?P<f4>.+?)\@(?P<f5>.+?)\_(?P<f6>.+?)\|(?P<f7>.+?)\_(?P<f8>.+?)"
             r"/G\:(?P<g1>.+?)\_(?P<g2>.+?)\%(?P<g3>.+?)\_(?P<g4>.+?)\_(?P<g5>.+?)"
             r"/H\:(?P<h1>.+?)\_(?P<h2>.+?)"
-            r"/I\:(?P<i1>.+?)\-(?P<i2>.+?)\@(?P<i3>.+?)\+(?P<i4>.+?)\&(?P<i5>.+?)\-(?P<i6>.+?)\|(?P<i7>.+?)\+(?P<i8>.+?)"  # noqa
+            r"/I\:(?P<i1>.+?)\-(?P<i2>.+?)\@(?P<i3>.+?)\+(?P<i4>.+?)\&(?P<i5>.+?)\-(?P<i6>.+?)\|(?P<i7>.+?)\+(?P<i8>.+?)"
             r"/J\:(?P<j1>.+?)\_(?P<j2>.+?)"
             r"/K\:(?P<k1>.+?)\+(?P<k2>.+?)\-(?P<k3>.+?)$",
             feature,
@@ -82,10 +119,16 @@ class Label:
         return cls(contexts=contexts)
 
     @property
-    def phoneme(self) -> OjtPhoneme:
+    def phoneme(self) -> Vowel | Consonant | Sil:
         """このラベルに含まれる音素。子音 or 母音 (無音含む)。"""
-        # FIXME: バリデーションする
-        return self.contexts["p3"]  # type: ignore
+        p = self.contexts["p3"]
+        if _is_ojt_phoneme(p):
+            if p == "xx":
+                raise OjtUnknownPhonemeError()
+            else:
+                return p
+        else:
+            raise NonOjtPhonemeError()
 
     @property
     def mora_index(self) -> int:
@@ -152,7 +195,7 @@ class AccentPhraseLabel:
         moras: list[MoraLabel] = []  # モーラ系列
         mora_labels: list[Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
             if label.mora_index == 49:
@@ -210,11 +253,11 @@ class BreathGroupLabel:
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[Label] = (
-            []
-        )  # アクセント句ごとのラベル系列を一時保存するコンテナ
+        accent_labels: list[
+            Label
+        ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
 
-        for label, next_label in zip(labels, labels[1:] + [None]):
+        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # 区切りまでラベル系列を一時保存する
             accent_labels.append(label)
 
@@ -260,9 +303,9 @@ class UtteranceLabel:
 
         pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[Label] = (
-            []
-        )  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
+        group_labels: list[
+            Label
+        ] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
 
         for label in labels:
             # ポーズが出現するまでラベル系列を一時保存する

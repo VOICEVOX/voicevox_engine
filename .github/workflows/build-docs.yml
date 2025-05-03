@@ -8,7 +8,6 @@ on:
       - "master"
 
 env:
-  PYTHON_VERSION: "3.11.3"
   PUBLISH_DIR: "./docs/api"
   PUBLISH_BRANCH: "gh-pages"
   DESTINATION_DIR: "api"
@@ -16,31 +15,22 @@ env:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   upload-doc:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Set up Python
-        id: setup-python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-
-      - name: <Setup> Install Python dependencies
-        run: |
-          pip install -r requirements.txt
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
 
       - name: <Build> Make documents
-        run: |
-          PYTHONPATH=. python build_util/make_docs.py
+        run: PYTHONPATH=. python tools/make_docs.py
 
       - name: <Deploy> Deploy documents to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.PUBLISH_DIR }}

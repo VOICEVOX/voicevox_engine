@@ -1,179 +1,166 @@
+"""VOICEVOX ENGINE の実行"""
+
 import argparse
 import multiprocessing
 import os
 import sys
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+import warnings
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Optional
+from typing import TextIO, TypeVar
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.templating import Jinja2Templates
+from pydantic import TypeAdapter
 
-from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import deprecated_mutable_api
-from voicevox_engine.app.middlewares import configure_middlewares
-from voicevox_engine.app.openapi_schema import configure_openapi_schema
-from voicevox_engine.app.routers.engine_info import generate_engine_info_router
-from voicevox_engine.app.routers.library import generate_library_router
-from voicevox_engine.app.routers.morphing import generate_morphing_router
-from voicevox_engine.app.routers.preset import generate_preset_router
-from voicevox_engine.app.routers.setting import generate_setting_router
-from voicevox_engine.app.routers.speaker import generate_speaker_router
-from voicevox_engine.app.routers.tts_pipeline import generate_tts_pipeline_router
-from voicevox_engine.app.routers.user_dict import generate_user_dict_router
+from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
-from voicevox_engine.core.core_adapter import CoreAdapter
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.engine_manifest.EngineManifestLoader import EngineManifestLoader
-from voicevox_engine.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore
-from voicevox_engine.preset.PresetManager import PresetManager
-from voicevox_engine.setting.Setting import CorsPolicyMode
-from voicevox_engine.setting.SettingLoader import USER_SETTING_PATH, SettingHandler
-from voicevox_engine.tts_pipeline.tts_engine import (
-    TTSEngine,
-    make_tts_engines_from_cores,
+from voicevox_engine.engine_manifest import load_manifest
+from voicevox_engine.library.library_manager import LibraryManager
+from voicevox_engine.preset.preset_manager import PresetManager
+from voicevox_engine.setting.model import CorsPolicyMode
+from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
+from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
+from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.utility.path_utility import (
+    engine_manifest_path,
+    engine_root,
+    get_save_dir,
 )
-from voicevox_engine.user_dict.user_dict import update_dict
-from voicevox_engine.utility.core_version_utility import get_latest_version
-from voicevox_engine.utility.path_utility import engine_root, get_save_dir
-from voicevox_engine.utility.run_utility import decide_boolean_from_env
+
+
+def decide_boolean_from_env(env_name: str) -> bool:
+    """
+    環境変数からbool値を返す。
+
+    * 環境変数が"1"ならTrueを返す
+    * 環境変数が"0"か空白か存在しないならFalseを返す
+    * それ以外はwarningを出してFalseを返す
+    """
+    env = os.getenv(env_name, default="")
+    if env == "1":
+        return True
+    elif env == "" or env == "0":
+        return False
+    else:
+        warnings.warn(
+            f"Invalid environment variable value: {env_name}={env}",
+            stacklevel=1,
+        )
+        return False
+
+
+@dataclass(frozen=True)
+class Envs:
+    """環境変数の集合"""
+
+    output_log_utf8: bool
+    cpu_num_threads: str | None
+    env_preset_path: str | None
+    disable_mutable_api: bool
+
+
+_env_adapter = TypeAdapter(Envs)
+
+
+def read_environment_variables() -> Envs:
+    """環境変数を読み込む。"""
+    envs = Envs(
+        output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
+        cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
+        env_preset_path=os.getenv("VV_PRESET_FILE"),
+        disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
+    )
+    return _env_adapter.validate_python(asdict(envs))
 
 
 def set_output_log_utf8() -> None:
-    """
-    stdout/stderrのエンコーディングをUTF-8に切り替える関数
-    """
-    # コンソールがない環境だとNone https://docs.python.org/ja/3/library/sys.html#sys.__stdin__
-    if sys.stdout is not None:
-        if isinstance(sys.stdout, TextIOWrapper):
-            sys.stdout.reconfigure(encoding="utf-8")
+    """標準出力と標準エラー出力の出力形式を UTF-8 ベースに切り替える"""
+
+    # NOTE: for 文で回せないため関数内関数で実装している
+    def _prepare_utf8_stdio(stdio: TextIO) -> TextIO:
+        """UTF-8 ベースの標準入出力インターフェイスを用意する"""
+
+        CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
+        ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
+
+        # 既定の `TextIOWrapper` 入出力インターフェイスを UTF-8 へ再設定して返す
+        if isinstance(stdio, TextIOWrapper):
+            stdio.reconfigure(encoding=CODEC)
+            return stdio
         else:
-            # バッファを全て出力する
-            sys.stdout.flush()
+            # 既定インターフェイスのバッファを全て出力しきった上で UTF-8 設定の `TextIOWrapper` を生成して返す
+            stdio.flush()
             try:
-                sys.stdout = TextIOWrapper(
-                    sys.stdout.buffer, encoding="utf-8", errors="backslashreplace"
-                )
+                return TextIOWrapper(stdio.buffer, encoding=CODEC, errors=ERR)
             except AttributeError:
-                # stdout.bufferがない場合は無視
-                pass
-    if sys.stderr is not None:
-        if isinstance(sys.stderr, TextIOWrapper):
-            sys.stderr.reconfigure(encoding="utf-8")
-        else:
-            sys.stderr.flush()
-            try:
-                sys.stderr = TextIOWrapper(
-                    sys.stderr.buffer, encoding="utf-8", errors="backslashreplace"
-                )
-            except AttributeError:
-                # stderr.bufferがない場合は無視
-                pass
+                # バッファへのアクセスに失敗した場合、設定変更をおこなわず返す
+                return stdio
+
+    # NOTE:
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )
+    # これは Python インタープリタが標準入出力へ接続されていないことを意味するため、設定不要とみなす
+
+    if sys.stdout is None:
+        pass
+    else:
+        sys.stdout = _prepare_utf8_stdio(sys.stdout)
+
+    if sys.stderr is None:
+        pass
+    else:
+        sys.stderr = _prepare_utf8_stdio(sys.stderr)
 
 
-def generate_app(
-    tts_engines: dict[str, TTSEngine],
-    cores: dict[str, CoreAdapter],
-    latest_core_version: str,
-    setting_loader: SettingHandler,
-    preset_manager: PresetManager,
-    cancellable_engine: CancellableEngine | None = None,
-    root_dir: Optional[Path] = None,
-    cors_policy_mode: CorsPolicyMode = CorsPolicyMode.localapps,
-    allow_origin: Optional[list[str]] = None,
-    disable_mutable_api: bool = False,
-) -> FastAPI:
-    if root_dir is None:
-        root_dir = engine_root()
-
-    @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        update_dict()
-        yield
-
-    app = FastAPI(
-        title="VOICEVOX Engine",
-        description="VOICEVOXの音声合成エンジンです。",
-        version=__version__,
-        lifespan=lifespan,
-    )
-    app = configure_middlewares(app, cors_policy_mode, allow_origin)
-
-    if disable_mutable_api:
-        deprecated_mutable_api.enable = False
-
-    engine_manifest_data = EngineManifestLoader(
-        engine_root() / "engine_manifest.json", engine_root()
-    ).load_manifest()
-    library_manager = LibraryManager(
-        get_save_dir() / "installed_libraries",
-        engine_manifest_data.supported_vvlib_manifest_version,
-        engine_manifest_data.brand_name,
-        engine_manifest_data.name,
-        engine_manifest_data.uuid,
-    )
-
-    metas_store = MetasStore(root_dir / "speaker_info")
-
-    setting_ui_template = Jinja2Templates(
-        directory=engine_root() / "ui_template",
-        variable_start_string="<JINJA_PRE>",
-        variable_end_string="<JINJA_POST>",
-    )
-
-    def get_engine(core_version: Optional[str]) -> TTSEngine:
-        if core_version is None:
-            return tts_engines[latest_core_version]
-        if core_version in tts_engines:
-            return tts_engines[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    def get_core(core_version: Optional[str]) -> CoreAdapter:
-        """指定したバージョンのコアを取得する"""
-        if core_version is None:
-            return cores[latest_core_version]
-        if core_version in cores:
-            return cores[core_version]
-        raise HTTPException(status_code=422, detail="不明なバージョンです")
-
-    app.include_router(
-        generate_tts_pipeline_router(
-            get_engine, get_core, preset_manager, cancellable_engine
-        )
-    )
-    app.include_router(generate_morphing_router(get_engine, get_core, metas_store))
-    app.include_router(generate_preset_router(preset_manager))
-    app.include_router(generate_speaker_router(get_core, metas_store, root_dir))
-    if engine_manifest_data.supported_features.manage_library:
-        app.include_router(
-            generate_library_router(engine_manifest_data, library_manager)
-        )
-    app.include_router(generate_user_dict_router())
-    app.include_router(
-        generate_engine_info_router(get_core, cores, engine_manifest_data)
-    )
-    app.include_router(
-        generate_setting_router(
-            setting_loader, engine_manifest_data, setting_ui_template
-        )
-    )
-
-    app = configure_openapi_schema(app)
-
-    return app
+T = TypeVar("T")
 
 
-def main() -> None:
-    multiprocessing.freeze_support()
+def select_first_not_none(candidates: list[T | None]) -> T:
+    """None でない最初の値を取り出す。全て None の場合はエラーを送出する。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    raise RuntimeError("すべての候補値が None です")
 
-    output_log_utf8 = decide_boolean_from_env("VV_OUTPUT_LOG_UTF8")
-    if output_log_utf8:
-        set_output_log_utf8()
 
+S = TypeVar("S")
+
+
+def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
+    """None でない最初の値を取り出そうとし、全て None の場合は None を返す。"""
+    for candidate in candidates:
+        if candidate is not None:
+            return candidate
+    return None
+
+
+@dataclass(frozen=True)
+class CLIArgs:
+    host: str
+    port: int
+    use_gpu: bool
+    voicevox_dir: Path | None
+    voicelib_dirs: list[Path] | None
+    runtime_dirs: list[Path] | None
+    enable_mock: bool
+    enable_cancellable_synthesis: bool
+    init_processes: int
+    load_all_models: bool
+    cpu_num_threads: int | None
+    output_log_utf8: bool
+    cors_policy_mode: CorsPolicyMode | None
+    allow_origins: list[str] | None
+    setting_file: Path
+    preset_file: Path | None
+    disable_mutable_api: bool
+
+
+_cli_args_adapter = TypeAdapter(CLIArgs)
+
+
+def read_cli_arguments(envs: Envs) -> CLIArgs:
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
     # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
@@ -238,7 +225,7 @@ def main() -> None:
     parser.add_argument(
         "--cpu_num_threads",
         type=int,
-        default=os.getenv("VV_CPU_NUM_THREADS") or None,
+        default=envs.cpu_num_threads,
         help=(
             "音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。"
             "VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。"
@@ -261,7 +248,7 @@ def main() -> None:
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
-            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
             "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
@@ -289,8 +276,7 @@ def main() -> None:
         default=None,
         help=(
             "プリセットファイルを指定できます。"
-            "指定がない場合、環境変数 VV_PRESET_FILE、--voicevox_dirのpresets.yaml、"
-            "実行ファイルのディレクトリのpresets.yamlを順に探します。"
+            "指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。"
         ),
     )
 
@@ -304,105 +290,125 @@ def main() -> None:
         ),
     )
 
-    args = parser.parse_args()
+    args_dict = vars(parser.parse_args())
+
+    # NOTE: 複数個の同名引数に基づいてリスト化されるため `CLIArgs` で複数形にリネームされている
+    args_dict["voicelib_dirs"] = args_dict.pop("voicelib_dir")
+    args_dict["runtime_dirs"] = args_dict.pop("runtime_dir")
+    args_dict["allow_origins"] = args_dict.pop("allow_origin")
+
+    args = _cli_args_adapter.validate_python(args_dict)
+
+    return args
+
+
+def main() -> None:
+    """VOICEVOX ENGINE を実行する"""
+
+    multiprocessing.freeze_support()
+
+    envs = read_environment_variables()
+
+    if envs.output_log_utf8:
+        set_output_log_utf8()
+
+    args = read_cli_arguments(envs)
 
     if args.output_log_utf8:
         set_output_log_utf8()
 
-    # Synthesis Engine
-    use_gpu: bool = args.use_gpu
-    voicevox_dir: Path | None = args.voicevox_dir
-    voicelib_dirs: list[Path] | None = args.voicelib_dir
-    runtime_dirs: list[Path] | None = args.runtime_dir
-    enable_mock: bool = args.enable_mock
-    cpu_num_threads: int | None = args.cpu_num_threads
-    load_all_models: bool = args.load_all_models
-
-    cores = initialize_cores(
-        use_gpu=use_gpu,
-        voicelib_dirs=voicelib_dirs,
-        voicevox_dir=voicevox_dir,
-        runtime_dirs=runtime_dirs,
-        cpu_num_threads=cpu_num_threads,
-        enable_mock=enable_mock,
-        load_all_models=load_all_models,
+    core_manager = initialize_cores(
+        use_gpu=args.use_gpu,
+        voicelib_dirs=args.voicelib_dirs,
+        voicevox_dir=args.voicevox_dir,
+        runtime_dirs=args.runtime_dirs,
+        cpu_num_threads=args.cpu_num_threads,
+        enable_mock=args.enable_mock,
+        load_all_models=args.load_all_models,
     )
-    tts_engines = make_tts_engines_from_cores(cores)
-    assert len(tts_engines) != 0, "音声合成エンジンがありません。"
-    latest_core_version = get_latest_version(list(tts_engines.keys()))
-
-    # Cancellable Engine
-    enable_cancellable_synthesis: bool = args.enable_cancellable_synthesis
-    init_processes: int = args.init_processes
+    tts_engines = make_tts_engines_from_cores(core_manager)
+    song_engines = make_song_engines_from_cores(core_manager)
+    assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    assert len(song_engines.versions()) != 0, "音声合成エンジンがありません。"
 
     cancellable_engine: CancellableEngine | None = None
-    if enable_cancellable_synthesis:
+    if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(
-            init_processes=init_processes,
-            use_gpu=use_gpu,
-            voicelib_dirs=voicelib_dirs,
-            voicevox_dir=voicevox_dir,
-            runtime_dirs=runtime_dirs,
-            cpu_num_threads=cpu_num_threads,
-            enable_mock=enable_mock,
+            init_processes=args.init_processes,
+            use_gpu=args.use_gpu,
+            voicelib_dirs=args.voicelib_dirs,
+            voicevox_dir=args.voicevox_dir,
+            runtime_dirs=args.runtime_dirs,
+            cpu_num_threads=args.cpu_num_threads,
+            enable_mock=args.enable_mock,
         )
 
-    root_dir: Path | None = voicevox_dir
-    if root_dir is None:
-        root_dir = engine_root()
-
     setting_loader = SettingHandler(args.setting_file)
-
     settings = setting_loader.load()
 
-    cors_policy_mode: CorsPolicyMode | None = args.cors_policy_mode
-    if cors_policy_mode is None:
-        cors_policy_mode = settings.cors_policy_mode
+    # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
-    allow_origin = None
-    if args.allow_origin is not None:
-        allow_origin = args.allow_origin
-    elif settings.allow_origin is not None:
-        allow_origin = settings.allow_origin.split(" ")
-
-    # Preset Manager
-    # preset_pathの優先順: 引数、環境変数、voicevox_dir、実行ファイルのディレクトリ
-    # ファイルの存在に関わらず、優先順で最初に指定されたパスをプリセットファイルとして使用する
-    preset_path: Path | None = args.preset_file
-    if preset_path is None:
-        # 引数 --preset_file の指定がない場合
-        env_preset_path = os.getenv("VV_PRESET_FILE")
-        if env_preset_path is not None and len(env_preset_path) != 0:
-            # 環境変数 VV_PRESET_FILE の指定がある場合
-            preset_path = Path(env_preset_path)
-        else:
-            # 環境変数 VV_PRESET_FILE の指定がない場合
-            preset_path = root_dir / "presets.yaml"
-
-    preset_manager = PresetManager(
-        preset_path=preset_path,
+    cors_policy_mode = select_first_not_none(
+        [args.cors_policy_mode, settings.cors_policy_mode]
     )
 
-    disable_mutable_api: bool = args.disable_mutable_api | decide_boolean_from_env(
-        "VV_DISABLE_MUTABLE_API"
+    setting_allow_origins = None
+    if settings.allow_origin is not None:
+        setting_allow_origins = settings.allow_origin.split(" ")
+    allow_origin = select_first_not_none_or_none(
+        [args.allow_origins, setting_allow_origins]
     )
 
-    uvicorn.run(
-        generate_app(
-            tts_engines,
-            cores,
-            latest_core_version,
-            setting_loader,
-            preset_manager=preset_manager,
-            cancellable_engine=cancellable_engine,
-            root_dir=root_dir,
-            cors_policy_mode=cors_policy_mode,
-            allow_origin=allow_origin,
-            disable_mutable_api=disable_mutable_api,
-        ),
-        host=args.host,
-        port=args.port,
+    if envs.env_preset_path is not None and len(envs.env_preset_path) != 0:
+        env_preset_path = Path(envs.env_preset_path)
+    else:
+        env_preset_path = None
+    default_preset_path = get_save_dir() / "presets.yaml"
+    preset_path = select_first_not_none(
+        [args.preset_file, env_preset_path, default_preset_path]
     )
+    preset_manager = PresetManager(preset_path)
+
+    user_dict = UserDictionary()
+
+    engine_manifest = load_manifest(engine_manifest_path())
+
+    library_manager = LibraryManager(
+        get_save_dir() / "installed_libraries",
+        engine_manifest.supported_vvlib_manifest_version,
+        engine_manifest.brand_name,
+        engine_manifest.name,
+        engine_manifest.uuid,
+    )
+
+    root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
+    character_info_dir = root_dir / "resources" / "character_info"
+    # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
+    if not character_info_dir.exists():
+        character_info_dir = root_dir / "speaker_info"
+
+    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
+
+    # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
+    app = generate_app(
+        tts_engines,
+        song_engines,
+        core_manager,
+        setting_loader,
+        preset_manager,
+        user_dict,
+        engine_manifest,
+        library_manager,
+        cancellable_engine,
+        character_info_dir,
+        cors_policy_mode,
+        allow_origin,
+        disable_mutable_api=disable_mutable_api,
+    )
+
+    # VOICEVOX ENGINE サーバーを起動
+    # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

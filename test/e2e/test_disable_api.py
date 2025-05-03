@@ -2,10 +2,11 @@
 APIを無効化するテスト
 """
 
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi.testclient import TestClient
-from run import generate_app
+
+from voicevox_engine.app.application import generate_app
 
 
 # clientとschemaとパスを受け取ってリクエストを送信し、レスポンスが403であることを確認する
@@ -28,7 +29,7 @@ def _assert_request_and_response_403(
     assert response.status_code == 403, f"{method} {path} が403を返しませんでした"
 
 
-def test_disable_mutable_api(app_params: dict) -> None:
+def test_disable_mutable_api(app_params: dict[str, Any]) -> None:
     """エンジンの静的なデータを変更するAPIを無効化するテスト"""
     client = TestClient(generate_app(**app_params, disable_mutable_api=True))
 
