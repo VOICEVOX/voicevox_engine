@@ -12,7 +12,7 @@ on:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
       skip_dockerhub:
-        description: "Docker Hubへのプッシュを強制的に無効化"
+        description: "Docker Hubへのプッシュをスキップ"
         type: boolean
         default: false
 
