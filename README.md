@@ -578,7 +578,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" uv run run.py --voicelib_dir="/path/to/voicevo
 
 ### ビルド
 
-`pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりローカルでビルドが可能です。  
+`pyinstaller` を用いたパッケージ化によりローカルでビルドが可能です。  
 手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。
 
 GitHub を用いる場合、fork したリポジトリで GitHub Actions によるビルドが可能です。  
