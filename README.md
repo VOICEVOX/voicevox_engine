@@ -1,6 +1,6 @@
 # VOICEVOX ENGINE
 
-[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml)
+[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine.yml)
 [![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
 [![discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
 
@@ -582,7 +582,7 @@ DYLD_LIBRARY_PATH="/path/to/onnx" uv run run.py --voicelib_dir="/path/to/voicevo
 手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。
 
 GitHub を用いる場合、fork したリポジトリで GitHub Actions によるビルドが可能です。  
-Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
+Actions を ON にし、workflow_dispatch で`build-engine.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。
 

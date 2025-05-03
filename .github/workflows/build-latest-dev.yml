@@ -30,7 +30,7 @@ jobs:
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'build-engine-package.yml',
+              workflow_id: 'build-engine.yml',
               ref: 'master',
               inputs: {
                 version: dev_version,
