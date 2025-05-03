@@ -17,7 +17,6 @@ RUN <<EOF
     apt-get update
     apt-get install -y \
         gh \
-        wget \
         curl \
         p7zip
     apt-get clean
@@ -32,7 +31,7 @@ RUN <<EOF
 
     LIST_NAME=voicevox_engine-$VOICEVOX_ENGINE_TARGET-$VOICEVOX_ENGINE_VERSION.7z.txt
 
-    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
+    curl -fLO --retry 3 --retry-delay 5 "https://github.com/VOICEVOX/voicevox_engine/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
 
     awk \
         -v "tag=$VOICEVOX_ENGINE_VERSION" \
@@ -44,7 +43,7 @@ RUN <<EOF
         "$LIST_NAME" \
         > ./curl.txt
 
-    curl -fL --parallel --config ./curl.txt
+    curl -fL --retry 3 --retry-delay 5 --parallel --config ./curl.txt
 
     7zr x "$(head -1 "./$LIST_NAME")"
 
@@ -66,7 +65,7 @@ RUN <<EOF
 
     apt-get update
     apt-get install -y \
-        wget \
+        curl \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -84,7 +83,7 @@ RUN <<EOF
     set -eux
 
     # README
-    wget -nv --show-progress -c -O "/opt/voicevox_engine/README.md" "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+    curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 EOF
 
 # Create container start shell
