@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.11
+# syntax=docker/dockerfile:1.4
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
@@ -25,10 +25,10 @@ RUN <<EOF
 EOF
 
 ARG TARGETPLATFORM
-ARG VOICEVOX_ENGINE_VERSION=latest
+ARG VOICEVOX_ENGINE_VERSION
 ARG USE_GPU=false
 
-RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
+RUN <<EOF
     set -eux
 
     case "$USE_GPU" in
@@ -51,29 +51,23 @@ RUN --mount=type=secret,id=gh-token,env=GH_TOKEN <<EOF
             exit 1
     esac
 
-    if [ "$VOICEVOX_ENGINE_VERSION" = latest ]; then
-        tag=$(gh release view -R VOICEVOX/voicevox_engine --json tagName -q .tagName)
-    else
-        tag=$VOICEVOX_ENGINE_VERSION
-    fi
+    LIST_NAME=voicevox_engine-$TARGET-$VOICEVOX_ENGINE_VERSION.7z.txt
 
-    list_name=voicevox_engine-$TARGET-$tag.7z.txt
-
-    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$tag/$list_name"
+    wget -nv --show-progress "https://github.com/VOICEVOX/voicevox_engine/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
 
     awk \
-        -v "tag=$tag" \
+        -v "tag=$VOICEVOX_ENGINE_VERSION" \
         '{
              print \
                  "url = \"https://github.com/VOICEVOX/voicevox_engine/releases/download/" tag "/" $0 "\"\n" \
                  "output = \"" $0 "\""
         }' \
-        "$list_name" \
+        "$LIST_NAME" \
         > ./curl.txt
 
     curl -fL --parallel --config ./curl.txt
 
-    7zr x "$(head -1 "./$list_name")"
+    7zr x "$(head -1 "./$LIST_NAME")"
 
     mv ./$TARGET /opt/voicevox_engine
     rm ./*

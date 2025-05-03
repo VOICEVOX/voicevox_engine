@@ -24,12 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+      version: ${{ steps.vars.outputs.version }}
     steps:
       - name: <Setup> Declare variables
         id: vars
         run: |
-          : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
+          : # workflow_call/workflow_dispatchでのバージョン名か、latest
+          version_or_latest=${{ inputs.version || 'latest' }}
+
+          case "$version_or_latest" in
+            latest) version=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName -q .tagName) ;;
+            *) version=$version_or_latest
+          esac
+
+          echo "version_or_latest=$version_or_latest" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker:
     needs: [config]
@@ -156,18 +167,15 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
+            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-          secret-envs: gh-token=GH_TOKEN
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker-multi-platform:
     needs: [config, build-docker]
