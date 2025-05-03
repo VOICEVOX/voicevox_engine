@@ -248,7 +248,7 @@ uv lock --upgrade # 全部更新
 
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
-uv によらず VOICEVOX ENGINE を実行する方法を提供を提供するために、 requirements.txt ファイルを用意しています。
+pip-audit のために requirements.txt ファイルを用意しています。
 
 ```bash
 uv export --no-annotate --no-hashes --no-header -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
