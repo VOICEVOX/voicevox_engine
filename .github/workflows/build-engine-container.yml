@@ -1,11 +1,10 @@
 name: build-docker
 on:
-  push:
-    branches:
-      - master
-  release:
-    types:
-      - created
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       version:
@@ -15,8 +14,6 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
-  VOICEVOX_CORE_VERSION: "0.15.7"
-  ONNXRUNTIME_VERSION: "1.13.1"
 
 defaults:
   run:
@@ -71,7 +68,7 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+            base_runtime_image: mirror.gcr.io/ubuntu:20.04
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
@@ -95,7 +92,7 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+            base_runtime_image: mirror.gcr.io/ubuntu:22.04
             platforms: linux/amd64
 
     steps:
@@ -103,7 +100,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: <Setup> Prepare Python version
-        id: prepare-python
         uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
@@ -115,26 +111,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: <Setup> Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v4
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Setup> Check out the VOICEVOX RESOURCE repository
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Build> Merge VOICEVOX RESOURCE
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash tools/process_voicevox_resource.bash
 
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
@@ -180,18 +156,18 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ steps.prepare-python.outputs.python-version }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
-            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
             USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
+          secret-envs: gh-token=GH_TOKEN
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker-multi-platform:
     needs: [config, build-docker]
@@ -212,10 +188,6 @@ jobs:
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
-
-      - name: <Setup> Prepare Python version
-        id: prepare-python
-        uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
