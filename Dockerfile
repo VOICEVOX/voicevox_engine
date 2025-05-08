@@ -3,7 +3,6 @@
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
 ARG BASE_IMAGE=mirror.gcr.io/ubuntu:20.04
-ARG BASE_RUNTIME_IMAGE=$BASE_IMAGE
 
 # Download VOICEVOX ENGINE
 FROM ${BASE_IMAGE} AS download-engine-env
@@ -51,7 +50,7 @@ RUN <<EOF
 EOF
 
 # Runtime
-FROM ${BASE_RUNTIME_IMAGE} AS runtime-env
+FROM ${BASE_IMAGE} AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine

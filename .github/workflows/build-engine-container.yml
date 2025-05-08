@@ -55,8 +55,7 @@ jobs:
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
-        # base_image: Dockerfileのビルド用ステージのベースイメージ
-        # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
+        # base_image: Dockerfileのビルド用および実行用のベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04 / AMD64
@@ -65,7 +64,6 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
             voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 20.04 / ARM64
@@ -74,7 +72,6 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
             voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
@@ -83,7 +80,6 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
             voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
@@ -92,7 +88,6 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
             voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
@@ -101,7 +96,6 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
             voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
@@ -110,7 +104,6 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
             voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
 
@@ -174,7 +167,6 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
             VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
