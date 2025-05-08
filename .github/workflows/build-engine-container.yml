@@ -1,6 +1,6 @@
 name: build-docker
 on:
-  # FIXME: 現状masterブランチへのpushでは起動されないので、されるようにする
+  # FIXME: masterブランチへのpush時にビルド工程をテストする
   # https://github.com/VOICEVOX/voicevox_engine/pull/1669#discussion_r2076730954
   workflow_call:
     inputs:
