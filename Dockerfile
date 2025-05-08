@@ -16,7 +16,6 @@ RUN <<EOF
 
     apt-get update
     apt-get install -y \
-        gh \
         curl \
         p7zip
     apt-get clean
