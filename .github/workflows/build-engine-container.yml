@@ -205,6 +205,9 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
+      - name: <Setup> Prepare Python version
+        uses: ./.github/actions/prepare_python@v4
+
       - name: <Setup> Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
