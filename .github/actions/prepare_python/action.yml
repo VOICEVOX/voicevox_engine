@@ -5,10 +5,6 @@ inputs:
   dependency-group:
     description: "uv の依存パッケージインストール時に指定するグループ"
     required: false
-outputs:
-  python-version:
-    description: "Python version"
-    value: ${{ steps.export-python-version.outputs.python-version }}
 
 runs:
   using: "composite"
@@ -25,13 +21,4 @@ runs:
         else
           uv sync
         fi
-      shell: bash
-
-    - name: <Deploy> Export Python version
-      id: export-python-version
-      run: |
-        PYTHON_VERSION=$(
-          uv run python -c 'import platform; print(platform.python_version())'
-        )
-        echo "python-version=${PYTHON_VERSION}" >> "$GITHUB_OUTPUT"
       shell: bash
