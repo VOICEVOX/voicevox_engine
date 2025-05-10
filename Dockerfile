@@ -22,20 +22,12 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
-# assert VOICEVOX_CORE_VERSION >= 0.11.0 (ONNX)
+# assert VOICEVOX_CORE_VERSION >= 0.16.0 (ONNX)
 ARG TARGETPLATFORM
-ARG USE_GPU=false
-ARG VOICEVOX_CORE_VERSION=0.15.7
+ARG VOICEVOX_CORE_VERSION=0.16.0
 
 RUN <<EOF
     set -eux
-
-    # Processing Switch
-    if [ "${USE_GPU}" = "true" ]; then
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="gpu"
-    else
-        VOICEVOX_CORE_ASSET_ASSET_PROCESSING="cpu"
-    fi
 
     # TARGETARCH Switch
     if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then
@@ -44,7 +36,7 @@ RUN <<EOF
         VOICEVOX_CORE_ASSET_TARGETARCH="arm64"
     fi
 
-    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}-${VOICEVOX_CORE_ASSET_ASSET_PROCESSING}"
+    VOICEVOX_CORE_ASSET_PREFIX="voicevox_core-linux-${VOICEVOX_CORE_ASSET_TARGETARCH}"
 
     # Download Core
     VOICEVOX_CORE_ASSET_NAME=${VOICEVOX_CORE_ASSET_PREFIX}-${VOICEVOX_CORE_VERSION}
@@ -60,14 +52,14 @@ RUN <<EOF
     mv ./core/* /opt/voicevox_core/
 
     # Add /opt/voicevox_core to dynamic library search path
-    echo "/opt/voicevox_core" > /etc/ld.so.conf.d/voicevox_core.conf
+    echo "/opt/voicevox_core/lib" > /etc/ld.so.conf.d/voicevox_core.conf
 
     # Update dynamic library search cache
     ldconfig
 EOF
 
 
-# Download ONNX Runtime
+# Download VOICEVOX ONNX Runtime
 FROM ${BASE_IMAGE} AS download-onnxruntime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -86,13 +78,13 @@ EOF
 
 ARG TARGETPLATFORM
 ARG USE_GPU=false
-ARG ONNXRUNTIME_VERSION=1.13.1
+ARG ONNXRUNTIME_VERSION=1.17.3
 RUN <<EOF
     set -eux
 
     # Processing Switch
     if [ "${USE_GPU}" = "true" ]; then
-        ONNXRUNTIME_PROCESSING="gpu-"
+        ONNXRUNTIME_PROCESSING="cuda-"
     else
         ONNXRUNTIME_PROCESSING=""
     fi
@@ -104,7 +96,7 @@ RUN <<EOF
         ONNXRUNTIME_TARGETARCH=aarch64
     fi
     
-    ONNXRUNTIME_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-${ONNXRUNTIME_TARGETARCH}-${ONNXRUNTIME_PROCESSING}${ONNXRUNTIME_VERSION}.tgz"
+    ONNXRUNTIME_URL="https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-${ONNXRUNTIME_VERSION}/voicevox_onnxruntime-linux-${ONNXRUNTIME_TARGETARCH}-${ONNXRUNTIME_PROCESSING}${ONNXRUNTIME_VERSION}.tgz"
 
     # Download ONNX Runtime
     wget -nv --show-progress -c -O "./onnxruntime.tgz" "${ONNXRUNTIME_URL}"
@@ -121,6 +113,38 @@ RUN <<EOF
     ldconfig
 EOF
 
+FROM ${BASE_IMAGE} AS download-models-env
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /work
+
+RUN <<EOF
+    set -eux
+
+    apt-get update
+    apt-get install -y \
+        git
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+ARG TARGETPLATFORM
+ARG VOICEVOX_VVM_VERSION=0.1.0
+
+RUN <<EOF
+    set -eux
+
+    git init ./voicevox_vvm
+    cd ./voicevox_vvm
+    git remote add origin https://github.com/VOICEVOX/voicevox_vvm
+    git fetch --depth 1 origin "refs/tags/$VOICEVOX_VVM_VERSION"
+    git switch -d FETCH_HEAD
+    rm -rf ./.git
+
+    mkdir /opt/voicevox_vvm
+    mv ./* /opt/voicevox_vvm/
+EOF
 
 # Compile Python (version locked)
 FROM ${BASE_IMAGE} AS compile-python-env
@@ -224,6 +248,9 @@ COPY --from=download-core-env /opt/voicevox_core /opt/voicevox_core
 # COPY --from=download-onnxruntime-env /etc/ld.so.conf.d/onnxruntime.conf /etc/ld.so.conf.d/onnxruntime.conf
 COPY --from=download-onnxruntime-env /opt/onnxruntime /opt/onnxruntime
 
+# COPY VOICEVOX VVM
+COPY --from=download-models-env /opt/voicevox_vvm /opt/voicevox_vvm
+
 # Add local files
 ADD ./voicevox_engine /opt/voicevox_engine/voicevox_engine
 ADD ./docs /opt/voicevox_engine/docs
@@ -297,8 +324,8 @@ exec "\$@"
 EOF
 
 ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "env", "VV_MODELS_ROOT_DIR=/opt/voicevox_vvm/vvms", "/opt/python/bin/python3", "./run.py", "--voicelib_dir", "/opt/voicevox_core/lib/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
+CMD [ "gosu", "user", "env", "VV_MODELS_ROOT_DIR=/opt/voicevox_vvm/vvms", "/opt/python/bin/python3", "./run.py", "--use_gpu", "--voicelib_dir", "/opt/voicevox_core/lib/", "--runtime_dir", "/opt/onnxruntime/lib", "--host", "0.0.0.0" ]
