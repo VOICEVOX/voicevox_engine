@@ -17,7 +17,7 @@ on:
         required: true
 
 env:
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/voicevox_engine # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
@@ -54,6 +54,13 @@ jobs:
           else
             echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: <Setup> Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Pull ENGINE application docker image
         run: docker pull "${{ steps.docker_vars.outputs.image_tag }}"
