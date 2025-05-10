@@ -1,11 +1,12 @@
 name: build-docker
 on:
-  push:
-    branches:
-      - master
-  release:
-    types:
-      - created
+  # FIXME: masterブランチへのpush時にビルド工程をテストする
+  # https://github.com/VOICEVOX/voicevox_engine/pull/1669#discussion_r2076730954
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       version:
@@ -15,8 +16,6 @@ on:
 env:
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
-  VOICEVOX_CORE_VERSION: "0.15.7"
-  ONNXRUNTIME_VERSION: "1.13.1"
 
 defaults:
   run:
@@ -27,12 +26,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+      version: ${{ steps.vars.outputs.version }}
     steps:
       - name: <Setup> Declare variables
         id: vars
         run: |
-          : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
+          : # workflow_call/workflow_dispatchでのバージョン名か、latest
+          version_or_latest=${{ inputs.version || 'latest' }}
+
+          case "$version_or_latest" in
+            latest) version=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName -q .tagName) ;;
+            *) version=$version_or_latest
+          esac
+
+          echo "version_or_latest=$version_or_latest" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-docker:
     needs: [config]
@@ -45,8 +55,7 @@ jobs:
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
-        # base_image: Dockerfileのビルド用ステージのベースイメージ
-        # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
+        # base_image: Dockerfileのビルド用および実行用のベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04 / AMD64
@@ -55,7 +64,7 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 20.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -63,7 +72,7 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -71,7 +80,7 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
@@ -79,7 +88,7 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -87,7 +96,7 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -95,15 +104,14 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
 
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Prepare Python version
-        id: prepare-python
+      - name: <Setup> Prepare Python
         uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
@@ -115,26 +123,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: <Setup> Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v4
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Setup> Check out the VOICEVOX RESOURCE repository
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Build> Merge VOICEVOX RESOURCE
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash tools/process_voicevox_resource.bash
 
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
@@ -179,13 +167,9 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ steps.prepare-python.outputs.python-version }}
-            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
-            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
+            VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
-            USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.generate-docker-image-names.outputs.tags }}
@@ -214,8 +198,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: <Setup> Prepare Python version
-        id: prepare-python
-        uses: ./.github/actions/prepare_python
+        uses: ./.github/actions/prepare_python@v4
 
       - name: <Setup> Set up Docker Buildx
         id: buildx

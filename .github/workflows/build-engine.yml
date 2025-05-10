@@ -662,3 +662,10 @@ jobs:
     with:
       version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+
+  run-build-engine-container-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, run-release-test-workflow]
+    uses: ./.github/workflows/build-engine-container.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
