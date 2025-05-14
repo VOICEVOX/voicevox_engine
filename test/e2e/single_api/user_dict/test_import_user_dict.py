@@ -49,7 +49,9 @@ def test_post_import_user_dict_422(
 ) -> None:
     user_dict: dict[str, dict[str, str | int]] = {
         # NOTE: 必須パラメータが不足
-        "a11196ad-0000-4f4e-8eb3-3d2261c798fd": {"accent_type": 1,}
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd": {
+            "accent_type": 1,
+        }
     }
     response = client.post(
         "/import_user_dict", json=user_dict, params={"override": True}

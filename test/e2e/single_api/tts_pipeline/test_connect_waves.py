@@ -29,7 +29,7 @@ def test_post_connect_waves_200(
 def test_post_connect_waves_422(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    wavs = []
+    wavs: list[None] = []
 
     response = client.post("/connect_waves", json=wavs)
 
