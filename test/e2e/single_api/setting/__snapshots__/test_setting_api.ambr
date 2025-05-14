@@ -386,3 +386,6 @@
 # name: test_post_setting_204
   b''
 # ---
+# name: test_post_setting_422
+  b'{"detail":[{"type":"enum","loc":["body","cors_policy_mode"],"msg":"Input should be \'all\' or \'localapps\'","input":"wrong","ctx":{"expected":"\'all\' or \'localapps\'"}}]}'
+# ---
