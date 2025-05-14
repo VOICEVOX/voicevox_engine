@@ -108,11 +108,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
             text_url = package_to_license_url[package_name]
             pip_license.LicenseText = _get_license_text(text_url)
 
-        # soxr
-        if package_name == "soxr":
-            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
-            pip_license.LicenseText = _get_license_text(text_url)
-
         updated_licenses.append(
             _License(
                 package_name=pip_license.Name,
@@ -300,6 +295,22 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
+        # Python-SoXR (`soxr`, https://github.com/dofuuz/python-soxr) が依存するライブラリ
+        _License(
+            package_name="libsoxr",
+            package_version=None,
+            license_name="LGPL-2.1 license",
+            license_text="https://raw.githubusercontent.com/dofuuz/soxr/master/LICENCE",
+            license_text_type="remote_address",
+        ),
+        _License(
+            package_name="PFFFT",
+            package_version=None,
+            license_name="BSD-like",
+            license_text="https://raw.githubusercontent.com/dofuuz/python-soxr/main/cmake/LICENSE-PFFFT.txt",
+            license_text_type="remote_address",
+        ),
+        #
     ]
 
 
