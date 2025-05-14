@@ -44,3 +44,35 @@ def test_post_synthesis_morphing_200(
 
     assert response.headers["content-type"] == "audio/wav"
     assert snapshot == hash_wave_floats_from_wav_bytes(response.read())
+
+
+def test_post_synthesis_morphing_422(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    too_much_rate = 100
+    queries = {
+        "accent_phrases": [
+            {
+                "moras": [gen_mora("テ", "t", 2.3, "e", 0.8, 3.3)],
+                "accent": 1,
+            }
+        ],
+        "speedScale": 1.0,
+        "pitchScale": 1.0,
+        "intonationScale": 1.0,
+        "volumeScale": 1.0,
+        "prePhonemeLength": 0.1,
+        "postPhonemeLength": 0.1,
+        "pauseLength": None,
+        "pauseLengthScale": 1.0,
+        "outputSamplingRate": 24000,
+        "outputStereo": False,
+        "kana": "テ'_スト",
+    }
+    response = client.post(
+        "/synthesis_morphing",
+        params={"base_speaker": 0, "target_speaker": 0, "morph_rate": too_much_rate},
+        json=queries,
+    )
+    assert response.status_code == 422
+    assert snapshot_json == response.json()
