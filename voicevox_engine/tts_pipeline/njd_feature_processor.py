@@ -5,9 +5,10 @@ from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
+from voicevox_engine.utility.text_utility import replace_zenkaku_alphabets_with_hankaku
+
 from .katakana_english import (
     convert_english_to_katakana,
-    convert_zenkaku_alphabet_to_hankaku,
     is_hankaku_alphabet,
     should_convert_english_to_katakana,
 )
@@ -86,10 +87,10 @@ def _is_between_alphabet(features: list[NjdFeature], index: int) -> bool:
     next_feature = features[index + 1]
 
     prev_is_alphabet = is_hankaku_alphabet(
-        convert_zenkaku_alphabet_to_hankaku(prev_feature.string)
+        replace_zenkaku_alphabets_with_hankaku(prev_feature.string)
     )
     next_is_alphabet = is_hankaku_alphabet(
-        convert_zenkaku_alphabet_to_hankaku(next_feature.string)
+        replace_zenkaku_alphabets_with_hankaku(next_feature.string)
     )
 
     return prev_is_alphabet and next_is_alphabet
@@ -117,7 +118,7 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
         for i, feature in enumerate(njd_features):
             if not _is_unknown_reading_word(feature):
                 continue
-            hankaku_string = convert_zenkaku_alphabet_to_hankaku(feature.string)
+            hankaku_string = replace_zenkaku_alphabets_with_hankaku(feature.string)
             if not is_hankaku_alphabet(hankaku_string):
                 continue
             if not should_convert_english_to_katakana(hankaku_string):

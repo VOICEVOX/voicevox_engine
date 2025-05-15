@@ -11,6 +11,8 @@ from typing import Annotated, Self
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
+from voicevox_engine.utility.text_utility import replace_hankaku_alphabets_with_zenkaku
+
 
 class WordTypes(str, Enum):
     """品詞"""
@@ -40,15 +42,6 @@ def _check_comma_and_double_quote(text: str) -> str:
     if '"' in text:
         raise ValueError("ユーザー辞書データ内にダブルクォートが含まれています。")
     return text
-
-
-def _convert_to_zenkaku(surface: str) -> str:
-    return surface.translate(
-        str.maketrans(
-            "".join(chr(0x21 + i) for i in range(94)),
-            "".join(chr(0xFF01 + i) for i in range(94)),
-        )
-    )
 
 
 def _check_is_katakana(pronunciation: str) -> str:
@@ -87,7 +80,7 @@ class UserDictWord(BaseModel):
 
     surface: Annotated[
         str,
-        AfterValidator(_convert_to_zenkaku),
+        AfterValidator(replace_hankaku_alphabets_with_zenkaku),
         AfterValidator(_check_newlines_and_null),
     ] = Field(description="表層形")
     priority: int = Field(
