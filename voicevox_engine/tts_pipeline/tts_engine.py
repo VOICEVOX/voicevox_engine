@@ -264,7 +264,7 @@ class TTSEngine:
         # 各音素の音長を生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
-        # 生成された音長でモーラ内の音長属性を更新する
+        # 生成された音長でモーラの音素長を更新する
         vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:
