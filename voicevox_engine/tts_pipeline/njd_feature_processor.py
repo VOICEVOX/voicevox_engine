@@ -5,8 +5,7 @@ from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
-from voicevox_engine.utility.text_utility import replace_zenkaku_alphabets_with_hankaku
-
+from ..utility.text_utility import replace_zenkaku_alphabets_with_hankaku
 from .katakana_english import (
     convert_english_to_katakana,
     is_hankaku_alphabet,

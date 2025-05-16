@@ -11,7 +11,7 @@ from typing import Annotated, Self
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.utility.text_utility import replace_hankaku_alphabets_with_zenkaku
+from ..utility.text_utility import replace_hankaku_alphabets_with_zenkaku
 
 
 class WordTypes(str, Enum):
