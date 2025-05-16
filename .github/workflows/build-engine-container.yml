@@ -160,7 +160,8 @@ jobs:
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
-          # FIXME: "edge"タグの場合のみキャッシュを作るようにする
+          # NOTE: 一時的にデフォルトブランチでビルドしていないので常にfalseになっている
+          # FIXME: デフォルトブランチでビルドし、デフォルトブランチでのみtrueになるようにする
           if false; then
             cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
