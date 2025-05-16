@@ -247,7 +247,7 @@ class TTSEngine:
     ) -> list[AccentPhrase]:
         """
         母音・子音・無音の音長を更新する。
-        
+
         アクセント句系列とスタイルに基づき、アクセント句系列の音長属性を更新する。
         """
         # NOTE: アクセント句に含まれない音長情報（例: AudioQueryのspeedScale、pauseLength）でアクセント句の音長属性は上書きされうる
