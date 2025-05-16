@@ -69,7 +69,7 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
 
 
 def _generate_silence_mora(length: float) -> Mora:
-    """無音モーラの生成"""
+    """指定した長さの無音モーラを生成する。"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
@@ -245,7 +245,13 @@ class TTSEngine:
     def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
+        """
+        母音・子音・無音の音長を更新する。
+        
+        アクセント句系列とスタイルに基づき、アクセント句系列の音長属性を更新する。
+        """
+        # NOTE: アクセント句に含まれない音長情報（例: AudioQueryのspeedScale、pauseLength）でアクセント句の音長属性は上書きされうる
+
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
@@ -255,10 +261,10 @@ class TTSEngine:
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
-        # コアを用いて音素長を生成する
+        # 各音素の音長を生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
-        # 生成結果でモーラ内の音素長属性を置換する
+        # 生成された音長でモーラ内の音長属性を更新する
         vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:
