@@ -56,17 +56,6 @@ def is_hankaku_alphabet(text: str) -> TypeGuard[HankakuAlphabet]:
     return bool(re.fullmatch("[a-zA-Z]+", text))
 
 
-def convert_zenkaku_alphabet_to_hankaku(text: str) -> str:
-    """全角アルファベットを半角に変換する"""
-    # TODO: ユーザー辞書にも似た関数があるため、共通化を検討する
-    return text.translate(
-        str.maketrans(
-            "".join(chr(0xFF01 + i) for i in range(94)),
-            "".join(chr(0x21 + i) for i in range(94)),
-        )
-    )
-
-
 def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
     """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
     if len(string) < 3:
