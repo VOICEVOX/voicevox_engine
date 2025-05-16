@@ -237,7 +237,8 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
   run-release-test-workflow:
-    # FIXME: "edge"タグの場合、テストは控えるようにする
+    # NOTE: 一時的にデフォルトブランチでビルドしていないので常にtrueになっている
+    # FIXME: Docker Hubにpushしない場合はfalseになるようにする
     if: true
     needs: [config, build-docker, build-docker-multi-platform]
     uses: ./.github/workflows/test-engine-container.yml
