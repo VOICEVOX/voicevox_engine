@@ -69,7 +69,7 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
 
 
 def _generate_silence_mora(length: float) -> Mora:
-    """指定した長さの無音モーラを生成する。"""
+    """指定した音素長の無音モーラを生成する。"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
