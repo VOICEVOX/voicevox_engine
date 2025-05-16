@@ -229,7 +229,7 @@ jobs:
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          VERSION_OR_LATEST: ${{ needs.config.outputs.version }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
           MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
