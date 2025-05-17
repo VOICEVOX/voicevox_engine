@@ -1,5 +1,8 @@
 name: build-docker
 on:
+  # FIXME: デフォルトブランチへのpush時にビルドをテストする
+  # https://github.com/VOICEVOX/voicevox_engine/pull/1669#discussion_r2076730954
+  workflow_call:
   release:
     types:
       - created
@@ -160,7 +163,7 @@ jobs:
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
-          # NOTE: 一時的にデフォルトブランチでビルドしていないので常にfalseになっている
+          # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にfalseになっている
           # FIXME: デフォルトブランチでビルドし、デフォルトブランチでのみtrueになるようにする
           if false; then
             cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
@@ -237,7 +240,7 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
   run-release-test-workflow:
-    # NOTE: 一時的にデフォルトブランチでビルドしていないので常にtrueになっている
+    # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にtrueになっている
     # FIXME: Docker Hubにpushしない場合はfalseになるようにする
     if: true
     needs: [config, build-docker, build-docker-multi-platform]
