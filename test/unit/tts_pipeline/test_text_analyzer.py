@@ -280,14 +280,18 @@ utterance_hello_hiho = UtteranceLabel.from_labels(labels_hello_hiho)
 
 def test_utterance_phonemes() -> None:
     """UtteranceLabel に含まれる音素系列をテスト"""
+    # NOTE: sil と pau は区切りに使われ、ラベルの音素として残らない。
     outputs_hello_hiho = space_jointed_phonemes(utterance_hello_hiho)
-    expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
+    expects_hello_hiho = "k o N n i ch i w a h i h o d e s U"
     assert outputs_hello_hiho == expects_hello_hiho
 
 
 def test_utterance_features() -> None:
     """UtteranceLabel に含まれる features をテスト"""
-    assert features(utterance_hello_hiho) == test_case_hello_hiho
+    # NOTE: sil と pau はラベルの区切りに使われ、feature として残らない。
+    outputs_features = features(utterance_hello_hiho)
+    expects_features = test_case_hello_hiho[1:10] + test_case_hello_hiho[11:19]
+    assert outputs_features == expects_features
 
 
 def test_voice() -> None:

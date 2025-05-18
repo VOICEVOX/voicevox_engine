@@ -296,14 +296,12 @@ class UtteranceLabel:
     """発声ラベル"""
 
     breath_groups: list[BreathGroupLabel]  # 発声の区切りのリスト
-    pauses: list[Label]  # 無音のリスト
 
     @classmethod
     def from_labels(cls, labels: list[Label]) -> Self:
-        """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
+        """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する。"""
         # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
 
-        pauses: list[Label] = []  # ポーズラベルのリスト
         breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
         group_labels: list[
             Label
@@ -317,7 +315,6 @@ class UtteranceLabel:
             # 一時的なラベル系列を確定させて処理する
             else:
                 # ポーズラベルを保存する
-                pauses.append(label)
                 if len(group_labels) > 0:
                     # ラベル系列からBreathGroupLabelを生成して保存する
                     breath_group = BreathGroupLabel.from_labels(group_labels)
@@ -326,22 +323,18 @@ class UtteranceLabel:
                     group_labels = []
 
         # UtteranceLabelインスタンスを生成する
-        utterance = cls(breath_groups=breath_groups, pauses=pauses)
+        utterance = cls(breath_groups=breath_groups)
 
         return utterance
 
     @property
     def labels(self) -> list[Label]:
-        """内包する全てのラベルを返す"""
-        labels: list[Label] = []
-        for i in range(len(self.pauses)):
-            if self.pauses[i] is not None:
-                labels += [self.pauses[i]]
-
-            if i < len(self.pauses) - 1:
-                labels += self.breath_groups[i].labels
-
-        return labels
+        """内包する全てのラベルを返す。"""
+        return list(
+            chain.from_iterable(
+                breath_group.labels for breath_group in self.breath_groups
+            )
+        )
 
 
 def mora_to_text(mora_phonemes: str) -> str:
