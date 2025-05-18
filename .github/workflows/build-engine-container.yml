@@ -1,6 +1,6 @@
 name: build-docker
 on:
-  # FIXME: masterブランチへのpush時にビルド工程をテストする
+  # FIXME: デフォルトブランチへのpush時にビルドをテストする
   # https://github.com/VOICEVOX/voicevox_engine/pull/1669#discussion_r2076730954
   workflow_call:
     inputs:
@@ -25,24 +25,13 @@ jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
     outputs:
-      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
       version: ${{ steps.vars.outputs.version }}
     steps:
       - name: <Setup> Declare variables
         id: vars
         run: |
-          : # workflow_call/workflow_dispatchでのバージョン名か、latest
-          version_or_latest=${{ inputs.version || 'latest' }}
-
-          case "$version_or_latest" in
-            latest) version=$(gh release view -R "$GITHUB_REPOSITORY" --json tagName -q .tagName) ;;
-            *) version=$version_or_latest
-          esac
-
-          echo "version_or_latest=$version_or_latest" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          : # releaseタグ名か、workflow_dispatchでのバージョン名が入る
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
 
   build-docker:
     needs: [config]
@@ -133,7 +122,7 @@ jobs:
 
             uv run tools/generate_docker_image_names.py \
               --repository "${{ env.IMAGE_NAME }}" \
-              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --version "${{ needs.config.outputs.version }}" \
               --prefix "${{ matrix.prefixes }}"
 
             echo "EOF"
@@ -151,7 +140,9 @@ jobs:
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
-          if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
+          # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にfalseになっている
+          # FIXME: デフォルトブランチでビルドし、デフォルトブランチでのみtrueになるようにする
+          if false; then
             cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
 
@@ -213,7 +204,7 @@ jobs:
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image
         env:
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
           MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
@@ -221,10 +212,11 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
   run-release-test-workflow:
-    # version が指定されている場合のみ実行する
-    if: needs.config.outputs.version_or_latest != 'latest'
+    # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にtrueになっている
+    # FIXME: Docker Hubにpushしない場合はfalseになるようにする
+    if: true
     needs: [config, build-docker, build-docker-multi-platform]
     uses: ./.github/workflows/test-engine-container.yml
     with:
-      version: ${{ needs.config.outputs.version_or_latest }}
+      version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
