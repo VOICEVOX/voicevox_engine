@@ -189,7 +189,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: <Setup> Prepare Python version
-        uses: ./.github/actions/prepare_python@v4
+        uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
