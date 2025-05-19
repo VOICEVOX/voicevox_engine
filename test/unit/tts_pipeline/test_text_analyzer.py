@@ -410,7 +410,7 @@ def test_parse_full_context_labels() -> None:
     #
     #     アクセント句:      |____________________^_P|   |_______________^|
     #
-    #     ※ `^`はアクセント位置、`P`は `.pause_mora` 属性の有無
+    #     ※ `^`はアクセント位置を指し、`P`は`.pause_mora`があることを意味する。
     #
     true_accent_phrases = [
         AccentPhrase(
