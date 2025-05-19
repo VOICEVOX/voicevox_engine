@@ -157,11 +157,6 @@ class Label:
         """BreathGroup内におけるアクセント句のインデックス"""
         return self.contexts["f5"]
 
-    @property
-    def breath_group_index(self) -> str:
-        """BreathGroupのインデックス"""
-        return self.contexts["i3"]
-
     def __repr__(self) -> str:
         """Label クラス共通の文字列にこのインスタンスが持つ音素を含めて表示する。"""
         return f"<Label phoneme='{self.phoneme}'>"
@@ -267,7 +262,6 @@ class BreathGroupLabel:
             # 一時的なラベル系列を確定させて処理する
             if (
                 next_label is None
-                or label.breath_group_index != next_label.breath_group_index
                 or label.accent_phrase_index != next_label.accent_phrase_index
             ):
                 # アクセント句を生成して保存する
