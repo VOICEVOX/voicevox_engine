@@ -328,42 +328,9 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-def test_text_to_accent_phrases_normal() -> None:
-    """`text_to_accent_phrases` は正常な日本語文をパースする"""
-    # Inputs
-    text = "こんにちは、ヒホです。"
-    # Expects
-    true_accent_phrases = [
-        AccentPhrase(
-            moras=[
-                _gen_mora("コ", "k", "o"),
-                _gen_mora("ン", None, "N"),
-                _gen_mora("ニ", "n", "i"),
-                _gen_mora("チ", "ch", "i"),
-                _gen_mora("ワ", "w", "a"),
-            ],
-            accent=5,
-            pause_mora=_gen_mora("、", None, "pau"),
-        ),
-        AccentPhrase(
-            moras=[
-                _gen_mora("ヒ", "h", "i"),
-                _gen_mora("ホ", "h", "o"),
-                _gen_mora("デ", "d", "e"),
-                _gen_mora("ス", "s", "U"),
-            ],
-            accent=1,
-            pause_mora=None,
-        ),
-    ]
-    # Outputs
-    accent_phrases = text_to_accent_phrases(text)
-    # Tests
-    assert accent_phrases == true_accent_phrases
-
-
-def stub_unknown_features_koxx(_: str) -> list[str]:
-    """`sil-k-o-xx-sil` に相当する features を常に返す `text_to_features()` のStub"""
+@pytest.fixture
+def labels_with_unknown() -> list[str]:
+    """unknown 音素を含むフルコンテキストラベル。音素は `sil-k-o-xx-sil`。"""
     return [
         ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
         ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
@@ -382,21 +349,16 @@ def test_label_non_ojt_phoneme() -> None:
         _ = unknown_label.phoneme
 
 
-def test_label_unknown_phoneme() -> None:
-    """`Label` は unknown 音素 `xx` をパース失敗する"""
-    unknown_feature = stub_unknown_features_koxx("dummy")[3]
+def test_label_unknown_phoneme(labels_with_unknown: list[str]) -> None:
+    """`Label` は unknown 音素 `xx` のパースに失敗する。"""
+    unknown_full_context_label = labels_with_unknown[3]
     with pytest.raises(OjtUnknownPhonemeError):
-        unknown_label = Label.from_feature(unknown_feature)
+        unknown_label = Label.from_feature(unknown_full_context_label)
         _ = unknown_label.phoneme
 
 
-def test_text_to_accent_phrases_unknown() -> None:
-    """`text_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
-    with pytest.raises(OjtUnknownPhonemeError):
-        text_to_accent_phrases("dummy", text_to_features=stub_unknown_features_koxx)
-
-
-def test_parse_full_context_labels() -> None:
+def test_parse_full_context_labels_normal() -> None:
+    """`_parse_full_context_labels()` は正常な日本語文のフルコンテキストラベル系列をパースする。"""
     # outputs
     accent_phrases = _parse_full_context_labels(test_case_hello_hiho)
 
@@ -439,4 +401,45 @@ def test_parse_full_context_labels() -> None:
     ]
 
     # tests
+    assert accent_phrases == true_accent_phrases
+
+
+def test_parse_full_context_labels_unknown(labels_with_unknown: list[str]) -> None:
+    """`_parse_full_context_labels()` は unknown 音素を含むフルコンテキストラベル系列のパースに失敗する。"""
+    with pytest.raises(OjtUnknownPhonemeError):
+        _parse_full_context_labels(labels_with_unknown)
+
+
+def test_text_to_accent_phrases_normal() -> None:
+    """`text_to_accent_phrases` は正常な日本語文をパースする。"""
+    # NOTE: 外部ライブラリである pyopenjtalk を含めたテストになっている。
+    # Inputs
+    text = "こんにちは、ヒホです。"
+    # Expects
+    true_accent_phrases = [
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", "o"),
+                _gen_mora("ン", None, "N"),
+                _gen_mora("ニ", "n", "i"),
+                _gen_mora("チ", "ch", "i"),
+                _gen_mora("ワ", "w", "a"),
+            ],
+            accent=5,
+            pause_mora=_gen_mora("、", None, "pau"),
+        ),
+        AccentPhrase(
+            moras=[
+                _gen_mora("ヒ", "h", "i"),
+                _gen_mora("ホ", "h", "o"),
+                _gen_mora("デ", "d", "e"),
+                _gen_mora("ス", "s", "U"),
+            ],
+            accent=1,
+            pause_mora=None,
+        ),
+    ]
+    # Outputs
+    accent_phrases = text_to_accent_phrases(text)
+    # Tests
     assert accent_phrases == true_accent_phrases
