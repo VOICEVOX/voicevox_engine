@@ -363,17 +363,6 @@ def test_parse_full_context_labels_normal() -> None:
     accent_phrases = _parse_full_context_labels(test_case_hello_hiho)
 
     # expects
-    #
-    #     ラベル:       sil k o   N  n i  ch i  w a pau h i  h o  d e  s U sil
-    #
-    #     子音/母音:        k/o  /N  n/i  ch/i  w/a     h/i  h/o  d/e  s/U
-    #     テキスト:          コ   ン  ニ    チ    ワ      ヒ   ホ   デ   ス
-    #     モーラ:           |_|  |_| |_|  |__|  |_|     |_|  |_|  |_|  |_|
-    #
-    #     アクセント句:      |____________________^_P|   |^_______________|
-    #
-    #     ※ `^`はアクセント位置を指し、`P`は`.pause_mora`があることを意味する。
-    #
     true_accent_phrases = [
         AccentPhrase(
             moras=[
