@@ -11,6 +11,7 @@ from voicevox_engine.tts_pipeline.text_analyzer import (
     NonOjtPhonemeError,
     OjtUnknownPhonemeError,
     UtteranceLabel,
+    _parse_full_context_labels,
     mora_to_text,
     text_to_accent_phrases,
 )
@@ -393,3 +394,49 @@ def test_text_to_accent_phrases_unknown() -> None:
     """`text_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
     with pytest.raises(OjtUnknownPhonemeError):
         text_to_accent_phrases("dummy", text_to_features=stub_unknown_features_koxx)
+
+
+def test_parse_full_context_labels() -> None:
+    # outputs
+    accent_phrases = _parse_full_context_labels(test_case_hello_hiho)
+
+    # expects
+    #
+    #     ラベル:       sil k o   N  n i  ch i  w a pau h i  h o  d e  s U sil
+    #
+    #     子音/母音:        k/o  /N  n/i  ch/i  w/a     h/i  h/o  d/e  s/U
+    #     テキスト:          コ   ン  ニ    チ    ワ      ヒ   ホ   デ   ス
+    #     モーラ:           |_|  |_| |_|  |__|  |_|     |_|  |_|  |_|  |_|
+    #
+    #     アクセント句:      |____________________^_P|   |_______________^|
+    #
+    #     ※ `^`はアクセント位置、`P`は `.pause_mora` 属性の有無
+    #
+    true_accent_phrases = [
+        AccentPhrase(
+            moras=[
+                _gen_mora("コ", "k", "o"),
+                _gen_mora("ン", None, "N"),
+                _gen_mora("ニ", "n", "i"),
+                _gen_mora("チ", "ch", "i"),
+                _gen_mora("ワ", "w", "a"),
+            ],
+            accent=5,
+            pause_mora=_gen_mora("、", None, "pau"),
+            is_interrogative=False,
+        ),
+        AccentPhrase(
+            moras=[
+                _gen_mora("ヒ", "h", "i"),
+                _gen_mora("ホ", "h", "o"),
+                _gen_mora("デ", "d", "e"),
+                _gen_mora("ス", "s", "U"),
+            ],
+            accent=1,
+            pause_mora=None,
+            is_interrogative=False,
+        ),
+    ]
+
+    # tests
+    assert accent_phrases == true_accent_phrases

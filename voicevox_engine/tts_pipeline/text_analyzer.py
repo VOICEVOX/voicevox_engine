@@ -370,8 +370,10 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     ]
 
 
-def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
-    """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
+def _parse_full_context_labels(labels: list[str]) -> list[AccentPhrase]:
+    """フルコンテキストラベルをアクセント句系列へ変換する。"""
+    utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, labels)))
+
     if len(utterance.breath_groups) == 0:
         return []
 
@@ -409,11 +411,9 @@ def text_to_accent_phrases(
     if len(text.strip()) == 0:
         return []
 
-    # 日本語文からUtteranceLabelを抽出する
-    features = text_to_features(text)
-    utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, features)))
+    # 日本語文からフルコンテキストラベル系列を抽出する
+    full_context_labels = text_to_features(text)
 
-    # ドメインを変換する
-    accent_phrases = _utterance_to_accent_phrases(utterance)
+    accent_phrases = _parse_full_context_labels(full_context_labels)
 
     return accent_phrases
