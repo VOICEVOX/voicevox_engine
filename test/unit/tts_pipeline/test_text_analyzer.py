@@ -45,7 +45,6 @@ def features(ojt_container: OjtContainer) -> list[str]:
 
 @pytest.fixture
 def test_case_hello_hiho() -> list[str]:
-    # def features_hello_hiho() -> list[str]:
     """「こんにちは、ヒホです。」のフルコンテキストラベル。"""
     # NOTE: `pyopenjtalk.extract_fullcontext("こんにちは、ヒホです。")` の出力をハードコードしたものである。
     return [
