@@ -190,7 +190,7 @@ def test_label_feature(
     ] == test_case_hello_hiho
 
 
-def test_mora_label_phonemes(
+def test_mora_label(
     test_case_hello_hiho: list[str], labels_hello_hiho: list[Label]
 ) -> None:
     # outputs
