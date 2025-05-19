@@ -1,7 +1,6 @@
 """テキスト解析"""
 
 import re
-from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import chain
 from typing import Any, Final, Literal, Self, TypeGuard
@@ -403,17 +402,10 @@ def _parse_full_context_labels(labels: list[str]) -> list[AccentPhrase]:
     ]
 
 
-def text_to_accent_phrases(
-    text: str,
-    text_to_features: Callable[[str], list[str]] = pyopenjtalk.extract_fullcontext,
-) -> list[AccentPhrase]:
-    """日本語文からアクセント句系列を生成する"""
+def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
+    """日本語文からアクセント句系列を生成する。"""
     if len(text.strip()) == 0:
         return []
-
-    # 日本語文からフルコンテキストラベル系列を抽出する
-    full_context_labels = text_to_features(text)
-
+    full_context_labels = pyopenjtalk.extract_fullcontext(text)
     accent_phrases = _parse_full_context_labels(full_context_labels)
-
     return accent_phrases
