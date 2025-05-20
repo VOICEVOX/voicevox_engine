@@ -44,6 +44,6 @@ def test_convert_english_to_katakana() -> None:
 
     pron = convert_english_to_katakana(string)
 
-    expected_pron = "ボイボ"
+    expected_pron = "ヴォイヴォ"
 
     assert expected_pron == pron

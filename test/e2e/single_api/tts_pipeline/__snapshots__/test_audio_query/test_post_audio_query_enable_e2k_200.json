@@ -5,10 +5,10 @@
       "is_interrogative": false,
       "moras": [
         {
-          "consonant": "b",
-          "consonant_length": 0.5,
-          "pitch": 2.56,
-          "text": "ボ",
+          "consonant": "v",
+          "consonant_length": 2.56,
+          "pitch": 4.62,
+          "text": "ヴォ",
           "vowel": "o",
           "vowel_length": 1.88
         },
@@ -21,10 +21,10 @@
           "vowel_length": 1.31
         },
         {
-          "consonant": "b",
-          "consonant_length": 0.5,
-          "pitch": 2.44,
-          "text": "ボ",
+          "consonant": "v",
+          "consonant_length": 2.56,
+          "pitch": 4.5,
+          "text": "ヴォ",
           "vowel": "o",
           "vowel_length": 1.88
         }
@@ -33,7 +33,7 @@
     }
   ],
   "intonationScale": 1.0,
-  "kana": "ボ'イボ",
+  "kana": "ヴォ'イヴォ",
   "outputSamplingRate": 24000,
   "outputStereo": false,
   "pauseLength": null,
