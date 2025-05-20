@@ -125,20 +125,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
             )
         )
 
-    updated_licenses.append(
-        _License(
-            package_name="kanalizer-rs",
-            package_version="0.1.0",
-            license_name=None,
-            license_text=[
-                str(p.locate())
-                for p in importlib.metadata.files("kanalizer")  # type: ignore
-                if p.name == "NOTICE.md"
-            ][0],
-            license_text_type="local_address",
-        )
-    )
-
     return updated_licenses
 
 
@@ -314,6 +300,17 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             package_version="8.9.2",
             license_name=None,
             license_text="tools/licenses/cudnn/LICENSE",
+            license_text_type="local_address",
+        ),
+        _License(
+            package_name="kanalizer-rs",
+            package_version="0.1.0",
+            license_name=None,
+            license_text=[
+                str(p.locate())
+                for p in importlib.metadata.files("kanalizer")  # type: ignore
+                if p.name == "NOTICE.md"
+            ][0],
             license_text_type="local_address",
         ),
     ]
