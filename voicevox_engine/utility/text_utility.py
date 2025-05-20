@@ -20,15 +20,17 @@ def replace_zenkaku_alphabets_with_hankaku(string: str) -> str:
     return string.translate(_ZENKAKU_TO_HANKAKU_TABLE)
 
 
+# 複数のカタカナが1つのモーラを構成するパターン
+_RULE_OTHERS: Final = "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
+_RULE_LINE_I: Final = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
+_RULE_LINE_U: Final = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
+# 1つのカタカナが1つのモーラを構成するパターン
+_RULE_ONE_MORA: Final = "[ァ-ヴー]"
+
+_MORA_PATTERN: Final = re.compile(
+    f"(?:{_RULE_OTHERS}|{_RULE_LINE_I}|{_RULE_LINE_U}|{_RULE_ONE_MORA})"
+)
+
 def count_mora(string: str) -> int:
     """文字列に含まれるモーラを数える。"""
-    # 複数のカタカナが1つのモーラを構成するパターン
-    rule_others = "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
-    rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-    rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-    # 1つのカタカナが1つのモーラを構成するパターン
-    rule_one_mora = "[ァ-ヴー]"
-
-    pattern = f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})"
-
-    return len(findall(pattern, string))
+    return len(_MORA_PATTERN.findall(string))
