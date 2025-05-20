@@ -1,6 +1,6 @@
 """テキスト処理に関するユーティリティ"""
 
-from re import findall
+from re import compile
 from typing import Final
 
 _HANKAKU_CHARS: Final = "".join(chr(0x21 + i) for i in range(94))
@@ -21,15 +21,18 @@ def replace_zenkaku_alphabets_with_hankaku(string: str) -> str:
 
 
 # 複数のカタカナが1つのモーラを構成するパターン
-_RULE_OTHERS: Final = "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
+_RULE_OTHERS: Final = (
+    "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
+)
 _RULE_LINE_I: Final = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
 _RULE_LINE_U: Final = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
 # 1つのカタカナが1つのモーラを構成するパターン
 _RULE_ONE_MORA: Final = "[ァ-ヴー]"
 
-_MORA_PATTERN: Final = re.compile(
+_MORA_PATTERN: Final = compile(
     f"(?:{_RULE_OTHERS}|{_RULE_LINE_I}|{_RULE_LINE_U}|{_RULE_ONE_MORA})"
 )
+
 
 def count_mora(string: str) -> int:
     """文字列に含まれるモーラを数える。"""
