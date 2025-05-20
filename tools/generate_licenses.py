@@ -7,6 +7,7 @@ VOICEVOX ENGINE の実行に必要なライブラリのライセンス一覧を�
 """
 
 import argparse
+import importlib.metadata
 import json
 import subprocess
 import sys
@@ -93,6 +94,7 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
     """pip から取得したライセンス情報の抜けを補完する。"""
     package_to_license_url: dict[str, str] = {
         # "package_name": "https://license.adress.com/v0.0.0/LICENSE.txt",
+        "kanalizer": "https://raw.githubusercontent.com/VOICEVOX/kanalizer/refs/heads/main/LICENSE"
     }
 
     updated_licenses = []
@@ -122,6 +124,20 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
                 license_text_type="raw",
             )
         )
+
+    updated_licenses.append(
+        _License(
+            package_name="kanalizer-rs",
+            package_version="0.1.0",
+            license_name=None,
+            license_text=[
+                str(p.locate())
+                for p in importlib.metadata.files("kanalizer")  # type: ignore
+                if p.name == "NOTICE.md"
+            ][0],
+            license_text_type="local_address",
+        )
+    )
 
     return updated_licenses
 
