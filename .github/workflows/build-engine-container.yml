@@ -44,7 +44,7 @@ jobs:
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
-        # base_image: Dockerfileのビルド用および実行用のベースイメージ
+        # base_image: Dockerfileのベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04 / AMD64
