@@ -27,7 +27,7 @@ on:
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
   VOICEVOX_CORE_VERSION: "0.16.0"
-  VOICEVOX_VVM_VERSION: "0.1.0"
+  VOICEVOX_VVM_VERSION: "0.1.0" # FIXME: ソングのモデルが入っていない
 
 defaults:
   run:
