@@ -70,6 +70,6 @@ def convert_english_to_katakana(string: HankakuAlphabet) -> str:
             for alphabet in word:
                 kana += ojt_alphabet_kana_mapping[alphabet.upper()]
         else:
-            kana += kanalizer.convert(word.lower(), on_incomplete="error")
+            kana += kanalizer.convert(word.lower())
 
     return kana
