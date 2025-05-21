@@ -94,7 +94,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
     """pip から取得したライセンス情報の抜けを補完する。"""
     package_to_license_url: dict[str, str] = {
         # "package_name": "https://license.adress.com/v0.0.0/LICENSE.txt",
-        "kanalizer": "https://raw.githubusercontent.com/VOICEVOX/kanalizer/refs/heads/main/LICENSE"  # https://github.com/VOICEVOX/kanalizer/issues/123
     }
 
     updated_licenses = []
