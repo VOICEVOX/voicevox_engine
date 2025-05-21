@@ -2,7 +2,7 @@
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
-ARG BASE_IMAGE=mirror.gcr.io/ubuntu:20.04
+ARG BASE_IMAGE=mirror.gcr.io/ubuntu:22.04
 
 # Download VOICEVOX ENGINE
 FROM ${BASE_IMAGE} AS download-engine-env
