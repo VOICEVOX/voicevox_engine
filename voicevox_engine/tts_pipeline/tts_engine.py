@@ -7,13 +7,12 @@ from typing import Any, Final, Literal, TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
-from voicevox_engine.utility.core_version_utility import get_latest_version
-
 from ..core.core_adapter import CoreAdapter, DeviceSupport
-from ..core.core_initializer import MOCK_VER, CoreManager
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
+from ..utility.core_version_utility import MOCK_VER, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
 from .kana_converter import parse_kana
 from .model import (
@@ -433,8 +432,6 @@ class TTSEngineManager:
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
-    # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
-    MOCK_VER = "0.0.0"
     tts_engines = TTSEngineManager()
     for ver, core in core_manager.items():
         if ver == MOCK_VER:
