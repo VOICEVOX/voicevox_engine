@@ -7,6 +7,9 @@ on:
       version:
         type: string
         required: true
+    secrets:
+      DOCKERHUB_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       version:
