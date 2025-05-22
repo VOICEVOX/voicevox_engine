@@ -301,20 +301,22 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
-        # kanalizerが依存しているkanalizer-rsの依存ライブラリのライセンス
-        # https://github.com/VOICEVOX/kanalizer/tree/main/infer/crates/kanalizer-rs
-        _License(
-            package_name="kanalizer-rs",
-            package_version="0.1.0",
-            license_name=None,
-            license_text=[
-                str(p.locate())
+    ]
+
+
+def _patch_licenses_manually(licenses: list[_License]) -> None:
+    """手動でライセンス情報を修正する。"""
+    for license in licenses:
+        if license.package_name == "kanalizer":
+            # kanalizerのwheelをビルドするときに使ったライブラリの情報を追加する
+            license.license_text += "\n\n"
+
+            notice_md = [
+                Path(p.locate())
                 for p in importlib.metadata.files("kanalizer")  # type: ignore
                 if p.name == "NOTICE.md"
-            ][0],
-            license_text_type="local_address",
-        ),
-    ]
+            ][0]
+            license.license_text += notice_md.read_text(encoding="utf8")
 
 
 def _generate_licenses() -> list[_License]:
@@ -322,6 +324,7 @@ def _generate_licenses() -> list[_License]:
     licenses = _update_licenses(pip_licenses)
     _validate_license_compliance(licenses)
     _add_licenses_manually(licenses)
+    _patch_licenses_manually(licenses)
 
     return licenses
 
