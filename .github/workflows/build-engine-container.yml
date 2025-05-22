@@ -49,7 +49,7 @@ jobs:
         include:
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
-            prefixes: "cpu-amd64,cpu-amd64-ubuntu22.04"
+            prefixes: "cpu-amd64-ubuntu22.04"
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
@@ -57,7 +57,7 @@ jobs:
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
           - os: ubuntu-24.04-arm
-            prefixes: "cpu-arm64,cpu-arm64-ubuntu22.04"
+            prefixes: "cpu-arm64-ubuntu22.04"
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
@@ -65,7 +65,7 @@ jobs:
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
-            prefixes: "nvidia,nvidia-amd64,nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
+            prefixes: "nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
