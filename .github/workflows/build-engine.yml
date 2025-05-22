@@ -23,6 +23,10 @@ on:
         description: "デバッグ用に成果物をartifactにアップロードするか"
         type: boolean
         default: false
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
@@ -669,5 +673,6 @@ jobs:
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
+      push_dockerhub: ${{ github.event.inputs.push_dockerhub }}
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
