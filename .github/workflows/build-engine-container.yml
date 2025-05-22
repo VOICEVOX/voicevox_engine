@@ -15,8 +15,8 @@ on:
       version:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
-      skip_dockerhub:
-        description: "Docker Hubへのプッシュやログインをスキップする"
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
         type: boolean
         default: false
 
@@ -33,7 +33,6 @@ jobs:
     outputs:
       version: ${{ steps.vars.outputs.version }}
       ghcr_repository: ${{ steps.vars.outputs.ghcr_repository }}
-      dockerhub_enabled: ${{ steps.vars.outputs.dockerhub_enabled }}
       dockerhub_repository: ${{ steps.vars.outputs.dockerhub_repository }}
     steps:
       - name: <Setup> Declare variables
@@ -45,15 +44,8 @@ jobs:
           : # GitHub Container RegistryのDockerイメージリポジトリ
           echo "ghcr_repository=ghcr.io/${{ github.repository_owner }}/voicevox_engine" >> "$GITHUB_OUTPUT"
 
-          : # Docker Hubの設定
-          {
-            if [[ -n "${{ vars.DOCKERHUB_USERNAME }}" && "${{ github.event.inputs.skip_dockerhub }}" != 'true' ]]; then
-              echo "dockerhub_enabled=true"
-              echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine"
-            else
-              echo "dockerhub_enabled=false"
-            fi
-          } >> "$GITHUB_OUTPUT"
+          : # Docker HubのDockerイメージリポジトリ
+          echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine" >> "$GITHUB_OUTPUT"
 
   build-docker:
     needs: [config]
@@ -141,7 +133,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: needs.config.outputs.dockerhub_enabled == 'true'
+        if: github.event.inputs.push_dockerhub == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
@@ -164,7 +156,7 @@ jobs:
       
       - name: <Build> Generate Docker image names for Docker Hub
         id: generate-dockerhub-docker-image-names
-        if: needs.config.outputs.dockerhub_enabled == 'true'
+        if: github.event.inputs.push_dockerhub == 'true'
         run: |
           # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
           {
@@ -259,7 +251,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: needs.config.outputs.dockerhub_enabled == 'true'
+        if: github.event.inputs.push_dockerhub == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
