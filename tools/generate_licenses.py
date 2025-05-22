@@ -301,6 +301,8 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
+        # kanalizerが依存しているkanalizer-rsの依存ライブラリのライセンス
+        # https://github.com/VOICEVOX/kanalizer/tree/main/infer/crates/kanalizer-rs
         _License(
             package_name="kanalizer-rs",
             package_version="0.1.0",
