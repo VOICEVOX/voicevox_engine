@@ -35,6 +35,7 @@ jobs:
               inputs: {
                 version: dev_version,
                 prerelease: true,
+                push_dockerhub: true,
               },
             });
             console.log(`Triggered workflow_dispatch for ${dev_version}`);
