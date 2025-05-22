@@ -12,14 +12,14 @@ from voicevox_engine.user_dict.model import (
     UserDictWord,
     WordTypes,
 )
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionaryManager
 from voicevox_engine.user_dict.user_dict_word import UserDictInputError, WordProperty
 
 from ..dependencies import VerifyMutabilityAllowed
 
 
 def generate_user_dict_router(
-    user_dict: UserDictionary, verify_mutability: VerifyMutabilityAllowed
+    user_dict_manager: UserDictionaryManager, verify_mutability: VerifyMutabilityAllowed
 ) -> APIRouter:
     """ユーザー辞書 API Router を生成する"""
     router = APIRouter(tags=["ユーザー辞書"])
@@ -35,7 +35,7 @@ def generate_user_dict_router(
         単語の表層形(surface)は正規化済みの物を返します。
         """
         try:
-            return user_dict.read_dict()
+            return user_dict_manager.read_dict()
         except UserDictInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except Exception as e:
@@ -75,7 +75,7 @@ def generate_user_dict_router(
     ) -> str:
         """ユーザー辞書に言葉を追加します。"""
         try:
-            word_uuid = user_dict.apply_word(
+            word_uuid = user_dict_manager.apply_word(
                 WordProperty(
                     surface=surface,
                     pronunciation=pronunciation,
@@ -132,7 +132,7 @@ def generate_user_dict_router(
     ) -> None:
         """ユーザー辞書に登録されている言葉を更新します。"""
         try:
-            user_dict.rewrite_word(
+            user_dict_manager.rewrite_word(
                 word_uuid,
                 WordProperty(
                     surface=surface,
@@ -163,7 +163,7 @@ def generate_user_dict_router(
     ) -> None:
         """ユーザー辞書に登録されている言葉を削除します。"""
         try:
-            user_dict.delete_word(word_uuid=word_uuid)
+            user_dict_manager.delete_word(word_uuid=word_uuid)
         except UserDictInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except Exception as e:
@@ -187,7 +187,9 @@ def generate_user_dict_router(
     ) -> None:
         """他のユーザー辞書をインポートします。"""
         try:
-            user_dict.import_user_dict(dict_data=import_dict_data, override=override)
+            user_dict_manager.import_user_dict(
+                dict_data=import_dict_data, override=override
+            )
         except UserDictInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except Exception as e:

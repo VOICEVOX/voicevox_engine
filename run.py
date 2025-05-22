@@ -23,7 +23,7 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionaryManager
 from voicevox_engine.utility.path_utility import (
     engine_manifest_path,
     engine_root,
@@ -368,7 +368,7 @@ def main() -> None:
     )
     preset_manager = PresetManager(preset_path)
 
-    user_dict = UserDictionary()
+    user_dict_manager = UserDictionaryManager()
 
     engine_manifest = load_manifest(engine_manifest_path())
 
@@ -395,7 +395,7 @@ def main() -> None:
         core_manager,
         setting_loader,
         preset_manager,
-        user_dict,
+        user_dict_manager,
         engine_manifest,
         library_manager,
         cancellable_engine,

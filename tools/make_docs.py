@@ -17,7 +17,7 @@ from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
 from voicevox_engine.tts_pipeline.song_engine import SongEngineManager
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionaryManager
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
 
@@ -43,7 +43,7 @@ def _generate_mock_app() -> FastAPI:
         core_manager=core_manager,
         setting_loader=SettingHandler(USER_SETTING_PATH),
         preset_manager=PresetManager(preset_path),
-        user_dict=UserDictionary(),
+        user_dict_manager=UserDictionaryManager(),
         engine_manifest=engine_manifest,
         library_manager=library_manager,
     )
