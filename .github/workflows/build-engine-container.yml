@@ -228,11 +228,11 @@ jobs:
       matrix:
         include:
           # Ubuntu 22.04 / AMD64, ARM64
-          - multi_platform_image_prefixes: ",cpu,cpu-ubuntu22.04"
+          - multi_platform_image_prefixes: "cpu-ubuntu22.04"
             amd64_image_prefix: "cpu-amd64-ubuntu22.04"
             arm64_image_prefix: "cpu-arm64-ubuntu22.04"
           # Ubuntu 24.04 / AMD64, ARM64
-          - multi_platform_image_prefixes: "cpu-ubuntu24.04"
+          - multi_platform_image_prefixes: ",cpu,cpu-ubuntu24.04"
             amd64_image_prefix: "cpu-amd64-ubuntu24.04"
             arm64_image_prefix: "cpu-arm64-ubuntu24.04"
 
