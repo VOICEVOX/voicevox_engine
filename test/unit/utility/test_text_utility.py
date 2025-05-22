@@ -53,7 +53,6 @@ def test_replace_zenkaku_alphabets_with_hankaku_only_hiragana(
         ("アサ", 2),
         ("イェーガー", 4),
         ("クヮンセイ", 4),
-
     ],
 )
 def test_count_mora(text: str, true_n_mora: int) -> None:
@@ -67,7 +66,8 @@ def test_count_mora(text: str, true_n_mora: int) -> None:
 def test_count_mora_small_char() -> None:
     """`count_mora()` は小文字が大文字と一体かを判断してモーラ数をカウントする。"""
     smalls = ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]
-    for big in filter(lambda char: char not in smalls, [chr(i) for i in range(12449, 12533)]):
+    bigs = filter(lambda c: c not in smalls, [chr(i) for i in range(12449, 12533)])
+    for big in bigs:
         for small in "ァィゥェォャュョ":
             # Inputs
             text = f"{big}{small}"
@@ -75,7 +75,7 @@ def test_count_mora_small_char() -> None:
             n_mora = count_mora(text)
             # Expects
             # NOTE: `parse_kana()` によるモーラ化の結果と一致するか検証している
-            true_n_mora = sum(map(lambda ap: len(ap.moras), parse_kana(text+"'")))
+            true_n_mora = sum(map(lambda ap: len(ap.moras), parse_kana(text + "'")))
 
             # tests
             assert true_n_mora == n_mora
