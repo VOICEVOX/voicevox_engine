@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal, TypeAlias
 
-from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
@@ -53,6 +52,14 @@ class _EngineCharacter(BaseModel):
 
 
 GetCoreCharacters: TypeAlias = Callable[[str | None], list[CoreCharacter]]
+
+
+class CharacterNotFoundError(Exception):
+    """指定されたキャラクターが見つからない。"""
+
+
+class CharacterInfoNotFoundError(Exception):
+    """指定されたキャラクターが見つからない。"""
 
 
 class MetasStore:
@@ -170,9 +177,7 @@ class MetasStore:
             filter(lambda character: character.uuid == character_uuid, characters), None
         )
         if character is None:
-            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
-            msg = "該当するキャラクターが見つかりません"
-            raise HTTPException(status_code=404, detail=msg)
+            raise CharacterNotFoundError("該当するキャラクターが見つかりません")
 
         # キャラクター情報を取得する
         try:
@@ -225,9 +230,7 @@ class MetasStore:
                     }
                 )
         except (FileNotFoundError, ResourceManagerError) as e:
-            # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
-            msg = "追加情報が見つかりませんでした"
-            raise HTTPException(status_code=500, detail=msg) from e
+            raise CharacterInfoNotFoundError("キャラクター情報が見つかりません") from e
 
         character_info = SpeakerInfo(
             policy=policy, portrait=portrait, style_infos=style_infos
