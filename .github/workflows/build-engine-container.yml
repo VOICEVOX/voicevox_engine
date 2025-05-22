@@ -187,6 +187,7 @@ jobs:
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にfalseになっている
           # FIXME: デフォルトブランチでビルドし、デフォルトブランチでのみtrueになるようにする
+          cache_to=""
           if false; then
             cache_to="type=registry,ref=${{ needs.config.outputs.ghcr_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
