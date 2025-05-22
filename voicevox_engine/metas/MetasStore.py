@@ -59,7 +59,7 @@ class CharacterNotFoundError(Exception):
 
 
 class CharacterInfoNotFoundError(Exception):
-    """指定されたキャラクターが見つからない。"""
+    """指定されたキャラクターの情報が見つからない。"""
 
 
 class MetasStore:
