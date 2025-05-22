@@ -267,6 +267,17 @@ jobs:
         run: |
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
+        if: github.event.inputs.push_dockerhub == 'true'
+        env:
+          IMAGE_NAME: ${{ needs.config.outputs.dockerhub_repository }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
+          AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
+          ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
+        run: |
+          bash ./tools/build_and_push_multi_platform_docker_images.bash
+
   run-release-test-workflow:
     # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にtrueになっている
     # FIXME: Docker Hubにpushしない場合はfalseになるようにする
