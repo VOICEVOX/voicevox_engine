@@ -5,7 +5,7 @@ from pathlib import Path
 
 from platformdirs import user_data_dir
 
-from voicevox_engine.utility.runtime_utility import is_development
+from .runtime_utility import is_development
 
 
 def engine_root() -> Path:

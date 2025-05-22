@@ -27,3 +27,8 @@ tqdm==4.67.1
 typing-extensions==4.13.2
 typing-inspection==0.4.0
 uvicorn==0.34.0
+
+dotnet
+semver
+pyopenjtalk
+vllm

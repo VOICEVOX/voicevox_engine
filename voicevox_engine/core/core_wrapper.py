@@ -601,6 +601,7 @@ class CoreWrapper:
         """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
 
+        print("core_dir", core_dir)
         self.core = load_core(core_dir, use_gpu)
 
         self.api_exists = _check_and_type_apis(self.core)

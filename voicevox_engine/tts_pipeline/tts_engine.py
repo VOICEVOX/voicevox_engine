@@ -7,7 +7,7 @@ from typing import Any, Final, Literal, TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
-from voicevox_engine.utility.core_version_utility import get_latest_version
+from ..utility.core_version_utility import get_latest_version
 
 from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import MOCK_VER, CoreManager
