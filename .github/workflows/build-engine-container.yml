@@ -139,7 +139,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build> Generate Docker image names
+      - name: <Build> Generate Docker image names for ghcr.io
         id: generate-ghcr-docker-image-names
         run: |
           # ghcr.io向けのDockerイメージ名を outputs.tags に改行区切りで格納する
