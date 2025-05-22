@@ -259,7 +259,7 @@ jobs:
 
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for ghcr.io
         env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          IMAGE_NAME: ${{ needs.config.outputs.ghcr_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
