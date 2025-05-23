@@ -204,6 +204,7 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
+            VOICEVOX_ENGINE_REPOSITORY=${{ github.repository }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
             VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}

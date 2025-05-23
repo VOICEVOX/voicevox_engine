@@ -21,6 +21,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+ARG VOICEVOX_ENGINE_REPOSITORY=VOICEVOX/voicevox_engine
 ARG VOICEVOX_ENGINE_VERSION
 ARG VOICEVOX_ENGINE_TARGET
 
@@ -29,13 +30,13 @@ RUN <<EOF
 
     LIST_NAME=voicevox_engine-$VOICEVOX_ENGINE_TARGET-$VOICEVOX_ENGINE_VERSION.7z.txt
 
-    curl -fLO --retry 3 --retry-delay 5 "https://github.com/VOICEVOX/voicevox_engine/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
+    curl -fLO --retry 3 --retry-delay 5 "https://github.com/$VOICEVOX_ENGINE_REPOSITORY/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
 
     awk \
         -v "tag=$VOICEVOX_ENGINE_VERSION" \
         '{
              print \
-                 "url = \"https://github.com/VOICEVOX/voicevox_engine/releases/download/" tag "/" $0 "\"\n" \
+                 "url = \"https://github.com/$VOICEVOX_ENGINE_REPOSITORY/releases/download/" tag "/" $0 "\"\n" \
                  "output = \"" $0 "\""
         }' \
         "$LIST_NAME" \
