@@ -49,12 +49,12 @@ jobs:
         id: docker_vars
         run: |
           # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
-          IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/voicevox_engine" | tr "[A-Z]" "[a-z]")
+          REPOSITORY=$(echo "ghcr.io/${{ github.repository_owner }}/voicevox_engine" | tr "[A-Z]" "[a-z]")
 
           if [ "${{ matrix.tag }}" != "" ]; then
-            echo "image_tag=${IMAGE_NAME}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+            echo "image_tag=${REPOSITORY}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_tag=${IMAGE_NAME}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+            echo "image_tag=${REPOSITORY}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: <Setup> Login to GitHub Container Registry
