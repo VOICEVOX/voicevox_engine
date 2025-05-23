@@ -673,6 +673,6 @@ jobs:
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
-      push_dockerhub: ${{ fromJSON(github.event.inputs.push_dockerhub) }}
+      push_dockerhub: ${{ inputs.push_dockerhub }}
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
