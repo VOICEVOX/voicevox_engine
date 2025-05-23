@@ -667,6 +667,7 @@ jobs:
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
-      push_dockerhub: ${{ fromJSON(github.event.inputs.push_dockerhub) }}
+      # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
+      push_dockerhub: ${{ inputs.push_dockerhub == true }}
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

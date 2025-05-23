@@ -136,7 +136,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: github.event.inputs.push_dockerhub == 'true'
+        if: inputs.push_dockerhub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
@@ -159,7 +159,7 @@ jobs:
       
       - name: <Build> Generate Docker image names for Docker Hub
         id: generate-dockerhub-docker-image-names
-        if: github.event.inputs.push_dockerhub == 'true'
+        if: inputs.push_dockerhub
         run: |
           # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
           {
@@ -204,6 +204,7 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
+            VOICEVOX_ENGINE_REPOSITORY=${{ github.repository }}
             VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
             VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -255,7 +256,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Login to Docker Hub
-        if: github.event.inputs.push_dockerhub == 'true'
+        if: inputs.push_dockerhub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
@@ -272,7 +273,7 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
       - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
-        if: github.event.inputs.push_dockerhub == 'true'
+        if: inputs.push_dockerhub
         env:
           IMAGE_NAME: ${{ needs.config.outputs.dockerhub_repository }}
           VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
