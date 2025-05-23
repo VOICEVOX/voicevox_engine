@@ -1,6 +1,6 @@
 """テキスト処理に関するユーティリティ"""
 
-from re import compile
+import re
 from typing import Final
 
 _HANKAKU_CHARS: Final = "".join(chr(0x21 + i) for i in range(94))
@@ -29,7 +29,7 @@ _RULE_LINE_U: Final = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[�
 # 1つのカタカナが1つのモーラを構成するパターン
 _RULE_ONE_MORA: Final = "[ァ-ヴー]"
 
-_MORA_PATTERN: Final = compile(
+_MORA_PATTERN: Final = re.compile(
     f"(?:{_RULE_OTHERS}|{_RULE_LINE_I}|{_RULE_LINE_U}|{_RULE_ONE_MORA})"
 )
 
