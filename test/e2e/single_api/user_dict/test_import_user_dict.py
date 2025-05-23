@@ -45,7 +45,7 @@ def test_post_import_user_dict_contents(
 
 
 def test_post_import_user_dict_422(
-    client: TestClient, snapshot: SnapshotAssertion
+    client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     user_dict: dict[str, dict[str, str | int]] = {
         # NOTE: 必須パラメータが不足
@@ -57,4 +57,4 @@ def test_post_import_user_dict_422(
         "/import_user_dict", json=user_dict, params={"override": True}
     )
     assert response.status_code == 422
-    assert snapshot == response.content
+    assert snapshot_json == response.json()

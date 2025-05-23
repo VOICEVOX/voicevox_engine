@@ -19,9 +19,9 @@ def test_post_setting_204(client: TestClient, snapshot: SnapshotAssertion) -> No
     assert snapshot == response.content
 
 
-def test_post_setting_422(client: TestClient, snapshot: SnapshotAssertion) -> None:
+def test_post_setting_422(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
     response = client.post(
         "/setting", data={"cors_policy_mode": "wrong", "allow_origin": "wrong"}
     )
     assert response.status_code == 422
-    assert snapshot == response.content
+    assert snapshot_json == response.json()

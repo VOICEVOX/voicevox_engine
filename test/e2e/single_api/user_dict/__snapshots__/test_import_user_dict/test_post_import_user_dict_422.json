@@ -1,0 +1,148 @@
+{
+  "detail": [
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "surface"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "priority"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "part_of_speech"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "part_of_speech_detail_1"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "part_of_speech_detail_2"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "part_of_speech_detail_3"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "inflectional_type"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "inflectional_form"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "stem"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "yomi"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "pronunciation"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": {
+        "accent_type": 1
+      },
+      "loc": [
+        "body",
+        "a11196ad-0000-4f4e-8eb3-3d2261c798fd",
+        "accent_associative_rule"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}
