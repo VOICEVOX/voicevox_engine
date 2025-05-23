@@ -5,13 +5,13 @@
 """
 
 from enum import Enum
-from re import findall, fullmatch
+from re import fullmatch
 from typing import Annotated, Self
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from ..utility.text_utility import replace_hankaku_alphabets_with_zenkaku
+from ..utility.text_utility import count_mora, replace_hankaku_alphabets_with_zenkaku
 
 
 class WordTypes(str, Enum):
@@ -108,21 +108,9 @@ class UserDictWord(BaseModel):
         # TODO: 2つの機能を２つの関数に分けるのが正しいか検討
         # モーラ数を計算し代入する
         if self.mora_count is None:
-            rule_others = (
-                "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
-            )
-            rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-            rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-            rule_one_mora = "[ァ-ヴー]"
-            self.mora_count = len(
-                findall(
-                    f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
-                    self.pronunciation,
-                )
-            )
+            self.mora_count = count_mora(self.pronunciation)
         # アクセント型を検証する
         if not 0 <= self.accent_type <= self.mora_count:
-            raise ValueError(
-                f"誤ったアクセント型です({self.accent_type})。 expect: 0 <= accent_type <= {self.mora_count}"
-            )
+            msg = f"誤ったアクセント型です({self.accent_type})。 expect: 0 <= accent_type <= {self.mora_count}"
+            raise ValueError(msg)
         return self

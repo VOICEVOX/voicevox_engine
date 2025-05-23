@@ -1,11 +1,10 @@
 """NJD Featureの処理"""
 
-import re
 from dataclasses import asdict, dataclass
 
 import pyopenjtalk
 
-from ..utility.text_utility import replace_zenkaku_alphabets_with_hankaku
+from ..utility.text_utility import count_mora, replace_zenkaku_alphabets_with_hankaku
 from .katakana_english import (
     convert_english_to_katakana,
     is_hankaku_alphabet,
@@ -35,18 +34,6 @@ class NjdFeature:
     @classmethod
     def from_english_kana(cls, english: str, kana: str) -> "NjdFeature":
         """英語のカタカナ読みからNjdFeatureを作成する"""
-        # TODO: user_dict/model.py内の処理と重複しているため、リファクタリングする
-        rule_others = (
-            "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
-        )
-        rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-        rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-        rule_one_mora = "[ァ-ヴー]"
-        mora_size = len(
-            re.findall(
-                f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})", kana
-            )
-        )
         return cls(
             string=english,
             pos="名詞",
@@ -59,7 +46,7 @@ class NjdFeature:
             read=kana,
             pron=kana,
             acc=1,
-            mora_size=mora_size,
+            mora_size=count_mora(kana),
             chain_rule="*",
             chain_flag=-1,
         )
