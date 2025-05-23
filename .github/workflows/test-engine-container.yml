@@ -17,7 +17,6 @@ on:
         required: true
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/voicevox_engine # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
   VERSION: |- # version指定時はversionを、それ以外はタグ名を使用
     ${{ (github.event.inputs || inputs).version }}
 
@@ -49,10 +48,13 @@ jobs:
       - name: <Setup> Declare variables
         id: docker_vars
         run: |
+          # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
+          REPOSITORY=$(echo "ghcr.io/${{ github.repository }}" | tr "[:upper:]" "[:lower:]")
+
           if [ "${{ matrix.tag }}" != "" ]; then
-            echo "image_tag=${{ env.IMAGE_NAME }}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+            echo "image_tag=${REPOSITORY}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           else
-            echo "image_tag=${{ env.IMAGE_NAME }}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+            echo "image_tag=${REPOSITORY}:${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: <Setup> Login to GitHub Container Registry
