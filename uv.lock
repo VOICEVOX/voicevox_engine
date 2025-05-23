@@ -715,7 +715,7 @@ wheels = [
 
 [[package]]
 name = "pyopenjtalk"
-version = "0.1.dev251+g74703b0"
+version = "0.1.6.dev133+g74703b0"
 source = { git = "https://github.com/VOICEVOX/pyopenjtalk?rev=74703b034dd90a1f199f49bb70bf3b66b1728a86#74703b034dd90a1f199f49bb70bf3b66b1728a86" }
 dependencies = [
     { name = "numpy" },
@@ -1071,7 +1071,6 @@ wheels = [
 
 [[package]]
 name = "voicevox-engine"
-version = "0.24.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi-slim" },

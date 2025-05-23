@@ -1,8 +1,6 @@
 [project]
 name = "voicevox_engine"
-version = "0.24.0"
-description = "Add your description here"
-readme = "README.md"
+dynamic = ["version"]
 requires-python = "==3.11.9"
 dependencies = [
   "fastapi-slim>=0.115.5",
@@ -21,6 +19,9 @@ dependencies = [
   "starlette>=0.45.3",
   "uvicorn>=0.34.0",
 ]
+
+[tool.setuptools]
+packages = ["voicevox_engine"]
 
 [tool.uv]
 default-groups = []
