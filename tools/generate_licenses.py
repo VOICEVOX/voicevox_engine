@@ -316,7 +316,7 @@ def _patch_licenses_manually(licenses: list[_License]) -> None:
             else:
                 raise Exception("kanalizerのNOTICE.mdが見つかりませんでした。")
             license.license_text += "\n\n"
-            license.license_text += notice_md.read_text(encoding="utf8")
+            license.license_text += notice_md.read_text(encoding="utf-8")
 
 
 def _generate_licenses() -> list[_License]:
