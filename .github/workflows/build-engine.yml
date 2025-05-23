@@ -455,7 +455,6 @@ jobs:
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
 
-          # TODO: symlinkだけどちゃんとコピーしてくれるか…？
           if [[ ${{ runner.os }} == Windows  ]]; then
             LIBCORE_PATH=download/core/lib/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/voicevox_onnxruntime.dll
