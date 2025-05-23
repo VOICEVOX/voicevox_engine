@@ -33,10 +33,11 @@ RUN <<EOF
     curl -fLO --retry 3 --retry-delay 5 "https://github.com/$VOICEVOX_ENGINE_REPOSITORY/releases/download/$VOICEVOX_ENGINE_VERSION/$LIST_NAME"
 
     awk \
+        -v "repo=$VOICEVOX_ENGINE_REPOSITORY" \
         -v "tag=$VOICEVOX_ENGINE_VERSION" \
         '{
              print \
-                 "url = \"https://github.com/$VOICEVOX_ENGINE_REPOSITORY/releases/download/" tag "/" $0 "\"\n" \
+                 "url = \"https://github.com/" repo "/releases/download/" tag "/" $0 "\"\n" \
                  "output = \"" $0 "\""
         }' \
         "$LIST_NAME" \
