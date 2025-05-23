@@ -34,8 +34,8 @@ jobs:
         tag:
           - ""
           - cpu
-          - cpu-ubuntu20.04
           - cpu-ubuntu22.04
+          - cpu-ubuntu24.04
 
     steps:
       - name: <Setup> Check out the repository
