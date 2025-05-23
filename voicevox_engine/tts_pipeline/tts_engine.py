@@ -245,8 +245,7 @@ class TTSEngine:
     def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """
-        アクセント句系列に含まれる音素の長さをスタイルに合わせて更新する。"""
+        """アクセント句系列に含まれる音素の長さをスタイルに合わせて更新する。"""
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
@@ -256,10 +255,10 @@ class TTSEngine:
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
-        # 各音素の音長を生成する
+        # 各音素の長さを生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
-        # 生成された音長でモーラの音素長を更新する
+        # 生成された音素長でモーラの音素長を更新する
         vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:

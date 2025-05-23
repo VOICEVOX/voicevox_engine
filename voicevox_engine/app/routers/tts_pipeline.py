@@ -205,7 +205,7 @@ def generate_tts_pipeline_router(
     @router.post(
         "/mora_data",
         tags=["クエリ編集"],
-        summary="アクセント句から音高・音素長を得る",
+        summary="アクセント句から音素の長さと音高を得る",
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
@@ -219,7 +219,7 @@ def generate_tts_pipeline_router(
     @router.post(
         "/mora_length",
         tags=["クエリ編集"],
-        summary="アクセント句から音素長を得る",
+        summary="アクセント句から音素の長さを得る",
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
