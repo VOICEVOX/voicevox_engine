@@ -7,6 +7,7 @@ VOICEVOX ENGINE の実行に必要なライブラリのライセンス一覧を�
 """
 
 import argparse
+import importlib.metadata
 import json
 import subprocess
 import sys
@@ -93,7 +94,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
     """pip から取得したライセンス情報の抜けを補完する。"""
     package_to_license_url: dict[str, str] = {
         # "package_name": "https://license.adress.com/v0.0.0/LICENSE.txt",
-        "e2k": "https://raw.githubusercontent.com/Patchethium/e2k/refs/tags/0.3.0/LICENSE",
     }
 
     updated_licenses = []
@@ -304,11 +304,27 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
     ]
 
 
+def _patch_licenses_manually(licenses: list[_License]) -> None:
+    """手動でライセンス情報を修正する。"""
+    for license in licenses:
+        if license.package_name == "kanalizer":
+            # kanalizerのwheelをビルドするときに使ったライブラリの情報を追加する
+            for p in importlib.metadata.files("kanalizer"):  # type: ignore
+                if p.name == "NOTICE.md":
+                    notice_md = Path(p.locate())
+                    break
+            else:
+                raise Exception("kanalizerのNOTICE.mdが見つかりませんでした。")
+            license.license_text += "\n\n"
+            license.license_text += notice_md.read_text(encoding="utf-8")
+
+
 def _generate_licenses() -> list[_License]:
     pip_licenses = _acquire_licenses_of_pip_managed_libraries()
     licenses = _update_licenses(pip_licenses)
     _validate_license_compliance(licenses)
     _add_licenses_manually(licenses)
+    _patch_licenses_manually(licenses)
 
     return licenses
 

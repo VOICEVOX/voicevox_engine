@@ -219,18 +219,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491", size = 25901, upload-time = "2014-06-16T11:18:57.406Z" }
 
 [[package]]
-name = "e2k"
-version = "0.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/75/52/5e44462cd146c05513082522dab6ac606b3f119f58f42188fb7da02d3472/e2k-0.3.0.tar.gz", hash = "sha256:be7d40339aae8eb81f84db54183b34bd6914aad3f8396e4fe622f81b17ddb98b", size = 8225627, upload-time = "2025-03-09T13:12:26.365Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/b3/e2fe2d3d6bff7e6e2a61bfe5d90b50fa9bebcdc0861eb066a9c939054f94/e2k-0.3.0-py3-none-any.whl", hash = "sha256:67ae1a437d39d582def8c1dfec3634f61897d1b7dc49ce89e714d10b841c7c14", size = 8221224, upload-time = "2025-03-09T13:12:22.563Z" },
-]
-
-[[package]]
 name = "fastapi-slim"
 version = "0.115.12"
 source = { registry = "https://pypi.org/simple" }
@@ -327,6 +315,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "kanalizer"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/45/ab/17afb904792db4f81b936f291d2c27bd427fc4d6519b152fb491c422814d/kanalizer-0.1.1.tar.gz", hash = "sha256:71e4523a332d1fdc43f0205a22f9cf9356edda7f4f9ff5efb5febcab60674a86", size = 57938, upload-time = "2025-05-21T22:28:28.653Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/5e/44bf1b1154430644cc88a1b0189337f1d85d38b02e78c3dd7a793c705c82/kanalizer-0.1.1-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:9aac05e5590948850445b91ca317b257d531fa0989c28141c76f2de7ee77c813", size = 4447967, upload-time = "2025-05-21T22:28:16.235Z" },
+    { url = "https://files.pythonhosted.org/packages/02/f8/df74b6d44b4abe02421bd240d2954b821a9786aac28b6a5de4eec5f9f7a2/kanalizer-0.1.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:6004b464002cb389130679f21d77523d84c494f302159ce18506d47039e0d657", size = 4441973, upload-time = "2025-05-21T22:28:18.378Z" },
+    { url = "https://files.pythonhosted.org/packages/27/7b/ce684aa9fa5b512dab5e054da7cd554838b018a8579921d20973ec7a26dd/kanalizer-0.1.1-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:9709732d7786b3c97b9b66ebbf162ba0adf88b6cdd193ba26d85e2a759f81237", size = 4452585, upload-time = "2025-05-21T22:28:20.617Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/82/5c93ae789fa44f3615ee465e36ce39ea4c3973d597a93dfa4c8ba4ff6edf/kanalizer-0.1.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:bb86f3fa2cfe4034fa68f3035e3235bb6ee314e1957aac9c0426d651e473709a", size = 4489970, upload-time = "2025-05-21T22:28:22.886Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/5d/a38e4e73a0ed7ceb5a7fa37213df72f999f224631aac0b713c46aadeace8/kanalizer-0.1.1-cp39-abi3-win32.whl", hash = "sha256:07acb02533ea8dc57dc2442ee9efe8978961ddafed13f0c35125abfea48c9e10", size = 4306111, upload-time = "2025-05-21T22:28:24.658Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/1c/69ad29206576664d01876e78d15a74d7f0a59691eabb15af35c9923c44d1/kanalizer-0.1.1-cp39-abi3-win_amd64.whl", hash = "sha256:ced78e0e3bc57ceafa92e008dd42cf65fe5abc02d1e9dbc8846518f6fca59e29", size = 4324435, upload-time = "2025-05-21T22:28:26.747Z" },
 ]
 
 [[package]]
@@ -727,7 +729,7 @@ wheels = [
 
 [[package]]
 name = "pyopenjtalk"
-version = "0.1.6.dev133+g74703b0"
+version = "0.1.dev251+g74703b0"
 source = { git = "https://github.com/VOICEVOX/pyopenjtalk?rev=74703b034dd90a1f199f49bb70bf3b66b1728a86#74703b034dd90a1f199f49bb70bf3b66b1728a86" }
 dependencies = [
     { name = "numpy" },
@@ -1086,9 +1088,9 @@ name = "voicevox-engine"
 version = "0.24.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "e2k" },
     { name = "fastapi-slim" },
     { name = "jinja2" },
+    { name = "kanalizer" },
     { name = "numpy" },
     { name = "platformdirs" },
     { name = "pydantic" },
@@ -1124,9 +1126,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "e2k", specifier = "==0.3.0" },
     { name = "fastapi-slim", specifier = ">=0.115.5" },
     { name = "jinja2", specifier = ">=3.1.3" },
+    { name = "kanalizer", specifier = ">=0.1.1" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "platformdirs", specifier = ">=4.2.0" },
     { name = "pydantic", specifier = ">=2.7.3" },
