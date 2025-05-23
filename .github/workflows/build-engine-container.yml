@@ -1,22 +1,30 @@
 name: build-docker
 on:
-  push:
-    branches:
-      - master
-  release:
-    types:
-      - created
+  # FIXME: デフォルトブランチへのpush時にビルドをテストする
+  # https://github.com/VOICEVOX/voicevox_engine/pull/1669#discussion_r2076730954
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      push_dockerhub:
+        type: boolean
+        default: false
+    secrets:
+      DOCKERHUB_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       version:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
 
 env:
-  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
-  VOICEVOX_CORE_VERSION: "0.15.7"
-  ONNXRUNTIME_VERSION: "1.13.1"
 
 defaults:
   run:
@@ -26,17 +34,29 @@ jobs:
   config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
     runs-on: ubuntu-latest
     outputs:
-      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+      version: ${{ steps.vars.outputs.version }}
+      ghcr_repository: ${{ steps.vars.outputs.ghcr_repository }}
+      dockerhub_repository: ${{ steps.vars.outputs.dockerhub_repository }}
     steps:
       - name: <Setup> Declare variables
         id: vars
         run: |
-          : # releaseタグ名か、workflow_dispatchでのバージョン名か、latestが入る
-          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
+          : # releaseタグ名か、workflow_dispatchでのバージョン名が入る
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+
+          : # GitHub Container RegistryのDockerイメージリポジトリ
+          echo "ghcr_repository=ghcr.io/${{ github.repository_owner }}/voicevox_engine" >> "$GITHUB_OUTPUT"
+
+          : # Docker HubのDockerイメージリポジトリ
+          echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine" >> "$GITHUB_OUTPUT"
 
   build-docker:
     needs: [config]
     runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
@@ -45,8 +65,7 @@ jobs:
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
-        # base_image: Dockerfileのビルド用ステージのベースイメージ
-        # base_runtime_image: Dockerfileの実行用ステージのベースイメージ
+        # base_image: Dockerfileのベースイメージ
         # platforms: Dockerのプラットフォームバリアント。カンマ区切り。 参考: https://docs.docker.com/build/building/multi-platform/
         include:
           # Ubuntu 20.04 / AMD64
@@ -55,7 +74,7 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 20.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -63,7 +82,7 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu20.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/ubuntu:20.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 20.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -71,7 +90,7 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu20.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:20.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
           # Ubuntu 22.04 / AMD64
           - os: ubuntu-latest
@@ -79,7 +98,7 @@ jobs:
             buildcache_prefix: "cpu-amd64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-x64
             platforms: linux/amd64
           # Ubuntu 22.04 / ARM64
           - os: ubuntu-24.04-arm
@@ -87,7 +106,7 @@ jobs:
             buildcache_prefix: "cpu-arm64-ubuntu22.04"
             target: runtime-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/ubuntu:22.04
+            voicevox_engine_target: linux-cpu-arm64
             platforms: linux/arm64/v8
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - os: ubuntu-latest
@@ -95,76 +114,82 @@ jobs:
             buildcache_prefix: "nvidia-amd64-ubuntu22.04"
             target: runtime-nvidia-env
             base_image: mirror.gcr.io/ubuntu:22.04
-            base_runtime_image: mirror.gcr.io/nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+            voicevox_engine_target: linux-nvidia
             platforms: linux/amd64
 
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Prepare Python version
-        id: prepare-python
+      - name: <Setup> Prepare Python
         uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: <Setup> Login to DockerHub
+      - name: <Setup> Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Login to Docker Hub
+        if: github.event.inputs.push_dockerhub == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Setup> Prepare VOICEVOX RESOURCE cache
-        uses: actions/cache@v4
-        id: voicevox-resource-cache
-        with:
-          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Setup> Check out the VOICEVOX RESOURCE repository
-        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: VOICEVOX/voicevox_resource
-          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
-          path: download/resource
-
-      - name: <Build> Merge VOICEVOX RESOURCE
-        env:
-          DOWNLOAD_RESOURCE_PATH: download/resource
-        run: bash tools/process_voicevox_resource.bash
-
-      - name: <Build> Generate Docker image names
-        id: generate-docker-image-names
+      - name: <Build> Generate Docker image names for ghcr.io
+        id: generate-ghcr-docker-image-names
         run: |
-          # Dockerイメージ名を outputs.tags に改行区切りで格納する
+          # ghcr.io向けのDockerイメージ名を outputs.tags に改行区切りで格納する
           {
             echo "tags<<EOF"
 
             uv run tools/generate_docker_image_names.py \
-              --repository "${{ env.IMAGE_NAME }}" \
-              --version "${{ needs.config.outputs.version_or_latest }}" \
+              --repository "${{ needs.config.outputs.ghcr_repository }}" \
+              --version "${{ needs.config.outputs.version }}" \
+              --prefix "${{ matrix.prefixes }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      
+      - name: <Build> Generate Docker image names for Docker Hub
+        id: generate-dockerhub-docker-image-names
+        if: github.event.inputs.push_dockerhub == 'true'
+        run: |
+          # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
+          {
+            echo "tags<<EOF"
+
+            uv run tools/generate_docker_image_names.py \
+              --repository "${{ needs.config.outputs.dockerhub_repository }}" \
+              --version "${{ needs.config.outputs.version }}" \
               --prefix "${{ matrix.prefixes }}"
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
       # ビルドキャッシュに指定するためのDockerイメージ名を生成する
+      # NOTE: ビルドキャッシュは ghcr.io に作成する
       # NOTE: デフォルトブランチへのコミットの場合のみキャッシュを作成する
       - name: <Build> Generate Docker buildcache image names
         id: generate-docker-buildcache-image-names
         run: |
           # --cache-from に指定するためのDockerイメージ名
           # 常にデフォルトブランチのビルドキャッシュ（*-latest-buildcache）を使用する
-          cache_from="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache"
+          cache_from="type=registry,ref=${{ needs.config.outputs.ghcr_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache"
 
           # --cache-to に指定するためのDockerイメージ名
           # リリースの場合、ビルドキャッシュを作成しないため、空文字列を格納する
           cache_to=""
-          if [ "${{ needs.config.outputs.version_or_latest }}" = "latest" ]; then
-            cache_to="type=registry,ref=${{ env.IMAGE_NAME }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
+          # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にfalseになっている
+          # FIXME: デフォルトブランチでビルドし、デフォルトブランチでのみtrueになるようにする
+          if false; then
+            cache_to="type=registry,ref=${{ needs.config.outputs.ghcr_repository }}:${{ matrix.buildcache_prefix }}-latest-buildcache,mode=max"
           fi
 
           # outputs に格納する
@@ -179,16 +204,14 @@ jobs:
           file: ./Dockerfile
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            BASE_RUNTIME_IMAGE=${{ matrix.base_runtime_image }}
-            PYTHON_VERSION=${{ steps.prepare-python.outputs.python-version }}
-            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version_or_latest }}
-            VOICEVOX_CORE_VERSION=${{ env.VOICEVOX_CORE_VERSION }}
+            VOICEVOX_ENGINE_VERSION=${{ needs.config.outputs.version }}
+            VOICEVOX_ENGINE_TARGET=${{ matrix.voicevox_engine_target }}
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
-            USE_GPU=${{ matrix.target == 'runtime-nvidia-env' }}
-            ONNXRUNTIME_VERSION=${{ env.ONNXRUNTIME_VERSION }}
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ steps.generate-docker-image-names.outputs.tags }}
+          tags: |
+            ${{ steps.generate-ghcr-docker-image-names.outputs.tags }}
+            ${{ steps.generate-dockerhub-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
@@ -196,6 +219,10 @@ jobs:
   build-docker-multi-platform:
     needs: [config, build-docker]
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
@@ -213,24 +240,42 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Setup> Prepare Python version
-        id: prepare-python
+      - name: <Setup> Prepare Python
         uses: ./.github/actions/prepare_python
 
       - name: <Setup> Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: <Setup> Login to DockerHub
+      - name: <Setup> Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Login to Docker Hub
+        if: github.event.inputs.push_dockerhub == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build/Deploy> Build and Deploy multi-platform Docker image
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image for ghcr.io
         env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          VERSION_OR_LATEST: ${{ needs.config.outputs.version_or_latest }}
+          IMAGE_NAME: ${{ needs.config.outputs.ghcr_repository }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
+          AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
+          ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
+          MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
+        run: |
+          bash ./tools/build_and_push_multi_platform_docker_images.bash
+
+      - name: <Build/Deploy> Build and Deploy multi-platform Docker image for Docker Hub
+        if: github.event.inputs.push_dockerhub == 'true'
+        env:
+          IMAGE_NAME: ${{ needs.config.outputs.dockerhub_repository }}
+          VERSION_OR_LATEST: ${{ needs.config.outputs.version }} # TODO: 環境変数名をVERSIONにする？
           AMD64_IMAGE_PREFIX: ${{ matrix.amd64_image_prefix }}
           ARM64_IMAGE_PREFIX: ${{ matrix.arm64_image_prefix }}
           MULTI_PLATFORM_IMAGE_PREFIXES: ${{ matrix.multi_platform_image_prefixes }}
@@ -238,10 +283,11 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
   run-release-test-workflow:
-    # version が指定されている場合のみ実行する
-    if: needs.config.outputs.version_or_latest != 'latest'
+    # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にtrueになっている
+    # FIXME: Docker Hubにpushしない場合はfalseになるようにする
+    if: true
     needs: [config, build-docker, build-docker-multi-platform]
     uses: ./.github/workflows/test-engine-container.yml
     with:
-      version: ${{ needs.config.outputs.version_or_latest }}
+      version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
