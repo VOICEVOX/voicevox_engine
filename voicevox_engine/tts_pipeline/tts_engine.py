@@ -246,10 +246,7 @@ class TTSEngine:
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
         """
-        母音・子音・無音の音長を更新する。
-
-        アクセント句系列とスタイルに基づき、アクセント句系列の音長属性を更新する。
-        """
+        アクセント句系列に含まれる音素の長さをスタイルに合わせて更新する。"""
         # NOTE: アクセント句に含まれない音長情報（例: AudioQueryのspeedScale、pauseLength）でアクセント句の音長属性は上書きされうる
 
         # モーラ系列を抽出する
@@ -278,7 +275,7 @@ class TTSEngine:
     def update_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
+        """アクセント句系列に含まれるモーラの音高をスタイルに合わせて更新する。"""
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
@@ -345,7 +342,7 @@ class TTSEngine:
     def update_length_and_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
+        """アクセント句系列に含まれる音素の長さとモーラの音高をスタイルに合わせて更新する。"""
         accent_phrases = self.update_length(accent_phrases, style_id)
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
