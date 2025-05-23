@@ -70,7 +70,7 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
     単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成する。
 
-    モーラの音素長と音高は0で初期化する。
+    音素長と音高は0で初期化する。
     """
     # NOTE: longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
     # NOTE: ポーズと疑問形はこの関数内で処理しない
@@ -128,7 +128,7 @@ def parse_kana(text: str) -> list[AccentPhrase]:
     """
     AquesTalk 風記法テキストからアクセント句系列を生成する。
 
-    モーラの音素長と音高は0で初期化する。
+    音素長と音高は0で初期化する。
     """
     parsed_results: list[AccentPhrase] = []
     phrase_base = 0

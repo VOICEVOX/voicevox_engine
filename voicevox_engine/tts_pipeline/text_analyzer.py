@@ -359,7 +359,7 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     """
     MoraLabel系列をMora系列へキャストする。
 
-    モーラの音素長と音高は0で初期化する。
+    音素長と音高は0で初期化する。
     """
     return [
         Mora(
