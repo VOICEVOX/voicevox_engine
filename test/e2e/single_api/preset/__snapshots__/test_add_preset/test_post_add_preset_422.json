@@ -1,0 +1,43 @@
+{
+  "detail": [
+    {
+      "input": {
+        "id": 9999,
+        "intonationScale": 1,
+        "name": "test_preset",
+        "pauseLength": null,
+        "pauseLengthScale": 1,
+        "pitchScale": 1,
+        "postPhonemeLength": 10,
+        "prePhonemeLength": 10,
+        "speaker_uuid": "123-456-789-234",
+        "speedScale": "a",
+        "volumeScale": null
+      },
+      "loc": [
+        "body",
+        "style_id"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    },
+    {
+      "input": "a",
+      "loc": [
+        "body",
+        "speedScale"
+      ],
+      "msg": "Input should be a valid number, unable to parse string as a number",
+      "type": "float_parsing"
+    },
+    {
+      "input": null,
+      "loc": [
+        "body",
+        "volumeScale"
+      ],
+      "msg": "Input should be a valid number",
+      "type": "float_type"
+    }
+  ]
+}
