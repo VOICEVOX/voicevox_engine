@@ -45,7 +45,7 @@ jobs:
           echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
 
           : # GitHub Container RegistryのDockerイメージリポジトリ
-          echo "ghcr_repository=ghcr.io/${{ github.repository }}" | tr "A-Z" "a-z" >> "$GITHUB_OUTPUT"
+          echo "ghcr_repository=ghcr.io/${{ github.repository }}" | tr "[:upper:]" "[:lower:]" >> "$GITHUB_OUTPUT"
 
           : # Docker HubのDockerイメージリポジトリ
           echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine" >> "$GITHUB_OUTPUT"

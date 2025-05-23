@@ -49,7 +49,7 @@ jobs:
         id: docker_vars
         run: |
           # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
-          REPOSITORY=$(echo "ghcr.io/${{ github.repository }}" | tr "A-Z" "a-z")
+          REPOSITORY=$(echo "ghcr.io/${{ github.repository }}" | tr "[:upper:]" "[:lower:]")
 
           if [ "${{ matrix.tag }}" != "" ]; then
             echo "image_tag=${REPOSITORY}:${{ matrix.tag }}-${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
