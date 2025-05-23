@@ -247,8 +247,6 @@ class TTSEngine:
     ) -> list[AccentPhrase]:
         """
         アクセント句系列に含まれる音素の長さをスタイルに合わせて更新する。"""
-        # NOTE: アクセント句に含まれない音長情報（例: AudioQueryのspeedScale、pauseLength）でアクセント句の音長属性は上書きされうる
-
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
