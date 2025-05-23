@@ -309,13 +309,13 @@ def _patch_licenses_manually(licenses: list[_License]) -> None:
     for license in licenses:
         if license.package_name == "kanalizer":
             # kanalizerのwheelをビルドするときに使ったライブラリの情報を追加する
+            for p in importlib.metadata.files("kanalizer"):  # type: ignore
+                if p.name == "NOTICE.md":
+                    notice_md = Path(p.locate())
+                    break
+            else:
+                raise Exception("kanalizerのNOTICE.mdが見つかりませんでした。")
             license.license_text += "\n\n"
-
-            notice_md = [
-                Path(p.locate())
-                for p in importlib.metadata.files("kanalizer")  # type: ignore
-                if p.name == "NOTICE.md"
-            ][0]
             license.license_text += notice_md.read_text(encoding="utf8")
 
 
