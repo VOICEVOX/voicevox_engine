@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - feature/fix-push-dockerhub-from-json-empty-error-test
   release:
     types:
       - created
