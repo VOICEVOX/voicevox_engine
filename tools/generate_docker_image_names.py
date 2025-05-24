@@ -26,7 +26,7 @@ def _generate_docker_image_tags(
     version: str,
     comma_separated_prefix: str,
     with_latest: bool,
-) -> list[str]:
+) -> set[str]:
     """
     Dockerイメージタグを生成する。
 
@@ -51,8 +51,8 @@ def _generate_docker_image_tags(
 
     Returns
     -------
-    list[str]
-        Dockerイメージタグの配列。
+    set[str]
+        Dockerイメージタグのセット。
 
     Examples
     --------
@@ -80,16 +80,16 @@ def _generate_docker_image_tags(
     prefixes = comma_separated_prefix.split(",")
 
     # 戻り値の配列
-    tags: list[str] = []
+    tags: set[str] = set()
 
     for prefix in prefixes:
         # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
         if prefix:
             prefix = f"{prefix}-"
-        tags.append(f"{prefix}{version}")
+        tags.add(f"{prefix}{version}")
 
         if with_latest:
-            tags.append(f"{prefix}latest")
+            tags.add(f"{prefix}latest")
 
     return tags
 
@@ -145,7 +145,7 @@ def _generate_docker_image_names(
     version: str,
     comma_separated_prefix: str,
     with_latest: bool,
-) -> list[str]:
+) -> set[str]:
     """
     Dockerイメージ名を生成する。
 
@@ -164,7 +164,7 @@ def _generate_docker_image_names(
 
     Returns
     -------
-    list[str]
+    set[str]
         Dockerイメージ名の配列。
     """
     tags = _generate_docker_image_tags(
@@ -172,9 +172,11 @@ def _generate_docker_image_names(
         comma_separated_prefix=comma_separated_prefix,
         with_latest=with_latest,
     )
-    return _create_docker_image_names(
-        repository=repository,
-        tags=tags,
+    return set(
+        _create_docker_image_names(
+            repository=repository,
+            tags=list(tags),
+        )
     )
 
 

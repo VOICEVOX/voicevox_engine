@@ -12,13 +12,13 @@ def test_generate_docker_image_tags_for_prerelease() -> None:
     # Inputs
     version = "0.22.0-preview.1"
     comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
-    with_latest = True
+    with_latest = False
     # Expects
-    expected_image_names = [
+    expected_image_names = {
         "0.22.0-preview.1",
         "cpu-0.22.0-preview.1",
         "cpu-ubuntu22.04-0.22.0-preview.1",
-    ]
+    }
     # Outputs
     image_names = _generate_docker_image_tags(
         version=version,
@@ -37,14 +37,14 @@ def test_generate_docker_image_tags_for_release() -> None:
     comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
     with_latest = True
     # Expects
-    expected_image_names = [
+    expected_image_names = {
         "0.22.0",
         "latest",
         "cpu-0.22.0",
         "cpu-latest",
         "cpu-ubuntu22.04-0.22.0",
         "cpu-ubuntu22.04-latest",
-    ]
+    }
     # Outputs
     image_names = _generate_docker_image_tags(
         version=version,
@@ -93,13 +93,13 @@ def test_generate_docker_image_names_for_prerelease() -> None:
     repository = "your-org/your-repo"
     version = "0.22.0-preview.1"
     comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
-    with_latest = True
+    with_latest = False
     # Expects
-    expected_image_names = [
+    expected_image_names = {
         "your-org/your-repo:0.22.0-preview.1",
         "your-org/your-repo:cpu-0.22.0-preview.1",
         "your-org/your-repo:cpu-ubuntu22.04-0.22.0-preview.1",
-    ]
+    }
     # Outputs
     image_names = _generate_docker_image_names(
         repository=repository,
@@ -120,14 +120,14 @@ def test_generate_docker_image_names_for_release() -> None:
     comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
     with_latest = True
     # Expects
-    expected_image_names = [
+    expected_image_names = {
         "your-org/your-repo:0.22.0",
         "your-org/your-repo:latest",
         "your-org/your-repo:cpu-0.22.0",
         "your-org/your-repo:cpu-latest",
         "your-org/your-repo:cpu-ubuntu22.04-0.22.0",
         "your-org/your-repo:cpu-ubuntu22.04-latest",
-    ]
+    }
     # Outputs
     image_names = _generate_docker_image_names(
         repository=repository,
