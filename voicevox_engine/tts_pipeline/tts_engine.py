@@ -21,8 +21,9 @@ from .model import (
     Mora,
 )
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .njd_feature_processor import text_to_full_context_labels
 from .phoneme import Phoneme
-from .text_analyzer import text_to_accent_phrases
+from .text_analyzer import full_context_labels_to_accent_phrases
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
@@ -344,9 +345,15 @@ class TTSEngine:
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self,
+        text: str,
+        style_id: StyleId,
+        enable_e2k: bool = False,  # TODO: 初期値をなくす？
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        accent_phrases = text_to_accent_phrases(text)
+        full_context_labels = text_to_full_context_labels(text, enable_e2k=enable_e2k)
+        accent_phrases = full_context_labels_to_accent_phrases(full_context_labels)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
