@@ -149,33 +149,32 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: <Build> Generate Docker image names for ghcr.io
-        id: generate-ghcr-docker-image-names
+      - name: <Build> Generate Docker image names
+        id: generate-docker-image-names
         run: |
-          # ghcr.io向けのDockerイメージ名を outputs.tags に改行区切りで格納する
+          # NOTE: workflow_call・workflow_dispatch以外では、 `inputs.prerelease == null` であるため `--with_latest` を指定しない
+          WITH_LATEST_ARG="${{ inputs.prerelease == false && '--with_latest' || '' }}"
+
+          # Dockerイメージ名を outputs.tags に改行区切りで格納する
           {
             echo "tags<<EOF"
 
+            # ghcr.io
             uv run tools/generate_docker_image_names.py \
               --repository "${{ needs.config.outputs.ghcr_repository }}" \
               --version "${{ needs.config.outputs.version }}" \
-              --prefix "${{ matrix.prefixes }}"
+              --prefix "${{ matrix.prefixes }}" \
+              ${WITH_LATEST_ARG}
 
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-      
-      - name: <Build> Generate Docker image names for Docker Hub
-        id: generate-dockerhub-docker-image-names
-        if: inputs.push_dockerhub
-        run: |
-          # Docker Hub向けのDockerイメージ名を outputs.tags に改行区切りで格納する
-          {
-            echo "tags<<EOF"
-
-            uv run tools/generate_docker_image_names.py \
-              --repository "${{ needs.config.outputs.dockerhub_repository }}" \
-              --version "${{ needs.config.outputs.version }}" \
-              --prefix "${{ matrix.prefixes }}"
+            # Docker Hub
+            # NOTE: workflow_call・workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため、Docker Hubにプッシュしない
+            if [[ "${{ inputs.push_dockerhub }}" == "true" ]]; then
+              uv run tools/generate_docker_image_names.py \
+                --repository "${{ needs.config.outputs.dockerhub_repository }}" \
+                --version "${{ needs.config.outputs.version }}" \
+                --prefix "${{ matrix.prefixes }}" \
+                ${WITH_LATEST_ARG}
+            fi
 
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
@@ -217,9 +216,7 @@ jobs:
             VOICEVOX_RESOURCE_VERSION=${{ env.VOICEVOX_RESOURCE_VERSION }}
           target: ${{ matrix.target }}
           push: true
-          tags: |
-            ${{ steps.generate-ghcr-docker-image-names.outputs.tags }}
-            ${{ steps.generate-dockerhub-docker-image-names.outputs.tags }}
+          tags: ${{ steps.generate-docker-image-names.outputs.tags }}
           cache-from: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-from }}
           cache-to: ${{ steps.generate-docker-buildcache-image-names.outputs.cache-to }}
           platforms: ${{ matrix.platforms }}
