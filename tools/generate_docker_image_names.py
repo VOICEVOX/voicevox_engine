@@ -99,7 +99,7 @@ def _generate_docker_image_tags(
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
 
-    # 戻り値の配列
+    # 戻り値のセット
     tags: set[str] = set()
 
     for prefix in prefixes:
