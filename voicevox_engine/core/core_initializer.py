@@ -5,12 +5,10 @@ import os
 import warnings
 from pathlib import Path
 
-from ..utility.core_version_utility import get_latest_version
+from ..utility.core_version_utility import MOCK_VER, get_latest_version
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_adapter import CoreAdapter
 from .core_wrapper import CoreWrapper, load_runtime_lib
-
-MOCK_VER = "0.0.0"
 
 
 def _get_half_logical_cores() -> int:
