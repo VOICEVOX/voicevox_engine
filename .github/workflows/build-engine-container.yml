@@ -10,6 +10,9 @@ on:
       push_dockerhub:
         type: boolean
         default: false
+      prerelease:
+        type: boolean
+        default: true
     secrets:
       DOCKERHUB_TOKEN:
         required: true
@@ -22,6 +25,10 @@ on:
         description: "Docker Hubにプッシュする"
         type: boolean
         default: false
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
