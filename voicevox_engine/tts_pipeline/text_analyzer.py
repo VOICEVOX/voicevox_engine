@@ -157,10 +157,6 @@ class _Label:
             breath_group_index=contexts["i3"],
         )
 
-    def __repr__(self) -> str:
-        """_Label クラス共通の文字列にこのインスタンスが持つ音素を含めて表示する。"""
-        return f"<Label phoneme='{self.phoneme}'>"
-
 
 @dataclass
 class MoraLabel:
