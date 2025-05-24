@@ -58,7 +58,7 @@ def _generate_docker_image_tags(
     --------
     >>> _generate_docker_image_tags(
     ...     version="0.22.0-preview.1",
-    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
+    ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
     ...     with_latest=False,
     ... )
     {'0.22.0-preview.1',
@@ -66,7 +66,7 @@ def _generate_docker_image_tags(
      'cpu-ubuntu22.04-0.22.0-preview.1'}
     >>> _generate_docker_image_tags(
     ...     version="0.22.0",
-    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
+    ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
     ...     with_latest=True,
     ... )
     {'0.22.0',
