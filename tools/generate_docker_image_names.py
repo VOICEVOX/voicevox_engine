@@ -192,8 +192,8 @@ def main() -> None:
     parser.add_argument(
         "--version",
         type=str,
-        default="latest",
-        help='バージョン（例: "0.22.0", "latest"）',
+        required=True,
+        help='バージョン（例: "0.22.0-preview.1", "0.22.0"）',
     )
     parser.add_argument(
         "--prefix",
