@@ -99,7 +99,7 @@ def _create_docker_image_names(
     tags: list[str],
 ) -> list[str]:
     """
-    Dockerイメージ名を生成する。
+    Dockerイメージ名を作成する。
 
     Dockerリポジトリ名、Dockerタグ名のリストを受け取り、Dockerイメージ名を配列で返す。
 
