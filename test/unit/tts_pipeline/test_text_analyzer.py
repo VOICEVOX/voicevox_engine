@@ -374,7 +374,9 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-def test_full_context_labels_to_accent_phrases_normal() -> None:
+def test_full_context_labels_to_accent_phrases_normal(
+    test_case_hello_hiho: list[str],
+) -> None:
     """`full_context_labels_to_accent_phrases` は正常な日本語文のフルコンテキストラベルをパースする"""
     # Expects
     true_accent_phrases = [
