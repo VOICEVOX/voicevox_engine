@@ -1,0 +1,52 @@
+"""`generate_docker_image_names.py` のテスト"""
+
+from tools.generate_docker_image_names import _generate_docker_image_tags
+
+
+def test_generate_docker_image_tags_for_prerelease() -> None:
+    """プレリリース向けのDockerイメージタグを生成できる。"""
+    # Inputs
+    version = "0.22.0-preview.1"
+    comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
+    with_latest = True
+    # Expects
+    expected_image_names = [
+        "0.22.0-preview.1",
+        "cpu-0.22.0-preview.1",
+        "cpu-ubuntu22.04-0.22.0-preview.1",
+    ]
+    # Outputs
+    image_names = _generate_docker_image_tags(
+        version=version,
+        comma_separated_prefix=comma_separated_prefix,
+        with_latest=with_latest,
+    )
+
+    # Test
+    assert image_names == expected_image_names
+
+
+def test_generate_docker_image_tags_for_release() -> None:
+    """リリース向けのDockerイメージタグを生成できる。"""
+    # Inputs
+    version = "0.22.0"
+    comma_separated_prefix = ",cpu,cpu-ubuntu22.04"
+    with_latest = True
+    # Expects
+    expected_image_names = [
+        "0.22.0",
+        "latest",
+        "cpu-0.22.0",
+        "cpu-latest",
+        "cpu-ubuntu22.04-0.22.0",
+        "cpu-ubuntu22.04-latest",
+    ]
+    # Outputs
+    image_names = _generate_docker_image_tags(
+        version=version,
+        comma_separated_prefix=comma_separated_prefix,
+        with_latest=with_latest,
+    )
+
+    # Test
+    assert image_names == expected_image_names
