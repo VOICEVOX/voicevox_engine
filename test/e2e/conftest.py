@@ -20,7 +20,7 @@ from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_core
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict_manager import (
     DEFAULT_DICT_PATH,
-    UserDictionary,
+    UserDictionaryManager,
 )
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
@@ -46,7 +46,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
     preset_manager = PresetManager(preset_path)
 
     # テスト用に隔離されたユーザー辞書を生成する
-    user_dict = UserDictionary(
+    user_dict_manager = UserDictionaryManager(
         default_dict_path=_copy_under_dir(DEFAULT_DICT_PATH, tmp_path),
         user_dict_path=_generate_user_dict(tmp_path),
     )
@@ -66,7 +66,7 @@ def app_params(tmp_path: Path) -> dict[str, Any]:
         "core_manager": core_manager,
         "setting_loader": setting_loader,
         "preset_manager": preset_manager,
-        "user_dict": user_dict,
+        "user_dict_manager": user_dict_manager,
         "engine_manifest": engine_manifest,
         "library_manager": library_manager,
     }
