@@ -98,12 +98,13 @@ def generate_tts_pipeline_router(
     def audio_query(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        accent_phrases = engine.create_accent_phrases(text, style_id)
+        accent_phrases = engine.create_accent_phrases(text, style_id, enable_e2k)
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -127,6 +128,7 @@ def generate_tts_pipeline_router(
     def audio_query_from_preset(
         text: str,
         preset_id: int,
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
@@ -147,7 +149,9 @@ def generate_tts_pipeline_router(
                 status_code=422, detail="該当するプリセットIDが見つかりません"
             )
 
-        accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
+        accent_phrases = engine.create_accent_phrases(
+            text, selected_preset.style_id, enable_e2k
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=selected_preset.speedScale,
@@ -178,6 +182,7 @@ def generate_tts_pipeline_router(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         is_kana: bool = False,
+        enable_e2k: bool = True,  # TODO: デフォルト値をどうするか考える
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         """
@@ -189,6 +194,8 @@ def generate_tts_pipeline_router(
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
+        enable_e2kが`true`のとき、テキスト中の読みが不明な英単語を、e2kで解析します。デフォルトは`true`です。
+        is_kanaが`true`のとき、enable_e2kの値は無視されます。
         """
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
@@ -200,7 +207,7 @@ def generate_tts_pipeline_router(
                     status_code=400, detail=ParseKanaBadRequest(e).model_dump()
                 ) from e
         else:
-            return engine.create_accent_phrases(text, style_id)
+            return engine.create_accent_phrases(text, style_id, enable_e2k)
 
     @router.post(
         "/mora_data",
