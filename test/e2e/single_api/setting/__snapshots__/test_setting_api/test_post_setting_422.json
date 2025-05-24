@@ -1,0 +1,16 @@
+{
+  "detail": [
+    {
+      "ctx": {
+        "expected": "'all' or 'localapps'"
+      },
+      "input": "wrong",
+      "loc": [
+        "body",
+        "cors_policy_mode"
+      ],
+      "msg": "Input should be 'all' or 'localapps'",
+      "type": "enum"
+    }
+  ]
+}
