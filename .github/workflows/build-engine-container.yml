@@ -167,8 +167,8 @@ jobs:
               ${WITH_LATEST_ARG}
 
             # Docker Hub
-            # NOTE: workflow_call・workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため、Docker Hubにプッシュしない
             # TODO: レジストリごとにプッシュするプレフィックスを変更したい（ https://github.com/VOICEVOX/voicevox_engine/issues/1663 ）
+            # NOTE: workflow_call・workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため、Docker Hubにプッシュしない
             if [[ "${{ inputs.push_dockerhub }}" == "true" ]]; then
               uv run tools/generate_docker_image_names.py \
                 --repository "${{ needs.config.outputs.dockerhub_repository }}" \
