@@ -50,7 +50,7 @@ def _generate_docker_image_tags(
     """
     Dockerイメージタグを生成する。
 
-    バージョン、カンマ区切りのプレフィックスを受け取り、タグを配列で返す。
+    バージョン、カンマ区切りのプレフィックスを受け取り、タグをセットで返す。
 
     prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
 
@@ -169,7 +169,7 @@ def _generate_docker_image_names(
     """
     Dockerイメージ名を生成する。
 
-    Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、Dockerイメージ名を配列で返す。
+    Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、Dockerイメージ名をセットで返す。
 
     Parameters
     ----------
@@ -185,7 +185,7 @@ def _generate_docker_image_names(
     Returns
     -------
     set[str]
-        Dockerイメージ名の配列。
+        Dockerイメージ名のセット。
     """
     tags = _generate_docker_image_tags(
         version=version,
