@@ -408,13 +408,15 @@ def test_full_context_labels_to_accent_phrases_normal(
     assert accent_phrases == true_accent_phrases
 
 
-test_case_koxx = [
-    ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
-    ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-    ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-    ".^.-xx+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-    ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
-]
+@pytest.fixture
+def test_case_koxx() -> list[str]:
+    return [
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-xx+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+    ]
 
 
 def test_label_non_ojt_phoneme() -> None:
@@ -426,7 +428,7 @@ def test_label_non_ojt_phoneme() -> None:
         _ = unknown_label.phoneme
 
 
-def test_label_unknown_phoneme() -> None:
+def test_label_unknown_phoneme(test_case_koxx: list[str]) -> None:
     """`Label` は unknown 音素 `xx` をパース失敗する"""
     unknown_feature = test_case_koxx[3]
     with pytest.raises(OjtUnknownPhonemeError):
@@ -434,7 +436,9 @@ def test_label_unknown_phoneme() -> None:
         _ = unknown_label.phoneme
 
 
-def test_full_context_labels_to_accent_phrases_unknown() -> None:
+def test_full_context_labels_to_accent_phrases_unknown(
+    test_case_koxx: list[str],
+) -> None:
     """`full_context_labels_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
     with pytest.raises(OjtUnknownPhonemeError):
         full_context_labels_to_accent_phrases(test_case_koxx)
