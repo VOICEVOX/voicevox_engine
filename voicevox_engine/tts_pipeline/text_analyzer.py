@@ -5,10 +5,9 @@ from dataclasses import dataclass
 from itertools import chain
 from typing import Any, Final, Literal, Self, TypeGuard
 
-import pyopenjtalk
-
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .njd_feature_processor import text_to_full_context_labels
 from .phoneme import Consonant, Sil, Vowel
 
 
@@ -402,10 +401,10 @@ def _parse_full_context_labels(labels: list[str]) -> list[AccentPhrase]:
     ]
 
 
-def text_to_accent_phrases(text: str) -> list[AccentPhrase]:
+def text_to_accent_phrases(text: str, enable_e2k: bool) -> list[AccentPhrase]:
     """日本語文からアクセント句系列を生成する。"""
     if len(text.strip()) == 0:
         return []
-    full_context_labels = pyopenjtalk.extract_fullcontext(text)
+    full_context_labels = text_to_full_context_labels(text, enable_e2k=enable_e2k)
     accent_phrases = _parse_full_context_labels(full_context_labels)
     return accent_phrases

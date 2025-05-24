@@ -401,7 +401,7 @@ def test_parse_full_context_labels_unknown(labels_with_unknown: list[str]) -> No
 
 def test_text_to_accent_phrases_normal() -> None:
     """`text_to_accent_phrases` は正常な日本語文をパースする。"""
-    # NOTE: 外部ライブラリである pyopenjtalk を含めたテストになっている。
+    # NOTE: 外部ライブラリである pyopenjtalk と kanalizer を含めたテストになっている。
     # Inputs
     text = "こんにちは、ヒホです。"
     # Expects
@@ -429,6 +429,6 @@ def test_text_to_accent_phrases_normal() -> None:
         ),
     ]
     # Outputs
-    accent_phrases = text_to_accent_phrases(text)
+    accent_phrases = text_to_accent_phrases(text, enable_e2k=True)
     # Tests
     assert accent_phrases == true_accent_phrases

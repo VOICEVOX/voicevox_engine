@@ -344,9 +344,14 @@ class TTSEngine:
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self,
+        text: str,
+        style_id: StyleId,
+        enable_e2k: bool = False,  # TODO: 初期値をなくす？
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        accent_phrases = text_to_accent_phrases(text)
+        accent_phrases = text_to_accent_phrases(text=text, enable_e2k=enable_e2k)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
