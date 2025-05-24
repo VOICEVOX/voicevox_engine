@@ -580,7 +580,7 @@
             "type": "string"
           },
           "consonant_length": {
-            "description": "子音の音長",
+            "description": "子音の長さ",
             "title": "Consonant Length",
             "type": "number"
           },
@@ -600,7 +600,7 @@
             "type": "string"
           },
           "vowel_length": {
-            "description": "母音の音長",
+            "description": "母音の長さ",
             "title": "Vowel Length",
             "type": "number"
           }
@@ -2179,7 +2179,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "アクセント句から音高・音素長を得る",
+        "summary": "アクセント句から音素の長さと音高を得る",
         "tags": [
           "クエリ編集"
         ]
@@ -2248,7 +2248,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "アクセント句から音素長を得る",
+        "summary": "アクセント句から音素の長さを得る",
         "tags": [
           "クエリ編集"
         ]

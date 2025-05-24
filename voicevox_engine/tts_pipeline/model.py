@@ -23,13 +23,11 @@ class Mora(BaseModel):
         default=None, description="子音の音素"
     )
     consonant_length: float | SkipJsonSchema[None] = Field(
-        default=None, description="子音の音長"
+        default=None, description="子音の長さ"
     )
     vowel: str = Field(description="母音の音素")
-    vowel_length: float = Field(description="母音の音長")
-    pitch: float = Field(
-        description="音高"
-    )  # デフォルト値をつけるとts側のOpenAPIで生成されたコードの型がOptionalになる
+    vowel_length: float = Field(description="母音の長さ")
+    pitch: float = Field(description="音高")
 
     def __hash__(self) -> int:
         """内容に対して一意なハッシュ値を返す。"""

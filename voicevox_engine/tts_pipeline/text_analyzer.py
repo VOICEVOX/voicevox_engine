@@ -353,7 +353,11 @@ def mora_to_text(mora_phonemes: str) -> str:
 
 
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
-    """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
+    """
+    MoraLabel系列をMora系列へキャストする。
+
+    音素長と音高は0で初期化する。
+    """
     return [
         Mora(
             text=mora_to_text("".join([label.phoneme for label in mora.labels])),
