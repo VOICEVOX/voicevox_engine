@@ -17,6 +17,26 @@ $ uv run ./tools/generate_docker_image_names.py \
   --version "VER" \
   --prefix ""
 REPO:VER
+
+$ uv run ./tools/generate_docker_image_names.py \
+  --repository "REPO" \
+  --version "VER" \
+  --prefix ",A,B" \
+  --with_latest
+REPO:VER
+REPO:latest
+REPO:A-VER
+REPO:A-latest
+REPO:B-VER
+REPO:B-latest
+
+$ uv run ./tools/generate_docker_image_names.py \
+  --repository "REPO" \
+  --version "VER" \
+  --prefix "" \
+  --with_latest
+REPO:VER
+REPO:latest
 """
 
 from argparse import ArgumentParser
