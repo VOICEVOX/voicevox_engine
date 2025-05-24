@@ -153,7 +153,10 @@ jobs:
         id: generate-docker-image-names
         run: |
           # NOTE: workflow_call・workflow_dispatch以外では、 `inputs.prerelease == null` であるため `--with_latest` を指定しない
-          WITH_LATEST_ARG="${{ inputs.prerelease == false && '--with_latest' || '' }}"
+          WITH_LATEST_ARG=""
+          if [[ "${{ inputs.prerelease }}" == "false" ]]; then
+            WITH_LATEST_ARG="--with_latest"
+          fi
 
           # Dockerイメージ名を outputs.tags に改行区切りで格納する
           {
