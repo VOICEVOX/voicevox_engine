@@ -22,6 +22,124 @@ REPO:VER
 from argparse import ArgumentParser
 
 
+def _generate_docker_image_tags(
+    version: str,
+    comma_separated_prefix: str,
+    with_latest: bool,
+) -> list[str]:
+    """
+    Dockerイメージタグを生成する。
+
+    バージョン、カンマ区切りのプレフィックスを受け取り、タグを配列で返す。
+
+    prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
+
+    - 例: version="VER", prefix="A" -> "A-VER"
+
+    prefixが空文字列の場合、"{version}"をタグにする
+
+    - 例: version="VER",  prefix="" -> "VER"
+
+    Parameters
+    ----------
+    version : str
+        バージョン
+    comma_separated_prefix : str
+        カンマ区切りのプレフィックス
+    with_latest : bool
+        バージョンをlatestに置き換えたタグを追加する
+
+    Returns
+    -------
+    list[str]
+        Dockerイメージタグの配列。
+
+    Examples
+    --------
+    >>> _generate_docker_image_tags(
+    ...     version="0.22.0-preview.1",
+    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
+    ...     with_latest=False,
+    ... )
+    ['0.22.0-preview.1',
+     'cpu-0.22.0-preview.1',
+     'cpu-ubuntu22.04-0.22.0-preview.1']
+    >>> _generate_docker_image_tags(
+    ...     version="0.22.0",
+    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
+    ...     with_latest=True,
+    ... )
+    ['0.22.0',
+     'latest',
+     'cpu-0.22.0',
+     'cpu-latest',
+     'cpu-ubuntu22.04-0.22.0',
+     'cpu-ubuntu22.04-latest']
+    """
+    # カンマ区切りのタグ名を配列に変換
+    prefixes = comma_separated_prefix.split(",")
+
+    # 戻り値の配列
+    tags: list[str] = []
+
+    for prefix in prefixes:
+        # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
+        if prefix:
+            prefix = f"{prefix}-"
+        tags.append(f"{prefix}{version}")
+
+        if with_latest:
+            tags.append(f"{prefix}latest")
+
+    return tags
+
+
+def _create_docker_image_names(
+    repository: str,
+    tags: list[str],
+) -> list[str]:
+    """
+    Dockerイメージ名を生成する。
+
+    Dockerリポジトリ名、Dockerタグ名のリストを受け取り、Dockerイメージ名を配列で返す。
+
+    Parameters
+    ----------
+    repository : str
+        Dockerリポジトリ名
+    tags : list[str]
+        Dockerイメージタグのリスト
+
+    Returns
+    -------
+    list[str]
+        Dockerイメージ名の配列。
+
+    Examples
+    --------
+    >>> _create_docker_image_names(
+    ...     repository="voicevox/voicevox_engine",
+    ...     tags=[
+    ...         "0.22.0-preview.1",
+    ...         "cpu-0.22.0-preview.1",
+    ...         "cpu-ubuntu22.04-0.22.0-preview.1",
+    ...     ],
+    ... )
+    ['voicevox/voicevox_engine:0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1']
+    """
+    # 戻り値の配列
+    docker_image_names: list[str] = []
+
+    for tag in tags:
+        # Dockerイメージ名を生成
+        docker_image_name = f"{repository}:{tag}"
+        docker_image_names.append(docker_image_name)
+
+    return docker_image_names
+
+
 def _generate_docker_image_names(
     repository: str,
     version: str,
@@ -31,14 +149,7 @@ def _generate_docker_image_names(
     """
     Dockerイメージ名を生成する。
 
-    Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、バージョン付きのDockerイメージ名を配列で返す。
-    prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
-
-    - 例: repository="REPO", version="VER", prefix="A" -> "REPO:A-VER"
-
-    prefixが空文字列の場合、"{version}"をタグにする
-
-    - 例: repository="REPO", version="VER",  prefix="" -> "REPO:VER"
+    Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、Dockerイメージ名を配列で返す。
 
     Parameters
     ----------
@@ -55,47 +166,16 @@ def _generate_docker_image_names(
     -------
     list[str]
         Dockerイメージ名の配列。
-
-    Examples
-    --------
-    >>> _generate_docker_image_names(
-    ...     repository="voicevox/voicevox_engine",
-    ...     version="0.22.0-preview.1",
-    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
-    ...     with_latest=False,
-    ... )
-    ['voicevox/voicevox_engine:0.22.0-preview.1',
-     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1']
-    >>> _generate_docker_image_names(
-    ...     repository="voicevox/voicevox_engine",
-    ...     version="0.22.0",
-    ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
-    ...     with_latest=True,
-    ... )
-    ['voicevox/voicevox_engine:0.22.0',
-     'voicevox/voicevox_engine:latest',
-     'voicevox/voicevox_engine:cpu-0.22.0',
-     'voicevox/voicevox_engine:cpu-latest',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-latest']
     """
-    # カンマ区切りのタグ名を配列に変換
-    prefixes = comma_separated_prefix.split(",")
-
-    # 戻り値の配列
-    docker_image_names: list[str] = []
-
-    for prefix in prefixes:
-        # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
-        if prefix:
-            prefix = f"{prefix}-"
-        docker_image_names.append(f"{repository}:{prefix}{version}")
-
-        if with_latest:
-            docker_image_names.append(f"{repository}:{prefix}latest")
-
-    return docker_image_names
+    tags = _generate_docker_image_tags(
+        version=version,
+        comma_separated_prefix=comma_separated_prefix,
+        with_latest=with_latest,
+    )
+    return _create_docker_image_names(
+        repository=repository,
+        tags=tags,
+    )
 
 
 def main() -> None:
