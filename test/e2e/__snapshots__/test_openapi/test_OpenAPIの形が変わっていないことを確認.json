@@ -25,7 +25,7 @@
           },
           "pause_mora": {
             "$ref": "#/components/schemas/Mora",
-            "description": "後ろに無音を付けるかどうか",
+            "description": "アクセント句の末尾につく無音モーラ。null の場合は無音モーラを付けない。",
             "title": "Pause Mora"
           }
         },
