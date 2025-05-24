@@ -1,0 +1,16 @@
+{
+  "detail": [
+    {
+      "ctx": {
+        "le": 1.0
+      },
+      "input": "100",
+      "loc": [
+        "query",
+        "morph_rate"
+      ],
+      "msg": "Input should be less than or equal to 1",
+      "type": "less_than_equal"
+    }
+  ]
+}
