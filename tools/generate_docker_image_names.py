@@ -61,20 +61,20 @@ def _generate_docker_image_tags(
     ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
     ...     with_latest=False,
     ... )
-    ['0.22.0-preview.1',
+    {'0.22.0-preview.1',
      'cpu-0.22.0-preview.1',
-     'cpu-ubuntu22.04-0.22.0-preview.1']
+     'cpu-ubuntu22.04-0.22.0-preview.1'}
     >>> _generate_docker_image_tags(
     ...     version="0.22.0",
     ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
     ...     with_latest=True,
     ... )
-    ['0.22.0',
+    {'0.22.0',
      'latest',
      'cpu-0.22.0',
      'cpu-latest',
      'cpu-ubuntu22.04-0.22.0',
-     'cpu-ubuntu22.04-latest']
+     'cpu-ubuntu22.04-latest'}
     """
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
