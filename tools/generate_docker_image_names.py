@@ -60,13 +60,13 @@ def _generate_docker_image_names(
     --------
     >>> _generate_docker_image_names(
     ...     repository="voicevox/voicevox_engine",
-    ...     version="0.22.0-preview-1",
+    ...     version="0.22.0-preview.1",
     ...     comma_separated_prefix="cpu,cpu-ubuntu22.04",
     ...     with_latest=False,
     ... )
-    ['voicevox/voicevox_engine:0.22.0-preview-1',
-     'voicevox/voicevox_engine:cpu-0.22.0-preview-1',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview-1']
+    ['voicevox/voicevox_engine:0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1']
     >>> _generate_docker_image_names(
     ...     repository="voicevox/voicevox_engine",
     ...     version="0.22.0",
