@@ -62,7 +62,7 @@ jobs:
       matrix:
         # 各変数の説明
         # os: ビルド環境のOS
-        # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョン文字列のみがタグ名になる
+        # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョンのみがタグ名になる
         # buildcache_prefix: ビルドキャッシュのプレフィックス。空文字列やカンマは使用不可
         # target: Dockerfileのビルドステージ名
         # base_image: Dockerfileのベースイメージ
