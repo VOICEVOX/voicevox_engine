@@ -120,7 +120,7 @@ class CoreAdapter:
     def safe_yukarin_s_forward(
         self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
     ) -> NDArray[np.float32]:
-        """音素列から各音素の長さを求める。"""
+        """音素列から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -205,7 +205,7 @@ class CoreAdapter:
         note_duration: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.int64]:
-        """子音列・母音列・ノート長・スタイル ID から各音素の長さを求める。"""
+        """子音列・母音列・ノート長・スタイル ID から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 

@@ -648,7 +648,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        音素列から各音素の長さを求める。
+        音素列から音素ごとの長さを求める。
 
         Parameters
         ----------
@@ -662,7 +662,7 @@ class CoreWrapper:
         Returns
         -------
         output : NDArray[np.float32]
-            各音素の長さ
+            音素ごとの長さ
         """
         output = np.zeros((length,), dtype=np.float32)
         self.assert_core_success(

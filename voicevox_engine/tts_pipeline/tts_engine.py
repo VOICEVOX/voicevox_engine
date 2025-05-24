@@ -255,7 +255,7 @@ class TTSEngine:
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
-        # 各音素の長さを生成する
+        # 音素ごとの長さを生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
         # 生成された音素長でモーラの音素長を更新する
