@@ -7,12 +7,12 @@ on:
       version:
         type: string
         required: true
-      push_dockerhub:
-        type: boolean
-        default: false
       prerelease:
         type: boolean
         default: true
+      push_dockerhub:
+        type: boolean
+        default: false
     secrets:
       DOCKERHUB_TOKEN:
         required: true
@@ -21,14 +21,14 @@ on:
       version:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
-      push_dockerhub:
-        description: "Docker Hubにプッシュする"
-        type: boolean
-        default: false
       prerelease:
         description: "プレリリースかどうか"
         type: boolean
         default: true
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.0"
