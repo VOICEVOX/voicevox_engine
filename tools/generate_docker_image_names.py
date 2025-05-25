@@ -85,21 +85,21 @@ def _generate_docker_image_names(
     ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
     ...     with_latest=False,
     ... )
-    {"voicevox/voicevox_engine:0.22.0-preview.1",
-     "voicevox/voicevox_engine:cpu-0.22.0-preview.1",
-     "voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1"}
+    {'voicevox/voicevox_engine:0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1'}
     >>> _generate_docker_image_tags(
     ...     repository="voicevox/voicevox_engine",
     ...     version="0.22.0",
     ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
     ...     with_latest=True,
     ... )
-    {"voicevox/voicevox_engine:0.22.0",
-     "voicevox/voicevox_engine:latest",
-     "voicevox/voicevox_engine:cpu-0.22.0",
-     "voicevox/voicevox_engine:cpu-latest",
-     "voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0",
-     "voicevox/voicevox_engine:cpu-ubuntu22.04-latest"}
+    {'voicevox/voicevox_engine:0.22.0',
+     'voicevox/voicevox_engine:latest',
+     'voicevox/voicevox_engine:cpu-0.22.0',
+     'voicevox/voicevox_engine:cpu-latest',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-latest'}
     """
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
