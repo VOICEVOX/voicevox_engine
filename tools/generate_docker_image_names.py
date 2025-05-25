@@ -114,52 +114,6 @@ def _generate_docker_image_tags(
     return tags
 
 
-def _create_docker_image_names(
-    repository: str,
-    tags: list[str],
-) -> list[str]:
-    """
-    Dockerイメージ名を作成する。
-
-    Dockerリポジトリ名、Dockerタグ名のリストを受け取り、Dockerイメージ名を配列で返す。
-
-    Parameters
-    ----------
-    repository : str
-        Dockerリポジトリ名
-    tags : list[str]
-        Dockerイメージタグのリスト
-
-    Returns
-    -------
-    list[str]
-        Dockerイメージ名の配列。
-
-    Examples
-    --------
-    >>> _create_docker_image_names(
-    ...     repository="voicevox/voicevox_engine",
-    ...     tags=[
-    ...         "0.22.0-preview.1",
-    ...         "cpu-0.22.0-preview.1",
-    ...         "cpu-ubuntu22.04-0.22.0-preview.1",
-    ...     ],
-    ... )
-    ['voicevox/voicevox_engine:0.22.0-preview.1',
-     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1']
-    """
-    # 戻り値の配列
-    docker_image_names: list[str] = []
-
-    for tag in tags:
-        # Dockerイメージ名を生成
-        docker_image_name = f"{repository}:{tag}"
-        docker_image_names.append(docker_image_name)
-
-    return docker_image_names
-
-
 def _generate_docker_image_names(
     repository: str,
     version: str,
@@ -192,12 +146,7 @@ def _generate_docker_image_names(
         comma_separated_prefix=comma_separated_prefix,
         with_latest=with_latest,
     )
-    return set(
-        _create_docker_image_names(
-            repository=repository,
-            tags=list(tags),
-        )
-    )
+    return set(map(lambda tag: f"{repository}:{tag}", tags))
 
 
 def main() -> None:
