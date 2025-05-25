@@ -88,7 +88,7 @@ def _generate_docker_image_names(
     {'voicevox/voicevox_engine:0.22.0-preview.1',
      'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
      'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1'}
-    >>> _generate_docker_image_tags(
+    >>> _generate_docker_image_names(
     ...     repository="voicevox/voicevox_engine",
     ...     version="0.22.0",
     ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
