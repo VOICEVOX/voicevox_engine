@@ -53,9 +53,8 @@ class NjdFeature:
 
 
 def _is_unknown_reading_word(feature: NjdFeature) -> bool:
-    """読みが不明な単語であるか否かを判定する"""
-    # Mecabの解析で未知語となった場合、読みは空となる
-    # NJDは、読みが空の場合、読みを補完して品詞をフィラーとして扱う
+    """読みが不明な単語であるか否かを判定する。"""
+    # NOTE: Mecabは未知語の読みを空とし、NJDは空の読みを補完して品詞をフィラーとして扱う
     return feature.pos == "フィラー" and feature.chain_rule == "*"
 
 
@@ -102,18 +101,14 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
-            if not _is_unknown_reading_word(feature):
-                continue
             hankaku_string = replace_zenkaku_alphabets_with_hankaku(feature.string)
-            if not is_hankaku_alphabet(hankaku_string):
-                continue
-            if not should_convert_english_to_katakana(hankaku_string):
-                continue
-            new_pron = convert_english_to_katakana(hankaku_string)
-            njd_features[i] = NjdFeature.from_english_kana(
-                feature.string,
-                new_pron,
-            )
+            if (
+                _is_unknown_reading_word(feature)
+                and is_hankaku_alphabet(hankaku_string)
+                and should_convert_english_to_katakana(hankaku_string)
+            ):
+                new_pron = convert_english_to_katakana(hankaku_string)
+                njd_features[i] = NjdFeature.from_english_kana(feature.string, new_pron)
 
         # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
         njd_features = _remove_pau_space_between_alphabet(njd_features)
