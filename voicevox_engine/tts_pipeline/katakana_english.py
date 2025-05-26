@@ -78,7 +78,7 @@ def _convert_as_char_wise_katakana(alphabets: HankakuAlphabet) -> str:
 
     Examples
     --------
-    >>> _split_into_words("VOICE")
+    >>> _convert_as_char_wise_katakana("VOICE")
     "ブイオーアイシーイー"
     """
     yomi = ""
