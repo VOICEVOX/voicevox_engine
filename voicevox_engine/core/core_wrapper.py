@@ -786,7 +786,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.int64]:
         """
-        子音・母音列から音素ごとの長さを求める。
+        子音列の各子音の長さを求める。
 
         Parameters
         ----------
@@ -804,7 +804,7 @@ class CoreWrapper:
         Returns
         -------
         output : NDArray[np.int64]
-            子音長
+            子音の長さ
         """
         if self.api_exists["predict_sing_consonant_length_forward"]:
             output = np.zeros((length,), dtype=np.int64)
