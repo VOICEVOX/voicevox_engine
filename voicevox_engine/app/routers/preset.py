@@ -1,5 +1,6 @@
 """プリセット機能を提供する API Router"""
 
+from traceback import print_exception
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
@@ -31,7 +32,8 @@ def generate_preset_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
         return presets
 
     @router.post(
@@ -53,7 +55,8 @@ def generate_preset_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
         return id
 
     @router.post(
@@ -75,7 +78,8 @@ def generate_preset_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
         return id
 
     @router.post(
@@ -92,6 +96,7 @@ def generate_preset_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
 
     return router
