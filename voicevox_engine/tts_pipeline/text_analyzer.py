@@ -7,6 +7,7 @@ from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .njd_feature_processor import text_to_full_context_labels
 from .phoneme import Consonant, Sil, Vowel
 
 
@@ -371,8 +372,10 @@ def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
     ]
 
 
-def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
-    """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
+def _parse_full_context_labels(labels: list[str]) -> list[AccentPhrase]:
+    """フルコンテキストラベルをアクセント句系列へ変換する。"""
+    utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, labels)))
+
     if len(utterance.breath_groups) == 0:
         return []
 
@@ -402,18 +405,10 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def full_context_labels_to_accent_phrases(
-    full_context_labels: list[str],
-) -> list[AccentPhrase]:
-    """フルコンテキストラベルからアクセント句系列を生成する"""
-    if len(full_context_labels) == 0:
+def text_to_accent_phrases(text: str, enable_e2k: bool) -> list[AccentPhrase]:
+    """日本語文からアクセント句系列を生成する。"""
+    if len(text.strip()) == 0:
         return []
-
-    utterance = UtteranceLabel.from_labels(
-        list(map(Label.from_feature, full_context_labels))
-    )
-
-    # ドメインを変換する
-    accent_phrases = _utterance_to_accent_phrases(utterance)
-
+    full_context_labels = text_to_full_context_labels(text, enable_e2k=enable_e2k)
+    accent_phrases = _parse_full_context_labels(full_context_labels)
     return accent_phrases
