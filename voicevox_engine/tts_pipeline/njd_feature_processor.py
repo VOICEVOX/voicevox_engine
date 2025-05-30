@@ -97,9 +97,9 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
-            hankakus = replace_zenkaku_alphabets_with_hankaku(feature.string)
-            if _is_unknown_reading_word(feature) and is_hankaku_alphabet(hankakus):
-                new_pron = convert_english_to_katakana(hankakus)
+            string = replace_zenkaku_alphabets_with_hankaku(feature.string)
+            if _is_unknown_reading_word(feature) and is_hankaku_alphabet(string):
+                new_pron = convert_english_to_katakana(string)
                 njd_features[i] = NjdFeature.from_english_kana(feature.string, new_pron)
 
         # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する
