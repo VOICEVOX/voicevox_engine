@@ -5,11 +5,7 @@ from dataclasses import asdict, dataclass
 import pyopenjtalk
 
 from ..utility.text_utility import count_mora, replace_zenkaku_alphabets_with_hankaku
-from .katakana_english import (
-    convert_english_to_katakana,
-    is_hankaku_alphabet,
-    should_convert_english_to_katakana,
-)
+from .katakana_english import convert_english_to_katakana, is_hankaku_alphabet
 
 
 @dataclass
@@ -101,13 +97,9 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     if enable_e2k:
         for i, feature in enumerate(njd_features):
-            hankaku_string = replace_zenkaku_alphabets_with_hankaku(feature.string)
-            if (
-                _is_unknown_reading_word(feature)
-                and is_hankaku_alphabet(hankaku_string)
-                and should_convert_english_to_katakana(hankaku_string)
-            ):
-                new_pron = convert_english_to_katakana(hankaku_string)
+            string = replace_zenkaku_alphabets_with_hankaku(feature.string)
+            if _is_unknown_reading_word(feature) and is_hankaku_alphabet(string):
+                new_pron = convert_english_to_katakana(string)
                 njd_features[i] = NjdFeature.from_english_kana(feature.string, new_pron)
 
         # 英単語間のスペースがpauとして扱われて読みが不自然になるため、削除する

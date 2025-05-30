@@ -60,12 +60,13 @@ def _split_into_words(string: HankakuAlphabet) -> list[HankakuAlphabet]:
     return list(map(HankakuAlphabet, re.findall("[a-zA-Z][a-z]*", string)))
 
 
-def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
-    """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
+def _should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
+    """読みが不明な英単語をカタカナに変換するべきか否かを判定する。"""
+    # 2文字以下の場合はカタカナへ変換しない
     if len(string) < 3:
         return False
 
-    # 全て大文字の場合は、e2kでの解析を行わない
+    # 全て大文字の場合はカタカナへ変換しない
     if string == string.upper():
         return False
 
@@ -91,7 +92,7 @@ def convert_english_to_katakana(string: HankakuAlphabet) -> str:
     """英単語をカタカナ読みに変換する。"""
     kana = ""
     for word in _split_into_words(string):
-        if should_convert_english_to_katakana(word):
+        if _should_convert_english_to_katakana(word):
             # 単語を英単語とみなして読みを生成する
             kana += kanalizer.convert(word.lower())
         else:
