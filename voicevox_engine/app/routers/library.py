@@ -2,6 +2,7 @@
 
 import asyncio
 from io import BytesIO
+from traceback import print_exception
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
@@ -74,7 +75,8 @@ def generate_library_router(
         except LibraryOperationUnauthorizedError as e:
             raise HTTPException(status_code=403, detail=str(e)) from e
         except LibraryInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
 
     @router.post(
         "/uninstall_library/{library_uuid}",
@@ -96,6 +98,7 @@ def generate_library_router(
         except LibraryOperationUnauthorizedError as e:
             raise HTTPException(status_code=403, detail=str(e)) from e
         except LibraryInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
 
     return router
