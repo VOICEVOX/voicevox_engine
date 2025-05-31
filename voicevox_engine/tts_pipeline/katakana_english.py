@@ -46,30 +46,55 @@ def is_hankaku_alphabet(text: str) -> TypeGuard[HankakuAlphabet]:
     return bool(re.fullmatch("[a-zA-Z]+", text))
 
 
-def should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
-    """読みが不明な英単語をカタカナに変換するべきか否かを判定する"""
+def _split_into_words(string: HankakuAlphabet) -> list[HankakuAlphabet]:
+    """
+    アルファベット列を単語列へ分割する。
+
+    Examples
+    --------
+    >>> _split_into_words("VoiceVox")
+    ["Voice", "Vox"]
+    """
+    # TODO: 「全て大文字で書かれた英単語は、バラバラの文字へ分割される」という動作がユーザーにとって最適か検討 (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1524#issuecomment-2849254324)
+    # NOTE: キャメルケース的な単語に対応させるため、大文字で分割する
+    return list(map(HankakuAlphabet, re.findall("[a-zA-Z][a-z]*", string)))
+
+
+def _should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
+    """読みが不明な英単語をカタカナに変換するべきか否かを判定する。"""
+    # 2文字以下の場合はカタカナへ変換しない
     if len(string) < 3:
         return False
 
-    # 全て大文字の場合は、e2kでの解析を行わない
+    # 全て大文字の場合はカタカナへ変換しない
     if string == string.upper():
         return False
 
     return True
 
 
+def _convert_as_char_wise_katakana(alphabets: HankakuAlphabet) -> str:
+    """
+    アルファベット列を文字ごとのカタカナ読みへ変換する。
+
+    Examples
+    --------
+    >>> _convert_as_char_wise_katakana("VOICE")
+    "ブイオーアイシーイー"
+    """
+    yomi = ""
+    for alphabet in alphabets:
+        yomi += ojt_alphabet_kana_mapping[alphabet.upper()]
+    return yomi
+
+
 def convert_english_to_katakana(string: HankakuAlphabet) -> str:
-    """kanalizerを用いて、読みが不明な英単語をカタカナに変換する"""
+    """英単語をカタカナ読みに変換する。"""
     kana = ""
-    # キャメルケース的な単語に対応させるため、大文字で分割する
-    for word in re.findall("[a-zA-Z][a-z]*", string):
-        word = HankakuAlphabet(word)
-
-        # 大文字のみ、もしくは短いワードの場合は、kanalizerでの変換を行わない
-        if not should_convert_english_to_katakana(word):
-            for alphabet in word:
-                kana += ojt_alphabet_kana_mapping[alphabet.upper()]
-        else:
+    for word in _split_into_words(string):
+        if _should_convert_english_to_katakana(word):
+            # 単語を英単語とみなして読みを生成する
             kana += kanalizer.convert(word.lower())
-
+        else:
+            kana += _convert_as_char_wise_katakana(word)
     return kana
