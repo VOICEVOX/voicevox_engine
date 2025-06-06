@@ -15,7 +15,7 @@ from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionaryManager
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
 
@@ -27,7 +27,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
     song_engines = make_song_engines_from_cores(core_manager)
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
     preset_manager = PresetManager(get_save_dir() / "presets.yaml")
-    user_dict = UserDictionary()
+    user_dict_manager = UserDictionaryManager()
     engine_manifest = load_manifest(engine_manifest_path())
     library_manager = LibraryManager(
         get_save_dir() / "installed_libraries",
@@ -43,7 +43,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
         setting_loader=setting_loader,
         preset_manager=preset_manager,
         character_info_dir=root_dir / "resources" / "character_info",
-        user_dict=user_dict,
+        user_dict_manager=user_dict_manager,
         engine_manifest=engine_manifest,
         library_manager=library_manager,
     )
