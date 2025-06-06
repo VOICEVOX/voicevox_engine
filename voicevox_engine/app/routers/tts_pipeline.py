@@ -2,6 +2,7 @@
 
 import zipfile
 from tempfile import NamedTemporaryFile, TemporaryFile
+from traceback import print_exception
 from typing import Annotated, Self
 
 import soundfile
@@ -139,7 +140,8 @@ def generate_tts_pipeline_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -327,7 +329,8 @@ def generate_tts_pipeline_router(
                 version=version,
             )
         except CancellableEngineInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
 
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
