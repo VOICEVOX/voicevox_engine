@@ -62,8 +62,8 @@ def _split_into_words(string: HankakuAlphabet) -> list[HankakuAlphabet]:
 
 def _should_convert_english_to_katakana(string: HankakuAlphabet) -> bool:
     """読みが不明な英単語をカタカナに変換するべきか否かを判定する。"""
-    # 2文字以下の場合はカタカナへ変換しない
-    if len(string) < 3:
+    # 1文字の場合は変換しない
+    if len(string) == 1:
         return False
 
     # 全て大文字の場合はカタカナへ変換しない
