@@ -37,7 +37,7 @@ def test_split_into_words(string: str, true_words: list[str]) -> None:
         ("voivo", True),
         ("Voivo", True),
         ("VOIVO", False),  # 大文字のみの英単語は変換すべきではない
-        ("Vo", False),  # 2文字以下の英単語は変換すべきではない
+        ("V", False),  # 1文字の英単語は変換すべきではない
     ],
 )
 def test_should_convert_english_to_katakana(string: str, true_should: bool) -> None:
