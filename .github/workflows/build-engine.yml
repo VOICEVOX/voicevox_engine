@@ -23,6 +23,10 @@ on:
         description: "デバッグ用に成果物をartifactにアップロードするか"
         type: boolean
         default: false
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.1"
@@ -54,20 +58,20 @@ jobs:
       matrix:
         include:
           # Windows CPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
             target: windows-cpu
           # Windows DirectML
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
             target: windows-directml
           # Windows NVIDIA GPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
@@ -128,12 +132,12 @@ jobs:
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
       #       so you need to install GNU 'sed' and 'split'.
       - name: <Setup> Install dependencies (macOS)
-        if: startsWith(matrix.os, 'macos-')
+        if: runner.os == 'macOS'
         run: brew install gnu-sed coreutils
 
       # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        if: runner.os == 'Linux' && endsWith(matrix.target, 'nvidia')
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
@@ -167,10 +171,8 @@ jobs:
           CUDA_ROOT=$( echo "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}" | tr '\\' '/' )
 
           mkdir -p download/cuda/bin
-          # NOTE 1: actionlint による GitHub Actions 文法の暗示的 `________________` 置換が SchellCheck の `never be equal` エラーを起こさないように、変数代入する
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows ]]; then
             mv "${CUDA_ROOT}/bin/"*.dll download/cuda/bin/
 
             # remove CUDA to reduce disk usage
@@ -219,9 +221,7 @@ jobs:
         run: |
           set -eux
 
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+          if [[ ${{ runner.os }} == Windows ]]; then
             curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
@@ -287,16 +287,16 @@ jobs:
           path: download/zlib
 
       - name: <Setup> Set up MSVC
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-build"
+          dependency-group: build
 
       - name: <Setup> Prepare custom PyInstaller
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         run: ./tools/modify_pyinstaller.bash
 
       - name: <Setup> Download pyopenjtalk dictionary
@@ -304,7 +304,7 @@ jobs:
           # try 5 times, sleep 5 seconds before retry
           for _ in $(seq 5); do
             EXIT_CODE=0
-            python3 -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+            uv run python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
 
             if [ "$EXIT_CODE" = "0" ]; then
               break
@@ -364,14 +364,12 @@ jobs:
           path: download/onnxruntime
 
       - name: <Setup> Download ONNX Runtime (Windows)
-        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-')
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Windows'
         run: |
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET != *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == false ]]; then
             unzip download/onnxruntime.zip onnxruntime-*/lib/*.dll -d download/
             mv download/onnxruntime-* download/onnxruntime
           else
@@ -384,7 +382,7 @@ jobs:
           rm download/onnxruntime.zip
 
       - name: <Setup> Download ONNX Runtime (Mac/Linux)
-        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && startsWith(matrix.os, 'windows-') != true
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
           curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
@@ -433,13 +431,7 @@ jobs:
         run: |
           curl -L --retry 3 --retry-delay 5 \
             "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == mac-* ]]; then
-            ditto -x -k --sequesterRsrc --rsrc download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip download/
-          else
-            unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
-          fi
+          unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           mkdir -p download/core
           mv download/${{ env.VOICEVOX_CORE_ASSET_NAME }}/* download/core
           rm -rf download/${{ env.VOICEVOX_CORE_ASSET_NAME }}
@@ -454,23 +446,26 @@ jobs:
           cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
 
       - name: <Build> Generate filemap.json
-        run: python tools/generate_filemap.py --target_dir resources/character_info
+        run: uv run tools/generate_filemap.py --target_dir resources/character_info
 
       - name: <Build> Build VOICEVOX ENGINE run.py
         run: |
           set -eux
 
-          jq '.version = "${{ needs.config.outputs.version_or_latest }}"' engine_manifest.json > engine_manifest.json.tmp
+          jq '
+            .version = "${{ needs.config.outputs.version_or_latest }}" |
+            if ${{ runner.os == 'Windows' }} then .command += ".exe" else . end
+          ' engine_manifest.json > engine_manifest.json.tmp
+
           mv -f engine_manifest.json.tmp engine_manifest.json
 
           # Replace version & specify dynamic libraries
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          OS=${{ matrix.os }}
-          if [[ $OS == windows-* ]]; then
+
+          if [[ ${{ runner.os }} == Windows  ]]; then
             LIBCORE_PATH=download/core/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/onnxruntime.dll
-          elif [[ $OS == macos-* ]]; then
+          elif [[ ${{ runner.os }} == macOS ]]; then
             LIBCORE_PATH=download/core/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libonnxruntime.dylib
           else
@@ -481,13 +476,13 @@ jobs:
           CORE_MODEL_DIR_PATH="download/core/model" \
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
-          pyinstaller --noconfirm run.spec
+          uv run pyinstaller --noconfirm run.spec
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
 
       - name: <Build> Gather DLL dependencies (Windows)
-        if: startsWith(matrix.os, 'windows-')
+        if: runner.os == 'Windows'
         run: |
           set -eux
 
@@ -519,9 +514,7 @@ jobs:
           fi
 
           # Windows DirectML
-          # 一度代入して actionlint のエラー回避 (詳細: NOTE 1)
-          TARGET=${{ matrix.target }}
-          if [[ $TARGET == *-directml ]]; then
+          if [[ ${{ endsWith(matrix.target, '-directml') }} == true ]]; then
             # DirectML
             mv download/directml/DirectML.dll dist/run/
 
@@ -530,7 +523,7 @@ jobs:
           fi
 
       - name: <Build> Gather DLL dependencies (Linux CUDA)
-        if: startsWith(matrix.os, 'ubuntu-') && endsWith(matrix.target, 'nvidia')
+        if: runner.os == 'Linux' && endsWith(matrix.target, 'nvidia')
         run: |
           set -eux
 
@@ -557,7 +550,7 @@ jobs:
           rm -rf download/cudnn
 
       - name: <Build> Code signing
-        if: github.event.inputs.code_signing == 'true' && startsWith(matrix.os, 'windows-')
+        if: github.event.inputs.code_signing == 'true' && runner.os == 'Windows'
         run: bash tools/codesign.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
@@ -662,7 +655,7 @@ jobs:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
 
-      - name: <Deploy> Change tag to this commit for refreshing the release # c.f. voicevox_engine#854
+      - name: <Deploy> Change tag to this commit for refreshing the release # ref: https://github.com/VOICEVOX/voicevox_engine/issues/854
         run: |
           git tag -f ${{ needs.config.outputs.version }}
           git push -f --tag
@@ -674,3 +667,16 @@ jobs:
     with:
       version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+
+  run-build-engine-container-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, run-release-test-workflow]
+    uses: ./.github/workflows/build-engine-container.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      # NOTE: workflow_dispatch以外では、 `toJSON(inputs.prerelease) == 'null'` であるため `prerelease: true` となる
+      prerelease: ${{ toJSON(inputs.prerelease) != 'false' }}
+      # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
+      push_dockerhub: ${{ inputs.push_dockerhub == true }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

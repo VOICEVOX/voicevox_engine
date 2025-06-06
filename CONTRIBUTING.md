@@ -1,6 +1,6 @@
 # 貢献者ガイド
 
-VOICEVOX ENGINE はオープンソースプロジェクトです。本プロジェクトは活発に開発されており、その成果は製品版 VOICEVOX へも反映されています。VOICEVOX ENGINE はコミュニティの皆さんからのコントリビューションを歓迎しています。  
+VOICEVOX ENGINE はオープンソースプロジェクトです。本プロジェクトは活発に開発されており、その成果は製品版 VOICEVOX にも反映されています。VOICEVOX ENGINE はコミュニティの皆さんからのコントリビューションを歓迎しています。  
 本ガイドは開発方針・プルリクエスト手順・レビュープロセスなど、コントリビュータの皆さんの一助となる情報を提供します。
 
 ## 目次
@@ -41,7 +41,6 @@ VOICEVOX ENGINE の方針に関するガイドは以下から確認できます�
   - [パッケージを更新する](#パッケージを更新する)
   - [パッケージ情報を pip requirements.txt ファイルへ反映する](#パッケージ情報を-pip-requirementstxt-ファイルへ反映する)
 - 静的解析
-  - [タイポを検査する](#タイポを検査する)
   - [静的解析を一括実行する](#静的解析を一括実行する)
 - テスト
   - [コードをテストする](#コードをテストする)
@@ -81,7 +80,7 @@ VOICEVOX ENGINE は GitHub ベースのオープンな開発をおこなって�
 - [依存ライブラリをインストールする](#依存ライブラリをインストールする)
 - （任意）[音声ライブラリを導入する](#音声ライブラリを導入する)
 - [コードを編集する](#コードを編集する)
-- [静的解析を一括実行する](#静的解析を一括実行する)（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）
+- [静的解析を一括実行する](#静的解析を一括実行する)（[型検査](#型検査)・[リント](#リント)・[整形](#整形)・[タイポ検査](#タイポ検査)）
 - [コードをテストする](#コードをテストする)
 - ブランチをリモートへプッシュし、このレポジトリに対してプルリクエストを作成する
 
@@ -125,7 +124,10 @@ GitHub Issues を用いて機能向上を一元管理しています。
 ## 環境構築
 
 `Python 3.11.9` を用いて開発されています。
-インストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+依存ライブラリをインストールするには、各 OS ごとの C/C++ コンパイラ、CMake が必要になります。
+
+パッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。
+uv のインストール方法については[公式ドキュメント](https://docs.astral.sh/uv/getting-started/installation/)を参考にしてください。
 
 ### 依存ライブラリをインストールする
 
@@ -133,10 +135,10 @@ GitHub Issues を用いて機能向上を一元管理しています。
 
 ```bash
 # 実行・開発・テスト環境のインストール
-python -m pip install -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
+uv sync --all-groups
 
 # git hook のインストール
-pre-commit install -t pre-push
+uv run pre-commit install -t pre-push
 ```
 
 ## 音声ライブラリ
@@ -184,7 +186,7 @@ VOICEVOX ENGINE を実行することで HTTP サーバーが立ち上がりま�
 コマンドライン引数の詳細は以下のコマンドで確認してください。
 
 ```bash
-python run.py --help
+uv run run.py --help
 ```
 
 ### 音声ライブラリ無しで実行
@@ -192,36 +194,36 @@ python run.py --help
 音声ライブラリを導入しなかった場合あるいは軽量のモック版音声合成を利用したい場合、シェルで以下のコマンドを実行することでエンジンが実行されます。
 
 ```bash
-python run.py --enable_mock
+uv run run.py --enable_mock
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX を利用して実行
 
 ```bash
 VOICEVOX_DIR="C:/path/to/VOICEVOX/vv-engine" # 製品版 VOICEVOX ディレクトリ内の ENGINE のパス
-python run.py --voicevox_dir=$VOICEVOX_DIR
+uv run run.py --voicevox_dir=$VOICEVOX_DIR
 ```
 
 ### 音声ライブラリに製品版 VOICEVOX CORE を利用して実行
 
 ```bash
 VOICELIB_DIR_1="C:/path/to/core_1"; VOICELIB_DIR_2="C:/path/to/core_2"; # 製品版 VOICEVOX CORE ディレクトリのパス
-python run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
+uv run run.py --voicelib_dir=$VOICELIB_DIR_1 --voicelib_dir=$VOICELIB_DIR_2
 ```
 
 ### ログを UTF8 に変更
 
 ```bash
-python run.py --output_log_utf8
+uv run run.py --output_log_utf8
 # もしくは
-VV_OUTPUT_LOG_UTF8=1 python run.py
+VV_OUTPUT_LOG_UTF8=1 uv run run.py
 ```
 
 ## コードを編集する
 
 ### パッケージ
 
-`poetry` によってパッケージを管理しています。また `pip` ユーザー向けに `requirements-*.txt` を生成しています。  
+`uv` によってパッケージを管理しています。  
 依存パッケージは「ビルドにより音声ライブラリと一体化しても、音声ライブラリのライセンスと衝突しない」ライセンスを持つ必要があります。  
 主要ライセンスの可否は以下の通りです。
 
@@ -232,24 +234,26 @@ VV_OUTPUT_LOG_UTF8=1 python run.py
 #### パッケージを追加する
 
 ```bash
-poetry add `パッケージ名`
-poetry add --group dev `パッケージ名` # 開発依存の追加
-poetry add --group build `パッケージ名` # ビルド依存の追加
+uv add `パッケージ名`
+uv add --group dev `パッケージ名` # 開発依存の追加
+uv add --group build `パッケージ名` # ビルド依存の追加
 ```
 
 #### パッケージを更新する
 
 ```bash
-poetry update `パッケージ名`
-poetry update # 全部更新
+uv lock --upgrade-package `パッケージ名`
+uv lock --upgrade # 全部更新
 ```
 
 #### パッケージ情報を pip requirements.txt ファイルへ反映する
 
+pip-audit のために requirements.txt ファイルを用意しています。
+
 ```bash
-poetry export --without-hashes -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
-poetry export --without-hashes --with dev -o requirements-dev.txt
-poetry export --without-hashes --with build -o requirements-build.txt
+uv export --no-annotate --no-hashes --no-header -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
+uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt
+uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt
 ```
 
 ## 静的解析
@@ -264,14 +268,14 @@ poetry export --without-hashes --with build -o requirements-build.txt
 ### リント
 
 自動リントを採用しています。  
-目的は安全性の向上であり、リンターには `flake8` と `isort` を採用しています。
+目的は安全性の向上であり、リンターには `ruff` を採用しています。
 
 リンターの実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。
 
 ### 整形
 
 コード自動整形を採用しています。  
-目的は可読性の向上であり、フォーマッタには `black` を採用しています。
+目的は可読性の向上であり、フォーマッタには `ruff` を採用しています。
 
 フォーマッタの実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。
 
@@ -281,23 +285,19 @@ poetry export --without-hashes --with build -o requirements-build.txt
 
 タイポ検査を採用しています。  
 目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `pyproject.toml` を編集してください。  
-ローカルへの `typos` 導入は各自の環境に合わせて公式ドキュメントを参照してください。ローカルへの導入が難しい場合、プルリクエスト時に GitHub Actions で自動実行される `typos` の結果を参照してください。
 
-#### タイポを検査する
-
-シェルで以下のコマンドを実行することでタイポが検査されます。
-
-```bash
-typos
-```
+タイポ検査の実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。
 
 ### 静的解析を一括実行する
 
-シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)）が一括実行されます。  
-この際、可能な範囲で自動修正がおこなわれます。
+シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)・[タイポ検査](#タイポ検査)）が一括実行されます。  
 
 ```bash
-pysen run format lint
+## 一括でチェックのみをおこなう
+uv run mypy . && uv run ruff check && uv run ruff format --check && uv run typos
+
+## 一括でチェックと可能な範囲の自動修正をおこなう
+uv run mypy . && uv run ruff check --fix && uv run ruff format && uv run typos
 ```
 
 ## テスト
@@ -310,7 +310,7 @@ pysen run format lint
 シェルで以下のコマンドを実行することでテストが走ります。
 
 ```bash
-python -m pytest
+uv run pytest
 ```
 
 ### スナップショットを更新する
@@ -319,7 +319,15 @@ python -m pytest
 シェルで以下のコマンドを実行することでスナップショットが更新されます。
 
 ```bash
-python -m pytest --snapshot-update
+uv run pytest --snapshot-update
+```
+
+### カバレッジを取る
+
+以下のコマンドを実行することでカバレッジを取ることができます。
+
+```bash
+uv run coverage run --omit=test/* -m pytest && uv run coverage report -m
 ```
 
 ### 脆弱性を診断する
@@ -328,7 +336,7 @@ python -m pytest --snapshot-update
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
-pip-audit -r requirements.txt -r requirements-dev.txt -r requirements-build.txt
+uv run pip-audit
 ```
 
 ## ビルド
@@ -340,20 +348,20 @@ OUTPUT_LICENSE_JSON_PATH=licenses.json \
 bash tools/create_venv_and_generate_licenses.bash
 
 # モックでビルドする場合
-pyinstaller --noconfirm run.spec
+uv run pyinstaller --noconfirm run.spec
 
 # 製品版でビルドする場合
 CORE_MODEL_DIR_PATH="/path/to/core_model" \
 LIBCORE_PATH="/path/to/libcore" \
 LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-pyinstaller --noconfirm run.spec
+uv run pyinstaller --noconfirm run.spec
 ```
 
 TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
 
 ### Github Actions でビルド
 
-fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
+fork したリポジトリで Actions を ON にし、workflow_dispatch で`build-engine.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 
 ### API ドキュメントの確認
@@ -362,7 +370,7 @@ fork したリポジトリで Actions を ON にし、workflow_dispatch で`buil
 次のコマンドで API ドキュメントを手動で作成することができます。
 
 ```bash
-PYTHONPATH=. python tools/make_docs.py
+PYTHONPATH=. uv run tools/make_docs.py
 ```
 
 ## GitHub Actions

@@ -1,10 +1,13 @@
 """`TTSEngineManager` クラスのテスト"""
 
 import pytest
-from fastapi import HTTPException
 
 from voicevox_engine.dev.tts_engine.mock import MockTTSEngine
-from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import (
+    LATEST_VERSION,
+    TTSEngineManager,
+    TTSEngineNotFound,
+)
 
 
 def test_tts_engines_register_engine() -> None:
@@ -42,7 +45,7 @@ def test_tts_engines_get_engine_existing() -> None:
     # Expects
     true_acquired_tts_engine = tts_engine2
     # Outputs
-    acquired_tts_engine = tts_engines.get_engine("0.0.2")
+    acquired_tts_engine = tts_engines.get_tts_engine("0.0.2")
 
     # Test
     assert true_acquired_tts_engine == acquired_tts_engine
@@ -61,7 +64,7 @@ def test_tts_engines_get_engine_latest() -> None:
     # Expects
     true_acquired_tts_engine = tts_engine3
     # Outputs
-    acquired_tts_engine = tts_engines.get_engine(LATEST_VERSION)
+    acquired_tts_engine = tts_engines.get_tts_engine(LATEST_VERSION)
 
     # Test
     assert true_acquired_tts_engine == acquired_tts_engine
@@ -75,7 +78,6 @@ def test_tts_engines_get_engine_missing() -> None:
     tts_engine2 = MockTTSEngine()
     tts_engines.register_engine(tts_engine1, "0.0.1")
     tts_engines.register_engine(tts_engine2, "0.0.2")
-
     # Test
-    with pytest.raises(HTTPException) as _:
-        tts_engines.get_engine("0.0.3")
+    with pytest.raises(TTSEngineNotFound):
+        tts_engines.get_tts_engine("0.0.3")

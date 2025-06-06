@@ -21,6 +21,7 @@ from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import USER_SETTING_PATH, SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import (
@@ -81,7 +82,6 @@ def set_output_log_utf8() -> None:
     # NOTE: for 文で回せないため関数内関数で実装している
     def _prepare_utf8_stdio(stdio: TextIO) -> TextIO:
         """UTF-8 ベースの標準入出力インターフェイスを用意する"""
-
         CODEC = "utf-8"  # locale に依存せず UTF-8 コーデックを用いる
         ERR = "backslashreplace"  # 不正な形式のデータをバックスラッシュ付きのエスケープシーケンスに置換する
 
@@ -99,7 +99,7 @@ def set_output_log_utf8() -> None:
                 return stdio
 
     # NOTE:
-    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )  # noqa: B950
+    # `sys.std*` はコンソールがない環境だと `None` をとる (出典: https://docs.python.org/ja/3/library/sys.html#sys.__stdin__ )
     # これは Python インタープリタが標準入出力へ接続されていないことを意味するため、設定不要とみなす
 
     if sys.stdout is None:
@@ -136,7 +136,7 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
 
 
 @dataclass(frozen=True)
-class CLIArgs:
+class _CLIArgs:
     host: str
     port: int
     use_gpu: bool
@@ -156,10 +156,11 @@ class CLIArgs:
     disable_mutable_api: bool
 
 
-_cli_args_adapter = TypeAdapter(CLIArgs)
+_cli_args_adapter = TypeAdapter(_CLIArgs)
 
 
-def read_cli_arguments(envs: Envs) -> CLIArgs:
+def read_cli_arguments(envs: Envs) -> _CLIArgs:
+    """コマンドライン引数を読み込む。"""
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
     # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
     # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
@@ -247,7 +248,7 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
-            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。"
+            "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
             "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
@@ -303,7 +304,6 @@ def read_cli_arguments(envs: Envs) -> CLIArgs:
 
 def main() -> None:
     """VOICEVOX ENGINE を実行する"""
-
     multiprocessing.freeze_support()
 
     envs = read_environment_variables()
@@ -326,7 +326,9 @@ def main() -> None:
         load_all_models=args.load_all_models,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
+    song_engines = make_song_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
+    assert len(song_engines.versions()) != 0, "音声合成エンジンがありません。"
 
     cancellable_engine: CancellableEngine | None = None
     if args.enable_cancellable_synthesis:
@@ -366,7 +368,7 @@ def main() -> None:
     )
     preset_manager = PresetManager(preset_path)
 
-    use_dict = UserDictionary()
+    user_dict = UserDictionary()
 
     engine_manifest = load_manifest(engine_manifest_path())
 
@@ -378,24 +380,22 @@ def main() -> None:
         engine_manifest.uuid,
     )
 
-    if args.disable_mutable_api:
-        disable_mutable_api = True
-    else:
-        disable_mutable_api = envs.disable_mutable_api
-
     root_dir = select_first_not_none([args.voicevox_dir, engine_root()])
     character_info_dir = root_dir / "resources" / "character_info"
     # NOTE: ENGINE v0.19 以前向けに後方互換性を確保する
     if not character_info_dir.exists():
         character_info_dir = root_dir / "speaker_info"
 
+    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
+
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
         tts_engines,
+        song_engines,
         core_manager,
         setting_loader,
         preset_manager,
-        use_dict,
+        user_dict,
         engine_manifest,
         library_manager,
         cancellable_engine,

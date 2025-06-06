@@ -1,12 +1,18 @@
+"""テキスト分析の単体テスト。"""
+
+import pytest
+
 from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
     Label,
     MoraLabel,
+    NonOjtPhonemeError,
+    OjtUnknownPhonemeError,
     UtteranceLabel,
+    full_context_labels_to_accent_phrases,
     mora_to_text,
-    text_to_accent_phrases,
 )
 
 
@@ -321,10 +327,8 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
     )
 
 
-def test_text_to_accent_phrases_normal() -> None:
-    """`text_to_accent_phrases` は正常な日本語文をパースする"""
-    # Inputs
-    text = "こんにちは、ヒホです。"
+def test_full_context_labels_to_accent_phrases_normal() -> None:
+    """`full_context_labels_to_accent_phrases` は正常な日本語文のフルコンテキストラベルをパースする"""
     # Expects
     true_accent_phrases = [
         AccentPhrase(
@@ -350,38 +354,38 @@ def test_text_to_accent_phrases_normal() -> None:
         ),
     ]
     # Outputs
-    accent_phrases = text_to_accent_phrases(text)
+    accent_phrases = full_context_labels_to_accent_phrases(test_case_hello_hiho)
     # Tests
     assert accent_phrases == true_accent_phrases
 
 
-def stub_unknown_features_koxx(_: str) -> list[str]:
-    """`sil-k-o-xx-sil` に相当する features を常に返す `text_to_features()` のStub"""
-    return [
-        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
-        ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-        ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-        ".^.-xx+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
-        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
-    ]
+test_case_koxx = [
+    ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+    ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+    ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+    ".^.-xx+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+    ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+]
 
 
-def test_text_to_accent_phrases_unknown() -> None:
-    """`text_to_accent_phrases` は unknown 音素を含む features をパースする"""
-    # Expects
-    true_accent_phrases = [
-        AccentPhrase(
-            moras=[
-                _gen_mora("コ", "k", "o"),
-                _gen_mora("xx", None, "xx"),
-            ],
-            accent=1,
-            pause_mora=None,
-        ),
-    ]
-    # Outputs
-    accent_phrases = text_to_accent_phrases(
-        "dummy", text_to_features=stub_unknown_features_koxx
-    )
-    # Tests
-    assert accent_phrases == true_accent_phrases
+def test_label_non_ojt_phoneme() -> None:
+    """`Label` は OpenJTalk で想定されない音素をパース失敗する"""
+    non_ojt_phoneme = "G"
+    non_ojt_feature = f".^.-{non_ojt_phoneme}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-."
+    unknown_label = Label.from_feature(non_ojt_feature)
+    with pytest.raises(NonOjtPhonemeError):
+        _ = unknown_label.phoneme
+
+
+def test_label_unknown_phoneme() -> None:
+    """`Label` は unknown 音素 `xx` をパース失敗する"""
+    unknown_feature = test_case_koxx[3]
+    with pytest.raises(OjtUnknownPhonemeError):
+        unknown_label = Label.from_feature(unknown_feature)
+        _ = unknown_label.phoneme
+
+
+def test_full_context_labels_to_accent_phrases_unknown() -> None:
+    """`full_context_labels_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
+    with pytest.raises(OjtUnknownPhonemeError):
+        full_context_labels_to_accent_phrases(test_case_koxx)

@@ -1,13 +1,18 @@
-"""
-/multi_synthesis API のテスト
-"""
+"""/multi_synthesis API のテスト。"""
 
-from test.e2e.single_api.utils import gen_mora
+import io
+import zipfile
 
 from fastapi.testclient import TestClient
+from syrupy.assertion import SnapshotAssertion
+
+from test.e2e.single_api.utils import gen_mora
+from test.utility import hash_wave_floats_from_wav_bytes
 
 
-def test_post_multi_synthesis_200(client: TestClient) -> None:
+def test_post_multi_synthesis_200(
+    client: TestClient, snapshot: SnapshotAssertion
+) -> None:
     queries = [
         {
             "accent_phrases": [
@@ -63,14 +68,11 @@ def test_post_multi_synthesis_200(client: TestClient) -> None:
     ]
     response = client.post("/multi_synthesis", params={"speaker": 0}, json=queries)
     assert response.status_code == 200
-
-    # FileResponse 内の zip ファイルに圧縮された .wav から抽出された音声波形が一致する
-    # FIXME: スナップショットテストを足す
-    # NOTE: ZIP ファイル内の .wav に Linux-Windows 数値精度問題があるため解凍が必要
     assert response.headers["content-type"] == "application/zip"
-    # from test.utility import summarize_wav_bytes
-    # from syrupy.assertion import SnapshotAssertion
-    # # zip 解凍
-    # wav_summarys = map(lambda wav_byte: summarize_wav_bytes(wav_byte), wav_bytes)
-    # wavs_summary = concatenate_func(wav_summarys)
-    # assert snapshot == wavs_summary
+
+    # zip 内の全ての wav の波形がスナップショットと一致する
+    zip_bytes = io.BytesIO(response.read())
+    with zipfile.ZipFile(zip_bytes, "r") as zip_file:
+        wav_files = (zip_file.read(name) for name in zip_file.namelist())
+        for wav in wav_files:
+            assert snapshot == hash_wave_floats_from_wav_bytes(wav)

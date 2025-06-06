@@ -33,7 +33,6 @@ class PresetManager:
 
     def __init__(self, preset_path: Path):
         """プリセットマネージャーを生成する。プリセットファイルが存在しない場合は新規作成する。"""
-
         self.presets: list[Preset] = []  # 全プリセットのキャッシュ
         self.last_modified_time = 0.0
         self.preset_path = preset_path
@@ -44,17 +43,14 @@ class PresetManager:
                 try:
                     shutil.move(old_preset_path, self.preset_path)
                 except OSError:
-                    warnings.warn(
-                        "プリセットファイルのマイグレーションに失敗しました",
-                        stacklevel=1,
-                    )
+                    msg = "プリセットファイルのマイグレーションに失敗しました"
+                    warnings.warn(msg, stacklevel=1)
                     self.preset_path.write_text("[]")
             else:
                 self.preset_path.write_text("[]")
 
     def _refresh_cache(self) -> None:
         """プリセットの設定ファイルの最新状態をキャッシュへ反映する"""
-
         # データベース更新の確認（タイムスタンプベース）
         try:
             _last_modified_time = self.preset_path.stat().st_mtime
@@ -63,20 +59,20 @@ class PresetManager:
                 return
 
             # データベースの読み込み
-            with open(self.preset_path, mode="r", encoding="utf-8") as f:
+            with open(self.preset_path, encoding="utf-8") as f:
                 obj = yaml.safe_load(f)
-        except OSError:
-            raise PresetInternalError("プリセットの読み込みに失敗しました")
-        except yaml.YAMLError:
-            raise PresetInternalError("プリセットのパースに失敗しました")
+        except OSError as e:
+            raise PresetInternalError("プリセットの読み込みに失敗しました") from e
+        except yaml.YAMLError as e:
+            raise PresetInternalError("プリセットのパースに失敗しました") from e
         if obj is None:
             raise PresetInternalError("プリセットの設定ファイルが空の内容です")
 
         try:
             preset_list_adapter = TypeAdapter(list[Preset])
             _presets = preset_list_adapter.validate_python(obj)
-        except ValidationError:
-            raise PresetInternalError("プリセットの設定ファイルにミスがあります")
+        except ValidationError as e:
+            raise PresetInternalError("プリセットの設定ファイルにミスがあります") from e
 
         # 全idの一意性をバリデーション
         if len([preset.id for preset in _presets]) != len(
@@ -90,7 +86,6 @@ class PresetManager:
 
     def add_preset(self, preset: Preset) -> int:
         """新規プリセットを追加し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -103,18 +98,17 @@ class PresetManager:
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
-        except Exception as err:
+        except Exception as e:
             self.presets.pop()
-            if isinstance(err, OSError):
-                raise PresetInternalError("プリセットの書き込みに失敗しました")
+            if isinstance(e, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました") from e
             else:
-                raise err
+                raise e
 
         return preset.id
 
     def load_presets(self) -> list[Preset]:
         """全てのプリセットを取得する"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -122,7 +116,6 @@ class PresetManager:
 
     def update_preset(self, preset: Preset) -> int:
         """指定されたプリセットを更新し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -139,18 +132,17 @@ class PresetManager:
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
-        except Exception as err:
+        except Exception as e:
             self.presets[prev_preset[0]] = prev_preset[1]
-            if isinstance(err, OSError):
-                raise PresetInternalError("プリセットの書き込みに失敗しました")
+            if isinstance(e, OSError):
+                raise PresetInternalError("プリセットの書き込みに失敗しました") from e
             else:
-                raise err
+                raise e
 
         return preset.id
 
     def delete_preset(self, id: int) -> int:
         """ID で指定されたプリセットを削除し、その ID を取得する。"""
-
         # データベース更新の反映
         self._refresh_cache()
 
@@ -168,9 +160,9 @@ class PresetManager:
         # 変更の反映。失敗時はリバート。
         try:
             self._write_on_file()
-        except OSError:
+        except OSError as e:
             self.presets.insert(buf_index, buf)
-            raise PresetInternalError("プリセットの書き込みに失敗しました")
+            raise PresetInternalError("プリセットの書き込みに失敗しました") from e
 
         return id
 

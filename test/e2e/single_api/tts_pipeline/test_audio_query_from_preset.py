@@ -1,11 +1,9 @@
-"""
-/audio_query_from_preset API のテスト
-"""
-
-from test.utility import round_floats
+"""/audio_query_from_preset API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import round_floats
 
 
 def test_post_audio_query_from_preset_200(

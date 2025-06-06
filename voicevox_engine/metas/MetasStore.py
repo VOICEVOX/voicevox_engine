@@ -1,8 +1,9 @@
 """キャラクター情報とキャラクターメタ情報の管理"""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Final, Literal, TypeAlias
+from typing import Final, Literal, TypeAlias
 
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
@@ -44,9 +45,7 @@ _SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
 class _EngineCharacter(BaseModel):
-    """
-    エンジンに含まれるキャラクター情報
-    """
+    """エンジンに含まれるキャラクター情報。"""
 
     supported_features: SpeakerSupportedFeatures = Field(
         default_factory=SpeakerSupportedFeatures
@@ -89,7 +88,6 @@ class MetasStore:
 
     def characters(self, core_version: str | None) -> list[Character]:
         """キャラクターの情報の一覧を取得する。"""
-
         # エンジンとコアのキャラクター情報を統合する
         characters: list[Character] = []
         for core_character in self._get_core_characters(core_version):
@@ -122,6 +120,27 @@ class MetasStore:
         resource_baseurl: str,
         resource_format: ResourceFormat,
     ) -> SpeakerInfo:
+        """
+        指定されたキャラクターの情報を取得する。
+
+        Parameters
+        ----------
+        character_uuid:
+            キャラクターを指定する UUID
+        talk_or_sing:
+            「喋れる」と「歌える」のどちらを取得するか
+        core_version:
+            コアのバージョン
+        resource_baseurl:
+            リソースが存在するディレクトリのベース URL
+        resource_format:
+            返されるリソースのフォーマット
+
+        Returns
+        -------
+        SpeakerInfo
+            キャラクター情報
+        """
         # キャラクター情報は以下のディレクトリ構造に従わなければならない。
         # {engine_characters_path}/
         #     {character_uuid_0}/
@@ -205,10 +224,10 @@ class MetasStore:
                         "voice_samples": voice_samples,
                     }
                 )
-        except (FileNotFoundError, ResourceManagerError):
+        except (FileNotFoundError, ResourceManagerError) as e:
             # FIXME: HTTPExceptionはこのファイルとドメインが合わないので辞める
             msg = "追加情報が見つかりませんでした"
-            raise HTTPException(status_code=500, detail=msg)
+            raise HTTPException(status_code=500, detail=msg) from e
 
         character_info = SpeakerInfo(
             policy=policy, portrait=portrait, style_infos=style_infos

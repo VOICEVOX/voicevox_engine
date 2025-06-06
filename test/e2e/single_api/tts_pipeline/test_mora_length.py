@@ -1,12 +1,10 @@
-"""
-/mora_length API のテスト
-"""
-
-from test.e2e.single_api.utils import gen_mora
-from test.utility import round_floats
+"""/mora_length API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.e2e.single_api.utils import gen_mora
+from test.utility import round_floats
 
 
 def test_post_mora_length_200(

@@ -2,13 +2,13 @@
 
 import argparse
 from pathlib import Path
+
 from test.benchmark.engine_preparation import ServerType, generate_client
 from test.benchmark.speed.utility import benchmark_time
 
 
 def benchmark_get_speakers(server: ServerType, root_dir: Path | None = None) -> float:
     """`GET /speakers` にかかる時間を測定する。"""
-
     client = generate_client(server, root_dir)
 
     def execute() -> None:
@@ -23,7 +23,6 @@ def benchmark_get_speaker_info_all(
     server: ServerType, root_dir: Path | None = None
 ) -> float:
     """全ての喋れるキャラクターへの `GET /speaker_info` にかかる時間を測定する。"""
-
     client = generate_client(server, root_dir)
 
     # speaker_uuid 一覧を準備
@@ -46,9 +45,9 @@ def benchmark_request_time_for_all_talk_characters(
 ) -> float:
     """
     喋れるキャラクターの数と同じ回数の `GET /` にかかる時間を測定する。
+
     `GET /` はエンジン内部処理が最小であるため、全ての喋れるキャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
-
     client = generate_client(server, root_dir)
 
     # speaker_uuid 一覧を準備
@@ -79,13 +78,13 @@ if __name__ == "__main__":
 
     result_speakers_fakeserve = benchmark_get_speakers("fake", root_dir)
     result_speakers_localhost = benchmark_get_speakers("localhost", root_dir)
-    print("`GET /speakers` fakeserve: {:.4f} sec".format(result_speakers_fakeserve))
-    print("`GET /speakers` localhost: {:.4f} sec".format(result_speakers_localhost))
+    print(f"`GET /speakers` fakeserve: {result_speakers_fakeserve:.4f} sec")
+    print(f"`GET /speakers` localhost: {result_speakers_localhost:.4f} sec")
 
     _result_spk_infos_fakeserve = benchmark_get_speaker_info_all("fake", root_dir)
     _result_spk_infos_localhost = benchmark_get_speaker_info_all("localhost", root_dir)
-    result_spk_infos_fakeserve = "{:.3f}".format(_result_spk_infos_fakeserve)
-    result_spk_infos_localhost = "{:.3f}".format(_result_spk_infos_localhost)
+    result_spk_infos_fakeserve = f"{_result_spk_infos_fakeserve:.3f}"
+    result_spk_infos_localhost = f"{_result_spk_infos_localhost:.3f}"
     print(
         f"全ての喋れるキャラクター `GET /speaker_info` fakeserve: {result_spk_infos_fakeserve} sec"
     )
@@ -97,13 +96,5 @@ if __name__ == "__main__":
     req_time_all_local = benchmark_request_time_for_all_talk_characters(
         "localhost", root_dir
     )
-    print(
-        "全ての喋れるキャラクター `GET /` fakeserve: {:.3f} sec".format(
-            req_time_all_fake
-        )
-    )
-    print(
-        "全ての喋れるキャラクター `GET /` localhost: {:.3f} sec".format(
-            req_time_all_local
-        )
-    )
+    print(f"全ての喋れるキャラクター `GET /` fakeserve: {req_time_all_fake:.3f} sec")
+    print(f"全ての喋れるキャラクター `GET /` localhost: {req_time_all_local:.3f} sec")

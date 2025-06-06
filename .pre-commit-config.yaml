@@ -3,34 +3,48 @@
 repos:
   - repo: local
     hooks:
-      - id: pysen-lint
-        name: pysen-lint
-        entry: pysen run lint
+      - id: check-linting
+        name: check-linting
+        entry: uv run ruff check
         language: python
         types: [file, python]
         stages: [pre-push]
         pass_filenames: false
-      - id: poetry-check # `pyproject.toml` と `poetry.lock` が整合する
-        name: poetry-check
-        entry: poetry check
+      - id: check-formatting
+        name: check-formatting
+        entry: uv run ruff format --check
+        language: python
+        types: [file, python]
+        stages: [pre-push]
+        pass_filenames: false
+      - id: check-typing
+        name: check-typing
+        entry: uv run mypy .
+        language: python
+        types: [file, python]
+        stages: [pre-push]
+        pass_filenames: false
+      - id: uv-check # `pyproject.toml` と `uv.lock` が整合する
+        name: uv-check
+        entry: uv lock --check
         language: python
         stages: [pre-push]
         pass_filenames: false
-      - id: poetry-export
-        name: poetry-export
-        entry: poetry export --without-hashes -o requirements.txt
+      - id: uv-export
+        name: uv-export
+        entry: uv export --no-annotate --no-hashes --no-header -o requirements.txt
         language: python
         stages: [pre-push]
         pass_filenames: false
-      - id: poetry-export-dev
-        name: poetry-export-dev
-        entry: poetry export --without-hashes --with dev -o requirements-dev.txt
+      - id: uv-export-dev
+        name: uv-export-dev
+        entry: uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt
         language: python
         stages: [pre-push]
         pass_filenames: false
-      - id: poetry-export-build
-        name: poetry-export-build
-        entry: poetry export --without-hashes --with build -o requirements-build.txt
+      - id: uv-export-build
+        name: uv-export-build
+        entry: uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt
         language: python
         stages: [pre-push]
         pass_filenames: false

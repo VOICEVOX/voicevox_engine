@@ -1,11 +1,9 @@
-"""
-/engine_manifest API のテスト
-"""
-
-from test.utility import hash_long_string
+"""/engine_manifest API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
+
+from test.utility import hash_long_string
 
 
 def test_get_engine_manifest_200(

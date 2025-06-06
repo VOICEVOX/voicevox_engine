@@ -5,12 +5,13 @@
 """
 
 from enum import Enum
-from re import findall, fullmatch
-from typing import Self
+from re import fullmatch
+from typing import Annotated, Self
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
-from typing_extensions import Annotated
+
+from ..utility.text_utility import count_mora, replace_hankaku_alphabets_with_zenkaku
 
 
 class WordTypes(str, Enum):
@@ -43,15 +44,6 @@ def _check_comma_and_double_quote(text: str) -> str:
     return text
 
 
-def _convert_to_zenkaku(surface: str) -> str:
-    return surface.translate(
-        str.maketrans(
-            "".join(chr(0x21 + i) for i in range(94)),
-            "".join(chr(0xFF01 + i) for i in range(94)),
-        )
-    )
-
-
 def _check_is_katakana(pronunciation: str) -> str:
     if not fullmatch(r"[ァ-ヴー]+", pronunciation):
         raise ValueError("発音は有効なカタカナでなくてはいけません。")
@@ -82,15 +74,13 @@ CsvSafeStr = Annotated[
 
 
 class UserDictWord(BaseModel):
-    """
-    辞書のコンパイルに使われる情報
-    """
+    """辞書のコンパイルに使われる情報。"""
 
     model_config = ConfigDict(validate_assignment=True)
 
     surface: Annotated[
         str,
-        AfterValidator(_convert_to_zenkaku),
+        AfterValidator(replace_hankaku_alphabets_with_zenkaku),
         AfterValidator(_check_newlines_and_null),
     ] = Field(description="表層形")
     priority: int = Field(
@@ -114,24 +104,13 @@ class UserDictWord(BaseModel):
 
     @model_validator(mode="after")
     def check_mora_count_and_accent_type(self) -> Self:
+        """モーラ数が None であれば計算し、アクセント型を検証する。"""
+        # TODO: 2つの機能を２つの関数に分けるのが正しいか検討
+        # モーラ数を計算し代入する
         if self.mora_count is None:
-            rule_others = (
-                "[イ][ェ]|[ヴ][ャュョ]|[ウクグトド][ゥ]|[テデ][ィェャュョ]|[クグ][ヮ]"
-            )
-            rule_line_i = "[キシチニヒミリギジヂビピ][ェャュョ]|[キニヒミリギビピ][ィ]"
-            rule_line_u = "[クツフヴグ][ァ]|[ウクスツフヴグズ][ィ]|[ウクツフヴグ][ェォ]"
-            rule_one_mora = "[ァ-ヴー]"
-            self.mora_count = len(
-                findall(
-                    f"(?:{rule_others}|{rule_line_i}|{rule_line_u}|{rule_one_mora})",
-                    self.pronunciation,
-                )
-            )
-
+            self.mora_count = count_mora(self.pronunciation)
+        # アクセント型を検証する
         if not 0 <= self.accent_type <= self.mora_count:
-            raise ValueError(
-                "誤ったアクセント型です({})。 expect: 0 <= accent_type <= {}".format(
-                    self.accent_type, self.mora_count
-                )
-            )
+            msg = f"誤ったアクセント型です({self.accent_type})。 expect: 0 <= accent_type <= {self.mora_count}"
+            raise ValueError(msg)
         return self

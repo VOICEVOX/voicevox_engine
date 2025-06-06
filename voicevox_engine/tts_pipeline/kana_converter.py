@@ -11,7 +11,7 @@
 - `？` で疑問文
 - アクセント位置はちょうど１つ
 
-NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法` # noqa
+NOTE: ユーザー向け案内 `https://github.com/VOICEVOX/voicevox_engine/blob/master/README.md#aquestalk-風記法`
 """
 
 from typing import Any
@@ -56,6 +56,8 @@ for kana, (consonant, vowel) in mora_kana_to_mora_phonemes.items():
 
 
 class ParseKanaError(Exception):
+    """AquesTalk 風記法のパースが失敗した。"""
+
     def __init__(self, errcode: ParseKanaErrorCode, **kwargs: Any) -> None:
         self.errcode = errcode
         self.errname = errcode.name
@@ -66,17 +68,11 @@ class ParseKanaError(Exception):
 
 def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
     """
-    単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成
-    longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
-    Parameters
-    ----------
-    phrase : str
-        単一アクセント句に相当するAquesTalk 風記法テキスト
-    Returns
-    -------
-    accent_phrase : AccentPhrase
-        アクセント句
+    単一アクセント句に相当するAquesTalk 風記法テキストからアクセント句オブジェクトを生成する。
+
+    音素長と音高は0で初期化する。
     """
+    # NOTE: longest matchによりモーラ化。入力長Nに対し計算量O(N^2)。
     # NOTE: ポーズと疑問形はこの関数内で処理しない
 
     accent_index: int | None = None
@@ -130,17 +126,10 @@ def _text_to_accent_phrase(phrase: str) -> AccentPhrase:
 
 def parse_kana(text: str) -> list[AccentPhrase]:
     """
-    AquesTalk 風記法テキストからアクセント句系列を生成
-    Parameters
-    ----------
-    text : str
-        AquesTalk 風記法テキスト
-    Returns
-    -------
-    parsed_results : list[AccentPhrase]
-        アクセント句（音素・モーラ音高 0初期化）系列を生成
-    """
+    AquesTalk 風記法テキストからアクセント句系列を生成する。
 
+    音素長と音高は0で初期化する。
+    """
     parsed_results: list[AccentPhrase] = []
     phrase_base = 0
     if len(text) == 0:
@@ -187,17 +176,7 @@ def parse_kana(text: str) -> list[AccentPhrase]:
 
 
 def create_kana(accent_phrases: list[AccentPhrase]) -> str:
-    """
-    アクセント句系列からAquesTalk 風記法テキストを生成
-    Parameters
-    ----------
-    accent_phrases : list[AccentPhrase]
-        アクセント句系列
-    Returns
-    -------
-    text : str
-        AquesTalk 風記法テキスト
-    """
+    """アクセント句系列からAquesTalk 風記法テキストを生成する。"""
     text = ""
     # アクセント句を先頭から逐次パースし、`text`末尾にAquesTalk 風記法の文字を都度追加（ループ）
     for i, phrase in enumerate(accent_phrases):

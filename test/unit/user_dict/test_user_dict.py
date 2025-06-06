@@ -1,3 +1,5 @@
+"""ユーザー辞書の単体テスト。"""
+
 import json
 from copy import deepcopy
 from pathlib import Path
@@ -5,10 +7,13 @@ from pathlib import Path
 import pytest
 from pyopenjtalk import g2p, unset_user_dict
 
-from voicevox_engine.user_dict.model import UserDictWord, WordTypes
+from voicevox_engine.user_dict.model import (
+    USER_DICT_MAX_PRIORITY,
+    UserDictWord,
+    WordTypes,
+)
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    USER_DICT_MAX_PRIORITY,
     UserDictInputError,
     WordProperty,
     create_word,
@@ -57,7 +62,7 @@ import_word = UserDictWord(
 )
 
 
-def get_new_word(user_dict: dict[str, UserDictWord]) -> UserDictWord:
+def _get_new_word(user_dict: dict[str, UserDictWord]) -> UserDictWord:
     assert len(user_dict) == 2 or (
         len(user_dict) == 1 and "aab7dda2-0d97-43c8-8cb7-3f440dab9b4e" not in user_dict
     )
@@ -96,7 +101,6 @@ def test_create_word() -> None:
 
 
 def test_apply_word_without_json(tmp_path: Path) -> None:
-
     user_dict = UserDictionary(
         user_dict_path=tmp_path / "test_apply_word_without_json.json"
     )
@@ -105,7 +109,7 @@ def test_apply_word_without_json(tmp_path: Path) -> None:
     )
     res = user_dict.read_dict()
     assert len(res) == 1
-    new_word = get_new_word(res)
+    new_word = _get_new_word(res)
     assert (
         new_word.surface,
         new_word.pronunciation,
@@ -124,7 +128,7 @@ def test_apply_word_with_json(tmp_path: Path) -> None:
     )
     res = user_dict.read_dict()
     assert len(res) == 2
-    new_word = get_new_word(res)
+    new_word = _get_new_word(res)
     assert (
         new_word.surface,
         new_word.pronunciation,

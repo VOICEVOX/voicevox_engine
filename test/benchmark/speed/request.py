@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+
 from test.benchmark.engine_preparation import ServerType, generate_client
 from test.benchmark.speed.utility import benchmark_time
 
@@ -9,9 +10,9 @@ from test.benchmark.speed.utility import benchmark_time
 def benchmark_request(server: ServerType, root_dir: Path | None = None) -> float:
     """
     エンジンへのリクエストにかかる時間を測定する。
+
     `GET /` はエンジン内部処理が最小であるため、全キャラクター分のリクエスト-レスポンス（ネットワーク処理部分）にかかる時間を擬似的に計測できる。
     """
-
     client = generate_client(server, root_dir)
 
     def execute() -> None:
@@ -35,5 +36,5 @@ if __name__ == "__main__":
 
     result_fakeserve = benchmark_request(server="fake", root_dir=root_dir)
     result_localhost = benchmark_request(server="localhost", root_dir=root_dir)
-    print("`GET /` fakeserve: {:.4f} sec".format(result_fakeserve))
-    print("`GET /` localhost: {:.4f} sec".format(result_localhost))
+    print(f"`GET /` fakeserve: {result_fakeserve:.4f} sec")
+    print(f"`GET /` localhost: {result_localhost:.4f} sec")

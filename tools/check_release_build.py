@@ -1,9 +1,8 @@
-"""
-ビルド結果をテストする
-"""
+"""ビルド結果をテストする。"""
 
 import argparse
 import json
+import shlex
 import time
 from io import BytesIO
 from pathlib import Path
@@ -16,7 +15,7 @@ import soundfile
 base_url = "http://127.0.0.1:50021/"
 
 
-def test_release_build(
+def _test_release_build(
     dist_dir: Path, skip_run_process: bool, skip_check_manifest: bool
 ) -> None:
     run_file = dist_dir / "run"
@@ -29,6 +28,8 @@ def test_release_build(
         assert manifest_file.is_file()
         manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
         assert "manifest_version" in manifest
+        command_filename = shlex.split(manifest["command"])[0]
+        assert (dist_dir / command_filename).exists()
 
     # 起動
     process = None
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--skip_run_process", action="store_true")
     parser.add_argument("--skip_check_manifest", action="store_true")
     args = parser.parse_args()
-    test_release_build(
+    _test_release_build(
         dist_dir=args.dist_dir,
         skip_run_process=args.skip_run_process,
         skip_check_manifest=args.skip_check_manifest,
