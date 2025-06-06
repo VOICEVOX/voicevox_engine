@@ -29,8 +29,8 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.23.0"
-  VOICEVOX_CORE_VERSION: "0.15.7"
+  VOICEVOX_RESOURCE_VERSION: "0.23.1"
+  VOICEVOX_CORE_VERSION: "0.15.8"
 
 defaults:
   run:
@@ -103,14 +103,15 @@ jobs:
             voicevox_core_asset_prefix: voicevox_core-linux-arm64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-aarch64-1.13.1.tgz
             target: linux-cpu-arm64
-          # Linux NVIDIA GPU
-          - os: ubuntu-22.04
-            architecture: "x64"
-            voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
-            onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
-            cuda_version: "11.8.0"
-            cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-8.9.2.26_cuda11-archive.tar.xz
-            target: linux-nvidia
+          # TODO: 一時的なコメントアウトを戻す
+          # # Linux NVIDIA GPU
+          # - os: ubuntu-22.04
+          #   architecture: "x64"
+          #   voicevox_core_asset_prefix: voicevox_core-linux-x64-gpu
+          #   onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-linux-x64-gpu-1.13.1.tgz
+          #   cuda_version: "11.8.0"
+          #   cudnn_url: https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-8.9.2.26_cuda11-archive.tar.xz
+          #   target: linux-nvidia
 
     runs-on: ${{ matrix.os }}
 
