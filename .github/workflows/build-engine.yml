@@ -27,6 +27,10 @@ on:
         description: "Docker Hubにプッシュする"
         type: boolean
         default: false
+      with_latest:
+        description: "Dockerイメージのlatestタグをプッシュする"
+        type: boolean
+        default: false
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.1"
@@ -673,9 +677,9 @@ jobs:
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
-      # NOTE: workflow_dispatch以外では、 `toJSON(inputs.prerelease) == 'null'` であるため `prerelease: true` となる
-      prerelease: ${{ toJSON(inputs.prerelease) != 'false' }}
       # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
       push_dockerhub: ${{ inputs.push_dockerhub == true }}
+      # NOTE: workflow_dispatch以外では、 `inputs.with_latest == 'null'` であるため `with_latest: false` となる
+      with_latest: ${{ inputs.with_latest == true }}
     secrets:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

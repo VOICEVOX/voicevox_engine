@@ -5,7 +5,7 @@ from tools.generate_docker_image_names import (
 )
 
 
-def test_generate_docker_image_names_for_prerelease() -> None:
+def test_generate_docker_image_names() -> None:
     """プレリリース向けのDockerイメージ名を生成できる。"""
     # Inputs
     repository = "your-org/your-repo"
@@ -30,7 +30,7 @@ def test_generate_docker_image_names_for_prerelease() -> None:
     assert image_names == expected_image_names
 
 
-def test_generate_docker_image_names_for_release() -> None:
+def test_generate_docker_image_names_with_latest() -> None:
     """リリース向けのDockerイメージ名を生成できる。"""
     # Inputs
     repository = "your-org/your-repo"
