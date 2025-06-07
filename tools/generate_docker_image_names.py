@@ -17,26 +17,6 @@ $ uv run ./tools/generate_docker_image_names.py \
   --version "VER" \
   --prefix ""
 REPO:VER
-
-$ uv run ./tools/generate_docker_image_names.py \
-  --repository "REPO" \
-  --version "VER" \
-  --prefix ",A,B" \
-  --with_latest
-REPO:VER
-REPO:latest
-REPO:A-VER
-REPO:A-latest
-REPO:B-VER
-REPO:B-latest
-
-$ uv run ./tools/generate_docker_image_names.py \
-  --repository "REPO" \
-  --version "VER" \
-  --prefix "" \
-  --with_latest
-REPO:VER
-REPO:latest
 """
 
 from argparse import ArgumentParser
@@ -46,7 +26,6 @@ def _generate_docker_image_names(
     repository: str,
     version: str,
     comma_separated_prefix: str,
-    with_latest: bool,
 ) -> set[str]:
     """
     Dockerイメージ名を生成する。
@@ -69,8 +48,6 @@ def _generate_docker_image_names(
         バージョン
     comma_separated_prefix : str
         カンマ区切りのプレフィックス
-    with_latest : bool
-        バージョンをlatestに置き換えたタグを追加する
 
     Returns
     -------
@@ -83,23 +60,10 @@ def _generate_docker_image_names(
     ...     repository="voicevox/voicevox_engine",
     ...     version="0.22.0-preview.1",
     ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
-    ...     with_latest=False,
     ... )
     {'voicevox/voicevox_engine:0.22.0-preview.1',
      'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
      'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1'}
-    >>> _generate_docker_image_names(
-    ...     repository="voicevox/voicevox_engine",
-    ...     version="0.22.0",
-    ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
-    ...     with_latest=True,
-    ... )
-    {'voicevox/voicevox_engine:0.22.0',
-     'voicevox/voicevox_engine:latest',
-     'voicevox/voicevox_engine:cpu-0.22.0',
-     'voicevox/voicevox_engine:cpu-latest',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-latest'}
     """
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
@@ -112,9 +76,6 @@ def _generate_docker_image_names(
         if prefix:
             prefix = f"{prefix}-"
         docker_image_names.add(f"{repository}:{prefix}{version}")
-
-        if with_latest:
-            docker_image_names.add(f"{repository}:{prefix}latest")
 
     return docker_image_names
 
@@ -140,25 +101,18 @@ def main() -> None:
         default="",
         help='カンマ区切りのプレフィックス（例: ",cpu,cpu-ubuntu22.04", "nvidia,nvidia-ubuntu22.04"）',
     )
-    parser.add_argument(
-        "--with_latest",
-        action="store_true",
-        help="バージョンをlatestに置き換えたタグを追加する",
-    )
 
     args = parser.parse_args()
 
     repository: str = args.repository
     version: str = args.version
     comma_separated_prefix: str = args.prefix
-    with_latest: bool = args.with_latest
 
     # Dockerイメージ名を生成
     docker_image_names = _generate_docker_image_names(
         repository=repository,
         version=version,
         comma_separated_prefix=comma_separated_prefix,
-        with_latest=with_latest,
     )
 
     # 標準出力に出力

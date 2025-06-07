@@ -7,9 +7,6 @@ on:
       version:
         type: string
         required: true
-      prerelease:
-        type: boolean
-        default: true
       push_dockerhub:
         type: boolean
         default: false
@@ -21,10 +18,6 @@ on:
       version:
         description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
         required: true
-      prerelease:
-        description: "プレリリースかどうか"
-        type: boolean
-        default: true
       push_dockerhub:
         description: "Docker Hubにプッシュする"
         type: boolean
@@ -152,12 +145,6 @@ jobs:
       - name: <Build> Generate Docker image names
         id: generate-docker-image-names
         run: |
-          # NOTE: workflow_call・workflow_dispatch以外では、 `{{ inputs.prerelease }} == "null"` であるため、 `if [[ false ]]` となる
-          WITH_LATEST_ARG=""
-          if [[ "${{ inputs.prerelease }}" == "false" ]]; then
-            WITH_LATEST_ARG="--with_latest"
-          fi
-
           # Dockerイメージ名を outputs.tags に改行区切りで格納する
           {
             echo "tags<<EOF"
@@ -166,8 +153,7 @@ jobs:
             uv run tools/generate_docker_image_names.py \
               --repository "${{ needs.config.outputs.ghcr_repository }}" \
               --version "${{ needs.config.outputs.version }}" \
-              --prefix "${{ matrix.prefixes }}" \
-              ${WITH_LATEST_ARG}
+              --prefix "${{ matrix.prefixes }}"
 
             # Docker Hub
             # TODO: レジストリごとにプッシュするプレフィックスを変更したい（ https://github.com/VOICEVOX/voicevox_engine/issues/1663 ）
@@ -176,8 +162,7 @@ jobs:
               uv run tools/generate_docker_image_names.py \
                 --repository "${{ needs.config.outputs.dockerhub_repository }}" \
                 --version "${{ needs.config.outputs.version }}" \
-                --prefix "${{ matrix.prefixes }}" \
-                ${WITH_LATEST_ARG}
+                --prefix "${{ matrix.prefixes }}"
             fi
 
             echo "EOF"
