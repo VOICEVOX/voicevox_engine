@@ -36,6 +36,7 @@ jobs:
                 version: dev_version,
                 prerelease: true,
                 push_dockerhub: true,
+                with_latest: false,
               },
             });
             console.log(`Triggered workflow_dispatch for ${dev_version}`);
