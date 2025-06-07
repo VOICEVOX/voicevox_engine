@@ -137,10 +137,10 @@ jobs:
 
       - name: <Build> Build and push target Docker images
         run: |
-          while read -r target_tag; do <<< "${{ steps.generate-target-docker-image-names.outputs.tags }}"
+          while read -r target_tag; do
             # Dockerイメージの別名を作成
             docker tag "${{ steps.generate-source-docker-image-name.outputs.tag }}" "${target_tag}"
 
             # Dockerイメージの別名をpush
             docker push "${target_tag}"
-          done
+          done <<< "${{ steps.generate-target-docker-image-names.outputs.tags }}"
