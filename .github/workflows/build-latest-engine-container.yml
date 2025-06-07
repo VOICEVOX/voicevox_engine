@@ -36,13 +36,19 @@ jobs:
 
     strategy:
       matrix:
+        # 各変数の説明
+        # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョンのみがタグ名になる
         include:
+          # Ubuntu 22.04
+          - prefixes: "cpu-ubuntu22.04"
           # Ubuntu 22.04 / AMD64
           - prefixes: "cpu-amd64-ubuntu22.04"
           # Ubuntu 22.04 / ARM64
           - prefixes: "cpu-arm64-ubuntu22.04"
           # Ubuntu 22.04 / AMD64 / NVIDIA
           - prefixes: "nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
+          # Ubuntu 24.04
+          - prefixes: ",cpu,cpu-ubuntu24.04"
           # Ubuntu 24.04 / AMD64
           - prefixes: "cpu-amd64,cpu-amd64-ubuntu24.04"
           # Ubuntu 24.04 / ARM64
@@ -130,17 +136,12 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: <Build> Pull source Docker image
-        run: |
-          # 複製元のDockerイメージをpullする
-          docker pull "${{ steps.generate-source-docker-image-name.outputs.tag }}"
-
       - name: <Build> Build and push target Docker images
         run: |
           while read -r target_tag; do
-            # Dockerイメージの別名を作成
-            docker tag "${{ steps.generate-source-docker-image-name.outputs.tag }}" "${target_tag}"
-
-            # Dockerイメージの別名をpush
-            docker push "${target_tag}"
+            # Dockerイメージの別名を作成してpushする
+            # NOTE: 複製元のマニフェストリストに含まれるイメージが宛先にコピーされる
+            docker buildx imagetools create \
+              --tag "${target_tag}" \
+              "${{ steps.generate-source-docker-image-name.outputs.tag }}"
           done <<< "${{ steps.generate-target-docker-image-names.outputs.tags }}"
