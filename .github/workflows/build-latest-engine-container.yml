@@ -87,10 +87,6 @@ jobs:
           # 最初のprefixを取得する
           # NOTE: matrix.prefixes はすべて同じイメージの別名なので、最初のprefixだけをpull対象とする
           FIRST_PREFIX=$(echo "${{ matrix.prefixes }}" | cut -d ',' -f 1)
-          if [[ -z "${FIRST_PREFIX}" ]]; then
-            echo "::error:: matrix.prefixes が空です"
-            exit 1
-          fi
 
           echo "first_prefix=${FIRST_PREFIX}" >> "${GITHUB_OUTPUT}"
 
