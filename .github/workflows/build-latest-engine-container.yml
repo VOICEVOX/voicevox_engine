@@ -1,8 +1,5 @@
 name: Build latest engine container
 on:
-  push:
-    branches:
-      - feature/build-latest-engine-container-ci
   workflow_dispatch:
     inputs:
       version:
