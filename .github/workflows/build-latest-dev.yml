@@ -34,6 +34,7 @@ jobs:
               ref: 'master',
               inputs: {
                 version: dev_version,
+                prerelease: true,
                 push_dockerhub: true,
               },
             });
