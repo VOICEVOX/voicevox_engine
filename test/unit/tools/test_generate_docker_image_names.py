@@ -6,7 +6,7 @@ from tools.generate_docker_image_names import (
 
 
 def test_generate_docker_image_names() -> None:
-    """プレリリース向けのDockerイメージ名を生成できる。"""
+    """Dockerイメージ名を生成できる。"""
     # Inputs
     repository = "your-org/your-repo"
     version = "0.22.0-preview.1"
