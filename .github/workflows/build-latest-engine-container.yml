@@ -36,6 +36,7 @@ jobs:
 
     strategy:
       matrix:
+        # TODO: 1つのランナーで実行したい
         # 各変数の説明
         # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョンのみがタグ名になる
         include:
