@@ -133,7 +133,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: <Build> Build and push target Docker images
+      - name: <Build/Deploy> Build and push target Docker images
         run: |
           # --tag 引数のリストを生成する
           TAG_ARGS=()
