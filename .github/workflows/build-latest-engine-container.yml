@@ -135,10 +135,14 @@ jobs:
 
       - name: <Build> Build and push target Docker images
         run: |
-          while read -r target_tag; do
-            # Dockerイメージの別名を作成してpushする
-            # NOTE: 複製元のマニフェストリストに含まれるイメージが宛先にコピーされる
-            docker buildx imagetools create \
-              --tag "${target_tag}" \
-              "${{ steps.generate-source-docker-image-name.outputs.tag }}"
+          # --tag 引数のリストを生成する
+          TAG_ARGS=()
+          while IFS= read -r TAG; do
+            TAG_ARGS+=(--tag "$TAG")
           done <<< "${{ steps.generate-target-docker-image-names.outputs.tags }}"
+
+          # Dockerイメージの別名を作成してpushする
+          # NOTE: 複製元のタグに含まれる各プラットフォームのイメージが宛先にコピーされる
+          docker buildx imagetools create \
+            "${TAG_ARGS[@]}" \
+            "${{ steps.generate-source-docker-image-name.outputs.tag }}"
