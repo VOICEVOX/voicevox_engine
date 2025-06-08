@@ -104,7 +104,9 @@ def generate_tts_pipeline_router(
         """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        accent_phrases = engine.create_accent_phrases(text, style_id, enable_katakana_english)
+        accent_phrases = engine.create_accent_phrases(
+            text, style_id, enable_katakana_english
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
