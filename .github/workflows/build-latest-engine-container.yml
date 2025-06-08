@@ -1,4 +1,4 @@
-name: Build latest engine container
+name: Release latest engine container
 on:
   workflow_dispatch:
     inputs:
