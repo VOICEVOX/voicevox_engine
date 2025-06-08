@@ -114,7 +114,7 @@ class SupportedFeatures(BaseModel):
         default=None, description="キャラクター情報のリソースをURLで返送"
     )
     katakana_english: bool | SkipJsonSchema[None] = Field(
-        default=None, description="読みが不明な英単語の解析"
+        default=None, description="未知の英単語をカタカナ読みに変換"
     )
 
 
