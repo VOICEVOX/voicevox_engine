@@ -40,7 +40,7 @@ class SupportedFeaturesJson:
     sing: FeatureSupportJson
     manage_library: FeatureSupportJson
     return_resource_url: FeatureSupportJson
-    katakana_english: FeatureSupportJson
+    apply_katakana_english: FeatureSupportJson
 
 
 @dataclass(frozen=True)
@@ -113,7 +113,7 @@ class SupportedFeatures(BaseModel):
     return_resource_url: bool | SkipJsonSchema[None] = Field(
         default=None, description="キャラクター情報のリソースをURLで返送"
     )
-    katakana_english: bool | SkipJsonSchema[None] = Field(
+    apply_katakana_english: bool | SkipJsonSchema[None] = Field(
         default=None, description="未知の英単語をカタカナ読みに変換"
     )
 

@@ -349,7 +349,7 @@ class TTSEngine:
         self,
         text: str,
         style_id: StyleId,
-        enable_katakana_english: bool = False,  # TODO: 初期値をなくす？
+        enable_katakana_english: bool,
     ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
         full_context_labels = text_to_full_context_labels(
