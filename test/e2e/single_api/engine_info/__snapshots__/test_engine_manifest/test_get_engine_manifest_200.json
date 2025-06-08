@@ -22,6 +22,7 @@
     "adjust_speed_scale": true,
     "adjust_volume_scale": true,
     "interrogative_upspeak": true,
+    "katakana_english": true,
     "manage_library": true,
     "return_resource_url": true,
     "sing": true,

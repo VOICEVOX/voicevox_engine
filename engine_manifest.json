@@ -74,7 +74,7 @@
             "value": true,
             "name": "キャラクター情報のリソースをURLで返送"
         },
-        "return_resource_url": {
+        "katakana_english": {
             "type": "bool",
             "value": true,
             "name": "読みが不明な英単語の解析"
