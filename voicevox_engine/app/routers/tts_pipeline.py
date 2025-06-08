@@ -196,7 +196,7 @@ def generate_tts_pipeline_router(
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
-        enable_katakana_englishが`true`のとき、テキスト中の読みが不明な英単語を、kanalizerで解析します。デフォルトは`true`です。
+        enable_katakana_englishが`true`のとき、テキスト中の読みが不明な英単語をカタカナ読みにします。デフォルトは`true`です。
         is_kanaが`true`のとき、enable_katakana_englishの値は無視されます。
         """
         version = core_version or LATEST_VERSION
