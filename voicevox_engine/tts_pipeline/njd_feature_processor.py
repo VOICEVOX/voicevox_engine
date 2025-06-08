@@ -86,7 +86,7 @@ def _remove_pau_space_between_alphabet(features: list[NjdFeature]) -> list[NjdFe
     ]
 
 
-def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
+def text_to_full_context_labels(text: str, enable_katakana_english: bool) -> list[str]:
     """日本語文からフルコンテキストラベルを生成する"""
     # TODO: この関数のテストについて検討する
     # https://github.com/VOICEVOX/voicevox_engine/pull/1562/files#r2014009618
@@ -95,7 +95,7 @@ def text_to_full_context_labels(text: str, enable_e2k: bool) -> list[str]:
 
     njd_features = list(map(lambda f: NjdFeature(**f), pyopenjtalk.run_frontend(text)))
 
-    if enable_e2k:
+    if enable_katakana_english:
         for i, feature in enumerate(njd_features):
             string = replace_zenkaku_alphabets_with_hankaku(feature.string)
             if _is_unknown_reading_word(feature) and is_hankaku_alphabet(string):
