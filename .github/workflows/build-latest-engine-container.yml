@@ -1,5 +1,6 @@
 # latestタグをリリースする
 # NOTE: 指定したバージョンのDockerイメージをプルして、latest タグを付けて再プッシュする
+
 name: Release latest engine container
 on:
   workflow_dispatch:
