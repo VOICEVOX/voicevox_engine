@@ -1,3 +1,5 @@
+# latestタグをリリースする
+# NOTE: 指定したバージョンのDockerイメージをプルして、latest タグを付けて再プッシュする
 name: Release latest engine container
 on:
   workflow_dispatch:
@@ -99,7 +101,7 @@ jobs:
             echo "tag<<EOF"
 
             # ghcr.io
-            # NOTE: ghcr.io からpullして、 ghcr.io と Docker Hub の両方にpushする
+            # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
             uv run tools/generate_docker_image_names.py \
               --repository "${{ needs.config.outputs.ghcr_repository }}" \
               --version "${{ inputs.version }}" \
