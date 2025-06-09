@@ -349,10 +349,12 @@ class TTSEngine:
         self,
         text: str,
         style_id: StyleId,
-        enable_e2k: bool = False,  # TODO: 初期値をなくす？
+        enable_katakana_english: bool,
     ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        full_context_labels = text_to_full_context_labels(text, enable_e2k=enable_e2k)
+        full_context_labels = text_to_full_context_labels(
+            text, enable_katakana_english=enable_katakana_english
+        )
         accent_phrases = full_context_labels_to_accent_phrases(full_context_labels)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
