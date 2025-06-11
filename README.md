@@ -435,7 +435,7 @@ curl -s \
     -X POST \
     -d @disabled_query.json \
     "127.0.0.1:50021/synthesis?speaker=1" \
-    > audio.wav
+    > disabled_audio.wav
 ```
 
 ### その他の引数
