@@ -401,6 +401,29 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
 
+### 英単語の読み方を変える
+
+辞書に登録されていない英単語は、デフォルトで自然にカタカナ読みします。  
+この機能を無効にしたい場合は `/audio_query` の `enable_katakana_english` パラメータに `false` を指定してください。
+
+```bash
+echo -n "こんにちは、voice synthesisのworldへwelcome" >text.txt
+
+# カタカナ読みを無効にする
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1&enable_katakana_english=false" \
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio.wav
+```
+
 ### その他の引数
 
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
