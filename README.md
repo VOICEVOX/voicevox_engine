@@ -409,10 +409,10 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 ```bash
 echo -n "こんにちは、voice synthesisのworldへwelcome" >text.txt
 
-# カタカナ読みを無効にする
+# 「こんにちは、ボイス シンセシスの...」のように読まれます。
 curl -s \
     -X POST \
-    "127.0.0.1:50021/audio_query?speaker=1&enable_katakana_english=false" \
+    "127.0.0.1:50021/audio_query?speaker=1" \
     --get --data-urlencode text@text.txt \
     > query.json
 
@@ -420,6 +420,20 @@ curl -s \
     -H "Content-Type: application/json" \
     -X POST \
     -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio.wav
+
+# 「こんにちは、ボイス エスワイエヌティーエッチエスアイエスの...」のように読まれます。
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1&enable_katakana_english=false" \
+    --get --data-urlencode text@text.txt \
+    > disabled_query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @disabled_query.json \
     "127.0.0.1:50021/synthesis?speaker=1" \
     > audio.wav
 ```
