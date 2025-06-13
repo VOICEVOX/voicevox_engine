@@ -29,7 +29,7 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.23.0"
+  VOICEVOX_RESOURCE_VERSION: "0.23.1"
   VOICEVOX_CORE_VERSION: "0.16.0"
   VOICEVOX_VVM_VERSION: "0.1.0" # FIXME: ソングのモデルが入っていない
 
@@ -58,9 +58,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # ONNX Runtimeを**GHAの**`windows-2019`でビルドするのが困難であるため、Windowsのビルドは`windows-2022`で行い、そのテストは`windows-2019`で行う。
-          # ただし`windows-2019`での動作保証が困難になるか、`windows-2019`自体が消滅するならば一律で`windows-2022`に引き上げる。
-
           # Windows CPU
           - os: windows-2022
             architecture: "x64"
@@ -667,6 +664,8 @@ jobs:
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
+      # NOTE: workflow_dispatch以外では、 `toJSON(inputs.prerelease) == 'null'` であるため `prerelease: true` となる
+      prerelease: ${{ toJSON(inputs.prerelease) != 'false' }}
       # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
       push_dockerhub: ${{ inputs.push_dockerhub == true }}
     secrets:
