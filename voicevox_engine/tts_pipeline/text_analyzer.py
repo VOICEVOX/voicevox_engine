@@ -93,8 +93,8 @@ class _Label:
 
     phoneme: Vowel | Consonant | Sil  # 音素。子音か母音 (無音含む)。
     is_pause: bool  # 無音 (silent/pause) か否か。
-    mora_index: int  # アクセント句内におけるモーラのインデックス (1 ~ 49)。
-    accent_position: int  # アクセント句内におけるアクセントの位置 (1 ~ 49)。
+    mora_index: int | None  # アクセント句内におけるモーラのインデックス (1 ~ 49)。
+    accent_position: int | None  # アクセント句内におけるアクセントの位置 (1 ~ 49)。
     is_interrogative: bool  # 疑問形か否か。
     accent_phrase_index: str  # BreathGroup内におけるアクセント句のインデックス。
     breath_group_index: str  # BreathGroupのインデックス。
@@ -132,23 +132,25 @@ class _Label:
         else:
             raise NonOjtPhonemeError()
 
-        # モーラインデックス無しを -1 扱いする
         # NOTE: pau と sil はアクセント句に属さないため、モーラインデックスが無い
-        mora_index = contexts["a2"]
-        if mora_index == "xx":
-            mora_index = "-1"
+        _mora_index = contexts["a2"]
+        if _mora_index == "xx":
+            mora_index = None
+        else:
+            mora_index = int(_mora_index)
 
-        # アクセント位置無しを -1 扱いする
         # NOTE: pau と sil はアクセント句に属さないため、アクセント位置が無い
-        accent_position = contexts["f2"]
-        if accent_position == "xx":
-            accent_position = "-1"
+        _accent_position = contexts["f2"]
+        if _accent_position == "xx":
+            accent_position = None
+        else:
+            accent_position = int(_accent_position)
 
         return cls(
             phoneme=p,
             is_pause=contexts["f1"] == "xx",
-            mora_index=int(mora_index),
-            accent_position=int(accent_position),
+            mora_index=mora_index,
+            accent_position=accent_position,
             is_interrogative=contexts["f3"] == "1",
             accent_phrase_index=contexts["f5"],
             breath_group_index=contexts["i3"],
@@ -212,9 +214,12 @@ class AccentPhraseLabel:
                 mora_labels = []
 
         # アクセント位置を決定する
-        accent = moras[0].vowel.accent_position
+        _accent = moras[0].vowel.accent_position
+        if _accent is None:
+            msg = "アクセント位置が指定されていません。"
+            raise RuntimeError(msg)
         # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
-        accent = accent if accent <= len(moras) else len(moras)
+        accent = _accent if _accent <= len(moras) else len(moras)
 
         # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
         is_interrogative = moras[-1].vowel.is_interrogative
