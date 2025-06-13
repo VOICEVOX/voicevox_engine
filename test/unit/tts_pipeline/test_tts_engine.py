@@ -242,7 +242,9 @@ def test_mocked_create_accent_phrases_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = "こんにちは、ヒホです"
     # Outputs
-    result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
+    result = tts_engine.create_accent_phrases(
+        hello_hiho, StyleId(1), enable_katakana_english=False
+    )
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -419,7 +421,9 @@ def _koreha_arimasuka_base_expected() -> list[AccentPhrase]:
 
 def _create_synthesis_test_base(text: str) -> list[AccentPhrase]:
     tts_engine = TTSEngine(core=MockCoreWrapper())
-    return tts_engine.create_accent_phrases(text, StyleId(1))
+    return tts_engine.create_accent_phrases(
+        text, StyleId(1), enable_katakana_english=False
+    )
 
 
 def _assert_equeal_accent_phrases(
@@ -441,7 +445,9 @@ def test_create_accent_phrases() -> None:
     text = "これはありますか？"
     expected = _koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
-    actual = tts_engine.create_accent_phrases(text, StyleId(1))
+    actual = tts_engine.create_accent_phrases(
+        text, StyleId(1), enable_katakana_english=False
+    )
     _assert_equeal_accent_phrases(expected, actual)
 
 

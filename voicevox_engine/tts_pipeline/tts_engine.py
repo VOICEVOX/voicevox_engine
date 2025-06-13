@@ -7,13 +7,12 @@ from typing import Any, Final, Literal, TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
-from voicevox_engine.utility.core_version_utility import get_latest_version
-
 from ..core.core_adapter import CoreAdapter, DeviceSupport
-from ..core.core_initializer import MOCK_VER, CoreManager
+from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
+from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
 from .kana_converter import parse_kana
 from .model import (
@@ -21,8 +20,9 @@ from .model import (
     Mora,
 )
 from .mora_mapping import mora_phonemes_to_mora_kana
+from .njd_feature_processor import text_to_full_context_labels
 from .phoneme import Phoneme
-from .text_analyzer import text_to_accent_phrases
+from .text_analyzer import full_context_labels_to_accent_phrases
 
 # 疑問文語尾定数
 UPSPEAK_LENGTH = 0.15
@@ -69,7 +69,7 @@ def _create_one_hot(accent_phrase: AccentPhrase, index: int) -> NDArray[np.int64
 
 
 def _generate_silence_mora(length: float) -> Mora:
-    """無音モーラの生成"""
+    """音の長さを指定して無音モーラを生成する。"""
     return Mora(text="　", vowel="sil", vowel_length=length, pitch=0.0)
 
 
@@ -245,7 +245,7 @@ class TTSEngine:
     def update_length(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列に含まれるモーラの音素長属性をスタイルに合わせて更新する"""
+        """アクセント句系列に含まれる音素の長さをスタイルに合わせて更新する。"""
         # モーラ系列を抽出する
         moras = to_flatten_moras(accent_phrases)
 
@@ -255,10 +255,10 @@ class TTSEngine:
         # 音素クラスから音素IDスカラへ表現を変換する
         phoneme_ids = np.array([p.id for p in phonemes], dtype=np.int64)
 
-        # コアを用いて音素長を生成する
+        # 音素ごとの長さを生成する
         phoneme_lengths = self._core.safe_yukarin_s_forward(phoneme_ids, style_id)
 
-        # 生成結果でモーラ内の音素長属性を置換する
+        # 生成された音素長でモーラの音素長を更新する
         vowel_indexes = [i for i, p in enumerate(phonemes) if p.is_mora_tail()]
         for i, mora in enumerate(moras):
             if mora.consonant is None:
@@ -272,7 +272,7 @@ class TTSEngine:
     def update_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列に含まれるモーラの音高属性をスタイルに合わせて更新する"""
+        """アクセント句系列に含まれるモーラの音高をスタイルに合わせて更新する。"""
         # 後続のnumpy.concatenateが空リストだとエラーになるので別処理
         if len(accent_phrases) == 0:
             return []
@@ -339,14 +339,22 @@ class TTSEngine:
     def update_length_and_pitch(
         self, accent_phrases: list[AccentPhrase], style_id: StyleId
     ) -> list[AccentPhrase]:
-        """アクセント句系列の音素長・モーラ音高をスタイルIDに基づいて更新する"""
+        """アクセント句系列に含まれる音素の長さとモーラの音高をスタイルに合わせて更新する。"""
         accent_phrases = self.update_length(accent_phrases, style_id)
         accent_phrases = self.update_pitch(accent_phrases, style_id)
         return accent_phrases
 
-    def create_accent_phrases(self, text: str, style_id: StyleId) -> list[AccentPhrase]:
+    def create_accent_phrases(
+        self,
+        text: str,
+        style_id: StyleId,
+        enable_katakana_english: bool,
+    ) -> list[AccentPhrase]:
         """テキストからアクセント句系列を生成し、スタイルIDに基づいてその音素長・モーラ音高を更新する"""
-        accent_phrases = text_to_accent_phrases(text)
+        full_context_labels = text_to_full_context_labels(
+            text, enable_katakana_english=enable_katakana_english
+        )
+        accent_phrases = full_context_labels_to_accent_phrases(full_context_labels)
         accent_phrases = self.update_length_and_pitch(accent_phrases, style_id)
         return accent_phrases
 
@@ -425,7 +433,7 @@ class TTSEngineManager:
             return self._engines[self._latest_version()]
         elif version in self._engines:
             return self._engines[version]
-        elif version == MOCK_VER:
+        elif version == MOCK_CORE_VERSION:
             raise MockTTSEngineNotFound()
         else:
             raise TTSEngineNotFound(version=version)
@@ -433,11 +441,9 @@ class TTSEngineManager:
 
 def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
-    # FIXME: `MOCK_VER` を循環 import 無しに `initialize_cores()` 関連モジュールから import する
-    MOCK_VER = "0.0.0"
     tts_engines = TTSEngineManager()
     for ver, core in core_manager.items():
-        if ver == MOCK_VER:
+        if ver == MOCK_CORE_VERSION:
             from ..dev.tts_engine.mock import MockTTSEngine
 
             tts_engines.register_engine(MockTTSEngine(), ver)
