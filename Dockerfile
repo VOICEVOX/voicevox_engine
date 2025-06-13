@@ -78,7 +78,7 @@ EOF
 COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
 
 # Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.23.0
+ARG VOICEVOX_RESOURCE_VERSION=0.23.1
 RUN <<EOF
     set -eux
 
