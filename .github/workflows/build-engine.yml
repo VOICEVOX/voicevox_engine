@@ -31,7 +31,7 @@ on:
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.1"
   VOICEVOX_CORE_VERSION: "0.16.0" # FIXME: VOICEVOX/voicevox_core#1089が入っていない
-  VOICEVOX_VVM_VERSION: "0.1.0" # FIXME: ソングのモデルが入っていない
+  VOICEVOX_VVM_VERSION: "0.1.0-tmp-song.0"
 
 defaults:
   run:
@@ -398,13 +398,11 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
-      # FIXME: 数分かかるみたいなようなのでgithubusercontentからの方がよさげだが、#709でやることにする。
-      - name: <Setup> Check out VVM repository
-        uses: actions/checkout@v4
-        with:
-          repository: VOICEVOX/voicevox_vvm
-          ref: ${{ env.VOICEVOX_VVM_VERSION }}
-          path: download/vvm
+      # VOICEVOX VVM
+      - name: <Setup> Download VVMs
+        run: gh release download "$VOICEVOX_VVM_VERSION" -R VOICEVOX/voicevox_vvm -D download/vvm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # VOICEVOX CORE
       - name: <Setup> Prepare CORE cache
