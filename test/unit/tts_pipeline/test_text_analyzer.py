@@ -6,11 +6,11 @@ from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
     AccentPhraseLabel,
     BreathGroupLabel,
-    Label,
     MoraLabel,
     NonOjtPhonemeError,
     OjtUnknownPhonemeError,
     UtteranceLabel,
+    _Label,
     full_context_labels_to_accent_phrases,
     mora_to_text,
 )
@@ -36,11 +36,6 @@ def contexts_to_feature(contexts: dict[str, str]) -> str:
 
 # OpenJTalk コンテナクラス
 OjtContainer = MoraLabel | AccentPhraseLabel | BreathGroupLabel | UtteranceLabel
-
-
-def features(ojt_container: OjtContainer) -> list[str]:
-    """コンテナインスタンスに直接的・間接的に含まれる全ての feature を返す"""
-    return [contexts_to_feature(p.contexts) for p in ojt_container.labels]
 
 
 @pytest.fixture
@@ -132,8 +127,8 @@ def test_case_hello_hiho() -> list[str]:
 
 
 @pytest.fixture
-def labels_hello_hiho(test_case_hello_hiho: list[str]) -> list[Label]:
-    return list(map(Label.from_feature, test_case_hello_hiho))
+def labels_hello_hiho(test_case_hello_hiho: list[str]) -> list[_Label]:
+    return list(map(_Label.from_feature, test_case_hello_hiho))
 
 
 def jointed_phonemes(ojt_container: OjtContainer) -> str:
@@ -146,17 +141,17 @@ def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
     return " ".join([label.phoneme for label in ojt_container.labels])
 
 
-def test_label_phoneme(labels_hello_hiho: list[Label]) -> None:
-    """Label に含まれる音素をテスト"""
+def test_label_phoneme(labels_hello_hiho: list[_Label]) -> None:
+    """_Label に含まれる音素をテスト。"""
     assert (
         " ".join([label.phoneme for label in labels_hello_hiho])
         == "sil k o N n i ch i w a pau h i h o d e s U sil"
     )
 
 
-def test_label_is_pause(labels_hello_hiho: list[Label]) -> None:
-    """Label のポーズ判定をテスト"""
-    assert [label.is_pause() for label in labels_hello_hiho] == [
+def test_label_is_pause(labels_hello_hiho: list[_Label]) -> None:
+    """_Label のポーズ判定をテスト。"""
+    assert [label.is_pause for label in labels_hello_hiho] == [
         True,  # sil
         False,  # k
         False,  # o
@@ -180,18 +175,7 @@ def test_label_is_pause(labels_hello_hiho: list[Label]) -> None:
     ]
 
 
-def test_label_feature(
-    test_case_hello_hiho: list[str], labels_hello_hiho: list[Label]
-) -> None:
-    """Label に含まれる features をテスト"""
-    assert [
-        contexts_to_feature(label.contexts) for label in labels_hello_hiho
-    ] == test_case_hello_hiho
-
-
-def test_mora_label(
-    test_case_hello_hiho: list[str], labels_hello_hiho: list[Label]
-) -> None:
+def test_mora_label(labels_hello_hiho: list[_Label]) -> None:
     # outputs
     # contexts["a2"] == "1" ko
     mora_hello_1 = MoraLabel(consonant=labels_hello_hiho[1], vowel=labels_hello_hiho[2])
@@ -220,9 +204,6 @@ def test_mora_label(
         consonant=labels_hello_hiho[17], vowel=labels_hello_hiho[18]
     )
 
-    # expects
-    expects = test_case_hello_hiho
-
     # test
     # 音素系列
     assert jointed_phonemes(mora_hello_1) == "ko"
@@ -234,27 +215,17 @@ def test_mora_label(
     assert jointed_phonemes(mora_hiho_2) == "ho"
     assert jointed_phonemes(mora_hiho_3) == "de"
     assert jointed_phonemes(mora_hiho_4) == "sU"
-    # features
-    assert features(mora_hello_1) == expects[1:3]
-    assert features(mora_hello_2) == expects[3:4]
-    assert features(mora_hello_3) == expects[4:6]
-    assert features(mora_hello_4) == expects[6:8]
-    assert features(mora_hello_5) == expects[8:10]
-    assert features(mora_hiho_1) == expects[11:13]
-    assert features(mora_hiho_2) == expects[13:15]
-    assert features(mora_hiho_3) == expects[15:17]
-    assert features(mora_hiho_4) == expects[17:19]
 
 
 # TODO: ValueErrorを吐く作為的ではない自然な例の模索
 # 存在しないなら放置でよい
 @pytest.fixture
-def accent_phrase_hello(labels_hello_hiho: list[Label]) -> AccentPhraseLabel:
+def accent_phrase_hello(labels_hello_hiho: list[_Label]) -> AccentPhraseLabel:
     return AccentPhraseLabel.from_labels(labels_hello_hiho[1:10])
 
 
 @pytest.fixture
-def accent_phrase_hiho(labels_hello_hiho: list[Label]) -> AccentPhraseLabel:
+def accent_phrase_hiho(labels_hello_hiho: list[_Label]) -> AccentPhraseLabel:
     return AccentPhraseLabel.from_labels(labels_hello_hiho[11:19])
 
 
@@ -276,24 +247,13 @@ def test_accent_phrase_phonemes(
     assert outputs_hiho == "h i h o d e s U"
 
 
-def test_accent_phrase_features(
-    test_case_hello_hiho: list[str],
-    accent_phrase_hello: AccentPhraseLabel,
-    accent_phrase_hiho: AccentPhraseLabel,
-) -> None:
-    """AccentPhraseLabel に含まれる features をテスト"""
-    expects = test_case_hello_hiho
-    assert features(accent_phrase_hello) == expects[1:10]
-    assert features(accent_phrase_hiho) == expects[11:19]
-
-
 @pytest.fixture
-def breath_group_hello(labels_hello_hiho: list[Label]) -> BreathGroupLabel:
+def breath_group_hello(labels_hello_hiho: list[_Label]) -> BreathGroupLabel:
     return BreathGroupLabel.from_labels(labels_hello_hiho[1:10])
 
 
 @pytest.fixture
-def breath_group_hiho(labels_hello_hiho: list[Label]) -> BreathGroupLabel:
+def breath_group_hiho(labels_hello_hiho: list[_Label]) -> BreathGroupLabel:
     return BreathGroupLabel.from_labels(labels_hello_hiho[11:19])
 
 
@@ -307,19 +267,8 @@ def test_breath_group_phonemes(
     assert outputs_hiho == "h i h o d e s U"
 
 
-def test_breath_group_features(
-    test_case_hello_hiho: list[str],
-    breath_group_hello: BreathGroupLabel,
-    breath_group_hiho: BreathGroupLabel,
-) -> None:
-    """BreathGroupLabel に含まれる features をテスト"""
-    expects = test_case_hello_hiho
-    assert features(breath_group_hello) == expects[1:10]
-    assert features(breath_group_hiho) == expects[11:19]
-
-
 @pytest.fixture
-def utterance_hello_hiho(labels_hello_hiho: list[Label]) -> UtteranceLabel:
+def utterance_hello_hiho(labels_hello_hiho: list[_Label]) -> UtteranceLabel:
     return UtteranceLabel.from_labels(labels_hello_hiho)
 
 
@@ -328,13 +277,6 @@ def test_utterance_phonemes(utterance_hello_hiho: UtteranceLabel) -> None:
     outputs_hello_hiho = space_jointed_phonemes(utterance_hello_hiho)
     expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
     assert outputs_hello_hiho == expects_hello_hiho
-
-
-def test_utterance_features(
-    test_case_hello_hiho: list[str], utterance_hello_hiho: UtteranceLabel
-) -> None:
-    """UtteranceLabel に含まれる features をテスト"""
-    assert features(utterance_hello_hiho) == test_case_hello_hiho
 
 
 def test_voice() -> None:
@@ -420,20 +362,18 @@ def test_case_koxx() -> list[str]:
 
 
 def test_label_non_ojt_phoneme() -> None:
-    """`Label` は OpenJTalk で想定されない音素をパース失敗する"""
+    """`_Label` は OpenJTalk で想定されない音素を受け入れない。"""
     non_ojt_phoneme = "G"
     non_ojt_feature = f".^.-{non_ojt_phoneme}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-."
-    unknown_label = Label.from_feature(non_ojt_feature)
     with pytest.raises(NonOjtPhonemeError):
-        _ = unknown_label.phoneme
+        _Label.from_feature(non_ojt_feature)
 
 
 def test_label_unknown_phoneme(test_case_koxx: list[str]) -> None:
-    """`Label` は unknown 音素 `xx` をパース失敗する"""
+    """`_Label` は unknown 音素 `xx` を受け入れない。"""
     unknown_feature = test_case_koxx[3]
     with pytest.raises(OjtUnknownPhonemeError):
-        unknown_label = Label.from_feature(unknown_feature)
-        _ = unknown_label.phoneme
+        _Label.from_feature(unknown_feature)
 
 
 def test_full_context_labels_to_accent_phrases_unknown(
