@@ -12,7 +12,7 @@ from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
 from ..model import AudioQuery
-from ..utility.core_version_utility import MOCK_VER, get_latest_version
+from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
 from .kana_converter import parse_kana
 from .model import (
@@ -424,7 +424,7 @@ class TTSEngineManager:
             return self._engines[self._latest_version()]
         elif version in self._engines:
             return self._engines[version]
-        elif version == MOCK_VER:
+        elif version == MOCK_CORE_VERSION:
             raise MockTTSEngineNotFound()
         else:
             raise TTSEngineNotFound(version=version)
@@ -434,7 +434,7 @@ def make_tts_engines_from_cores(core_manager: CoreManager) -> TTSEngineManager:
     """コア一覧からTTSエンジン一覧を生成する"""
     tts_engines = TTSEngineManager()
     for ver, core in core_manager.items():
-        if ver == MOCK_VER:
+        if ver == MOCK_CORE_VERSION:
             from ..dev.tts_engine.mock import MockTTSEngine
 
             tts_engines.register_engine(MockTTSEngine(), ver)

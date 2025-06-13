@@ -5,7 +5,7 @@ import os
 import warnings
 from pathlib import Path
 
-from ..utility.core_version_utility import MOCK_VER, get_latest_version
+from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_adapter import CoreAdapter
 from .core_wrapper import CoreWrapper, load_runtime_lib
@@ -164,8 +164,8 @@ def initialize_cores(
         # モック追加
         from ..dev.core.mock import MockCoreWrapper
 
-        if not core_manager.has_core(MOCK_VER):
+        if not core_manager.has_core(MOCK_CORE_VERSION):
             core = MockCoreWrapper()
-            core_manager.register_core(CoreAdapter(core), MOCK_VER)
+            core_manager.register_core(CoreAdapter(core), MOCK_CORE_VERSION)
 
     return core_manager

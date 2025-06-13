@@ -9,7 +9,7 @@ from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
 from ..metas.Metas import StyleId
-from ..utility.core_version_utility import MOCK_VER, get_latest_version
+from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
 from .model import (
     FrameAudioQuery,
@@ -433,7 +433,7 @@ class SongEngineManager:
             return self._engines[self._latest_version()]
         elif version in self._engines:
             return self._engines[version]
-        elif version == MOCK_VER:
+        elif version == MOCK_CORE_VERSION:
             raise MockSongEngineNotFound()
         else:
             raise SongEngineNotFound(version=version)
@@ -443,7 +443,7 @@ def make_song_engines_from_cores(core_manager: CoreManager) -> SongEngineManager
     """コア一覧からSongエンジン一覧を生成する"""
     song_engines = SongEngineManager()
     for ver, core in core_manager.items():
-        if ver == MOCK_VER:
+        if ver == MOCK_CORE_VERSION:
             from ..dev.song_engine.mock import MockSongEngine
 
             song_engines.register_engine(MockSongEngine(), ver)

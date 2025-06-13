@@ -4,7 +4,7 @@ from typing import Final
 
 from semver.version import Version
 
-MOCK_VER: Final = "0.0.0"
+MOCK_CORE_VERSION: Final = "0.0.0"
 
 
 def get_latest_version(versions: list[str]) -> str:
