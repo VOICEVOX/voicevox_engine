@@ -1,6 +1,6 @@
 # VOICEVOX ENGINE
 
-[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine-package.yml)
+[![build](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine.yml/badge.svg)](https://github.com/VOICEVOX/voicevox_engine/actions/workflows/build-engine.yml)
 [![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox_engine)](https://github.com/VOICEVOX/voicevox_engine/releases)
 [![discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
 
@@ -401,6 +401,43 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
 
+### 英単語の読み方を変える
+
+辞書に登録されていない英単語は、デフォルトで自然にカタカナ読みします。  
+この機能を無効にしたい場合は `/audio_query` の `enable_katakana_english` パラメータに `false` を指定してください。
+
+```bash
+echo -n "こんにちは、voice synthesisのworldへwelcome" >text.txt
+
+# 「こんにちは、ボイス シンセシスの...」のように読まれます。
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > audio.wav
+
+# 「こんにちは、ボイス エスワイエヌティーエッチエスアイエスの...」のように読まれます。
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1&enable_katakana_english=false" \
+    --get --data-urlencode text@text.txt \
+    > disabled_query.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @disabled_query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > disabled_audio.wav
+```
+
 ### その他の引数
 
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
@@ -578,11 +615,11 @@ DYLD_LIBRARY_PATH="/path/to/onnx" uv run run.py --voicelib_dir="/path/to/voicevo
 
 ### ビルド
 
-`pyinstaller` を用いたパッケージ化と Dockerfile を用いたコンテナ化によりローカルでビルドが可能です。  
+`pyinstaller` を用いたパッケージ化によりローカルでビルドが可能です。  
 手順の詳細は [貢献者ガイド#ビルド](./CONTRIBUTING.md#ビルド) を御覧ください。
 
 GitHub を用いる場合、fork したリポジトリで GitHub Actions によるビルドが可能です。  
-Actions を ON にし、workflow_dispatch で`build-engine-package.yml`を起動すればビルドできます。
+Actions を ON にし、workflow_dispatch で`build-engine.yml`を起動すればビルドできます。
 成果物は Release にアップロードされます。
 ビルドに必要な GitHub Actions の設定は [貢献者ガイド#GitHub Actions](./CONTRIBUTING.md#github-actions) を御覧ください。
 

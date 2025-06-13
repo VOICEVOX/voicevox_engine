@@ -1,12 +1,9 @@
 """テキスト解析"""
 
 import re
-from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import chain
 from typing import Any, Final, Literal, Self, TypeGuard
-
-import pyopenjtalk
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
@@ -356,7 +353,11 @@ def mora_to_text(mora_phonemes: str) -> str:
 
 
 def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
-    """MoraLabel系列をMora系列へキャストする。音素長と音高は 0 初期化"""
+    """
+    MoraLabel系列をMora系列へキャストする。
+
+    音素長と音高は0で初期化する。
+    """
     return [
         Mora(
             text=mora_to_text("".join([label.phoneme for label in mora.labels])),
@@ -401,17 +402,16 @@ def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase
     ]
 
 
-def text_to_accent_phrases(
-    text: str,
-    text_to_features: Callable[[str], list[str]] = pyopenjtalk.extract_fullcontext,
+def full_context_labels_to_accent_phrases(
+    full_context_labels: list[str],
 ) -> list[AccentPhrase]:
-    """日本語文からアクセント句系列を生成する"""
-    if len(text.strip()) == 0:
+    """フルコンテキストラベルからアクセント句系列を生成する"""
+    if len(full_context_labels) == 0:
         return []
 
-    # 日本語文からUtteranceLabelを抽出する
-    features = text_to_features(text)
-    utterance = UtteranceLabel.from_labels(list(map(Label.from_feature, features)))
+    utterance = UtteranceLabel.from_labels(
+        list(map(Label.from_feature, full_context_labels))
+    )
 
     # ドメインを変換する
     accent_phrases = _utterance_to_accent_phrases(utterance)

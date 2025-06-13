@@ -47,11 +47,11 @@ jobs:
             target: macos-x64
           - os: macos-14
             target: macos-arm64
-          - os: windows-2019
+          - os: windows-2022
             target: windows-cpu
-          - os: windows-2019
+          - os: windows-2022
             target: windows-nvidia
-          - os: windows-2019
+          - os: windows-2022
             target: windows-directml
 
     runs-on: ${{ matrix.os }}

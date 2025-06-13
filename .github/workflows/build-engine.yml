@@ -23,10 +23,14 @@ on:
         description: "デバッグ用に成果物をartifactにアップロードするか"
         type: boolean
         default: false
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.23.0"
-  VOICEVOX_CORE_VERSION: "0.15.7"
+  VOICEVOX_RESOURCE_VERSION: "0.23.1"
+  VOICEVOX_CORE_VERSION: "0.15.8"
 
 defaults:
   run:
@@ -54,20 +58,20 @@ jobs:
       matrix:
         include:
           # Windows CPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cpu
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-1.13.1.zip
             target: windows-cpu
           # Windows DirectML
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-directml
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/Microsoft.ML.OnnxRuntime.DirectML.1.13.1.zip
             directml_url: https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.10.0
             target: windows-directml
           # Windows NVIDIA GPU
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             voicevox_core_asset_prefix: voicevox_core-windows-x64-cuda
             onnxruntime_url: https://github.com/microsoft/onnxruntime/releases/download/v1.13.1/onnxruntime-win-x64-gpu-1.13.1.zip
@@ -662,3 +666,16 @@ jobs:
     with:
       version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+
+  run-build-engine-container-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, run-release-test-workflow]
+    uses: ./.github/workflows/build-engine-container.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      # NOTE: workflow_dispatch以外では、 `toJSON(inputs.prerelease) == 'null'` であるため `prerelease: true` となる
+      prerelease: ${{ toJSON(inputs.prerelease) != 'false' }}
+      # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
+      push_dockerhub: ${{ inputs.push_dockerhub == true }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

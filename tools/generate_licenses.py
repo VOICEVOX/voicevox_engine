@@ -7,6 +7,7 @@ VOICEVOX ENGINE の実行に必要なライブラリのライセンス一覧を�
 """
 
 import argparse
+import importlib.metadata
 import json
 import subprocess
 import sys
@@ -106,11 +107,6 @@ def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
                 # ライセンスがpypiに無い
                 raise Exception(f"No License info provided for {package_name}")
             text_url = package_to_license_url[package_name]
-            pip_license.LicenseText = _get_license_text(text_url)
-
-        # soxr
-        if package_name == "soxr":
-            text_url = "https://raw.githubusercontent.com/dofuuz/python-soxr/v0.3.6/LICENSE.txt"
             pip_license.LicenseText = _get_license_text(text_url)
 
         updated_licenses.append(
@@ -300,7 +296,38 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",
         ),
+        # Python-SoXR (`soxr`, https://github.com/dofuuz/python-soxr) が依存するライブラリ
+        _License(
+            package_name="libsoxr",
+            package_version=None,
+            license_name="LGPL-2.1 license",
+            license_text="https://raw.githubusercontent.com/dofuuz/soxr/master/LICENCE",
+            license_text_type="remote_address",
+        ),
+        _License(
+            package_name="PFFFT",
+            package_version=None,
+            license_name="BSD-like",
+            license_text="https://raw.githubusercontent.com/dofuuz/python-soxr/main/cmake/LICENSE-PFFFT.txt",
+            license_text_type="remote_address",
+        ),
+        #
     ]
+
+
+def _patch_licenses_manually(licenses: list[_License]) -> None:
+    """手動でライセンス情報を修正する。"""
+    for license in licenses:
+        if license.package_name == "kanalizer":
+            # kanalizerのwheelをビルドするときに使ったライブラリの情報を追加する
+            for p in importlib.metadata.files("kanalizer"):  # type: ignore
+                if p.name == "NOTICE.md":
+                    notice_md = Path(p.locate())
+                    break
+            else:
+                raise Exception("kanalizerのNOTICE.mdが見つかりませんでした。")
+            license.license_text += "\n\n"
+            license.license_text += notice_md.read_text(encoding="utf-8")
 
 
 def _generate_licenses() -> list[_License]:
@@ -308,6 +335,7 @@ def _generate_licenses() -> list[_License]:
     licenses = _update_licenses(pip_licenses)
     _validate_license_compliance(licenses)
     _add_licenses_manually(licenses)
+    _patch_licenses_manually(licenses)
 
     return licenses
 
