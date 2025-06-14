@@ -461,7 +461,7 @@ jobs:
             LIBONNXRUNTIME_PATH=download/onnxruntime/lib/libvoicevox_onnxruntime.so
           fi
 
-          CORE_MODEL_DIR_PATH="download/vvm/vvms" \
+          CORE_MODEL_DIR_PATH="download/vvm" \
           LIBCORE_PATH="$LIBCORE_PATH" \
           LIBONNXRUNTIME_PATH="$LIBONNXRUNTIME_PATH" \
           uv run pyinstaller --noconfirm run.spec
