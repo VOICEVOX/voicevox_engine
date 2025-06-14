@@ -334,7 +334,7 @@ class UserDictionaryManager:
         user_dict = self._load_dict()
 
         if word_uuid not in user_dict:
-            raise UserDictInputError("IDに該当するワードが見つかりませんでした")
+            raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
         del user_dict[word_uuid]
 
         self._save_dict(user_dict)
