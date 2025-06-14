@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass
-from itertools import chain
+from itertools import chain, groupby
 from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
@@ -245,34 +245,10 @@ class BreathGroupLabel:
 
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-        # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
-
-        accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[
-            _Label
-        ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
-
-        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
-            # 区切りまでラベル系列を一時保存する
-            accent_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            if (
-                next_label is None
-                or label.breath_group_index != next_label.breath_group_index
-                or label.accent_phrase_index != next_label.accent_phrase_index
-            ):
-                # アクセント句を生成して保存する
-                accent_phrase = AccentPhraseLabel.from_labels(accent_labels)
-                accent_phrases.append(accent_phrase)
-                # 次に向けてリセット
-                accent_labels = []
-
-        # BreathGroupLabel インスタンスを生成する
-        breath_group = cls(accent_phrases=accent_phrases)
-
-        return breath_group
+        """ラベル系列からBreathGroupLabelインスタンスを生成する。"""
+        groups = groupby(labels, lambda label: label.accent_phrase_index)
+        aps = [AccentPhraseLabel.from_labels(list(group)) for _, group in groups]
+        return cls(accent_phrases=aps)
 
     @property
     def labels(self) -> list[_Label]:
