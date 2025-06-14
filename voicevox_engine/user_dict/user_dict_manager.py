@@ -250,7 +250,7 @@ class UserDictionaryManager:
         _apply_dict_to_openjtalk(
             default_dict_path=self._default_dict_path,
             user_dict_path=self._user_dict_path,
-            user_dict=self.read_dict(),
+            user_dict=self._load_dict(),
         )
 
     def read_dict(self) -> dict[str, UserDictWord]:
