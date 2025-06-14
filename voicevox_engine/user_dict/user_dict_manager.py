@@ -121,10 +121,12 @@ mutex_openjtalk_dict = threading.Lock()
 
 
 @_mutex_wrapper(mutex_openjtalk_dict)
-def _update_openjtalk_dictionary(
+def _apply_dict_to_openjtalk(
     default_dict_path: Path, user_dict_path: Path, user_dict: dict[str, UserDictWord]
 ) -> None:
-    """OpenJTalk が参照する辞書をデフォルト辞書と新しいユーザー辞書で上書きする。"""
+    """辞書データを OpenJTalk へ適用する。"""
+    # NOTE: OpenJTalk が参照する辞書をデフォルト辞書と新しいユーザー辞書で上書きする。
+
     random_string = uuid4()
     # csv形式辞書データの一時保存ファイル
     tmp_csv_path = user_dict_path.with_name(f"user.dict_csv-{random_string}.tmp")
@@ -245,7 +247,7 @@ class UserDictionaryManager:
 
     def _apply_dict(self) -> None:
         """デフォルト辞書とユーザー辞書をOpenJTalkへ適用する。"""
-        _update_openjtalk_dictionary(
+        _apply_dict_to_openjtalk(
             default_dict_path=self._default_dict_path,
             user_dict_path=self._user_dict_path,
             user_dict=self.read_dict(),
