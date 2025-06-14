@@ -152,12 +152,20 @@ jobs:
           key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
+      - name: <Setup> Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Linux'
+        with:
+          tool-cache: false
+          large-packages: false
+          swap-storage: false
+
       - name: <Setup> Set up CUDA toolkit
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
         uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          method: network
+          method: ${{ runner.os == 'Linux' && 'local' || 'network' }}
           cuda: ${{ matrix.cuda_version }}
 
       - name: <Setup> Extract CUDA Dynamic Libraries
