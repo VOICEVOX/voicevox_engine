@@ -195,7 +195,7 @@ def test_case_koxx() -> list[str]:
     ]
 
 
-def test_full_context_labels_to_accent_phrases_non_ojt_symbol(
+def test_full_context_labels_to_accent_phrases_non_ojt_phoneme(
     test_case_kog: list[str],
 ) -> None:
     """`full_context_labels_to_accent_phrases()` は OpenJTalk で想定されない音素を受け入れない。"""
