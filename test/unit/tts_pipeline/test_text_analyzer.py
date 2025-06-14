@@ -4,38 +4,11 @@ import pytest
 
 from voicevox_engine.tts_pipeline.model import AccentPhrase, Mora
 from voicevox_engine.tts_pipeline.text_analyzer import (
-    AccentPhraseLabel,
-    BreathGroupLabel,
-    MoraLabel,
     NonOjtPhonemeError,
     OjtUnknownPhonemeError,
-    UtteranceLabel,
-    _Label,
     full_context_labels_to_accent_phrases,
     mora_to_text,
 )
-
-
-def contexts_to_feature(contexts: dict[str, str]) -> str:
-    """ラベルの contexts を feature へ変換する"""
-    return (
-        "{p1}^{p2}-{p3}+{p4}={p5}"
-        "/A:{a1}+{a2}+{a3}"
-        "/B:{b1}-{b2}_{b3}"
-        "/C:{c1}_{c2}+{c3}"
-        "/D:{d1}+{d2}_{d3}"
-        "/E:{e1}_{e2}!{e3}_{e4}-{e5}"
-        "/F:{f1}_{f2}#{f3}_{f4}@{f5}_{f6}|{f7}_{f8}"
-        "/G:{g1}_{g2}%{g3}_{g4}_{g5}"
-        "/H:{h1}_{h2}"
-        "/I:{i1}-{i2}@{i3}+{i4}&{i5}-{i6}|{i7}+{i8}"
-        "/J:{j1}_{j2}"
-        "/K:{k1}+{k2}-{k3}"
-    ).format(**contexts)
-
-
-# OpenJTalk コンテナクラス
-OjtContainer = MoraLabel | AccentPhraseLabel | BreathGroupLabel | UtteranceLabel
 
 
 @pytest.fixture
@@ -126,159 +99,6 @@ def test_case_hello_hiho() -> list[str]:
     ]
 
 
-@pytest.fixture
-def labels_hello_hiho(test_case_hello_hiho: list[str]) -> list[_Label]:
-    return list(map(_Label.from_feature, test_case_hello_hiho))
-
-
-def jointed_phonemes(ojt_container: OjtContainer) -> str:
-    """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を結合してを返す"""
-    return "".join([label.phoneme for label in ojt_container.labels])
-
-
-def space_jointed_phonemes(ojt_container: OjtContainer) -> str:
-    """コンテナインスタンスに直接的・間接的に含まれる全ラベルの音素文字を ` ` 挟みながら結合してを返す"""
-    return " ".join([label.phoneme for label in ojt_container.labels])
-
-
-def test_label_phoneme(labels_hello_hiho: list[_Label]) -> None:
-    """_Label に含まれる音素をテスト。"""
-    assert (
-        " ".join([label.phoneme for label in labels_hello_hiho])
-        == "sil k o N n i ch i w a pau h i h o d e s U sil"
-    )
-
-
-def test_label_is_pause(labels_hello_hiho: list[_Label]) -> None:
-    """_Label のポーズ判定をテスト。"""
-    assert [label.is_pause for label in labels_hello_hiho] == [
-        True,  # sil
-        False,  # k
-        False,  # o
-        False,  # N
-        False,  # n
-        False,  # i
-        False,  # ch
-        False,  # i
-        False,  # w
-        False,  # a
-        True,  # pau
-        False,  # h
-        False,  # i
-        False,  # h
-        False,  # o
-        False,  # d
-        False,  # e
-        False,  # s
-        False,  # u
-        True,  # sil
-    ]
-
-
-def test_mora_label(labels_hello_hiho: list[_Label]) -> None:
-    # outputs
-    # contexts["a2"] == "1" ko
-    mora_hello_1 = MoraLabel(consonant=labels_hello_hiho[1], vowel=labels_hello_hiho[2])
-    # contexts["a2"] == "2" N
-    mora_hello_2 = MoraLabel(consonant=None, vowel=labels_hello_hiho[3])
-    # contexts["a2"] == "3" ni
-    mora_hello_3 = MoraLabel(consonant=labels_hello_hiho[4], vowel=labels_hello_hiho[5])
-    # contexts["a2"] == "4" chi
-    mora_hello_4 = MoraLabel(consonant=labels_hello_hiho[6], vowel=labels_hello_hiho[7])
-    # contexts["a2"] == "5" wa
-    mora_hello_5 = MoraLabel(consonant=labels_hello_hiho[8], vowel=labels_hello_hiho[9])
-    # contexts["a2"] == "1" hi
-    mora_hiho_1 = MoraLabel(
-        consonant=labels_hello_hiho[11], vowel=labels_hello_hiho[12]
-    )
-    # contexts["a2"] == "2" ho
-    mora_hiho_2 = MoraLabel(
-        consonant=labels_hello_hiho[13], vowel=labels_hello_hiho[14]
-    )
-    # contexts["a2"] == "3" de
-    mora_hiho_3 = MoraLabel(
-        consonant=labels_hello_hiho[15], vowel=labels_hello_hiho[16]
-    )
-    # contexts["a2"] == "1" sU
-    mora_hiho_4 = MoraLabel(
-        consonant=labels_hello_hiho[17], vowel=labels_hello_hiho[18]
-    )
-
-    # test
-    # 音素系列
-    assert jointed_phonemes(mora_hello_1) == "ko"
-    assert jointed_phonemes(mora_hello_2) == "N"
-    assert jointed_phonemes(mora_hello_3) == "ni"
-    assert jointed_phonemes(mora_hello_4) == "chi"
-    assert jointed_phonemes(mora_hello_5) == "wa"
-    assert jointed_phonemes(mora_hiho_1) == "hi"
-    assert jointed_phonemes(mora_hiho_2) == "ho"
-    assert jointed_phonemes(mora_hiho_3) == "de"
-    assert jointed_phonemes(mora_hiho_4) == "sU"
-
-
-# TODO: ValueErrorを吐く作為的ではない自然な例の模索
-# 存在しないなら放置でよい
-@pytest.fixture
-def accent_phrase_hello(labels_hello_hiho: list[_Label]) -> AccentPhraseLabel:
-    return AccentPhraseLabel.from_labels(labels_hello_hiho[1:10])
-
-
-@pytest.fixture
-def accent_phrase_hiho(labels_hello_hiho: list[_Label]) -> AccentPhraseLabel:
-    return AccentPhraseLabel.from_labels(labels_hello_hiho[11:19])
-
-
-def test_accent_phrase_accent(
-    accent_phrase_hello: AccentPhraseLabel, accent_phrase_hiho: AccentPhraseLabel
-) -> None:
-    """AccentPhraseLabel に含まれるアクセント位置をテスト"""
-    assert accent_phrase_hello.accent == 5
-    assert accent_phrase_hiho.accent == 1
-
-
-def test_accent_phrase_phonemes(
-    accent_phrase_hello: AccentPhraseLabel, accent_phrase_hiho: AccentPhraseLabel
-) -> None:
-    """AccentPhraseLabel に含まれる音素系列をテスト"""
-    outputs_hello = space_jointed_phonemes(accent_phrase_hello)
-    outputs_hiho = space_jointed_phonemes(accent_phrase_hiho)
-    assert outputs_hello == "k o N n i ch i w a"
-    assert outputs_hiho == "h i h o d e s U"
-
-
-@pytest.fixture
-def breath_group_hello(labels_hello_hiho: list[_Label]) -> BreathGroupLabel:
-    return BreathGroupLabel.from_labels(labels_hello_hiho[1:10])
-
-
-@pytest.fixture
-def breath_group_hiho(labels_hello_hiho: list[_Label]) -> BreathGroupLabel:
-    return BreathGroupLabel.from_labels(labels_hello_hiho[11:19])
-
-
-def test_breath_group_phonemes(
-    breath_group_hello: BreathGroupLabel, breath_group_hiho: BreathGroupLabel
-) -> None:
-    """BreathGroupLabel に含まれる音素系列をテスト"""
-    outputs_hello = space_jointed_phonemes(breath_group_hello)
-    outputs_hiho = space_jointed_phonemes(breath_group_hiho)
-    assert outputs_hello == "k o N n i ch i w a"
-    assert outputs_hiho == "h i h o d e s U"
-
-
-@pytest.fixture
-def utterance_hello_hiho(labels_hello_hiho: list[_Label]) -> UtteranceLabel:
-    return UtteranceLabel.from_labels(labels_hello_hiho)
-
-
-def test_utterance_phonemes(utterance_hello_hiho: UtteranceLabel) -> None:
-    """UtteranceLabel に含まれる音素系列をテスト"""
-    outputs_hello_hiho = space_jointed_phonemes(utterance_hello_hiho)
-    expects_hello_hiho = "sil k o N n i ch i w a pau h i h o d e s U sil"
-    assert outputs_hello_hiho == expects_hello_hiho
-
-
 def test_voice() -> None:
     assert mora_to_text("a") == "ア"
     assert mora_to_text("i") == "イ"
@@ -319,7 +139,7 @@ def _gen_mora(text: str, consonant: str | None, vowel: str) -> Mora:
 def test_full_context_labels_to_accent_phrases_normal(
     test_case_hello_hiho: list[str],
 ) -> None:
-    """`full_context_labels_to_accent_phrases` は正常な日本語文のフルコンテキストラベルをパースする"""
+    """`full_context_labels_to_accent_phrases()` は正常な日本語文のフルコンテキストラベルをパースする。"""
     # Expects
     true_accent_phrases = [
         AccentPhrase(
@@ -351,7 +171,21 @@ def test_full_context_labels_to_accent_phrases_normal(
 
 
 @pytest.fixture
+def test_case_kog() -> list[str]:
+    """OpenJTalk で想定されない音素を含むフルコンテキストラベル。"""
+    p = "G"
+    return [
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-o+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        f".^.-{p}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
+        ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
+    ]
+
+
+@pytest.fixture
 def test_case_koxx() -> list[str]:
+    """unknown 音素を含むフルコンテキストラベル。"""
     return [
         ".^.-sil+.=./A:.+xx+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:xx_xx#xx_.@xx_.|._./G:._.%._._./H:._./I:.-.@xx+.&.-.|.+./J:._./K:.+.-.",
         ".^.-k+.=./A:.+1+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-.",
@@ -361,24 +195,17 @@ def test_case_koxx() -> list[str]:
     ]
 
 
-def test_label_non_ojt_phoneme() -> None:
-    """`_Label` は OpenJTalk で想定されない音素を受け入れない。"""
-    non_ojt_phoneme = "G"
-    non_ojt_feature = f".^.-{non_ojt_phoneme}+.=./A:.+2+./B:.-._./C:._.+./D:.+._./E:._.!._.-./F:2_1#0_.@1_.|._./G:._.%._._./H:._./I:.-.@1+.&.-.|.+./J:._./K:.+.-."
+def test_full_context_labels_to_accent_phrases_non_ojt_phoneme(
+    test_case_kog: list[str],
+) -> None:
+    """`full_context_labels_to_accent_phrases()` は OpenJTalk で想定されない音素を受け入れない。"""
     with pytest.raises(NonOjtPhonemeError):
-        _Label.from_feature(non_ojt_feature)
+        full_context_labels_to_accent_phrases(test_case_kog)
 
 
-def test_label_unknown_phoneme(test_case_koxx: list[str]) -> None:
-    """`_Label` は unknown 音素 `xx` を受け入れない。"""
-    unknown_feature = test_case_koxx[3]
-    with pytest.raises(OjtUnknownPhonemeError):
-        _Label.from_feature(unknown_feature)
-
-
-def test_full_context_labels_to_accent_phrases_unknown(
+def test_full_context_labels_to_accent_phrases_unknown_phoneme(
     test_case_koxx: list[str],
 ) -> None:
-    """`full_context_labels_to_accent_phrases` は unknown 音素を含む features をパース失敗する"""
+    """`full_context_labels_to_accent_phrases()` は unknown 音素を含むフルコンテキストラベルを受け入れない。"""
     with pytest.raises(OjtUnknownPhonemeError):
         full_context_labels_to_accent_phrases(test_case_koxx)
