@@ -31,7 +31,7 @@ on:
 env:
   VOICEVOX_RESOURCE_VERSION: "0.23.1"
   VOICEVOX_CORE_VERSION: "0.16.0" # FIXME: VOICEVOX/voicevox_core#1089が入っていない
-  VOICEVOX_VVM_VERSION: "0.1.0-tmp-song.0"
+  VOICEVOX_VVM_VERSION: "0.1.0-tmp-song.0" # FIXME: 10期生がいない
 
 defaults:
   run:
@@ -152,6 +152,7 @@ jobs:
           key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
+      # FIXME: 現在cuda-toolkitで暫定的に`method=local`としているため必要。暫定対応が不要になればこちらも不要となるはず
       - name: <Setup> Free Disk Space
         uses: jlumbroso/free-disk-space@main
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Linux'
@@ -165,7 +166,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          method: ${{ runner.os == 'Linux' && 'local' || 'network' }}
+          method: ${{ runner.os == 'Linux' && 'local' || 'network' }} # FIXME: 現在LinuxだとCUDA 12.8のインストールがapt経由でできなくなっているため、暫定的な対応を入れた形。 (<https://github.com/VOICEVOX/voicevox_engine/pull/1587#issuecomment-2972894697>)
           cuda: ${{ matrix.cuda_version }}
 
       - name: <Setup> Extract CUDA Dynamic Libraries
