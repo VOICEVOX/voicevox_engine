@@ -335,8 +335,18 @@ def _mora_labels_to_moras(mora_labels: list[_MoraLabel]) -> list[Mora]:
     ]
 
 
-def _utterance_to_accent_phrases(utterance: _UtteranceLabel) -> list[AccentPhrase]:
-    """_UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
+def full_context_labels_to_accent_phrases(
+    full_context_labels: list[str],
+) -> list[AccentPhrase]:
+    """フルコンテキストラベルからアクセント句系列を生成する"""
+    if len(full_context_labels) == 0:
+        return []
+
+    utterance = _UtteranceLabel.from_labels(
+        list(map(_Label.from_feature, full_context_labels))
+    )
+
+    # _UtteranceLabelインスタンスからアクセント句系列を生成する。
     if len(utterance.breath_groups) == 0:
         return []
 
@@ -364,20 +374,3 @@ def _utterance_to_accent_phrases(utterance: _UtteranceLabel) -> list[AccentPhras
         for i_breath_group, breath_group in enumerate(utterance.breath_groups)
         for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
     ]
-
-
-def full_context_labels_to_accent_phrases(
-    full_context_labels: list[str],
-) -> list[AccentPhrase]:
-    """フルコンテキストラベルからアクセント句系列を生成する"""
-    if len(full_context_labels) == 0:
-        return []
-
-    utterance = _UtteranceLabel.from_labels(
-        list(map(_Label.from_feature, full_context_labels))
-    )
-
-    # ドメインを変換する
-    accent_phrases = _utterance_to_accent_phrases(utterance)
-
-    return accent_phrases
