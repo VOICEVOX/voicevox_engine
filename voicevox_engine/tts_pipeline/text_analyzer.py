@@ -2,7 +2,6 @@
 
 import re
 from dataclasses import dataclass
-from itertools import chain
 from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
@@ -158,7 +157,7 @@ class _Label:
 
 
 @dataclass
-class MoraLabel:
+class _MoraLabel:
     """モーララベル。モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ。"""
 
     consonant: _Label | None  # 子音
@@ -174,10 +173,10 @@ class MoraLabel:
 
 
 @dataclass
-class AccentPhraseLabel:
+class _AccentPhraseLabel:
     """アクセント句ラベル"""
 
-    moras: list[MoraLabel]  # モーラ系列
+    moras: list[_MoraLabel]  # モーラ系列
     accent: int  # アクセント位置
     is_interrogative: bool  # 疑問文か否か
 
@@ -186,7 +185,7 @@ class AccentPhraseLabel:
         """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
         # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
-        moras: list[MoraLabel] = []  # モーラ系列
+        moras: list[_MoraLabel] = []  # モーラ系列
         mora_labels: list[_Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
 
         for label, next_label in zip(labels, labels[1:] + [None], strict=True):
@@ -208,7 +207,7 @@ class AccentPhraseLabel:
                 else:
                     raise ValueError(mora_labels)
                 # 子音と母音からモーラを生成して保存する
-                mora = MoraLabel(consonant=consonant, vowel=vowel)
+                mora = _MoraLabel(consonant=consonant, vowel=vowel)
                 moras.append(mora)
                 # 次に向けてリセット
                 mora_labels = []
@@ -231,24 +230,19 @@ class AccentPhraseLabel:
 
         return accent_phrase
 
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        return list(chain.from_iterable(m.labels for m in self.moras))
-
 
 @dataclass
-class BreathGroupLabel:
+class _BreathGroupLabel:
     """発声区切りラベル"""
 
-    accent_phrases: list[AccentPhraseLabel]  # アクセント句のリスト
+    accent_phrases: list[_AccentPhraseLabel]  # アクセント句のリスト
 
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
         # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
-        accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
+        accent_phrases: list[_AccentPhraseLabel] = []  # アクセント句系列
         accent_labels: list[
             _Label
         ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
@@ -264,7 +258,7 @@ class BreathGroupLabel:
                 or label.accent_phrase_index != next_label.accent_phrase_index
             ):
                 # アクセント句を生成して保存する
-                accent_phrase = AccentPhraseLabel.from_labels(accent_labels)
+                accent_phrase = _AccentPhraseLabel.from_labels(accent_labels)
                 accent_phrases.append(accent_phrase)
                 # 次に向けてリセット
                 accent_labels = []
@@ -274,30 +268,19 @@ class BreathGroupLabel:
 
         return breath_group
 
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        return list(
-            chain.from_iterable(
-                accent_phrase.labels for accent_phrase in self.accent_phrases
-            )
-        )
-
 
 @dataclass
-class UtteranceLabel:
+class _UtteranceLabel:
     """発声ラベル"""
 
-    breath_groups: list[BreathGroupLabel]  # 発声の区切りのリスト
-    pauses: list[_Label]  # 無音のリスト
+    breath_groups: list[_BreathGroupLabel]  # 発声の区切りのリスト
 
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
         # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
 
-        pauses: list[_Label] = []  # ポーズラベルのリスト
-        breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
+        breath_groups: list[_BreathGroupLabel] = []  # BreathGroupLabel のリスト
         group_labels: list[
             _Label
         ] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
@@ -309,32 +292,17 @@ class UtteranceLabel:
 
             # 一時的なラベル系列を確定させて処理する
             else:
-                # ポーズラベルを保存する
-                pauses.append(label)
                 if len(group_labels) > 0:
                     # ラベル系列からBreathGroupLabelを生成して保存する
-                    breath_group = BreathGroupLabel.from_labels(group_labels)
+                    breath_group = _BreathGroupLabel.from_labels(group_labels)
                     breath_groups.append(breath_group)
                     # 次に向けてリセット
                     group_labels = []
 
         # UtteranceLabelインスタンスを生成する
-        utterance = cls(breath_groups=breath_groups, pauses=pauses)
+        utterance = cls(breath_groups=breath_groups)
 
         return utterance
-
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        labels: list[_Label] = []
-        for i in range(len(self.pauses)):
-            if self.pauses[i] is not None:
-                labels += [self.pauses[i]]
-
-            if i < len(self.pauses) - 1:
-                labels += self.breath_groups[i].labels
-
-        return labels
 
 
 def mora_to_text(mora_phonemes: str) -> str:
@@ -348,7 +316,7 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
-def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
+def _mora_labels_to_moras(mora_labels: list[_MoraLabel]) -> list[Mora]:
     """
     MoraLabel系列をMora系列へキャストする。
 
@@ -374,11 +342,11 @@ def full_context_labels_to_accent_phrases(
     if len(full_context_labels) == 0:
         return []
 
-    utterance = UtteranceLabel.from_labels(
+    utterance = _UtteranceLabel.from_labels(
         list(map(_Label.from_feature, full_context_labels))
     )
 
-    # UtteranceLabelインスタンスからアクセント句系列を生成する。
+    # _UtteranceLabelインスタンスからアクセント句系列を生成する。
     if len(utterance.breath_groups) == 0:
         return []
 
