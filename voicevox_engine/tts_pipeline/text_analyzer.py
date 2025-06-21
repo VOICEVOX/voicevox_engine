@@ -192,7 +192,7 @@ class _AccentPhraseLabel:
 
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if mora_index >= 49:
+            if mora_index is not None and mora_index >= 49:
                 break
 
             # ラベルの数に基づいて子音と母音を分け、モーラを生成する
