@@ -215,7 +215,6 @@ class _AccentPhraseLabel:
                     raise ValueError(mora_labels)
             moras.append(_gen_mora(consonant=consonant, vowel=vowel))
 
-            # NOTE: アクセント位置の情報は先頭モーラに記録されている
             if len(moras) == 1:
                 if vowel.accent_position is None:
                     msg = "アクセント位置が指定されていません。"
