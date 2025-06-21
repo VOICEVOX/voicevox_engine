@@ -303,9 +303,6 @@ def full_context_labels_to_accent_phrases(
     )
 
     # _UtteranceLabelインスタンスからアクセント句系列を生成する。
-    if len(utterance.breath_groups) == 0:
-        return []
-
     return [
         AccentPhrase(
             moras=_mora_labels_to_moras(accent_phrase.moras),
