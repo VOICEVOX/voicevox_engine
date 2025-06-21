@@ -157,36 +157,46 @@ class _Label:
         )
 
 
-@dataclass
-class _MoraLabel:
-    """モーララベル。モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ。"""
+def _gen_mora(consonant: _Label | None, vowel: _Label) -> Mora:
+    """音素長と音高を0で初期化したモーラを生成する。"""
+    phonemes = vowel.phoneme if consonant is None else consonant.phoneme + vowel.phoneme
+    return Mora(
+        text=mora_to_text(phonemes),
+        consonant=(consonant.phoneme if consonant is not None else None),
+        consonant_length=0 if consonant is not None else None,
+        vowel=vowel.phoneme,
+        vowel_length=0,
+        pitch=0,
+    )
 
-    consonant: _Label | None  # 子音
-    vowel: _Label  # 母音
 
-    @property
-    def labels(self) -> list[_Label]:
-        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。"""
-        if self.consonant is not None:
-            return [self.consonant, self.vowel]
-        else:
-            return [self.vowel]
+def _gen_pau_mora() -> Mora:
+    """音素長と音高を0で初期化したpauモーラを生成する。"""
+    return Mora(
+        text="、",
+        consonant=None,
+        consonant_length=None,
+        vowel="pau",
+        vowel_length=0,
+        pitch=0,
+    )
 
 
 @dataclass
 class _AccentPhraseLabel:
     """アクセント句ラベル"""
 
-    moras: list[_MoraLabel]  # モーラ系列
+    moras: list[Mora]  # モーラ系列
     accent: int  # アクセント位置
     is_interrogative: bool  # 疑問文か否か
 
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
-        # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
+        """ラベル系列を区切ってアクセント句ラベルを生成する。"""
+        moras: list[Mora] = []
+        accent: int = 1
+        is_interrogative: bool = False
 
-        moras: list[_MoraLabel] = []  # モーラ系列
         for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
             mora_labels = list(_mora_labels)
 
@@ -203,18 +213,20 @@ class _AccentPhraseLabel:
                     consonant, vowel = mora_labels[0], mora_labels[1]
                 case _:
                     raise ValueError(mora_labels)
-            moras.append(_MoraLabel(consonant=consonant, vowel=vowel))
+            moras.append(_gen_mora(consonant=consonant, vowel=vowel))
 
-        # アクセント位置を決定する
-        _accent = moras[0].vowel.accent_position
-        if _accent is None:
-            msg = "アクセント位置が指定されていません。"
-            raise RuntimeError(msg)
+            # NOTE: アクセント位置の情報は先頭モーラに記録されている
+            if len(moras) == 1:
+                if vowel.accent_position is None:
+                    msg = "アクセント位置が指定されていません。"
+                    raise RuntimeError(msg)
+                accent = vowel.accent_position
+
+            # NOTE: 末尾モーラの疑問文フラグがアクセント句の疑問文フラグになる
+            is_interrogative = vowel.is_interrogative
+
         # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
-        accent = _accent if _accent <= len(moras) else len(moras)
-
-        # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
-        is_interrogative = moras[-1].vowel.is_interrogative
+        accent = accent if accent <= len(moras) else len(moras)
 
         # アクセント句ラベルを生成する
         accent_phrase = cls(
@@ -272,25 +284,6 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
-def _mora_labels_to_moras(mora_labels: list[_MoraLabel]) -> list[Mora]:
-    """
-    MoraLabel系列をMora系列へキャストする。
-
-    音素長と音高は0で初期化する。
-    """
-    return [
-        Mora(
-            text=mora_to_text("".join([label.phoneme for label in mora.labels])),
-            consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
-            consonant_length=0 if mora.consonant is not None else None,
-            vowel=mora.vowel.phoneme,
-            vowel_length=0,
-            pitch=0,
-        )
-        for mora in mora_labels
-    ]
-
-
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
@@ -308,17 +301,10 @@ def full_context_labels_to_accent_phrases(
 
     return [
         AccentPhrase(
-            moras=_mora_labels_to_moras(accent_phrase.moras),
+            moras=accent_phrase.moras,
             accent=accent_phrase.accent,
             pause_mora=(
-                Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=0,
-                    pitch=0,
-                )
+                _gen_pau_mora()
                 if (
                     i_accent_phrase == len(breath_group.accent_phrases) - 1
                     and i_breath_group != len(utterance.breath_groups) - 1
