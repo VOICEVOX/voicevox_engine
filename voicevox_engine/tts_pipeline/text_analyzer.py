@@ -157,7 +157,7 @@ class _Label:
         )
 
 
-def _gen_mora(consonant: _Label | None, vowel: _Label) -> Mora:
+def _generate_mora(consonant: _Label | None, vowel: _Label) -> Mora:
     """音素長と音高を0で初期化したモーラを生成する。"""
     phonemes = vowel.phoneme if consonant is None else consonant.phoneme + vowel.phoneme
     return Mora(
@@ -170,7 +170,7 @@ def _gen_mora(consonant: _Label | None, vowel: _Label) -> Mora:
     )
 
 
-def _gen_pau_mora() -> Mora:
+def _generate_pau_mora() -> Mora:
     """音素長と音高を0で初期化したpauモーラを生成する。"""
     return Mora(
         text="、",
@@ -213,7 +213,7 @@ class _AccentPhraseLabel:
                     consonant, vowel = mora_labels[0], mora_labels[1]
                 case _:
                     raise ValueError(mora_labels)
-            moras.append(_gen_mora(consonant=consonant, vowel=vowel))
+            moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
             if len(moras) == 1:
                 if vowel.accent_position is None:
@@ -310,7 +310,7 @@ def full_context_labels_to_accent_phrases(
             moras=accent_phrase.moras,
             accent=accent_phrase.accent,
             pause_mora=(
-                _gen_pau_mora()
+                _generate_pau_mora()
                 if (
                     i_accent_phrase == len(breath_group.accent_phrases) - 1
                     and i_breath_group != len(utterance.breath_groups) - 1
