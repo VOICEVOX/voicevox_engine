@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from itertools import groupby
 from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
@@ -186,31 +187,23 @@ class _AccentPhraseLabel:
         # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
 
         moras: list[_MoraLabel] = []  # モーラ系列
-        mora_labels: list[_Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
+        for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
+            mora_labels = list(_mora_labels)
 
-        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if label.mora_index == 49:
+            if mora_index is not None and mora_index >= 49:
                 break
 
-            # 区切りまでラベル系列を一時保存する
-            mora_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            if next_label is None or label.mora_index != next_label.mora_index:
-                # モーラごとのラベル系列長に基づいて子音と母音を得る
-                if len(mora_labels) == 1:
+            # ラベルの数に基づいて子音と母音を分け、モーラを生成する
+            match len(mora_labels):
+                case 1:
                     consonant, vowel = None, mora_labels[0]
-                elif len(mora_labels) == 2:
+                case 2:
                     consonant, vowel = mora_labels[0], mora_labels[1]
-                else:
+                case _:
                     raise ValueError(mora_labels)
-                # 子音と母音からモーラを生成して保存する
-                mora = _MoraLabel(consonant=consonant, vowel=vowel)
-                moras.append(mora)
-                # 次に向けてリセット
-                mora_labels = []
+            moras.append(_MoraLabel(consonant=consonant, vowel=vowel))
 
         # アクセント位置を決定する
         _accent = moras[0].vowel.accent_position
@@ -240,33 +233,14 @@ class _BreathGroupLabel:
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-        # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
-
-        accent_phrases: list[_AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[
-            _Label
-        ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
-
-        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
-            # 区切りまでラベル系列を一時保存する
-            accent_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            if (
-                next_label is None
-                or label.breath_group_index != next_label.breath_group_index
-                or label.accent_phrase_index != next_label.accent_phrase_index
-            ):
-                # アクセント句を生成して保存する
-                accent_phrase = _AccentPhraseLabel.from_labels(accent_labels)
-                accent_phrases.append(accent_phrase)
-                # 次に向けてリセット
-                accent_labels = []
-
-        # BreathGroupLabel インスタンスを生成する
-        breath_group = cls(accent_phrases=accent_phrases)
-
-        return breath_group
+        groups = groupby(
+            labels,
+            lambda label: (label.breath_group_index, label.accent_phrase_index),
+        )
+        accent_phrases = [
+            _AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups
+        ]
+        return cls(accent_phrases=accent_phrases)
 
 
 @dataclass
@@ -278,31 +252,13 @@ class _UtteranceLabel:
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
-        # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
-
-        breath_groups: list[_BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[
-            _Label
-        ] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
-
-        for label in labels:
-            # ポーズが出現するまでラベル系列を一時保存する
-            if not label.is_pause:
-                group_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            else:
-                if len(group_labels) > 0:
-                    # ラベル系列からBreathGroupLabelを生成して保存する
-                    breath_group = _BreathGroupLabel.from_labels(group_labels)
-                    breath_groups.append(breath_group)
-                    # 次に向けてリセット
-                    group_labels = []
-
-        # UtteranceLabelインスタンスを生成する
-        utterance = cls(breath_groups=breath_groups)
-
-        return utterance
+        return cls(
+            breath_groups=[
+                _BreathGroupLabel.from_labels(list(labels))
+                for is_pau, labels in groupby(labels, lambda label: label.is_pause)
+                if not is_pau
+            ]
+        )
 
 
 def mora_to_text(mora_phonemes: str) -> str:
