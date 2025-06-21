@@ -101,7 +101,7 @@ def test_case_hello_hiho() -> list[str]:
 
 @pytest.fixture
 def sil_pau_sil() -> list[str]:
-    """無音のみで構成されたのフルコンテキストラベル。"""
+    """無音のみで構成されたフルコンテキストラベル。"""
     return [
         # sil (無音)
         "xx^xx-sil+pau=sil/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
