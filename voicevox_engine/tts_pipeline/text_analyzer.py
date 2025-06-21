@@ -295,9 +295,6 @@ def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
     """フルコンテキストラベルからアクセント句系列を生成する"""
-    if len(full_context_labels) == 0:
-        return []
-
     utterance = _UtteranceLabel.from_labels(
         list(map(_Label.from_feature, full_context_labels))
     )
