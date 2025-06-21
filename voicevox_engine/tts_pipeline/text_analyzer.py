@@ -194,8 +194,8 @@ class _AccentPhraseLabel:
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列を区切ってアクセント句ラベルを生成する。"""
         moras: list[Mora] = []
-        accent: int = 1
-        is_interrogative: bool = False
+        accent: int | None = None
+        is_interrogative: bool | None = False
 
         for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
             mora_labels = list(_mora_labels)
@@ -224,8 +224,15 @@ class _AccentPhraseLabel:
             # NOTE: 末尾モーラの疑問文フラグがアクセント句の疑問文フラグになる
             is_interrogative = vowel.is_interrogative
 
+        if accent is None:
+            msg = "アクセント位置が指定されていません。"
+            raise RuntimeError(msg)
         # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
+
+        if is_interrogative is None:
+            msg = "疑問形フラグが指定されていません。"
+            raise RuntimeError(msg)
 
         # アクセント句ラベルを生成する
         accent_phrase = cls(
