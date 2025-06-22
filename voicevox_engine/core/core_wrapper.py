@@ -252,7 +252,7 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
     - コアライブラリの名前が CORENAME_DICT の定義に従っている
 
     の両方が真のときである。
-    cf. https://github.com/VOICEVOX/voicevox_engine/issues/385
+    ref: https://github.com/VOICEVOX/voicevox_engine/issues/385
     """
     if (core_dir / "metas.json").exists():
         return None
@@ -268,13 +268,11 @@ def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
     """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
     machine = platform.machine()
     # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
-    if machine == "x86_64" or machine == "x64" or machine == "AMD64":
+    if machine in ["x86_64", "x64", "AMD64"]:
         return "x64"
-    elif machine == "i386" or machine == "x86":
+    elif machine in ["i386", "x86"]:
         return "x86"
-    elif machine == "arm64":
-        return "aarch64"
-    elif machine == "aarch64":
+    elif machine in ["arm64", "aarch64"]:
         return "aarch64"
     elif machine == "armv7l":
         return "armv7l"
@@ -295,16 +293,14 @@ def _get_core_name(
 
     Parameters
     ----------
-    arch_name : Literal["x64", "x86", "aarch64", "armv7l", "universal"]
+    arch_name:
         実行中マシンのアーキテクチャ
-    platform_name : str
+    platform_name:
         実行中マシンのシステム名
-    model_type: Literal["libtorch", "onnxruntime"]
-    gpu_type: GPUType
 
     Returns
     -------
-    name : str | None
+    name:
         Core名（None: サポート外）
     """
     if platform_name == "Darwin":
@@ -362,60 +358,80 @@ def load_core(core_dir: Path, use_gpu: bool) -> CDLL:
 
     Parameters
     ----------
-    core_dir : Path
+    core_dir:
         直下にコア（共有ライブラリ）が存在するディレクトリ
-    use_gpu
 
     Returns
     -------
-    core : CDLL
-        コアDLL
+    コアDLL
     """
-    # Core>=0.12
     core_name = _find_version_0_12_core_or_later(core_dir)
     if core_name:
-        try:
-            # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
-            #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
-            return CDLL(str((core_dir / core_name).resolve(strict=True)))
-        except OSError as e:
-            raise RuntimeError(f"コアの読み込みに失敗しました：{e}") from e
+        return _load_core_version_0_12_or_later(core_dir / core_name)
+    else:
+        return _load_core_version_earlier_than_0_12(core_dir, use_gpu=use_gpu)
 
-    # Core<0.12
+
+def _load_core_dll(core_path: Path) -> CDLL:
+    """コア共有ライブラリを読み込む。"""
+    # NOTE: CDLL クラスのコンストラクタの引数 name には文字列を渡す必要がある。
+    #       Windows 環境では PathLike オブジェクトを引数として渡すと初期化に失敗する。
+    return CDLL(str(core_path.resolve(strict=True)))
+
+
+def _load_core_version_0_12_or_later(core_path: Path) -> CDLL:
+    """v0.12以降のコア共有ライブラリを読み込む。"""
+    try:
+        return _load_core_dll(core_path)
+    except OSError as e:
+        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{e}"
+        raise RuntimeError(msg) from e
+
+
+def _load_core_version_earlier_than_0_12(core_dir: Path, use_gpu: bool) -> CDLL:
+    """v0.12以前のコア共有ライブラリを読み込む。"""
     model_type = _check_core_type(core_dir)
     if model_type is None:
         raise RuntimeError("コアが見つかりません")
+
+    # 最新の読み込みエラーを記録する
+    latest_e: OSError | None = None
+
+    # GPU 版を読み込む
     if use_gpu or model_type == "onnxruntime":
-        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-        if core_name:
-            try:
-                return CDLL(str((core_dir / core_name).resolve(strict=True)))
-            except OSError:
-                pass
-        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.DIRECT_ML)
-        if core_name:
-            try:
-                return CDLL(str((core_dir / core_name).resolve(strict=True)))
-            except OSError:
-                pass
+        for gpu_type in [GPUType.CUDA, GPUType.DIRECT_ML]:
+            core_name = _get_suitable_core_name(model_type, gpu_type)
+            if core_name:
+                try:
+                    return _load_core_dll(core_dir / core_name)
+                except OSError as e:
+                    latest_e = e
+
+    # CPU 版を読み込む
+    # NOTE: GPU 版の読み込みが全て失敗した場合は CPU 版へフォールバックする
     core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.NONE)
     if core_name:
         try:
-            return CDLL(str((core_dir / core_name).resolve(strict=True)))
+            return _load_core_dll(core_dir / core_name)
         except OSError as e:
-            _e = e
-        if model_type == "libtorch":
-            core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
-            if core_name:
-                try:
-                    return CDLL(str((core_dir / core_name).resolve(strict=True)))
-                except OSError as e:
-                    _e = e
-        raise RuntimeError(f"コアの読み込みに失敗しました：{_e}") from _e
+            latest_e = e
+
+    # libtorch CUDA 版を CPU モードで読み込む
+    # NOTE: libtorch は CUDA 版 のみが存在するため、CUDA 版の CPU モードへフォールバックする
+    if model_type == "libtorch":
+        core_name = _get_suitable_core_name(model_type, gpu_type=GPUType.CUDA)
+        if core_name:
+            try:
+                return _load_core_dll(core_dir / core_name)
+            except OSError as e:
+                latest_e = e
+
+    if latest_e is not None:
+        msg = f"利用可能なコアがありましたが、読み込みに失敗しました：{latest_e}"
+        raise RuntimeError(msg)
     else:
-        raise RuntimeError(
-            f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません"
-        )
+        msg = f"このコンピュータのアーキテクチャ {platform.machine()} で利用可能なコアがありません。"
+        raise RuntimeError(msg)
 
 
 _C_TYPE = (
@@ -770,7 +786,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.int64]:
         """
-        子音・母音列から音素ごとの長さを求める。
+        子音列の各子音の長さを求める。
 
         Parameters
         ----------
@@ -788,7 +804,7 @@ class CoreWrapper:
         Returns
         -------
         output : NDArray[np.int64]
-            子音長
+            子音の長さ
         """
         if self.api_exists["predict_sing_consonant_length_forward"]:
             output = np.zeros((length,), dtype=np.int64)

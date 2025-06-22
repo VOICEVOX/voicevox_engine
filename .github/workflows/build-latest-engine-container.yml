@@ -1,0 +1,151 @@
+# latestタグをリリースする
+# NOTE: 指定したバージョンのDockerイメージをプルして、latest タグを付けて再プッシュする
+
+name: Release latest engine container
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    runs-on: ubuntu-latest
+    outputs:
+      ghcr_repository: ${{ steps.vars.outputs.ghcr_repository }}
+      dockerhub_repository: ${{ steps.vars.outputs.dockerhub_repository }}
+    steps:
+      - name: <Setup> Declare variables
+        id: vars
+        run: |
+          : # GitHub Container RegistryのDockerイメージリポジトリ
+          echo "ghcr_repository=ghcr.io/${{ github.repository }}" | tr "[:upper:]" "[:lower:]" >> "$GITHUB_OUTPUT"
+
+          : # Docker HubのDockerイメージリポジトリ
+          echo "dockerhub_repository=${{ vars.DOCKERHUB_USERNAME }}/voicevox_engine" >> "$GITHUB_OUTPUT"
+
+  build-docker-latest:
+    needs: [config]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # TODO: 1つのランナーで実行したい
+        # 各変数の説明
+        # prefixes: Docker tagのプレフィックス。カンマ区切り。空文字列の場合、バージョンのみがタグ名になる
+        include:
+          # Ubuntu 22.04
+          - prefixes: "cpu-ubuntu22.04"
+          # Ubuntu 22.04 / AMD64
+          - prefixes: "cpu-amd64-ubuntu22.04"
+          # Ubuntu 22.04 / ARM64
+          - prefixes: "cpu-arm64-ubuntu22.04"
+          # Ubuntu 22.04 / AMD64 / NVIDIA
+          - prefixes: "nvidia-ubuntu22.04,nvidia-amd64-ubuntu22.04"
+          # Ubuntu 24.04
+          - prefixes: ",cpu,cpu-ubuntu24.04"
+          # Ubuntu 24.04 / AMD64
+          - prefixes: "cpu-amd64,cpu-amd64-ubuntu24.04"
+          # Ubuntu 24.04 / ARM64
+          - prefixes: "cpu-arm64,cpu-arm64-ubuntu24.04"
+          # Ubuntu 24.04 / AMD64 / NVIDIA
+          - prefixes: "nvidia,nvidia-amd64,nvidia-ubuntu24.04,nvidia-amd64-ubuntu24.04"
+
+    steps:
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Setup> Prepare Python
+        uses: ./.github/actions/prepare_python
+
+      - name: <Setup> Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: <Setup> Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Login to Docker Hub
+        if: inputs.push_dockerhub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: <Build> Get first prefix
+        id: get-first-prefix
+        run: |
+          # 最初のprefixを取得する
+          # NOTE: matrix.prefixes はすべて同じイメージの別名なので、最初のprefixだけをpull対象とする
+          FIRST_PREFIX=$(echo "${{ matrix.prefixes }}" | cut -d ',' -f 1)
+
+          echo "first_prefix=${FIRST_PREFIX}" >> "${GITHUB_OUTPUT}"
+
+      - name: <Build> Generate source Docker image name
+        id: generate-source-docker-image-name
+        run: |
+          # Dockerイメージ名を outputs.tag に1つだけ格納する
+          {
+            echo "tag<<EOF"
+
+            # ghcr.io
+            # NOTE: Docker Hubのレートリミット回避のためGitHub Container Registryを使う
+            uv run tools/generate_docker_image_names.py \
+              --repository "${{ needs.config.outputs.ghcr_repository }}" \
+              --version "${{ inputs.version }}" \
+              --prefix "${{ steps.get-first-prefix.outputs.first_prefix }}"
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: <Build> Generate target Docker image names
+        id: generate-target-docker-image-names
+        run: |
+          # Dockerイメージ名を outputs.tags に改行区切りで格納する
+          {
+            echo "tags<<EOF"
+
+            # ghcr.io
+            uv run tools/generate_docker_image_names.py \
+              --repository "${{ needs.config.outputs.ghcr_repository }}" \
+              --version "latest" \
+              --prefix "${{ matrix.prefixes }}"
+
+            # Docker Hub
+            # NOTE: workflow_dispatch以外では、 `{{ inputs.push_dockerhub }} == "null"` であるため、 `if [[ false ]]` となる
+            if [[ "${{ inputs.push_dockerhub }}" == "true" ]]; then
+              uv run tools/generate_docker_image_names.py \
+                --repository "${{ needs.config.outputs.dockerhub_repository }}" \
+                --version "latest" \
+                --prefix "${{ matrix.prefixes }}"
+            fi
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: <Build/Deploy> Build and push target Docker images
+        run: |
+          # --tag 引数のリストを生成する
+          TAG_ARGS=()
+          while IFS= read -r TAG; do
+            TAG_ARGS+=(--tag "$TAG")
+          done <<< "${{ steps.generate-target-docker-image-names.outputs.tags }}"
+
+          # Dockerイメージの別名を作成してpushする
+          # NOTE: 複製元のタグに含まれる各プラットフォームのイメージが宛先にコピーされる
+          docker buildx imagetools create \
+            "${TAG_ARGS[@]}" \
+            "${{ steps.generate-source-docker-image-name.outputs.tag }}"

@@ -1,10 +1,10 @@
 """
 Dockerイメージ名を生成する。
 
-Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を改行区切りで標準出力に出力する。
+Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、Dockerイメージ名を改行区切りで標準出力に出力する。
 
 例
-$ python3 ./tools/generate_docker_image_names.py \
+$ uv run ./tools/generate_docker_image_names.py \
   --repository "REPO" \
   --version "VER" \
   --prefix ",A,B"
@@ -12,7 +12,7 @@ REPO:VER
 REPO:A-VER
 REPO:B-VER
 
-$ python3 ./tools/generate_docker_image_names.py \
+$ uv run ./tools/generate_docker_image_names.py \
   --repository "REPO" \
   --version "VER" \
   --prefix ""
@@ -26,11 +26,12 @@ def _generate_docker_image_names(
     repository: str,
     version: str,
     comma_separated_prefix: str,
-) -> list[str]:
+) -> set[str]:
     """
     Dockerイメージ名を生成する。
 
-    Dockerリポジトリ名、バージョン文字列、カンマ区切りのプレフィックスを受け取り、バージョン文字列付きのDockerイメージ名を配列で返す。
+    Dockerリポジトリ名、バージョン、カンマ区切りのプレフィックスを受け取り、Dockerイメージ名をセットで返す。
+
     prefixが空文字列でない場合、"{prefix}-{version}"をタグにする
 
     - 例: repository="REPO", version="VER", prefix="A" -> "REPO:A-VER"
@@ -44,35 +45,37 @@ def _generate_docker_image_names(
     repository : str
         Dockerリポジトリ名
     version : str
-        バージョン文字列
+        バージョン
     comma_separated_prefix : str
         カンマ区切りのプレフィックス
 
     Returns
     -------
-    list[str]
-        Dockerイメージ名の配列。
+    set[str]
+        Dockerイメージ名のセット。
 
     Examples
     --------
     >>> _generate_docker_image_names(
-    ...     "voicevox/voicevox_engine", "0.22.0", "cpu,cpu-ubuntu22.04"
+    ...     repository="voicevox/voicevox_engine",
+    ...     version="0.22.0-preview.1",
+    ...     comma_separated_prefix=",cpu,cpu-ubuntu22.04",
     ... )
-    ['voicevox/voicevox_engine:0.22.0',
-     'voicevox/voicevox_engine:cpu-0.22.0',
-     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0']
+    {'voicevox/voicevox_engine:0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-0.22.0-preview.1',
+     'voicevox/voicevox_engine:cpu-ubuntu22.04-0.22.0-preview.1'}
     """
     # カンマ区切りのタグ名を配列に変換
     prefixes = comma_separated_prefix.split(",")
 
-    # 戻り値の配列
-    docker_image_names: list[str] = []
+    # 戻り値のセット
+    docker_image_names: set[str] = set()
 
     for prefix in prefixes:
         # プレフィックスが空文字列でない場合、末尾にハイフンを付ける
         if prefix:
             prefix = f"{prefix}-"
-        docker_image_names.append(f"{repository}:{prefix}{version}")
+        docker_image_names.add(f"{repository}:{prefix}{version}")
 
     return docker_image_names
 
@@ -89,8 +92,8 @@ def main() -> None:
     parser.add_argument(
         "--version",
         type=str,
-        default="latest",
-        help='バージョン文字列（例: "0.22.0", "latest"）',
+        required=True,
+        help='バージョン（例: "0.22.0-preview.1", "0.22.0"）',
     )
     parser.add_argument(
         "--prefix",

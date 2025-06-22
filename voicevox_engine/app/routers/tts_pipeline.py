@@ -2,6 +2,7 @@
 
 import zipfile
 from tempfile import NamedTemporaryFile, TemporaryFile
+from traceback import print_exception
 from typing import Annotated, Self
 
 import soundfile
@@ -98,12 +99,15 @@ def generate_tts_pipeline_router(
     def audio_query(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_katakana_english: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        accent_phrases = engine.create_accent_phrases(text, style_id)
+        accent_phrases = engine.create_accent_phrases(
+            text, style_id, enable_katakana_english
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=1,
@@ -127,6 +131,7 @@ def generate_tts_pipeline_router(
     def audio_query_from_preset(
         text: str,
         preset_id: int,
+        enable_katakana_english: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> AudioQuery:
         """音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
@@ -137,7 +142,8 @@ def generate_tts_pipeline_router(
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
         for preset in presets:
             if preset.id == preset_id:
                 selected_preset = preset
@@ -147,7 +153,9 @@ def generate_tts_pipeline_router(
                 status_code=422, detail="該当するプリセットIDが見つかりません"
             )
 
-        accent_phrases = engine.create_accent_phrases(text, selected_preset.style_id)
+        accent_phrases = engine.create_accent_phrases(
+            text, selected_preset.style_id, enable_katakana_english
+        )
         return AudioQuery(
             accent_phrases=accent_phrases,
             speedScale=selected_preset.speedScale,
@@ -178,6 +186,7 @@ def generate_tts_pipeline_router(
         text: str,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         is_kana: bool = False,
+        enable_katakana_english: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> list[AccentPhrase]:
         """
@@ -189,6 +198,8 @@ def generate_tts_pipeline_router(
         * カナの手前に`_`を入れるとそのカナは無声化される
         * アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。
         * アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。
+        enable_katakana_englishが`true`のとき、テキスト中の読みが不明な英単語をカタカナ読みにします。デフォルトは`true`です。
+        is_kanaが`true`のとき、enable_katakana_englishの値は無視されます。
         """
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
@@ -200,12 +211,12 @@ def generate_tts_pipeline_router(
                     status_code=400, detail=ParseKanaBadRequest(e).model_dump()
                 ) from e
         else:
-            return engine.create_accent_phrases(text, style_id)
+            return engine.create_accent_phrases(text, style_id, enable_katakana_english)
 
     @router.post(
         "/mora_data",
         tags=["クエリ編集"],
-        summary="アクセント句から音高・音素長を得る",
+        summary="アクセント句から音素の長さと音高を得る",
     )
     def mora_data(
         accent_phrases: list[AccentPhrase],
@@ -219,7 +230,7 @@ def generate_tts_pipeline_router(
     @router.post(
         "/mora_length",
         tags=["クエリ編集"],
-        summary="アクセント句から音素長を得る",
+        summary="アクセント句から音素の長さを得る",
     )
     def mora_length(
         accent_phrases: list[AccentPhrase],
@@ -302,6 +313,7 @@ def generate_tts_pipeline_router(
         query: AudioQuery,
         request: Request,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         if cancellable_engine is None:
@@ -312,10 +324,15 @@ def generate_tts_pipeline_router(
         try:
             version = core_version or LATEST_VERSION
             f_name = cancellable_engine.synthesize_wave(
-                query, style_id, request, version=version
+                query,
+                style_id,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+                request=request,
+                version=version,
             )
         except CancellableEngineInternalError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            print_exception(e)
+            raise HTTPException(status_code=500) from e
 
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
@@ -344,6 +361,12 @@ def generate_tts_pipeline_router(
     def multi_synthesis(
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         version = core_version or LATEST_VERSION
@@ -354,13 +377,15 @@ def generate_tts_pipeline_router(
             with zipfile.ZipFile(f, mode="a") as zip_file:
                 for i in range(len(queries)):
                     if queries[i].outputSamplingRate != sampling_rate:
-                        raise HTTPException(
-                            status_code=422,
-                            detail="サンプリングレートが異なるクエリがあります",
-                        )
+                        msg = "サンプリングレートが異なるクエリがあります"
+                        raise HTTPException(status_code=422, detail=msg)
 
                     with TemporaryFile() as wav_file:
-                        wave = engine.synthesize_wave(queries[i], style_id)
+                        wave = engine.synthesize_wave(
+                            queries[i],
+                            style_id,
+                            enable_interrogative_upspeak=enable_interrogative_upspeak,
+                        )
                         soundfile.write(
                             file=wav_file,
                             data=wave,

@@ -1,7 +1,7 @@
 {
     "manifest_version": "0.13.1",
-    "name": "DUMMY Engine",
-    "brand_name": "DUMMY",
+    "name": "VOICEVOX ENGINE OSS",
+    "brand_name": "VOICEVOX OSS",
     "uuid": "c7b58856-bd56-4aa1-afb7-b8415f824b06",
     "version": "999.999.999",
     "url": "https://github.com/VOICEVOX/voicevox_engine",
@@ -54,12 +54,12 @@
             "value": true,
             "name": "疑問文の自動調整"
         },
-        "synthesis_morphing" : {
+        "synthesis_morphing": {
             "type": "bool",
             "value": true,
             "name": "2種類のスタイルでモーフィングした音声を合成"
         },
-        "sing" : {
+        "sing": {
             "type": "bool",
             "value": true,
             "name": "歌唱音声合成"
@@ -69,10 +69,15 @@
             "value": true,
             "name": "音声ライブラリのインストール・アンインストール"
         },
-        "return_resource_url":{
-            "type":"bool",
-            "value":true,
+        "return_resource_url": {
+            "type": "bool",
+            "value": true,
             "name": "キャラクター情報のリソースをURLで返送"
+        },
+        "apply_katakana_english": {
+            "type": "bool",
+            "value": true,
+            "name": "未知の英単語をカタカナ読みに変換"
         }
     }
 }
