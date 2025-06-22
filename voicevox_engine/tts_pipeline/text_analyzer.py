@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Final, Literal, Self, TypeGuard
+from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
@@ -224,25 +224,6 @@ class _AccentPhraseLabel:
         return accent_phrase
 
 
-@dataclass
-class _BreathGroupLabel:
-    """発声区切りラベル"""
-
-    accent_phrases: list[_AccentPhraseLabel]  # アクセント句のリスト
-
-    @classmethod
-    def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-        groups = groupby(
-            labels,
-            lambda label: (label.breath_group_index, label.accent_phrase_index),
-        )
-        accent_phrases = [
-            _AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups
-        ]
-        return cls(accent_phrases=accent_phrases)
-
-
 def mora_to_text(mora_phonemes: str) -> str:
     """モーラ相当の音素文字系列を日本語カタカナ文へ変換する（例: 'hO' -> 'ホ')"""
     if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
@@ -277,14 +258,26 @@ def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
     """フルコンテキストラベルからアクセント句系列を生成する"""
-    labels = map(_Label.from_feature, full_context_labels)
-    breath_groups = [
-        _BreathGroupLabel.from_labels(list(labels))
-        for is_pau, labels in groupby(labels, lambda label: label.is_pause)
+    all_labels = map(_Label.from_feature, full_context_labels)
+
+    pause_group_labels_list = [
+        list(labels)
+        for is_pau, labels in groupby(all_labels, lambda label: label.is_pause)
         if not is_pau
     ]
 
-    if len(breath_groups) == 0:
+    PauseGroup: TypeAlias = list[_AccentPhraseLabel]
+    pause_groups: list[PauseGroup] = []
+    for pause_group_labels in pause_group_labels_list:
+        groups = groupby(
+            pause_group_labels,
+            lambda label: (label.breath_group_index, label.accent_phrase_index),
+        )
+        pause_groups.append(
+            [_AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups]
+        )
+
+    if len(pause_groups) == 0:
         return []
 
     return [
@@ -301,13 +294,13 @@ def full_context_labels_to_accent_phrases(
                     pitch=0,
                 )
                 if (
-                    i_accent_phrase == len(breath_group.accent_phrases) - 1
-                    and i_breath_group != len(breath_groups) - 1
+                    i_accent_phrase == len(pause_group) - 1
+                    and i_pause_group != len(pause_groups) - 1
                 )
                 else None
             ),
             is_interrogative=accent_phrase.is_interrogative,
         )
-        for i_breath_group, breath_group in enumerate(breath_groups)
-        for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
+        for i_pause_group, pause_group in enumerate(pause_groups)
+        for i_accent_phrase, accent_phrase in enumerate(pause_group)
     ]
