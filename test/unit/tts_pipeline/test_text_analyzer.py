@@ -201,6 +201,16 @@ def test_full_context_labels_to_accent_phrases_normal_silence(
     assert accent_phrases == true_accent_phrases
 
 
+def test_full_context_labels_to_accent_phrases_normal_no_label() -> None:
+    """`full_context_labels_to_accent_phrases()` は空のフルコンテキストラベル系列をパースする。"""
+    # Expects
+    true_accent_phrases: list[AccentPhrase] = []
+    # Outputs
+    accent_phrases = full_context_labels_to_accent_phrases([])
+    # Tests
+    assert accent_phrases == true_accent_phrases
+
+
 @pytest.fixture
 def test_case_kog() -> list[str]:
     """OpenJTalk で想定されない音素を含むフルコンテキストラベル。"""

@@ -243,24 +243,6 @@ class _BreathGroupLabel:
         return cls(accent_phrases=accent_phrases)
 
 
-@dataclass
-class _UtteranceLabel:
-    """発声ラベル"""
-
-    breath_groups: list[_BreathGroupLabel]  # 発声の区切りのリスト
-
-    @classmethod
-    def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
-        return cls(
-            breath_groups=[
-                _BreathGroupLabel.from_labels(list(labels))
-                for is_pau, labels in groupby(labels, lambda label: label.is_pause)
-                if not is_pau
-            ]
-        )
-
-
 def mora_to_text(mora_phonemes: str) -> str:
     """モーラ相当の音素文字系列を日本語カタカナ文へ変換する（例: 'hO' -> 'ホ')"""
     if mora_phonemes[-1:] in ["A", "I", "U", "E", "O"]:
@@ -295,14 +277,13 @@ def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
     """フルコンテキストラベルからアクセント句系列を生成する"""
-    if len(full_context_labels) == 0:
-        return []
+    labels = map(_Label.from_feature, full_context_labels)
+    breath_groups = [
+        _BreathGroupLabel.from_labels(list(labels))
+        for is_pau, labels in groupby(labels, lambda label: label.is_pause)
+        if not is_pau
+    ]
 
-    utterance = _UtteranceLabel.from_labels(
-        list(map(_Label.from_feature, full_context_labels))
-    )
-
-    # _UtteranceLabelインスタンスからアクセント句系列を生成する。
     return [
         AccentPhrase(
             moras=_mora_labels_to_moras(accent_phrase.moras),
@@ -318,12 +299,12 @@ def full_context_labels_to_accent_phrases(
                 )
                 if (
                     i_accent_phrase == len(breath_group.accent_phrases) - 1
-                    and i_breath_group != len(utterance.breath_groups) - 1
+                    and i_breath_group != len(breath_groups) - 1
                 )
                 else None
             ),
             is_interrogative=accent_phrase.is_interrogative,
         )
-        for i_breath_group, breath_group in enumerate(utterance.breath_groups)
+        for i_breath_group, breath_group in enumerate(breath_groups)
         for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
     ]
