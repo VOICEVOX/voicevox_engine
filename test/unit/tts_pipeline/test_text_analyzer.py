@@ -100,19 +100,15 @@ def test_case_hello_hiho() -> list[str]:
 
 
 @pytest.fixture
-def sil_pau_sil() -> list[str]:
+def sil_sil() -> list[str]:
     """無音のみで構成されたフルコンテキストラベル。"""
     return [
         # sil (無音)
-        "xx^xx-sil+pau=sil/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
+        "xx^xx-sil+sil=xx/A:xx+xx+xx/B:xx-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:xx_xx!xx_xx-xx"
         + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:5_5%0_xx_xx/H:xx_xx/I:xx-xx"
         + "@xx+xx&xx-xx|xx+xx/J:1_5/K:2+2-9",
-        # pau (読点)
-        "xx^sil-pau+sil=xx/A:xx+xx+xx/B:09-xx_xx/C:xx_xx+xx/D:09+xx_xx/E:5_5!0_xx-xx"
-        + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:4_1%0_xx_xx/H:1_5/I:xx-xx"
-        + "@xx+xx&xx-xx|xx+xx/J:1_4/K:2+2-9",
         # sil (無音)
-        "sil^pau-sil+xx=xx/A:xx+xx+xx/B:10-7_2/C:xx_xx+xx/D:xx+xx_xx/E:4_1!0_xx-xx"
+        "xx^sil-sil+xx=xx/A:xx+xx+xx/B:10-7_2/C:xx_xx+xx/D:xx+xx_xx/E:4_1!0_xx-xx"
         + "/F:xx_xx#xx_xx@xx_xx|xx_xx/G:xx_xx%xx_xx_xx/H:1_4/I:xx-xx"
         + "@xx+xx&xx-xx|xx+xx/J:xx_xx/K:2+2-9",
     ]
@@ -190,13 +186,13 @@ def test_full_context_labels_to_accent_phrases_normal(
 
 
 def test_full_context_labels_to_accent_phrases_normal_silence(
-    sil_pau_sil: list[str],
+    sil_sil: list[str],
 ) -> None:
     """`full_context_labels_to_accent_phrases()` は正常な無音のフルコンテキストラベルをパースする。"""
     # Expects
     true_accent_phrases: list[AccentPhrase] = []
     # Outputs
-    accent_phrases = full_context_labels_to_accent_phrases(sil_pau_sil)
+    accent_phrases = full_context_labels_to_accent_phrases(sil_sil)
     # Tests
     assert accent_phrases == true_accent_phrases
 
