@@ -2,7 +2,7 @@
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP", "D", "FAST", "NPY"]
+select = ["E", "F", "B", "I", "W", "UP", "D", "NPY"]
 ignore = [
   "E501", # line-too-long
   "D400", # missing-trailing-period。日本語の「。」に対応していないため。
