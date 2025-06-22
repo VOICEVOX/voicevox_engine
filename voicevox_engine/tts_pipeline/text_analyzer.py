@@ -195,7 +195,7 @@ class _AccentPhraseLabel:
         """ラベル系列を区切ってアクセント句ラベルを生成する。"""
         moras: list[Mora] = []
         accent: int | None = None
-        is_interrogative: bool | None = False
+        is_interrogative: bool | None = None
 
         for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
             mora_labels = list(_mora_labels)
