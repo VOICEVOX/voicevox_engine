@@ -35,7 +35,7 @@ def _copy_under_dir(file_path: Path, dir_path: Path) -> Path:
 @pytest.fixture
 def app_params(tmp_path: Path) -> dict[str, Any]:
     """`generate_app` の全ての引数を生成する。"""
-    core_manager = initialize_cores(use_gpu=False, enable_mock=True)
+    core_manager = initialize_cores(use_gpu=False, enable_mock=True, cpu_num_threads=1)
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
     setting_loader = SettingHandler(tmp_path / "not_exist.yaml")

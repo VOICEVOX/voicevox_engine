@@ -1,0 +1,46 @@
+{
+  "accent_phrases": [
+    {
+      "accent": 1,
+      "is_interrogative": false,
+      "moras": [
+        {
+          "consonant": "v",
+          "consonant_length": 2.56,
+          "pitch": 4.62,
+          "text": "ヴォ",
+          "vowel": "o",
+          "vowel_length": 1.88
+        },
+        {
+          "consonant": null,
+          "consonant_length": null,
+          "pitch": 1.25,
+          "text": "イ",
+          "vowel": "i",
+          "vowel_length": 1.31
+        },
+        {
+          "consonant": "v",
+          "consonant_length": 2.56,
+          "pitch": 4.5,
+          "text": "ヴォ",
+          "vowel": "o",
+          "vowel_length": 1.88
+        }
+      ],
+      "pause_mora": null
+    }
+  ],
+  "intonationScale": 1.0,
+  "kana": "ヴォ'イヴォ",
+  "outputSamplingRate": 24000,
+  "outputStereo": false,
+  "pauseLength": null,
+  "pauseLengthScale": 1.0,
+  "pitchScale": 0.0,
+  "postPhonemeLength": 0.1,
+  "prePhonemeLength": 0.1,
+  "speedScale": 1.0,
+  "volumeScale": 1.0
+}

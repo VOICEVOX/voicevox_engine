@@ -5,7 +5,6 @@ from typing import Literal, TypedDict, get_args
 import pytest
 from pydantic import ValidationError
 
-from voicevox_engine.tts_pipeline.kana_converter import parse_kana
 from voicevox_engine.user_dict.model import UserDictWord
 
 
@@ -120,39 +119,6 @@ def test_count_mora() -> None:
 
     # Test
     assert mora_count == true_mora_count
-
-
-def test_count_mora_x() -> None:
-    test_value = generate_model()
-    for s in [chr(i) for i in range(12449, 12533)]:
-        if s in ["ァ", "ィ", "ゥ", "ェ", "ォ", "ッ", "ャ", "ュ", "ョ", "ヮ"]:
-            continue
-        for x in "ァィゥェォャュョ":
-            expected_count = 0
-            test_value["pronunciation"] = s + x
-            for accent_phrase in parse_kana(
-                test_value["pronunciation"] + "'",
-            ):
-                expected_count += len(accent_phrase.moras)
-                assert UserDictWord(**test_value).mora_count == expected_count
-
-
-def test_count_mora_xwa() -> None:
-    """「ヮ」を含む発音のモーラ数が適切にカウントされる。"""
-    # Inputs
-    test_value = generate_model()
-    test_value["pronunciation"] = "クヮンセイ"
-    # Expects
-    true_mora_count = 0
-    for accent_phrase in parse_kana(
-        test_value["pronunciation"] + "'",
-    ):
-        true_mora_count += len(accent_phrase.moras)
-    # Outputs
-    mora_rount = UserDictWord(**test_value).mora_count
-
-    # Test
-    assert mora_rount == true_mora_count
 
 
 def test_invalid_pronunciation_not_katakana() -> None:

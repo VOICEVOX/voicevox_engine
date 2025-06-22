@@ -242,7 +242,9 @@ def test_mocked_create_accent_phrases_output(
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = "こんにちは、ヒホです"
     # Outputs
-    result = tts_engine.create_accent_phrases(hello_hiho, StyleId(1))
+    result = tts_engine.create_accent_phrases(
+        hello_hiho, StyleId(1), enable_katakana_english=False
+    )
     # Tests
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
@@ -266,7 +268,9 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_query()
     # Outputs
-    result = tts_engine.synthesize_wave(hello_hiho, StyleId(1))
+    result = tts_engine.synthesize_wave(
+        hello_hiho, StyleId(1), enable_interrogative_upspeak=True
+    )
     # Tests
     assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 
@@ -417,7 +421,9 @@ def _koreha_arimasuka_base_expected() -> list[AccentPhrase]:
 
 def _create_synthesis_test_base(text: str) -> list[AccentPhrase]:
     tts_engine = TTSEngine(core=MockCoreWrapper())
-    return tts_engine.create_accent_phrases(text, StyleId(1))
+    return tts_engine.create_accent_phrases(
+        text, StyleId(1), enable_katakana_english=False
+    )
 
 
 def _assert_equeal_accent_phrases(
@@ -430,7 +436,8 @@ def _assert_equeal_accent_phrases(
 
 
 def test_create_accent_phrases() -> None:
-    """accent_phrasesの作成時では疑問文モーラ処理を行わない。
+    """
+    accent_phrasesの作成時では疑問文モーラ処理を行わない。
 
     (https://github.com/VOICEVOX/voicevox_engine/issues/272#issuecomment-1022610866)
     """
@@ -438,7 +445,9 @@ def test_create_accent_phrases() -> None:
     text = "これはありますか？"
     expected = _koreha_arimasuka_base_expected()
     expected[-1].is_interrogative = True
-    actual = tts_engine.create_accent_phrases(text, StyleId(1))
+    actual = tts_engine.create_accent_phrases(
+        text, StyleId(1), enable_katakana_english=False
+    )
     _assert_equeal_accent_phrases(expected, actual)
 
 
