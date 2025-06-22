@@ -11,6 +11,8 @@ from typing import Any
 from unittest import TestCase
 from zipfile import ZipFile
 
+import pytest
+
 from voicevox_engine.library.library_manager import (
     LibraryFormatInvalidError,
     LibraryManager,
@@ -79,29 +81,30 @@ class _TestLibraryManager(TestCase):
         self.library_filename.unlink()
 
     def test_installed_libraries(self) -> None:
-        self.assertEqual(self.library_manger.installed_libraries(), {})
+        assert self.library_manger.installed_libraries() == {}
 
         self.library_manger.install_library(
             self.library_uuid,
             self.library_file,
         )
         # 内容はdownloadable_library.jsonを元に生成されるので、内容は確認しない
-        self.assertEqual(
-            list(self.library_manger.installed_libraries().keys())[0], self.library_uuid
+        assert (
+            list(self.library_manger.installed_libraries().keys())[0]
+            == self.library_uuid
         )
 
         self.library_manger.uninstall_library(self.library_uuid)
-        self.assertEqual(self.library_manger.installed_libraries(), {})
+        assert self.library_manger.installed_libraries() == {}
 
     def test_install_unauthorized_library(self) -> None:
         """エンジンの受け入れリストに ID の無い音声ライブラリはインストールできない。"""
         invalid_uuid = "52398bd5-3cc3-406c-a159-dfec5ace4bab"
-        with self.assertRaises(LibraryNotFoundError):
+        with pytest.raises(LibraryNotFoundError):
             self.library_manger.install_library(invalid_uuid, self.library_file)
 
     def test_install_non_zip_file(self) -> None:
         """非 ZIP ファイルは音声ライブラリとしてインストールできない。"""
-        with self.assertRaises(LibraryFormatInvalidError):
+        with pytest.raises(LibraryFormatInvalidError):
             self.library_manger.install_library(self.library_uuid, BytesIO())
 
     def test_install_manifest_less_library(self) -> None:
@@ -110,7 +113,7 @@ class _TestLibraryManager(TestCase):
         create_vvlib_without_manifest(invalid_vvlib_name, self.library_filename)
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryFormatInvalidError),
+            pytest.raises(LibraryFormatInvalidError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -128,7 +131,7 @@ class _TestLibraryManager(TestCase):
 
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryFormatInvalidError),
+            pytest.raises(LibraryFormatInvalidError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -148,7 +151,7 @@ class _TestLibraryManager(TestCase):
         # Tests
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryFormatInvalidError),
+            pytest.raises(LibraryFormatInvalidError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -169,7 +172,7 @@ class _TestLibraryManager(TestCase):
         # Tests
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryFormatInvalidError),
+            pytest.raises(LibraryFormatInvalidError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -190,7 +193,7 @@ class _TestLibraryManager(TestCase):
         # Tests
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryFormatInvalidError),
+            pytest.raises(LibraryFormatInvalidError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -211,7 +214,7 @@ class _TestLibraryManager(TestCase):
         # Tests
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryUnsupportedError),
+            pytest.raises(LibraryUnsupportedError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -233,7 +236,7 @@ class _TestLibraryManager(TestCase):
         # Tests
         with (
             open(invalid_vvlib_name, "br") as f,
-            self.assertRaises(LibraryUnsupportedError),
+            pytest.raises(LibraryUnsupportedError),
         ):
             self.library_manger.install_library(self.library_uuid, f)
 
@@ -245,13 +248,13 @@ class _TestLibraryManager(TestCase):
         library_path = self.library_manger.install_library(
             self.library_uuid, self.library_file
         )
-        self.assertEqual(self.tmp_dir_path / self.library_uuid, library_path)
+        assert self.tmp_dir_path / self.library_uuid == library_path
 
         self.library_manger.uninstall_library(self.library_uuid)
 
     def test_uninstall_library(self) -> None:
         # TODO: アンインストール出来ないライブラリをテストできるようにしたい
-        with self.assertRaises(LibraryNotFoundError):
+        with pytest.raises(LibraryNotFoundError):
             self.library_manger.uninstall_library(self.library_uuid)
 
         self.library_manger.install_library(self.library_uuid, self.library_file)
