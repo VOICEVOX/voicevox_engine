@@ -33,7 +33,7 @@ from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.song_engine import SongEngineManager
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
-from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.user_dict.user_dict_manager import UserDictionaryManager
 from voicevox_engine.utility.path_utility import engine_root
 from voicevox_engine.utility.runtime_utility import is_development
 
@@ -44,7 +44,7 @@ def generate_app(
     core_manager: CoreManager,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
-    user_dict: UserDictionary,
+    user_dict_manager: UserDictionaryManager,
     engine_manifest: EngineManifest,
     library_manager: LibraryManager,
     cancellable_engine: CancellableEngine | None = None,
@@ -100,7 +100,9 @@ def generate_app(
         app.include_router(
             generate_library_router(library_manager, verify_mutability_allowed)
         )
-    app.include_router(generate_user_dict_router(user_dict, verify_mutability_allowed))
+    app.include_router(
+        generate_user_dict_router(user_dict_manager, verify_mutability_allowed)
+    )
     app.include_router(generate_engine_info_router(core_version_list, engine_manifest))
     app.include_router(
         generate_setting_router(
