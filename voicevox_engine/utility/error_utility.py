@@ -2,4 +2,4 @@
 
 
 class UnreachableError(Exception):
-    """本来は実行されないパスが実行された。"""
+    """到達しないはずのコードに到達した。"""
