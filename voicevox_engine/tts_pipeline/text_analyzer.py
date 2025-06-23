@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
 
+from ..utility.error_utility import NeverError
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
 from .phoneme import Consonant, Sil, Vowel
@@ -214,8 +215,7 @@ class _AccentPhraseLabel:
             moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
         if vowel is None:
-            msg = "母音が取得できません。"
-            raise RuntimeError(msg)
+            raise NeverError()
 
         if vowel.accent_position is None:
             msg = "アクセント位置が指定されていません。"

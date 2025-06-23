@@ -16,6 +16,7 @@ from voicevox_engine.setting.setting_manager import SettingHandler
 from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
+from voicevox_engine.utility.error_utility import NeverError
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
 
 
@@ -71,4 +72,4 @@ def generate_client(
     elif server == "localhost":
         return httpx.Client(base_url="http://localhost:50021")
     else:
-        raise Exception(f"{server} はサポートされていないサーバータイプです")
+        raise NeverError(server)

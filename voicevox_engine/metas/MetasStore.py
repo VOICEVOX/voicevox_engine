@@ -15,6 +15,7 @@ from voicevox_engine.metas.Metas import (
     StyleId,
 )
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
+from voicevox_engine.utility.error_utility import NeverError
 
 ResourceFormat: TypeAlias = Literal["base64", "url"]
 
@@ -270,4 +271,4 @@ def filter_characters_and_styles(
             sing_character.talk_styles = []
         return sing_characters
     else:
-        raise Exception(f"'{talk_or_sing}' は不正な style_type です")
+        raise NeverError(talk_or_sing)
