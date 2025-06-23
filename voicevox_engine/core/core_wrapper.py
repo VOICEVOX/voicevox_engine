@@ -39,30 +39,36 @@ def load_runtime_lib(runtime_dirs: list[Path]) -> None:
     """
     # `lib_file_names`は「ENGINE が利用可能な DLL のファイル名一覧」である
     # `lib_names` は「ENGINE が利用可能な DLL のライブラリ名一覧」である（ライブラリ名は `libtorch.so.1.0` の `torch` 部分）
-    if platform.system() == "Windows":
-        # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
-        # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
-        # 参考 2. https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616
-        lib_file_names = [
-            "torch_cpu.dll",
-            "torch_cuda.dll",
-            "DirectML.dll",
-            "onnxruntime.dll",
-            "voicevox_onnxruntime.dll",
-        ]
-        lib_names = ["torch_cpu", "torch_cuda", "onnxruntime", "voicevox_onnxruntime"]
-    elif platform.system() == "Linux":
-        lib_file_names = [
-            "libtorch.so",
-            "libonnxruntime.so",
-            "libvoicevox_onnxruntime.so",
-        ]
-        lib_names = ["torch", "onnxruntime", "voicevox_onnxruntime"]
-    elif platform.system() == "Darwin":
-        lib_file_names = ["libonnxruntime.dylib", "libvoicevox_onnxruntime.dylib"]
-        lib_names = ["onnxruntime", "voicevox_onnxruntime"]
-    else:
-        raise RuntimeError("不明なOSです")
+    match platform.system():
+        case "Windows":
+            # DirectML.dllはonnxruntimeと互換性のないWindows標準搭載のものを優先して読み込むことがあるため、明示的に読み込む
+            # 参考 1. https://github.com/microsoft/onnxruntime/issues/3360
+            # 参考 2. https://tadaoyamaoka.hatenablog.com/entry/2020/06/07/113616
+            lib_file_names = [
+                "torch_cpu.dll",
+                "torch_cuda.dll",
+                "DirectML.dll",
+                "onnxruntime.dll",
+                "voicevox_onnxruntime.dll",
+            ]
+            lib_names = [
+                "torch_cpu",
+                "torch_cuda",
+                "onnxruntime",
+                "voicevox_onnxruntime",
+            ]
+        case "Linux":
+            lib_file_names = [
+                "libtorch.so",
+                "libonnxruntime.so",
+                "libvoicevox_onnxruntime.so",
+            ]
+            lib_names = ["torch", "onnxruntime", "voicevox_onnxruntime"]
+        case "Darwin":
+            lib_file_names = ["libonnxruntime.dylib", "libvoicevox_onnxruntime.dylib"]
+            lib_names = ["onnxruntime", "voicevox_onnxruntime"]
+        case _:
+            raise RuntimeError("不明なOSです")
 
     # 引数指定ディレクトリ直下の DLL を読み込む
     for runtime_dir in runtime_dirs:
@@ -266,18 +272,18 @@ def _find_version_0_12_core_or_later(core_dir: Path) -> str | None:
 
 def _get_arch_name() -> Literal["x64", "x86", "aarch64", "armv7l"] | None:
     """実行中マシンのアーキテクチャ（None: サポート外アーキテクチャ）。"""
-    machine = platform.machine()
-    # 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換
-    if machine in ["x86_64", "x64", "AMD64"]:
-        return "x64"
-    elif machine in ["i386", "x86"]:
-        return "x86"
-    elif machine in ["arm64", "aarch64"]:
-        return "aarch64"
-    elif machine == "armv7l":
-        return "armv7l"
-    else:
-        return None
+    # NOTE: 特定のアーキテクチャ上で複数パターンの文字列を返し得るので一意に変換する。
+    match platform.machine():
+        case "x86_64" | "x64" | "AMD64":
+            return "x64"
+        case "i386" | "x86":
+            return "x86"
+        case "arm64" | "aarch64":
+            return "aarch64"
+        case "armv7l":
+            return "armv7l"
+        case _:
+            return None
 
 
 def _get_core_name(
