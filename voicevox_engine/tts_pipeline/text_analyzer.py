@@ -187,7 +187,7 @@ def _generate_accent_phrase(labels: Iterable[_Label]) -> AccentPhrase:
     """
     ラベル系列からアクセント句を生成する。
 
-    ポーズモーラは None で初期化される。
+    pauモーラは None で初期化される。
     """
     moras: list[Mora] = []
     vowel: _Label | None = None
