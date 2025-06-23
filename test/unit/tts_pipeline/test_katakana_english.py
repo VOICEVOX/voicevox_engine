@@ -13,7 +13,7 @@ from voicevox_engine.tts_pipeline.katakana_english import (
 
 
 @pytest.mark.parametrize(
-    "string,true_words",
+    ("string", "true_words"),
     [
         ("voicevox", ["voicevox"]),
         ("VoiceVox", ["Voice", "Vox"]),
@@ -32,7 +32,7 @@ def test_split_into_words(string: str, true_words: list[str]) -> None:
 
 
 @pytest.mark.parametrize(
-    "string,true_should",
+    ("string", "true_should"),
     [
         ("voivo", True),
         ("Voivo", True),
@@ -48,7 +48,7 @@ def test_should_convert_english_to_katakana(string: str, true_should: bool) -> N
 
 
 @pytest.mark.parametrize(
-    "alphabets,true_yomi",
+    ("alphabets", "true_yomi"),
     [
         ("aa", "エーエー"),
         ("Aa", "エーエー"),
