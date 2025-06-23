@@ -211,7 +211,7 @@ def _generate_accent_phrase(labels: Iterable[_Label]) -> AccentPhrase:
         moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
     if vowel is None:
-            raise UnreachableError()
+        raise UnreachableError()
 
     if vowel.accent_position is None:
         msg = "アクセント位置が指定されていません。"
