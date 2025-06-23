@@ -277,9 +277,6 @@ def full_context_labels_to_accent_phrases(
             [_AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups]
         )
 
-    if len(pause_groups) == 0:
-        return []
-
     return [
         AccentPhrase(
             moras=_mora_labels_to_moras(accent_phrase.moras),
