@@ -22,8 +22,8 @@ def _assert_request_and_response_403(
             response = client.put(path)
         case "delete":
             response = client.delete(path)
-        case _ as unreachable:
-            assert_never(unreachable)
+        case _:
+            assert_never(method)
 
     assert response.status_code == 403, f"{method} {path} が403を返しませんでした"
 

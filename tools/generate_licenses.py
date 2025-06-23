@@ -87,7 +87,7 @@ class _License:
             case "remote_address":
                 self.license_text = _get_license_text(license_text)
             case _:
-                assert_never("型で保護され実行されないはずのパスが実行されました")
+                assert_never(license_text_type)
 
 
 def _update_licenses(pip_licenses: list[_PipLicense]) -> list[_License]:
