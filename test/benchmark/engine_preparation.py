@@ -2,7 +2,7 @@
 
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Literal, assert_never
 
 import httpx
 from fastapi.testclient import TestClient
@@ -71,4 +71,4 @@ def generate_client(
     elif server == "localhost":
         return httpx.Client(base_url="http://localhost:50021")
     else:
-        raise Exception(f"{server} はサポートされていないサーバータイプです")
+        assert_never(server)
