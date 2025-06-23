@@ -1,7 +1,6 @@
 """テキスト解析"""
 
 import re
-from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
@@ -183,7 +182,7 @@ def _generate_pau_mora() -> Mora:
     )
 
 
-def _generate_accent_phrase(labels: Iterable[_Label]) -> AccentPhrase:
+def _generate_accent_phrase(labels: list[_Label]) -> AccentPhrase:
     """
     ラベル系列からアクセント句を生成する。
 
@@ -256,7 +255,9 @@ def full_context_labels_to_accent_phrases(
             pause_group_labels,
             lambda label: (label.breath_group_index, label.accent_phrase_index),
         )
-        pause_groups.append([_generate_accent_phrase(labels) for _, labels in groups])
+        pause_groups.append(
+            [_generate_accent_phrase(list(labels)) for _, labels in groups]
+        )
 
     accent_phrases: list[AccentPhrase] = []
     for i_pause_group, pause_group in enumerate(pause_groups):
