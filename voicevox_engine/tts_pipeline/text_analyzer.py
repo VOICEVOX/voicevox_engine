@@ -193,8 +193,10 @@ class _AccentPhraseLabel:
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
         """ラベル系列を区切ってアクセント句ラベルを生成する。"""
+        if len(labels) == 0:
+            raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
+
         moras: list[Mora] = []
-        vowel: _Label | None = None
         for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
             mora_labels = list(_mora_labels)
 
@@ -213,19 +215,15 @@ class _AccentPhraseLabel:
                     raise ValueError(mora_labels)
             moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
-        if vowel is None:
-            msg = "母音が取得できません。"
-            raise RuntimeError(msg)
-
-        if vowel.accent_position is None:
+        if labels[0].accent_position is None:
             msg = "アクセント位置が指定されていません。"
             raise RuntimeError(msg)
-        accent = vowel.accent_position
+        accent = labels[0].accent_position
         # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
         accent = accent if accent <= len(moras) else len(moras)
 
         accent_phrase = cls(
-            moras=moras, accent=accent, is_interrogative=vowel.is_interrogative
+            moras=moras, accent=accent, is_interrogative=labels[0].is_interrogative
         )
 
         return accent_phrase
