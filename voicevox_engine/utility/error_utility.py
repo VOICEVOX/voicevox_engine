@@ -1,5 +1,5 @@
 """エラーに関するユーティリティ。"""
 
 
-class NeverError(Exception):
+class UnreachableError(Exception):
     """本来は実行されないパスが実行された。"""
