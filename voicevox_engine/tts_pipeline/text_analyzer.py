@@ -265,20 +265,21 @@ def full_context_labels_to_accent_phrases(
             [_AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups]
         )
 
-    return [
-        AccentPhrase(
-            moras=accent_phrase.moras,
-            accent=accent_phrase.accent,
-            pause_mora=(
-                _generate_pau_mora()
-                if (
-                    i_accent_phrase == len(pause_group) - 1
-                    and i_pause_group != len(pause_groups) - 1
-                )
-                else None
-            ),
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-        for i_pause_group, pause_group in enumerate(pause_groups)
-        for i_accent_phrase, accent_phrase in enumerate(pause_group)
-    ]
+    accent_phrases: list[AccentPhrase] = []
+    for i_pause_group, pause_group in enumerate(pause_groups):
+        is_last_group = i_pause_group == len(pause_groups) - 1
+        for i_accent_phrase, accent_phrase in enumerate(pause_group):
+            is_last_phrase = i_accent_phrase == len(pause_group) - 1
+            _accent_phrase = AccentPhrase(
+                moras=accent_phrase.moras,
+                accent=accent_phrase.accent,
+                pause_mora=(
+                    _generate_pau_mora()
+                    if is_last_phrase and not is_last_group
+                    else None
+                ),
+                is_interrogative=accent_phrase.is_interrogative,
+            )
+            accent_phrases.append(_accent_phrase)
+
+    return accent_phrases
