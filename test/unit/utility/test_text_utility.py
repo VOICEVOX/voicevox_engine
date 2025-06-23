@@ -11,7 +11,7 @@ from voicevox_engine.utility.text_utility import (
 
 
 @pytest.mark.parametrize(
-    "text,true_replaced_text",
+    ("text", "true_replaced_text"),
     [
         ("あいうえお", "あいうえお"),
         ("ABCDE", "ＡＢＣＤＥ"),
@@ -29,7 +29,7 @@ def test_replace_hankaku_alphabets_with_zenkaku_only_hiragana(
 
 
 @pytest.mark.parametrize(
-    "text,true_replaced_text",
+    ("text", "true_replaced_text"),
     [
         ("あいうえお", "あいうえお"),
         ("ＡＢＣＤＥ", "ABCDE"),
@@ -47,7 +47,7 @@ def test_replace_zenkaku_alphabets_with_hankaku_only_hiragana(
 
 
 @pytest.mark.parametrize(
-    "text,true_n_mora",
+    ("text", "true_n_mora"),
     [
         ("エ", 1),
         ("アサ", 2),
