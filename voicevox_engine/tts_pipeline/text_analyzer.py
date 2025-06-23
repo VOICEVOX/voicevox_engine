@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
 
-from ..utility.error_utility import UnreachableError
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
 from .phoneme import Consonant, Sil, Vowel
@@ -190,8 +189,10 @@ def _generate_accent_phrase(labels: Iterable[_Label]) -> AccentPhrase:
 
     pauモーラは None で初期化される。
     """
+    if len(labels) == 0:
+        raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
+
     moras: list[Mora] = []
-    vowel: _Label | None = None
     for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
         mora_labels = list(_mora_labels)
 
@@ -210,13 +211,10 @@ def _generate_accent_phrase(labels: Iterable[_Label]) -> AccentPhrase:
                 raise ValueError(mora_labels)
         moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
-    if vowel is None:
-        raise UnreachableError()
-
-    if vowel.accent_position is None:
+    if labels[0].accent_position is None:
         msg = "アクセント位置が指定されていません。"
         raise RuntimeError(msg)
-    accent = vowel.accent_position
+    accent = labels[0].accent_position
     # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
     accent = accent if accent <= len(moras) else len(moras)
 

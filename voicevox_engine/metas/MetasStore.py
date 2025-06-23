@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, TypeAlias
+from typing import Final, Literal, TypeAlias, assert_never
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,6 @@ from voicevox_engine.metas.Metas import (
     StyleId,
 )
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
-from voicevox_engine.utility.error_utility import UnreachableError
 
 ResourceFormat: TypeAlias = Literal["base64", "url"]
 
@@ -271,4 +270,4 @@ def filter_characters_and_styles(
             sing_character.talk_styles = []
         return sing_characters
     else:
-        raise UnreachableError(talk_or_sing)
+        assert_never(talk_or_sing)
