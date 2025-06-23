@@ -5,6 +5,7 @@ from typing import Any, Literal
 from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
+from voicevox_engine.utility.error_utility import UnreachableError
 
 
 # clientとschemaとパスを受け取ってリクエストを送信し、レスポンスが403であることを確認する
@@ -23,7 +24,7 @@ def _assert_request_and_response_403(
         case "delete":
             response = client.delete(path)
         case _:
-            raise ValueError("Never")
+            raise UnreachableError(method)
 
     assert response.status_code == 403, f"{method} {path} が403を返しませんでした"
 
