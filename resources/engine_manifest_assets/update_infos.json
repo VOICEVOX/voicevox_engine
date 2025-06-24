@@ -7,7 +7,16 @@
       "Docker Hub上のlatestタグを安定最新版に変更",
       "辞書に登録されていない英単語の自然なカタカナ読みを可能に"
     ],
-    "contributors": []
+    "contributors": [
+      "aoirint",
+      "Hiroshiba",
+      "nanae772",
+      "qryxip",
+      "raa0121",
+      "sabonerune",
+      "sevenc-nanashi",
+      "tarepan"
+    ]
   },
   {
     "version": "0.23.1",

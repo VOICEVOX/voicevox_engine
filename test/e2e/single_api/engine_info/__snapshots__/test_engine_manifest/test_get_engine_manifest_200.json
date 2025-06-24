@@ -32,7 +32,16 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
-      "contributors": [],
+      "contributors": [
+        "aoirint",
+        "Hiroshiba",
+        "nanae772",
+        "qryxip",
+        "raa0121",
+        "sabonerune",
+        "sevenc-nanashi",
+        "tarepan"
+      ],
       "descriptions": [
         "OpenAPIの関数名をわかりやすく変更",
         "DockerfileでPython実行環境を作成しない形に変更",
