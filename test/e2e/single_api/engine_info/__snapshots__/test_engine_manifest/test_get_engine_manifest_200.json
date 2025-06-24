@@ -34,6 +34,16 @@
     {
       "contributors": [],
       "descriptions": [
+        "OpenAPIの関数名をわかりやすく変更",
+        "DockerfileでPython実行環境を作成しない形に変更",
+        "Docker Hub上のlatestタグを安定最新版に変更",
+        "辞書に登録されていない英単語の自然なカタカナ読みを可能に"
+      ],
+      "version": "0.24.0"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
         "キャラクター「離途」「黒沢冴白」を追加"
       ],
       "version": "0.23.1"
