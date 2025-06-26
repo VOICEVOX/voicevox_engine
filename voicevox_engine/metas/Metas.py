@@ -71,6 +71,7 @@ class StyleInfo(BaseModel):
 
 class SpeakerInfo(BaseModel):
     """キャラクターの追加情報"""
+
     id: str = Field(description="キャラクターのUUID")
     name: str = Field(description="キャラクターの名前")
     policy: str = Field(description="policy.md")
