@@ -56,6 +56,7 @@ class StyleInfo(BaseModel):
     """スタイルの追加情報"""
 
     id: StyleId = Field(description="スタイルID")
+    name: str | SkipJsonSchema[None] = Field(description="スタイル名")
     icon: str = Field(
         description="このスタイルのアイコンをbase64エンコードしたもの、あるいはURL"
     )
@@ -71,6 +72,8 @@ class StyleInfo(BaseModel):
 class SpeakerInfo(BaseModel):
     """キャラクターの追加情報"""
 
+    id: str | SkipJsonSchema[None] = Field(description="キャラクターのUUID")
+    name: str | SkipJsonSchema[None] = Field(description="キャラクターの名前")
     policy: str = Field(description="policy.md")
     portrait: str = Field(
         description="立ち絵画像をbase64エンコードしたもの、あるいはURL"
