@@ -1,7 +1,7 @@
 # メンテナンスガイドライン
 
 このリポジトリは VOICEVOX OSS 用のコードを管理しています。  
-Github Releases には製品版 VOICEVOX のビルド済みパッケージと VVPP パッケージが配置されています。  
+GitHub Releases には製品版 VOICEVOX のビルド済みパッケージと VVPP パッケージが配置されています。  
 Docker Hub の `voicevox/voicevox_engine` リポジトリに製品版 VOICEVOX エンジンの Docker イメージが配置されています。
 
 ## 新しいバージョンのリリース方法
