@@ -174,8 +174,7 @@ class MetasStore:
         characters = self.characters(core_version)
         characters = filter_characters_and_styles(characters, talk_or_sing)
         character = next(
-            filter(lambda character: character.uuid ==
-                   character_uuid, characters), None
+            filter(lambda character: character.uuid == character_uuid, characters), None
         )
         if character is None:
             raise CharacterNotFoundError("該当するキャラクターが見つかりません")
@@ -214,8 +213,7 @@ class MetasStore:
                 icon = _resource_str(style_icon_path)
 
                 # style portrait
-                style_portrait_path = character_path / \
-                    "portraits" / f"{style_id}.png"
+                style_portrait_path = character_path / "portraits" / f"{style_id}.png"
                 style_portrait = None
                 if style_portrait_path.exists():
                     style_portrait = _resource_str(style_portrait_path)
@@ -224,8 +222,9 @@ class MetasStore:
                 voice_samples: list[str] = []
                 for j in range(3):
                     num = str(j + 1).zfill(3)
-                    voice_path = character_path / \
-                        "voice_samples" / f"{style_id}_{num}.wav"
+                    voice_path = (
+                        character_path / "voice_samples" / f"{style_id}_{num}.wav"
+                    )
                     voice_samples.append(_resource_str(voice_path))
 
                 style_infos.append(
@@ -241,7 +240,11 @@ class MetasStore:
             raise CharacterInfoNotFoundError("キャラクター情報が見つかりません") from e
 
         character_info = SpeakerInfo(
-            id=character_id, policy=policy, portrait=portrait, style_infos=style_infos, name=character_name
+            id=character_id,
+            policy=policy,
+            portrait=portrait,
+            style_infos=style_infos,
+            name=character_name,
         )
         return character_info
 
