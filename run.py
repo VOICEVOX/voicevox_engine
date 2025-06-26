@@ -40,16 +40,15 @@ def decide_boolean_from_env(env_name: str) -> bool:
     * それ以外はwarningを出してFalseを返す
     """
     env = os.getenv(env_name, default="")
-    if env == "1":
-        return True
-    elif env == "" or env == "0":
-        return False
-    else:
-        warnings.warn(
-            f"Invalid environment variable value: {env_name}={env}",
-            stacklevel=1,
-        )
-        return False
+    match env:
+        case "1":
+            return True
+        case "" | "0":
+            return False
+        case _:
+            msg = f"Invalid environment variable value: {env_name}={env}"
+            warnings.warn(msg, stacklevel=1)
+            return False
 
 
 @dataclass(frozen=True)

@@ -2,8 +2,8 @@
 
 import re
 from dataclasses import dataclass
-from itertools import chain
-from typing import Any, Final, Literal, Self, TypeGuard
+from itertools import groupby
+from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
@@ -157,184 +157,76 @@ class _Label:
         )
 
 
+def _generate_mora(consonant: _Label | None, vowel: _Label) -> Mora:
+    """音素長と音高を0で初期化したモーラを生成する。"""
+    phonemes = vowel.phoneme if consonant is None else consonant.phoneme + vowel.phoneme
+    return Mora(
+        text=mora_to_text(phonemes),
+        consonant=(consonant.phoneme if consonant is not None else None),
+        consonant_length=0 if consonant is not None else None,
+        vowel=vowel.phoneme,
+        vowel_length=0,
+        pitch=0,
+    )
+
+
+def _generate_pau_mora() -> Mora:
+    """音素長と音高を0で初期化したpauモーラを生成する。"""
+    return Mora(
+        text="、",
+        consonant=None,
+        consonant_length=None,
+        vowel="pau",
+        vowel_length=0,
+        pitch=0,
+    )
+
+
 @dataclass
-class MoraLabel:
-    """モーララベル。モーラは1音素(母音や促音「っ」、撥音「ん」など)か、2音素(母音と子音の組み合わせ)で成り立つ。"""
-
-    consonant: _Label | None  # 子音
-    vowel: _Label  # 母音
-
-    @property
-    def labels(self) -> list[_Label]:
-        """このモーラを構成するラベルリスト。母音ラベルのみの場合は [母音ラベル,]、子音ラベルもある場合は [子音ラベル, 母音ラベル]。"""
-        if self.consonant is not None:
-            return [self.consonant, self.vowel]
-        else:
-            return [self.vowel]
-
-
-@dataclass
-class AccentPhraseLabel:
+class _AccentPhraseLabel:
     """アクセント句ラベル"""
 
-    moras: list[MoraLabel]  # モーラ系列
+    moras: list[Mora]  # モーラ系列
     accent: int  # アクセント位置
     is_interrogative: bool  # 疑問文か否か
 
     @classmethod
     def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をcontextで区切りアクセント句ラベルを生成する"""
-        # NOTE:「モーラごとのラベル系列」はラベル系列をcontextで区切り生成される。
+        """ラベル系列を区切ってアクセント句ラベルを生成する。"""
+        if len(labels) == 0:
+            raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
 
-        moras: list[MoraLabel] = []  # モーラ系列
-        mora_labels: list[_Label] = []  # モーラごとのラベル系列を一時保存するコンテナ
+        moras: list[Mora] = []
+        for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
+            mora_labels = list(_mora_labels)
 
-        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
             # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
             # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if label.mora_index == 49:
+            if mora_index is not None and mora_index >= 49:
                 break
 
-            # 区切りまでラベル系列を一時保存する
-            mora_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            if next_label is None or label.mora_index != next_label.mora_index:
-                # モーラごとのラベル系列長に基づいて子音と母音を得る
-                if len(mora_labels) == 1:
+            # ラベルの数に基づいて子音と母音を分け、モーラを生成する
+            match len(mora_labels):
+                case 1:
                     consonant, vowel = None, mora_labels[0]
-                elif len(mora_labels) == 2:
+                case 2:
                     consonant, vowel = mora_labels[0], mora_labels[1]
-                else:
+                case _:
                     raise ValueError(mora_labels)
-                # 子音と母音からモーラを生成して保存する
-                mora = MoraLabel(consonant=consonant, vowel=vowel)
-                moras.append(mora)
-                # 次に向けてリセット
-                mora_labels = []
+            moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
-        # アクセント位置を決定する
-        _accent = moras[0].vowel.accent_position
-        if _accent is None:
+        if labels[0].accent_position is None:
             msg = "アクセント位置が指定されていません。"
             raise RuntimeError(msg)
+        accent = labels[0].accent_position
         # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
-        accent = _accent if _accent <= len(moras) else len(moras)
+        accent = accent if accent <= len(moras) else len(moras)
 
-        # 疑問文か否か判定する（末尾モーラ母音のcontextに基づく）
-        is_interrogative = moras[-1].vowel.is_interrogative
-
-        # アクセント句ラベルを生成する
         accent_phrase = cls(
-            moras=moras, accent=accent, is_interrogative=is_interrogative
+            moras=moras, accent=accent, is_interrogative=labels[0].is_interrogative
         )
 
         return accent_phrase
-
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        return list(chain.from_iterable(m.labels for m in self.moras))
-
-
-@dataclass
-class BreathGroupLabel:
-    """発声区切りラベル"""
-
-    accent_phrases: list[AccentPhraseLabel]  # アクセント句のリスト
-
-    @classmethod
-    def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をcontextで区切りBreathGroupLabelインスタンスを生成する"""
-        # NOTE:「アクセント句ごとのラベル系列」はラベル系列をcontextで区切り生成される。
-
-        accent_phrases: list[AccentPhraseLabel] = []  # アクセント句系列
-        accent_labels: list[
-            _Label
-        ] = []  # アクセント句ごとのラベル系列を一時保存するコンテナ
-
-        for label, next_label in zip(labels, labels[1:] + [None], strict=True):
-            # 区切りまでラベル系列を一時保存する
-            accent_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            if (
-                next_label is None
-                or label.breath_group_index != next_label.breath_group_index
-                or label.accent_phrase_index != next_label.accent_phrase_index
-            ):
-                # アクセント句を生成して保存する
-                accent_phrase = AccentPhraseLabel.from_labels(accent_labels)
-                accent_phrases.append(accent_phrase)
-                # 次に向けてリセット
-                accent_labels = []
-
-        # BreathGroupLabel インスタンスを生成する
-        breath_group = cls(accent_phrases=accent_phrases)
-
-        return breath_group
-
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        return list(
-            chain.from_iterable(
-                accent_phrase.labels for accent_phrase in self.accent_phrases
-            )
-        )
-
-
-@dataclass
-class UtteranceLabel:
-    """発声ラベル"""
-
-    breath_groups: list[BreathGroupLabel]  # 発声の区切りのリスト
-    pauses: list[_Label]  # 無音のリスト
-
-    @classmethod
-    def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列をポーズで区切りUtteranceLabelインスタンスを生成する"""
-        # NOTE:「BreathGroupLabelごとのラベル系列」はラベル系列をポーズで区切り生成される。
-
-        pauses: list[_Label] = []  # ポーズラベルのリスト
-        breath_groups: list[BreathGroupLabel] = []  # BreathGroupLabel のリスト
-        group_labels: list[
-            _Label
-        ] = []  # BreathGroupLabelごとのラベル系列を一時保存するコンテナ
-
-        for label in labels:
-            # ポーズが出現するまでラベル系列を一時保存する
-            if not label.is_pause:
-                group_labels.append(label)
-
-            # 一時的なラベル系列を確定させて処理する
-            else:
-                # ポーズラベルを保存する
-                pauses.append(label)
-                if len(group_labels) > 0:
-                    # ラベル系列からBreathGroupLabelを生成して保存する
-                    breath_group = BreathGroupLabel.from_labels(group_labels)
-                    breath_groups.append(breath_group)
-                    # 次に向けてリセット
-                    group_labels = []
-
-        # UtteranceLabelインスタンスを生成する
-        utterance = cls(breath_groups=breath_groups, pauses=pauses)
-
-        return utterance
-
-    @property
-    def labels(self) -> list[_Label]:
-        """内包する全てのラベルを返す"""
-        labels: list[_Label] = []
-        for i in range(len(self.pauses)):
-            if self.pauses[i] is not None:
-                labels += [self.pauses[i]]
-
-            if i < len(self.pauses) - 1:
-                labels += self.breath_groups[i].labels
-
-        return labels
 
 
 def mora_to_text(mora_phonemes: str) -> str:
@@ -348,68 +240,43 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
-def _mora_labels_to_moras(mora_labels: list[MoraLabel]) -> list[Mora]:
-    """
-    MoraLabel系列をMora系列へキャストする。
+def full_context_labels_to_accent_phrases(
+    full_context_labels: list[str],
+) -> list[AccentPhrase]:
+    """フルコンテキストラベルからアクセント句系列を生成する"""
+    all_labels = map(_Label.from_feature, full_context_labels)
 
-    音素長と音高は0で初期化する。
-    """
-    return [
-        Mora(
-            text=mora_to_text("".join([label.phoneme for label in mora.labels])),
-            consonant=(mora.consonant.phoneme if mora.consonant is not None else None),
-            consonant_length=0 if mora.consonant is not None else None,
-            vowel=mora.vowel.phoneme,
-            vowel_length=0,
-            pitch=0,
-        )
-        for mora in mora_labels
+    pause_group_labels_list = [
+        list(labels)
+        for is_pau, labels in groupby(all_labels, lambda label: label.is_pause)
+        if not is_pau
     ]
 
-
-def _utterance_to_accent_phrases(utterance: UtteranceLabel) -> list[AccentPhrase]:
-    """UtteranceLabelインスタンスをアクセント句系列へドメイン変換する"""
-    if len(utterance.breath_groups) == 0:
-        return []
+    PauseGroup: TypeAlias = list[_AccentPhraseLabel]
+    pause_groups: list[PauseGroup] = []
+    for pause_group_labels in pause_group_labels_list:
+        groups = groupby(
+            pause_group_labels,
+            lambda label: (label.breath_group_index, label.accent_phrase_index),
+        )
+        pause_groups.append(
+            [_AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups]
+        )
 
     return [
         AccentPhrase(
-            moras=_mora_labels_to_moras(accent_phrase.moras),
+            moras=accent_phrase.moras,
             accent=accent_phrase.accent,
             pause_mora=(
-                Mora(
-                    text="、",
-                    consonant=None,
-                    consonant_length=None,
-                    vowel="pau",
-                    vowel_length=0,
-                    pitch=0,
-                )
+                _generate_pau_mora()
                 if (
-                    i_accent_phrase == len(breath_group.accent_phrases) - 1
-                    and i_breath_group != len(utterance.breath_groups) - 1
+                    i_accent_phrase == len(pause_group) - 1
+                    and i_pause_group != len(pause_groups) - 1
                 )
                 else None
             ),
             is_interrogative=accent_phrase.is_interrogative,
         )
-        for i_breath_group, breath_group in enumerate(utterance.breath_groups)
-        for i_accent_phrase, accent_phrase in enumerate(breath_group.accent_phrases)
+        for i_pause_group, pause_group in enumerate(pause_groups)
+        for i_accent_phrase, accent_phrase in enumerate(pause_group)
     ]
-
-
-def full_context_labels_to_accent_phrases(
-    full_context_labels: list[str],
-) -> list[AccentPhrase]:
-    """フルコンテキストラベルからアクセント句系列を生成する"""
-    if len(full_context_labels) == 0:
-        return []
-
-    utterance = UtteranceLabel.from_labels(
-        list(map(_Label.from_feature, full_context_labels))
-    )
-
-    # ドメインを変換する
-    accent_phrases = _utterance_to_accent_phrases(utterance)
-
-    return accent_phrases

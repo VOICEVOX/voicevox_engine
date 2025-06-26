@@ -24,7 +24,7 @@ def configure_middlewares(
         print_exception(exc)
         return JSONResponse(
             status_code=500,
-            content="Internal Server Error",
+            content={"detail": "Internal Server Error"},
         )
 
     app.add_middleware(ServerErrorMiddleware, handler=global_execution_handler)

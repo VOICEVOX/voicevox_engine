@@ -12,7 +12,7 @@ from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 
 
-@pytest.fixture()
+@pytest.fixture
 def cancellable_client(app_params: dict[str, Any]) -> TestClient:
     app_params["cancellable_engine"] = CancellableEngine(
         init_processes=1,

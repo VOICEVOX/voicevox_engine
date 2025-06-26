@@ -47,7 +47,7 @@ def _gen_pau_space_feature() -> NjdFeature:
 
 
 @pytest.mark.parametrize(
-    "input_features, true_features",
+    ("input_features", "true_features"),
     [
         # アルファベットに挟まれた空白を削除する
         pytest.param(

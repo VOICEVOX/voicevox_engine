@@ -1,6 +1,6 @@
 """APIを無効化するテスト。"""
 
-from typing import Any, Literal
+from typing import Any, Literal, assert_never
 
 from fastapi.testclient import TestClient
 
@@ -13,16 +13,17 @@ def _assert_request_and_response_403(
     method: Literal["post", "get", "put", "delete"],
     path: str,
 ) -> None:
-    if method == "post":
-        response = client.post(path)
-    elif method == "get":
-        response = client.get(path)
-    elif method == "put":
-        response = client.put(path)
-    elif method == "delete":
-        response = client.delete(path)
-    else:
-        raise ValueError("methodはpost, get, put, deleteのいずれかである必要があります")
+    match method:
+        case "post":
+            response = client.post(path)
+        case "get":
+            response = client.get(path)
+        case "put":
+            response = client.put(path)
+        case "delete":
+            response = client.delete(path)
+        case _:
+            assert_never(method)
 
     assert response.status_code == 403, f"{method} {path} が403を返しませんでした"
 

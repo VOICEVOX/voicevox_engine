@@ -13,7 +13,7 @@ def test_unknown_phoneme() -> None:
     unknown_phoneme = Phoneme("xx")
 
     # Tests
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not in tuple"):
         _ = unknown_phoneme.id
 
 
