@@ -15,7 +15,7 @@ Docker Hub の `voicevox/voicevox_engine` リポジトリに製品版 VOICEVOX �
 
 1. アップデート情報を`resources/engine_manifest_assets/update_infos.json`に追加
 2. スナップショットテストの更新
-3. Github Workflow の `VOICEVOX_RESOURCE_VERSION`を更新
+3. GitHub Workflow の `VOICEVOX_RESOURCE_VERSION`を更新
 4. デフォルトブランチにプルリクエスト・マージ
 5. パッケージ版・Docker 版を`.github/workflows/build-engine.yml`でビルド
 6. Github Workflow の完了まで待機
@@ -34,6 +34,6 @@ Docker Hub の `voicevox/voicevox_engine` リポジトリに製品版 VOICEVOX �
 1. アップデート情報を`resources/engine_manifest_assets/update_infos.json`に追加
 2. 新しいキャラクターがいる場合は辞書を更新
 3. スナップショットテストの更新
-4. Github Workflow の `VOICEVOX_RESOURCE_VERSION`と`VOICEVOX_CORE_VERSION`を更新
+4. GitHub Workflow の `VOICEVOX_RESOURCE_VERSION`と`VOICEVOX_CORE_VERSION`を更新
 5. `release-0.XX` ブランチにプルリクエスト・マージ
 6. `新しいマイナーバージョン(0.XX.0)のリリース`の手順 5 から手順 10 までを実行
