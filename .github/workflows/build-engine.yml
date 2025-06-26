@@ -152,21 +152,12 @@ jobs:
           key: ${{ matrix.os }}-cuda-dll-${{ matrix.cuda_version }}-v1
           path: download/cuda
 
-      # FIXME: 現在cuda-toolkitで暫定的に`method=local`としているため必要。暫定対応が不要になればこちらも不要となるはず
-      - name: <Setup> Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Linux'
-        with:
-          tool-cache: false
-          large-packages: false
-          swap-storage: false
-
       - name: <Setup> Set up CUDA toolkit
         if: matrix.cuda_version != '' && steps.cuda-dll-cache-restore.outputs.cache-hit != 'true'
         uses: Jimver/cuda-toolkit@v0.2.22
         id: cuda-toolkit
         with:
-          method: ${{ runner.os == 'Linux' && 'local' || 'network' }} # FIXME: 現在LinuxだとCUDA 12.8のインストールがapt経由でできなくなっているため、暫定的な対応を入れた形。 (<https://github.com/VOICEVOX/voicevox_engine/pull/1587#issuecomment-2972894697>)
+          method: network
           cuda: ${{ matrix.cuda_version }}
 
       - name: <Setup> Extract CUDA Dynamic Libraries
