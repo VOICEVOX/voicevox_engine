@@ -20,7 +20,9 @@ RESOURCE_ENDPOINT = "_resources"
 
 
 async def _get_resource_baseurl(request: Request) -> str:
-    """リソースのベースURLを生成する。
+    """
+    リソースのベースURLを生成する。
+
     リクエストのスキームとホスト名を使用して、リソースのベースURLを生成する。
     例: `http://localhost:50021/_resources`
     """
@@ -28,7 +30,11 @@ async def _get_resource_baseurl(request: Request) -> str:
     if not port:
         port = 80 if request.url.scheme == "http" else 443
 
-    return f"{request.headers.get('X-Forwarded-Scheme') or request.url.scheme}://{request.headers.get('X-Forwarded-Host') or request.url.hostname}:{port}/{RESOURCE_ENDPOINT}"
+    return (
+        f"{request.headers.get('X-Forwarded-Scheme') or request.url.scheme}"
+        f"://{request.headers.get('X-Forwarded-Host') or request.url.hostname}"
+        f":{port}/{RESOURCE_ENDPOINT}"
+    )
 
 
 def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
