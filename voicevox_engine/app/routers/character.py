@@ -31,8 +31,8 @@ async def _get_resource_baseurl(request: Request) -> str:
         port = 80 if request.url.scheme == "http" else 443
 
     return (
-        f"{request.headers.get('X-Forwarded-Scheme') or request.url.scheme}"
-        f"://{request.headers.get('X-Forwarded-Host') or request.url.hostname}"
+        f"{request.url.scheme}"
+        f"://{request.url.hostname}"
         f":{port}/{RESOURCE_ENDPOINT}"
     )
 
