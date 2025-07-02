@@ -30,11 +30,7 @@ async def _get_resource_baseurl(request: Request) -> str:
     if not port:
         port = 80 if request.url.scheme == "http" else 443
 
-    return (
-        f"{request.url.scheme}"
-        f"://{request.url.hostname}"
-        f":{port}/{RESOURCE_ENDPOINT}"
-    )
+    return f"{request.url.scheme}://{request.url.hostname}:{port}/{RESOURCE_ENDPOINT}"
 
 
 def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
