@@ -182,12 +182,8 @@ def _generate_pau_mora() -> Mora:
     )
 
 
-def _generate_accent_phrase(labels: list[_Label]) -> AccentPhrase:
-    """
-    ラベル系列からアクセント句を生成する。
-
-    pauモーラは None で初期化される。
-    """
+def _generate_accent_phrase(labels: list[_Label], with_pau: bool) -> AccentPhrase:
+    """ラベル系列と句末ポーズフラグからアクセント句を生成する。"""
     if len(labels) == 0:
         raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
 
@@ -217,11 +213,10 @@ def _generate_accent_phrase(labels: list[_Label]) -> AccentPhrase:
     # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
     accent = accent if accent <= len(moras) else len(moras)
 
-    # FIXME: pauモーラは None で初期化されている。必要な更新を忘れる可能性がある。
     return AccentPhrase(
         moras=moras,
         accent=accent,
-        pause_mora=None,
+        pause_mora=_generate_pau_mora() if with_pau else None,
         is_interrogative=vowel.is_interrogative,
     )
 
@@ -237,6 +232,10 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
+AccentPhaseLabels: TypeAlias = list[_Label]
+PauseGroup: TypeAlias = list[AccentPhaseLabels]
+
+
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
@@ -249,24 +248,22 @@ def full_context_labels_to_accent_phrases(
         if not is_pau
     ]
 
-    PauseGroup: TypeAlias = list[AccentPhrase]
     pause_groups: list[PauseGroup] = []
     for pause_group_labels in pause_group_labels_list:
         groups = groupby(
             pause_group_labels,
             lambda label: (label.breath_group_index, label.accent_phrase_index),
         )
-        pause_groups.append(
-            [_generate_accent_phrase(list(labels)) for _, labels in groups]
-        )
+        pause_groups.append([list(labels) for _, labels in groups])
 
     accent_phrases: list[AccentPhrase] = []
     for i_pause_group, pause_group in enumerate(pause_groups):
         is_last_group = i_pause_group == len(pause_groups) - 1
-        for i_accent_phrase, accent_phrase in enumerate(pause_group):
+
+        for i_accent_phrase, labels in enumerate(pause_group):
             is_last_phrase = i_accent_phrase == len(pause_group) - 1
-            if is_last_phrase and not is_last_group:
-                accent_phrase.pause_mora = _generate_pau_mora()
+            with_pau = is_last_phrase and not is_last_group
+            accent_phrase = _generate_accent_phrase(labels, with_pau=with_pau)
             accent_phrases.append(accent_phrase)
 
     return accent_phrases
