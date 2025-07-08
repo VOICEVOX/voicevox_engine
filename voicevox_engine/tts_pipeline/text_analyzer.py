@@ -239,7 +239,7 @@ PauseGroup: TypeAlias = list[AccentPhaseLabels]
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
-    """フルコンテキストラベルからアクセント句系列を生成する。"""
+    """フルコンテキストラベルからアクセント句系列を生成する"""
     all_labels = map(_Label.from_feature, full_context_labels)
 
     pause_group_labels_list = [
