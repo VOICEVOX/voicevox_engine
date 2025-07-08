@@ -183,7 +183,7 @@ def _generate_pau_mora() -> Mora:
 
 
 def _generate_accent_phrase(labels: list[_Label], with_pau: bool) -> AccentPhrase:
-    """ラベル系列と句末ポーズフラグからアクセント句を生成する。"""
+    """ラベル系列とポーズの有無からアクセント句を生成する。"""
     if len(labels) == 0:
         raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
 
@@ -239,7 +239,7 @@ PauseGroup: TypeAlias = list[AccentPhaseLabels]
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
-    """フルコンテキストラベルからアクセント句系列を生成する"""
+    """フルコンテキストラベルからアクセント句系列を生成する。"""
     all_labels = map(_Label.from_feature, full_context_labels)
 
     pause_group_labels_list = [
