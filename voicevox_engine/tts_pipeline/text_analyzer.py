@@ -217,6 +217,7 @@ def _generate_accent_phrase(labels: list[_Label]) -> AccentPhrase:
     # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
     accent = accent if accent <= len(moras) else len(moras)
 
+    # FIXME: pauモーラは None で初期化されている。必要な更新を忘れる可能性がある。
     return AccentPhrase(
         moras=moras,
         accent=accent,
