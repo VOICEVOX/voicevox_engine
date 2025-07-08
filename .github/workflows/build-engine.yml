@@ -29,8 +29,8 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.24.0"
-  VOICEVOX_CORE_VERSION: "0.15.8"
+  VOICEVOX_RESOURCE_VERSION: "0.24.1"
+  VOICEVOX_CORE_VERSION: "0.15.9"
 
 defaults:
   run:
