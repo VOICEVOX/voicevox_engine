@@ -13,13 +13,13 @@ macholib==1.16.3 ; sys_platform == 'darwin'
 markupsafe==3.0.2
 numpy==2.2.4
 packaging==24.2
-pefile==2024.8.26 ; sys_platform == 'win32'
+pefile==2023.2.7 ; sys_platform == 'win32'
 platformdirs==4.3.7
 pycparser==2.22
 pydantic==2.11.3
 pydantic-core==2.33.1
-pyinstaller==5.13.2
-pyinstaller-hooks-contrib==2025.2
+pyinstaller==6.14.2
+pyinstaller-hooks-contrib==2025.5
 pyopenjtalk @ git+https://github.com/VOICEVOX/pyopenjtalk@74703b034dd90a1f199f49bb70bf3b66b1728a86
 python-multipart==0.0.20
 pywin32-ctypes==0.2.3 ; sys_platform == 'win32'

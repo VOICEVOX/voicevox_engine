@@ -30,7 +30,7 @@ default-groups = []
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
 
 [dependency-groups]
-build = ["pyinstaller<6"] # NOTE: PyInstaller6ではmacOSのエディタにバンドルすると動作しなくなる (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1022)
+build = ["pyinstaller>=6"]
 dev = [
   "coveralls>=4.0.1",
   "httpx>=0.28.1", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)

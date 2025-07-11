@@ -351,10 +351,10 @@ bash tools/create_venv_and_generate_licenses.bash
 uv run pyinstaller --noconfirm run.spec
 
 # 製品版でビルドする場合
-CORE_MODEL_DIR_PATH="/path/to/core_model" \
-LIBCORE_PATH="/path/to/libcore" \
-LIBONNXRUNTIME_PATH="/path/to/libonnxruntime" \
-uv run pyinstaller --noconfirm run.spec
+uv run pyinstaller --noconfirm run.spec -- \
+--libcore_path="/path/to/libcore" \
+--libonnxruntime_path="/path/to/libonnxruntime" \
+--core_model_dir_path="/path/to/core_model"
 ```
 
 TODO: Docker 版のビルド手順を GitHub Actions をベースに記述する
