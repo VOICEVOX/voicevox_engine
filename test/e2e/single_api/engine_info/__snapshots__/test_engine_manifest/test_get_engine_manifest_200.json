@@ -32,6 +32,14 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「ユーレイちゃん」「東北ずん子」「東北きりたん」「東北イタコ」を追加",
+        "キャラクター「猫使アル」「猫使ビィ」「離途」「黒沢冴白」のスタイルを追加・更新"
+      ],
+      "version": "0.24.1"
+    },
+    {
       "contributors": [
         "aoirint",
         "Hiroshiba",

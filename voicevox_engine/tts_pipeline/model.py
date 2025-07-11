@@ -45,7 +45,8 @@ class AccentPhrase(BaseModel):
     moras: list[Mora] = Field(description="モーラのリスト")
     accent: int = Field(description="アクセント箇所")
     pause_mora: Mora | SkipJsonSchema[None] = Field(
-        default=None, description="後ろに無音を付けるかどうか"
+        default=None,
+        description="アクセント句の末尾につく無音モーラ。null の場合は無音モーラを付けない。",
     )
     is_interrogative: bool = Field(default=False, description="疑問系かどうか")
 
