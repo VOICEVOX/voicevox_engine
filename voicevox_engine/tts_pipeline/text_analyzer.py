@@ -182,51 +182,43 @@ def _generate_pau_mora() -> Mora:
     )
 
 
-@dataclass
-class _AccentPhraseLabel:
-    """アクセント句ラベル"""
+def _generate_accent_phrase(labels: list[_Label], with_pau: bool) -> AccentPhrase:
+    """ラベル系列とポーズの有無からアクセント句を生成する。"""
+    if len(labels) == 0:
+        raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
 
-    moras: list[Mora]  # モーラ系列
-    accent: int  # アクセント位置
-    is_interrogative: bool  # 疑問文か否か
+    moras: list[Mora] = []
+    for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
+        mora_labels = list(_mora_labels)
 
-    @classmethod
-    def from_labels(cls, labels: list[_Label]) -> Self:
-        """ラベル系列を区切ってアクセント句ラベルを生成する。"""
-        if len(labels) == 0:
-            raise RuntimeError("ラベルが無いためアクセント句を生成できません。")
+        # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
+        # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
+        if mora_index is not None and mora_index >= 49:
+            break
 
-        moras: list[Mora] = []
-        for mora_index, _mora_labels in groupby(labels, lambda label: label.mora_index):
-            mora_labels = list(_mora_labels)
+        # ラベルの数に基づいて子音と母音を分け、モーラを生成する
+        match len(mora_labels):
+            case 1:
+                consonant, vowel = None, mora_labels[0]
+            case 2:
+                consonant, vowel = mora_labels[0], mora_labels[1]
+            case _:
+                raise ValueError(mora_labels)
+        moras.append(_generate_mora(consonant=consonant, vowel=vowel))
 
-            # モーラ抽出を打ち切る（ワークアラウンド、VOICEVOX/voicevox_engine#57）
-            # mora_index の最大値が 49 であるため、49番目以降のモーラではラベルのモーラ番号を区切りに使えない
-            if mora_index is not None and mora_index >= 49:
-                break
+    if labels[0].accent_position is None:
+        msg = "アクセント位置が指定されていません。"
+        raise RuntimeError(msg)
+    accent = labels[0].accent_position
+    # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
+    accent = accent if accent <= len(moras) else len(moras)
 
-            # ラベルの数に基づいて子音と母音を分け、モーラを生成する
-            match len(mora_labels):
-                case 1:
-                    consonant, vowel = None, mora_labels[0]
-                case 2:
-                    consonant, vowel = mora_labels[0], mora_labels[1]
-                case _:
-                    raise ValueError(mora_labels)
-            moras.append(_generate_mora(consonant=consonant, vowel=vowel))
-
-        if labels[0].accent_position is None:
-            msg = "アクセント位置が指定されていません。"
-            raise RuntimeError(msg)
-        accent = labels[0].accent_position
-        # アクセント位置の値がアクセント句内のモーラ数を超える場合はクリップ（ワークアラウンド、VOICEVOX/voicevox_engine#55 を参照）
-        accent = accent if accent <= len(moras) else len(moras)
-
-        accent_phrase = cls(
-            moras=moras, accent=accent, is_interrogative=labels[0].is_interrogative
-        )
-
-        return accent_phrase
+    return AccentPhrase(
+        moras=moras,
+        accent=accent,
+        pause_mora=_generate_pau_mora() if with_pau else None,
+        is_interrogative=vowel.is_interrogative,
+    )
 
 
 def mora_to_text(mora_phonemes: str) -> str:
@@ -238,6 +230,10 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes_to_mora_kana[mora_phonemes]
     else:
         return mora_phonemes
+
+
+AccentPhaseLabels: TypeAlias = list[_Label]
+PauseGroup: TypeAlias = list[AccentPhaseLabels]
 
 
 def full_context_labels_to_accent_phrases(
@@ -252,31 +248,22 @@ def full_context_labels_to_accent_phrases(
         if not is_pau
     ]
 
-    PauseGroup: TypeAlias = list[_AccentPhraseLabel]
     pause_groups: list[PauseGroup] = []
     for pause_group_labels in pause_group_labels_list:
         groups = groupby(
             pause_group_labels,
             lambda label: (label.breath_group_index, label.accent_phrase_index),
         )
-        pause_groups.append(
-            [_AccentPhraseLabel.from_labels(list(labels)) for _, labels in groups]
-        )
+        pause_groups.append([list(labels) for _, labels in groups])
 
-    return [
-        AccentPhrase(
-            moras=accent_phrase.moras,
-            accent=accent_phrase.accent,
-            pause_mora=(
-                _generate_pau_mora()
-                if (
-                    i_accent_phrase == len(pause_group) - 1
-                    and i_pause_group != len(pause_groups) - 1
-                )
-                else None
-            ),
-            is_interrogative=accent_phrase.is_interrogative,
-        )
-        for i_pause_group, pause_group in enumerate(pause_groups)
-        for i_accent_phrase, accent_phrase in enumerate(pause_group)
-    ]
+    accent_phrases: list[AccentPhrase] = []
+    for i_pause_group, pause_group in enumerate(pause_groups):
+        is_last_group = i_pause_group == len(pause_groups) - 1
+
+        for i_accent_phrase, labels in enumerate(pause_group):
+            is_last_phrase = i_accent_phrase == len(pause_group) - 1
+            with_pau = is_last_phrase and not is_last_group
+            accent_phrase = _generate_accent_phrase(labels, with_pau=with_pau)
+            accent_phrases.append(accent_phrase)
+
+    return accent_phrases
