@@ -246,10 +246,11 @@ jobs:
               exit 1
           esac
 
-          case "$RUNNER_OS" in
-            Windows) exe_suffix=.exe ;;
-            *) exe_suffix=
-          esac
+          # ここをcase文にするとShellCheck v0.8.0は`exe_suffix`を追跡できなくなる。最新のv0.10.0ならできる
+          exe_suffix=
+          if [ "$RUNNER_OS" = Windows ]; then
+            exe_suffix=.exe
+          fi
 
           bin_dir=~/.local/bin
 
