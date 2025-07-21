@@ -406,7 +406,7 @@ def main() -> None:
 
     # VOICEVOX ENGINE サーバーを起動
     # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
-    uvicorn.run(app, host=args.host, port=args.port, forwarded_allow_ips="*")
+    uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

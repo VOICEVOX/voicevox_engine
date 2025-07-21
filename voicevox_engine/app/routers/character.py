@@ -26,7 +26,7 @@ async def _get_resource_baseurl(request: Request) -> str:
     リクエストのスキームとホスト名を使用して、リソースのベースURLを生成する。
     例: `http://localhost:50021/_resources`
     """
-    return f"{request.url.scheme}://{request.url.hostname}/{RESOURCE_ENDPOINT}"
+    return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
 def _characters_to_speakers(characters: list[Character]) -> list[Speaker]:
