@@ -19,6 +19,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 
 F0_EPSLION = 0.1
+DUR_EPSILON = 0.02
 
 
 def _seg_dur(seg: Segment) -> float:
@@ -61,7 +62,7 @@ def generate_guide_router() -> APIRouter:
 
         # Optionally trim silence
         if trim:
-            wav, _ = trim_audio(wav, top_db=20)
+            wav, _ = trim_audio(wav, top_db=30)
 
         # Resample to match aligner's sampling rate
         r_wav = (
@@ -117,9 +118,10 @@ def generate_guide_router() -> APIRouter:
                 seg_idx += 2
 
                 # Extend overly short consonants
-                if mora.consonant_length < 0.04:
-                    mora.consonant_length += 0.5 * mora.vowel_length
-                    mora.vowel_length /= 2.0
+                if mora.consonant_length <= DUR_EPSILON and mora.vowel_length > 3 * DUR_EPSILON:
+                    dur = mora.consonant_length + mora.vowel_length
+                    mora.consonant_length = 0.25 * dur
+                    mora.vowel_length = 0.75 * dur
             else:
                 assert mora.vowel.lower() == segs[seg_idx].phoneme
                 mora.vowel_length = _seg_dur(segs[seg_idx])
