@@ -41,6 +41,7 @@ class SupportedFeaturesJson:
     manage_library: FeatureSupportJson
     return_resource_url: FeatureSupportJson
     apply_katakana_english: FeatureSupportJson
+    guide: FeatureSupportJson
 
 
 @dataclass(frozen=True)
@@ -115,6 +116,9 @@ class SupportedFeatures(BaseModel):
     )
     apply_katakana_english: bool | SkipJsonSchema[None] = Field(
         default=None, description="未知の英単語をカタカナ読みに変換"
+    )
+    guide: bool | SkipJsonSchema[None] = Field(
+        default=None, description="Forced Alignerによる自動調整"
     )
 
 

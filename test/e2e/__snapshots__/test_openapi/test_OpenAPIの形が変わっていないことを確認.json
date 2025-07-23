@@ -1021,6 +1021,11 @@
             "title": "Apply Katakana English",
             "type": "boolean"
           },
+          "guide": {
+            "description": "Forced Alignerによる自動調整",
+            "title": "Guided Tuning",
+            "type": "boolean"
+          },
           "interrogative_upspeak": {
             "description": "疑問文の自動調整",
             "title": "Interrogative Upspeak",

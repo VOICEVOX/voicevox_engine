@@ -78,6 +78,11 @@
             "type": "bool",
             "value": true,
             "name": "未知の英単語をカタカナ読みに変換"
+        },
+        "guide": {
+            "type": "bool",
+            "value": true,
+            "name": "Forced Alignerによる自動調整"
         }
     }
 }
