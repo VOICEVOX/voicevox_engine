@@ -43,7 +43,7 @@ def generate_guide_router() -> APIRouter:
 
     @router.post(
         "/guide",
-        summary="参考音声とqueryの発音をForced Alignし、調整されたAudioQueryを返す",
+        summary="参考音声に合わせて発音タイミングとイントネーションを自動調整したAudioQueryを返します",
     )
     async def guide(
         query: Annotated[str, Form(...)],
