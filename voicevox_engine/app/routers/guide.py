@@ -18,7 +18,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     to_flatten_moras,
 )
 
-F0_EPSLION = 0.1
+F0_EPSILON = 0.1
 DUR_EPSILON = 0.02
 
 
@@ -97,10 +97,10 @@ def generate_guide_router() -> APIRouter:
                     mora.vowel_length + (mora.consonant_length or 0.0),
                 )
                 for mora in moras
-                if mora.pitch > F0_EPSLION
+                if mora.pitch > F0_EPSILON
             ]
             src_pitch = sum(p * d for p, d in pd_list) / sum(d for _, d in pd_list)
-            new_pitch = np.mean(f0[f0 > F0_EPSLION])
+            new_pitch = np.mean(f0[f0 > F0_EPSILON])
             drift = src_pitch - new_pitch
 
         # Assign segment durations and pitch
@@ -134,7 +134,7 @@ def generate_guide_router() -> APIRouter:
             # Assign pitch (except for unvoiced vowels)
             if mora.vowel not in ["U", "I", "N", "cl"]:
                 mora_f0 = f0[int(s * scale_factor) : int(e * scale_factor)]
-                mora_f0 = mora_f0[mora_f0 > F0_EPSLION]
+                mora_f0 = mora_f0[mora_f0 > F0_EPSILON]
                 mora.pitch = (
                     float(np.mean(mora_f0)) + drift if mora_f0.size > 0 else 0.0
                 )
