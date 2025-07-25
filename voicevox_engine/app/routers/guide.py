@@ -45,7 +45,7 @@ def generate_guide_router() -> APIRouter:
         "/guide",
         summary="参考音声に合わせて発音タイミングとイントネーションを自動調整したAudioQueryを返します",
     )
-    async def guide(
+    def guide(
         query: Annotated[str, Form(...)],
         ref_audio: Annotated[UploadFile, File(...)],
         normalize: Annotated[bool, Form(...)] = True,
@@ -53,7 +53,7 @@ def generate_guide_router() -> APIRouter:
     ) -> AudioQuery:
         # Load AudioQuery and audio file
         query_obj = AudioQuery(**json.loads(query))
-        file_bytes = await ref_audio.read()
+        file_bytes = ref_audio.file.read()
         wav, sr = soundfile.read(io.BytesIO(file_bytes))
 
         # Convert stereo to mono if necessary
