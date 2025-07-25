@@ -23,14 +23,14 @@ DUR_EPSILON = 0.02
 
 
 def _seg_dur(seg: Segment) -> float:
-    return (seg.end - seg.start) / 1000.0
+    return float((seg.end - seg.start) / 1000.0)
 
 
 def _sanitize_long_vowel(segs: list[Segment]) -> list[Segment]:
     """Sanitize long vowels (e.g. `s-o-o`, `y-u-u`) by dividing their duration evenly."""
     for i in range(len(segs) - 1):
         if segs[i].phoneme == segs[i + 1].phoneme:
-            mid = (segs[i].start + segs[i + 1].end) / 2
+            mid = int((segs[i].start + segs[i + 1].end) / 2)
             segs[i].end = mid
             segs[i + 1].start = mid + 1
     return segs
