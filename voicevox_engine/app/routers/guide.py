@@ -118,7 +118,10 @@ def generate_guide_router() -> APIRouter:
                 seg_idx += 2
 
                 # Extend overly short consonants
-                if mora.consonant_length <= DUR_EPSILON and mora.vowel_length > 3 * DUR_EPSILON:
+                if (
+                    mora.consonant_length <= DUR_EPSILON
+                    and mora.vowel_length > 3 * DUR_EPSILON
+                ):
                     dur = mora.consonant_length + mora.vowel_length
                     mora.consonant_length = 0.25 * dur
                     mora.vowel_length = 0.75 * dur
