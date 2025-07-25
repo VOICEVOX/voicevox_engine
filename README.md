@@ -438,6 +438,48 @@ curl -s \
     > disabled_audio.wav
 ```
 
+### ガイド
+
+参考音声に合わせてAudioQueryの発音タイミングとイントネーションを自動調整します。
+
+```bash
+echo -n "こんにちは。" > text.txt
+
+# 参照音声を合成する
+curl -s \
+    -X POST \
+    "127.0.0.1:50021/audio_query?speaker=1" \
+    --get --data-urlencode text@text.txt \
+    > ref.json
+
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @ref.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > ref.wav
+
+# ガイドAPIを呼び出し、参照音声により自動調整する
+curl -s \
+    -X POST \
+    -F "query=$(cat ref.json)" \
+    -F "ref_audio=@ref.wav" \
+    -F "normalize=true" \
+    -F "trim=true" \
+    "127.0.0.1:50021/guide" \
+    > guided_query.json
+
+# 調整された音声を合成する
+curl -s \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @guided_query.json \
+    "127.0.0.1:50021/synthesis?speaker=1" \
+    > guided.wav
+```
+
+こちらの参照音声はVOICEVOXで合成されますが、他の音声（録音、他のアプリで合成されたものなど）を使うこともできます。
+
 ### その他の引数
 
 エンジン起動時に引数を指定できます。詳しいことは`-h`引数でヘルプを確認してください。
