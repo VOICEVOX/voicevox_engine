@@ -246,11 +246,15 @@ jobs:
               exit 1
           esac
 
-          # ここをcase文にするとShellCheck v0.8.0は`exe_suffix`を追跡できなくなる。最新のv0.10.0ならできる
-          exe_suffix=
-          if [ "$RUNNER_OS" = Windows ]; then
-            exe_suffix=.exe
-          fi
+          # 下記の`Linux|macOS)`と`Windows)`の順番を入れ替えたりすると、ShellCheck v0.8.0は`$exe_suffix`が取り得る値を把握できなくなる。
+          # 最新のv0.10.0ならそのような問題は起きない。
+          case "$RUNNER_OS" in
+            Linux|macOS) exe_suffix= ;;
+            Windows) exe_suffix=.exe ;;
+            *)
+              echo 'unexpected runner' >&2
+              exit 1
+          esac
 
           bin_dir=~/.local/bin
 
@@ -258,7 +262,7 @@ jobs:
 
           curl -fL --retry 3 --retry-all-errors --retry-delay 5 \
             -o $bin_dir/download$exe_suffix \
-            "https://github.com/VOICEVOX/voicevox_core/releases/download/$VOICEVOX_CORE_AND_DOWNLOADER_VERSION/$downloader_name"
+            https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
 
           if [ "$RUNNER_OS" == Windows ]; then
             cygpath -w $bin_dir >> "$GITHUB_PATH"
