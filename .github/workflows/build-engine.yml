@@ -267,7 +267,8 @@ jobs:
             echo $bin_dir >> "$GITHUB_PATH"
           fi
 
-      # ダウンローダーを0.16にしたら、download/core/下にそれぞれ直接ダウンロードする
+      # NOTE: ダウンローダー0.15はvoicevox_core.dll、ONNX Runtime、モデル等をまとめてしかダウンロードできないが、0.16になると個別にダウンロードできる
+      # TODO: ダウンローダーを0.16にしたら、個別ダウンロードにし、download/core/下に直接配置する
       - name: <Setup> Run Downloader
         if: |
           steps.voicevox-core-cache-restore.outputs.cache-hit != 'true' ||
