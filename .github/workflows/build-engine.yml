@@ -30,7 +30,7 @@ on:
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.24.1"
-  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.15.9" # このバージョンのダウンローダーは不要であるシステム辞書まで取って来てしまうが、0.16ではオプトアウトできる。またリトライ機構も0.16.1あたりで入る予定
+  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.15.9" # このバージョンのダウンローダーは不要であるシステム辞書まで取ってきてしまうが、0.16ではオプトアウトできる。またリトライ機構も0.16.1あたりで入る予定
   VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.1.1"
 
 defaults:
