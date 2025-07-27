@@ -221,7 +221,7 @@ jobs:
           set -eux
 
           if [[ ${{ runner.os }} == Windows ]]; then
-            curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
+            curl -fL --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.zip
 
             unzip download/cudnn.zip cudnn-*/bin/*.dll -d download/cudnn_tmp
 
@@ -231,7 +231,7 @@ jobs:
 
             rm download/cudnn.zip
           else
-            curl -L --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
+            curl -fL --retry 3 --retry-delay 5 "${{ matrix.cudnn_url }}" > download/cudnn.tar.xz
 
             tar -Jxf download/cudnn.tar.xz -C download/
 
@@ -269,7 +269,7 @@ jobs:
       - name: <Setup> Download zlib dynamic Library
         if: steps.zlib-cache-restore.outputs.cache-hit != 'true' && matrix.zlib_url != ''
         run: |
-          curl -L --retry 3 --retry-delay 5 "${{ matrix.zlib_url }}" -o download/zlib.zip
+          curl -fL --retry 3 --retry-delay 5 "${{ matrix.zlib_url }}" -o download/zlib.zip
           mkdir -p download/zlib
 
           # extract only dlls
@@ -335,7 +335,7 @@ jobs:
       - name: <Setup> Set up DirectML dynamic Library
         if: steps.directml-cache-restore.outputs.cache-hit != 'true' && endswith(matrix.target, '-directml')
         run: |
-          curl -L --retry 3 --retry-delay 5 "${{ matrix.directml_url }}" -o download/directml.zip
+          curl -fL --retry 3 --retry-delay 5 "${{ matrix.directml_url }}" -o download/directml.zip
           mkdir -p download/directml
 
           # extract only dlls
@@ -365,7 +365,7 @@ jobs:
       - name: <Setup> Download ONNX Runtime (Windows)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Windows'
         run: |
-          curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
+          curl -fL --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.zip
 
           # extract only dlls
           if [[ ${{ endsWith(matrix.target, '-directml') }} == false ]]; then
@@ -383,7 +383,7 @@ jobs:
       - name: <Setup> Download ONNX Runtime (Mac/Linux)
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
-          curl -L --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
+          curl -fL --retry 3 --retry-delay 5 "${{ matrix.onnxruntime_url }}" > download/onnxruntime.tgz
           mkdir -p download/onnxruntime
           tar xf "download/onnxruntime.tgz" -C "download/onnxruntime" --strip-components 1
           rm download/onnxruntime.tgz
@@ -428,7 +428,7 @@ jobs:
         env:
           VOICEVOX_CORE_ASSET_NAME: ${{ matrix.voicevox_core_asset_prefix }}-${{ env.VOICEVOX_CORE_VERSION }}
         run: |
-          curl -L --retry 3 --retry-delay 5 \
+          curl -fL --retry 3 --retry-delay 5 \
             "https://github.com/VOICEVOX/voicevox_core/releases/download/${{ env.VOICEVOX_CORE_VERSION }}/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip" > download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip
           unzip download/${{ env.VOICEVOX_CORE_ASSET_NAME }}.zip -d download/
           mkdir -p download/core
