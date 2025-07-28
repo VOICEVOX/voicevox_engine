@@ -228,12 +228,13 @@ jobs:
           key: models-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-core${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
           path: download/core/models
 
-      - name: <Setup> Install Downloader
+      - name: <Setup> Download Downloader
         if: |
           steps.voicevox-core-cache-restore.outputs.cache-hit != 'true' ||
             steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' ||
             steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' ||
             steps.models-cache-restore.outputs.cache-hit != 'true'
+        id: download-downloader
         run: |
           case "$RUNNER_OS,$RUNNER_ARCH" in
             Windows,X64) downloader_name=download-windows-x64.exe ;;
@@ -246,30 +247,11 @@ jobs:
               exit 1
           esac
 
-          # 下記の`Linux|macOS)`と`Windows)`の順番を入れ替えたりすると、ShellCheck v0.8.0は`$exe_suffix`が取り得る値を把握できなくなる。
-          # 最新のv0.10.0ならそのような問題は起きない。
-          case "$RUNNER_OS" in
-            Linux|macOS) exe_suffix= ;;
-            Windows) exe_suffix=.exe ;;
-            *)
-              echo 'unexpected runner' >&2
-              exit 1
-          esac
-
-          bin_dir=~/.local/bin
-
-          mkdir -p $bin_dir
-
-          curl -fL --retry 3 --retry-delay 5 \
-            -o $bin_dir/download$exe_suffix \
+          curl -fLO --retry 3 --retry-delay 5 \
+            --output-dir "$RUNNER_TEMP" \
             https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
 
-          if [ "$RUNNER_OS" == Windows ]; then
-            cygpath -w $bin_dir >> "$GITHUB_PATH"
-          else
-            chmod u+x $bin_dir/download
-            echo $bin_dir >> "$GITHUB_PATH"
-          fi
+          echo "downloader-path=$RUNNER_TEMP/$downloader_name" >> "$GITHUB_OUTPUT"
 
       # NOTE: ダウンローダー0.15はvoicevox_core.dll、ONNX Runtime、モデル等をまとめてしかダウンロードできないが、0.16になると個別にダウンロードできる
       # TODO: ダウンローダーを0.16にしたら、個別ダウンロードにし、download/core/下に直接配置する
@@ -280,7 +262,7 @@ jobs:
             steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' ||
             steps.models-cache-restore.outputs.cache-hit != 'true'
         run: |
-          download \
+          ${{ steps.download-downloader.outputs.downloader-path }} \
             -o ./download_ \
             --cpu-arch ${{ matrix.architecture }} \
             --device ${{ matrix.onnxruntime_device }} \
