@@ -252,7 +252,6 @@ jobs:
             https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
 
           if [ "$RUNNER_OS" != 'Windows' ]; then
-            # 実行権限を付与
             chmod +x "$RUNNER_TEMP/$downloader_name"
           fi
 
