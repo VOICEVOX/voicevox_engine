@@ -251,9 +251,10 @@ jobs:
             --output-dir "$RUNNER_TEMP" \
             https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
 
-          downloader_path=$(cygpath "$RUNNER_TEMP"/$downloader_name)
+          downloader_path=$RUNNER_TEMP/$downloader_name
 
           if [ "$RUNNER_OS" != 'Windows' ]; then
+            downloader_path=$(cygpath "$downloader_path")
             chmod +x "$downloader_path"
           fi
 
