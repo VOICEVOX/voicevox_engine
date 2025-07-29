@@ -318,7 +318,7 @@ jobs:
             matrix.onnxruntime_device == 'cuda'
         run: |
           dst=download/core/additional_libraries
-          mkdir $dst
+          mkdir -p $dst
           case "$RUNNER_OS" in
             Windows) mv -v download_/cu*.dll $dst/ ;;
             Linux) mv -v download_/libcu*.so.* $dst/ ;;
@@ -333,7 +333,7 @@ jobs:
             matrix.onnxruntime_device == 'directml'
         run: |
           dst=download/core/additional_libraries
-          mkdir $dst
+          mkdir -p $dst
           mv -v download_/DirectML.dll $dst/
 
       - name: <Setup> Save additional libraries cache
