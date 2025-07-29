@@ -251,6 +251,10 @@ jobs:
             --output-dir "$RUNNER_TEMP" \
             https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
 
+          if [ "$RUNNER_OS" != 'Windows' ]; then
+            chmod +x "$RUNNER_TEMP/$downloader_name"
+          fi
+
           echo "downloader-path=$RUNNER_TEMP/$downloader_name" >> "$GITHUB_OUTPUT"
 
       # NOTE: ダウンローダー0.15はvoicevox_core.dll、ONNX Runtime、モデル等をまとめてしかダウンロードできないが、0.16になると個別にダウンロードできる
