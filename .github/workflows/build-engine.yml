@@ -253,8 +253,9 @@ jobs:
 
           downloader_path=$RUNNER_TEMP/$downloader_name
 
-          if [ "$RUNNER_OS" != 'Windows' ]; then
+          if [ "$RUNNER_OS" = 'Windows' ]; then
             downloader_path=$(cygpath "$downloader_path")
+          else
             chmod +x "$downloader_path"
           fi
 
