@@ -31,7 +31,7 @@ on:
 env:
   VOICEVOX_RESOURCE_VERSION: "0.24.1"
   VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.0" # FIXME: VOICEVOX/voicevox_core#1089が入っていない。またリトライ機構も無い
-  VOICEVOX_ONNX_RUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
+  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
   VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.2.0" # FIXME: VOICEVOX/voicevox_additional_libraries#5
 
 defaults:
@@ -301,7 +301,7 @@ jobs:
         run: |
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only onnxruntime \
-            --onnxruntime-version "$VOICEVOX_ONNX_RUNTIME_VERSION" \
+            --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
             --device ${{ matrix.onnxruntime_device }} \
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core
