@@ -290,7 +290,7 @@ def test_raw_wave_to_output_wave_with_resample() -> None:
     """Test `raw_wave_to_output_wave` with resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
-    raw_wave = np.random.rand(240).astype(np.float32)
+    raw_wave = np.random.default_rng().random(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects
@@ -306,7 +306,7 @@ def test_raw_wave_to_output_wave_without_resample() -> None:
     """Test `raw_wave_to_output_wave`  without resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputStereo=True)
-    raw_wave = np.random.rand(240).astype(np.float32)
+    raw_wave = np.random.default_rng().random(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects
