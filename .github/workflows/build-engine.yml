@@ -33,6 +33,7 @@ env:
   VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.0" # FIXME: VOICEVOX/voicevox_core#1089が入っていない。またリトライ機構も無い
   VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
   VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.2.0" # FIXME: VOICEVOX/voicevox_additional_libraries#5
+  VOICEVOX_CORE_VVM_VERSION: "0.16.0"
 
 defaults:
   run:
@@ -226,7 +227,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: models-cache-restore
         with:
-          key: models-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-core${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
+          key: models-${{ env.VOICEVOX_CORE_VVM_VERSION }}
           path: download/core/models
 
       - name: <Setup> Download Downloader
@@ -353,6 +354,7 @@ jobs:
         run: |
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only models \
+            --models-version "$VOICEVOX_CORE_VVM_VERSION" \
             -o download/core \
             <<< y
 
