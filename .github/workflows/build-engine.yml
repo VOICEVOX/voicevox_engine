@@ -275,8 +275,8 @@ jobs:
           ${{ steps.download-downloader.outputs.downloader-path }} \
             -o ./download_ \
             --cpu-arch ${{ matrix.architecture }} \
-            --device ${{ matrix.onnxruntime_device }} \
-            -v "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
+            --devices ${{ matrix.onnxruntime_device }} \
+            --c-api-version "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
             --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -302,9 +302,10 @@ jobs:
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only onnxruntime \
             --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
-            --device ${{ matrix.onnxruntime_device }} \
+            --devices ${{ matrix.onnxruntime_device }} \
             --cpu-arch ${{ matrix.architecture }} \
-            -o download/core
+            -o download/core \
+            <<< y
 
       - name: <Setup> Rename ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && (runner.os == 'macOS' || runner.os == 'Linux')
@@ -335,7 +336,7 @@ jobs:
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only additional-libraries \
             --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION" \
-            --device ${{ matrix.onnxruntime_device }} \
+            --devices ${{ matrix.onnxruntime_device }} \
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core
 
@@ -352,7 +353,8 @@ jobs:
         run: |
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only models \
-            -o download/core
+            -o download/core \
+            <<< y
 
       - name: <Setup> Save models cache
         uses: actions/cache/save@v4
