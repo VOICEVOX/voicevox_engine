@@ -436,6 +436,11 @@ jobs:
 
           mv download/core/additional_libraries/*.dll dist/run/
           if ${{ matrix.onnxruntime_device == 'cuda' }}; then
+
+            # ONNX Runtime providers
+            mv download/core/onnxruntime/lib/onnxruntime_*.dll dist/run/
+
+            # zlib
             mv download/zlib/zlibwapi.dll dist/run/
           fi
 
