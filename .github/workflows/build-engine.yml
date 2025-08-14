@@ -263,25 +263,6 @@ jobs:
 
           echo "downloader-path=$downloader_path" >> "$GITHUB_OUTPUT"
 
-      # NOTE: ダウンローダー0.15はvoicevox_core.dll、ONNX Runtime、モデル等をまとめてしかダウンロードできないが、0.16になると個別にダウンロードできる
-      # TODO: ダウンローダーを0.16にしたら、個別ダウンロードにし、download/core/下に直接配置する
-      - name: <Setup> Run Downloader
-        if: |
-          steps.voicevox-core-cache-restore.outputs.cache-hit != 'true' ||
-            steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' ||
-            steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' ||
-            steps.models-cache-restore.outputs.cache-hit != 'true'
-        run: |
-          # FIXME: 10期生およびソングモデル(0.1.0-tmp-song.0)が欠けている状態
-          ${{ steps.download-downloader.outputs.downloader-path }} \
-            -o ./download_ \
-            --cpu-arch ${{ matrix.architecture }} \
-            --devices ${{ matrix.onnxruntime_device }} \
-            --c-api-version "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
-            --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: <Setup> Download CORE
         if: steps.voicevox-core-cache-restore.outputs.cache-hit != 'true'
         run: |
