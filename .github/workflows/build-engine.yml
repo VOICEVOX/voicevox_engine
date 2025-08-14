@@ -400,13 +400,13 @@ jobs:
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
 
           if [[ ${{ runner.os }} == Windows  ]]; then
-            LIBCORE_PATH=download/core/c_api/voicevox_core.dll
+            LIBCORE_PATH=download/core/c_api/lib/voicevox_core.dll
             LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/voicevox_onnxruntime.dll
           elif [[ ${{ runner.os }} == macOS ]]; then
-            LIBCORE_PATH=download/core/c_api/libvoicevox_core.dylib
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.dylib
             LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.dylib
           else
-            LIBCORE_PATH=download/core/c_api/libvoicevox_core.so
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.so
             LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
           fi
 
