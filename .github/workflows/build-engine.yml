@@ -271,6 +271,8 @@ jobs:
             --c-api-version "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save CORE cache
         uses: actions/cache/save@v4
@@ -288,6 +290,8 @@ jobs:
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core \
             <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Rename ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && (runner.os == 'macOS' || runner.os == 'Linux')
@@ -321,6 +325,8 @@ jobs:
             --devices ${{ matrix.onnxruntime_device }} \
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save additional libraries cache
         if: matrix.onnxruntime_device != 'cpu'
@@ -338,6 +344,8 @@ jobs:
             --models-version "$VOICEVOX_CORE_VVM_VERSION" \
             -o download/core \
             <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save models cache
         uses: actions/cache/save@v4
