@@ -20,6 +20,12 @@ RESOURCE_ENDPOINT = "_resources"
 
 
 async def _get_resource_baseurl(request: Request) -> str:
+    """
+    リソースのベースURLを生成する。
+
+    リクエストのスキームとホスト名を使用して、リソースのベースURLを生成する。
+    例: `http://localhost:50021/_resources`
+    """
     return f"{request.url.scheme}://{request.url.netloc}/{RESOURCE_ENDPOINT}"
 
 
