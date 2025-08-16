@@ -227,7 +227,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: models-cache-restore
         with:
-          key: models-${{ env.VOICEVOX_CORE_VVM_VERSION }}
+          key: models-${{ env.VOICEVOX_VVM_VERSION }}
           path: download/core/models
 
       - name: <Setup> Download Downloader
@@ -283,6 +283,7 @@ jobs:
       - name: <Setup> Download ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true'
         run: |
+          # NOTE: `"y"`を流し込んで利用規約に同意している
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only onnxruntime \
             --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
