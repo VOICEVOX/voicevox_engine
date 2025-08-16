@@ -341,7 +341,7 @@ jobs:
         run: |
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only models \
-            --models-version "$VOICEVOX_CORE_VVM_VERSION" \
+            --models-version "$VOICEVOX_VVM_VERSION" \
             -o download/core \
             <<< y
         env:
