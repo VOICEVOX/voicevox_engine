@@ -208,7 +208,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         ),
         _License(
             package_name="ONNX Runtime",
-            package_version="1.13.1",
+            package_version="1.17.3",
             license_name="MIT license",
             license_text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
             license_text_type="remote_address",
@@ -274,24 +274,24 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="https://svn.code.sf.net/p/lame/svn/tags/RELEASE__3_100/lame/COPYING",
             license_text_type="remote_address",
         ),
-        # license text from CUDA 11.8.0
-        # https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local
-        # https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_522.06_windows.exe
-        # cuda_11.8.0_522.06_windows.exe (cuda_documentation/Doc/EULA.txt)
+        # license text from CUDA 12.8.1
+        # https://developer.nvidia.com/cuda-12-8-1-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local
+        # https://developer.download.nvidia.com/compute/cuda/12.8.1/local_installers/cuda_12.8.1_572.61_windows.exe
+        # cuda_12.8.1_572.61_windows.exe (cuda_documentation/Doc/EULA.txt)
         _License(
             package_name="CUDA Toolkit",
-            package_version="11.8.0",
+            package_version="12.8.1",
             license_name=None,
             license_text="tools/licenses/cuda/EULA.txt",
             license_text_type="local_address",
         ),
-        # license text from cuDNN v8.9.2 (June 1st, 2023), for CUDA 11.x, cuDNN Library for Windows
+        # license text from cuDNN v8.9.7 (December 5th, 2023), for CUDA 12.x, cuDNN Library for Windows
         # https://developer.nvidia.com/rdp/cudnn-archive
-        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip
-        # cudnn-windows-x86_64-8.9.2.26_cuda11-archive.zip (cudnn-windows-x86_64-8.9.2.26_cuda11-archive/LICENSE)
+        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.7.29_cuda12-archive.zip
+        # cudnn-windows-x86_64-8.9.7.29_cuda12-archive.zip (cudnn-windows-x86_64-8.9.7.29_cuda12-archive/LICENSE)
         _License(
             package_name="cuDNN",
-            package_version="8.9.2",
+            package_version="8.9.7",
             license_name=None,
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",

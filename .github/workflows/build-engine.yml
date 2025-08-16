@@ -30,8 +30,10 @@ on:
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.24.1"
-  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.15.9" # このバージョンのダウンローダーは不要であるシステム辞書まで取ってきてしまうが、0.16ではオプトアウトできる。またリトライ機構も0.16.1あたりで入る予定
-  VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.1.1"
+  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.1"
+  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
+  VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.2.0"
+  VOICEVOX_VVM_VERSION: "0.16.0"
 
 defaults:
   run:
@@ -130,7 +132,7 @@ jobs:
           sudo apt-get install -y patchelf
 
       - name: <Setup> Create download directory
-        run: mkdir -p download/
+        run: mkdir -p download/core
 
       # zlib
       - name: <Setup> Export zlib url to calc hash
@@ -225,7 +227,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: models-cache-restore
         with:
-          key: models-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-core${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
+          key: models-${{ env.VOICEVOX_VVM_VERSION }}
           path: download/core/models
 
       - name: <Setup> Download Downloader
@@ -261,30 +263,16 @@ jobs:
 
           echo "downloader-path=$downloader_path" >> "$GITHUB_OUTPUT"
 
-      # NOTE: ダウンローダー0.15はvoicevox_core.dll、ONNX Runtime、モデル等をまとめてしかダウンロードできないが、0.16になると個別にダウンロードできる
-      # TODO: ダウンローダーを0.16にしたら、個別ダウンロードにし、download/core/下に直接配置する
-      - name: <Setup> Run Downloader
-        if: |
-          steps.voicevox-core-cache-restore.outputs.cache-hit != 'true' ||
-            steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' ||
-            steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' ||
-            steps.models-cache-restore.outputs.cache-hit != 'true'
-        run: |
-          ${{ steps.download-downloader.outputs.downloader-path }} \
-            -o ./download_ \
-            --cpu-arch ${{ matrix.architecture }} \
-            --device ${{ matrix.onnxruntime_device }} \
-            -v "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
-            --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: <Setup> Move CORE
+      - name: <Setup> Download CORE
         if: steps.voicevox-core-cache-restore.outputs.cache-hit != 'true'
         run: |
-          dst=download/core/c_api
-          mkdir -p $dst
-          mv -v download_/*voicevox_core* $dst/
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only c-api \
+            --c-api-version "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save CORE cache
         uses: actions/cache/save@v4
@@ -292,12 +280,19 @@ jobs:
           key: ${{ steps.voicevox-core-cache-restore.outputs.cache-primary-key }}
           path: download/core/c_api
 
-      - name: <Setup> Move ONNX Runtime
+      - name: <Setup> Download ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true'
         run: |
-          dst=download/core/onnxruntime/lib
-          mkdir -p $dst
-          mv -v download_/*onnxruntime* $dst/
+          # NOTE: `"y"`を流し込んで利用規約に同意している
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only onnxruntime \
+            --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
+            --devices ${{ matrix.onnxruntime_device }} \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core \
+            <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Rename ONNX Runtime
         if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && (runner.os == 'macOS' || runner.os == 'Linux')
@@ -306,12 +301,12 @@ jobs:
           case "$RUNNER_OS" in
             macOS)
               mv -v \
-                "$(find $lib_dir -name 'libonnxruntime.[1-9]*.dylib')" \
-                $lib_dir/libonnxruntime.dylib ;;
+                "$(find $lib_dir -name 'libvoicevox_onnxruntime.[1-9]*.dylib')" \
+                $lib_dir/libvoicevox_onnxruntime.dylib ;;
             Linux)
               mv -v \
-                "$(find $lib_dir -name 'libonnxruntime.so.[1-9]*')" \
-                $lib_dir/libonnxruntime.so ;;
+                "$(find $lib_dir -name 'libvoicevox_onnxruntime.so.[1-9]*')" \
+                $lib_dir/libvoicevox_onnxruntime.so ;;
           esac
 
       - name: <Setup> Save ONNX Runtime cache
@@ -320,29 +315,19 @@ jobs:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/core/onnxruntime
 
-      - name: <Setup> Move CUDA
+      - name: <Setup> Download additional libraries
         if: |
           steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' &&
-            matrix.onnxruntime_device == 'cuda'
+            matrix.onnxruntime_device != 'cpu'
         run: |
-          dst=download/core/additional_libraries
-          mkdir -p $dst
-          case "$RUNNER_OS" in
-            Windows) mv -v download_/cu*.dll $dst/ ;;
-            Linux) mv -v download_/libcu*.so.* $dst/ ;;
-            *)
-              echo 'unexpected runner' >&2
-              exit 1
-          esac
-
-      - name: <Setup> Move DirectML
-        if: |
-          steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' &&
-            matrix.onnxruntime_device == 'directml'
-        run: |
-          dst=download/core/additional_libraries
-          mkdir -p $dst
-          mv -v download_/DirectML.dll $dst/
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only additional-libraries \
+            --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION" \
+            --devices ${{ matrix.onnxruntime_device }} \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save additional libraries cache
         if: matrix.onnxruntime_device != 'cpu'
@@ -351,12 +336,17 @@ jobs:
           key: ${{ steps.additional-libraries-cache-restore.outputs.cache-primary-key }}
           path: download/core/additional_libraries
 
-      - name: <Setup> Move models
+      - name: <Setup> Download models
         if: steps.models-cache-restore.outputs.cache-hit != 'true'
         run: |
-          dst=download/core/models
-          [ ! -e $dst ]
-          mv -v download_/model $dst
+          # NOTE: `"y"`を流し込んで利用規約に同意している
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only models \
+            --models-version "$VOICEVOX_VVM_VERSION" \
+            -o download/core \
+            <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save models cache
         uses: actions/cache/save@v4
@@ -411,20 +401,20 @@ jobs:
           $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
 
           if [[ ${{ runner.os }} == Windows  ]]; then
-            LIBCORE_PATH=download/core/c_api/voicevox_core.dll
-            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/onnxruntime.dll
+            LIBCORE_PATH=download/core/c_api/lib/voicevox_core.dll
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/voicevox_onnxruntime.dll
           elif [[ ${{ runner.os }} == macOS ]]; then
-            LIBCORE_PATH=download/core/c_api/libvoicevox_core.dylib
-            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libonnxruntime.dylib
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.dylib
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.dylib
           else
-            LIBCORE_PATH=download/core/c_api/libvoicevox_core.so
-            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libonnxruntime.so
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.so
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
           fi
 
           uv run pyinstaller --noconfirm run.spec -- \
             --libcore_path="$LIBCORE_PATH" \
             --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
-            --core_model_dir_path="download/core/models"
+            --core_model_dir_path="download/core/models/vvms"
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
@@ -438,7 +428,7 @@ jobs:
           if ${{ matrix.onnxruntime_device == 'cuda' }}; then
 
             # ONNX Runtime providers
-            mv download/core/onnxruntime/lib/onnxruntime_*.dll dist/run/
+            mv download/core/onnxruntime/lib/voicevox_onnxruntime_*.dll dist/run/
 
             # zlib
             mv download/zlib/zlibwapi.dll dist/run/
@@ -452,8 +442,8 @@ jobs:
           # ONNX Runtime providers
           # NOTE: `$ORIGIN` は RPATH の特殊トークンであるため、bash 変数扱いされないために適切なエスケープが必要。
           # shellcheck disable=SC2016
-          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/core/onnxruntime/lib"/libonnxruntime_providers_*.so
-          mv download/core/onnxruntime/lib/libonnxruntime_*.so dist/run/
+          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/core/onnxruntime/lib"/libvoicevox_onnxruntime_providers_*.so
+          mv download/core/onnxruntime/lib/libvoicevox_onnxruntime_*.so dist/run/
 
           # CUDA, cuDNN
           mv download/core/additional_libraries/*.so* dist/run/

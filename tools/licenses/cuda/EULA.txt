@@ -2,7 +2,7 @@ End User License Agreement
 --------------------------
 
 NVIDIA Software License Agreement and CUDA Supplement to
-Software License Agreement. Last updated: October 8, 2021
+Software License Agreement.
 
 The CUDA Toolkit End User License Agreement applies to the
 NVIDIA CUDA Toolkit, the NVIDIA CUDA Samples, the NVIDIA
@@ -12,7 +12,7 @@ model and development tools. If you do not agree with the
 terms and conditions of the license agreement, then do not
 download or use the software.
 
-Last updated: October 8, 2021.
+Last updated: January 12, 2024.
 
 
 Preface
@@ -20,7 +20,7 @@ Preface
 
 The Software License Agreement in Chapter 1 and the Supplement
 in Chapter 2 contain license terms and conditions that govern
-the use of NVIDIA software. By accepting this agreement, you
+the use of NVIDIA toolkit. By accepting this agreement, you
 agree to comply with all the terms and conditions applicable
 to the product(s) included herein.
 
@@ -379,15 +379,15 @@ DEALING OR COURSE OF TRADE.
 1.5. Limitation of Liability
 
 TO THE MAXIMUM EXTENT PERMITTED BY LAW, NVIDIA AND ITS
-AFFILIATES SHALL NOT BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-PUNITIVE OR CONSEQUENTIAL DAMAGES, OR ANY LOST PROFITS, LOSS
-OF USE, LOSS OF DATA OR LOSS OF GOODWILL, OR THE COSTS OF
-PROCURING SUBSTITUTE PRODUCTS, ARISING OUT OF OR IN CONNECTION
-WITH THIS AGREEMENT OR THE USE OR PERFORMANCE OF THE SDK,
-WHETHER SUCH LIABILITY ARISES FROM ANY CLAIM BASED UPON BREACH
-OF CONTRACT, BREACH OF WARRANTY, TORT (INCLUDING NEGLIGENCE),
-PRODUCT LIABILITY OR ANY OTHER CAUSE OF ACTION OR THEORY OF
-LIABILITY. IN NO EVENT WILL NVIDIA’S AND ITS AFFILIATES
+AFFILIATES SHALL NOT BE LIABLE FOR ANY (I) SPECIAL, INCIDENTAL,
+PUNITIVE OR CONSEQUENTIAL DAMAGES, OR (II) DAMAGES FOR (A) ANY 
+LOST PROFITS, LOSS OF USE, LOSS OF DATA OR LOSS OF GOODWILL, 
+OR THE COSTS OF PROCURING SUBSTITUTE PRODUCTS, ARISING OUT OF 
+OR IN CONNECTION WITH THIS AGREEMENT OR THE USE OR PERFORMANCE 
+OF THE SDK, WHETHER SUCH LIABILITY ARISES FROM ANY CLAIM BASED 
+UPON BREACH OF CONTRACT, BREACH OF WARRANTY, TORT (INCLUDING 
+NEGLIGENCE), PRODUCT LIABILITY OR ANY OTHER CAUSE OF ACTION OR 
+THEORY OF LIABILITY. IN NO EVENT WILL NVIDIA’S AND ITS AFFILIATES
 TOTAL CUMULATIVE LIABILITY UNDER OR ARISING OUT OF THIS
 AGREEMENT EXCEED US$10.00. THE NATURE OF THE LIABILITY OR THE
 NUMBER OF CLAIMS OR SUITS SHALL NOT ENLARGE OR EXTEND THIS
@@ -453,9 +453,7 @@ requested information to verify your compliance with this
 Agreement.
 
 This Agreement will be governed in all respects by the laws of
-the United States and of the State of Delaware as those laws
-are applied to contracts entered into and performed entirely
-within Delaware by Delaware residents, without regard to the
+the United States and of the State of Delaware, without regard to the
 conflicts of laws principles. The United Nations Convention on
 Contracts for the International Sale of Goods is specifically
 disclaimed. You agree to all terms of this Agreement in the
@@ -500,9 +498,9 @@ U.S. Department of Treasury’s Office of Foreign Assets
 Control (OFAC), or any applicable export laws, restrictions or
 regulations. These laws include restrictions on destinations,
 end users and end use. By accepting this Agreement, you
-confirm that you are not a resident or citizen of any country
-currently embargoed by the U.S. and that you are not otherwise
-prohibited from receiving the SDK.
+confirm that you are not located in a country currently 
+embargoed by the U.S. or otherwise prohibited from receiving 
+the SDK under U.S. law.
 
 Any notice delivered by NVIDIA to you under this Agreement
 will be delivered via mail, email or fax. You agree that any
@@ -587,7 +585,7 @@ nvidia-compute-license-questions@nvidia.com.
 2.6. Attachment A
 
 The following CUDA Toolkit files may be distributed with
-Licensee Applications developed by you, including certain
+applications developed by you, including certain
 variations of these files that have version number or
 architecture specific information embedded in the file name -
 as an example only, for release version 9.0 of the 64-bit
@@ -822,7 +820,7 @@ libnvrtc.dylib, libnvrtc-builtins.dylib
 
 Linux
 
-libnvrtc.so, libnvrtc-builtins.so
+libnvrtc.so, libnvrtc-builtins.so, libnvrtc_static.a, libnvrtx-builtins_static.a
 
 Component
 
@@ -839,6 +837,18 @@ libnvvm.dylib
 Linux
 
 libnvvm.so
+
+Component
+
+NVIDIA JIT Linking Library
+
+Windows
+
+libnvJitLink.dll, libnvJitLink.lib
+
+Linux
+
+libnvJitLink.so, libnvJitLink_static.a
 
 Component
 
@@ -910,7 +920,7 @@ NVIDIA CUDA Driver Libraries
 
 Linux
 
-libcuda.so, libnvidia-ptxjitcompiler.so
+libcuda.so, libnvidia-ptxjitcompiler.so, libnvptxcompiler_static.a
 
 Component
 
@@ -924,17 +934,6 @@ Linux
 
 libcufile.so, libcufile_rdma.so, libcufile_static.a,
 libcufile_rdma_static.a
-
-The NVIDIA CUDA Driver Libraries are only distributable in
-applications that meet this criteria:
-
-  1. The application was developed starting from a NVIDIA CUDA
-    container obtained from Docker Hub or the NVIDIA GPU
-    Cloud, and
-
-  2. The resulting application is packaged as a Docker
-    container and distributed to users on Docker Hub or the
-    NVIDIA GPU Cloud only.
 
 In addition to the rights above, for parties that are
 developing software intended solely for use on Jetson
@@ -1593,6 +1592,41 @@ conditions:
     Apache License Version 2.0.
 
   21. The DX12-CUDA sample uses the d3dx12.h header, which is
-    subject to the MIT license .
+    subject to the MIT license.
+
+  22. Components of the driver and compiler used for binary management, including 
+    nvFatBin, nvcc, and cuobjdump, use the Zstandard library which is subject to
+	the following license:
+
+    BSD License
+
+    For Zstandard software
+
+    Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification,
+ 	are permitted provided that the following conditions are met:
+
+        * Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+
+        * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+        * Neither the name Facebook, nor Meta, nor the names of its contributors may
+      be used to endorse or promote products derived from this software without
+      specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+    OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+    OF SUCH DAMAGE.
 
 -----------------
