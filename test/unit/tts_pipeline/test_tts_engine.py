@@ -9,7 +9,7 @@ from syrupy.assertion import SnapshotAssertion
 from test.unit.tts_pipeline.tts_utils import gen_mora, sec
 from test.utility import pydantic_to_native_type, round_floats, summarize_big_ndarray
 from voicevox_engine.dev.core.mock import MockCoreWrapper
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.metas import StyleId
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.tts_pipeline.model import (
     AccentPhrase,

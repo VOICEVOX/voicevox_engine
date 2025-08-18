@@ -9,7 +9,7 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import TypeAdapter
 
-from ..metas.Metas import StyleId
+from ..metas.metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
 
 CoreStyleId = NewType("CoreStyleId", int)

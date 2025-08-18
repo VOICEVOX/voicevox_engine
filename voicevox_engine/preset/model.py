@@ -7,7 +7,7 @@
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.metas import StyleId
 
 
 class Preset(BaseModel):
