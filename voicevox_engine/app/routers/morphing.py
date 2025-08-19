@@ -10,8 +10,8 @@ from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
-from voicevox_engine.metas.Metas import StyleId
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.metas import StyleId
+from voicevox_engine.metas.metas_store import MetasStore
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.morphing.model import MorphableTargetInfo
 from voicevox_engine.morphing.morphing import (

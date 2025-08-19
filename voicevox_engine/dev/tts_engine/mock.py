@@ -7,7 +7,7 @@ import numpy as np
 from numpy.typing import NDArray
 from pyopenjtalk import tts
 
-from ...metas.Metas import StyleId
+from ...metas.metas import StyleId
 from ...model import AudioQuery
 from ...tts_pipeline.audio_postprocessing import raw_wave_to_output_wave
 from ...tts_pipeline.tts_engine import (

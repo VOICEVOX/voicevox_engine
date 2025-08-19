@@ -8,7 +8,7 @@ from typing import Final, Literal, TypeAlias, assert_never
 from pydantic import BaseModel, Field
 
 from voicevox_engine.core.core_adapter import CoreCharacter, CoreCharacterStyle
-from voicevox_engine.metas.Metas import (
+from voicevox_engine.metas.metas import (
     SpeakerInfo,
     SpeakerStyle,
     SpeakerSupportedFeatures,

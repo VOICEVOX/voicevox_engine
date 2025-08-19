@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
-from ..metas.Metas import StyleId
+from ..metas.metas import StyleId
 from ..model import AudioQuery
 from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
