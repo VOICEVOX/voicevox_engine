@@ -14,6 +14,7 @@ from voicevox_engine.app.openapi_schema import (
 )
 from voicevox_engine.app.routers.character import generate_character_router
 from voicevox_engine.app.routers.engine_info import generate_engine_info_router
+from voicevox_engine.app.routers.guide import generate_guide_router
 from voicevox_engine.app.routers.library import generate_library_router
 from voicevox_engine.app.routers.morphing import generate_morphing_router
 from voicevox_engine.app.routers.portal_page import generate_portal_page_router
@@ -91,6 +92,7 @@ def generate_app(
             tts_engines, song_engines, preset_manager, cancellable_engine
         )
     )
+    app.include_router(generate_guide_router())
     app.include_router(generate_morphing_router(tts_engines, metas_store))
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)

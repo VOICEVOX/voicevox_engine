@@ -880,6 +880,18 @@ wheels = [
 ]
 
 [[package]]
+name = "snfa"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/dc/14/e0c20f1b2e78fa9ffcb357f802e795fc9a43bd4ef291e33461b4785b04cb/snfa-0.2.0.tar.gz", hash = "sha256:2be48956b50737381666640bd52750189867f17cb325f3d334f6f95bb6bb9b3b", size = 1167947, upload-time = "2025-07-22T17:43:41.775Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/22/448ed4ba8b585116f01fac0b1257493f578ea27fcccdf22b337d45b03570/snfa-0.2.0-py3-none-any.whl", hash = "sha256:16dec139c58ecd31e04edec7cc9d700e1d38fc2d04bc575068f4e8b7bbfa2a9d", size = 1164485, upload-time = "2025-07-22T17:43:38.917Z" },
+]
+
+[[package]]
 name = "sniffio"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1101,6 +1113,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "semver" },
     { name = "setuptools" },
+    { name = "snfa" },
     { name = "soundfile" },
     { name = "soxr" },
     { name = "starlette" },
@@ -1139,6 +1152,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.1" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools", specifier = ">=78.1.0" },
+    { name = "snfa", specifier = ">=0.2.0" },
     { name = "soundfile", specifier = ">=0.13.1" },
     { name = "soxr", specifier = ">=0.5.0" },
     { name = "starlette", specifier = ">=0.45.3" },
@@ -1146,7 +1160,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-build = [{ name = "pyinstaller", specifier = ">=6.0.0" }]
+build = [{ name = "pyinstaller", specifier = ">=6" }]
 dev = [
     { name = "coveralls", specifier = ">=4.0.1" },
     { name = "httpx", specifier = ">=0.28.1" },
