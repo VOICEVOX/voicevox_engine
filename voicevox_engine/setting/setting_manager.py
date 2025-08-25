@@ -27,9 +27,14 @@ USER_SETTING_PATH: Path = get_save_dir() / "setting.yml"
 
 
 class SettingHandler:
+    """設定ファイルの読み書きを管理する。"""
+
+    # FIXME: クラス名を機能に合わせたものへリネームする（例: `SettingManager`）
+
     def __init__(self, setting_file_path: Path) -> None:
         """
         設定ファイルの管理
+
         Parameters
         ----------
         setting_file_path : Path

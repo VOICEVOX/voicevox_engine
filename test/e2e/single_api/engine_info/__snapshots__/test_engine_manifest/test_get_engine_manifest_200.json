@@ -1,5 +1,5 @@
 {
-  "brand_name": "DUMMY",
+  "brand_name": "VOICEVOX OSS",
   "default_sampling_rate": 24000,
   "dependency_licenses": [
     {
@@ -12,7 +12,7 @@
   "frame_rate": 93.75,
   "icon": "MD5:f957eb4f5daedccb4eb6a5170f384bf4",
   "manifest_version": "0.13.1",
-  "name": "DUMMY Engine",
+  "name": "VOICEVOX ENGINE OSS",
   "supported_features": {
     "adjust_intonation_scale": true,
     "adjust_mora_pitch": true,
@@ -21,6 +21,7 @@
     "adjust_pitch_scale": true,
     "adjust_speed_scale": true,
     "adjust_volume_scale": true,
+    "apply_katakana_english": true,
     "interrogative_upspeak": true,
     "manage_library": true,
     "return_resource_url": true,
@@ -30,6 +31,40 @@
   "supported_vvlib_manifest_version": null,
   "terms_of_service": "dummy teams of service",
   "update_infos": [
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「ユーレイちゃん」「東北ずん子」「東北きりたん」「東北イタコ」を追加",
+        "キャラクター「猫使アル」「猫使ビィ」「離途」「黒沢冴白」のスタイルを追加・更新"
+      ],
+      "version": "0.24.1"
+    },
+    {
+      "contributors": [
+        "aoirint",
+        "Hiroshiba",
+        "nanae772",
+        "qryxip",
+        "raa0121",
+        "sabonerune",
+        "sevenc-nanashi",
+        "tarepan"
+      ],
+      "descriptions": [
+        "OpenAPIの関数名をわかりやすく変更",
+        "DockerfileでPython実行環境を作成しない形に変更",
+        "Docker Hub上のlatestタグを安定最新版に変更",
+        "辞書に登録されていない英単語の自然なカタカナ読みを可能に"
+      ],
+      "version": "0.24.0"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「離途」「黒沢冴白」を追加"
+      ],
+      "version": "0.23.1"
+    },
     {
       "contributors": [
         "aoirint",

@@ -1,6 +1,4 @@
-"""
-/setting API のテスト
-"""
+"""/setting API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -19,3 +17,11 @@ def test_post_setting_204(client: TestClient, snapshot: SnapshotAssertion) -> No
     )
     assert response.status_code == 204
     assert snapshot == response.content
+
+
+def test_post_setting_422(client: TestClient, snapshot_json: SnapshotAssertion) -> None:
+    response = client.post(
+        "/setting", data={"cors_policy_mode": "wrong", "allow_origin": "wrong"}
+    )
+    assert response.status_code == 422
+    assert snapshot_json == response.json()

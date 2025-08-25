@@ -2,7 +2,7 @@
   "components": {
     "schemas": {
       "AccentPhrase": {
-        "description": "アクセント句ごとの情報",
+        "description": "アクセント句ごとの情報。",
         "properties": {
           "accent": {
             "description": "アクセント箇所",
@@ -25,7 +25,7 @@
           },
           "pause_mora": {
             "$ref": "#/components/schemas/Mora",
-            "description": "後ろに無音を付けるかどうか",
+            "description": "アクセント句の末尾につく無音モーラ。null の場合は無音モーラを付けない。",
             "title": "Pause Mora"
           }
         },
@@ -37,7 +37,7 @@
         "type": "object"
       },
       "AudioQuery": {
-        "description": "音声合成用のクエリ",
+        "description": "音声合成用のクエリ。",
         "properties": {
           "accent_phrases": {
             "description": "アクセント句のリスト",
@@ -126,7 +126,7 @@
         "type": "object"
       },
       "BaseLibraryInfo": {
-        "description": "音声ライブラリの情報",
+        "description": "音声ライブラリの情報。",
         "properties": {
           "bytes": {
             "description": "音声ライブラリのバイト数",
@@ -222,7 +222,7 @@
         "type": "object"
       },
       "CorsPolicyMode": {
-        "description": "CORSの許可モード",
+        "description": "CORSの許可モード。",
         "enum": [
           "all",
           "localapps"
@@ -231,7 +231,7 @@
         "type": "string"
       },
       "DownloadableLibraryInfo": {
-        "description": "ダウンロード可能な音声ライブラリの情報",
+        "description": "ダウンロード可能な音声ライブラリの情報。",
         "properties": {
           "bytes": {
             "description": "音声ライブラリのバイト数",
@@ -279,7 +279,7 @@
         "type": "object"
       },
       "EngineManifest": {
-        "description": "エンジン自体に関する情報",
+        "description": "エンジン自体に関する情報。",
         "properties": {
           "brand_name": {
             "description": "ブランド名",
@@ -370,7 +370,7 @@
         "type": "object"
       },
       "FrameAudioQuery": {
-        "description": "フレームごとの音声合成用のクエリ",
+        "description": "フレームごとの音声合成用のクエリ。",
         "properties": {
           "f0": {
             "description": "フレームごとの基本周波数",
@@ -424,7 +424,7 @@
         "type": "object"
       },
       "FramePhoneme": {
-        "description": "音素の情報",
+        "description": "音素の情報。",
         "properties": {
           "frame_length": {
             "description": "音素のフレーム長",
@@ -470,7 +470,7 @@
         "type": "object"
       },
       "InstalledLibraryInfo": {
-        "description": "インストール済み音声ライブラリの情報",
+        "description": "インストール済み音声ライブラリの情報。",
         "properties": {
           "bytes": {
             "description": "音声ライブラリのバイト数",
@@ -524,7 +524,7 @@
         "type": "object"
       },
       "LibrarySpeaker": {
-        "description": "音声ライブラリに含まれるキャラクターの情報",
+        "description": "音声ライブラリに含まれるキャラクターの情報。",
         "properties": {
           "speaker": {
             "$ref": "#/components/schemas/Speaker"
@@ -541,7 +541,7 @@
         "type": "object"
       },
       "LicenseInfo": {
-        "description": "依存ライブラリのライセンス情報",
+        "description": "依存ライブラリのライセンス情報。",
         "properties": {
           "license": {
             "description": "依存ライブラリのライセンス名",
@@ -572,7 +572,7 @@
         "type": "object"
       },
       "Mora": {
-        "description": "モーラ（子音＋母音）ごとの情報",
+        "description": "モーラ（子音＋母音）ごとの情報。",
         "properties": {
           "consonant": {
             "description": "子音の音素",
@@ -580,7 +580,7 @@
             "type": "string"
           },
           "consonant_length": {
-            "description": "子音の音長",
+            "description": "子音の長さ",
             "title": "Consonant Length",
             "type": "number"
           },
@@ -600,7 +600,7 @@
             "type": "string"
           },
           "vowel_length": {
-            "description": "母音の音長",
+            "description": "母音の長さ",
             "title": "Vowel Length",
             "type": "number"
           }
@@ -615,6 +615,7 @@
         "type": "object"
       },
       "MorphableTargetInfo": {
+        "description": "モーフィング相手としての情報。",
         "properties": {
           "is_morphable": {
             "description": "指定したキャラクターに対してモーフィングの可否",
@@ -629,7 +630,7 @@
         "type": "object"
       },
       "Note": {
-        "description": "音符ごとの情報",
+        "description": "音符ごとの情報。",
         "properties": {
           "frame_length": {
             "description": "音符のフレーム長",
@@ -667,6 +668,7 @@
         "type": "object"
       },
       "ParseKanaBadRequest": {
+        "description": "読み仮名のパースに失敗した。",
         "properties": {
           "error_args": {
             "additionalProperties": {
@@ -696,7 +698,7 @@
         "type": "object"
       },
       "Preset": {
-        "description": "プリセット情報",
+        "description": "プリセット情報。",
         "properties": {
           "id": {
             "description": "プリセットID",
@@ -776,7 +778,7 @@
         "type": "object"
       },
       "Score": {
-        "description": "楽譜情報",
+        "description": "楽譜情報。",
         "properties": {
           "notes": {
             "description": "音符のリスト",
@@ -950,7 +952,7 @@
         "type": "object"
       },
       "SupportedDevicesInfo": {
-        "description": "対応しているデバイスの情報",
+        "description": "対応しているデバイスの情報。",
         "properties": {
           "cpu": {
             "description": "CPUに対応しているか",
@@ -977,7 +979,7 @@
         "type": "object"
       },
       "SupportedFeatures": {
-        "description": "エンジンが持つ機能の一覧",
+        "description": "エンジンが持つ機能の一覧。",
         "properties": {
           "adjust_intonation_scale": {
             "description": "全体の抑揚の調整",
@@ -1012,6 +1014,11 @@
           "adjust_volume_scale": {
             "description": "全体の音量の調整",
             "title": "Adjust Volume Scale",
+            "type": "boolean"
+          },
+          "apply_katakana_english": {
+            "description": "未知の英単語をカタカナ読みに変換",
+            "title": "Apply Katakana English",
             "type": "boolean"
           },
           "interrogative_upspeak": {
@@ -1054,7 +1061,7 @@
         "type": "object"
       },
       "UpdateInfo": {
-        "description": "エンジンのアップデート情報",
+        "description": "エンジンのアップデート情報。",
         "properties": {
           "contributors": {
             "description": "貢献者名",
@@ -1086,7 +1093,7 @@
         "type": "object"
       },
       "UserDictWord": {
-        "description": "辞書のコンパイルに使われる情報",
+        "description": "辞書のコンパイルに使われる情報。",
         "properties": {
           "accent_associative_rule": {
             "description": "アクセント結合規則",
@@ -1219,7 +1226,7 @@
         "type": "object"
       },
       "VvlibManifest": {
-        "description": "vvlib(VOICEVOX Library)に関する情報",
+        "description": "vvlib(VOICEVOX Library)に関する情報。",
         "properties": {
           "brand_name": {
             "description": "エンジンのブランド名",
@@ -1284,8 +1291,8 @@
     }
   },
   "info": {
-    "description": "DUMMY の音声合成エンジンです。",
-    "title": "DUMMY Engine",
+    "description": "VOICEVOX OSS の音声合成エンジンです。",
+    "title": "VOICEVOX ENGINE OSS",
     "version": "latest"
   },
   "openapi": "3.1.0",
@@ -1314,7 +1321,7 @@
     },
     "/accent_phrases": {
       "post": {
-        "description": "テキストからアクセント句を得ます。\nis_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。\n* 全てのカナはカタカナで記述される\n* アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。\n* カナの手前に`_`を入れるとそのカナは無声化される\n* アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。\n* アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。",
+        "description": "テキストからアクセント句を得ます。\n\nis_kanaが`true`のとき、テキストは次のAquesTalk 風記法で解釈されます。デフォルトは`false`です。\n* 全てのカナはカタカナで記述される\n* アクセント句は`/`または`、`で区切る。`、`で区切った場合に限り無音区間が挿入される。\n* カナの手前に`_`を入れるとそのカナは無声化される\n* アクセント位置を`'`で指定する。全てのアクセント句にはアクセント位置を1つ指定する必要がある。\n* アクセント句末に`？`(全角)を入れることにより疑問文の発音ができる。\nenable_katakana_englishが`true`のとき、テキスト中の読みが不明な英単語をカタカナ読みにします。デフォルトは`true`です。\nis_kanaが`true`のとき、enable_katakana_englishの値は無視されます。",
         "operationId": "accent_phrases",
         "parameters": [
           {
@@ -1342,6 +1349,16 @@
             "schema": {
               "default": false,
               "title": "Is Kana",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "enable_katakana_english",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Katakana English",
               "type": "boolean"
             }
           },
@@ -1399,7 +1416,7 @@
     },
     "/add_preset": {
       "post": {
-        "description": "新しいプリセットを追加します",
+        "description": "新しいプリセットを追加します。",
         "operationId": "add_preset",
         "requestBody": {
           "content": {
@@ -1466,6 +1483,16 @@
           },
           {
             "in": "query",
+            "name": "enable_katakana_english",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Katakana English",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
             "name": "core_version",
             "required": false,
             "schema": {
@@ -1527,6 +1554,16 @@
           },
           {
             "in": "query",
+            "name": "enable_katakana_english",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Katakana English",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
             "name": "core_version",
             "required": false,
             "schema": {
@@ -1574,6 +1611,16 @@
             "schema": {
               "title": "Speaker",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
             }
           },
           {
@@ -1700,7 +1747,7 @@
     },
     "/delete_preset": {
       "post": {
-        "description": "既存のプリセットを削除します",
+        "description": "既存のプリセットを削除します。",
         "operationId": "delete_preset",
         "parameters": [
           {
@@ -1902,7 +1949,7 @@
     },
     "/initialize_speaker": {
       "post": {
-        "description": "指定されたスタイルを初期化します。\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
+        "description": "指定されたスタイルを初期化します。\n\n実行しなくても他のAPIは使用できますが、初回実行時に時間がかかることがあります。",
         "operationId": "initialize_speaker",
         "parameters": [
           {
@@ -1959,7 +2006,7 @@
     },
     "/install_library/{library_uuid}": {
       "post": {
-        "description": "音声ライブラリをインストールします。\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。",
+        "description": "音声ライブラリをインストールします。\n\n音声ライブラリのZIPファイルをリクエストボディとして送信してください。",
         "operationId": "install_library",
         "parameters": [
           {
@@ -2137,7 +2184,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "アクセント句から音高・音素長を得る",
+        "summary": "アクセント句から音素の長さと音高を得る",
         "tags": [
           "クエリ編集"
         ]
@@ -2206,7 +2253,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "アクセント句から音素長を得る",
+        "summary": "アクセント句から音素の長さを得る",
         "tags": [
           "クエリ編集"
         ]
@@ -2283,7 +2330,7 @@
     },
     "/morphable_targets": {
       "post": {
-        "description": "指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
+        "description": "指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。\n\nモーフィングの許可/禁止は`/speakers`の`speaker.supported_features.synthesis_morphing`に記載されています。\nプロパティが存在しない場合は、モーフィングが許可されているとみなします。\n返り値のスタイルIDはstring型なので注意。",
         "operationId": "morphable_targets",
         "parameters": [
           {
@@ -2359,6 +2406,18 @@
             }
           },
           {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
             "in": "query",
             "name": "core_version",
             "required": false,
@@ -2413,7 +2472,7 @@
     },
     "/presets": {
       "get": {
-        "description": "エンジンが保持しているプリセットの設定を返します",
+        "description": "エンジンが保持しているプリセットの設定を返します。",
         "operationId": "get_presets",
         "responses": {
           "200": {
@@ -2679,7 +2738,7 @@
     },
     "/singer_info": {
       "get": {
-        "description": "UUID で指定された歌えるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
+        "description": "UUID で指定された歌えるキャラクターの情報を返します。\n\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "singer_info",
         "parameters": [
           {
@@ -2792,7 +2851,7 @@
     },
     "/speaker_info": {
       "get": {
-        "description": "UUID で指定された喋れるキャラクターの情報を返します。\n画像や音声はresource_formatで指定した形式で返されます。",
+        "description": "UUID で指定された喋れるキャラクターの情報を返します。\n\n画像や音声はresource_formatで指定した形式で返されます。",
         "operationId": "speaker_info",
         "parameters": [
           {
@@ -3022,7 +3081,7 @@
     },
     "/synthesis_morphing": {
       "post": {
-        "description": "指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。\nモーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。",
+        "description": "指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。\n\nモーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。",
         "operationId": "_synthesis_morphing",
         "parameters": [
           {
@@ -3052,6 +3111,18 @@
               "minimum": 0.0,
               "title": "Morph Rate",
               "type": "number"
+            }
+          },
+          {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
             }
           },
           {
@@ -3143,7 +3214,7 @@
     },
     "/update_preset": {
       "post": {
-        "description": "既存のプリセットを更新します",
+        "description": "既存のプリセットを更新します。",
         "operationId": "update_preset",
         "requestBody": {
           "content": {
@@ -3187,7 +3258,7 @@
     },
     "/user_dict": {
       "get": {
-        "description": "ユーザー辞書に登録されている単語の一覧を返します。\n単語の表層形(surface)は正規化済みの物を返します。",
+        "description": "ユーザー辞書に登録されている単語の一覧を返します。\n\n単語の表層形(surface)は正規化済みの物を返します。",
         "operationId": "get_user_dict_words",
         "responses": {
           "200": {
@@ -3434,7 +3505,7 @@
     },
     "/validate_kana": {
       "post": {
-        "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n従っていない場合はエラーが返ります。",
+        "description": "テキストがAquesTalk 風記法に従っているかどうかを判定します。\n\n従っていない場合はエラーが返ります。",
         "operationId": "validate_kana",
         "parameters": [
           {

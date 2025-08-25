@@ -2,22 +2,23 @@
 
 import numpy as np
 
+from test.unit.tts_pipeline.tts_utils import gen_mora, sec
 from voicevox_engine.model import AudioQuery
+from voicevox_engine.tts_pipeline.audio_postprocessing import (
+    _apply_output_sampling_rate,
+    _apply_output_stereo,
+    _apply_volume_scale,
+    raw_wave_to_output_wave,
+)
 from voicevox_engine.tts_pipeline.model import AccentPhrase
 from voicevox_engine.tts_pipeline.tts_engine import (
     _apply_intonation_scale,
-    _apply_output_sampling_rate,
-    _apply_output_stereo,
     _apply_pitch_scale,
     _apply_prepost_silence,
     _apply_speed_scale,
-    _apply_volume_scale,
     _count_frame_per_unit,
     _query_to_decoder_feature,
-    raw_wave_to_output_wave,
 )
-
-from .tts_utils import gen_mora, sec
 
 TRUE_NUM_PHONEME = 45
 
@@ -289,7 +290,7 @@ def test_raw_wave_to_output_wave_with_resample() -> None:
     """Test `raw_wave_to_output_wave` with resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputSamplingRate=48000, outputStereo=True)
-    raw_wave = np.random.rand(240).astype(np.float32)
+    raw_wave = np.random.default_rng().random(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects
@@ -305,7 +306,7 @@ def test_raw_wave_to_output_wave_without_resample() -> None:
     """Test `raw_wave_to_output_wave`  without resampling option."""
     # Inputs
     query = _gen_query(volumeScale=2, outputStereo=True)
-    raw_wave = np.random.rand(240).astype(np.float32)
+    raw_wave = np.random.default_rng().random(240).astype(np.float32)
     sr_raw_wave = 24000
 
     # Expects

@@ -23,27 +23,19 @@ jobs:
           script: |
             const latest_release = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
-              repo: context.repo.repo
+              repo: context.repo.repo,
             });
             const split_version = latest_release.data.tag_name.split('.');
             const dev_version = `${split_version[0]}.${parseInt(split_version[1]) + 1}.0-dev`;
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'build-engine-package.yml',
+              workflow_id: 'build-engine.yml',
               ref: 'master',
               inputs: {
                 version: dev_version,
-                prerelease: true
-              }
-            })
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'build-engine-container.yml',
-              ref: 'master',
-              inputs: {
-                version: dev_version
-              }
-            })
+                prerelease: true,
+                push_dockerhub: true,
+              },
+            });
             console.log(`Triggered workflow_dispatch for ${dev_version}`);

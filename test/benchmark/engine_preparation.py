@@ -2,7 +2,7 @@
 
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Literal, assert_never
 
 import httpx
 from fastapi.testclient import TestClient
@@ -13,6 +13,7 @@ from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.setting.setting_manager import SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import make_song_engines_from_cores
 from voicevox_engine.tts_pipeline.tts_engine import make_tts_engines_from_cores
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_dir
@@ -23,6 +24,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
         voicevox_dir=root_dir, use_gpu=False, enable_mock=False
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
+    song_engines = make_song_engines_from_cores(core_manager)
     setting_loader = SettingHandler(Path("./not_exist.yaml"))
     preset_manager = PresetManager(get_save_dir() / "presets.yaml")
     user_dict = UserDictionary()
@@ -36,6 +38,7 @@ def _generate_engine_fake_server(root_dir: Path) -> TestClient:
     )
     app = generate_app(
         tts_engines=tts_engines,
+        song_engines=song_engines,
         core_manager=core_manager,
         setting_loader=setting_loader,
         preset_manager=preset_manager,
@@ -55,10 +58,10 @@ def generate_client(
 ) -> TestClient | httpx.Client:
     """
     VOICEVOX ENGINE へアクセス可能なクライアントを生成する。
+
     `server=localhost` では http://localhost:50021 へのクライアントを生成する。
     `server=fake` ではネットワークを介さずレスポンスを返す疑似サーバーを生成する。
     """
-
     if server == "fake":
         if root_dir is None:
             warn_msg = "root_dirが未指定であるため、自動的に `VOICEVOX/vv-engine` を `root_dir` に設定します。"
@@ -68,4 +71,4 @@ def generate_client(
     elif server == "localhost":
         return httpx.Client(base_url="http://localhost:50021")
     else:
-        raise Exception(f"{server} はサポートされていないサーバータイプです")
+        assert_never(server)

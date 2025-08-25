@@ -9,7 +9,7 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import TypeAdapter
 
-from ..metas.Metas import StyleId
+from ..metas.metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
 
 CoreStyleId = NewType("CoreStyleId", int)
@@ -50,6 +50,7 @@ class DeviceSupport:
 class CoreAdapter:
     """
     コアのアダプター。
+
     ついでにコア内部で推論している処理をプロセスセーフにする。
     """
 
@@ -60,6 +61,7 @@ class CoreAdapter:
 
     @property
     def default_sampling_rate(self) -> int:
+        """デフォルトのサンプリングレート。"""
         return self.core.default_sampling_rate
 
     @property
@@ -92,7 +94,9 @@ class CoreAdapter:
     ) -> None:
         """
         指定したスタイルでの音声合成を初期化する。
+
         何度も実行可能。未実装の場合は何もしない。
+
         Parameters
         ----------
         style_id : StyleId
@@ -120,6 +124,7 @@ class CoreAdapter:
     def safe_yukarin_s_forward(
         self, phoneme_list_s: NDArray[np.int64], style_id: StyleId
     ) -> NDArray[np.float32]:
+        """音素列から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -148,6 +153,7 @@ class CoreAdapter:
         end_accent_phrase_list: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
+        """モーラごとの音素列とアクセント情報からモーラごとの音高を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -182,6 +188,7 @@ class CoreAdapter:
         f0: NDArray[np.float32],
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
+        """フレームごとの音素・音高とスタイル ID から波形を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
@@ -234,6 +241,7 @@ class CoreAdapter:
         note_duration: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.int64]:
+        """子音列・母音列・ノート長・スタイル ID から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -254,6 +262,7 @@ class CoreAdapter:
         note: NDArray[np.int64],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
+        """フレームごとの音素・ノートとスタイル ID からフレームごとの音高を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -274,6 +283,7 @@ class CoreAdapter:
         f0: NDArray[np.float32],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
+        """フレームごとの音素・ノート・音高とスタイル ID からフレームごとの音量を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
@@ -295,6 +305,7 @@ class CoreAdapter:
         volume: NDArray[np.float32],
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
+        """フレームごとの音素・音高・音量とスタイル ID から音声波形を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:

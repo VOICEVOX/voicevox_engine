@@ -26,11 +26,12 @@ from voicevox_engine.core.core_adapter import CoreCharacter
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.metas_store import MetasStore
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode
 from voicevox_engine.setting.setting_manager import SettingHandler
+from voicevox_engine.tts_pipeline.song_engine import SongEngineManager
 from voicevox_engine.tts_pipeline.tts_engine import TTSEngineManager
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.utility.path_utility import engine_root
@@ -39,6 +40,7 @@ from voicevox_engine.utility.runtime_utility import is_development
 
 def generate_app(
     tts_engines: TTSEngineManager,
+    song_engines: SongEngineManager,
     core_manager: CoreManager,
     setting_loader: SettingHandler,
     preset_manager: PresetManager,
@@ -85,7 +87,9 @@ def generate_app(
     )
 
     app.include_router(
-        generate_tts_pipeline_router(tts_engines, preset_manager, cancellable_engine)
+        generate_tts_pipeline_router(
+            tts_engines, song_engines, preset_manager, cancellable_engine
+        )
     )
     app.include_router(generate_morphing_router(tts_engines, metas_store))
     app.include_router(

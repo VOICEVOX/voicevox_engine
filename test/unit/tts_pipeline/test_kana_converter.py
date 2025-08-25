@@ -1,4 +1,8 @@
+"""AquesTalk 風記法パーサーの単体テスト。"""
+
 from unittest import TestCase
+
+import pytest
 
 from voicevox_engine.tts_pipeline import kana_converter
 from voicevox_engine.tts_pipeline.kana_converter import ParseKanaError, create_kana
@@ -541,11 +545,11 @@ def test_interrogative_accent_phrase_marks() -> None:
     )
 
 
-class TestParseKanaException(TestCase):
+class _TestParseKanaException(TestCase):
     def _assert_error_code(self, kana: str, code: ParseKanaErrorCode) -> None:
-        with self.assertRaises(ParseKanaError) as err:
+        with pytest.raises(ParseKanaError) as e:
             parse_kana(kana)
-        self.assertEqual(err.exception.errcode, code)
+        assert e.value.errcode == code
 
     def test_exceptions(self) -> None:
         self._assert_error_code("アクセント", ParseKanaErrorCode.ACCENT_NOTFOUND)
@@ -557,21 +561,19 @@ class TestParseKanaException(TestCase):
         self._assert_error_code("/ア'", ParseKanaErrorCode.EMPTY_PHRASE)
         self._assert_error_code("", ParseKanaErrorCode.EMPTY_PHRASE)
 
-        with self.assertRaises(ParseKanaError) as err:
+        with pytest.raises(ParseKanaError) as e:
             parse_kana("ヒト'ツメ/フタツメ")
-        self.assertEqual(err.exception.errcode, ParseKanaErrorCode.ACCENT_NOTFOUND)
-        self.assertEqual(err.exception.kwargs, {"text": "フタツメ"})
+        assert e.value.errcode == ParseKanaErrorCode.ACCENT_NOTFOUND
+        assert e.value.kwargs == {"text": "フタツメ"}
 
-        with self.assertRaises(ParseKanaError) as err:
+        with pytest.raises(ParseKanaError) as e:
             parse_kana("ア'/")
-        self.assertEqual(err.exception.errcode, ParseKanaErrorCode.EMPTY_PHRASE)
-        self.assertEqual(err.exception.kwargs, {"position": "2"})
+        assert e.value.errcode == ParseKanaErrorCode.EMPTY_PHRASE
+        assert e.value.kwargs == {"position": "2"}
 
-        with self.assertRaises(ParseKanaError) as err:
+        with pytest.raises(ParseKanaError) as e:
             kana_converter.parse_kana("ア？ア'")
-        self.assertEqual(
-            err.exception.errcode, ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
-        )
+        assert e.value.errcode == ParseKanaErrorCode.INTERROGATION_MARK_NOT_AT_END
 
 
 def test_create_kana_interrogative() -> None:

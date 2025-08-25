@@ -2,18 +2,16 @@
 
 import json
 import os
-import sys
+import warnings
 from pathlib import Path
 
-from ..utility.core_version_utility import get_latest_version
+from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from ..utility.path_utility import engine_root, get_save_dir
 from .core_adapter import CoreAdapter
 from .core_wrapper import CoreWrapper, load_runtime_lib
 
-MOCK_VER = "0.0.0"
 
-
-def get_half_logical_cores() -> int:
+def _get_half_logical_cores() -> int:
     logical_cores = os.cpu_count()
     if logical_cores is None:
         return 0
@@ -69,7 +67,7 @@ def initialize_cores(
     load_all_models: bool = False,
 ) -> CoreManager:
     """
-    音声ライブラリをロードしてコアを生成
+    音声ライブラリを読み込んでコアを生成する。
 
     Parameters
     ----------
@@ -91,12 +89,9 @@ def initialize_cores(
         起動時に全てのモデルを読み込むかどうか
     """
     if cpu_num_threads == 0 or cpu_num_threads is None:
-        print(
-            "Warning: cpu_num_threads is set to 0. "
-            + "Setting it to half of the logical cores.",
-            file=sys.stderr,
-        )
-        cpu_num_threads = get_half_logical_cores()
+        msg = "cpu_num_threads is set to 0. Setting it to half of the logical cores."
+        warnings.warn(msg, stacklevel=1)
+        cpu_num_threads = _get_half_logical_cores()
 
     root_dir = engine_root()
 
@@ -105,10 +100,10 @@ def initialize_cores(
     runtime_dirs += [voicevox_dir] if voicevox_dir else []
     runtime_dirs = runtime_dirs or [root_dir]
     runtime_dirs = [p.expanduser() for p in runtime_dirs]
-    # ランタイムをロードする
+    # ランタイムを読み込む
     load_runtime_lib(runtime_dirs)
 
-    # コアをロードし `core_manager` へ登録する
+    # コアを読み込み `core_manager` へ登録する
     core_manager = CoreManager()
 
     # 引数による指定を反映し、無ければ `root_dir` とする
@@ -121,7 +116,8 @@ def initialize_cores(
 
         def load_core_library(core_dir: Path, suppress_error: bool = False) -> None:
             """
-            指定されたコアをロードし `core_manager` へ登録する。
+            指定されたコアを読み込み `core_manager` へ登録する。
+
             Parameters
             ----------
             core_dir : Path
@@ -129,19 +125,16 @@ def initialize_cores(
             suppress_error: bool
                 エラーを抑制する。`core_dir` がコア候補であることを想定。
             """
-            # 指定されたコアをロードし登録する
+            # 指定されたコアを読み込み登録する
             try:
-                # コアをロードする
+                # コアを読み込む
                 core = CoreWrapper(use_gpu, core_dir, cpu_num_threads, load_all_models)
                 # コアを登録する
                 metas = json.loads(core.metas())
                 core_version: str = metas[0]["version"]
-                print(f"Info: Loading core {core_version}.")
                 if core_manager.has_core(core_version):
-                    print(
-                        "Warning: Core loading is skipped because of version duplication.",
-                        file=sys.stderr,
-                    )
+                    msg = "Core loading is skipped because of version duplication."
+                    warnings.warn(msg, stacklevel=1)
                 else:
                     core_manager.register_core(CoreAdapter(core), core_version)
             except Exception:
@@ -149,11 +142,11 @@ def initialize_cores(
                 if not suppress_error:
                     raise
 
-        # `voicelib_dirs` 下のコアをロードし登録する
+        # `voicelib_dirs` 下のコアを読み込み登録する
         for core_dir in voicelib_dirs:
             load_core_library(core_dir)
 
-        # ユーザーディレクトリ下のコアをロードし登録する
+        # ユーザーディレクトリ下のコアを読み込み登録する
         # コア候補を列挙する
         user_voicelib_dirs = []
         core_libraries_dir = get_save_dir() / "core_libraries"
@@ -163,7 +156,7 @@ def initialize_cores(
             if not path.is_dir():
                 continue
             user_voicelib_dirs.append(path)
-        # コア候補をロードし登録する。候補がコアで無かった場合のエラーを抑制する。
+        # コア候補を読み込み登録する。候補がコアで無かった場合のエラーを抑制する。
         for core_dir in user_voicelib_dirs:
             load_core_library(core_dir, suppress_error=True)
 
@@ -171,9 +164,8 @@ def initialize_cores(
         # モック追加
         from ..dev.core.mock import MockCoreWrapper
 
-        if not core_manager.has_core(MOCK_VER):
-            print("Info: Loading mock.")
+        if not core_manager.has_core(MOCK_CORE_VERSION):
             core = MockCoreWrapper()
-            core_manager.register_core(CoreAdapter(core), MOCK_VER)
+            core_manager.register_core(CoreAdapter(core), MOCK_CORE_VERSION)
 
     return core_manager

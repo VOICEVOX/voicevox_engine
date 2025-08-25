@@ -1,6 +1,4 @@
-"""
-/sing_frame_f0 API のテスト
-"""
+"""/sing_frame_f0 API のテスト。"""
 
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
@@ -376,6 +374,5 @@ def test_post_sing_frame_f0_200(
         params={"speaker": 0},
         json={"score": score, "frame_audio_query": frame_audio_query},
     )
-    print(response.text)
     assert response.status_code == 200
     assert snapshot_json == round_floats(response.json(), 2)

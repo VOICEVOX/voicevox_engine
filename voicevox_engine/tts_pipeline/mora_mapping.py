@@ -1,4 +1,6 @@
 """
+モーラと音素の対応関係。
+
 以下のモーラ対応表はOpenJTalkのソースコードから取得し、
 カタカナ表記とモーラが一対一対応するように改造した。
 ライセンス表記：
@@ -435,6 +437,6 @@ mora_phonemes_to_mora_kana: dict[str, _MoraKana] = {
 }
 # 「ヒ」→「hi」
 mora_kana_to_mora_phonemes: dict[_MoraKana, tuple[Consonant | None, BaseVowel]] = {
-    kana: (consonant, vowel)  # noqa B035 キー(kana)が一意であれば無視できる
+    kana: (consonant, vowel)
     for [kana, consonant, vowel] in _mora_list_minimum + _mora_list_additional
 }

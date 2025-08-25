@@ -1,6 +1,4 @@
-"""
-/connect_waves API のテスト
-"""
+"""/connect_waves API のテスト。"""
 
 import base64
 from pathlib import Path
@@ -26,3 +24,14 @@ def test_post_connect_waves_200(
     # 音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
     assert snapshot == hash_wave_floats_from_wav_bytes(response.read())
+
+
+def test_post_connect_waves_422(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    wavs: list[None] = []
+
+    response = client.post("/connect_waves", json=wavs)
+
+    assert response.status_code == 422
+    assert snapshot_json == response.json()

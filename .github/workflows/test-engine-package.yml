@@ -47,11 +47,11 @@ jobs:
             target: macos-x64
           - os: macos-14
             target: macos-arm64
-          - os: windows-2019
+          - os: windows-2022
             target: windows-cpu
-          - os: windows-2019
+          - os: windows-2022
             target: windows-nvidia
-          - os: windows-2019
+          - os: windows-2022
             target: windows-directml
 
     runs-on: ${{ matrix.os }}
@@ -69,13 +69,13 @@ jobs:
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
-          requirements-suffix: "-dev"
+          dependency-group: dev
 
       - name: <Setup> Download ENGINE package
         run: |
           mkdir -p download
-          curl -L --retry 3 --retry-delay 5 -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
-          <download/list.txt xargs -I '%' curl -L --retry 3 --retry-delay 5 -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
+          curl -fL --retry 3 --retry-delay 5 -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
+          <download/list.txt xargs -I '%' curl -fL --retry 3 --retry-delay 5 -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
           7z x "download/$(head -n1 download/list.txt)"
           mv "${{ matrix.target }}" dist/
 
@@ -84,4 +84,4 @@ jobs:
         run: chmod +x dist/run
 
       - name: <Test> Test ENGINE package
-        run: python tools/check_release_build.py --dist_dir dist/
+        run: uv run tools/check_release_build.py --dist_dir dist/

@@ -6,8 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
-from voicevox_engine.metas.MetasStore import Character, MetasStore, ResourceFormat
+from voicevox_engine.metas.metas import Speaker, SpeakerInfo
+from voicevox_engine.metas.metas_store import (
+    Character,
+    CharacterInfoNotFoundError,
+    CharacterNotFoundError,
+    MetasStore,
+    ResourceFormat,
+)
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
 RESOURCE_ENDPOINT = "_resources"
@@ -54,15 +60,21 @@ def generate_character_router(
     ) -> SpeakerInfo:
         """
         UUID で指定された喋れるキャラクターの情報を返します。
+
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        return metas_store.character_info(
-            character_uuid=speaker_uuid,
-            talk_or_sing="talk",
-            core_version=core_version,
-            resource_baseurl=resource_baseurl,
-            resource_format=resource_format,
-        )
+        try:
+            return metas_store.character_info(
+                character_uuid=speaker_uuid,
+                talk_or_sing="talk",
+                core_version=core_version,
+                resource_baseurl=resource_baseurl,
+                resource_format=resource_format,
+            )
+        except CharacterNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        except CharacterInfoNotFoundError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     @router.get("/singers")
     def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
@@ -79,26 +91,30 @@ def generate_character_router(
     ) -> SpeakerInfo:
         """
         UUID で指定された歌えるキャラクターの情報を返します。
+
         画像や音声はresource_formatで指定した形式で返されます。
         """
-        return metas_store.character_info(
-            character_uuid=speaker_uuid,
-            talk_or_sing="sing",
-            core_version=core_version,
-            resource_baseurl=resource_baseurl,
-            resource_format=resource_format,
-        )
+        try:
+            return metas_store.character_info(
+                character_uuid=speaker_uuid,
+                talk_or_sing="sing",
+                core_version=core_version,
+                resource_baseurl=resource_baseurl,
+                resource_format=resource_format,
+            )
+        except CharacterNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
+        except CharacterInfoNotFoundError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     # リソースはAPIとしてアクセスするものではないことを表明するためOpenAPIスキーマーから除外する
     @router.get(f"/{RESOURCE_ENDPOINT}/{{resource_hash}}", include_in_schema=False)
     async def resources(resource_hash: str) -> FileResponse:
-        """
-        ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す
-        """
+        """ResourceManagerから発行されたハッシュ値に対応するリソースファイルを返す。"""
         try:
             resource_path = resource_manager.resource_path(resource_hash)
-        except ResourceManagerError:
-            raise HTTPException(status_code=404)
+        except ResourceManagerError as e:
+            raise HTTPException(status_code=404) from e
         return FileResponse(
             resource_path,
             headers={"Cache-Control": "max-age=2592000"},  # 30日

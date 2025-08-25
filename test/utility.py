@@ -1,3 +1,5 @@
+"""全テスト共通のユーティリティ。"""
+
 import hashlib
 import io
 from typing import Any
@@ -8,17 +10,18 @@ from fastapi.encoders import jsonable_encoder
 
 
 def round_floats(value: Any, round_value: int) -> Any:
-    """floatの小数点以下を再帰的に丸める"""
-    if isinstance(value, float):
-        return round(value, round_value)
-    elif isinstance(value, np.ndarray) and np.issubdtype(value.dtype, np.floating):
-        return np.round(value, round_value)
-    elif isinstance(value, list):
-        return [round_floats(v, round_value) for v in value]
-    elif isinstance(value, dict):
-        return {k: round_floats(v, round_value) for k, v in value.items()}
-    else:
-        return value
+    """floatの小数点以下を再帰的に丸める。"""
+    match value:
+        case float():
+            return round(value, round_value)
+        case np.ndarray() if np.issubdtype(value.dtype, np.floating):
+            return np.round(value, round_value)
+        case list():
+            return [round_floats(v, round_value) for v in value]
+        case dict():
+            return {k: round_floats(v, round_value) for k, v in value.items()}
+        case _:
+            return value
 
 
 def pydantic_to_native_type(value: Any) -> Any:
@@ -27,38 +30,36 @@ def pydantic_to_native_type(value: Any) -> Any:
 
 
 def hash_long_string(value: Any) -> Any:
-    """文字数が1000文字を超えるものはハッシュ化する"""
-
-    def to_hash(value: str) -> str:
-        return "MD5:" + hashlib.md5(value.encode()).hexdigest()
-
-    if isinstance(value, str):
-        return value if len(value) <= 1000 else to_hash(value)
-    elif isinstance(value, list):
-        return [hash_long_string(v) for v in value]
-    elif isinstance(value, dict):
-        return {k: hash_long_string(v) for k, v in value.items()}
-    else:
-        return value
+    """文字数が1000文字を超えるものはハッシュ化する。"""
+    match value:
+        case str() if len(value) <= 1000:
+            return value
+        case str():
+            return "MD5:" + hashlib.md5(value.encode()).hexdigest()
+        case list():
+            return [hash_long_string(v) for v in value]
+        case dict():
+            return {k: hash_long_string(v) for k, v in value.items()}
+        case _:
+            return value
 
 
 def summarize_big_ndarray(value: Any) -> Any:
-    """要素数が100を超える NDArray を、ハッシュ値と shape からなる文字列へ要約する"""
-
-    def to_hash(value: np.ndarray) -> str:
-        return "MD5:" + hashlib.md5(value.tobytes()).hexdigest()
-
-    if isinstance(value, np.ndarray):
-        if value.size <= 100:
+    """要素数が100を超える NDArray を、ハッシュ値と shape からなる文字列へ要約する。"""
+    match value:
+        case np.ndarray() if value.size <= 100:
             return value
-        else:
-            return {"hash": to_hash(value), "shape": value.shape}
-    elif isinstance(value, list):
-        return [summarize_big_ndarray(v) for v in value]
-    elif isinstance(value, dict):
-        return {k: summarize_big_ndarray(v) for k, v in value.items()}
-    else:
-        return value
+        case np.ndarray():
+            return {
+                "hash": "MD5:" + hashlib.md5(value.tobytes()).hexdigest(),
+                "shape": value.shape,
+            }
+        case list():
+            return [summarize_big_ndarray(v) for v in value]
+        case dict():
+            return {k: summarize_big_ndarray(v) for k, v in value.items()}
+        case _:
+            return value
 
 
 def hash_wave_floats_from_wav_bytes(wav_bytes: bytes) -> str:

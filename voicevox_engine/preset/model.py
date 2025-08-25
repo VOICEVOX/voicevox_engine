@@ -7,13 +7,11 @@
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.metas import StyleId
 
 
 class Preset(BaseModel):
-    """
-    プリセット情報
-    """
+    """プリセット情報。"""
 
     id: int = Field(description="プリセットID")
     name: str = Field(description="プリセット名")

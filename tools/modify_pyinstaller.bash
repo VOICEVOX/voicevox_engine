@@ -8,7 +8,7 @@
 
 set -eux
 
-pyinstaller_version=$(pyinstaller -v)
+pyinstaller_version=$(uv run pyinstaller -v)
 tempdir=$(mktemp -dt modify_pyinstaller.XXXXXXXX)
 trap 'rm -rf "$tempdir"' EXIT
 git clone https://github.com/pyinstaller/pyinstaller.git "$tempdir" -b "v$pyinstaller_version" --depth 1
@@ -24,4 +24,4 @@ __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 #endif
 EOF
 (cd "$tempdir/bootloader" && python ./waf all --msvc_targets="x64")
-pip install -U "$tempdir"
+uv pip install -U "$tempdir" # TODO: 可能であればuv addでやる

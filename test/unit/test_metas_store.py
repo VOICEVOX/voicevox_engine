@@ -1,12 +1,15 @@
+"""キャラクターメタ情報の単体テスト。"""
+# TODO: モジュール/ファイル名とモジュール docstring の一貫性を検証
+
 import uuid
 
-from voicevox_engine.metas.Metas import (
+from voicevox_engine.metas.metas import (
     SpeakerStyle,
     SpeakerSupportedFeatures,
     StyleId,
     StyleType,
 )
-from voicevox_engine.metas.MetasStore import (
+from voicevox_engine.metas.metas_store import (
     _SING_STYLE_TYPES,
     _TALK_STYLE_TYPES,
     Character,

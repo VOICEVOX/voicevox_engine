@@ -1,0 +1,579 @@
+name: build
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "バージョン情報（A.BB.C / A.BB.C-preview.D）"
+        required: true
+      prerelease:
+        description: "プレリリースかどうか"
+        type: boolean
+        default: true
+      code_signing:
+        description: "コード署名する"
+        type: boolean
+        default: false
+      upload_artifact:
+        description: "デバッグ用に成果物をartifactにアップロードするか"
+        type: boolean
+        default: false
+      push_dockerhub:
+        description: "Docker Hubにプッシュする"
+        type: boolean
+        default: false
+
+env:
+  VOICEVOX_RESOURCE_VERSION: "0.24.1"
+  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.1"
+  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
+  VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.2.0"
+  VOICEVOX_VVM_VERSION: "0.16.0"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  config: # 全 jobs で利用する定数の定義. `env` が利用できないコンテキストでも利用できる.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vars.outputs.version }}
+      version_or_latest: ${{ steps.vars.outputs.version_or_latest }}
+    steps:
+      - name: <Setup> Declare variables
+        id: vars
+        run: |
+          : # release タグ名, または workflow_dispatch でのバージョン名. リリースでない (push event) 場合は空文字列
+          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          : # release タグ名, または workflow_dispatch でのバージョン名, または 'latest'
+          echo "version_or_latest=${{ github.event.release.tag_name || github.event.inputs.version || 'latest' }}" >> "$GITHUB_OUTPUT"
+
+  build-and-upload:
+    needs: [config]
+    environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
+    strategy:
+      matrix:
+        include:
+          # Windows CPU
+          - os: windows-2022
+            architecture: "x64"
+            onnxruntime_device: cpu
+            target: windows-cpu
+          # Windows DirectML
+          - os: windows-2022
+            architecture: "x64"
+            onnxruntime_device: directml
+            target: windows-directml
+          # Windows NVIDIA GPU
+          - os: windows-2022
+            architecture: "x64"
+            onnxruntime_device: cuda
+            zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
+            target: windows-nvidia
+          # Mac CPU (x64 arch)
+          - os: macos-13
+            architecture: "x64"
+            onnxruntime_device: cpu
+            target: macos-x64
+          # Mac CPU (arm64 arch)
+          - os: macos-14
+            architecture: "arm64"
+            onnxruntime_device: cpu
+            target: macos-arm64
+          # Linux CPU (x64 arch)
+          - os: ubuntu-22.04
+            architecture: "x64"
+            onnxruntime_device: cpu
+            target: linux-cpu-x64
+          # Linux CPU (arm64 arch)
+          - os: ubuntu-22.04-arm
+            architecture: "arm64"
+            onnxruntime_device: cpu
+            target: linux-cpu-arm64
+          # Linux NVIDIA GPU
+          - os: ubuntu-22.04
+            architecture: "x64"
+            onnxruntime_device: cuda
+            target: linux-nvidia
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      # GNUコマンド
+      sed: ${{ startsWith(matrix.os, 'macos-') && 'gsed' || 'sed' }}
+      split: ${{ startsWith(matrix.os, 'macos-') && 'gsplit' || 'split' }}
+
+    steps:
+      - name: <Setup> Declare variables
+        id: vars
+        run: echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
+
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      # NOTE: The default 'sed' and 'split' of macOS is BSD 'sed' and 'split'.
+      #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
+      #       so you need to install GNU 'sed' and 'split'.
+      - name: <Setup> Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gnu-sed coreutils
+
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      - name: <Setup> Install ONNX Runtime dependencies (Linux)
+        if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf
+
+      - name: <Setup> Create download directory
+        run: mkdir -p download/core
+
+      # zlib
+      - name: <Setup> Export zlib url to calc hash
+        if: matrix.zlib_url != ''
+        run: echo "${{ matrix.zlib_url }}" >> download/zlib_url.txt
+
+      - name: <Setup> Restore cached zlib
+        if: matrix.zlib_url != ''
+        uses: actions/cache/restore@v4
+        id: zlib-cache-restore
+        with:
+          key: zlib-cache-v1-${{ hashFiles('download/zlib_url.txt') }}
+          path: download/zlib
+
+      - name: <Setup> Download zlib dynamic Library
+        if: steps.zlib-cache-restore.outputs.cache-hit != 'true' && matrix.zlib_url != ''
+        run: |
+          curl -fL --retry 3 --retry-delay 5 "${{ matrix.zlib_url }}" -o download/zlib.zip
+          mkdir -p download/zlib
+
+          # extract only dlls
+          unzip download/zlib.zip dll_${{ matrix.architecture }}/zlibwapi.dll -d download/zlib
+          rm download/zlib.zip
+          mv download/zlib/dll_${{ matrix.architecture }}/zlibwapi.dll download/zlib/zlibwapi.dll
+          rm -r download/zlib/dll_${{ matrix.architecture }}
+
+      - name: <Setup> Save zlib cache
+        if: matrix.zlib_url != ''
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.zlib-cache-restore.outputs.cache-primary-key }}
+          path: download/zlib
+
+      - name: <Setup> Set up MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: <Setup> Prepare Python Runtime / Python Dependencies
+        uses: ./.github/actions/prepare_python
+        with:
+          dependency-group: build
+
+      - name: <Setup> Prepare custom PyInstaller
+        if: runner.os == 'Windows'
+        run: ./tools/modify_pyinstaller.bash
+
+      - name: <Setup> Download pyopenjtalk dictionary
+        run: |
+          # try 5 times, sleep 5 seconds before retry
+          for _ in $(seq 5); do
+            EXIT_CODE=0
+            uv run python -c "import pyopenjtalk; pyopenjtalk._lazy_init()" || EXIT_CODE=$?
+
+            if [ "$EXIT_CODE" = "0" ]; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            exit "$EXIT_CODE"
+          fi
+
+      # VOICEVOX CORE
+      - name: <Setup> Restore cached CORE
+        uses: actions/cache/restore@v4
+        id: voicevox-core-cache-restore
+        with:
+          key: voicevox-core-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-v${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
+          path: download/core/c_api
+
+      # ONNX Runtime
+      - name: <Setup> Restore cached ONNX Runtime
+        uses: actions/cache/restore@v4
+        id: onnxruntime-cache-restore
+        with:
+          key: onnxruntime-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-core${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
+          path: download/core/onnxruntime
+
+      # additional libraries
+      - name: <Setup> Restore cached additional libraries
+        if: matrix.onnxruntime_device != 'cpu'
+        uses: actions/cache/restore@v4
+        id: additional-libraries-cache-restore
+        with:
+          key: additional-libraries-${{ env.VOICEVOX_ADDITIONAL_LIBRARIES_VERSION }}-${{ matrix.onnxruntime_device }}-${{ matrix.architecture }}
+          path: download/core/additional_libraries
+
+      # models
+      - name: <Setup> Restore cached models
+        uses: actions/cache/restore@v4
+        id: models-cache-restore
+        with:
+          key: models-${{ env.VOICEVOX_VVM_VERSION }}
+          path: download/core/models
+
+      - name: <Setup> Download Downloader
+        if: |
+          steps.voicevox-core-cache-restore.outputs.cache-hit != 'true' ||
+            steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' ||
+            steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' ||
+            steps.models-cache-restore.outputs.cache-hit != 'true'
+        id: download-downloader
+        run: |
+          case "$RUNNER_OS,$RUNNER_ARCH" in
+            Windows,X64) downloader_name=download-windows-x64.exe ;;
+            macOS,X64) downloader_name=download-osx-x64 ;;
+            macOS,ARM64) downloader_name=download-osx-arm64 ;;
+            Linux,X64) downloader_name=download-linux-x64 ;;
+            Linux,ARM64) downloader_name=download-linux-arm64 ;;
+            *)
+              echo 'unexpected runner' >&2
+              exit 1
+          esac
+
+          curl -fLO --retry 3 --retry-delay 5 \
+            --output-dir "$RUNNER_TEMP" \
+            https://github.com/VOICEVOX/voicevox_core/releases/download/"$VOICEVOX_CORE_AND_DOWNLOADER_VERSION"/$downloader_name
+
+          downloader_path=$RUNNER_TEMP/$downloader_name
+
+          if [ "$RUNNER_OS" = 'Windows' ]; then
+            downloader_path=$(cygpath "$downloader_path")
+          else
+            chmod +x "$downloader_path"
+          fi
+
+          echo "downloader-path=$downloader_path" >> "$GITHUB_OUTPUT"
+
+      - name: <Setup> Download CORE
+        if: steps.voicevox-core-cache-restore.outputs.cache-hit != 'true'
+        run: |
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only c-api \
+            --c-api-version "$VOICEVOX_CORE_AND_DOWNLOADER_VERSION" \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Save CORE cache
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.voicevox-core-cache-restore.outputs.cache-primary-key }}
+          path: download/core/c_api
+
+      - name: <Setup> Download ONNX Runtime
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true'
+        run: |
+          # NOTE: `"y"`を流し込んで利用規約に同意している
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only onnxruntime \
+            --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
+            --devices ${{ matrix.onnxruntime_device }} \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core \
+            <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Rename ONNX Runtime
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && (runner.os == 'macOS' || runner.os == 'Linux')
+        run: |
+          lib_dir=download/core/onnxruntime/lib
+          case "$RUNNER_OS" in
+            macOS)
+              mv -v \
+                "$(find $lib_dir -name 'libvoicevox_onnxruntime.[1-9]*.dylib')" \
+                $lib_dir/libvoicevox_onnxruntime.dylib ;;
+            Linux)
+              mv -v \
+                "$(find $lib_dir -name 'libvoicevox_onnxruntime.so.[1-9]*')" \
+                $lib_dir/libvoicevox_onnxruntime.so ;;
+          esac
+
+      - name: <Setup> Save ONNX Runtime cache
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
+          path: download/core/onnxruntime
+
+      - name: <Setup> Download additional libraries
+        if: |
+          steps.additional-libraries-cache-restore.outputs.cache-hit != 'true' &&
+            matrix.onnxruntime_device != 'cpu'
+        run: |
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only additional-libraries \
+            --additional-libraries-version "$VOICEVOX_ADDITIONAL_LIBRARIES_VERSION" \
+            --devices ${{ matrix.onnxruntime_device }} \
+            --cpu-arch ${{ matrix.architecture }} \
+            -o download/core
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Save additional libraries cache
+        if: matrix.onnxruntime_device != 'cpu'
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.additional-libraries-cache-restore.outputs.cache-primary-key }}
+          path: download/core/additional_libraries
+
+      - name: <Setup> Download models
+        if: steps.models-cache-restore.outputs.cache-hit != 'true'
+        run: |
+          # NOTE: `"y"`を流し込んで利用規約に同意している
+          ${{ steps.download-downloader.outputs.downloader-path }} \
+            --only models \
+            --models-version "$VOICEVOX_VVM_VERSION" \
+            -o download/core \
+            <<< y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: <Setup> Save models cache
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.models-cache-restore.outputs.cache-primary-key }}
+          path: download/core/models
+
+      # VOICEVOX RESOURCE
+      - name: <Setup> Prepare RESOURCE cache
+        uses: actions/cache@v4
+        id: voicevox-resource-cache
+        with:
+          key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
+          path: download/resource
+
+      - name: <Setup> Check out RESOURCE repository
+        if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: VOICEVOX/voicevox_resource
+          ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
+          path: download/resource
+
+      - name: <Build> Merge RESOURCE
+        env:
+          DOWNLOAD_RESOURCE_PATH: download/resource
+        run: bash tools/process_voicevox_resource.bash
+
+      # Build
+      - name: <Build> Generate licenses.json
+        run: |
+          OUTPUT_LICENSE_JSON_PATH=resources/engine_manifest_assets/dependency_licenses.json \
+          bash tools/create_venv_and_generate_licenses.bash
+          # FIXME: VOICEVOX (editor) cannot build without licenses.json
+          cp resources/engine_manifest_assets/dependency_licenses.json licenses.json
+
+      - name: <Build> Generate filemap.json
+        run: uv run tools/generate_filemap.py --target_dir resources/character_info
+
+      - name: <Build> Build VOICEVOX ENGINE run.py
+        run: |
+          set -eux
+
+          jq '
+            .version = "${{ needs.config.outputs.version_or_latest }}" |
+            if ${{ runner.os == 'Windows' }} then .command += ".exe" else . end
+          ' engine_manifest.json > engine_manifest.json.tmp
+
+          mv -f engine_manifest.json.tmp engine_manifest.json
+
+          # Replace version & specify dynamic libraries
+          $sed -i "s/__version__ = \"latest\"/__version__ = \"${{ needs.config.outputs.version_or_latest }}\"/" voicevox_engine/__init__.py
+
+          if [[ ${{ runner.os }} == Windows  ]]; then
+            LIBCORE_PATH=download/core/c_api/lib/voicevox_core.dll
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/voicevox_onnxruntime.dll
+          elif [[ ${{ runner.os }} == macOS ]]; then
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.dylib
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.dylib
+          else
+            LIBCORE_PATH=download/core/c_api/lib/libvoicevox_core.so
+            LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
+          fi
+
+          uv run pyinstaller --noconfirm run.spec -- \
+            --libcore_path="$LIBCORE_PATH" \
+            --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
+            --core_model_dir_path="download/core/models/vvms"
+
+      # Because PyInstaller does not copy dynamic loaded libraries,
+      # manually move DLL dependencies into `dist/run/` (cache already saved)
+
+      - name: <Build> Gather DLL dependencies (Windows)
+        if: runner.os == 'Windows' && matrix.onnxruntime_device != 'cpu'
+        run: |
+          set -eux
+
+          mv download/core/additional_libraries/*.dll dist/run/
+          if ${{ matrix.onnxruntime_device == 'cuda' }}; then
+
+            # ONNX Runtime providers
+            mv download/core/onnxruntime/lib/voicevox_onnxruntime_*.dll dist/run/
+
+            # zlib
+            mv download/zlib/zlibwapi.dll dist/run/
+          fi
+
+      - name: <Build> Gather DLL dependencies (Linux CUDA)
+        if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
+        run: |
+          set -eux
+
+          # ONNX Runtime providers
+          # NOTE: `$ORIGIN` は RPATH の特殊トークンであるため、bash 変数扱いされないために適切なエスケープが必要。
+          # shellcheck disable=SC2016
+          patchelf --set-rpath '$ORIGIN' "$(pwd)/download/core/onnxruntime/lib"/libvoicevox_onnxruntime_providers_*.so
+          mv download/core/onnxruntime/lib/libvoicevox_onnxruntime_*.so dist/run/
+
+          # CUDA, cuDNN
+          mv download/core/additional_libraries/*.so* dist/run/
+
+      - name: <Build> Code signing
+        if: github.event.inputs.code_signing == 'true' && runner.os == 'Windows'
+        run: bash tools/codesign.bash "dist/run/run.exe"
+        env:
+          ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
+          ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
+          ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
+
+      - name: <Build> Rename artifact directory to archive
+        run: mv dist/run/ "${{ matrix.target }}/"
+
+      # 7z archives
+      - name: <Build> Create 7z archives
+        run: |
+          # Compress to artifact.7z.001, artifact.7z.002, ...
+          7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
+
+          # Output splitted archive list
+          ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
+          mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
+
+      - name: <Deploy> Upload 7z archives to artifact
+        if: github.event.inputs.upload_artifact == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vars.outputs.package_name }}-7z
+          path: |
+            ${{ steps.vars.outputs.package_name }}.7z.*
+
+      - name: <Deploy> Upload 7z archives to Release assets
+        if: needs.config.outputs.version != ''
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          prerelease: ${{ github.event.inputs.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.config.outputs.version }}
+          artifacts: >
+            ${{ steps.vars.outputs.package_name }}.7z.*
+          commit: ${{ github.sha }}
+
+      - name: <Setup> Clean 7z archives to reduce disk usage
+        run: rm -f ${{ steps.vars.outputs.package_name }}.7z.*
+
+      # VVPP archives
+      - name: <Build> Create VVPP archives
+        run: |
+          # Compress to compressed.zip.001, compressed.zip.002, ...
+          # NOTE: 1000th archive will be "compressed.zip.1000" after "compressed.zip.999". This is unconsidered as an extreme case.
+          (cd "${{ matrix.target }}" && 7z -r -v1900M a "../compressed.zip")
+
+          # Rename to artifact.001.vvppp, artifact.002.vvppp, ...
+          for FILE in compressed.zip.*; do
+            NUMBER=${FILE##*.} # 001
+            mv "${FILE}" "${{ steps.vars.outputs.package_name }}.${NUMBER}.vvppp"
+          done
+
+          # Rename to artifact.vvpp if there are only artifact.001.vvppp
+          if [ "$(find ${{ steps.vars.outputs.package_name }}.*.vvppp -maxdepth 1 | wc -l)" -eq 1 ]; then
+            mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
+          fi
+
+          # Output splitted archive list
+          ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
+          mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
+
+      - name: <Deploy> Upload VVPP archives to artifact
+        if: github.event.inputs.upload_artifact == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vars.outputs.package_name }}-vvpp
+          path: |
+            ${{ steps.vars.outputs.package_name }}.vvpp
+            ${{ steps.vars.outputs.package_name }}*.vvppp
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
+
+      - name: <Deploy> Upload VVPP archives to Release assets
+        if: needs.config.outputs.version != ''
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          prerelease: ${{ github.event.inputs.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.config.outputs.version }}
+          artifacts: >
+            ${{ steps.vars.outputs.package_name }}.vvpp,
+            ${{ steps.vars.outputs.package_name }}*.vvppp,
+            ${{ steps.vars.outputs.package_name }}.vvpp.txt
+          commit: ${{ github.sha }}
+
+      - name: <Deploy> Merge artifacts
+        if: github.event.inputs.upload_artifact == 'true'
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ steps.vars.outputs.package_name }}
+          pattern: ${{ steps.vars.outputs.package_name }}-*
+          delete-merged: true
+
+  update-tag-to-current-commit:
+    if: needs.config.outputs.version != ''
+    needs: [config, build-and-upload]
+    runs-on: ubuntu-latest
+    steps:
+      - name: <Setup> Check out the repository
+        uses: actions/checkout@v4
+
+      - name: <Deploy> Change tag to this commit for refreshing the release # ref: https://github.com/VOICEVOX/voicevox_engine/issues/854
+        run: |
+          git tag -f ${{ needs.config.outputs.version }}
+          git push -f --tag
+
+  run-release-test-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, build-and-upload]
+    uses: ./.github/workflows/test-engine-package.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
+
+  run-build-engine-container-workflow:
+    if: needs.config.outputs.version != ''
+    needs: [config, run-release-test-workflow]
+    uses: ./.github/workflows/build-engine-container.yml
+    with:
+      version: ${{ needs.config.outputs.version }}
+      # NOTE: workflow_dispatch以外では、 `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
+      push_dockerhub: ${{ inputs.push_dockerhub == true }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 from syrupy.assertion import SnapshotAssertion
 
 from test.utility import hash_long_string
-from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
+from voicevox_engine.metas.metas import Speaker, SpeakerInfo
 
 _speaker_list_adapter = TypeAdapter(list[Speaker])
 
@@ -20,9 +20,7 @@ def _hash_bytes(value: bytes) -> str:
 def _assert_resource_url(
     client: TestClient, snapshot: SnapshotAssertion, url: str, name: str
 ) -> None:
-    """
-    URLからデータが正しく取得できるかスナップショットテストをする
-    """
+    """URLからデータが正しく取得できるかスナップショットテストをする。"""
     response = client.get(url)
     assert response.status_code == 200
     assert snapshot(name=name) == _hash_bytes(response.content)
