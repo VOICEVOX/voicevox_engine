@@ -54,6 +54,26 @@ docker pull voicevox/voicevox_engine:nvidia-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-latest
 ```
 
+#### 環境変数を指定してDockerを実行
+
+```bash
+# CORS設定と全モデル読み込みを環境変数で指定
+docker run --rm -p '127.0.0.1:50021:50021' \
+  -e VV_CORS_POLICY_MODE=all \
+  -e VV_LOAD_ALL_MODELS=1 \
+  voicevox/voicevox_engine:cpu-latest
+
+# 特定ドメインからのアクセスを許可
+docker run --rm -p '127.0.0.1:50021:50021' \
+  -e VV_CORS_POLICY_MODE=example.com,api.example.com \
+  voicevox/voicevox_engine:cpu-latest
+
+# 変更可能APIを無効化
+docker run --rm -p '127.0.0.1:50021:50021' \
+  -e VV_DISABLE_MUTABLE_API=1 \
+  voicevox/voicevox_engine:cpu-latest
+```
+
 ##### トラブルシューティング
 
 GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
@@ -397,6 +417,62 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 
 実行時引数`--disable_mutable_api`か環境変数`VV_DISABLE_MUTABLE_API=1`を指定することで、エンジンの設定や辞書などを変更する API を無効にできます。
 
+### 環境変数での設定
+
+VOICEVOX ENGINE では、以下の環境変数を使用して設定を変更できます。環境変数の設定は、コマンドライン引数よりも優先され、設定ファイルよりも優先されます。
+
+#### CORS設定
+
+- **`VV_CORS_POLICY_MODE`**: CORSポリシーモードを設定
+  - `all`: すべてのオリジンからのリクエストを許可
+  - `localapps`: ローカルアプリケーションからのリクエストのみを許可（デフォルト）
+  - `example.com,example2.com`: カンマ区切りで特定のドメインを許可
+
+```bash
+# 例: 全てのオリジンを許可
+export VV_CORS_POLICY_MODE=all
+
+# 例: 特定のドメインを許可
+export VV_CORS_POLICY_MODE=example.com,api.example.com
+
+# Windows の場合
+set VV_CORS_POLICY_MODE=example.com,api.example.com
+```
+
+#### モデル読み込み設定
+
+- **`VV_LOAD_ALL_MODELS`**: 起動時に全ての音声合成モデルを読み込む
+  - `1`: 有効（全モデルを読み込み）
+  - `0` または未設定: 無効（必要時に読み込み）
+
+```bash
+# 例: 起動時に全モデルを読み込む
+export VV_LOAD_ALL_MODELS=1
+
+# Windows の場合
+set VV_LOAD_ALL_MODELS=1
+```
+
+#### API制限設定
+
+- **`VV_DISABLE_MUTABLE_API`**: 辞書登録や設定変更などのAPIを無効化
+  - `1`: 無効化
+  - `0` または未設定: 有効
+
+```bash
+# 例: 変更可能なAPIを無効化
+export VV_DISABLE_MUTABLE_API=1
+
+# Windows の場合
+set VV_DISABLE_MUTABLE_API=1
+```
+
+#### その他の設定
+
+- **`VV_CPU_NUM_THREADS`**: 音声合成に使用するCPUスレッド数
+- **`VV_OUTPUT_LOG_UTF8`**: ログ出力をUTF-8で行う（`1`で有効）
+- **`VV_PRESET_FILE`**: プリセットファイルのパス
+
 ### 文字コード
 
 リクエスト・レスポンスの文字コードはすべて UTF-8 です。
@@ -467,15 +543,14 @@ options:
                         音声合成を途中でキャンセルできるようになります。
   --init_processes INIT_PROCESSES
                         cancellable_synthesis機能の初期化時に生成するプロセス数です。
-  --load_all_models     起動時に全ての音声合成モデルを読み込みます。
+  --load_all_models     起動時に全ての音声合成モデルを読み込みます。指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS の値が使われます。VV_LOAD_ALL_MODELS の値が1の場合は有効で、0または空文字、値がない場合は無効です。
   --cpu_num_threads CPU_NUM_THREADS
                         音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。
   --output_log_utf8     ログ出力をUTF-8でおこないます。指定しない場合、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
   --cors_policy_mode {CorsPolicyMode.all,CorsPolicyMode.localapps}
-                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連に限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。このオプションは--
-                        setting_fileで指定される設定ファイルよりも優先されます。
+                        CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE の値が使われます。VV_CORS_POLICY_MODE では "all", "localapps" または "ドメイン,ドメイン2" 形式で指定できます。このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --allow_origin [ALLOW_ORIGIN ...]
-                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
+                        許可するオリジンを指定します。スペースで区切ることで複数指定できます。指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE がカンマ区切りドメイン形式の場合はその値が使われます。このオプションは--setting_fileで指定される設定ファイルよりも優先されます。
   --setting_file SETTING_FILE
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
