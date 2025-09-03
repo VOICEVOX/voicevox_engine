@@ -285,7 +285,7 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         "--cors_policy_mode",
         type=CorsPolicyMode,
         choices=list(CorsPolicyMode),
-        default=envs.cors_policy_mode,
+        default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
