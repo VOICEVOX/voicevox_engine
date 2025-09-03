@@ -51,29 +51,31 @@ def decide_boolean_from_env(env_name: str) -> bool:
             return False
 
 
-def parse_cors_policy_from_env(env_value: str) -> tuple[CorsPolicyMode | None, list[str] | None]:
+def parse_cors_policy_from_env(
+    env_value: str,
+) -> tuple[CorsPolicyMode | None, list[str] | None]:
     """
     環境変数からCORSポリシーモードとallow_originsを解析する。
-    
+
     * "all" または "localapps" の場合は対応するCorsPolicyModeを返す
     * "ドメイン,ドメイン2" 形式の場合は None とドメインリストを返す
     * 空文字列の場合は None, None を返す
     """
     if not env_value:
         return None, None
-    
+
     # 標準のCORSポリシーモードをチェック
     try:
         cors_mode = CorsPolicyMode(env_value)
         return cors_mode, None
     except ValueError:
         pass
-    
+
     # カンマ区切りのドメインリストとして解析
     domains = [domain.strip() for domain in env_value.split(",") if domain.strip()]
     if domains:
         return None, domains
-    
+
     return None, None
 
 
@@ -98,7 +100,7 @@ def read_environment_variables() -> Envs:
     cors_policy_mode, cors_allow_origins = parse_cors_policy_from_env(
         os.getenv("VV_CORS_POLICY_MODE", "")
     )
-    
+
     envs = Envs(
         output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
         cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
@@ -291,7 +293,7 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
             "指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE の値が使われます。"
-            "VV_CORS_POLICY_MODE では \"all\", \"localapps\" または \"ドメイン,ドメイン2\" 形式で指定できます。"
+            'VV_CORS_POLICY_MODE では "all", "localapps" または "ドメイン,ドメイン2" 形式で指定できます。'
             "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
         ),
     )
