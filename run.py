@@ -299,7 +299,6 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     parser.add_argument(
         "--allow_origin",
         nargs="*",
-        default=envs.cors_allow_origins,
         help=(
             "許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
             "指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE がカンマ区切りドメイン形式の場合はその値が使われます。"
