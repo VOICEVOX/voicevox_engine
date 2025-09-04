@@ -253,11 +253,12 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     parser.add_argument(
         "--load_all_models",
         action="store_true",
-        default=envs.load_all_models,
+        default=False,
         help=(
             "起動時に全ての音声合成モデルを読み込みます。"
-            "指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS の値が使われます。"
+            "環境変数 VV_LOAD_ALL_MODELS が設定されている場合、そちらが優先されます。"
             "VV_LOAD_ALL_MODELS の値が1の場合は有効で、0または空文字、値がない場合は無効です。"
+            "優先順位: 環境変数 > コマンドライン引数"
         ),
     )
 
@@ -292,19 +293,20 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
-            "指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE の値が使われます。"
+            "環境変数 VV_CORS_POLICY_MODE が設定されている場合、そちらが優先されます。"
             'VV_CORS_POLICY_MODE では "all", "localapps" または "ドメイン,ドメイン2" 形式で指定できます。'
-            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+            "優先順位: 環境変数 > コマンドライン引数 > 設定ファイル"
         ),
     )
 
     parser.add_argument(
         "--allow_origin",
         nargs="*",
+        default=None,
         help=(
             "許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
-            "指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE がカンマ区切りドメイン形式の場合はその値が使われます。"
-            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+            "環境変数 VV_CORS_POLICY_MODE がカンマ区切りドメイン形式の場合、そちらが優先されます。"
+            "優先順位: 環境変数 > コマンドライン引数 > 設定ファイル"
         ),
     )
 
@@ -361,6 +363,9 @@ def main() -> None:
     if args.output_log_utf8:
         set_output_log_utf8()
 
+    # load_all_models の優先順位処理: 環境変数 > コマンドライン引数
+    load_all_models = envs.load_all_models or args.load_all_models
+
     core_manager = initialize_cores(
         use_gpu=args.use_gpu,
         voicelib_dirs=args.voicelib_dirs,
@@ -368,7 +373,7 @@ def main() -> None:
         runtime_dirs=args.runtime_dirs,
         cpu_num_threads=args.cpu_num_threads,
         enable_mock=args.enable_mock,
-        load_all_models=args.load_all_models,
+        load_all_models=load_all_models,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
@@ -390,17 +395,17 @@ def main() -> None:
     setting_loader = SettingHandler(args.setting_file)
     settings = setting_loader.load()
 
-    # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
+    # 複数方式で指定可能な場合、優先度は上から「環境変数」「引数」「設定ファイル」「デフォルト値」
 
     cors_policy_mode = select_first_not_none(
-        [args.cors_policy_mode, envs.cors_policy_mode, settings.cors_policy_mode]
+        [envs.cors_policy_mode, args.cors_policy_mode, settings.cors_policy_mode]
     )
 
     setting_allow_origins = None
     if settings.allow_origin is not None:
         setting_allow_origins = settings.allow_origin.split(" ")
     allow_origin = select_first_not_none_or_none(
-        [args.allow_origins, envs.cors_allow_origins, setting_allow_origins]
+        [envs.cors_allow_origins, args.allow_origins, setting_allow_origins]
     )
 
     if envs.env_preset_path is not None and len(envs.env_preset_path) != 0:
@@ -431,7 +436,7 @@ def main() -> None:
     if not character_info_dir.exists():
         character_info_dir = root_dir / "speaker_info"
 
-    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
+    disable_mutable_api = envs.disable_mutable_api or args.disable_mutable_api
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(
