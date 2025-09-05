@@ -29,7 +29,7 @@ a = Analysis(
     ["run.py"],
     pathex=[],
     binaries=[],
-    datas=collect_data_files("pyopenjtalk"),
+    datas=collect_data_files("pyopenjtalk") + collect_data_files("snfa"),
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
