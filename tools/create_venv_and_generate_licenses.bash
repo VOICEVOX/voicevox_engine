@@ -11,7 +11,9 @@ uv venv "licenses_venv"
 export VIRTUAL_ENV="licenses_venv"
 uv sync --active
 # requirements-dev.txt でバージョン指定されている pip-licenses-cli をインストールする
-uv pip install "$(grep pip-licenses-cli requirements-dev.txt | cut -f 1 -d ';')"
+uv pip install \
+  "$(grep pip-licenses-cli requirements-dev.txt | cut -f 1 -d ';')" \
+  "$(grep pip-licenses-lib requirements-dev.txt | cut -f 1 -d ';')"
 uv run --active tools/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 rm -rf $VIRTUAL_ENV
