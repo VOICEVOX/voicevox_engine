@@ -38,7 +38,8 @@ packaging==24.2
 pip==25.0.1
 pip-api==0.0.34
 pip-audit==2.9.0
-pip-licenses==5.0.0
+pip-licenses-cli==2.0.0
+pip-licenses-lib==0.6.0
 pip-requirements-parser==32.0.1
 platformdirs==4.3.7
 pluggy==1.5.0
@@ -67,7 +68,6 @@ soxr==0.5.0.post1
 starlette==0.45.3
 syrupy==4.9.1
 toml==0.10.2
-tomli==2.2.1
 tqdm==4.67.1
 types-pyyaml==6.0.12.20250402
 typing-extensions==4.13.2
