@@ -15,6 +15,7 @@ numpy==2.2.4
 packaging==24.2
 pefile==2023.2.7 ; sys_platform == 'win32'
 platformdirs==4.3.7
+psutil==7.1.1
 pycparser==2.22
 pydantic==2.11.3
 pydantic-core==2.33.1
