@@ -272,8 +272,8 @@ class SongEngine:
         ]
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()  # type: ignore
-        volume_list: list[float] = volumes.tolist()  # type: ignore
+        f0_list: list[float] = f0s.tolist()
+        volume_list: list[float] = volumes.tolist()
 
         return phoneme_data_list, f0_list, volume_list
 
@@ -323,7 +323,7 @@ class SongEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()  # type: ignore
+        f0_list: list[float] = f0s.tolist()
 
         return f0_list
 
@@ -375,7 +375,7 @@ class SongEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        volume_list: list[float] = volumes.tolist()  # type: ignore
+        volume_list: list[float] = volumes.tolist()
 
         return volume_list
 
