@@ -13,7 +13,7 @@ from .core_wrapper import CoreWrapper, load_runtime_lib
 
 
 def _determine_default_cpu_num_threads() -> int:
-    """理論コア数と物理コア数が異なる場合または理論コア数が不明な場合は0を返す。そうではない場合は理論コア数の半分を返す。"""
+    """論理コア数が不明な場合は0を返す。論理コア数と物理コア数が判明していて異なる場合は0を返す。それ以外は論理コア数の半分を返す。"""
     logical_cores: int | None = psutil.cpu_count(logical=True)
     if logical_cores is None:
         return 0
