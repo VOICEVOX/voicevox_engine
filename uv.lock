@@ -1139,7 +1139,7 @@ requires-dist = [
     { name = "kanalizer", specifier = ">=0.1.1" },
     { name = "numpy", specifier = ">=2.2.3" },
     { name = "platformdirs", specifier = ">=4.2.0" },
-    { name = "psutil", specifier = ">=6.0.0" },
+    { name = "psutil", specifier = ">=7.1.1" },
     { name = "pydantic", specifier = ">=2.7.3" },
     { name = "pyopenjtalk", git = "https://github.com/VOICEVOX/pyopenjtalk?rev=74703b034dd90a1f199f49bb70bf3b66b1728a86" },
     { name = "python-multipart", specifier = ">=0.0.20" },
