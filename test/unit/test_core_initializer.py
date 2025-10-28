@@ -143,8 +143,13 @@ def test_cores_items() -> None:
 def test_determine_default_cpu_num_threads(
     logical_cores: int | None, physical_cores: int | None, expected: int
 ) -> None:
+    """_determine_default_cpu_num_threads() でデフォルトのCPUスレッド数を決定できる。"""
+    # Outputs
     with patch(
         "psutil.cpu_count",
         side_effect=lambda logical=True: logical_cores if logical else physical_cores,
     ):
-        assert _determine_default_cpu_num_threads() == expected
+        cpu_num_threads = _determine_default_cpu_num_threads()
+
+    # Test
+    assert expected == cpu_num_threads
