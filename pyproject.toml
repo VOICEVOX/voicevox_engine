@@ -8,7 +8,7 @@ dependencies = [
   "kanalizer>=0.1.1",
   "numpy>=2.2.3",
   "platformdirs>=4.2.0",
-  "psutil>=6.0.0",
+  "psutil>=7.1.1",
   "pydantic>=2.7.3",
   "pyopenjtalk",
   "python-multipart>=0.0.20", # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
