@@ -57,15 +57,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# ca-certificates: pyopenjtalk dictionary download
-# build-essential: pyopenjtalk local build
-# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
     apt-get update
     apt-get install -y \
-        curl \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -79,12 +75,7 @@ COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
 
 # Download Resource
 ARG VOICEVOX_RESOURCE_VERSION=0.25.0
-RUN <<EOF
-    set -eux
-
-    # README
-    curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
-EOF
+ADD "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md" "/opt/voicevox_engine/README.md"
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
