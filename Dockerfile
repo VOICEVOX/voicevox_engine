@@ -94,10 +94,10 @@ set -eux
 # Display README for engine
 cat /opt/voicevox_engine/README.md > /dev/stderr
 
-exec "\$@"
+exec gosu user /opt/voicevox_engine/run "\$@"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh", "gosu", "user", "/opt/voicevox_engine/run" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "--host", "0.0.0.0" ]
 
 # Enable use_gpu
