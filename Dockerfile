@@ -51,6 +51,29 @@ RUN <<EOF
     rm ./*
 EOF
 
+# Download Resource
+FROM ${BASE_IMAGE} AS download-resource-env
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /work
+
+RUN <<EOF
+    set -eux
+
+    apt-get update
+    apt-get install -y curl
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+EOF
+
+ARG VOICEVOX_RESOURCE_VERSION=0.25.0
+RUN <<EOF
+    set -eux
+
+    # README
+    curl -fLo "/work/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+EOF
+
 # Runtime
 FROM ${BASE_IMAGE} AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
@@ -73,9 +96,8 @@ EOF
 # Copy VOICEVOX ENGINE
 COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
 
-# Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.25.0
-ADD "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md" "/opt/voicevox_engine/README.md"
+# Copy Resource
+COPY --from=download-resource-env /work/README.md /opt/voicevox_engine/README.md
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
