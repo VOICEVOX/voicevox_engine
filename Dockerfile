@@ -94,12 +94,12 @@ set -eux
 # Display README for engine
 cat /opt/voicevox_engine/README.md > /dev/stderr
 
-exec "\$@"
+exec gosu user /opt/voicevox_engine/run "\$@"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--use_gpu", "--host", "0.0.0.0" ]
+CMD [ "--use_gpu", "--host", "0.0.0.0" ]
