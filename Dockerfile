@@ -4,8 +4,7 @@
 
 ARG BASE_IMAGE=mirror.gcr.io/ubuntu:22.04
 
-# Download VOICEVOX ENGINE
-FROM ${BASE_IMAGE} AS download-engine-env
+FROM ${BASE_IMAGE} AS download-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -21,6 +20,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+# Download VOICEVOX ENGINE
 ARG VOICEVOX_ENGINE_REPOSITORY
 ARG VOICEVOX_ENGINE_VERSION
 ARG VOICEVOX_ENGINE_TARGET
@@ -52,20 +52,6 @@ RUN <<EOF
 EOF
 
 # Download Resource
-FROM ${BASE_IMAGE} AS download-resource-env
-ARG DEBIAN_FRONTEND=noninteractive
-
-WORKDIR /work
-
-RUN <<EOF
-    set -eux
-
-    apt-get update
-    apt-get install -y curl
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
-
 ARG VOICEVOX_RESOURCE_VERSION=0.25.0
 RUN <<EOF
     set -eux
@@ -94,10 +80,10 @@ RUN <<EOF
 EOF
 
 # Copy VOICEVOX ENGINE
-COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
+COPY --from=download-env /opt/voicevox_engine /opt/voicevox_engine
 
 # Copy Resource
-COPY --from=download-resource-env /work/README.md /opt/voicevox_engine/README.md
+COPY --from=download-env /work/README.md /opt/voicevox_engine/README.md
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
