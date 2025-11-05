@@ -37,13 +37,15 @@ dev = [
   "httpx>=0.28.1", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
   "mypy>=1.10.0",
   "pip-audit>=2.7.3",
-  "pip-licenses-cli==3.0.0", # NOTE: must be specified exactly (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1281)
   "pre-commit>=4.0.1",
   "pytest>=8.2.0",
   "ruff>=0.11.1",
   "syrupy>=4.6.1",
   "types-pyyaml>=6.0.12",
   "typos>=1.31.1",
+]
+licenses = [
+  "pip-licenses-cli>=3.0.0",
 ]
 
 [tool.ruff]
