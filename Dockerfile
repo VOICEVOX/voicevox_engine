@@ -2,23 +2,15 @@
 
 # TODO: build-arg と target のドキュメントをこのファイルに書く
 
-ARG BASE_IMAGE=mirror.gcr.io/ubuntu:22.04
-
-FROM ${BASE_IMAGE} AS download-env
+# --- Download ---
+FROM mirror.gcr.io/ubuntu:22.04 AS download-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
 
-RUN <<EOF
-    set -eux
-
-    apt-get update
-    apt-get install -y \
-        curl \
-        p7zip
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-EOF
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y  curl p7zip
 
 # Download VOICEVOX ENGINE
 ARG VOICEVOX_ENGINE_REPOSITORY
@@ -60,24 +52,37 @@ RUN <<EOF
     curl -fLo "/work/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
 EOF
 
-# Runtime
-FROM ${BASE_IMAGE} AS runtime-env
+# -- Download Additional Packages ---
+FROM mirror.gcr.io/ubuntu:22.04 AS download-additional-packages
+
+# Download Additional Packages
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y zlib1g
+
+# --- Runtime ---
+FROM gcr.io/distroless/base-debian12 AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
+# Copy busybox
+COPY --from=busybox:musl /bin/busybox /usr/local/bin/busybox
+SHELL ["/usr/local/bin/busybox", "sh", "-c"]
+
+# Copy gosu
+COPY --from=tianon/gosu /gosu /usr/local/bin/
+
+# Add non-root user
 RUN <<EOF
     set -eux
-
-    apt-get update
-    apt-get install -y \
-        gosu
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
-
-    # Create a general user
-    useradd --create-home user
+    busybox addgroup -S user
+    busybox adduser -S -G user user
+    busybox chown -R user:user /opt/voicevox_engine
 EOF
+
+# Install Packages
+COPY --from=download-env /usr/lib/x86_64-linux-gnu/libz.so.1 /usr/lib/x86_64-linux-gnu/libz.so.1
 
 # Copy VOICEVOX ENGINE
 COPY --from=download-env /opt/voicevox_engine /opt/voicevox_engine
@@ -86,17 +91,17 @@ COPY --from=download-env /opt/voicevox_engine /opt/voicevox_engine
 COPY --from=download-env /work/README.md /opt/voicevox_engine/README.md
 
 # Create container start shell
-COPY --chmod=775 <<EOF /entrypoint.sh
-#!/bin/bash
+COPY --chmod=775 <<'EOF' /opt/entrypoint.sh
+#!/usr/local/bin/busybox sh
 set -eux
 
 # Display README for engine
-cat /opt/voicevox_engine/README.md > /dev/stderr
+busybox cat /opt/voicevox_engine/README.md > /dev/stderr
 
-exec gosu user /opt/voicevox_engine/run "\$@"
+exec gosu user /opt/voicevox_engine/run "$@"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
 CMD [ "--host", "0.0.0.0" ]
 
 # Enable use_gpu
