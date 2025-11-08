@@ -10,11 +10,13 @@ target "default" {
 
 target "cpu" {
   inherits = [ "default" ]
+  tags = [ "voicevox/voicevox_engine:latest-cpu" ]
   target = "runtime-env"
 }
 
 target "nvidia" {
   inherits = [ "default" ]
+  tags = [ "voicevox/voicevox_engine:latest-nvidia" ]
   args = {
     VOICEVOX_ENGINE_TARGET = "linux-nvidia"
   }
