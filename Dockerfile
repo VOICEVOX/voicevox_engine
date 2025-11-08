@@ -82,7 +82,7 @@ RUN <<EOF
 EOF
 
 # Install Packages
-COPY --from=download-env /usr/lib/x86_64-linux-gnu/libz.so.1 /usr/lib/x86_64-linux-gnu/libz.so.1
+COPY --from=download-additional-packages /usr/lib/x86_64-linux-gnu/libz.so.1 /usr/lib/x86_64-linux-gnu/libz.so.1
 
 # Copy VOICEVOX ENGINE
 COPY --from=download-env /opt/voicevox_engine /opt/voicevox_engine
