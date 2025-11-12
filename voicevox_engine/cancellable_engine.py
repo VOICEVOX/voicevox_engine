@@ -17,7 +17,7 @@ import soundfile
 from fastapi import Request
 
 from .core.core_initializer import initialize_cores
-from .metas.Metas import StyleId
+from .metas.metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import LatestVersion, make_tts_engines_from_cores
 

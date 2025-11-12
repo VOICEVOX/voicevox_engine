@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 from syrupy.assertion import SnapshotAssertion
 
 from test.utility import hash_long_string
-from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
+from voicevox_engine.metas.metas import Speaker, SpeakerInfo
 
 _speaker_list_adapter = TypeAdapter(list[Speaker])
 

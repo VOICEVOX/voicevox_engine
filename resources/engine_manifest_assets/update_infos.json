@@ -1,5 +1,21 @@
 [
   {
+    "version": "0.25.0",
+    "descriptions": [
+      "PコアとEコア搭載CPUで音声合成が遅くなる問題を修正",
+      "開発環境の向上"
+    ],
+    "contributors": [
+      "Hiroshiba",
+      "mikecat",
+      "nanae772",
+      "qryxip",
+      "sabonerune",
+      "sevenc-nanashi",
+      "tarepan"
+    ]
+  },
+  {
     "version": "0.24.1",
     "descriptions": [
       "キャラクター「ユーレイちゃん」「東北ずん子」「東北きりたん」「東北イタコ」を追加",

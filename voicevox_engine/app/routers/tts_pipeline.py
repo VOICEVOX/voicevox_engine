@@ -17,7 +17,7 @@ from voicevox_engine.cancellable_engine import (
     CancellableEngineInternalError,
 )
 from voicevox_engine.core.core_adapter import DeviceSupport
-from voicevox_engine.metas.Metas import StyleId
+from voicevox_engine.metas.metas import StyleId
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.preset_manager import (
     PresetInputError,

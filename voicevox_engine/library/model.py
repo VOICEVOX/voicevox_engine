@@ -6,7 +6,7 @@
 
 from pydantic import BaseModel, Field, StrictStr
 
-from voicevox_engine.metas.Metas import Speaker, SpeakerInfo
+from voicevox_engine.metas.metas import Speaker, SpeakerInfo
 
 
 class LibrarySpeaker(BaseModel):

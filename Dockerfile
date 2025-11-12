@@ -4,8 +4,7 @@
 
 ARG BASE_IMAGE=mirror.gcr.io/ubuntu:22.04
 
-# Download VOICEVOX ENGINE
-FROM ${BASE_IMAGE} AS download-engine-env
+FROM ${BASE_IMAGE} AS download-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /work
@@ -21,6 +20,7 @@ RUN <<EOF
     rm -rf /var/lib/apt/lists/*
 EOF
 
+# Download VOICEVOX ENGINE
 ARG VOICEVOX_ENGINE_REPOSITORY
 ARG VOICEVOX_ENGINE_VERSION
 ARG VOICEVOX_ENGINE_TARGET
@@ -51,21 +51,26 @@ RUN <<EOF
     rm ./*
 EOF
 
+# Download Resource
+ARG VOICEVOX_RESOURCE_VERSION=0.25.0
+RUN <<EOF
+    set -eux
+
+    # README
+    curl -fLo "/work/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
+EOF
+
 # Runtime
 FROM ${BASE_IMAGE} AS runtime-env
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /opt/voicevox_engine
 
-# ca-certificates: pyopenjtalk dictionary download
-# build-essential: pyopenjtalk local build
-# ref: https://github.com/VOICEVOX/voicevox_engine/issues/770
 RUN <<EOF
     set -eux
 
     apt-get update
     apt-get install -y \
-        curl \
         gosu
     apt-get clean
     rm -rf /var/lib/apt/lists/*
@@ -75,16 +80,10 @@ RUN <<EOF
 EOF
 
 # Copy VOICEVOX ENGINE
-COPY --from=download-engine-env /opt/voicevox_engine /opt/voicevox_engine
+COPY --from=download-env /opt/voicevox_engine /opt/voicevox_engine
 
-# Download Resource
-ARG VOICEVOX_RESOURCE_VERSION=0.24.1
-RUN <<EOF
-    set -eux
-
-    # README
-    curl -fLo "/opt/voicevox_engine/README.md" --retry 3 --retry-delay 5 "https://raw.githubusercontent.com/VOICEVOX/voicevox_resource/${VOICEVOX_RESOURCE_VERSION}/engine/README.md"
-EOF
+# Copy Resource
+COPY --from=download-env /work/README.md /opt/voicevox_engine/README.md
 
 # Create container start shell
 COPY --chmod=775 <<EOF /entrypoint.sh
@@ -94,12 +93,12 @@ set -eux
 # Display README for engine
 cat /opt/voicevox_engine/README.md > /dev/stderr
 
-exec "\$@"
+exec gosu user /opt/voicevox_engine/run "\$@"
 EOF
 
-ENTRYPOINT [ "/entrypoint.sh"  ]
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--host", "0.0.0.0" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "--host", "0.0.0.0" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
-CMD [ "gosu", "user", "/opt/voicevox_engine/run", "--use_gpu", "--host", "0.0.0.0" ]
+CMD [ "--use_gpu", "--host", "0.0.0.0" ]

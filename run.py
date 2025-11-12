@@ -243,7 +243,7 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     parser.add_argument(
         "--cors_policy_mode",
         type=CorsPolicyMode,
-        choices=list(CorsPolicyMode),
+        choices=[i.value for i in CorsPolicyMode],
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
