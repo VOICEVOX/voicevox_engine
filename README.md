@@ -466,6 +466,8 @@ curl -s \
     -F "ref_audio=@ref.wav" \
     -F "normalize=true" \
     -F "trim=true" \
+    -F "assign_length=true" \
+    -F "assign_pitch=true" \
     "127.0.0.1:50021/guide" \
     > guided_query.json
 

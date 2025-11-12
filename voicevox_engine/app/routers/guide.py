@@ -50,6 +50,8 @@ def generate_guide_router() -> APIRouter:
         ref_audio: Annotated[UploadFile, File(...)],
         normalize: Annotated[bool, Form(...)] = True,
         trim: Annotated[bool, Form(...)] = True,
+        assign_length: Annotated[bool, Form(...)] = True,
+        assign_pitch: Annotated[bool, Form(...)] = True,
     ) -> AudioQuery:
         # Load AudioQuery and audio file
         query_obj = AudioQuery(**json.loads(query))
@@ -108,17 +110,17 @@ def generate_guide_router() -> APIRouter:
         while ap_idx < len(query_obj.accent_phrases):
             ap = query_obj.accent_phrases[ap_idx]
             mora = ap.moras[mora_idx]
-
             if mora.consonant:
                 assert mora.consonant.lower() == segs[seg_idx].phoneme
                 assert mora.vowel.lower() == segs[seg_idx + 1].phoneme
-                mora.consonant_length = _seg_dur(segs[seg_idx])
-                mora.vowel_length = _seg_dur(segs[seg_idx + 1])
+                if assign_length:
+                    mora.consonant_length = _seg_dur(segs[seg_idx])
+                    mora.vowel_length = _seg_dur(segs[seg_idx + 1])
                 s, e = segs[seg_idx].start, segs[seg_idx + 1].end
                 seg_idx += 2
 
                 # Extend overly short consonants
-                if (
+                if assign_length and (
                     mora.consonant_length <= DUR_EPSILON
                     and mora.vowel_length > 3 * DUR_EPSILON
                 ):
@@ -127,23 +129,25 @@ def generate_guide_router() -> APIRouter:
                     mora.vowel_length = 0.75 * dur
             else:
                 assert mora.vowel.lower() == segs[seg_idx].phoneme
-                mora.vowel_length = _seg_dur(segs[seg_idx])
+                if assign_length:
+                    mora.vowel_length = _seg_dur(segs[seg_idx])
                 s, e = segs[seg_idx].start, segs[seg_idx].end
                 seg_idx += 1
-
-            # Assign pitch (except for unvoiced vowels)
-            if mora.vowel not in ["U", "I", "N", "cl"]:
-                mora_f0 = f0[int(s * scale_factor) : int(e * scale_factor)]
-                mora_f0 = mora_f0[mora_f0 > F0_EPSILON]
-                mora.pitch = (
-                    float(np.mean(mora_f0)) + drift if mora_f0.size > 0 else 0.0
-                )
+            if assign_pitch:
+                # Assign pitch (except for unvoiced vowels)
+                if mora.vowel not in ["U", "I", "N", "cl"]:
+                    mora_f0 = f0[int(s * scale_factor) : int(e * scale_factor)]
+                    mora_f0 = mora_f0[mora_f0 > F0_EPSILON]
+                    mora.pitch = (
+                        float(np.mean(mora_f0)) + drift if mora_f0.size > 0 else 0.0
+                    )
 
             mora_idx += 1
             if mora_idx == len(ap.moras):
                 if ap.pause_mora:
                     assert segs[seg_idx].phoneme == "pau"
-                    ap.pause_mora.vowel_length = _seg_dur(segs[seg_idx])
+                    if assign_length:
+                        ap.pause_mora.vowel_length = _seg_dur(segs[seg_idx])
                     seg_idx += 1
                 mora_idx = 0
                 ap_idx += 1
