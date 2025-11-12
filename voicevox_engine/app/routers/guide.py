@@ -110,7 +110,7 @@ def generate_guide_router() -> APIRouter:
         while ap_idx < len(query_obj.accent_phrases):
             ap = query_obj.accent_phrases[ap_idx]
             mora = ap.moras[mora_idx]
-            if mora.consonant:
+            if mora.consonant and mora.consonant_length:
                 assert mora.consonant.lower() == segs[seg_idx].phoneme
                 assert mora.vowel.lower() == segs[seg_idx + 1].phoneme
                 if assign_length:
