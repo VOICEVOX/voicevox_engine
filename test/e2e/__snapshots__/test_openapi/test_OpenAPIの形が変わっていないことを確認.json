@@ -175,6 +175,16 @@
       },
       "Body_guide_guide_post": {
         "properties": {
+          "assign_length": {
+            "default": true,
+            "title": "Assign Length",
+            "type": "boolean"
+          },
+          "assign_pitch": {
+            "default": true,
+            "title": "Assign Pitch",
+            "type": "boolean"
+          },
           "normalize": {
             "default": true,
             "title": "Normalize",
