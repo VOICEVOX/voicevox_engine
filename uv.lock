@@ -881,14 +881,14 @@ wheels = [
 
 [[package]]
 name = "snfa"
-version = "0.2.0"
+version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/14/e0c20f1b2e78fa9ffcb357f802e795fc9a43bd4ef291e33461b4785b04cb/snfa-0.2.0.tar.gz", hash = "sha256:2be48956b50737381666640bd52750189867f17cb325f3d334f6f95bb6bb9b3b", size = 1167947, upload-time = "2025-07-22T17:43:41.775Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/87/52fd0346a24cce712c9646e788979323e68e81db885371140836e89c0268/snfa-0.3.1.tar.gz", hash = "sha256:64fca0069d0d7786ef057e976f6235dc08f9f48a18454eec619363e496b3de0d", size = 1164895, upload-time = "2025-11-12T02:25:47.866Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/22/448ed4ba8b585116f01fac0b1257493f578ea27fcccdf22b337d45b03570/snfa-0.2.0-py3-none-any.whl", hash = "sha256:16dec139c58ecd31e04edec7cc9d700e1d38fc2d04bc575068f4e8b7bbfa2a9d", size = 1164485, upload-time = "2025-07-22T17:43:38.917Z" },
+    { url = "https://files.pythonhosted.org/packages/15/2f/d4f6c97c714cce319c1d9dff8a6b29db682eed601376cd055b73e65c7ec2/snfa-0.3.1-py3-none-any.whl", hash = "sha256:1d2d56428fe10844d5b830f22db48e9d58e72060a5f954c9da03892087aba3f1", size = 1161369, upload-time = "2025-11-12T02:25:45.835Z" },
 ]
 
 [[package]]
@@ -1152,7 +1152,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.1" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools", specifier = ">=78.1.0" },
-    { name = "snfa", specifier = ">=0.2.0" },
+    { name = "snfa", specifier = ">=0.3.1" },
     { name = "soundfile", specifier = ">=0.13.1" },
     { name = "soxr", specifier = ">=0.5.0" },
     { name = "starlette", specifier = ">=0.45.3" },
