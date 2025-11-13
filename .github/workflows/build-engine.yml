@@ -77,7 +77,7 @@ jobs:
             zlib_url: http://www.winimage.com/zLibDll/zlib123dllx64.zip
             target: windows-nvidia
           # Mac CPU (x64 arch)
-          - os: macos-13
+          - os: macos-15-intel
             architecture: "x64"
             onnxruntime_device: cpu
             target: macos-x64
