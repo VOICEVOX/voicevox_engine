@@ -33,8 +33,8 @@ from voicevox_engine.utility.path_utility import (
 # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
 # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
 # ref: https://github.com/VOICEVOX/voicevox_engine/pull/647#issuecomment-1540204653
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = 50021
+_DEFAULT_HOST = "localhost"
+_DEFAULT_PORT = 50021
 
 
 def decide_boolean_from_env(env_name: str) -> bool:
@@ -168,17 +168,6 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
     return None
 
 
-def argstr_to_bool(value: str) -> bool:
-    """引数の文字列をboolに変換する"""
-    lower_value = value.lower()
-    if lower_value in ["1", "t", "true"]:
-        return True
-    elif lower_value in ["0", "f", "false"]:
-        return False
-    msg = f"invalid bool value: '{value}'"
-    raise argparse.ArgumentTypeError(msg)
-
-
 @dataclass(frozen=True)
 class _CLIArgs:
     host: str | None
@@ -218,9 +207,8 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     )
     parser.add_argument(
         "--use_gpu",
-        nargs="?",
-        const=True,
-        type=argstr_to_bool,
+        action=argparse.BooleanOptionalAction,
+        default=False,
         help=(
             "GPUを使って音声合成するか設定します。指定しない場合、代わりに環境変数 VV_USE_GPU の値が使われます。"
             "VV_USE_GPU の値が1の場合はGPUを使用し、0または空文字、値がない場合は使用されません。"
@@ -398,8 +386,8 @@ def main() -> None:
 
     # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
 
-    host = select_first_not_none([args.host, envs.host, DEFAULT_HOST])
-    port = select_first_not_none([args.port, envs.port, DEFAULT_PORT])
+    host = select_first_not_none([args.host, envs.host, _DEFAULT_HOST])
+    port = select_first_not_none([args.port, envs.port, _DEFAULT_PORT])
 
     cors_policy_mode = select_first_not_none(
         [args.cors_policy_mode, settings.cors_policy_mode]
