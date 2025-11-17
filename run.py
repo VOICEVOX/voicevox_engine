@@ -208,7 +208,6 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     parser.add_argument(
         "--use_gpu",
         action=argparse.BooleanOptionalAction,
-        default=False,
         help=(
             "GPUを使って音声合成するか設定します。指定しない場合、代わりに環境変数 VV_USE_GPU の値が使われます。"
             "VV_USE_GPU の値が1の場合はGPUを使用し、0または空文字、値がない場合は使用されません。"
