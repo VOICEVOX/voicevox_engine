@@ -445,7 +445,7 @@ curl -s \
 ```bash
 $ uv run run.py -h
 
-usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu [USE_GPU]] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock]
+usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu | --no-use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock]
               [--enable_cancellable_synthesis] [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {all,localapps}]
               [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE] [--disable_mutable_api]
 
@@ -455,7 +455,8 @@ options:
   -h, --help            show this help message and exit
   --host HOST           接続を受け付けるホストアドレスです。指定しない場合、代わりに環境変数 VV_HOST の値が使われます。
   --port PORT           接続を受け付けるポート番号です。指定しない場合、代わりに環境変数 VV_PORT の値が使われます。
-  --use_gpu [USE_GPU]   GPUを使って音声合成するか設定します。指定しない場合、代わりに環境変数 VV_USE_GPU の値が使われます。VV_USE_GPU の値が1の場合はGPUを使用し、0または空文字、値がない場合は使用されません。
+  --use_gpu, --no-use_gpu
+                        GPUを使って音声合成するか設定します。指定しない場合、代わりに環境変数 VV_USE_GPU の値が使われます。VV_USE_GPU の値が1の場合はGPUを使用し、0または空文字、値がない場合は使用されません。
   --voicevox_dir VOICEVOX_DIR
                         VOICEVOXのディレクトリパスです。
   --voicelib_dir VOICELIB_DIR
