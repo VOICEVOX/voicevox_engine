@@ -19,6 +19,7 @@ from voicevox_engine.cancellable_engine import (
 )
 from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.metas.metas import StyleId
+from voicevox_engine.metas.metas_store import Character, MetasStore
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.preset_manager import (
     PresetInputError,
@@ -82,12 +83,25 @@ class SupportedDevicesInfo(BaseModel):
             dml=device_support.dml,
         )
 
+def is_streamable(
+    characters: list[Character], style_id: StyleId
+) -> bool:
+    """指定されたスタイル ID がストリーミング合成に対応しているか判定する。"""
+    style_id_to_character: dict[StyleId, Character] = {}
+    for character in characters:
+        for style in character.talk_styles + character.sing_styles:
+            style_id_to_character[style.id] = character
+    if style_id not in style_id_to_character:
+        return False
+    character = style_id_to_character[style_id]
+    return character.supported_features.streaming_synthesis
 
 def generate_tts_pipeline_router(
     tts_engines: TTSEngineManager,
     song_engines: SongEngineManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
+    metas_store: MetasStore,
 ) -> APIRouter:
     """音声合成 API Router を生成する"""
     router = APIRouter()
@@ -441,6 +455,12 @@ def generate_tts_pipeline_router(
             raise HTTPException(
                 status_code=422,
                 detail="ステレオ出力はサポートされていません",
+            )
+        characters = metas_store.characters(core_version)
+        if not is_streamable(characters, style_id):
+            raise HTTPException(
+                status_code=422,
+                detail="指定されたスタイルはストリーミング合成に対応していません",
             )
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
