@@ -437,7 +437,7 @@ def generate_tts_pipeline_router(
                 detail="ステレオ出力はサポートされていません",
             )
         version = core_version or LATEST_VERSION
-        engine = tts_engines.get_engine(version)
+        engine = tts_engines.get_tts_engine(version)
         frame_length, wave_generator = engine.synthesize_wave_stream(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
