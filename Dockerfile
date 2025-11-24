@@ -102,4 +102,5 @@ ENTRYPOINT [ "/entrypoint.sh" ]
 
 # Enable use_gpu
 FROM runtime-env AS runtime-nvidia-env
+
 ENV VV_USE_GPU=1
