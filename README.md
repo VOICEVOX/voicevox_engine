@@ -54,15 +54,6 @@ docker pull voicevox/voicevox_engine:nvidia-latest
 docker run --rm --gpus all -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-latest
 ```
 
-#### 起動オプションを変更
-
-全てのCORSを許可
-
-```bash
-docker pull voicevox/voicevox_engine:nvidia-latest
-docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:nvidia-latest --cors_policy_mode all
-```
-
 ##### トラブルシューティング
 
 GPU 版を利用する場合、環境によってエラーが発生することがあります。その場合、`--runtime=nvidia`を`docker run`につけて実行すると解決できることがあります。
