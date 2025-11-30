@@ -173,6 +173,45 @@
         "title": "BaseLibraryInfo",
         "type": "object"
       },
+      "Body_guide_guide_post": {
+        "properties": {
+          "assign_length": {
+            "default": true,
+            "title": "Assign Length",
+            "type": "boolean"
+          },
+          "assign_pitch": {
+            "default": true,
+            "title": "Assign Pitch",
+            "type": "boolean"
+          },
+          "normalize": {
+            "default": true,
+            "title": "Normalize",
+            "type": "boolean"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "ref_audio": {
+            "format": "binary",
+            "title": "Ref Audio",
+            "type": "string"
+          },
+          "trim": {
+            "default": true,
+            "title": "Trim",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "query",
+          "ref_audio"
+        ],
+        "title": "Body_guide_guide_post",
+        "type": "object"
+      },
       "Body_setting_post_setting_post": {
         "properties": {
           "allow_origin": {
@@ -1019,6 +1058,11 @@
           "apply_katakana_english": {
             "description": "未知の英単語をカタカナ読みに変換",
             "title": "Apply Katakana English",
+            "type": "boolean"
+          },
+          "guide": {
+            "description": "Forced Alignerによる自動調整",
+            "title": "Guide",
             "type": "boolean"
           },
           "interrogative_upspeak": {
@@ -1891,6 +1935,47 @@
         "summary": "Frame Synthesis",
         "tags": [
           "音声合成"
+        ]
+      }
+    },
+    "/guide": {
+      "post": {
+        "operationId": "guide",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_guide_guide_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioQuery"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "参考音声に合わせて発音タイミングとイントネーションを自動調整したAudioQueryを返します",
+        "tags": [
+          "クエリ編集"
         ]
       }
     },
