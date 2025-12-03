@@ -9,7 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # NOTE: アンドキュメントな変数を使用するので存在チェックをする
+    # NOTE: アンドキュメントな環境変数を使用するので存在を確認をする
     - name: <Setup> Get ImageOS environment variable
       id: image-os
       run: |
