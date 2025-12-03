@@ -9,10 +9,22 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # NOTE: アンドキュメントな環境変数を使用するので存在を確認をする
+    - name: <Setup> Get ImageOS environment variable
+      id: image-os
+      run: |
+        if [[ -z "$ImageOS" ]]; then
+          echo "::error::ImageOSが未定義です"
+          exit 1
+        fi
+        echo "IMAGE_OS=$ImageOS" >> "$GITHUB_OUTPUT"
+      shell: bash
+
     - name: <Setup> Install uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v7
       with:
-        enable-cache: false # TODO: uvの上手いキャッシュのやり方を考える
+        enable-cache: true
+        cache-suffix: ${{ steps.image-os.outputs.IMAGE_OS }}
 
     - name: <Setup> Install Python dependencies
       run: |
