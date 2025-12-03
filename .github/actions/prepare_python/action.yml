@@ -9,19 +9,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: <Setup> Get cache-suffix
-      if: ${{ runner.os == 'Linux' }}
-      id: cache-suffix
+    # NOTE: アンドキュメントな変数を使用するので存在チェックをする
+    - name: <Setup> Get ImageOS environment variable
+      id: image-os
       run: |
-        $(gcc --print-file-name=libc.so.6) | \
-          awk 'NR==1 {print "CACHE_SUFFIX=glibc-" $NF}' >> "$GITHUB_OUTPUT"
+        if [[ -z "$ImageOS" ]]; then
+          echo "::error::ImageOSが未定義です"
+          exit 1
+        fi
+        echo "IMAGE_OS=$ImageOS" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: <Setup> Install uv
       uses: astral-sh/setup-uv@v7
       with:
         enable-cache: true
-        cache-suffix: ${{ steps.cache-suffix.outputs.CACHE_SUFFIX }}
+        cache-suffix: ${{ steps.image-os.outputs.IMAGE_OS }}
 
     - name: <Setup> Install Python dependencies
       run: |
