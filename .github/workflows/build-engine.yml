@@ -229,6 +229,7 @@ jobs:
         with:
           key: models-${{ env.VOICEVOX_VVM_VERSION }}
           path: download/core/models
+          enableCrossOsArchive: true
 
       - name: <Setup> Download Downloader
         if: |
