@@ -229,6 +229,7 @@ jobs:
         with:
           key: models-${{ env.VOICEVOX_VVM_VERSION }}
           path: download/core/models
+          enableCrossOsArchive: true
 
       - name: <Setup> Download Downloader
         if: |
@@ -353,6 +354,7 @@ jobs:
         with:
           key: ${{ steps.models-cache-restore.outputs.cache-primary-key }}
           path: download/core/models
+          enableCrossOsArchive: true
 
       # VOICEVOX RESOURCE
       - name: <Setup> Prepare RESOURCE cache
@@ -361,6 +363,7 @@ jobs:
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
           path: download/resource
+          enableCrossOsArchive: true
 
       - name: <Setup> Check out RESOURCE repository
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
