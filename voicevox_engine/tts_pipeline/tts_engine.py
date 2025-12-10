@@ -2,6 +2,7 @@
 
 import copy
 import math
+from collections.abc import Generator
 from typing import Any, Final, Literal, TypeAlias
 
 import numpy as np
@@ -383,6 +384,45 @@ class TTSEngine:
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+    def synthesize_wave_stream(
+        self,
+        query: AudioQuery,
+        style_id: StyleId,
+        chunk_length: float = 0.3,
+        enable_interrogative_upspeak: bool = True,
+    ) -> tuple[int, Generator[NDArray[np.float32], None, None]]:
+        """生成音声全体のフレーム数と音声波形を生成する同期ストリームを返す"""
+        valid_chunk_size = max(1, round(chunk_length * 24000 / 256))  # second * 24000Hz / 256frame
+        query = copy.deepcopy(query)
+        query.accent_phrases = _apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
+
+        phoneme, f0 = _query_to_decoder_feature(query)
+        # 中間表現を生成する。両端にマージンが付与されている点に注意
+        audio_feature = self._core.safe_generate_full_intermediate(
+            phoneme, f0, style_id
+        )
+
+        def wave_generator() -> Generator[NDArray[np.float32], None, None]:
+            # render_[start|end]: マージンを除いた有効部分の開始/終了位置
+            # slice_[start|end]: マージンを含む全体の開始/終了位置
+            for render_start in range(self._core.margin_width, len(audio_feature) - self._core.margin_width, valid_chunk_size):
+                render_end = min(render_start + valid_chunk_size, len(audio_feature) - self._core.margin_width)
+                slice_start = render_start - self._core.margin_width
+                slice_end = render_end + self._core.margin_width
+                feature_segment = audio_feature[slice_start:slice_end, :]
+                raw_wave_with_margin, sr_raw_wave = (
+                    self._core.safe_render_audio_segment(feature_segment, style_id)
+                )
+                raw_wave = raw_wave_with_margin[
+                    self._core.margin_width * 256 : -self._core.margin_width * 256
+                ]
+                wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
+                yield wave
+
+        return (len(audio_feature) - 2 * self._core.margin_width) * 256, wave_generator()
 
     def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
         """指定されたスタイル ID に関する合成機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""
