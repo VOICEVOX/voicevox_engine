@@ -23,9 +23,11 @@ jobs:
           dependency-group: dev
 
       - name: <Test> Check Python dependency security
-        uses: pypa/gh-action-pip-audit@v1.1.0
+        uses: pypa/gh-action-pip-audit@98cf6988a1ff22e7e257d180c9333bc2ac5938f3
         with:
-          inputs: requirements.txt requirements-dev.txt requirements-build.txt
+          virtual-environment: .venv
+          inputs: .
+          locked: true
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1
