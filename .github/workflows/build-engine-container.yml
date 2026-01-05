@@ -24,7 +24,7 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.25.0"
+  VOICEVOX_RESOURCE_VERSION: "0.25.1"
 
 defaults:
   run:
