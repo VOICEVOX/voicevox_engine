@@ -32,6 +32,13 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「あんこもん」を追加"
+      ],
+      "version": "0.25.1"
+    },
+    {
       "contributors": [
         "Hiroshiba",
         "mikecat",

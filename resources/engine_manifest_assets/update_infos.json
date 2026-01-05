@@ -1,5 +1,10 @@
 [
   {
+    "version": "0.25.1",
+    "descriptions": ["キャラクター「あんこもん」を追加"],
+    "contributors": []
+  },
+  {
     "version": "0.25.0",
     "descriptions": [
       "PコアとEコア搭載CPUで音声合成が遅くなる問題を修正",
