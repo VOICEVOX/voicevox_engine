@@ -339,10 +339,13 @@ jobs:
       - name: <Setup> Download models
         if: steps.models-cache-restore.outputs.cache-hit != 'true'
         run: |
+          # NOTE: VOICEVOX Nemo を除外
+          MODELS_PATTERN='[!n]*'
           # NOTE: `"y"`を流し込んで利用規約に同意している
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only models \
             --models-version "$VOICEVOX_VVM_VERSION" \
+            --models-pattern "$MODELS_PATTERN" \
             -o download/core \
             <<< y
         env:
