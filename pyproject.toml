@@ -37,7 +37,7 @@ dev = [
   "httpx>=0.28.1", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
   "mypy>=1.10.0",
   "pip-audit>=2.7.3",
-  "pip-licenses-cli==2.0.0", # NOTE: must be specified exactly (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1281)
+  "pip-licenses-cli==3.0.0", # NOTE: must be specified exactly (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1281)
   "pre-commit>=4.0.1",
   "pytest>=8.2.0",
   "ruff>=0.11.1",
@@ -76,10 +76,13 @@ docstring-code-format = true
 
 [tool.mypy]
 strict = true
-plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
+plugins = "pydantic.mypy"
 python_version = "3.11"
 ignore_missing_imports = true
 warn_unreachable = true
+
+[tool.typos.files]
+extend-exclude = ["tools/licenses"]
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument
