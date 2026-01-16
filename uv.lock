@@ -1160,13 +1160,15 @@ dev = [
     { name = "httpx" },
     { name = "mypy" },
     { name = "pip-audit" },
-    { name = "pip-licenses-cli" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "syrupy" },
     { name = "types-pyyaml" },
     { name = "typos" },
+]
+licenses = [
+    { name = "pip-licenses-cli" },
 ]
 
 [package.metadata]
@@ -1197,7 +1199,6 @@ dev = [
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "mypy", specifier = ">=1.10.0" },
     { name = "pip-audit", specifier = ">=2.7.3" },
-    { name = "pip-licenses-cli", specifier = "==3.0.0" },
     { name = "pre-commit", specifier = ">=4.0.1" },
     { name = "pytest", specifier = ">=8.2.0" },
     { name = "ruff", specifier = ">=0.11.1" },
@@ -1205,6 +1206,7 @@ dev = [
     { name = "types-pyyaml", specifier = ">=6.0.12" },
     { name = "typos", specifier = ">=1.31.1" },
 ]
+licenses = [{ name = "pip-licenses-cli", specifier = ">=3.0.0" }]
 
 [[package]]
 name = "wcwidth"

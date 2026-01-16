@@ -39,7 +39,6 @@ VOICEVOX ENGINE の方針に関するガイドは以下から確認できます�
 - パッケージ
   - [パッケージを追加する](#パッケージを追加する)
   - [パッケージを更新する](#パッケージを更新する)
-  - [パッケージ情報を pip requirements.txt ファイルへ反映する](#パッケージ情報を-pip-requirementstxt-ファイルへ反映する)
 - 静的解析
   - [静的解析を一括実行する](#静的解析を一括実行する)
 - テスト
@@ -246,16 +245,6 @@ uv lock --upgrade-package `パッケージ名`
 uv lock --upgrade # 全部更新
 ```
 
-#### パッケージ情報を pip requirements.txt ファイルへ反映する
-
-pip-audit のために requirements.txt ファイルを用意しています。
-
-```bash
-uv export --no-annotate --no-hashes --no-header -o requirements.txt # こちらを更新する場合は下２つも更新する必要があります。
-uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt
-uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt
-```
-
 ## 静的解析
 
 ### 型検査
@@ -336,7 +325,8 @@ uv run coverage run --omit=test/* -m pytest && uv run coverage report -m
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
-uv run pip-audit
+uv export --all-groups --no-header -o pylock.toml
+uv run pip-audit --locked .
 ```
 
 ## ビルド
