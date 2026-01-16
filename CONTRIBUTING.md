@@ -39,7 +39,6 @@ VOICEVOX ENGINE の方針に関するガイドは以下から確認できます�
 - パッケージ
   - [パッケージを追加する](#パッケージを追加する)
   - [パッケージを更新する](#パッケージを更新する)
-  - [パッケージ情報を pylock.toml ファイルへ反映する](#パッケージ情報を-pylocktoml-ファイルへ反映する)
 - 静的解析
   - [静的解析を一括実行する](#静的解析を一括実行する)
 - テスト
@@ -246,14 +245,6 @@ uv lock --upgrade-package `パッケージ名`
 uv lock --upgrade # 全部更新
 ```
 
-#### パッケージ情報を pylock.toml ファイルへ反映する
-
-pip-audit のために pylock.toml ファイルを用意しています。
-
-```bash
-uv export --all-groups --no-header -o pylock.toml
-```
-
 ## 静的解析
 
 ### 型検査
@@ -334,6 +325,7 @@ uv run coverage run --omit=test/* -m pytest && uv run coverage report -m
 シェルで以下のコマンドを実行することで脆弱性が診断されます。
 
 ```bash
+uv export --all-groups --no-header -o pylock.toml
 uv run pip-audit --locked .
 ```
 

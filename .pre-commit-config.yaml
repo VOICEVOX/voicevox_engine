@@ -30,9 +30,3 @@ repos:
         language: python
         stages: [pre-push]
         pass_filenames: false
-      - id: uv-export
-        name: uv-export
-        entry: uv export --all-groups --no-header -o pylock.toml
-        language: python
-        stages: [pre-push]
-        pass_filenames: false

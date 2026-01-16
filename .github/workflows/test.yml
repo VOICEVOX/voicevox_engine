@@ -30,16 +30,6 @@ jobs:
           uv lock
           git diff --exit-code
 
-      - name: <Test> Check dependency lists
-        run: |
-          uv export --all-groups --no-header -o pylock.check.toml
-
-          diff -q pylock.toml pylock.check.toml > /dev/null
-          if [ $? = 1 ]; then
-            echo "uv export has some diff"
-            exit 1
-          fi
-
       - name: <Test> Check linting
         run: uv run ruff check
 
