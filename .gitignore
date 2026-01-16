@@ -2,6 +2,7 @@
 ## Artifact of generating licenses
 /licenses.json
 licenses_venv/
+
 ## Temporary dependency lock file generated for pip-audit
 /pylock.toml
 
