@@ -4,7 +4,7 @@
 モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
-from enum import Enum
+from enum import StrEnum
 from re import fullmatch
 from typing import Annotated, Self
 
@@ -14,7 +14,7 @@ from pydantic.json_schema import SkipJsonSchema
 from ..utility.text_utility import count_mora, replace_hankaku_alphabets_with_zenkaku
 
 
-class WordTypes(str, Enum):
+class WordTypes(StrEnum):
     """品詞"""
 
     PROPER_NOUN = "PROPER_NOUN"

@@ -15,7 +15,7 @@ dependencies = [
   "pyworld>=0.3.5",
   "pyyaml>=6.0.1",
   "semver>=3.0.0",
-  "setuptools>=78.1.0", # NOTE: pyworldがpkg_resourcesを使っている。
+  "setuptools<82", # NOTE: pyworldがpkg_resourcesを使っている。
   "soundfile>=0.13.1",
   "soxr>=0.5.0",
   "starlette>=0.45.3",
@@ -30,7 +30,7 @@ pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b03
 
 [dependency-groups]
 build = [
-    "pyinstaller==6.17.0",
+  "pyinstaller>=6.17.0",
 ]
 dev = [
   "coveralls>=4.0.1",
