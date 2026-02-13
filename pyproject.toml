@@ -45,7 +45,7 @@ dev = [
   "typos>=1.31.1",
 ]
 licenses = [
-    "pip-licenses>=5.5.1",
+  "pip-licenses>=5.5.1",
 ]
 
 [tool.ruff]
