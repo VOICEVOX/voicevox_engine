@@ -594,25 +594,15 @@ wheels = [
 ]
 
 [[package]]
-name = "pip-licenses-cli"
-version = "3.0.1"
+name = "pip-licenses"
+version = "5.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pip-licenses-lib" },
     { name = "prettytable" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/89/fb4e266729965a23bc4400aff022ddbafe38668d544b3bc3b11394473551/pip_licenses_cli-3.0.1.tar.gz", hash = "sha256:6d9262325dff114897aa52b2bb996496506be5c41119ecf7b7aba237dc7b3d88", size = 23049, upload-time = "2025-11-06T08:26:38.264Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/4c/b4be9024dae3b5b3c0a6c58cc1d4a35fffe51c3adb835350cb7dcd43b5cd/pip_licenses-5.5.1.tar.gz", hash = "sha256:7df370e6e5024a3f7449abf8e4321ef868ba9a795698ad24ab6851f3e7fc65a7", size = 49108, upload-time = "2026-01-27T21:46:41.432Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/d9/fdd6f01b51e11f9a612fad3407726f9b192d3d4025888872e99e3a5ac17b/pip_licenses_cli-3.0.1-py3-none-any.whl", hash = "sha256:d5aec7414c4d7b00bd53d3f2b7ddb1898f2d596f057c1d3c305edc1b60ab5229", size = 16495, upload-time = "2025-11-06T08:26:36.902Z" },
-]
-
-[[package]]
-name = "pip-licenses-lib"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f1/9d/526e66475bc532c7d5a30eda41841b7e19582ad5e98160059888d7a4f0c9/pip_licenses_lib-1.0.0.tar.gz", hash = "sha256:aff6a67c7adc5498b3225a71dd8391cbd78c8179a0deacb16b360a971fecd381", size = 14324, upload-time = "2025-10-20T08:11:20.13Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/7e/418c30cd52375ee9fefd3a2fd9fc98688d3467577e0ab256c96c444dc06b/pip_licenses_lib-1.0.0-py3-none-any.whl", hash = "sha256:6e3bc3ef60f61e0ae3c46d3fd7849caa4d13d99fc42abd41df7562d64951a3a2", size = 9332, upload-time = "2025-10-20T08:11:19.085Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/a3/0b369cdffef3746157712804f1ded9856c75aa060217ee206f742c74e753/pip_licenses-5.5.1-py3-none-any.whl", hash = "sha256:ed5e229a93760e529cfa7edaec6630b5a2cd3874c1bddb8019e5f18a723fdead", size = 22108, upload-time = "2026-01-27T21:46:39.766Z" },
 ]
 
 [[package]]
@@ -1201,7 +1191,7 @@ dev = [
     { name = "typos" },
 ]
 licenses = [
-    { name = "pip-licenses-cli" },
+    { name = "pip-licenses" },
 ]
 
 [package.metadata]
@@ -1239,7 +1229,7 @@ dev = [
     { name = "types-pyyaml", specifier = ">=6.0.12" },
     { name = "typos", specifier = ">=1.31.1" },
 ]
-licenses = [{ name = "pip-licenses-cli", specifier = ">=3.0.0" }]
+licenses = [{ name = "pip-licenses", specifier = ">=5.5.1" }]
 
 [[package]]
 name = "wcwidth"
