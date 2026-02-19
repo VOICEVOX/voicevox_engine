@@ -30,21 +30,3 @@ repos:
         language: python
         stages: [pre-push]
         pass_filenames: false
-      - id: uv-export
-        name: uv-export
-        entry: uv export --no-annotate --no-hashes --no-header -o requirements.txt
-        language: python
-        stages: [pre-push]
-        pass_filenames: false
-      - id: uv-export-dev
-        name: uv-export-dev
-        entry: uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt
-        language: python
-        stages: [pre-push]
-        pass_filenames: false
-      - id: uv-export-build
-        name: uv-export-build
-        entry: uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt
-        language: python
-        stages: [pre-push]
-        pass_filenames: false

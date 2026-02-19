@@ -30,6 +30,12 @@ from voicevox_engine.utility.path_utility import (
     get_save_dir,
 )
 
+# Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
+# これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
+# ref: https://github.com/VOICEVOX/voicevox_engine/pull/647#issuecomment-1540204653
+_DEFAULT_HOST = "localhost"
+_DEFAULT_PORT = 50021
+
 
 def decide_boolean_from_env(env_name: str) -> bool:
     """
@@ -51,6 +57,28 @@ def decide_boolean_from_env(env_name: str) -> bool:
             return False
 
 
+def decide_port_from_env(env_name: str) -> int | None:
+    """
+    環境変数からポート番号を返す。
+
+    * 環境変数が0から65535の範囲の整数と解釈可能ならその数を返す
+    * 環境変数が空白か存在しないならNoneを返す
+    * それ以外はwarningを出してNoneを返す
+    """
+    env = os.getenv(env_name)
+    if env is None or env == "":
+        return None
+    try:
+        port = int(env)
+        if 0 <= port <= 65535:
+            return port
+    except ValueError:
+        pass
+    msg = f"Invalid environment variable value: {env_name}={env}"
+    warnings.warn(msg, stacklevel=1)
+    return None
+
+
 @dataclass(frozen=True)
 class Envs:
     """環境変数の集合"""
@@ -59,6 +87,9 @@ class Envs:
     cpu_num_threads: str | None
     env_preset_path: str | None
     disable_mutable_api: bool
+    host: str | None
+    port: int | None
+    use_gpu: bool
 
 
 _env_adapter = TypeAdapter(Envs)
@@ -71,6 +102,9 @@ def read_environment_variables() -> Envs:
         cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
         env_preset_path=os.getenv("VV_PRESET_FILE"),
         disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
+        host=os.getenv("VV_HOST"),
+        port=decide_port_from_env("VV_PORT"),
+        use_gpu=decide_boolean_from_env("VV_USE_GPU"),
     )
     return _env_adapter.validate_python(asdict(envs))
 
@@ -136,9 +170,9 @@ def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
 
 @dataclass(frozen=True)
 class _CLIArgs:
-    host: str
-    port: int
-    use_gpu: bool
+    host: str | None
+    port: int | None
+    use_gpu: bool | None
     voicevox_dir: Path | None
     voicelib_dirs: list[Path] | None
     runtime_dirs: list[Path] | None
@@ -161,20 +195,23 @@ _cli_args_adapter = TypeAdapter(_CLIArgs)
 def read_cli_arguments(envs: Envs) -> _CLIArgs:
     """コマンドライン引数を読み込む。"""
     parser = argparse.ArgumentParser(description="VOICEVOX のエンジンです。")
-    # Uvicorn でバインドするアドレスを "localhost" にすることで IPv4 (127.0.0.1) と IPv6 ([::1]) の両方でリッスンできます.
-    # これは Uvicorn のドキュメントに記載されていない挙動です; 将来のアップデートにより動作しなくなる可能性があります.
-    # ref: https://github.com/VOICEVOX/voicevox_engine/pull/647#issuecomment-1540204653
     parser.add_argument(
         "--host",
         type=str,
-        default="localhost",
-        help="接続を受け付けるホストアドレスです。",
+        help="接続を受け付けるホストアドレスです。指定しない場合、代わりに環境変数 VV_HOST の値が使われます。",
     )
     parser.add_argument(
-        "--port", type=int, default=50021, help="接続を受け付けるポート番号です。"
+        "--port",
+        type=int,
+        help="接続を受け付けるポート番号です。指定しない場合、代わりに環境変数 VV_PORT の値が使われます。",
     )
     parser.add_argument(
-        "--use_gpu", action="store_true", help="GPUを使って音声合成するようになります。"
+        "--use_gpu",
+        action=argparse.BooleanOptionalAction,
+        help=(
+            "GPUを使って音声合成するか設定します。指定しない場合、代わりに環境変数 VV_USE_GPU の値が使われます。"
+            "VV_USE_GPU の値が1の場合はGPUを使用し、0または空文字、値がない場合は使用されません。"
+        ),
     )
     parser.add_argument(
         "--voicevox_dir",
@@ -243,7 +280,7 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
     parser.add_argument(
         "--cors_policy_mode",
         type=CorsPolicyMode,
-        choices=list(CorsPolicyMode),
+        choices=[i.value for i in CorsPolicyMode],
         default=None,
         help=(
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
@@ -315,8 +352,10 @@ def main() -> None:
     if args.output_log_utf8:
         set_output_log_utf8()
 
+    use_gpu = select_first_not_none([args.use_gpu, envs.use_gpu])
+
     core_manager = initialize_cores(
-        use_gpu=args.use_gpu,
+        use_gpu=use_gpu,
         voicelib_dirs=args.voicelib_dirs,
         voicevox_dir=args.voicevox_dir,
         runtime_dirs=args.runtime_dirs,
@@ -333,7 +372,7 @@ def main() -> None:
     if args.enable_cancellable_synthesis:
         cancellable_engine = CancellableEngine(
             init_processes=args.init_processes,
-            use_gpu=args.use_gpu,
+            use_gpu=use_gpu,
             voicelib_dirs=args.voicelib_dirs,
             voicevox_dir=args.voicevox_dir,
             runtime_dirs=args.runtime_dirs,
@@ -345,6 +384,9 @@ def main() -> None:
     settings = setting_loader.load()
 
     # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
+
+    host = select_first_not_none([args.host, envs.host, _DEFAULT_HOST])
+    port = select_first_not_none([args.port, envs.port, _DEFAULT_PORT])
 
     cors_policy_mode = select_first_not_none(
         [args.cors_policy_mode, settings.cors_policy_mode]
@@ -406,7 +448,7 @@ def main() -> None:
 
     # VOICEVOX ENGINE サーバーを起動
     # NOTE: デフォルトは ASGI に準拠した HTTP/1.1 サーバー
-    uvicorn.run(app, host=args.host, port=args.port)
+    uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":

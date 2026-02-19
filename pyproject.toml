@@ -1,8 +1,6 @@
 [project]
 name = "voicevox_engine"
-version = "0.24.0"
-description = "Add your description here"
-readme = "README.md"
+version = "0.24.0" # TODO: できればversionを自動管理する
 requires-python = "==3.11.9"
 dependencies = [
   "fastapi-slim>=0.115.5",
@@ -10,13 +8,14 @@ dependencies = [
   "kanalizer>=0.1.1",
   "numpy>=2.2.3",
   "platformdirs>=4.2.0",
+  "psutil>=7.1.1",
   "pydantic>=2.7.3",
   "pyopenjtalk",
   "python-multipart>=0.0.20", # NOTE: required by fastapi.Form (fastapi-slim's unmanaged dependency)
   "pyworld>=0.3.5",
   "pyyaml>=6.0.1",
   "semver>=3.0.0",
-  "setuptools>=78.1.0", # NOTE: pyworldがpkg_resourcesを使っている。
+  "setuptools<82", # NOTE: pyworldがpkg_resourcesを使っている。
   "soundfile>=0.13.1",
   "soxr>=0.5.0",
   "starlette>=0.45.3",
@@ -30,13 +29,14 @@ default-groups = []
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
 
 [dependency-groups]
-build = ["pyinstaller>=6"]
+build = [
+  "pyinstaller>=6.17.0",
+]
 dev = [
   "coveralls>=4.0.1",
   "httpx>=0.28.1", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
   "mypy>=1.10.0",
   "pip-audit>=2.7.3",
-  "pip-licenses==5.0.0", # NOTE: must be specified exactly (ref: https://github.com/VOICEVOX/voicevox_engine/issues/1281)
   "pre-commit>=4.0.1",
   "pytest>=8.2.0",
   "ruff>=0.11.1",
@@ -44,12 +44,15 @@ dev = [
   "types-pyyaml>=6.0.12",
   "typos>=1.31.1",
 ]
+licenses = [
+  "pip-licenses>=5.5.1",
+]
 
 [tool.ruff]
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "W", "UP", "D", "D213", "PT"]
+select = ["E", "F", "B", "I", "W", "UP", "D", "D213", "PT", "NPY"]
 ignore = [
   "E501", # line-too-long
   "D400", # missing-trailing-period。日本語の「。」に対応していないため。
@@ -75,10 +78,13 @@ docstring-code-format = true
 
 [tool.mypy]
 strict = true
-plugins = "numpy.typing.mypy_plugin,pydantic.mypy"
+plugins = "pydantic.mypy"
 python_version = "3.11"
 ignore_missing_imports = true
 warn_unreachable = true
+
+[tool.typos.files]
+extend-exclude = ["tools/licenses"]
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument

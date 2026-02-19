@@ -22,10 +22,17 @@ jobs:
         with:
           dependency-group: dev
 
+      - name: <Setup> Export pylock.toml
+        run: |
+          uv export --all-groups --no-header -o pylock.toml
+
       - name: <Test> Check Python dependency security
-        uses: pypa/gh-action-pip-audit@v1.1.0
+        # 未リリースの機能を使うためmainブランチのコミットを指定している
+        uses: pypa/gh-action-pip-audit@aad10797d60f7c941f2c511ffb70fd81d998c2a2
         with:
-          inputs: requirements.txt requirements-dev.txt requirements-build.txt
+          virtual-environment: .venv
+          inputs: .
+          locked: true
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@v1

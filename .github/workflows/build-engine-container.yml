@@ -24,7 +24,7 @@ on:
         default: false
 
 env:
-  VOICEVOX_RESOURCE_VERSION: "0.24.1"
+  VOICEVOX_RESOURCE_VERSION: "0.25.1"
 
 defaults:
   run:
@@ -277,9 +277,6 @@ jobs:
           bash ./tools/build_and_push_multi_platform_docker_images.bash
 
   run-release-test-workflow:
-    # NOTE: デフォルトブランチでのビルドを一時的にやめているので、常にtrueになっている
-    # FIXME: Docker Hubにpushしない場合はfalseになるようにする
-    if: true
     needs: [config, build-docker, build-docker-multi-platform]
     uses: ./.github/workflows/test-engine-container.yml
     with:

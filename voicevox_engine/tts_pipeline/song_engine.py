@@ -8,7 +8,7 @@ from numpy.typing import NDArray
 from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
 from ..core.core_wrapper import CoreWrapper
-from ..metas.Metas import StyleId
+from ..metas.metas import StyleId
 from ..utility.core_version_utility import MOCK_CORE_VERSION, get_latest_version
 from .audio_postprocessing import raw_wave_to_output_wave
 from .model import (
@@ -272,8 +272,8 @@ class SongEngine:
         ]
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()  # type: ignore
-        volume_list: list[float] = volumes.tolist()  # type: ignore
+        f0_list: list[float] = f0s.tolist()
+        volume_list: list[float] = volumes.tolist()
 
         return phoneme_data_list, f0_list, volume_list
 
@@ -323,7 +323,7 @@ class SongEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        f0_list: list[float] = f0s.tolist()  # type: ignore
+        f0_list: list[float] = f0s.tolist()
 
         return f0_list
 
@@ -375,7 +375,7 @@ class SongEngine:
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
-        volume_list: list[float] = volumes.tolist()  # type: ignore
+        volume_list: list[float] = volumes.tolist()
 
         return volume_list
 

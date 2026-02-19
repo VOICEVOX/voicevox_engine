@@ -26,7 +26,7 @@ from voicevox_engine.core.core_adapter import CoreCharacter
 from voicevox_engine.core.core_initializer import CoreManager
 from voicevox_engine.engine_manifest import EngineManifest
 from voicevox_engine.library.library_manager import LibraryManager
-from voicevox_engine.metas.MetasStore import MetasStore
+from voicevox_engine.metas.metas_store import MetasStore
 from voicevox_engine.preset.preset_manager import PresetManager
 from voicevox_engine.resource_manager import ResourceManager
 from voicevox_engine.setting.model import CorsPolicyMode

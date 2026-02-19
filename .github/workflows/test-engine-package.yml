@@ -43,7 +43,7 @@ jobs:
             target: linux-cpu-arm64
           - os: ubuntu-22.04
             target: linux-nvidia
-          - os: macos-13
+          - os: macos-15-intel
             target: macos-x64
           - os: macos-14
             target: macos-arm64
@@ -74,8 +74,8 @@ jobs:
       - name: <Setup> Download ENGINE package
         run: |
           mkdir -p download
-          curl -L --retry 3 --retry-delay 5 -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
-          <download/list.txt xargs -I '%' curl -L --retry 3 --retry-delay 5 -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
+          curl -fL --retry 3 --retry-delay 5 -o "download/list.txt" "${{ steps.vars.outputs.release_url }}/${{ steps.vars.outputs.package_name }}.7z.txt"
+          <download/list.txt xargs -I '%' curl -fL --retry 3 --retry-delay 5 -o "download/%" "${{ steps.vars.outputs.release_url }}/%"
           7z x "download/$(head -n1 download/list.txt)"
           mv "${{ matrix.target }}" dist/
 

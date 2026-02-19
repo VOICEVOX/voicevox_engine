@@ -1,4 +1,4 @@
-# 仮想環境を作ってrequirements.txtをインストールし、ライセンス一覧を生成する
+# 仮想環境を作って実行に必要な依存のみをインストールし、ライセンス一覧を生成する
 
 set -eux
 
@@ -9,9 +9,7 @@ fi
 
 uv venv "licenses_venv"
 export VIRTUAL_ENV="licenses_venv"
-uv sync --active
-# requirements-dev.txt でバージョン指定されている pip-licenses をインストールする
-uv pip install "$(grep pip-licenses requirements-dev.txt | cut -f 1 -d ';')"
+uv sync --active --group licenses
 uv run --active tools/generate_licenses.py > "${OUTPUT_LICENSE_JSON_PATH}"
 
 rm -rf $VIRTUAL_ENV

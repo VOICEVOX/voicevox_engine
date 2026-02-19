@@ -13,10 +13,10 @@ import pyworld as pw
 from numpy.typing import NDArray
 from soxr import resample
 
-from voicevox_engine.metas.MetasStore import Character
+from voicevox_engine.metas.metas_store import Character
 from voicevox_engine.morphing.model import MorphableTargetInfo
 
-from ..metas.Metas import StyleId
+from ..metas.metas import StyleId
 from ..model import AudioQuery
 from ..tts_pipeline.tts_engine import TTSEngine
 
