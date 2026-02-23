@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
+from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
@@ -232,38 +232,35 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
-AccentPhaseLabels: TypeAlias = list[_Label]
-PauseGroup: TypeAlias = list[AccentPhaseLabels]
-
-
 def full_context_labels_to_accent_phrases(
     full_context_labels: list[str],
 ) -> list[AccentPhrase]:
     """フルコンテキストラベルからアクセント句系列を生成する"""
     all_labels = map(_Label.from_feature, full_context_labels)
+    accent_phrases: list[AccentPhrase] = []
 
-    pause_group_labels_list = [
-        list(labels)
-        for is_pau, labels in groupby(all_labels, lambda label: label.is_pause)
-        if not is_pau
-    ]
+    # ラベルをポーズで区切ってグルーピングする
+    pause_groups: list[list[_Label]] = []
+    for is_pau, labels in groupby(all_labels, lambda label: label.is_pause):
+        if not is_pau:
+            pause_groups.append(list(labels))
 
-    pause_groups: list[PauseGroup] = []
-    for pause_group_labels in pause_group_labels_list:
-        groups = groupby(
+    for i_pause_group, pause_group_labels in enumerate(pause_groups):
+        is_last_pause_group = i_pause_group == len(pause_groups) - 1
+
+        # ラベルをブレスグループとアクセント句のインデックスで区切ってグルーピングする
+        accent_groups: list[list[_Label]] = []
+        for _, _accent_labels in groupby(
             pause_group_labels,
             lambda label: (label.breath_group_index, label.accent_phrase_index),
-        )
-        pause_groups.append([list(labels) for _, labels in groups])
+        ):
+            accent_groups.append(list(_accent_labels))
 
-    accent_phrases: list[AccentPhrase] = []
-    for i_pause_group, pause_group in enumerate(pause_groups):
-        is_last_group = i_pause_group == len(pause_groups) - 1
-
-        for i_accent_phrase, labels in enumerate(pause_group):
-            is_last_phrase = i_accent_phrase == len(pause_group) - 1
-            with_pau = is_last_phrase and not is_last_group
-            accent_phrase = _generate_accent_phrase(labels, with_pau=with_pau)
+        # アクセント句を生成する
+        for i_accent_phrase, accent_labels in enumerate(accent_groups):
+            is_last_accent_phrase = i_accent_phrase == len(accent_groups) - 1
+            with_pau = is_last_accent_phrase and not is_last_pause_group
+            accent_phrase = _generate_accent_phrase(accent_labels, with_pau=with_pau)
             accent_phrases.append(accent_phrase)
 
     return accent_phrases
