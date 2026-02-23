@@ -38,6 +38,9 @@ class SpeakerSupportedFeatures(BaseModel):
         ),
         default="ALL",
     )
+    streaming_synthesis: bool = Field(
+        description="ストリーミング合成への対応", default=False,
+    )
 
 
 class Speaker(BaseModel):

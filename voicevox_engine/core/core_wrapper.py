@@ -606,6 +606,8 @@ class CoreWrapper:
     ) -> None:
         """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
+        self.margin_width = 14
+        self.feature_dim = 80
 
         self.core = load_core(core_dir, use_gpu)
 
@@ -777,6 +779,82 @@ class CoreWrapper:
                 c_int(phoneme_size),
                 f0.ctypes.data_as(POINTER(c_float)),
                 phoneme.ctypes.data_as(POINTER(c_float)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def generate_full_intermediate(
+        self,
+        length: int,
+        phoneme_size: int,
+        f0: NDArray[np.float32],
+        phoneme: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """
+        フレームごとの音素と音高から音声特徴量を求める関数
+        Parameters
+        ----------
+        length : int
+            フレームの長さ
+        phoneme_size : int
+            音素の種類数
+        f0 : NDArray[np.float32]
+            フレームごとの音高
+        phoneme : NDArray[np.float32]
+            フレームごとの音素
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.float32]
+            音声特徴量
+        """
+        output = np.empty(
+            (length + 2 * self.margin_width, self.feature_dim), dtype=np.float32
+        )
+        self.assert_core_success(
+            self.core.generate_full_intermediate(
+                c_int(length),
+                c_int(phoneme_size),
+                f0.ctypes.data_as(POINTER(c_float)),
+                phoneme.ctypes.data_as(POINTER(c_float)),
+                style_id.ctypes.data_as(POINTER(c_long)),
+                output.ctypes.data_as(POINTER(c_float)),
+            )
+        )
+        return output
+
+    def render_audio_segment(
+        self,
+        length: int,
+        audio_feature: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """
+        音声特徴量から音声波形を生成する関数
+        Parameters
+        ----------
+        length : int
+            フレームの長さ
+        audio_feature : NDArray[np.float32]
+            音声特徴量
+        style_id : NDArray[np.int64]
+            スタイル番号
+        Returns
+        -------
+        output : NDArray[np.float32]
+            音声波形
+        """
+        output = np.empty((length * 256,), dtype=np.float32)
+        self.assert_core_success(
+            self.core.render_audio_segment(
+                c_int(length),
+                c_int(self.margin_width),
+                c_int(self.feature_dim),
+                audio_feature.ctypes.data_as(POINTER(c_float)),
                 style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),
             )

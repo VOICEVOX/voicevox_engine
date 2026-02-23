@@ -1,6 +1,7 @@
 """音声合成機能を提供する API Router"""
 
 import zipfile
+from collections.abc import Generator
 from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
 from typing import Annotated, Self
@@ -10,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, StreamingResponse
 
 from voicevox_engine.cancellable_engine import (
     CancellableEngine,
@@ -18,6 +19,7 @@ from voicevox_engine.cancellable_engine import (
 )
 from voicevox_engine.core.core_adapter import DeviceSupport
 from voicevox_engine.metas.metas import StyleId
+from voicevox_engine.metas.metas_store import Character, MetasStore
 from voicevox_engine.model import AudioQuery
 from voicevox_engine.preset.preset_manager import (
     PresetInputError,
@@ -81,12 +83,25 @@ class SupportedDevicesInfo(BaseModel):
             dml=device_support.dml,
         )
 
+def is_streamable(
+    characters: list[Character], style_id: StyleId
+) -> bool:
+    """指定されたスタイル ID がストリーミング合成に対応しているか判定する。"""
+    style_id_to_character: dict[StyleId, Character] = {}
+    for character in characters:
+        for style in character.talk_styles + character.sing_styles:
+            style_id_to_character[style.id] = character
+    if style_id not in style_id_to_character:
+        return False
+    character = style_id_to_character[style_id]
+    return character.supported_features.streaming_synthesis
 
 def generate_tts_pipeline_router(
     tts_engines: TTSEngineManager,
     song_engines: SongEngineManager,
     preset_manager: PresetManager,
     cancellable_engine: CancellableEngine | None,
+    metas_store: MetasStore,
 ) -> APIRouter:
     """音声合成 API Router を生成する"""
     router = APIRouter()
@@ -400,6 +415,86 @@ def generate_tts_pipeline_router(
             media_type="application/zip",
             background=BackgroundTask(try_delete_file, f.name),
         )
+
+    @router.post(
+        "/stream_synthesis",
+        response_class=StreamingResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
+    )
+    def stream_synthesis(
+        query: AudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        chunk_length: Annotated[
+            float,
+            Query(
+                description="一度に生成されるチャンクサイズ（秒）",
+            ),
+        ] = 0.3,
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> StreamingResponse:
+        if query.outputSamplingRate != 24000:
+            raise HTTPException(
+                status_code=422,
+                detail="24kHz以外のサンプリングレートはサポートされていません",
+            )
+        if query.outputStereo:
+            raise HTTPException(
+                status_code=422,
+                detail="ステレオ出力はサポートされていません",
+            )
+        characters = metas_store.characters(core_version)
+        if not is_streamable(characters, style_id):
+            raise HTTPException(
+                status_code=422,
+                detail="指定されたスタイルはストリーミング合成に対応していません",
+            )
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_tts_engine(version)
+        frame_length, wave_generator = engine.synthesize_wave_stream(
+            query, style_id, chunk_length=chunk_length, enable_interrogative_upspeak=enable_interrogative_upspeak
+        )
+
+        def generate_wav() -> Generator[bytes, None, None]:
+            data_size = frame_length * 2
+            file_size = data_size + 44
+            channel_size = 2 if query.outputStereo else 1
+            block_size = 16 * channel_size // 8
+            block_rate = query.outputSamplingRate * block_size
+            # yield wav header, fmt chunk, and data chunk header
+            yield (
+                b"RIFF"
+                + (file_size - 8).to_bytes(4, "little")
+                + b"WAVEfmt "
+                + (16).to_bytes(4, "little")  # fmt header length
+                + (1).to_bytes(2, "little")  # PCM
+                + channel_size.to_bytes(2, "little")
+                + query.outputSamplingRate.to_bytes(4, "little")
+                + block_rate.to_bytes(4, "little")
+                + block_size.to_bytes(2, "little")
+                + (16).to_bytes(2, "little")  # bit depth
+                + b"data"
+                + data_size.to_bytes(4, "little")
+            )
+            # yield data chunk body
+            for wave in wave_generator:
+                pcm = (wave.clip(-1, 1) * 32767).astype("<i2")
+                yield pcm.tobytes()
+
+        return StreamingResponse(generate_wav(), media_type="audio/wav")
 
     @router.post(
         "/sing_frame_audio_query",

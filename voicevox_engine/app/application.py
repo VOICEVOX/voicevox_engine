@@ -88,7 +88,7 @@ def generate_app(
 
     app.include_router(
         generate_tts_pipeline_router(
-            tts_engines, song_engines, preset_manager, cancellable_engine
+            tts_engines, song_engines, preset_manager, cancellable_engine, metas_store
         )
     )
     app.include_router(generate_morphing_router(tts_engines, metas_store))
