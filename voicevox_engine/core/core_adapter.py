@@ -3,6 +3,8 @@
 import json
 import threading
 from dataclasses import dataclass
+from functools import cached_property
+from itertools import chain
 from typing import Literal, NewType
 
 import numpy as np
@@ -14,6 +16,8 @@ from .core_wrapper import CoreWrapper, OldCoreError
 
 CoreStyleId = NewType("CoreStyleId", int)
 CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+
+_CoreStyleFeature = Literal["talk", "singing_teacher", "frame_decode"]
 
 
 @dataclass(frozen=True)
@@ -45,6 +49,12 @@ class DeviceSupport:
     cpu: bool
     cuda: bool  # CUDA (Nvidia GPU)
     dml: bool  # DirectML (Nvidia GPU/Radeon GPU等)
+
+
+class CoreStyleIdError(Exception):
+    """指定されたスタイルIDが不正エラー"""
+
+    pass
 
 
 class CoreAdapter:
@@ -84,6 +94,61 @@ class CoreAdapter:
             device_support = None
         return device_support
 
+    @cached_property
+    def _styles_features_dict(self) -> dict[StyleId, set[_CoreStyleFeature]]:
+        """スタイルIDが持つ機能を表すdict"""
+        style_dict: dict[StyleId, set[_CoreStyleFeature]] = {}
+
+        styles = map(lambda x: x.styles, self.characters)
+        for style in chain.from_iterable(styles):
+            core_type = style.type
+            if core_type is None:
+                core_type = "talk"
+
+            core_style_features: set[_CoreStyleFeature]
+            if core_type == "sing":
+                core_style_features = {"frame_decode", "singing_teacher"}
+            else:
+                core_style_features = {core_type}
+
+            style_id = StyleId(style.id)
+            # NOTE: 同じスタイルが"frame_decode"と"singing_teacher"を持つ可能性がある
+            style_feature = style_dict.get(style_id)
+            if style_feature is None:
+                style_dict[style_id] = core_style_features
+            else:
+                style_feature.update(core_style_features)
+
+        return style_dict
+
+    def _assert_support_feature(
+        self,
+        style_id: StyleId,
+        target_feature: Literal["any"] | _CoreStyleFeature,
+    ) -> None:
+        """
+        指定されたスタイルが存在し、機能をサポートするか確認する。
+
+        Parameters
+        ----------
+        style_id : StyleId
+            スタイルID
+        target_feature : Literal["any"] | _CoreStyleFeature
+            "any"の場合、スタイルがあることのみを確認する。
+        """
+        style_features = self._styles_features_dict.get(style_id)
+        if style_features is None:
+            msg = "指定されたスタイルが見つかりませんでした。"
+            raise CoreStyleIdError(msg)
+
+        if target_feature == "any":
+            # StyleIDの存在チェックのみ
+            return
+
+        if target_feature not in style_features:
+            msg = "指定されたスタイルはこの機能をサポートしていません。"
+            raise CoreStyleIdError(msg)
+
     def initialize_style_id_synthesis(
         self, style_id: StyleId, skip_reinit: bool
     ) -> None:
@@ -99,6 +164,7 @@ class CoreAdapter:
         skip_reinit : bool
             True の場合, 既に初期化済みのキャラクターの再初期化をスキップします
         """
+        self._assert_support_feature(style_id, "any")
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -111,6 +177,7 @@ class CoreAdapter:
 
     def is_initialized_style_id_synthesis(self, style_id: StyleId) -> bool:
         """指定したスタイルでの音声合成が初期化されているかどうかを返す"""
+        self._assert_support_feature(style_id, "any")
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
@@ -121,6 +188,7 @@ class CoreAdapter:
     ) -> NDArray[np.float32]:
         """音素列から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         # 前後無音を付加する（詳細: voicevox_engine#924）
@@ -150,6 +218,7 @@ class CoreAdapter:
     ) -> NDArray[np.float32]:
         """モーラごとの音素列とアクセント情報からモーラごとの音高を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         # 前後無音を付加する（詳細: voicevox_engine#924）
@@ -185,6 +254,7 @@ class CoreAdapter:
     ) -> tuple[NDArray[np.float32], int]:
         """フレームごとの音素・音高とスタイル ID から波形を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.decode_forward(
@@ -206,6 +276,7 @@ class CoreAdapter:
     ) -> NDArray[np.int64]:
         """子音列・母音列・ノート長・スタイル ID から音素ごとの長さを求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "singing_teacher")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         with self.mutex:
@@ -227,6 +298,7 @@ class CoreAdapter:
     ) -> NDArray[np.float32]:
         """フレームごとの音素・ノートとスタイル ID からフレームごとの音高を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "singing_teacher")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         with self.mutex:
@@ -248,6 +320,7 @@ class CoreAdapter:
     ) -> NDArray[np.float32]:
         """フレームごとの音素・ノート・音高とスタイル ID からフレームごとの音量を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「コア仕様に従う無音付加」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "singing_teacher")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
 
         with self.mutex:
@@ -270,6 +343,7 @@ class CoreAdapter:
     ) -> tuple[NDArray[np.float32], int]:
         """フレームごとの音素・音高・音量とスタイル ID から音声波形を求める。"""
         # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
+        self._assert_support_feature(style_id, "frame_decode")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.sf_decode_forward(
