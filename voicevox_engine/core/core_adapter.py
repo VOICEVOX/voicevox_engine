@@ -35,7 +35,7 @@ class CoreCharacter:
     version: str  # キャラクターのバージョン
 
 
-_core_character_adapter = TypeAdapter(list[CoreCharacter])
+_core_characters_adapter = TypeAdapter(list[CoreCharacter])
 
 
 @dataclass(frozen=True)
@@ -67,7 +67,7 @@ class CoreAdapter:
     @property
     def characters(self) -> list[CoreCharacter]:
         """キャラクター情報"""
-        return _core_character_adapter.validate_json(self.core.metas())
+        return _core_characters_adapter.validate_json(self.core.metas())
 
     @property
     def supported_devices(self) -> DeviceSupport | None:
