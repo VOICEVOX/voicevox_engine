@@ -68,7 +68,10 @@ jobs:
         run: docker pull "${{ steps.docker_vars.outputs.image_tag }}"
 
       - name: <Setup> Run ENGINE application docker container
-        run: docker run -d -p 50021:50021 "${{ steps.docker_vars.outputs.image_tag }}"
+        id: run_container
+        run: |
+          CONTAINER_ID=$(docker run -d -p 50021:50021 "${{ steps.docker_vars.outputs.image_tag }}")
+          echo "container_id=$CONTAINER_ID" >> "$GITHUB_OUTPUT"
 
       # Docker コンテナが起動してから、レスポンスが返ってくるまで待機する
       # リトライは10回まで `/version` にアクセスしてレスポンスのステータスコードをチェック
@@ -93,6 +96,16 @@ jobs:
             fi
           done
           exit 1
+
+      - name: <Test> Verify README display in container logs
+        run: |
+          LOGS=$(docker logs "${{ steps.run_container.outputs.container_id }}" 2>&1)
+          if echo "$LOGS" | grep -q "利用規約"; then
+            echo "README display check: PASSED"
+          else
+            echo "README display check: FAILED"
+            exit 1
+          fi
 
       - name: <Test> Test ENGINE application docker container
         run: uv run tools/check_release_build.py --skip_run_process --skip_check_manifest --dist_dir dist/
