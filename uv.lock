@@ -2,6 +2,10 @@ version = 1
 revision = 3
 requires-python = "==3.11.9"
 
+[options]
+exclude-newer = "2026-03-24T09:03:07.1141685Z"
+exclude-newer-span = "P1W"
+
 [[package]]
 name = "altgraph"
 version = "0.17.5"
