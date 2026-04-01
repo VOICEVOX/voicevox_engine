@@ -220,7 +220,7 @@ VV_OUTPUT_LOG_UTF8=1 uv run run.py
 
 ## コードを編集する
 
-### パッケージ
+### Python パッケージ
 
 `uv` によってパッケージを管理しています。  
 依存パッケージは「ビルドにより音声ライブラリと一体化しても、音声ライブラリのライセンスと衝突しない」ライセンスを持つ必要があります。  
@@ -243,6 +243,18 @@ uv add --group build `パッケージ名` # ビルド依存の追加
 ```bash
 uv lock --upgrade-package `パッケージ名`
 uv lock --upgrade # 全部更新
+```
+
+### GitHub Actions のバージョン固定
+
+[pinact](https://github.com/suzuki-shunsuke/pinact) を使って GitHub Actions のバージョンを full-length commit SHA に固定しています。
+
+```bash
+# バージョンを固定する
+pinact run
+
+# バージョンを更新して固定する
+pinact run --update --min-age 7
 ```
 
 ## 静的解析
@@ -273,13 +285,13 @@ uv lock --upgrade # 全部更新
 ### タイポ検査
 
 タイポ検査を採用しています。  
-目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `pyproject.toml` を編集してください。  
+目的は可読性の向上であり、チェッカーには [`typos`](https://github.com/crate-ci/typos) を採用しています。誤判定やチェックから除外すべきファイルがあれば[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives)に従って `pyproject.toml` を編集してください。
 
 タイポ検査の実行は "[静的解析を一括実行する](#静的解析を一括実行する)" 節を参照してください。
 
 ### 静的解析を一括実行する
 
-シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)・[タイポ検査](#タイポ検査)）が一括実行されます。  
+シェルで以下のコマンドを実行することで静的解析（[型検査](#型検査)・[リント](#リント)・[整形](#整形)・[タイポ検査](#タイポ検査)）が一括実行されます。
 
 ```bash
 ## 一括でチェックのみをおこなう
