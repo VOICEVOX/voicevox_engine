@@ -30,6 +30,9 @@ class MockTTSEngine(TTSEngine):
         enable_interrogative_upspeak: bool,
     ) -> NDArray[np.float32]:
         """音声合成用のクエリに含まれる読み仮名に基づいてOpenJTalkで音声波形を生成する。モーラごとの調整は反映されない。"""
+        # 不正なスタイルIDを渡されたときの動作を製品版に揃えるためスタイルの存在チェックをする
+        self._core._assert_support_feature(style_id, "talk")
+
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
 
