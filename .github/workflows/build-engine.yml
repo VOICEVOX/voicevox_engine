@@ -57,6 +57,8 @@ jobs:
   build-and-upload:
     needs: [config]
     environment: ${{ github.event.inputs.code_signing == 'true' && 'code_signing' || '' }} # コード署名用のenvironment
+    permissions:
+      contents: write
     strategy:
       matrix:
         include:
@@ -553,6 +555,8 @@ jobs:
     if: needs.config.outputs.version != ''
     needs: [config, build-and-upload]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: <Setup> Check out the repository
         uses: actions/checkout@v4
@@ -573,6 +577,8 @@ jobs:
   run-build-engine-container-workflow:
     if: needs.config.outputs.version != ''
     needs: [config, run-release-test-workflow]
+    permissions:
+      packages: write
     uses: ./.github/workflows/build-engine-container.yml
     with:
       version: ${{ needs.config.outputs.version }}
