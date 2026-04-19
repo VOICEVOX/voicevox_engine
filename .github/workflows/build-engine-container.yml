@@ -55,7 +55,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     permissions:
-      contents: read
       packages: write
 
     strategy:
@@ -214,7 +213,6 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
       packages: write
 
     strategy:
