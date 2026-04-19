@@ -41,8 +41,8 @@ jobs:
       - name: <Setup> Declare variables
         id: vars
         run: |
-          : # releaseタグ名か、workflow_dispatchでのバージョン名が入る
-          echo "version=${{ github.event.release.tag_name || github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          : # workflow_call か workflow_dispatch でのバージョン名が入る
+          echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
           : # GitHub Container RegistryのDockerイメージリポジトリ
           echo "ghcr_repository=ghcr.io/${{ github.repository }}" | tr "[:upper:]" "[:lower:]" >> "$GITHUB_OUTPUT"
@@ -156,7 +156,6 @@ jobs:
 
             # Docker Hub
             # TODO: レジストリごとにプッシュするプレフィックスを変更したい（ https://github.com/VOICEVOX/voicevox_engine/issues/1663 ）
-            # NOTE: workflow_call・workflow_dispatch以外では、 `{{ inputs.push_dockerhub }} == "null"` であるため、 `if [[ false ]]` となる
             if [[ "${{ inputs.push_dockerhub }}" == "true" ]]; then
               uv run tools/generate_docker_image_names.py \
                 --repository "${{ needs.config.outputs.dockerhub_repository }}" \
