@@ -4,7 +4,12 @@ import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
-from test.utility import round_floats
+from test.utility import (
+    FRAME_DECODE_STYLE_ID,
+    NOT_EXIST_STYLE_ID,
+    SING_STYLE_ID,
+    round_floats,
+)
 
 
 def test_post_audio_query_200(
@@ -15,7 +20,9 @@ def test_post_audio_query_200(
     assert snapshot_json == round_floats(response.json(), round_value=2)
 
 
-@pytest.mark.parametrize("style_id", [-1024, 5, 7])
+@pytest.mark.parametrize(
+    "style_id", [NOT_EXIST_STYLE_ID, FRAME_DECODE_STYLE_ID, SING_STYLE_ID]
+)
 def test_post_audio_query_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
 ) -> None:

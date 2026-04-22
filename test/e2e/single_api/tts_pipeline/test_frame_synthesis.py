@@ -4,7 +4,11 @@ import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
-from test.utility import hash_wave_floats_from_wav_bytes
+from test.utility import (
+    NOT_EXIST_STYLE_ID,
+    TALK_STYLE_ID,
+    hash_wave_floats_from_wav_bytes,
+)
 
 _query = {
     "f0": [
@@ -92,7 +96,7 @@ def test_post_frame_synthesis_200(
     assert snapshot == hash_wave_floats_from_wav_bytes(response.read())
 
 
-@pytest.mark.parametrize("style_id", [-1024, 0])
+@pytest.mark.parametrize("style_id", [NOT_EXIST_STYLE_ID, TALK_STYLE_ID])
 def test_post_frame_synthesis_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
 ) -> None:

@@ -8,7 +8,12 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 from test.e2e.single_api.utils import gen_mora
-from test.utility import hash_wave_floats_from_wav_bytes
+from test.utility import (
+    FRAME_DECODE_STYLE_ID,
+    NOT_EXIST_STYLE_ID,
+    SING_STYLE_ID,
+    hash_wave_floats_from_wav_bytes,
+)
 
 _queries = [
     {
@@ -80,7 +85,9 @@ def test_post_multi_synthesis_200(
             assert snapshot == hash_wave_floats_from_wav_bytes(wav)
 
 
-@pytest.mark.parametrize("style_id", [-1024, 5, 7])
+@pytest.mark.parametrize(
+    "style_id", [NOT_EXIST_STYLE_ID, FRAME_DECODE_STYLE_ID, SING_STYLE_ID]
+)
 def test_post_audio_query_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
 ) -> None:

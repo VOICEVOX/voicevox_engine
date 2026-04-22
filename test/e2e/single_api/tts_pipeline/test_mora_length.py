@@ -5,7 +5,12 @@ from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
 from test.e2e.single_api.utils import gen_mora
-from test.utility import round_floats
+from test.utility import (
+    FRAME_DECODE_STYLE_ID,
+    NOT_EXIST_STYLE_ID,
+    SING_STYLE_ID,
+    round_floats,
+)
 
 _accent_phrases = [
     {
@@ -29,7 +34,9 @@ def test_post_mora_length_200(
     assert snapshot_json == round_floats(response.json(), 2)
 
 
-@pytest.mark.parametrize("style_id", [-1024, 5, 7])
+@pytest.mark.parametrize(
+    "style_id", [NOT_EXIST_STYLE_ID, FRAME_DECODE_STYLE_ID, SING_STYLE_ID]
+)
 def test_post_mora_length_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
 ) -> None:
