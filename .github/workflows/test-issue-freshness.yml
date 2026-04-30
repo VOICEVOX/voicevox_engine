@@ -13,6 +13,8 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: <Test> Notify inactive 必要性議論 issues
         uses: actions/stale@v9
