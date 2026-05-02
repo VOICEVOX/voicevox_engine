@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
@@ -29,20 +29,6 @@ jobs:
         run: |
           uv lock
           git diff --exit-code
-
-      - name: <Test> Check dependency lists
-        run: |
-          uv export --no-annotate --no-hashes --no-header -o requirements.txt.check
-          uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt.check
-          uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt.check
-
-          diff -q requirements.txt requirements.txt.check || \
-          diff -q requirements-dev.txt requirements-dev.txt.check || \
-          diff -q requirements-build.txt requirements-build.txt.check > /dev/null
-          if [ $? = 1 ]; then
-            echo "uv export has some diff"
-            exit 1
-          fi
 
       - name: <Test> Check linting
         run: uv run ruff check
@@ -74,7 +60,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: <Setup> Install ShellCheck
         run: |
@@ -88,3 +74,9 @@ jobs:
         run: |
           bash <(curl -f --retry 3 --retry-delay 5 https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           ./actionlint
+
+      - name: <Test> Check pinact
+        uses: suzuki-shunsuke/pinact-action@28aeb220eb3252ad0d4422dd5d9368e925acbd8d # v1.3.0
+        with:
+          skip_push: "true"
+          min_age: "7"

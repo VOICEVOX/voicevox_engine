@@ -1,6 +1,5 @@
 """ユーザー辞書関連の処理"""
 
-import json
 import sys
 import threading
 import warnings
@@ -234,11 +233,12 @@ class UserDictionary:
         if not self._user_dict_path.is_file():
             return {}
 
-        with self._user_dict_path.open(encoding="utf-8") as f:
-            save_format_dict = _save_format_dict_adapter.validate_python(json.load(f))
-            result: dict[str, UserDictWord] = {}
-            for word_uuid, word in save_format_dict.items():
-                result[str(UUID(word_uuid))] = convert_from_save_format(word)
+        save_format_dict = _save_format_dict_adapter.validate_json(
+            self._user_dict_path.read_bytes()
+        )
+        result: dict[str, UserDictWord] = {}
+        for word_uuid, word in save_format_dict.items():
+            result[str(UUID(word_uuid))] = convert_from_save_format(word)
         return result
 
     def import_user_dict(
