@@ -19,9 +19,11 @@ defaults:
 jobs:
   upload-doc:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
@@ -30,7 +32,7 @@ jobs:
         run: PYTHONPATH=. uv run tools/make_docs.py
 
       - name: <Deploy> Deploy documents to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.PUBLISH_DIR }}

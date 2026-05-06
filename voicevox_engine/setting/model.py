@@ -4,10 +4,10 @@
 モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
-from enum import Enum
+from enum import StrEnum
 
 
-class CorsPolicyMode(str, Enum):
+class CorsPolicyMode(StrEnum):
     """CORSの許可モード。"""
 
     all = "all"  # 全てのオリジンからのリクエストを許可

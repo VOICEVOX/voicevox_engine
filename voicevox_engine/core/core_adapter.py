@@ -3,7 +3,7 @@
 import json
 import threading
 from dataclasses import dataclass
-from typing import Any, Literal, NewType
+from typing import Literal, NewType
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,7 +35,7 @@ class CoreCharacter:
     version: str  # キャラクターのバージョン
 
 
-_core_character_adapter = TypeAdapter(CoreCharacter)
+_core_characters_adapter = TypeAdapter(list[CoreCharacter])
 
 
 @dataclass(frozen=True)
@@ -71,8 +71,7 @@ class CoreAdapter:
     @property
     def characters(self) -> list[CoreCharacter]:
         """キャラクター情報"""
-        metas: list[Any] = json.loads(self.core.metas())
-        return list(map(_core_character_adapter.validate_python, metas))
+        return _core_characters_adapter.validate_json(self.core.metas())
 
     @property
     def supported_devices(self) -> DeviceSupport | None:

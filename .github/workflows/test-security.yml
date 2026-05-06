@@ -15,20 +15,27 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
           dependency-group: dev
 
+      - name: <Setup> Export pylock.toml
+        run: |
+          uv export --all-groups --no-header -o pylock.toml
+
       - name: <Test> Check Python dependency security
-        uses: pypa/gh-action-pip-audit@v1.1.0
+        # 未リリースの機能を使うためmainブランチのコミットを指定している
+        uses: pypa/gh-action-pip-audit@aad10797d60f7c941f2c511ffb70fd81d998c2a2
         with:
-          inputs: requirements.txt requirements-dev.txt requirements-build.txt
+          virtual-environment: .venv
+          inputs: .
+          locked: true
 
       - name: <Deploy> Notify Discord of security testing result
-        uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
