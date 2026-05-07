@@ -389,6 +389,7 @@ class TTSEngine:
         self,
         query: AudioQuery,
         style_id: StyleId,
+        start_offset: float = 0.0,
         chunk_length: float = 0.3,
         enable_interrogative_upspeak: bool = True,
     ) -> tuple[int, Generator[NDArray[np.float32], None, None]]:
@@ -404,6 +405,11 @@ class TTSEngine:
         audio_feature = self._core.safe_generate_full_intermediate(
             phoneme, f0, style_id
         )
+        # オフセット分のフレーム数だけずらす
+        audio_feature = audio_feature[max(0, round(start_offset * 24000 / 256)):]
+        # オフセットが生成音声よりも長い場合は空の音声を返す
+        if len(audio_feature) - 2 * self._core.margin_width <= 0:
+            return 0, iter([])
 
         def wave_generator() -> Generator[NDArray[np.float32], None, None]:
             # render_[start|end]: マージンを除いた有効部分の開始/終了位置

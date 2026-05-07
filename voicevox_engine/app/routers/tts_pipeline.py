@@ -418,10 +418,16 @@ def generate_tts_pipeline_router(
     def stream_synthesis(
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        chunk_length: Annotated[
+        start_offset: Annotated[
             float,
             Query(
-                description="一度に生成されるチャンクサイズ（秒）",
+                description="生成開始位置（秒）。省略時は先頭から生成する"
+            ),
+        ] = 0,
+        segment_length: Annotated[
+            float,
+            Query(
+                description="一度に生成されるセグメントの長さ（秒）",
             ),
         ] = 0.3,
         enable_interrogative_upspeak: Annotated[
@@ -445,7 +451,7 @@ def generate_tts_pipeline_router(
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         frame_length, wave_generator = engine.synthesize_wave_stream(
-            query, style_id, chunk_length=chunk_length, enable_interrogative_upspeak=enable_interrogative_upspeak
+            query, style_id, start_offset=start_offset, chunk_length=segment_length, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
 
         def generate_wav() -> Generator[bytes, None, None]:
