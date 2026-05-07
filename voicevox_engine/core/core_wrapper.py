@@ -497,6 +497,28 @@ _CORE_API_TYPES = {
         ),
         restype=c_bool,
     ),
+    "generate_full_intermediate": _CoreApiType(
+        argtypes=(
+            c_int,
+            c_int,
+            POINTER(c_float),
+            POINTER(c_float),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
+    "render_audio_segment": _CoreApiType(
+        argtypes=(
+            c_int,
+            c_int,
+            c_int,
+            POINTER(c_float),
+            POINTER(c_long),
+            POINTER(c_float),
+        ),
+        restype=c_bool,
+    ),
     "predict_sing_consonant_length_forward": _CoreApiType(
         argtypes=(
             c_int,
@@ -812,6 +834,8 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声特徴量
         """
+        if not self.api_exists["generate_full_intermediate"]:
+            raise OldCoreError
         output = np.empty(
             (length + 2 * self.margin_width, self.feature_dim), dtype=np.float32
         )
@@ -848,6 +872,8 @@ class CoreWrapper:
         output : NDArray[np.float32]
             音声波形
         """
+        if not self.api_exists["render_audio_segment"]:
+            raise OldCoreError
         output = np.empty((length * 256,), dtype=np.float32)
         self.assert_core_success(
             self.core.render_audio_segment(
