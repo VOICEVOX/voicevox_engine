@@ -817,6 +817,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         フレームごとの音素と音高から音声特徴量を求める関数
+
         Parameters
         ----------
         length : int
@@ -829,6 +830,7 @@ class CoreWrapper:
             フレームごとの音素
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]
@@ -859,6 +861,7 @@ class CoreWrapper:
     ) -> NDArray[np.float32]:
         """
         音声特徴量から音声波形を生成する関数
+
         Parameters
         ----------
         length : int
@@ -867,6 +870,7 @@ class CoreWrapper:
             音声特徴量
         style_id : NDArray[np.int64]
             スタイル番号
+
         Returns
         -------
         output : NDArray[np.float32]

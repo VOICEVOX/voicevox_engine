@@ -66,6 +66,7 @@ class CoreAdapter:
 
     @property
     def margin_width(self) -> int:
+        """音声特徴量の前後に付加される無音部分のフレーム数。"""
         return self.core.margin_width
 
     @property
@@ -207,6 +208,7 @@ class CoreAdapter:
         f0: NDArray[np.float32],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
+        """フレームごとの音素と音高から音声特徴量を求める。"""
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             audio_feature = self.core.generate_full_intermediate(
@@ -223,6 +225,7 @@ class CoreAdapter:
         audio_feature: NDArray[np.float32],
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
+        """音声特徴量とスタイル ID から音声波形を求める。"""
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.render_audio_segment(
