@@ -37,7 +37,7 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
 
     # 指定されたスタイルIDが不正エラー
     @app.exception_handler(CoreStyleIdError)
-    async def style_id_invaled_handler(
+    async def style_id_invalid_handler(
         request: Request, e: CoreStyleIdError
     ) -> JSONResponse:
         return JSONResponse(status_code=422, content={"message": str(e)})

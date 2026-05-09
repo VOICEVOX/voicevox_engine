@@ -8,7 +8,7 @@ import numpy as np
 import soundfile as sf
 from fastapi.encoders import jsonable_encoder
 
-NOT_EXIST_STYLE_ID = -1024
+NOT_FOUND_STYLE_ID = -1024
 TALK_STYLE_ID = 0
 FRAME_DECODE_STYLE_ID = 5
 SING_STYLE_ID = 7

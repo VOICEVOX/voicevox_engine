@@ -6,14 +6,14 @@ from syrupy.assertion import SnapshotAssertion
 
 from test.utility import (
     FRAME_DECODE_STYLE_ID,
-    NOT_EXIST_STYLE_ID,
+    NOT_FOUND_STYLE_ID,
     SING_STYLE_ID,
     TALK_STYLE_ID,
 )
 
 
 @pytest.mark.parametrize(
-    "style_id", [NOT_EXIST_STYLE_ID, FRAME_DECODE_STYLE_ID, SING_STYLE_ID]
+    "style_id", [NOT_FOUND_STYLE_ID, FRAME_DECODE_STYLE_ID, SING_STYLE_ID]
 )
 def test_accent_phrases_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
@@ -25,7 +25,7 @@ def test_accent_phrases_with_invalid_style_422(
     assert snapshot_json == response.json()
 
 
-@pytest.mark.parametrize("style_id", [NOT_EXIST_STYLE_ID, TALK_STYLE_ID])
+@pytest.mark.parametrize("style_id", [NOT_FOUND_STYLE_ID, TALK_STYLE_ID])
 def test_frame_synthesis_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
 ) -> None:
@@ -108,18 +108,18 @@ def test_frame_synthesis_with_invalid_style_422(
     assert snapshot_json == response.json()
 
 
-def test_initialize_speaker_with_not_exist_id_422(
+def test_initialize_speaker_with_not_found_style_422(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.post(
-        "/initialize_speaker", params={"speaker": NOT_EXIST_STYLE_ID}
+        "/initialize_speaker", params={"speaker": NOT_FOUND_STYLE_ID}
     )
     assert response.status_code == 422
     assert snapshot_json == response.json()
 
 
 @pytest.mark.parametrize(
-    "style_id", [NOT_EXIST_STYLE_ID, TALK_STYLE_ID, FRAME_DECODE_STYLE_ID]
+    "style_id", [NOT_FOUND_STYLE_ID, TALK_STYLE_ID, FRAME_DECODE_STYLE_ID]
 )
 def test_sing_frame_audio_query_with_invalid_style_422(
     client: TestClient, style_id: int, snapshot_json: SnapshotAssertion
