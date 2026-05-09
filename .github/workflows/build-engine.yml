@@ -150,6 +150,7 @@ jobs:
         if: steps.zlib-cache-restore.outputs.cache-hit != 'true' && matrix.zlib_url != ''
         run: |
           curl -fL --retry 3 --retry-delay 5 "${{ matrix.zlib_url }}" -o download/zlib.zip
+          echo "fd324c6923aa4f45a60413665e0b68bb34a7779d0861849e02d2711ff8efb9a4  download/zlib.zip" | sha256sum --check
           mkdir -p download/zlib
 
           # extract only dlls
