@@ -121,29 +121,21 @@ class CoreAdapter:
 
         return style_id_to_features
 
-    def _assert_style_supports_feature(
-        self,
-        style_id: StyleId,
-        target_feature: Literal["any"] | _CoreStyleFeature,
-    ) -> None:
-        """
-        指定されたスタイルが存在し、機能をサポートするか確認する。
-
-        Parameters
-        ----------
-        style_id : StyleId
-            スタイルID
-        target_feature : Literal["any"] | _CoreStyleFeature
-            "any"の場合、スタイルがあることのみを確認する。
-        """
+    def _assert_style_exists(self, style_id: StyleId) -> None:
+        """指定されたスタイルが存在するか確認する。"""
         style_features = self._style_id_to_features.get(style_id)
         if style_features is None:
             msg = "指定されたスタイルが見つかりませんでした。"
             raise CoreStyleIdError(msg)
 
-        if target_feature == "any":
-            # StyleIDの存在チェックのみ
-            return
+    def _assert_style_supports_feature(
+        self,
+        style_id: StyleId,
+        target_feature: _CoreStyleFeature,
+    ) -> None:
+        """指定されたスタイルが存在し、機能をサポートするか確認する。"""
+        self._assert_style_exists(style_id)
+        style_features = self._style_id_to_features[style_id]
 
         if target_feature not in style_features:
             msg = "指定されたスタイルはこの機能をサポートしていません。"
@@ -164,7 +156,7 @@ class CoreAdapter:
         skip_reinit : bool
             True の場合, 既に初期化済みのキャラクターの再初期化をスキップします
         """
-        self._assert_style_supports_feature(style_id, "any")
+        self._assert_style_exists(style_id)
         try:
             with self.mutex:
                 # 以下の条件のいずれかを満たす場合, 初期化を実行する
@@ -177,7 +169,7 @@ class CoreAdapter:
 
     def is_initialized_style_id_synthesis(self, style_id: StyleId) -> bool:
         """指定したスタイルでの音声合成が初期化されているかどうかを返す"""
-        self._assert_style_supports_feature(style_id, "any")
+        self._assert_style_exists(style_id)
         try:
             return self.core.is_model_loaded(style_id)
         except OldCoreError:
