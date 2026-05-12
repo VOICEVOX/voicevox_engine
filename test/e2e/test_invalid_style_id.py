@@ -4,12 +4,10 @@ import pytest
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
-from test.utility import (
-    FRAME_DECODE_STYLE_ID,
-    NOT_FOUND_STYLE_ID,
-    SING_STYLE_ID,
-    TALK_STYLE_ID,
-)
+NOT_FOUND_STYLE_ID = -1024
+TALK_STYLE_ID = 0
+FRAME_DECODE_STYLE_ID = 5
+SING_STYLE_ID = 7
 
 
 @pytest.mark.parametrize(

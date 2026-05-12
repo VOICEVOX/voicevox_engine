@@ -8,11 +8,6 @@ import numpy as np
 import soundfile as sf
 from fastapi.encoders import jsonable_encoder
 
-NOT_FOUND_STYLE_ID = -1024
-TALK_STYLE_ID = 0
-FRAME_DECODE_STYLE_ID = 5
-SING_STYLE_ID = 7
-
 
 def round_floats(value: Any, round_value: int) -> Any:
     """floatの小数点以下を再帰的に丸める。"""
