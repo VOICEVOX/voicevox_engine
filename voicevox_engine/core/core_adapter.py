@@ -123,8 +123,7 @@ class CoreAdapter:
 
     def _assert_style_exists(self, style_id: StyleId) -> None:
         """指定されたスタイルが存在するか確認する。"""
-        style_features = self._style_id_to_features.get(style_id)
-        if style_features is None:
+        if style_id not in self._style_id_to_features:
             msg = "指定されたスタイルが見つかりませんでした。"
             raise CoreStyleIdError(msg)
 
