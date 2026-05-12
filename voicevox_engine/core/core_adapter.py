@@ -112,11 +112,11 @@ class CoreAdapter:
                 core_style_features = {style_type}
 
             style_id = StyleId(style.id)
-            # NOTE: 同じスタイルが"frame_decode"と"singing_teacher"を持つ可能性がある
             style_features = style_id_to_features.get(style_id)
             if style_features is None:
                 style_id_to_features[style_id] = core_style_features
             else:
+                # NOTE: 同じスタイルが"frame_decode"と"singing_teacher"を持つ可能性がある
                 style_features.update(core_style_features)
 
         return style_id_to_features
