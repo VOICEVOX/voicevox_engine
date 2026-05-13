@@ -82,7 +82,7 @@ def test_post_frame_synthesis_200(
         "outputSamplingRate": 24000,
         "outputStereo": False,
     }
-    response = client.post("/frame_synthesis", params={"speaker": 0}, json=query)
+    response = client.post("/frame_synthesis", params={"speaker": 4}, json=query)
     assert response.status_code == 200
 
     # FileResponse 内の .wav から抽出された音声波形が一致する

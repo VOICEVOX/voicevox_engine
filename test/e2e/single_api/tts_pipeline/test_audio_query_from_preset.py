@@ -14,8 +14,8 @@ def test_post_audio_query_from_preset_200(
     preset = {
         "id": 8888,
         "name": "test_preset",
-        "speaker_uuid": "123-456-789-234",
-        "style_id": 9999,
+        "speaker_uuid": "35b2c544-660e-401e-b503-0e14c635303a",
+        "style_id": 8,
         "speedScale": 1.1,
         "pitchScale": 0.9,
         "intonationScale": 1.2,
