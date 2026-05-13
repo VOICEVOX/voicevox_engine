@@ -35,7 +35,7 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
         msg = "モックが見つかりません。エンジンの起動引数 `--enable_mock` を確認してください。"
         return JSONResponse(status_code=422, content={"message": msg})
 
-    # 指定されたスタイルIDが不正エラー
+    # 指定されたスタイルIDが利用できないエラー
     @app.exception_handler(CoreStyleIdError)
     async def style_id_invalid_handler(
         request: Request, e: CoreStyleIdError

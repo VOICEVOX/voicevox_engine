@@ -52,7 +52,7 @@ class DeviceSupport:
 
 
 class CoreStyleIdError(Exception):
-    """指定されたスタイルIDが不正エラー"""
+    """指定されたスタイルIDが利用できないエラー"""
 
     pass
 
@@ -96,7 +96,7 @@ class CoreAdapter:
 
     @cached_property
     def _style_id_to_features(self) -> dict[StyleId, set[_CoreStyleFeature]]:
-        """スタイルIDが持つ機能を表すdict"""
+        """スタイル ID ごとの対応機能。"""
         style_id_to_features: dict[StyleId, set[_CoreStyleFeature]] = {}
 
         styles = map(lambda x: x.styles, self.characters)
@@ -122,7 +122,7 @@ class CoreAdapter:
         return style_id_to_features
 
     def _assert_style_exists(self, style_id: StyleId) -> None:
-        """指定されたスタイルが存在するか確認する。"""
+        """指定されたスタイルが存在するか検証する。"""
         if style_id not in self._style_id_to_features:
             msg = "指定されたスタイルが見つかりませんでした。"
             raise CoreStyleIdError(msg)
@@ -132,7 +132,7 @@ class CoreAdapter:
         style_id: StyleId,
         target_feature: _CoreStyleFeature,
     ) -> None:
-        """指定されたスタイルが存在し、機能をサポートするか確認する。"""
+        """指定されたスタイルが存在し、機能をサポートするか検証する。"""
         self._assert_style_exists(style_id)
         style_features = self._style_id_to_features[style_id]
 

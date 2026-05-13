@@ -1,4 +1,4 @@
-"""不適切なStyleIDを渡した場合のテスト"""
+"""不正なスタイルIDを渡した場合のテスト"""
 
 import pytest
 from fastapi.testclient import TestClient
