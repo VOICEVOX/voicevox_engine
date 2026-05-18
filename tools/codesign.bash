@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # !!! コードサイニング証明書を取り扱うので取り扱い注意 !!!
 
-# eSignerCKAを使ってコード署名する
+# eSignerCKAを使ってコード署名する。
+# バージョンアップ時はチェックサムを sha256sum で確認して更新する。リリースから7日以上経過後が望ましい。
 
 set -eu
 
@@ -28,6 +29,7 @@ target_file_glob="$1"
 INSTALL_DIR='..\eSignerCKA'
 if [ ! -d "$INSTALL_DIR" ]; then
     curl -fLO --retry 3 --retry-delay 5 "https://github.com/SSLcom/eSignerCKA/releases/download/v1.0.6/SSL.COM-eSigner-CKA_1.0.6.zip"
+    echo "e4971440e4ebed94328492cf36e18999554c5c657c856f1cb14a6072c8b1c263  SSL.COM-eSigner-CKA_1.0.6.zip" | sha256sum --check
     unzip -o SSL.COM-eSigner-CKA_1.0.6.zip
     mv ./*eSigner*CKA_*.exe eSigner_CKA_Installer.exe
     powershell "

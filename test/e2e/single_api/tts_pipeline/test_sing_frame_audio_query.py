@@ -18,7 +18,7 @@ def test_post_sing_frame_audio_query_200(
             {"id": "e", "key": None, "frame_length": 10, "lyric": ""},
         ]
     }
-    response = client.post("/sing_frame_audio_query", params={"speaker": 0}, json=score)
+    response = client.post("/sing_frame_audio_query", params={"speaker": 7}, json=score)
     assert response.status_code == 200
     assert snapshot_json == round_floats(response.json(), 2)
 
@@ -36,6 +36,6 @@ def test_post_sing_old_frame_audio_query_200(
             {"key": None, "frame_length": 10, "lyric": ""},
         ]
     }
-    response = client.post("/sing_frame_audio_query", params={"speaker": 0}, json=score)
+    response = client.post("/sing_frame_audio_query", params={"speaker": 7}, json=score)
     assert response.status_code == 200
     assert snapshot_json == round_floats(response.json(), 2)

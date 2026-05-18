@@ -3,6 +3,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from voicevox_engine.core.core_adapter import CoreStyleIdError
 from voicevox_engine.core.core_initializer import CoreNotFound
 from voicevox_engine.tts_pipeline.tts_engine import (
     MockTTSEngineNotFound,
@@ -33,5 +34,12 @@ def configure_global_exception_handlers(app: FastAPI) -> FastAPI:
     ) -> JSONResponse:
         msg = "モックが見つかりません。エンジンの起動引数 `--enable_mock` を確認してください。"
         return JSONResponse(status_code=422, content={"message": msg})
+
+    # 指定されたスタイルIDが利用できないエラー
+    @app.exception_handler(CoreStyleIdError)
+    async def style_id_invalid_handler(
+        request: Request, e: CoreStyleIdError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=422, content={"message": str(e)})
 
     return app
