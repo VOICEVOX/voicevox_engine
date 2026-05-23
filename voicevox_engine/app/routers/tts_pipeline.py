@@ -403,7 +403,7 @@ def generate_tts_pipeline_router(
         )
 
     @router.post(
-        "/stream_synthesis",
+        "/streaming_synthesis",
         response_class=StreamingResponse,
         responses={
             200: {
@@ -415,7 +415,7 @@ def generate_tts_pipeline_router(
         tags=["音声合成"],
         summary="ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
     )
-    def stream_synthesis(
+    def streaming_synthesis(
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         start_offset: Annotated[
