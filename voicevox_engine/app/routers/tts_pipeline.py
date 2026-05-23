@@ -428,6 +428,7 @@ def generate_tts_pipeline_router(
             float,
             Query(
                 description="一度に生成されるセグメントの長さ（秒）",
+                gt=0,
             ),
         ] = 0.3,
         enable_interrogative_upspeak: Annotated[
