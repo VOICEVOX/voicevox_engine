@@ -8,6 +8,7 @@ from typing import Annotated, Self
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
+import numpy as np
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
@@ -451,12 +452,12 @@ def generate_tts_pipeline_router(
             )
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        frame_length, wave_generator = engine.synthesize_wave_stream(
+        wave_length, wave_generator = engine.synthesize_wave_stream(
             query, style_id, start_offset=start_offset, segment_length=segment_length, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
 
         def generate_wav() -> Generator[bytes, None, None]:
-            data_size = frame_length * 2
+            data_size = wave_length * 2
             file_size = data_size + 44
             channel_size = 2 if query.outputStereo else 1
             block_size = 16 * channel_size // 8
@@ -478,7 +479,7 @@ def generate_tts_pipeline_router(
             )
             # wave_generatorから生成された音声セグメントを都度16bit PCMに変換してyieldする
             for wave in wave_generator:
-                pcm = (wave.clip(-1, 1) * 32767).astype("<i2")
+                pcm = np.floor(np.clip(wave * 32768, -32768, 32767)).astype("<i2")
                 yield pcm.tobytes()
 
         return StreamingResponse(generate_wav(), media_type="audio/wav")

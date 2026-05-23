@@ -77,7 +77,7 @@ class CoreAdapter:
     @property
     def margin_width(self) -> int:
         """音声特徴量の前後に付加される無音部分のフレーム数。"""
-        return self.core.margin_width
+        return self.core.audio_feature_margin_width
 
     @property
     def characters(self) -> list[CoreCharacter]:

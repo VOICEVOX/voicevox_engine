@@ -628,8 +628,8 @@ class CoreWrapper:
     ) -> None:
         """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
-        self.margin_width = 14
-        self.feature_dim = 80
+        self.audio_feature_margin_width = 14
+        self.audio_feature_dimension = 80
 
         self.core = load_core(core_dir, use_gpu)
 
@@ -816,7 +816,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        フレームごとの音素と音高から音声特徴量を求める関数
+        フレームごとの音素と音高から音声特徴量を求める。
 
         Parameters
         ----------
@@ -839,7 +839,7 @@ class CoreWrapper:
         if not self.api_exists["generate_full_intermediate"]:
             raise OldCoreError
         output = np.empty(
-            (length + 2 * self.margin_width, self.feature_dim), dtype=np.float32
+            (length + 2 * self.audio_feature_margin_width, self.audio_feature_dimension), dtype=np.float32
         )
         self.assert_core_success(
             self.core.generate_full_intermediate(
@@ -860,7 +860,7 @@ class CoreWrapper:
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
-        音声特徴量から音声波形を生成する関数
+        音声特徴量から波形を求める。
 
         Parameters
         ----------
@@ -882,8 +882,8 @@ class CoreWrapper:
         self.assert_core_success(
             self.core.render_audio_segment(
                 c_int(length),
-                c_int(self.margin_width),
-                c_int(self.feature_dim),
+                c_int(self.audio_feature_margin_width),
+                c_int(self.audio_feature_dimension),
                 audio_feature.ctypes.data_as(POINTER(c_float)),
                 style_id.ctypes.data_as(POINTER(c_long)),
                 output.ctypes.data_as(POINTER(c_float)),

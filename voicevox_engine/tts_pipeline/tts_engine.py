@@ -393,7 +393,7 @@ class TTSEngine:
         segment_length: float,
         enable_interrogative_upspeak: bool,
     ) -> tuple[int, Generator[NDArray[np.float32], None, None]]:
-        """生成音声全体のフレーム数と音声波形を生成する同期ストリームを返す"""
+        """生成音声全体のサンプル数と音声波形を生成する同期ストリームを返す"""
         assert start_offset >= 0
         valid_segment_frames = _to_frame(segment_length)  # 一度に生成するフレーム数
         assert valid_segment_frames > 0
