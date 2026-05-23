@@ -460,7 +460,7 @@ def generate_tts_pipeline_router(
             channel_size = 2 if query.outputStereo else 1
             block_size = 16 * channel_size // 8
             block_rate = query.outputSamplingRate * block_size
-            # yield wav header, fmt chunk, and data chunk header
+            # WAVファイル冒頭部分（RIFFヘッダ、fmtチャンク、dataチャンクのヘッダ）をyieldする
             yield (
                 b"RIFF"
                 + (file_size - 8).to_bytes(4, "little")
@@ -475,7 +475,7 @@ def generate_tts_pipeline_router(
                 + b"data"
                 + data_size.to_bytes(4, "little")
             )
-            # yield data chunk body
+            # wave_generatorから生成された音声セグメントを都度16bit PCMに変換してyieldする
             for wave in wave_generator:
                 pcm = (wave.clip(-1, 1) * 32767).astype("<i2")
                 yield pcm.tobytes()
