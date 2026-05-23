@@ -390,11 +390,11 @@ class TTSEngine:
         query: AudioQuery,
         style_id: StyleId,
         start_offset: float = 0.0,
-        chunk_length: float = 0.3,
+        segment_length: float = 0.3,
         enable_interrogative_upspeak: bool = True,
     ) -> tuple[int, Generator[NDArray[np.float32], None, None]]:
         """生成音声全体のフレーム数と音声波形を生成する同期ストリームを返す"""
-        valid_chunk_size = max(1, round(chunk_length * 24000 / 256))  # second * 24000Hz / 256frame
+        valid_chunk_size = max(1, round(segment_length * 24000 / 256))  # second * 24000Hz / 256frame
         query = copy.deepcopy(query)
         query.accent_phrases = _apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak

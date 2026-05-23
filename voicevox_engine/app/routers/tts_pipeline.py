@@ -451,7 +451,7 @@ def generate_tts_pipeline_router(
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         frame_length, wave_generator = engine.synthesize_wave_stream(
-            query, style_id, start_offset=start_offset, chunk_length=segment_length, enable_interrogative_upspeak=enable_interrogative_upspeak
+            query, style_id, start_offset=start_offset, segment_length=segment_length, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
 
         def generate_wav() -> Generator[bytes, None, None]:
