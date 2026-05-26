@@ -6,9 +6,9 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
 from typing import Annotated, Self
 
+import numpy as np
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
-import numpy as np
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask

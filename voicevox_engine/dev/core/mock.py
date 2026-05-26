@@ -21,6 +21,8 @@ class MockCoreWrapper(CoreWrapper):
     ) -> None:
         """コアを利用可能にする。"""
         self.default_sampling_rate = 24000
+        self.audio_feature_margin_width = 14
+        self.audio_feature_dimension = 80
 
     def metas(self) -> str:
         """キャラクターメタ情報を文字列として取得する。"""
@@ -139,6 +141,36 @@ class MockCoreWrapper(CoreWrapper):
                 f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id
             ] * 256
         return np.array(result, dtype=np.float32)
+
+    def generate_full_intermediate(
+        self,
+        length: int,
+        phoneme_size: int,
+        f0: NDArray[np.float32],
+        phoneme: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """フレームごとの音素と音高から音声特徴量を求める。"""
+        output = np.zeros(
+            (length + 2 * self.audio_feature_margin_width, self.audio_feature_dimension), dtype=np.float32
+        )
+        for i in range(length):
+            output[i + self.audio_feature_margin_width, :] = (
+                f0[i, 0] * (np.where(phoneme[i] == 1)[0] / phoneme_size) + style_id
+            )
+        return output
+
+    def render_audio_segment(
+        self,
+        length: int,
+        audio_feature: NDArray[np.float32],
+        style_id: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """音声特徴量とスタイル ID から音声波形を求める。"""
+        output = np.zeros((length * 256,), dtype=np.float32)
+        for i in range(length):
+            output[i * 256 : (i + 1) * 256] = audio_feature[i, 0] + style_id
+        return output
 
     def predict_sing_consonant_length_forward(
         self,
