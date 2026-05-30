@@ -839,7 +839,11 @@ class CoreWrapper:
         if not self.api_exists["generate_full_intermediate"]:
             raise OldCoreError
         output = np.empty(
-            (length + 2 * self.audio_feature_margin_width, self.audio_feature_dimension), dtype=np.float32
+            (
+                length + 2 * self.audio_feature_margin_width,
+                self.audio_feature_dimension,
+            ),
+            dtype=np.float32,
         )
         self.assert_core_success(
             self.core.generate_full_intermediate(

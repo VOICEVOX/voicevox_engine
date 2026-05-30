@@ -408,16 +408,23 @@ class TTSEngine:
             phoneme, f0, style_id
         )
         # オフセット分のフレーム数だけずらす
-        audio_feature = audio_feature[_to_frame(start_offset):]
+        audio_feature = audio_feature[_to_frame(start_offset) :]
         margin_width = self._core.margin_width
         # オフセットが生成音声よりも長い場合は例外を投げる
-        assert len(audio_feature) - 2 * margin_width > 0, "start_offsetが生成音声の長さを超えています"
+        assert len(audio_feature) - 2 * margin_width > 0, (
+            "start_offsetが生成音声の長さを超えています"
+        )
 
         def wave_generator() -> Generator[NDArray[np.float32], None, None]:
             # render_[start|end]: マージンを除いた有効部分の開始/終了位置
             # slice_[start|end]: マージンを含む全体の開始/終了位置
-            for render_start in range(margin_width, len(audio_feature) - margin_width, valid_segment_frames):
-                render_end = min(render_start + valid_segment_frames, len(audio_feature) - margin_width)
+            for render_start in range(
+                margin_width, len(audio_feature) - margin_width, valid_segment_frames
+            ):
+                render_end = min(
+                    render_start + valid_segment_frames,
+                    len(audio_feature) - margin_width,
+                )
                 slice_start = render_start - margin_width
                 slice_end = render_end + margin_width
                 feature_segment = audio_feature[slice_start:slice_end, :]

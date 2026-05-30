@@ -152,7 +152,11 @@ class MockCoreWrapper(CoreWrapper):
     ) -> NDArray[np.float32]:
         """フレームごとの音素と音高から音声特徴量を求める。"""
         output = np.zeros(
-            (length + 2 * self.audio_feature_margin_width, self.audio_feature_dimension), dtype=np.float32
+            (
+                length + 2 * self.audio_feature_margin_width,
+                self.audio_feature_dimension,
+            ),
+            dtype=np.float32,
         )
         for i in range(length):
             output[i + self.audio_feature_margin_width, :] = (
