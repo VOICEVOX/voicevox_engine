@@ -1,12 +1,10 @@
 """音声合成機能を提供する API Router"""
 
 import zipfile
-from collections.abc import Generator
 from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
 from typing import Annotated, Self
 
-import numpy as np
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
@@ -49,6 +47,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
     TTSEngineManager,
 )
+from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
 from voicevox_engine.utility.file_utility import try_delete_file
 
 
@@ -457,34 +456,11 @@ def generate_tts_pipeline_router(
             segment_length=segment_length,
             enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
+        wavfile_generator = encode_wave_stream_as_wav(
+            wave_length, wave_generator, query.outputSamplingRate, query.outputStereo
+        )
 
-        def generate_wav() -> Generator[bytes, None, None]:
-            data_size = wave_length * 2
-            file_size = data_size + 44
-            channel_size = 2 if query.outputStereo else 1
-            block_size = 16 * channel_size // 8
-            block_rate = query.outputSamplingRate * block_size
-            # WAVファイル冒頭部分（RIFFヘッダ、fmtチャンク、dataチャンクのヘッダ）をyieldする
-            yield (
-                b"RIFF"
-                + (file_size - 8).to_bytes(4, "little")
-                + b"WAVEfmt "
-                + (16).to_bytes(4, "little")  # fmt header length
-                + (1).to_bytes(2, "little")  # PCM
-                + channel_size.to_bytes(2, "little")
-                + query.outputSamplingRate.to_bytes(4, "little")
-                + block_rate.to_bytes(4, "little")
-                + block_size.to_bytes(2, "little")
-                + (16).to_bytes(2, "little")  # bit depth
-                + b"data"
-                + data_size.to_bytes(4, "little")
-            )
-            # wave_generatorから生成された音声セグメントを都度16bit PCMに変換してyieldする
-            for wave in wave_generator:
-                pcm = np.floor(np.clip(wave * 32768, -32768, 32767)).astype("<i2")
-                yield pcm.tobytes()
-
-        return StreamingResponse(generate_wav(), media_type="audio/wav")
+        return StreamingResponse(wavfile_generator, media_type="audio/wav")
 
     @router.post(
         "/sing_frame_audio_query",
