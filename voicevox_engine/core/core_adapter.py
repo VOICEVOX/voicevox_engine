@@ -15,9 +15,11 @@ from ..metas.metas import StyleId
 from .core_wrapper import CoreWrapper, OldCoreError
 
 CoreStyleId = NewType("CoreStyleId", int)
-CoreStyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+CoreStyleType = Literal[
+    "talk", "singing_teacher", "frame_decode", "sing", "streaming_talk"
+]
 
-_CoreStyleFeature = Literal["talk", "singing_teacher", "frame_decode"]
+_CoreStyleFeature = Literal["talk", "singing_teacher", "frame_decode", "streaming_talk"]
 
 
 @dataclass(frozen=True)
@@ -113,6 +115,9 @@ class CoreAdapter:
             core_style_features: set[_CoreStyleFeature]
             if style_type == "sing":
                 core_style_features = {"frame_decode", "singing_teacher"}
+            elif style_type == "streaming_talk":
+                # NOTE: "streaming_talk"は"talk"を包含する
+                core_style_features = {"streaming_talk", "talk"}
             else:
                 core_style_features = {style_type}
 
@@ -270,6 +275,7 @@ class CoreAdapter:
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """フレームごとの音素と音高から音声特徴量を求める。"""
+        self._assert_style_supports_feature(style_id, "streaming_talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             audio_feature = self.core.generate_full_intermediate(
@@ -287,6 +293,7 @@ class CoreAdapter:
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
         """音声特徴量とスタイル ID から音声波形を求める。"""
+        self._assert_style_supports_feature(style_id, "streaming_talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
             wave = self.core.render_audio_segment(
