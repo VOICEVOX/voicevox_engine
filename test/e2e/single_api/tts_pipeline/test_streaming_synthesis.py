@@ -134,6 +134,57 @@ def test_post_streaming_synthesis_splits_by_accent_phrase(
         assert wav_bytes.startswith(b"RIFF")
 
 
+def test_post_streaming_synthesis_groups_by_chunk_min_accent_phrases(
+    client: TestClient,
+) -> None:
+    query = {
+        "accent_phrases": [
+            {
+                "moras": [gen_mora("テ", "t", 2.3, "e", 0.8, 3.3)],
+                "accent": 1,
+                "pause_mora": None,
+                "is_interrogative": False,
+            },
+            {
+                "moras": [gen_mora("ス", "s", 2.1, "U", 0.3, 0.0)],
+                "accent": 1,
+                "pause_mora": None,
+                "is_interrogative": False,
+            },
+            {
+                "moras": [gen_mora("ト", "t", 2.3, "o", 1.8, 4.1)],
+                "accent": 1,
+                "pause_mora": None,
+                "is_interrogative": False,
+            },
+        ],
+        "speedScale": 1.0,
+        "pitchScale": 1.0,
+        "intonationScale": 1.0,
+        "volumeScale": 1.0,
+        "prePhonemeLength": 0.1,
+        "postPhonemeLength": 0.1,
+        "pauseLength": None,
+        "pauseLengthScale": 1.0,
+        "outputSamplingRate": 24000,
+        "outputStereo": False,
+        "kana": "テ'/ス'_ト",
+    }
+    response = client.post(
+        "/streaming_synthesis",
+        params={"speaker": 0, "chunk_min_accent_phrases": 2},
+        json=query,
+    )
+    assert response.status_code == 200
+
+    parts = _parse_multipart_response(response.headers["content-type"], response.read())
+    assert [headers["x-sequence"] for headers, _wav_bytes in parts] == ["0", "1"]
+    assert [headers["x-is-last"] for headers, _wav_bytes in parts] == ["false", "true"]
+
+    for _headers, wav_bytes in parts:
+        assert wav_bytes.startswith(b"RIFF")
+
+
 def test_post_streaming_synthesis_empty_accent_phrases(
     client: TestClient,
 ) -> None:

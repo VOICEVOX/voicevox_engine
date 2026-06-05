@@ -7,8 +7,10 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
 from typing import Annotated, BinaryIO, Self
 
+import numpy as np
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
+from numpy.typing import NDArray
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
@@ -94,10 +96,13 @@ def generate_tts_pipeline_router(
     router = APIRouter()
     streaming_wav_file_read_size = 64 * 1024
 
-    def wave_to_wav_file(wave: object, sampling_rate: int) -> tuple[BinaryIO, int]:
+    def wave_to_wav_file(
+        wave: NDArray[np.float32], sampling_rate: int
+    ) -> tuple[BinaryIO, int]:
         """波形を complete WAV file に変換する。"""
         wav_file = TemporaryFile()
         soundfile.write(file=wav_file, data=wave, samplerate=sampling_rate, format="WAV")
+        wav_file.flush()
         content_length = wav_file.tell()
         wav_file.seek(0)
         return wav_file, content_length
@@ -108,7 +113,7 @@ def generate_tts_pipeline_router(
         """complete WAV file の列を multipart/mixed として返す。"""
         wav_files_iterator = iter(wav_files_iter)
         try:
-            wav_file, content_length = next(wav_files_iterator)
+            current_wav_file, content_length = next(wav_files_iterator)
         except StopIteration:
             yield f"--{boundary}--\r\n".encode("ascii")
             return
@@ -117,6 +122,7 @@ def generate_tts_pipeline_router(
         next_wav_file: BinaryIO | None = None
         try:
             while True:
+                assert current_wav_file is not None
                 try:
                     next_wav_file, next_content_length = next(wav_files_iterator)
                     is_last = "false"
@@ -134,21 +140,23 @@ def generate_tts_pipeline_router(
                     "\r\n"
                 ).encode("ascii")
                 try:
-                    while chunk := wav_file.read(streaming_wav_file_read_size):
+                    while chunk := current_wav_file.read(streaming_wav_file_read_size):
                         yield chunk
                 finally:
-                    wav_file.close()
+                    current_wav_file.close()
+                    current_wav_file = None
                 yield b"\r\n"
 
                 if next_wav_file is None:
                     break
 
-                wav_file = next_wav_file
+                current_wav_file = next_wav_file
                 content_length = next_content_length
                 next_wav_file = None
                 sequence += 1
         finally:
-            wav_file.close()
+            if current_wav_file is not None:
+                current_wav_file.close()
             if next_wav_file is not None:
                 next_wav_file.close()
 

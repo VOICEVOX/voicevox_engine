@@ -61,18 +61,33 @@ class MockTTSEngine(TTSEngine):
             query.accent_phrases, enable_interrogative_upspeak
         )
 
+        sampling_rate = 48000
         if len(query.accent_phrases) == 0:
-            sampling_rate = 48000
             duration = (query.prePhonemeLength + query.postPhonemeLength) / query.speedScale
             raw_wave = np.zeros(max(1, int(duration * sampling_rate)), dtype=np.float32)
             yield raw_wave_to_output_wave(query, raw_wave, sampling_rate)
             return
 
         min_accent_phrases = max(1, min_accent_phrases)
-        for start in range(0, len(query.accent_phrases), min_accent_phrases):
+        chunk_starts = list(range(0, len(query.accent_phrases), min_accent_phrases))
+        for start in chunk_starts:
             accent_phrases = query.accent_phrases[start : start + min_accent_phrases]
             kana_text = create_kana(accent_phrases)
             raw_wave, sr_raw_wave = self.forward(kana_text)
+            if start == chunk_starts[0]:
+                pre_silence_length = int(
+                    query.prePhonemeLength / query.speedScale * sr_raw_wave
+                )
+                raw_wave = np.concatenate(
+                    [np.zeros(pre_silence_length, dtype=np.float32), raw_wave]
+                )
+            if start == chunk_starts[-1]:
+                post_silence_length = int(
+                    query.postPhonemeLength / query.speedScale * sr_raw_wave
+                )
+                raw_wave = np.concatenate(
+                    [raw_wave, np.zeros(post_silence_length, dtype=np.float32)]
+                )
             yield raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     def forward(self, text: str) -> tuple[NDArray[np.float32], int]:
