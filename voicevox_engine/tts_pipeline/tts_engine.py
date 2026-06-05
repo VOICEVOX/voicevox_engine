@@ -239,7 +239,7 @@ def _query_to_decoder_feature(
 def _group_moras_by_accent_phrase_count(
     accent_phrase_moras: list[list[Mora]], min_accent_phrases: int
 ) -> list[list[Mora]]:
-    """アクセント句ごとのモーラ系列を指定数以上になるよう結合する。"""
+    """アクセント句ごとのモーラ系列を指定数ごとに結合する。末尾は端数になり得る。"""
     grouped: list[list[Mora]] = []
     for start in range(0, len(accent_phrase_moras), min_accent_phrases):
         moras: list[Mora] = []

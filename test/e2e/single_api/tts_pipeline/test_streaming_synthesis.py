@@ -132,3 +132,37 @@ def test_post_streaming_synthesis_splits_by_accent_phrase(
 
     for _headers, wav_bytes in parts:
         assert wav_bytes.startswith(b"RIFF")
+
+
+def test_post_streaming_synthesis_empty_accent_phrases(
+    client: TestClient,
+) -> None:
+    query = {
+        "accent_phrases": [],
+        "speedScale": 1.0,
+        "pitchScale": 1.0,
+        "intonationScale": 1.0,
+        "volumeScale": 1.0,
+        "prePhonemeLength": 0.1,
+        "postPhonemeLength": 0.1,
+        "pauseLength": None,
+        "pauseLengthScale": 1.0,
+        "outputSamplingRate": 24000,
+        "outputStereo": False,
+        "kana": "",
+    }
+    response = client.post(
+        "/streaming_synthesis",
+        params={"speaker": 0, "chunk_min_accent_phrases": 1},
+        json=query,
+    )
+    assert response.status_code == 200
+
+    parts = _parse_multipart_response(response.headers["content-type"], response.read())
+    assert len(parts) == 1
+
+    headers, wav_bytes = parts[0]
+    assert headers["x-sequence"] == "0"
+    assert headers["x-is-last"] == "true"
+    assert headers["content-type"] == "audio/wav"
+    assert wav_bytes.startswith(b"RIFF")

@@ -11,6 +11,7 @@ from pyopenjtalk import tts
 from ...metas.metas import StyleId
 from ...model import AudioQuery
 from ...tts_pipeline.audio_postprocessing import raw_wave_to_output_wave
+from ...tts_pipeline.kana_converter import create_kana
 from ...tts_pipeline.tts_engine import (
     TTSEngine,
     _apply_interrogative_upspeak,
@@ -60,11 +61,17 @@ class MockTTSEngine(TTSEngine):
             query.accent_phrases, enable_interrogative_upspeak
         )
 
+        if len(query.accent_phrases) == 0:
+            sampling_rate = 48000
+            duration = query.prePhonemeLength + query.postPhonemeLength
+            raw_wave = np.zeros(max(1, int(duration * sampling_rate)), dtype=np.float32)
+            yield raw_wave_to_output_wave(query, raw_wave, sampling_rate)
+            return
+
         min_accent_phrases = max(1, min_accent_phrases)
         for start in range(0, len(query.accent_phrases), min_accent_phrases):
             accent_phrases = query.accent_phrases[start : start + min_accent_phrases]
-            flatten_moras = to_flatten_moras(accent_phrases)
-            kana_text = "".join([mora.text for mora in flatten_moras])
+            kana_text = create_kana(accent_phrases)
             raw_wave, sr_raw_wave = self.forward(kana_text)
             yield raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 

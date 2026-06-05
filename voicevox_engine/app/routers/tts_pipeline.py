@@ -2,11 +2,10 @@
 
 import zipfile
 from collections.abc import Iterator
-from io import BytesIO
 from secrets import token_hex
 from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
-from typing import Annotated, Self
+from typing import Annotated, BinaryIO, Self
 
 import soundfile
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -93,20 +92,23 @@ def generate_tts_pipeline_router(
 ) -> APIRouter:
     """音声合成 API Router を生成する"""
     router = APIRouter()
+    streaming_wav_file_read_size = 64 * 1024
 
-    def wave_to_wav_bytes(wave: object, sampling_rate: int) -> bytes:
-        """波形を complete WAV bytes に変換する。"""
-        wav_file = BytesIO()
+    def wave_to_wav_file(wave: object, sampling_rate: int) -> tuple[BinaryIO, int]:
+        """波形を complete WAV file に変換する。"""
+        wav_file = TemporaryFile()
         soundfile.write(file=wav_file, data=wave, samplerate=sampling_rate, format="WAV")
-        return wav_file.getvalue()
+        content_length = wav_file.tell()
+        wav_file.seek(0)
+        return wav_file, content_length
 
     def make_streaming_audio_chunk_parts(
-        wav_bytes_iter: Iterator[bytes], boundary: str
+        wav_files_iter: Iterator[tuple[BinaryIO, int]], boundary: str
     ) -> Iterator[bytes]:
-        """complete WAV bytes の列を multipart/mixed として返す。"""
-        wav_bytes_iterator = iter(wav_bytes_iter)
+        """complete WAV file の列を multipart/mixed として返す。"""
+        wav_files_iterator = iter(wav_files_iter)
         try:
-            wav_bytes = next(wav_bytes_iterator)
+            wav_file, content_length = next(wav_files_iterator)
         except StopIteration:
             yield f"--{boundary}--\r\n".encode("ascii")
             return
@@ -114,10 +116,11 @@ def generate_tts_pipeline_router(
         sequence = 0
         while True:
             try:
-                next_wav_bytes = next(wav_bytes_iterator)
+                next_wav_file, next_content_length = next(wav_files_iterator)
                 is_last = "false"
             except StopIteration:
-                next_wav_bytes = None
+                next_wav_file = None
+                next_content_length = 0
                 is_last = "true"
 
             yield (
@@ -125,16 +128,21 @@ def generate_tts_pipeline_router(
                 "Content-Type: audio/wav\r\n"
                 f"X-Sequence: {sequence}\r\n"
                 f"X-Is-Last: {is_last}\r\n"
-                f"Content-Length: {len(wav_bytes)}\r\n"
+                f"Content-Length: {content_length}\r\n"
                 "\r\n"
             ).encode("ascii")
-            yield wav_bytes
+            try:
+                while chunk := wav_file.read(streaming_wav_file_read_size):
+                    yield chunk
+            finally:
+                wav_file.close()
             yield b"\r\n"
 
-            if next_wav_bytes is None:
+            if next_wav_file is None:
                 break
 
-            wav_bytes = next_wav_bytes
+            wav_file = next_wav_file
+            content_length = next_content_length
             sequence += 1
 
         yield f"--{boundary}--\r\n".encode("ascii")
@@ -385,8 +393,8 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_tts_engine(version)
         boundary = f"voicevox-{token_hex(16)}"
 
-        wav_bytes_iter = (
-            wave_to_wav_bytes(wave, query.outputSamplingRate)
+        wav_files_iter = (
+            wave_to_wav_file(wave, query.outputSamplingRate)
             for wave in engine.synthesize_wave_chunks(
                 query,
                 style_id,
@@ -397,7 +405,7 @@ def generate_tts_pipeline_router(
 
         return StreamingResponse(
             make_streaming_audio_chunk_parts(
-                wav_bytes_iter,
+                wav_files_iter,
                 boundary=boundary,
             ),
             media_type=f"multipart/mixed; boundary={boundary}",
