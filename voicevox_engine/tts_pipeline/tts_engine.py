@@ -244,7 +244,7 @@ def _group_moras_by_accent_phrase_count(
     for start in range(0, len(accent_phrase_moras), min_accent_phrases):
         moras: list[Mora] = []
         for phrase_moras in accent_phrase_moras[start : start + min_accent_phrases]:
-            moras += phrase_moras
+            moras.extend(phrase_moras)
         grouped.append(moras)
     return grouped
 
@@ -278,7 +278,12 @@ def _query_to_decoder_feature_chunks(
     # 抑揚スケールなどは文全体を基準にするため、全チャンクの Mora オブジェクトを
     # 共有したリストに一度まとめてから適用する。
     all_moras = [mora for chunk_moras in chunk_moras_list for mora in chunk_moras]
-    _apply_query_scales(all_moras, query)
+    scaled_moras = _apply_query_scales(all_moras, query)
+    current = 0
+    for i, chunk_moras in enumerate(chunk_moras_list):
+        next_current = current + len(chunk_moras)
+        chunk_moras_list[i] = scaled_moras[current:next_current]
+        current = next_current
 
     for chunk_moras in chunk_moras_list:
         yield _moras_to_decoder_feature(chunk_moras)

@@ -13,6 +13,7 @@ from ...model import AudioQuery
 from ...tts_pipeline.audio_postprocessing import raw_wave_to_output_wave
 from ...tts_pipeline.tts_engine import (
     TTSEngine,
+    _apply_interrogative_upspeak,
     to_flatten_moras,
 )
 from ..core.mock import MockCoreWrapper
@@ -55,6 +56,9 @@ class MockTTSEngine(TTSEngine):
         """音声合成用のクエリに含まれる読み仮名を複数アクセント句ごとに音声波形へ変換する。"""
         self._core._assert_style_supports_feature(style_id, "talk")
         query = copy.deepcopy(query)
+        query.accent_phrases = _apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
 
         min_accent_phrases = max(1, min_accent_phrases)
         for start in range(0, len(query.accent_phrases), min_accent_phrases):
