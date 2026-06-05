@@ -101,6 +101,16 @@ def _apply_interrogative_upspeak(
     return accent_phrases
 
 
+def apply_interrogative_upspeak(
+    accent_phrases: list[AccentPhrase], enable_interrogative_upspeak: bool
+) -> list[AccentPhrase]:
+    """必要に応じて各アクセント句の末尾へ疑問形モーラを付与する。"""
+    return _apply_interrogative_upspeak(
+        accent_phrases,
+        enable_interrogative_upspeak,
+    )
+
+
 def _apply_prepost_silence(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ前後無音（`prePhonemeLength` & `postPhonemeLength`）を付加する"""
     pre_silence_moras = [_generate_silence_mora(query.prePhonemeLength)]
@@ -439,7 +449,7 @@ class TTSEngine:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
         # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
         query = copy.deepcopy(query)
-        query.accent_phrases = _apply_interrogative_upspeak(
+        query.accent_phrases = apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak
         )
 
@@ -457,7 +467,7 @@ class TTSEngine:
     ) -> Iterator[NDArray[np.float32]]:
         """複数アクセント句をまとめた単位で音声波形を生成する。"""
         query = copy.deepcopy(query)
-        query.accent_phrases = _apply_interrogative_upspeak(
+        query.accent_phrases = apply_interrogative_upspeak(
             query.accent_phrases, enable_interrogative_upspeak
         )
 

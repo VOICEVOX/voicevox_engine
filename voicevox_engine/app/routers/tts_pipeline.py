@@ -114,36 +114,43 @@ def generate_tts_pipeline_router(
             return
 
         sequence = 0
-        while True:
-            try:
-                next_wav_file, next_content_length = next(wav_files_iterator)
-                is_last = "false"
-            except StopIteration:
+        next_wav_file: BinaryIO | None = None
+        try:
+            while True:
+                try:
+                    next_wav_file, next_content_length = next(wav_files_iterator)
+                    is_last = "false"
+                except StopIteration:
+                    next_wav_file = None
+                    next_content_length = 0
+                    is_last = "true"
+
+                yield (
+                    f"--{boundary}\r\n"
+                    "Content-Type: audio/wav\r\n"
+                    f"X-Sequence: {sequence}\r\n"
+                    f"X-Is-Last: {is_last}\r\n"
+                    f"Content-Length: {content_length}\r\n"
+                    "\r\n"
+                ).encode("ascii")
+                try:
+                    while chunk := wav_file.read(streaming_wav_file_read_size):
+                        yield chunk
+                finally:
+                    wav_file.close()
+                yield b"\r\n"
+
+                if next_wav_file is None:
+                    break
+
+                wav_file = next_wav_file
+                content_length = next_content_length
                 next_wav_file = None
-                next_content_length = 0
-                is_last = "true"
-
-            yield (
-                f"--{boundary}\r\n"
-                "Content-Type: audio/wav\r\n"
-                f"X-Sequence: {sequence}\r\n"
-                f"X-Is-Last: {is_last}\r\n"
-                f"Content-Length: {content_length}\r\n"
-                "\r\n"
-            ).encode("ascii")
-            try:
-                while chunk := wav_file.read(streaming_wav_file_read_size):
-                    yield chunk
-            finally:
-                wav_file.close()
-            yield b"\r\n"
-
-            if next_wav_file is None:
-                break
-
-            wav_file = next_wav_file
-            content_length = next_content_length
-            sequence += 1
+                sequence += 1
+        finally:
+            wav_file.close()
+            if next_wav_file is not None:
+                next_wav_file.close()
 
         yield f"--{boundary}--\r\n".encode("ascii")
 
