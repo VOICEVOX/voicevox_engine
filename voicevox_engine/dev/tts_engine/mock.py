@@ -69,19 +69,28 @@ class MockTTSEngine(TTSEngine):
             return
 
         min_accent_phrases = max(1, min_accent_phrases)
-        chunk_starts = list(range(0, len(query.accent_phrases), min_accent_phrases))
-        for start in chunk_starts:
-            accent_phrases = query.accent_phrases[start : start + min_accent_phrases]
+        chunk_accent_phrases_list = [
+            query.accent_phrases[start : start + min_accent_phrases]
+            for start in range(0, len(query.accent_phrases), min_accent_phrases)
+        ]
+        if (
+            len(chunk_accent_phrases_list) >= 2
+            and len(chunk_accent_phrases_list[-1]) < min_accent_phrases
+        ):
+            chunk_accent_phrases_list[-2].extend(chunk_accent_phrases_list[-1])
+            chunk_accent_phrases_list.pop()
+
+        for i, accent_phrases in enumerate(chunk_accent_phrases_list):
             kana_text = create_kana(accent_phrases)
             raw_wave, sr_raw_wave = self.forward(kana_text)
-            if start == chunk_starts[0]:
+            if i == 0:
                 pre_silence_length = int(
                     query.prePhonemeLength / query.speedScale * sr_raw_wave
                 )
                 raw_wave = np.concatenate(
                     [np.zeros(pre_silence_length, dtype=np.float32), raw_wave]
                 )
-            if start == chunk_starts[-1]:
+            if i == len(chunk_accent_phrases_list) - 1:
                 post_silence_length = int(
                     query.postPhonemeLength / query.speedScale * sr_raw_wave
                 )

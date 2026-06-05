@@ -2,10 +2,11 @@
 
 import zipfile
 from collections.abc import Iterator
+from io import BytesIO
 from secrets import token_hex
 from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
-from typing import Annotated, BinaryIO, Self
+from typing import Annotated, Self
 
 import numpy as np
 import soundfile
@@ -96,79 +97,44 @@ def generate_tts_pipeline_router(
     router = APIRouter()
     streaming_wav_file_read_size = 64 * 1024
 
-    def wave_to_wav_file(
+    def wave_to_wav_buffer(
         wave: NDArray[np.float32], sampling_rate: int
-    ) -> tuple[BinaryIO, int]:
-        """波形を complete WAV file に変換する。"""
-        wav_file = TemporaryFile()
+    ) -> tuple[BytesIO, int]:
+        """波形を complete WAV buffer に変換する。"""
+        wav_buffer = BytesIO()
         try:
             soundfile.write(
-                file=wav_file,
+                file=wav_buffer,
                 data=wave,
                 samplerate=sampling_rate,
                 format="WAV",
             )
-            wav_file.flush()
-            content_length = wav_file.tell()
-            wav_file.seek(0)
-            return wav_file, content_length
+            wav_buffer.flush()
+            content_length = wav_buffer.tell()
+            wav_buffer.seek(0)
+            return wav_buffer, content_length
         except Exception:
-            wav_file.close()
+            wav_buffer.close()
             raise
 
     def make_streaming_audio_chunk_parts(
-        wav_files_iter: Iterator[tuple[BinaryIO, int]], boundary: str
+        wav_buffers_iter: Iterator[tuple[BytesIO, int]], boundary: str
     ) -> Iterator[bytes]:
-        """complete WAV file の列を multipart/mixed として返す。"""
-        wav_files_iterator = iter(wav_files_iter)
-        try:
-            current_wav_file, content_length = next(wav_files_iterator)
-        except StopIteration:
-            yield f"--{boundary}--\r\n".encode("ascii")
-            return
-
-        sequence = 0
-        next_wav_file: BinaryIO | None = None
-        try:
-            while True:
-                if current_wav_file is None:
-                    raise RuntimeError("Current WAV file is unexpectedly closed.")
-                try:
-                    next_wav_file, next_content_length = next(wav_files_iterator)
-                    is_last = "false"
-                except StopIteration:
-                    next_wav_file = None
-                    next_content_length = 0
-                    is_last = "true"
-
-                yield (
-                    f"--{boundary}\r\n"
-                    "Content-Type: audio/wav\r\n"
-                    f"X-Sequence: {sequence}\r\n"
-                    f"X-Is-Last: {is_last}\r\n"
-                    f"Content-Length: {content_length}\r\n"
-                    "\r\n"
-                ).encode("ascii")
-                try:
-                    while chunk := current_wav_file.read(streaming_wav_file_read_size):
-                        yield chunk
-                finally:
-                    current_wav_file.close()
-                    current_wav_file = None
-                yield b"\r\n"
-
-                if next_wav_file is None:
-                    break
-
-                current_wav_file = next_wav_file
-                content_length = next_content_length
-                next_wav_file = None
-                sequence += 1
-        finally:
-            if current_wav_file is not None:
-                current_wav_file.close()
-            if next_wav_file is not None:
-                next_wav_file.close()
+        """complete WAV buffer の列を multipart/mixed として返す。"""
+        for sequence, (wav_buffer, content_length) in enumerate(wav_buffers_iter):
+            yield (
+                f"--{boundary}\r\n"
+                "Content-Type: audio/wav\r\n"
+                f"X-Sequence: {sequence}\r\n"
+                f"Content-Length: {content_length}\r\n"
+                "\r\n"
+            ).encode("ascii")
+            try:
+                while chunk := wav_buffer.read(streaming_wav_file_read_size):
+                    yield chunk
+            finally:
+                wav_buffer.close()
+            yield b"\r\n"
 
         yield f"--{boundary}--\r\n".encode("ascii")
 
@@ -387,7 +353,7 @@ def generate_tts_pipeline_router(
                         "schema": {
                             "type": "string",
                             "format": "binary",
-                            "description": "Each part body is complete WAV bytes. Part headers include X-Sequence and X-Is-Last.",
+                            "description": "Each part body is complete WAV bytes. Part headers include X-Sequence.",
                         }
                     }
                 },
@@ -418,8 +384,8 @@ def generate_tts_pipeline_router(
         engine = tts_engines.get_tts_engine(version)
         boundary = f"voicevox-{token_hex(16)}"
 
-        wav_files_iter = (
-            wave_to_wav_file(wave, query.outputSamplingRate)
+        wav_buffers_iter = (
+            wave_to_wav_buffer(wave, query.outputSamplingRate)
             for wave in engine.synthesize_wave_chunks(
                 query,
                 style_id,
@@ -430,7 +396,7 @@ def generate_tts_pipeline_router(
 
         return StreamingResponse(
             make_streaming_audio_chunk_parts(
-                wav_files_iter,
+                wav_buffers_iter,
                 boundary=boundary,
             ),
             media_type=f"multipart/mixed; boundary={boundary}",

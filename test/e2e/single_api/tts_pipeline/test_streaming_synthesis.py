@@ -78,7 +78,6 @@ def test_post_streaming_synthesis_200(
 
     headers, wav_bytes = parts[0]
     assert headers["x-sequence"] == "0"
-    assert headers["x-is-last"] == "true"
     assert headers["content-type"] == "audio/wav"
     assert wav_bytes.startswith(b"RIFF")
     assert snapshot == hash_wave_floats_from_wav_bytes(wav_bytes)
@@ -128,7 +127,6 @@ def test_post_streaming_synthesis_splits_by_accent_phrase(
 
     parts = _parse_multipart_response(response.headers["content-type"], response.read())
     assert [headers["x-sequence"] for headers, _wav_bytes in parts] == ["0", "1"]
-    assert [headers["x-is-last"] for headers, _wav_bytes in parts] == ["false", "true"]
 
     for _headers, wav_bytes in parts:
         assert wav_bytes.startswith(b"RIFF")
@@ -157,6 +155,18 @@ def test_post_streaming_synthesis_groups_by_chunk_min_accent_phrases(
                 "pause_mora": None,
                 "is_interrogative": False,
             },
+            {
+                "moras": [gen_mora("テ", "t", 2.3, "e", 0.8, 3.3)],
+                "accent": 1,
+                "pause_mora": None,
+                "is_interrogative": False,
+            },
+            {
+                "moras": [gen_mora("ス", "s", 2.1, "U", 0.3, 0.0)],
+                "accent": 1,
+                "pause_mora": None,
+                "is_interrogative": False,
+            },
         ],
         "speedScale": 1.0,
         "pitchScale": 1.0,
@@ -179,7 +189,6 @@ def test_post_streaming_synthesis_groups_by_chunk_min_accent_phrases(
 
     parts = _parse_multipart_response(response.headers["content-type"], response.read())
     assert [headers["x-sequence"] for headers, _wav_bytes in parts] == ["0", "1"]
-    assert [headers["x-is-last"] for headers, _wav_bytes in parts] == ["false", "true"]
 
     for _headers, wav_bytes in parts:
         assert wav_bytes.startswith(b"RIFF")
@@ -214,6 +223,5 @@ def test_post_streaming_synthesis_empty_accent_phrases(
 
     headers, wav_bytes = parts[0]
     assert headers["x-sequence"] == "0"
-    assert headers["x-is-last"] == "true"
     assert headers["content-type"] == "audio/wav"
     assert wav_bytes.startswith(b"RIFF")

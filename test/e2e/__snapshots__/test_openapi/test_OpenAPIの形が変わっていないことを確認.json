@@ -3032,7 +3032,7 @@
             "content": {
               "multipart/mixed": {
                 "schema": {
-                  "description": "Each part body is complete WAV bytes. Part headers include X-Sequence and X-Is-Last.",
+                  "description": "Each part body is complete WAV bytes. Part headers include X-Sequence.",
                   "format": "binary",
                   "type": "string"
                 }
