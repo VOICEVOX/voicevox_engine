@@ -101,11 +101,20 @@ def generate_tts_pipeline_router(
     ) -> tuple[BinaryIO, int]:
         """波形を complete WAV file に変換する。"""
         wav_file = TemporaryFile()
-        soundfile.write(file=wav_file, data=wave, samplerate=sampling_rate, format="WAV")
-        wav_file.flush()
-        content_length = wav_file.tell()
-        wav_file.seek(0)
-        return wav_file, content_length
+        try:
+            soundfile.write(
+                file=wav_file,
+                data=wave,
+                samplerate=sampling_rate,
+                format="WAV",
+            )
+            wav_file.flush()
+            content_length = wav_file.tell()
+            wav_file.seek(0)
+            return wav_file, content_length
+        except Exception:
+            wav_file.close()
+            raise
 
     def make_streaming_audio_chunk_parts(
         wav_files_iter: Iterator[tuple[BinaryIO, int]], boundary: str
@@ -122,7 +131,8 @@ def generate_tts_pipeline_router(
         next_wav_file: BinaryIO | None = None
         try:
             while True:
-                assert current_wav_file is not None
+                if current_wav_file is None:
+                    raise RuntimeError("Current WAV file is unexpectedly closed.")
                 try:
                     next_wav_file, next_content_length = next(wav_files_iterator)
                     is_last = "false"

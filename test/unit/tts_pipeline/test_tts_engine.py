@@ -242,6 +242,52 @@ def test_synthesize_wave_chunks_decodes_lazily() -> None:
     assert core.decode_forward.call_count == 2
 
 
+def test_synthesize_wave_chunks_skips_empty_accent_phrase_chunks() -> None:
+    core = MockCoreWrapper()
+    core.decode_forward = MagicMock(wraps=core.decode_forward)  # type: ignore[method-assign]
+    tts_engine = TTSEngine(core=core)
+    query = _gen_hello_hiho_query()
+    query.accent_phrases = [
+        query.accent_phrases[0],
+        AccentPhrase(moras=[], accent=1),
+        query.accent_phrases[1],
+    ]
+
+    chunks = list(
+        tts_engine.synthesize_wave_chunks(
+            query,
+            StyleId(1),
+            enable_interrogative_upspeak=True,
+            min_accent_phrases=1,
+        )
+    )
+
+    assert len(chunks) == 2
+    assert all(chunk.size > 0 for chunk in chunks)
+    assert core.decode_forward.call_count == 2
+
+
+def test_synthesize_wave_chunks_handles_all_empty_accent_phrases() -> None:
+    core = MockCoreWrapper()
+    core.decode_forward = MagicMock(wraps=core.decode_forward)  # type: ignore[method-assign]
+    tts_engine = TTSEngine(core=core)
+    query = _gen_hello_hiho_query()
+    query.accent_phrases = [AccentPhrase(moras=[], accent=1)]
+
+    chunks = list(
+        tts_engine.synthesize_wave_chunks(
+            query,
+            StyleId(1),
+            enable_interrogative_upspeak=True,
+            min_accent_phrases=1,
+        )
+    )
+
+    assert len(chunks) == 1
+    assert chunks[0].size > 0
+    assert core.decode_forward.call_count == 1
+
+
 def test_mocked_update_length_and_pitch_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:

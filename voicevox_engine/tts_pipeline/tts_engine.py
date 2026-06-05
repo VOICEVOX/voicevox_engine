@@ -1,7 +1,6 @@
 """テキスト音声合成エンジン"""
 
 import copy
-import math
 from collections.abc import Iterator
 from typing import Any, Final, Literal, TypeAlias
 
@@ -203,10 +202,12 @@ def _apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     """モーラ系列へ音声合成用のクエリがもつ抑揚スケール（`intonationScale`）を適用する"""
     # 有声音素 (f0>0) の平均値に対する乖離度をスケール
     voiced = list(filter(lambda mora: mora.pitch > 0, moras))
+    if len(voiced) == 0:
+        return moras
+
     mean_f0 = np.mean(list(map(lambda mora: mora.pitch, voiced))).item()
-    if mean_f0 != math.nan:  # 空リスト -> NaN
-        for mora in voiced:
-            mora.pitch = (mora.pitch - mean_f0) * query.intonationScale + mean_f0
+    for mora in voiced:
+        mora.pitch = (mora.pitch - mean_f0) * query.intonationScale + mean_f0
     return moras
 
 
@@ -270,8 +271,16 @@ def _query_to_decoder_feature_chunks(
         return
 
     accent_phrase_moras = [
-        to_flatten_moras([accent_phrase]) for accent_phrase in query.accent_phrases
+        moras
+        for accent_phrase in query.accent_phrases
+        if len(moras := to_flatten_moras([accent_phrase])) > 0
     ]
+    if len(accent_phrase_moras) == 0:
+        moras = _apply_prepost_silence([], query)
+        moras = _apply_query_scales(moras, query)
+        yield _moras_to_decoder_feature(moras)
+        return
+
     chunk_moras_list = _group_moras_by_accent_phrase_count(
         accent_phrase_moras,
         min_accent_phrases=max(1, min_accent_phrases),
