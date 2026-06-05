@@ -2969,6 +2969,94 @@
         ]
       }
     },
+    "/streaming_synthesis": {
+      "post": {
+        "operationId": "streaming_synthesis",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "ストリーミング音声合成で 1 チャンクにまとめる最小アクセント句数。大きいほど初回応答は遅くなるが、チャンク境界の音質劣化を抑えやすい。",
+            "in": "query",
+            "name": "chunk_min_accent_phrases",
+            "required": false,
+            "schema": {
+              "default": 4,
+              "description": "ストリーミング音声合成で 1 チャンクにまとめる最小アクセント句数。大きいほど初回応答は遅くなるが、チャンク境界の音質劣化を抑えやすい。",
+              "minimum": 1,
+              "title": "Chunk Min Accent Phrases",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "multipart/mixed": {
+                "schema": {
+                  "description": "Each part body is complete WAV bytes. Part headers include X-Sequence and X-Is-Last.",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "音声合成する（ストリーミング）",
+        "tags": [
+          "音声合成"
+        ]
+      }
+    },
     "/supported_devices": {
       "get": {
         "description": "対応デバイスの一覧を取得します。",

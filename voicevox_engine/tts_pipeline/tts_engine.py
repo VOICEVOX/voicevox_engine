@@ -2,6 +2,7 @@
 
 import copy
 import math
+from collections.abc import Iterator
 from typing import Any, Final, Literal, TypeAlias
 
 import numpy as np
@@ -199,20 +200,20 @@ def _apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
     return moras
 
 
-def _query_to_decoder_feature(
-    query: AudioQuery,
-) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-    """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
-    moras = to_flatten_moras(query.accent_phrases)
-
-    # 設定を適用する
-    moras = _apply_prepost_silence(moras, query)
+def _apply_query_scales(moras: list[Mora], query: AudioQuery) -> list[Mora]:
+    """モーラ系列へ音声合成用のクエリがもつ各種スケールを適用する。"""
     moras = _apply_pause_length(moras, query)
     moras = _apply_pause_length_scale(moras, query)
     moras = _apply_speed_scale(moras, query)
     moras = _apply_pitch_scale(moras, query)
     moras = _apply_intonation_scale(moras, query)
+    return moras
 
+
+def _moras_to_decoder_feature(
+    moras: list[Mora],
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+    """モーラ系列からフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る。"""
     # 表現を変更する（音素クラス → 音素 onehot ベクトル、モーラクラス → 音高スカラ）
     phoneme = np.stack([p.onehot for p in _to_flatten_phonemes(moras)])
     f0 = np.array([mora.pitch for mora in moras], dtype=np.float32)
@@ -223,6 +224,64 @@ def _query_to_decoder_feature(
     f0 = np.repeat(f0, frame_per_mora)
 
     return phoneme, f0
+
+
+def _query_to_decoder_feature(
+    query: AudioQuery,
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+    """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
+    moras = to_flatten_moras(query.accent_phrases)
+    moras = _apply_prepost_silence(moras, query)
+    moras = _apply_query_scales(moras, query)
+    return _moras_to_decoder_feature(moras)
+
+
+def _group_moras_by_accent_phrase_count(
+    accent_phrase_moras: list[list[Mora]], min_accent_phrases: int
+) -> list[list[Mora]]:
+    """アクセント句ごとのモーラ系列を指定数以上になるよう結合する。"""
+    grouped: list[list[Mora]] = []
+    for start in range(0, len(accent_phrase_moras), min_accent_phrases):
+        moras: list[Mora] = []
+        for phrase_moras in accent_phrase_moras[start : start + min_accent_phrases]:
+            moras += phrase_moras
+        grouped.append(moras)
+    return grouped
+
+
+def _query_to_decoder_feature_chunks(
+    query: AudioQuery, min_accent_phrases: int
+) -> Iterator[tuple[NDArray[np.float32], NDArray[np.float32]]]:
+    """音声合成用のクエリからアクセント句ごとのデコーダー入力を得る。"""
+    if len(query.accent_phrases) == 0:
+        moras = _apply_prepost_silence([], query)
+        moras = _apply_query_scales(moras, query)
+        yield _moras_to_decoder_feature(moras)
+        return
+
+    accent_phrase_moras = [
+        to_flatten_moras([accent_phrase]) for accent_phrase in query.accent_phrases
+    ]
+    chunk_moras_list = _group_moras_by_accent_phrase_count(
+        accent_phrase_moras,
+        min_accent_phrases=max(1, min_accent_phrases),
+    )
+    chunk_moras_list[0] = [
+        _generate_silence_mora(query.prePhonemeLength),
+        *chunk_moras_list[0],
+    ]
+    chunk_moras_list[-1] = [
+        *chunk_moras_list[-1],
+        _generate_silence_mora(query.postPhonemeLength),
+    ]
+
+    # 抑揚スケールなどは文全体を基準にするため、全チャンクの Mora オブジェクトを
+    # 共有したリストに一度まとめてから適用する。
+    all_moras = [mora for chunk_moras in chunk_moras_list for mora in chunk_moras]
+    _apply_query_scales(all_moras, query)
+
+    for chunk_moras in chunk_moras_list:
+        yield _moras_to_decoder_feature(chunk_moras)
 
 
 class TTSEngine:
@@ -383,6 +442,23 @@ class TTSEngine:
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+    def synthesize_wave_chunks(
+        self,
+        query: AudioQuery,
+        style_id: StyleId,
+        enable_interrogative_upspeak: bool,
+        min_accent_phrases: int = 4,
+    ) -> Iterator[NDArray[np.float32]]:
+        """複数アクセント句をまとめた単位で音声波形を生成する。"""
+        query = copy.deepcopy(query)
+        query.accent_phrases = _apply_interrogative_upspeak(
+            query.accent_phrases, enable_interrogative_upspeak
+        )
+
+        for phoneme, f0 in _query_to_decoder_feature_chunks(query, min_accent_phrases):
+            raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
+            yield raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
         """指定されたスタイル ID に関する合成機能を初期化する。既に初期化されていた場合は引数に応じて再初期化する。"""

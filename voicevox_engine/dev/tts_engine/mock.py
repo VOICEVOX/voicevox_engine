@@ -1,6 +1,7 @@
 """TTSEngine のモック"""
 
 import copy
+from collections.abc import Iterator
 from typing import Final
 
 import numpy as np
@@ -43,6 +44,25 @@ class MockTTSEngine(TTSEngine):
         raw_wave, sr_raw_wave = self.forward(kana_text)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
+
+    def synthesize_wave_chunks(
+        self,
+        query: AudioQuery,
+        style_id: StyleId,
+        enable_interrogative_upspeak: bool,
+        min_accent_phrases: int = 4,
+    ) -> Iterator[NDArray[np.float32]]:
+        """音声合成用のクエリに含まれる読み仮名を複数アクセント句ごとに音声波形へ変換する。"""
+        self._core._assert_style_supports_feature(style_id, "talk")
+        query = copy.deepcopy(query)
+
+        min_accent_phrases = max(1, min_accent_phrases)
+        for start in range(0, len(query.accent_phrases), min_accent_phrases):
+            accent_phrases = query.accent_phrases[start : start + min_accent_phrases]
+            flatten_moras = to_flatten_moras(accent_phrases)
+            kana_text = "".join([mora.text for mora in flatten_moras])
+            raw_wave, sr_raw_wave = self.forward(kana_text)
+            yield raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     def forward(self, text: str) -> tuple[NDArray[np.float32], int]:
         """文字列から pyopenjtalk を用いて音声を合成する。"""

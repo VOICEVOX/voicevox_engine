@@ -1,6 +1,9 @@
 """音声合成機能を提供する API Router"""
 
 import zipfile
+from collections.abc import Iterator
+from io import BytesIO
+from math import ceil
 from tempfile import NamedTemporaryFile, TemporaryFile
 from traceback import print_exception
 from typing import Annotated, Self
@@ -10,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, StreamingResponse
 
 from voicevox_engine.cancellable_engine import (
     CancellableEngine,
@@ -90,6 +93,32 @@ def generate_tts_pipeline_router(
 ) -> APIRouter:
     """音声合成 API Router を生成する"""
     router = APIRouter()
+    streaming_synthesis_boundary = "voicevox-stream-boundary"
+
+    def wave_to_wav_bytes(wave: object, sampling_rate: int) -> bytes:
+        """波形を complete WAV bytes に変換する。"""
+        wav_file = BytesIO()
+        soundfile.write(file=wav_file, data=wave, samplerate=sampling_rate, format="WAV")
+        return wav_file.getvalue()
+
+    def make_streaming_audio_chunk_parts(
+        wav_bytes_iter: Iterator[bytes], total_chunks: int
+    ) -> Iterator[bytes]:
+        """complete WAV bytes の列を multipart/mixed として返す。"""
+        for sequence, wav_bytes in enumerate(wav_bytes_iter):
+            is_last = "true" if sequence == total_chunks - 1 else "false"
+            yield (
+                f"--{streaming_synthesis_boundary}\r\n"
+                "Content-Type: audio/wav\r\n"
+                f"X-Sequence: {sequence}\r\n"
+                f"X-Is-Last: {is_last}\r\n"
+                f"Content-Length: {len(wav_bytes)}\r\n"
+                "\r\n"
+            ).encode("ascii")
+            yield wav_bytes
+            yield b"\r\n"
+
+        yield f"--{streaming_synthesis_boundary}--\r\n".encode("ascii")
 
     @router.post(
         "/audio_query",
@@ -294,6 +323,68 @@ def generate_tts_pipeline_router(
             f.name,
             media_type="audio/wav",
             background=BackgroundTask(try_delete_file, f.name),
+        )
+
+    @router.post(
+        "/streaming_synthesis",
+        response_class=StreamingResponse,
+        responses={
+            200: {
+                "content": {
+                    "multipart/mixed": {
+                        "schema": {
+                            "type": "string",
+                            "format": "binary",
+                            "description": "Each part body is complete WAV bytes. Part headers include X-Sequence and X-Is-Last.",
+                        }
+                    }
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="音声合成する（ストリーミング）",
+    )
+    def streaming_synthesis(
+        query: AudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
+        chunk_min_accent_phrases: Annotated[
+            int,
+            Query(
+                ge=1,
+                description="ストリーミング音声合成で 1 チャンクにまとめる最小アクセント句数。大きいほど初回応答は遅くなるが、チャンク境界の音質劣化を抑えやすい。",
+            ),
+        ] = 4,
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> StreamingResponse:
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_tts_engine(version)
+        total_chunks = max(
+            1,
+            ceil(len(query.accent_phrases) / chunk_min_accent_phrases),
+        )
+
+        wav_bytes_iter = (
+            wave_to_wav_bytes(wave, query.outputSamplingRate)
+            for wave in engine.synthesize_wave_chunks(
+                query,
+                style_id,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+                min_accent_phrases=chunk_min_accent_phrases,
+            )
+        )
+
+        return StreamingResponse(
+            make_streaming_audio_chunk_parts(
+                wav_bytes_iter,
+                total_chunks=total_chunks,
+            ),
+            media_type=f"multipart/mixed; boundary={streaming_synthesis_boundary}",
         )
 
     @router.post(

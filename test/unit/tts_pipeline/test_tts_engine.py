@@ -221,6 +221,27 @@ def test_mocked_update_pitch_output(snapshot_json: SnapshotAssertion) -> None:
     assert snapshot_json == round_floats(pydantic_to_native_type(result), round_value=2)
 
 
+def test_synthesize_wave_chunks_decodes_lazily() -> None:
+    core = MockCoreWrapper()
+    core.decode_forward = MagicMock(wraps=core.decode_forward)  # type: ignore[method-assign]
+    tts_engine = TTSEngine(core=core)
+
+    chunks = tts_engine.synthesize_wave_chunks(
+        _gen_hello_hiho_query(),
+        StyleId(1),
+        enable_interrogative_upspeak=True,
+        min_accent_phrases=1,
+    )
+
+    first_chunk = next(chunks)
+    assert first_chunk.size > 0
+    assert core.decode_forward.call_count == 1
+
+    second_chunk = next(chunks)
+    assert second_chunk.size > 0
+    assert core.decode_forward.call_count == 2
+
+
 def test_mocked_update_length_and_pitch_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
