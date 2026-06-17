@@ -35,7 +35,7 @@ build = [
 ]
 dev = [
   "coveralls==4.1.0",
-  "httpx2==2.3.0", # NOTE: required by fastapi.testclient.TestClient (fastapi-slim's unmanaged dependency)
+  "httpx2==2.3.0", # NOTE: required by fastapi.testclient.TestClient (fastapi's unmanaged dependency)
   "mypy==2.1.0",
   "pip-audit==2.10.0",
   "pre-commit==4.6.0",
