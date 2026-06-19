@@ -28,11 +28,11 @@ class MockCoreWrapper(CoreWrapper):
         """キャラクターメタ情報を文字列として取得する。"""
         return json.dumps(
             [
-                # トーク２つ・ハミング２つ
+                # トーク２つ（１つはストリーミング用）・ハミング２つ
                 {
                     "name": "dummy1",
                     "styles": [
-                        {"name": "style0", "id": 0},
+                        {"name": "style0", "id": 0, "type": "streaming_talk"},
                         {"name": "style1", "id": 2},
                         {"name": "style2", "id": 4, "type": "frame_decode"},
                         {"name": "style3", "id": 6, "type": "frame_decode"},

@@ -8,7 +8,7 @@ from pydantic.json_schema import SkipJsonSchema
 # NOTE: 循環importを防ぐためにとりあえずここに書いている
 # FIXME: 他のmodelに依存せず、全modelから参照できる場所に配置する
 StyleId = NewType("StyleId", int)
-StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing"]
+StyleType = Literal["talk", "singing_teacher", "frame_decode", "sing", "streaming_talk"]
 
 
 class SpeakerStyle(BaseModel):
@@ -24,6 +24,7 @@ class SpeakerStyle(BaseModel):
             "singing_teacher:歌唱音声合成用のクエリの作成が可能。"
             "frame_decode:歌唱音声合成が可能。"
             "sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。"
+            "streaming_talk:talkの機能に加えてストリーミング音声合成が可能。"
         ),
     )
 
