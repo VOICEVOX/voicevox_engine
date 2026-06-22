@@ -381,6 +381,21 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
+      - name: <Setup> Decode P12 certificate (macOS)
+        if: github.event.inputs.code_signing == 'true' && runner.os == 'macOS'
+        run: echo "$APPLE_P12_BASE64" | base64 --decode > /tmp/codesign.p12
+        env:
+          APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
+
+      - name: <Setup> Code signing keychain (macOS)
+        if: github.event.inputs.code_signing == 'true' && runner.os == 'macOS'
+        run: bash tools/codesign_setup.bash
+        env:
+          P12_PATH: /tmp/codesign.p12
+          P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+          CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
+          KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
+
       # Build
       - name: <Build> Generate licenses.json
         run: |
@@ -417,10 +432,16 @@ jobs:
             LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
           fi
 
+          CODESIGN_IDENTITY_ARG=""
+          if [[ "$RUNNER_OS" == "macOS" ]] && [[ -f /tmp/codesign_identity.txt ]]; then
+            CODESIGN_IDENTITY_ARG="--codesign_identity=$(head -n 1 /tmp/codesign_identity.txt)"
+          fi
+
           uv run pyinstaller --noconfirm run.spec -- \
             --libcore_path="$LIBCORE_PATH" \
             --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
-            --core_model_dir_path="download/core/models/vvms"
+            --core_model_dir_path="download/core/models/vvms" \
+            $CODESIGN_IDENTITY_ARG
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
@@ -461,6 +482,13 @@ jobs:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
+
+      - name: <Build> Code signing cleanup (macOS)
+        if: always() && github.event.inputs.code_signing == 'true' && runner.os == 'macOS'
+        run: bash tools/codesign_cleanup.bash
+        env:
+          CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
+          KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
 
       - name: <Build> Rename artifact directory to archive
         run: mv dist/run/ "${{ matrix.target }}/"
