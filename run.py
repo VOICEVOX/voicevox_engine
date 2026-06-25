@@ -311,15 +311,14 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         default=2,
         help="cancellable_synthesis機能の初期化時に生成するプロセス数です。",
     )
+    # NOTE: default=None により「未指定」を表現し、環境変数・設定ファイルへのフォールバックを可能にする
     parser.add_argument(
         "--load_all_models",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         default=None,
         help=(
             "起動時に全ての音声合成モデルを読み込みます。"
             "指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS、設定ファイルの値が順に使われます。"
-            "VV_LOAD_ALL_MODELS の値が1の場合は読み込み、0の場合は読み込みません。"
-            "いずれにも指定がない場合は読み込みません。"
         ),
     )
 
@@ -385,15 +384,14 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         ),
     )
 
+    # NOTE: default=None により「未指定」を表現し、環境変数・設定ファイルへのフォールバックを可能にする
     parser.add_argument(
         "--disable_mutable_api",
-        action=argparse.BooleanOptionalAction,
+        action="store_true",
         default=None,
         help=(
             "辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。"
             "指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API、設定ファイルの値が順に使われます。"
-            "VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0の場合は無効化しません。"
-            "いずれにも指定がない場合は無効化しません。"
         ),
     )
 

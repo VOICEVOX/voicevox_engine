@@ -446,8 +446,8 @@ curl -s \
 $ uv run run.py -h
 
 usage: run.py [-h] [--host HOST] [--port PORT] [--use_gpu | --no-use_gpu] [--voicevox_dir VOICEVOX_DIR] [--voicelib_dir VOICELIB_DIR] [--runtime_dir RUNTIME_DIR] [--enable_mock]
-              [--enable_cancellable_synthesis] [--init_processes INIT_PROCESSES] [--load_all_models | --no-load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8]
-              [--cors_policy_mode {all,localapps}] [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE] [--disable_mutable_api | --no-disable_mutable_api]
+              [--enable_cancellable_synthesis] [--init_processes INIT_PROCESSES] [--load_all_models] [--cpu_num_threads CPU_NUM_THREADS] [--output_log_utf8] [--cors_policy_mode {all,localapps}]
+              [--allow_origin [ALLOW_ORIGIN ...]] [--setting_file SETTING_FILE] [--preset_file PRESET_FILE] [--disable_mutable_api]
 
 VOICEVOX のエンジンです。
 
@@ -468,8 +468,7 @@ options:
                         音声合成を途中でキャンセルできるようになります。
   --init_processes INIT_PROCESSES
                         cancellable_synthesis機能の初期化時に生成するプロセス数です。
-  --load_all_models, --no-load_all_models
-                        起動時に全ての音声合成モデルを読み込みます。指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS、設定ファイルの値が順に使われます。VV_LOAD_ALL_MODELS の値が1の場合は読み込み、0の場合は読み込みません。いずれにも指定がない場合は読み込みません。
+  --load_all_models     起動時に全ての音声合成モデルを読み込みます。指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS、設定ファイルの値が順に使われます。
   --cpu_num_threads CPU_NUM_THREADS
                         音声合成を行うスレッド数です。指定しない場合、代わりに環境変数 VV_CPU_NUM_THREADS の値が使われます。VV_CPU_NUM_THREADS が空文字列でなく数値でもない場合はエラー終了します。
   --output_log_utf8     ログ出力をUTF-8でおこないます。指定しない場合、代わりに環境変数 VV_OUTPUT_LOG_UTF8 の値が使われます。VV_OUTPUT_LOG_UTF8 の値が1の場合はUTF-8で、0または空文字、値がない場合は環境によって自動的に決定されます。
@@ -482,8 +481,8 @@ options:
                         設定ファイルを指定できます。
   --preset_file PRESET_FILE
                         プリセットファイルを指定できます。指定がない場合、環境変数 VV_PRESET_FILE、ユーザーディレクトリのpresets.yamlを順に探します。
-  --disable_mutable_api, --no-disable_mutable_api
-                        辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API、設定ファイルの値が順に使われます。VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0の場合は無効化しません。いずれにも指定がない場合は無効化しません。
+  --disable_mutable_api
+                        辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API、設定ファイルの値が順に使われます。
 ```
 
 #### プロキシ環境での利用
