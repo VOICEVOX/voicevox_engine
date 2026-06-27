@@ -106,19 +106,20 @@ def decide_cors_policy_mode_from_env(env_name: str) -> CorsPolicyMode | None:
     """
     環境変数からCORSの許可モードを返す。
 
-    * 環境変数が "all" か "localapps" なら対応する `CorsPolicyMode` を返す
+    * 環境変数が "all" か "localapps" なら対応する CorsPolicyMode を返す
     * 環境変数が空白か存在しないならNoneを返す
     * それ以外はwarningを出してNoneを返す
     """
-    env = os.getenv(env_name, default="")
-    if env == "":
+    env = os.getenv(env_name)
+    if env is None or env == "":
         return None
     try:
         return CorsPolicyMode(env)
     except ValueError:
-        msg = f"Invalid environment variable value: {env_name}={env}"
-        warnings.warn(msg, stacklevel=1)
-        return None
+        pass
+    msg = f"Invalid environment variable value: {env_name}={env}"
+    warnings.warn(msg, stacklevel=1)
+    return None
 
 
 def decide_allow_origin_from_env(env_name: str) -> list[str] | None:
@@ -128,8 +129,8 @@ def decide_allow_origin_from_env(env_name: str) -> list[str] | None:
     * 環境変数が存在するなら、カンマ区切りでリスト化して返す（各要素の前後の空白は除く）
     * 環境変数が空白か存在しないか、有効なオリジンが無いならNoneを返す
     """
-    env = os.getenv(env_name, default="")
-    if env == "":
+    env = os.getenv(env_name)
+    if env is None or env == "":
         return None
     origins = [origin.strip() for origin in env.split(",") if origin.strip()]
     return origins or None
