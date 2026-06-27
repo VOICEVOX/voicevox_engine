@@ -57,6 +57,29 @@ def decide_boolean_from_env(env_name: str) -> bool:
             return False
 
 
+def decide_boolean_from_env_or_none(env_name: str) -> bool | None:
+    """
+    環境変数からbool値を返す。設定の優先順位付けのため、未指定なら None を返す。
+
+    * 環境変数が"1"ならTrueを返す
+    * 環境変数が"0"ならFalseを返す
+    * 環境変数が空白か存在しないならNoneを返す
+    * それ以外はwarningを出してNoneを返す
+    """
+    env = os.getenv(env_name, default="")
+    match env:
+        case "1":
+            return True
+        case "0":
+            return False
+        case "":
+            return None
+        case _:
+            msg = f"Invalid environment variable value: {env_name}={env}"
+            warnings.warn(msg, stacklevel=1)
+            return None
+
+
 def decide_port_from_env(env_name: str) -> int | None:
     """
     環境変数からポート番号を返す。
@@ -79,6 +102,40 @@ def decide_port_from_env(env_name: str) -> int | None:
     return None
 
 
+def decide_cors_policy_mode_from_env(env_name: str) -> CorsPolicyMode | None:
+    """
+    環境変数からCORSの許可モードを返す。
+
+    * 環境変数が "all" か "localapps" なら対応する CorsPolicyMode を返す
+    * 環境変数が空白か存在しないならNoneを返す
+    * それ以外はwarningを出してNoneを返す
+    """
+    env = os.getenv(env_name)
+    if env is None or env == "":
+        return None
+    try:
+        return CorsPolicyMode(env)
+    except ValueError:
+        pass
+    msg = f"Invalid environment variable value: {env_name}={env}"
+    warnings.warn(msg, stacklevel=1)
+    return None
+
+
+def decide_allow_origin_from_env(env_name: str) -> list[str] | None:
+    """
+    環境変数から許可するオリジンのリストを返す。
+
+    * 環境変数が存在するなら、カンマ区切りでリスト化して返す（各要素の前後の空白は除く）
+    * 環境変数が空白か存在しないか、有効なオリジンが無いならNoneを返す
+    """
+    env = os.getenv(env_name)
+    if env is None or env == "":
+        return None
+    origins = [origin.strip() for origin in env.split(",") if origin.strip()]
+    return origins or None
+
+
 @dataclass(frozen=True)
 class Envs:
     """環境変数の集合"""
@@ -86,7 +143,10 @@ class Envs:
     output_log_utf8: bool
     cpu_num_threads: str | None
     env_preset_path: str | None
-    disable_mutable_api: bool
+    disable_mutable_api: bool | None
+    load_all_models: bool | None
+    cors_policy_mode: CorsPolicyMode | None
+    allow_origins: list[str] | None
     host: str | None
     port: int | None
     use_gpu: bool
@@ -101,7 +161,10 @@ def read_environment_variables() -> Envs:
         output_log_utf8=decide_boolean_from_env("VV_OUTPUT_LOG_UTF8"),
         cpu_num_threads=os.getenv("VV_CPU_NUM_THREADS"),
         env_preset_path=os.getenv("VV_PRESET_FILE"),
-        disable_mutable_api=decide_boolean_from_env("VV_DISABLE_MUTABLE_API"),
+        disable_mutable_api=decide_boolean_from_env_or_none("VV_DISABLE_MUTABLE_API"),
+        load_all_models=decide_boolean_from_env_or_none("VV_LOAD_ALL_MODELS"),
+        cors_policy_mode=decide_cors_policy_mode_from_env("VV_CORS_POLICY_MODE"),
+        allow_origins=decide_allow_origin_from_env("VV_ALLOW_ORIGIN"),
         host=os.getenv("VV_HOST"),
         port=decide_port_from_env("VV_PORT"),
         use_gpu=decide_boolean_from_env("VV_USE_GPU"),
@@ -179,14 +242,14 @@ class _CLIArgs:
     enable_mock: bool
     enable_cancellable_synthesis: bool
     init_processes: int
-    load_all_models: bool
+    load_all_models: bool | None
     cpu_num_threads: int | None
     output_log_utf8: bool
     cors_policy_mode: CorsPolicyMode | None
     allow_origins: list[str] | None
     setting_file: Path
     preset_file: Path | None
-    disable_mutable_api: bool
+    disable_mutable_api: bool | None
 
 
 _cli_args_adapter = TypeAdapter(_CLIArgs)
@@ -249,10 +312,15 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         default=2,
         help="cancellable_synthesis機能の初期化時に生成するプロセス数です。",
     )
+    # NOTE: default=None により「未指定」を表現し、環境変数・設定ファイルへのフォールバックを可能にする
     parser.add_argument(
         "--load_all_models",
         action="store_true",
-        help="起動時に全ての音声合成モデルを読み込みます。",
+        default=None,
+        help=(
+            "起動時に全ての音声合成モデルを読み込みます。"
+            "指定しない場合、代わりに環境変数 VV_LOAD_ALL_MODELS、設定ファイルの値が順に使われます。"
+        ),
     )
 
     # 引数へcpu_num_threadsの指定がなければ、環境変数をロールします。
@@ -286,7 +354,7 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
             "CORSの許可モード。allまたはlocalappsが指定できます。allはすべてを許可します。"
             "localappsはオリジン間リソース共有ポリシーを、app://.とlocalhost関連、ブラウザ拡張URIに限定します。"
             "その他のオリジンはallow_originオプションで追加できます。デフォルトはlocalapps。"
-            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+            "指定しない場合、代わりに環境変数 VV_CORS_POLICY_MODE、--setting_fileで指定される設定ファイルの値が順に使われます。"
         ),
     )
 
@@ -295,7 +363,8 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         nargs="*",
         help=(
             "許可するオリジンを指定します。スペースで区切ることで複数指定できます。"
-            "このオプションは--setting_fileで指定される設定ファイルよりも優先されます。"
+            "指定しない場合、代わりに環境変数 VV_ALLOW_ORIGIN（カンマ区切り）、"
+            "--setting_fileで指定される設定ファイルの値が順に使われます。"
         ),
     )
 
@@ -316,13 +385,14 @@ def read_cli_arguments(envs: Envs) -> _CLIArgs:
         ),
     )
 
+    # NOTE: default=None により「未指定」を表現し、環境変数・設定ファイルへのフォールバックを可能にする
     parser.add_argument(
         "--disable_mutable_api",
         action="store_true",
+        default=None,
         help=(
             "辞書登録や設定変更など、エンジンの静的なデータを変更するAPIを無効化します。"
-            "指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API の値が使われます。"
-            "VV_DISABLE_MUTABLE_API の値が1の場合は無効化で、0または空文字、値がない場合は無視されます。"
+            "指定しない場合、代わりに環境変数 VV_DISABLE_MUTABLE_API、設定ファイルの値が順に使われます。"
         ),
     )
 
@@ -352,7 +422,15 @@ def main() -> None:
     if args.output_log_utf8:
         set_output_log_utf8()
 
+    setting_loader = SettingHandler(args.setting_file)
+    settings = setting_loader.load()
+
+    # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
+
     use_gpu = select_first_not_none([args.use_gpu, envs.use_gpu])
+    load_all_models = select_first_not_none(
+        [args.load_all_models, envs.load_all_models, settings.load_all_models]
+    )
 
     core_manager = initialize_cores(
         use_gpu=use_gpu,
@@ -361,7 +439,7 @@ def main() -> None:
         runtime_dirs=args.runtime_dirs,
         cpu_num_threads=args.cpu_num_threads,
         enable_mock=args.enable_mock,
-        load_all_models=args.load_all_models,
+        load_all_models=load_all_models,
     )
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
@@ -380,23 +458,18 @@ def main() -> None:
             enable_mock=args.enable_mock,
         )
 
-    setting_loader = SettingHandler(args.setting_file)
-    settings = setting_loader.load()
-
-    # 複数方式で指定可能な場合、優先度は上から「引数」「環境変数」「設定ファイル」「デフォルト値」
-
     host = select_first_not_none([args.host, envs.host, _DEFAULT_HOST])
     port = select_first_not_none([args.port, envs.port, _DEFAULT_PORT])
 
     cors_policy_mode = select_first_not_none(
-        [args.cors_policy_mode, settings.cors_policy_mode]
+        [args.cors_policy_mode, envs.cors_policy_mode, settings.cors_policy_mode]
     )
 
     setting_allow_origins = None
     if settings.allow_origin is not None:
         setting_allow_origins = settings.allow_origin.split(" ")
     allow_origin = select_first_not_none_or_none(
-        [args.allow_origins, setting_allow_origins]
+        [args.allow_origins, envs.allow_origins, setting_allow_origins]
     )
 
     if envs.env_preset_path is not None and len(envs.env_preset_path) != 0:
@@ -427,7 +500,13 @@ def main() -> None:
     if not character_info_dir.exists():
         character_info_dir = root_dir / "speaker_info"
 
-    disable_mutable_api = args.disable_mutable_api or envs.disable_mutable_api
+    disable_mutable_api = select_first_not_none(
+        [
+            args.disable_mutable_api,
+            envs.disable_mutable_api,
+            settings.disable_mutable_api,
+        ]
+    )
 
     # ASGI に準拠した VOICEVOX ENGINE アプリケーションを生成する
     app = generate_app(

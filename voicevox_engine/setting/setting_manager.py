@@ -18,6 +18,8 @@ class Setting:
 
     cors_policy_mode: CorsPolicyMode  # リソース共有ポリシー
     allow_origin: str | None = None  # 許可するオリジン
+    load_all_models: bool = False  # 起動時に全モデルを読み込むか
+    disable_mutable_api: bool = False  # データ変更APIを無効化するか
 
 
 _setting_adapter = TypeAdapter(Setting)
