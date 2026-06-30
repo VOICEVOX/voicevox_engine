@@ -3,7 +3,6 @@
 from typing import Any
 
 from fastapi import FastAPI
-from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
 
@@ -21,27 +20,16 @@ def simplify_operation_ids(app: FastAPI) -> FastAPI:
 
 def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastAPI:
     """自動生成された OpenAPI schema へカスタム属性を追加する。"""
+    original_openapi = app.openapi
 
     # BaseLibraryInfo/VvlibManifestモデルはAPIとして表には出ないが、エディタ側で利用したいので、手動で追加する
     # ref: https://fastapi.tiangolo.com/advanced/extending-openapi/#modify-the-openapi-schema
     def custom_openapi() -> Any:
-        if app.openapi_schema:
+        if app.openapi_schema is not None:
             return app.openapi_schema
-        openapi_schema = get_openapi(
-            title=app.title,
-            version=app.version,
-            openapi_version=app.openapi_version,
-            summary=app.summary,
-            description=app.description,
-            terms_of_service=app.terms_of_service,
-            contact=app.contact,
-            license_info=app.license_info,
-            routes=app.routes,
-            webhooks=app.webhooks.routes,
-            tags=app.openapi_tags,
-            servers=app.servers,
-            separate_input_output_schemas=app.separate_input_output_schemas,
-        )
+
+        openapi_schema = original_openapi()
+
         if manage_library:
             additional_models: list[type[BaseModel]] = [
                 BaseLibraryInfo,
