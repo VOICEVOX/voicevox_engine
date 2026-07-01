@@ -5,10 +5,9 @@ from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 import soundfile
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
-from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
 
 from voicevox_engine.metas.metas import StyleId
 from voicevox_engine.metas.metas_store import MetasStore
@@ -77,6 +76,7 @@ def generate_morphing_router(
         summary="2種類のスタイルでモーフィングした音声を合成する",
     )
     def _synthesis_morphing(
+        background_tasks: BackgroundTasks,
         query: AudioQuery,
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
@@ -132,10 +132,7 @@ def generate_morphing_router(
                 format="WAV",
             )
 
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f.name),
-        )
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="audio/wav")
 
     return router
