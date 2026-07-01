@@ -880,12 +880,13 @@
           },
           "type": {
             "default": "talk",
-            "description": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。",
+            "description": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。streaming_talk:talkの機能に加えてストリーミング音声合成が可能。",
             "enum": [
               "talk",
               "singing_teacher",
               "frame_decode",
-              "sing"
+              "sing",
+              "streaming_talk"
             ],
             "title": "Type",
             "type": "string"
@@ -2966,6 +2967,105 @@
         "summary": "Speakers",
         "tags": [
           "その他"
+        ]
+      }
+    },
+    "/streaming_synthesis": {
+      "post": {
+        "operationId": "streaming_synthesis",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "speaker",
+            "required": true,
+            "schema": {
+              "title": "Speaker",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "生成開始位置（秒）。省略時は先頭から生成する",
+            "in": "query",
+            "name": "start_offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "description": "生成開始位置（秒）。省略時は先頭から生成する",
+              "title": "Start Offset",
+              "type": "number"
+            }
+          },
+          {
+            "description": "一度に生成されるセグメントの長さ（秒）",
+            "in": "query",
+            "name": "segment_length",
+            "required": false,
+            "schema": {
+              "default": 0.3,
+              "description": "一度に生成されるセグメントの長さ（秒）",
+              "exclusiveMinimum": 0,
+              "title": "Segment Length",
+              "type": "number"
+            }
+          },
+          {
+            "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+            "in": "query",
+            "name": "enable_interrogative_upspeak",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "疑問系のテキストが与えられたら語尾を自動調整する",
+              "title": "Enable Interrogative Upspeak",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "core_version",
+            "required": false,
+            "schema": {
+              "title": "Core Version",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "audio/wav": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
+        "tags": [
+          "音声合成"
         ]
       }
     },
