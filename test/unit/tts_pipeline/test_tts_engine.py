@@ -280,6 +280,7 @@ def test_mocked_synthesize_wave_stream_output(snapshot_json: SnapshotAssertion) 
     # Inputs
     tts_engine = TTSEngine(MockCoreWrapper())
     hello_hiho = _gen_hello_hiho_query()
+    hello_hiho.outputSamplingRate = 24000
     # Outputs
     wave_length, result_gen = tts_engine.synthesize_wave_stream(
         hello_hiho,
