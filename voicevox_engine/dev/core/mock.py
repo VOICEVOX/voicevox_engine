@@ -174,6 +174,7 @@ class MockCoreWrapper(CoreWrapper):
         output = np.zeros((length * 256,), dtype=np.float32)
         for i in range(length):
             output[i * 256 : (i + 1) * 256] = audio_feature[i, 0] + style_id
+        output /= np.max(np.abs(output))  # 正規化
         return output
 
     def predict_sing_consonant_length_forward(
