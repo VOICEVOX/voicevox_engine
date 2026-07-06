@@ -268,9 +268,9 @@ def generate_tts_pipeline_router(
         summary="音声合成する",
     )
     def synthesis(
-        background_tasks: BackgroundTasks,
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -307,10 +307,10 @@ def generate_tts_pipeline_router(
         summary="音声合成する（キャンセル可能）",
     )
     def cancellable_synthesis(
-        background_tasks: BackgroundTasks,
         query: AudioQuery,
-        request: Request,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        request: Request,
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
@@ -354,9 +354,9 @@ def generate_tts_pipeline_router(
         summary="複数まとめて音声合成する",
     )
     def multi_synthesis(
-        background_tasks: BackgroundTasks,
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -476,9 +476,9 @@ def generate_tts_pipeline_router(
         tags=["音声合成"],
     )
     def frame_synthesis(
-        background_tasks: BackgroundTasks,
         query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """歌唱音声合成を行います。"""
@@ -511,7 +511,7 @@ def generate_tts_pipeline_router(
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
     def connect_waves(
-        background_tasks: BackgroundTasks, waves: list[str]
+        waves: list[str], background_tasks: BackgroundTasks
     ) -> FileResponse:
         """base64エンコードされたwavデータを一纏めにし、wavファイルで返します。"""
         try:

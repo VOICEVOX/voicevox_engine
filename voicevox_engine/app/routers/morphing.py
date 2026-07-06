@@ -76,11 +76,11 @@ def generate_morphing_router(
         summary="2種類のスタイルでモーフィングした音声を合成する",
     )
     def _synthesis_morphing(
-        background_tasks: BackgroundTasks,
         query: AudioQuery,
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
