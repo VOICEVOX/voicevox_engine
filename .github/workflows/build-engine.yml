@@ -471,7 +471,7 @@ jobs:
           # Compress to artifact.7z.001, artifact.7z.002, ...
           7z -r -v1900m a "${{ steps.vars.outputs.package_name }}.7z" "${{ matrix.target }}/"
 
-          # Output splitted archive list
+          # Output split archive list
           ls ${{ steps.vars.outputs.package_name }}.7z.* > archives_7z.txt
           mv archives_7z.txt "${{ steps.vars.outputs.package_name }}.7z.txt"
 
@@ -516,7 +516,7 @@ jobs:
             mv ${{ steps.vars.outputs.package_name }}.001.vvppp ${{ steps.vars.outputs.package_name }}.vvpp
           fi
 
-          # Output splitted archive list
+          # Output split archive list
           ls ${{ steps.vars.outputs.package_name }}*.vvppp ${{ steps.vars.outputs.package_name }}.vvpp > archives_vvpp.txt || true
           mv archives_vvpp.txt "${{ steps.vars.outputs.package_name }}.vvpp.txt"
 

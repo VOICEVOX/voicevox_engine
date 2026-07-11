@@ -68,7 +68,7 @@ jobs:
           sudo apt-get install -y shellcheck
 
       - name: <Test> Check shell files
-        run: git ls-files | grep -E '\.(ba)?sh' | xargs shellcheck
+        run: git ls-files | grep -E '\.(bash|sh)' | xargs shellcheck
 
       - name: <Test> Check workflow files
         run: |

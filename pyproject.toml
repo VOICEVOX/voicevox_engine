@@ -85,7 +85,8 @@ ignore_missing_imports = true
 warn_unreachable = true
 
 [tool.typos.files]
-extend-exclude = ["tools/licenses"]
+ignore-hidden = false
+extend-exclude = [".git", "tools/licenses"]
 
 [tool.typos.default.extend-words]
 datas = "datas" # PyInstaller's argument
