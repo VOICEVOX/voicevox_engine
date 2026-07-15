@@ -208,7 +208,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         ),
         _License(
             package_name="ONNX Runtime",
-            package_version="1.17.3",
+            package_version="1.23.2",
             license_name="MIT license",
             license_text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
             license_text_type="remote_address",

@@ -28,7 +28,7 @@ on:
 env:
   VOICEVOX_RESOURCE_VERSION: "0.25.2"
   VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.2"
-  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.17.3"
+  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.23.2"
   VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.2.0"
   VOICEVOX_VVM_VERSION: "0.16.4"
 
@@ -210,7 +210,7 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: onnxruntime-cache-restore
         with:
-          key: onnxruntime-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-core${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
+          key: onnxruntime-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-${{ env.VOICEVOX_ONNXRUNTIME_VERSION }}
           path: download/core/onnxruntime
 
       # additional libraries
