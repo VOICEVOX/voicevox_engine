@@ -447,6 +447,17 @@
             "description": "音素",
             "title": "Phoneme",
             "type": "string"
+          },
+          "seeding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Seeding"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "乱数のシード設定。null の場合は毎回結果が変わる。"
           }
         },
         "required": [
@@ -793,6 +804,31 @@
           "notes"
         ],
         "title": "Score",
+        "type": "object"
+      },
+      "Seeding": {
+        "description": "乱数のシード設定。",
+        "properties": {
+          "offset": {
+            "default": 0,
+            "description": "乱数列のオフセット。シード値から生成される乱数列を先頭から何フレーム分ずらして使うかを表す。",
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "seed": {
+            "description": "乱数シード値。",
+            "maximum": 2147483647.0,
+            "minimum": -2147483648.0,
+            "title": "Seed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seed"
+        ],
+        "title": "Seeding",
         "type": "object"
       },
       "Speaker": {

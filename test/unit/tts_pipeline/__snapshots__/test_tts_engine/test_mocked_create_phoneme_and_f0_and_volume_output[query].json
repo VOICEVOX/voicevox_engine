@@ -3,67 +3,80 @@
     {
       "frame_length": 5,
       "note_id": null,
-      "phoneme": "pau"
+      "phoneme": "pau",
+      "seeding": null
     },
     {
       "frame_length": 5,
       "note_id": null,
-      "phoneme": "d"
+      "phoneme": "d",
+      "seeding": null
     },
     {
       "frame_length": 6,
       "note_id": null,
-      "phoneme": "o"
+      "phoneme": "o",
+      "seeding": null
     },
     {
       "frame_length": 6,
       "note_id": null,
-      "phoneme": "r"
+      "phoneme": "r",
+      "seeding": null
     },
     {
       "frame_length": 7,
       "note_id": null,
-      "phoneme": "e"
+      "phoneme": "e",
+      "seeding": null
     },
     {
       "frame_length": 10,
       "note_id": null,
-      "phoneme": "m"
+      "phoneme": "m",
+      "seeding": null
     },
     {
       "frame_length": 21,
       "note_id": null,
-      "phoneme": "i"
+      "phoneme": "i",
+      "seeding": null
     },
     {
       "frame_length": 3,
       "note_id": null,
-      "phoneme": "pau"
+      "phoneme": "pau",
+      "seeding": null
     },
     {
       "frame_length": 2,
       "note_id": null,
-      "phoneme": "f"
+      "phoneme": "f",
+      "seeding": null
     },
     {
       "frame_length": 0,
       "note_id": null,
-      "phoneme": "a"
+      "phoneme": "a",
+      "seeding": null
     },
     {
       "frame_length": 12,
       "note_id": null,
-      "phoneme": "s"
+      "phoneme": "s",
+      "seeding": null
     },
     {
       "frame_length": 17,
       "note_id": null,
-      "phoneme": "o"
+      "phoneme": "o",
+      "seeding": null
     },
     {
       "frame_length": 10,
       "note_id": null,
-      "phoneme": "pau"
+      "phoneme": "pau",
+      "seeding": null
     }
   ],
   [
