@@ -266,7 +266,7 @@ class SongEngine:
                 frame_length=phoneme_duration,
                 note_id=phoneme_note_id,
                 # TODO: コアがシード値に対応したら、ここで実際のシード値を生成する
-                # （https://github.com/VOICEVOX/voicevox_engine/issues/1867）
+                # ref: https://github.com/VOICEVOX/voicevox_engine/issues/1867
                 seeding=None,
             )
             for phoneme_id, phoneme_duration, phoneme_note_id in zip(
