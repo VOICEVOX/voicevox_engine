@@ -34,42 +34,50 @@
     {
       "frame_length": 5,
       "note_id": "a",
-      "phoneme": "pau"
+      "phoneme": "pau",
+      "seeding": null
     },
     {
       "frame_length": 5,
       "note_id": "b",
-      "phoneme": "t"
+      "phoneme": "t",
+      "seeding": null
     },
     {
       "frame_length": 2,
       "note_id": "b",
-      "phoneme": "e"
+      "phoneme": "e",
+      "seeding": null
     },
     {
       "frame_length": 1,
       "note_id": "c",
-      "phoneme": "s"
+      "phoneme": "s",
+      "seeding": null
     },
     {
       "frame_length": 2,
       "note_id": "c",
-      "phoneme": "u"
+      "phoneme": "u",
+      "seeding": null
     },
     {
       "frame_length": 1,
       "note_id": "d",
-      "phoneme": "t"
+      "phoneme": "t",
+      "seeding": null
     },
     {
       "frame_length": 1,
       "note_id": "d",
-      "phoneme": "o"
+      "phoneme": "o",
+      "seeding": null
     },
     {
       "frame_length": 10,
       "note_id": "e",
-      "phoneme": "pau"
+      "phoneme": "pau",
+      "seeding": null
     }
   ],
   "volume": [

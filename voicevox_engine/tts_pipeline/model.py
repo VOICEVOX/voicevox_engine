@@ -75,12 +75,32 @@ class Score(BaseModel):
     notes: list[Note] = Field(description="音符のリスト")
 
 
+class Seeding(BaseModel):
+    """乱数のシード設定。"""
+
+    seed: int = Field(
+        ge=-(2**31),
+        le=2**31 - 1,
+        description="乱数シード値。",
+    )
+    offset: int = Field(
+        default=0,
+        ge=-(2**31),
+        le=2**31 - 1,
+        description="乱数列のオフセット。シード値から生成される乱数列を先頭から何フレーム分ずらして使うかを表す。",
+    )
+
+
 class FramePhoneme(BaseModel):
     """音素の情報。"""
 
     phoneme: str = Field(description="音素")
     frame_length: int = Field(description="音素のフレーム長")
     note_id: NoteId | None = Field(default=None, description="音符のID")
+    seeding: Seeding | None = Field(
+        default=None,
+        description="乱数のシード設定。null の場合は毎回結果が変わる。",
+    )
 
 
 class FrameAudioQuery(BaseModel):
