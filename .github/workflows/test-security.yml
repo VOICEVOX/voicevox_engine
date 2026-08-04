@@ -33,6 +33,9 @@ jobs:
           virtual-environment: .venv
           inputs: .
           locked: true
+          # Setuptoolsはpyworldがpkg_resourcesを使っているため更新できないが脆弱性の影響も受けないはず
+          ignore-vulns: |
+            PYSEC-2026-3447
 
       - name: <Deploy> Notify Discord of security testing result
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
