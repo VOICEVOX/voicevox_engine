@@ -10,7 +10,7 @@ rm -r resources/character_info
 cp -r "${DOWNLOAD_RESOURCE_PATH}/character_info" resources/character_info
 
 # キャラクター情報を前処理する
-uv run "${DOWNLOAD_RESOURCE_PATH}/scripts/clean_character_info.py" \
+uv run --active "${DOWNLOAD_RESOURCE_PATH}/scripts/clean_character_info.py" \
     --character_info_dir resources/character_info/
 
 # エンジンマニフェストを統合する
