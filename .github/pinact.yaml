@@ -8,3 +8,5 @@ files:
 ignore_actions:
   - name: voicevox/merge-gatekeeper
     ref: main
+  - name: pypa/gh-action-pip-audit
+    ref: fb241f581674a1bb995061d62504857a9ea4b69e

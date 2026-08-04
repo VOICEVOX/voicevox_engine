@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
@@ -28,7 +28,7 @@ jobs:
 
       - name: <Test> Check Python dependency security
         # 未リリースの機能を使うためmainブランチのコミットを指定している
-        uses: pypa/gh-action-pip-audit@aad10797d60f7c941f2c511ffb70fd81d998c2a2
+        uses: pypa/gh-action-pip-audit@fb241f581674a1bb995061d62504857a9ea4b69e
         with:
           virtual-environment: .venv
           inputs: .
