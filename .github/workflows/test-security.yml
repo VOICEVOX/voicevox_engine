@@ -33,7 +33,8 @@ jobs:
           virtual-environment: .venv
           inputs: .
           locked: true
-          # Setuptoolsはpyworldがpkg_resourcesを使っているため更新できないが脆弱性の影響も受けないはず
+          # NOTE: pyworldがpkg_resourcesを使うためsetuptoolsを82未満に固定しており、83.0.0で修正されたPYSEC-2026-3447を解消できない
+          # sdist作成時の脆弱性であり、sdistを作らないので影響を受けない
           ignore-vulns: |
             PYSEC-2026-3447
 
