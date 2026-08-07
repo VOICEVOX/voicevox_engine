@@ -9,13 +9,9 @@ from pydantic import BaseModel
 from voicevox_engine.library.model import BaseLibraryInfo, VvlibManifest
 
 
-def simplify_operation_ids(app: FastAPI) -> FastAPI:
+def simplify_operation_ids(route: APIRoute) -> str:
     """operation ID を簡略化してAPIクライアントで生成される関数名をシンプルにする。"""
-    for route in app.routes:
-        if isinstance(route, APIRoute):
-            route.operation_id = route.name
-
-    return app
+    return route.name
 
 
 def configure_openapi_schema(app: FastAPI, manage_library: bool | None) -> FastAPI:
