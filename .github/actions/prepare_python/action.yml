@@ -13,12 +13,32 @@ runs:
       uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       with:
         activate-environment: true
+      env:
+        UV_MANAGED_PYTHON: 1 # NOTE: python-build-standaloneの使用を強制する
 
     - name: <Setup> Install Python dependencies
       run: |
+        # NOTE: macOSでインストールするwheelのバージョンを制限するために`--python-platform`と`MACOSX_DEPLOYMENT_TARGET`を設定する
+        case "$RUNNER_OS,$RUNNER_ARCH" in
+          Windows,X64) python_platform=x86_64-pc-windows-msvc ;;
+          macOS,X64)
+            python_platform=x86_64-apple-darwin
+            export MACOSX_DEPLOYMENT_TARGET="13.0"
+            ;;
+          macOS,ARM64)
+            python_platform=aarch64-apple-darwin
+            export MACOSX_DEPLOYMENT_TARGET="13.0"
+            ;;
+          Linux,X64) python_platform=x86_64-unknown-linux-gnu ;;
+          Linux,ARM64) python_platform=aarch64-unknown-linux-gnu ;;
+          *)
+            echo 'unexpected runner' >&2
+            exit 1
+            ;;
+        esac
         if [[ -n "${{ inputs.dependency-group }}" ]]; then
-          uv sync --group ${{ inputs.dependency-group }}
+          uv sync --group ${{ inputs.dependency-group }} --python-platform "$python_platform"
         else
-          uv sync
+          uv sync --python-platform "$python_platform"
         fi
       shell: bash
