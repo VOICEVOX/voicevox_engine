@@ -8,7 +8,7 @@ import warnings
 from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TextIO, TypeVar
+from typing import TextIO
 
 import uvicorn
 from pydantic import TypeAdapter
@@ -146,10 +146,7 @@ def set_output_log_utf8() -> None:
         sys.stderr = _prepare_utf8_stdio(sys.stderr)
 
 
-T = TypeVar("T")
-
-
-def select_first_not_none(candidates: list[T | None]) -> T:
+def select_first_not_none[T](candidates: list[T | None]) -> T:
     """None でない最初の値を取り出す。全て None の場合はエラーを送出する。"""
     for candidate in candidates:
         if candidate is not None:
@@ -157,10 +154,7 @@ def select_first_not_none(candidates: list[T | None]) -> T:
     raise RuntimeError("すべての候補値が None です")
 
 
-S = TypeVar("S")
-
-
-def select_first_not_none_or_none(candidates: list[S | None]) -> S | None:
+def select_first_not_none_or_none[T](candidates: list[T | None]) -> T | None:
     """None でない最初の値を取り出そうとし、全て None の場合は None を返す。"""
     for candidate in candidates:
         if candidate is not None:

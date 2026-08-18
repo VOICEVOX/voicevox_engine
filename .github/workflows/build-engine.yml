@@ -113,7 +113,7 @@ jobs:
         run: echo "package_name=voicevox_engine-${{ matrix.target }}-${{ needs.config.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: <Setup> Check out the repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # NOTE: The default 'sed' and 'split' of macOS is BSD 'sed' and 'split'.
       #       There is a difference in specification between BSD 'sed' and 'split' and GNU 'sed' and 'split',
@@ -165,7 +165,7 @@ jobs:
 
       # VOICEVOX CORE
       - name: <Setup> Restore cached CORE
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: voicevox-core-cache-restore
         with:
           key: voicevox-core-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-v${{ env.VOICEVOX_CORE_AND_DOWNLOADER_VERSION }}
@@ -173,7 +173,7 @@ jobs:
 
       # ONNX Runtime
       - name: <Setup> Restore cached ONNX Runtime
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: onnxruntime-cache-restore
         with:
           key: onnxruntime-${{ runner.os }}-${{ matrix.architecture }}-${{ matrix.onnxruntime_device }}-${{ env.VOICEVOX_ONNXRUNTIME_VERSION }}
@@ -182,7 +182,7 @@ jobs:
       # additional libraries
       - name: <Setup> Restore cached additional libraries
         if: matrix.onnxruntime_device != 'cpu'
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: additional-libraries-cache-restore
         with:
           key: additional-libraries-${{ env.VOICEVOX_ADDITIONAL_LIBRARIES_VERSION }}-${{ matrix.onnxruntime_device }}-${{ matrix.architecture }}
@@ -190,7 +190,7 @@ jobs:
 
       # models
       - name: <Setup> Restore cached models
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: models-cache-restore
         with:
           key: models-${{ env.VOICEVOX_VVM_VERSION }}
@@ -242,7 +242,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save CORE cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: ${{ steps.voicevox-core-cache-restore.outputs.cache-primary-key }}
           path: download/core/c_api
@@ -277,7 +277,7 @@ jobs:
           esac
 
       - name: <Setup> Save ONNX Runtime cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/core/onnxruntime
@@ -321,7 +321,7 @@ jobs:
 
       - name: <Setup> Save additional libraries cache
         if: matrix.onnxruntime_device != 'cpu'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: ${{ steps.additional-libraries-cache-restore.outputs.cache-primary-key }}
           path: download/core/additional_libraries
@@ -342,7 +342,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: <Setup> Save models cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           key: ${{ steps.models-cache-restore.outputs.cache-primary-key }}
           path: download/core/models
@@ -350,7 +350,7 @@ jobs:
 
       # VOICEVOX RESOURCE
       - name: <Setup> Prepare RESOURCE cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: voicevox-resource-cache
         with:
           key: voicevox-resource-${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -359,7 +359,7 @@ jobs:
 
       - name: <Setup> Check out RESOURCE repository
         if: steps.voicevox-resource-cache.outputs.cache-hit != 'true'
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: VOICEVOX/voicevox_resource
           ref: ${{ env.VOICEVOX_RESOURCE_VERSION }}
@@ -463,7 +463,7 @@ jobs:
 
       - name: <Deploy> Upload 7z archives to artifact
         if: inputs.upload_artifact == true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.vars.outputs.package_name }}-7z
           path: |
@@ -508,7 +508,7 @@ jobs:
 
       - name: <Deploy> Upload VVPP archives to artifact
         if: inputs.upload_artifact == true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.vars.outputs.package_name }}-vvpp
           path: |
@@ -532,7 +532,7 @@ jobs:
 
       - name: <Deploy> Merge artifacts
         if: inputs.upload_artifact == true
-        uses: actions/upload-artifact/merge@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.vars.outputs.package_name }}
           pattern: ${{ steps.vars.outputs.package_name }}-*
@@ -546,7 +546,7 @@ jobs:
       contents: write
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: <Deploy> Change tag to this commit for refreshing the release # ref: https://github.com/VOICEVOX/voicevox_engine/issues/854
         run: |

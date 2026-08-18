@@ -1,13 +1,13 @@
 [project]
 name = "voicevox_engine"
 version = "0.24.0" # TODO: できればversionを自動管理する
-requires-python = "==3.11.9"
+requires-python = "==3.14.6"
 dependencies = [
-  "fastapi==0.136.3",
+  "fastapi==0.140.7",
   "jinja2==3.1.6", # NOTE: required by fastapi.templating.Jinja2Templates (fastapi's unmanaged dependency)
   "kanalizer==0.1.1",
-  "numpy==2.4.6",
-  "platformdirs==4.10.0",
+  "numpy==2.5.1",
+  "platformdirs==4.11.0",
   "psutil==7.2.2",
   "pydantic==2.13.4",
   "pyopenjtalk",
@@ -19,7 +19,7 @@ dependencies = [
   "soundfile==0.14.0",
   "soxr==1.1.0",
   "starlette>=0.45.3",
-  "uvicorn==0.49.0",
+  "uvicorn==0.51.0",
 ]
 
 [tool.uv]
@@ -31,26 +31,26 @@ pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b03
 
 [dependency-groups]
 build = [
-  "pyinstaller==6.20.0",
+  "pyinstaller==6.21.0",
 ]
 dev = [
   "coveralls==4.1.0",
-  "httpx2==2.3.0", # NOTE: required by fastapi.testclient.TestClient (fastapi's unmanaged dependency)
-  "mypy==2.1.0",
-  "pip-audit==2.10.0",
-  "pre-commit==4.6.0",
-  "pytest==9.0.3",
-  "ruff==0.15.16",
-  "syrupy==5.3.1",
-  "types-pyyaml==6.0.12.20260518",
-  "typos==1.47.2",
+  "httpx2==2.9.1", # NOTE: required by fastapi.testclient.TestClient (fastapi's unmanaged dependency)
+  "mypy==2.3.0",
+  "pip-audit==2.10.1",
+  "pre-commit==4.6.1",
+  "pytest==9.1.1",
+  "ruff==0.16.0",
+  "syrupy==5.5.3",
+  "types-pyyaml==6.0.12.20260724",
+  "typos==1.48.0",
 ]
 licenses = [
   "pip-licenses==5.5.5",
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "B", "I", "W", "UP", "D", "D213", "PT", "NPY"]
@@ -80,7 +80,7 @@ docstring-code-format = true
 [tool.mypy]
 strict = true
 plugins = "pydantic.mypy"
-python_version = "3.11"
+python_version = "3.14"
 ignore_missing_imports = true
 warn_unreachable = true
 

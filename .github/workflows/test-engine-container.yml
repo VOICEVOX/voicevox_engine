@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: <Setup> Login to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
