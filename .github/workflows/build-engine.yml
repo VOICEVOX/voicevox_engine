@@ -122,9 +122,9 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gnu-sed coreutils
 
-      # ONNX Runtime providersとCUDA周りをリンクするために使う
+      # ONNX Runtime本体のSONAMEとCUDA providerの依存ライブラリ探索先を調整するために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
-        if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
@@ -276,6 +276,15 @@ jobs:
                 "$(find $lib_dir -name 'libvoicevox_onnxruntime.so.[1-9]*')" \
                 $lib_dir/libvoicevox_onnxruntime.so ;;
           esac
+
+      - name: <Setup> Fix ONNX Runtime SONAME (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          # NOTE: Engineは`.so`を読み込む一方で、Coreは`.so.X.Y.Z`形式のファイル名を要求するため、
+          #       SONAMEをCoreが要求するファイル名に合わせる。
+          patchelf \
+            --set-soname "libvoicevox_onnxruntime.so.$VOICEVOX_ONNXRUNTIME_VERSION" \
+            download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
 
       - name: <Setup> Save ONNX Runtime cache
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
