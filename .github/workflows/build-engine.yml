@@ -27,8 +27,8 @@ on:
 
 env:
   VOICEVOX_RESOURCE_VERSION: "0.25.2"
-  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.16.2"
-  VOICEVOX_ONNXRUNTIME_VERSION: "voicevox_onnxruntime-1.23.2"
+  VOICEVOX_CORE_AND_DOWNLOADER_VERSION: "0.17.0"
+  VOICEVOX_ONNXRUNTIME_VERSION: "1.23.2"
   VOICEVOX_ADDITIONAL_LIBRARIES_VERSION: "0.3.0"
   VOICEVOX_VVM_VERSION: "0.16.4"
 
@@ -122,9 +122,9 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gnu-sed coreutils
 
-      # ONNX Runtimeのライブラリ識別名とCUDA providerのRPATHを変更するために使う
+      # ONNX RuntimeのCUDA providerのRPATHを変更するために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf
@@ -254,6 +254,7 @@ jobs:
           ${{ steps.download-downloader.outputs.downloader-path }} \
             --only onnxruntime \
             --onnxruntime-version "$VOICEVOX_ONNXRUNTIME_VERSION" \
+            --onnxruntime-type voicevox-onnxruntime \
             --devices ${{ matrix.onnxruntime_device }} \
             --cpu-arch ${{ matrix.architecture }} \
             -o download/core \
@@ -281,29 +282,6 @@ jobs:
         with:
           key: ${{ steps.onnxruntime-cache-restore.outputs.cache-primary-key }}
           path: download/core/onnxruntime
-
-      # VOICEVOX CORE 0.16.2でONNX Runtime 1.23.2を読み込むためのワークアラウンド
-      # TODO: コアがonnxruntime 1.23.2をサポートしたら削除する
-      - name: <Setup> Rewrite ONNX Runtime library identity
-        if: runner.os == 'macOS' || runner.os == 'Linux'
-        run: |
-          # NOTE: onnxruntime 1.23.2は互換があるため、識別名だけ偽装してCOREに読み込ませる。
-          EXPECTED_ONNXRUNTIME_VERSION=1.17.3
-          lib_dir=download/core/onnxruntime/lib
-          case "$RUNNER_OS" in
-            macOS)
-              library_path=$lib_dir/libvoicevox_onnxruntime.dylib
-              install_name_tool \
-                -id "@rpath/libvoicevox_onnxruntime.$EXPECTED_ONNXRUNTIME_VERSION.dylib" \
-                "$library_path"
-              # TODO: macOSの正式なコード署名が実装されたら正式に再署名する
-              codesign --force --sign - "$library_path" ;;
-            Linux)
-              library_path=$lib_dir/libvoicevox_onnxruntime.so
-              patchelf \
-                --set-soname "libvoicevox_onnxruntime.so.$EXPECTED_ONNXRUNTIME_VERSION" \
-                "$library_path" ;;
-          esac
 
       - name: <Setup> Download additional libraries
         if: |
