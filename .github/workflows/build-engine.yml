@@ -122,7 +122,7 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gnu-sed coreutils
 
-      # ONNX RuntimeのCUDA providerのRPATHを変更するために使う
+      # ONNX Runtime providersとCUDA周りをリンクするために使う
       - name: <Setup> Install ONNX Runtime dependencies (Linux)
         if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
         run: |
