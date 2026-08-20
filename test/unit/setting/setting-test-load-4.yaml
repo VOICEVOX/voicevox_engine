@@ -1,0 +1,4 @@
+allow_origin: null
+cors_policy_mode: localapps
+disable_mutable_api: true
+load_all_models: true
