@@ -278,7 +278,7 @@ jobs:
           esac
 
       - name: <Setup> Fix ONNX Runtime SONAME (Linux)
-        if: runner.os == 'Linux'
+        if: steps.onnxruntime-cache-restore.outputs.cache-hit != 'true' && runner.os == 'Linux'
         run: |
           # NOTE: Engineは`.so`を読み込む一方で、Coreは`.so.X.Y.Z`形式のファイル名を要求するため、
           #       SONAMEをCoreが要求するファイル名に合わせる。
