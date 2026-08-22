@@ -357,6 +357,26 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
+      - name: <Setup> Decode P12 certificate (macOS)
+        if: inputs.code_signing == true && runner.os == 'macOS'
+        run: |
+          if [ -z "$APPLE_P12_BASE64" ]; then
+            echo "APPLE_P12_BASE64が未定義または空です"
+            exit 1
+          fi
+          echo "$APPLE_P12_BASE64" | base64 --decode > /tmp/codesign.p12
+        env:
+          APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
+
+      - name: <Setup> Code signing keychain (macOS)
+        if: inputs.code_signing == true && runner.os == 'macOS'
+        run: bash tools/codesign_setup.bash
+        env:
+          P12_PATH: /tmp/codesign.p12
+          P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+          CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
+          KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
+
       # Build
       - name: <Build> Generate licenses.json
         run: |
@@ -393,10 +413,16 @@ jobs:
             LIBONNXRUNTIME_PATH=download/core/onnxruntime/lib/libvoicevox_onnxruntime.so
           fi
 
-          uv run pyinstaller --noconfirm run.spec -- \
-            --libcore_path="$LIBCORE_PATH" \
-            --libonnxruntime_path="$LIBONNXRUNTIME_PATH" \
-            --core_model_dir_path="download/core/models/vvms"
+          PYINSTALLER_ARGS=(
+            "--libcore_path=$LIBCORE_PATH"
+            "--libonnxruntime_path=$LIBONNXRUNTIME_PATH"
+            "--core_model_dir_path=download/core/models/vvms"
+          )
+          if [[ "$RUNNER_OS" == "macOS" ]] && [[ -f /tmp/codesign_identity.txt ]]; then
+            PYINSTALLER_ARGS+=("--codesign_identity=$(head -n 1 /tmp/codesign_identity.txt)")
+          fi
+
+          uv run pyinstaller --noconfirm run.spec -- "${PYINSTALLER_ARGS[@]}"
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
@@ -434,6 +460,40 @@ jobs:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
+
+      - name: <Test> Verify code signing (macOS)
+        if: inputs.code_signing == true && runner.os == 'macOS'
+        run: |
+          set -eu
+
+          MACH_O_COUNT=0
+          while IFS= read -r -d '' TARGET_FILE; do
+            if ! file "$TARGET_FILE" | grep -q "Mach-O"; then
+              continue
+            fi
+
+            MACH_O_COUNT=$((MACH_O_COUNT + 1))
+            codesign --verify --strict --verbose=2 "$TARGET_FILE"
+            SIGNATURE_INFO="$(codesign --display --verbose=4 "$TARGET_FILE" 2>&1)"
+            if echo "$SIGNATURE_INFO" | grep -q "^Signature=adhoc$"; then
+              echo "アドホック署名のバイナリがあります: $TARGET_FILE"
+              exit 1
+            fi
+            echo "署名を確認しました: $TARGET_FILE"
+          done < <(find dist/run -type f -print0)
+
+          if [ "$MACH_O_COUNT" -eq 0 ]; then
+            echo "署名を確認できるMach-Oファイルがありません"
+            exit 1
+          fi
+
+      - name: <Build> Code signing cleanup (macOS)
+        if: always() && inputs.code_signing == true && runner.os == 'macOS'
+        run: bash tools/codesign_cleanup.bash
+        env:
+          P12_PATH: /tmp/codesign.p12
+          CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
+          KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
 
       - name: <Build> Rename artifact directory to archive
         run: mv dist/run/ "${{ matrix.target }}/"
