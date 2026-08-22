@@ -2,7 +2,7 @@
 
 import copy
 import math
-from collections.abc import Generator
+from collections.abc import Iterator
 from typing import Any, Final, Literal, TypeAlias
 
 import numpy as np
@@ -415,7 +415,7 @@ class TTSEngine:
             "start_offsetが生成音声の長さを超えています"
         )
 
-        def wave_generator() -> Generator[NDArray[np.float32], None, None]:
+        def wave_generator() -> Iterator[NDArray[np.float32]]:
             # render_[start|end]: マージンを除いた有効部分の開始/終了位置
             # slice_[start|end]: マージンを含む全体の開始/終了位置
             for render_start in range(
