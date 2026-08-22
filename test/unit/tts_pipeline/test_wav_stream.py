@@ -1,7 +1,7 @@
 """wav_stream 関数の単体テスト。"""
 
 import io
-from collections.abc import Generator
+from collections.abc import Iterator
 
 import numpy as np
 import numpy.testing
@@ -24,7 +24,7 @@ def _generate_sine_wave_ndarray(
 
 def chunk_generator(
     wave: NDArray[np.float32], chunk_size: int
-) -> Generator[np.ndarray, None, None]:
+ ) -> Iterator[NDArray[np.float32]]:
     for i in range(0, len(wave), chunk_size):
         yield wave[i : i + chunk_size]
 
