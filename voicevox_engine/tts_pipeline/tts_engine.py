@@ -202,8 +202,14 @@ def _apply_intonation_scale(moras: list[Mora], query: AudioQuery) -> list[Mora]:
 
 def _query_to_decoder_feature(
     query: AudioQuery,
+    enable_interrogative_upspeak: bool,
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """音声合成用のクエリからフレームごとの音素 (shape=(フレーム長, 音素数)) と音高 (shape=(フレーム長,)) を得る"""
+    # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
+    query = copy.deepcopy(query)
+    query.accent_phrases = _apply_interrogative_upspeak(
+        query.accent_phrases, enable_interrogative_upspeak
+    )
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
@@ -374,13 +380,7 @@ class TTSEngine:
         enable_interrogative_upspeak: bool,
     ) -> NDArray[np.float32]:
         """音声合成用のクエリ・スタイルID・疑問文語尾自動調整フラグに基づいて音声波形を生成する"""
-        # モーフィング時などに同一参照のqueryで複数回呼ばれる可能性があるので、元の引数のqueryに破壊的変更を行わない
-        query = copy.deepcopy(query)
-        query.accent_phrases = _apply_interrogative_upspeak(
-            query.accent_phrases, enable_interrogative_upspeak
-        )
-
-        phoneme, f0 = _query_to_decoder_feature(query)
+        phoneme, f0 = _query_to_decoder_feature(query, enable_interrogative_upspeak)
         raw_wave, sr_raw_wave = self._core.safe_decode_forward(phoneme, f0, style_id)
         wave = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
         return wave
@@ -394,15 +394,8 @@ class TTSEngine:
         enable_interrogative_upspeak: bool,
     ) -> tuple[int, Iterator[NDArray[np.float32]]]:
         """生成音声全体のサンプル数と音声波形を生成する同期ストリームを返す"""
-        assert start_offset >= 0
         valid_segment_frames = _to_frame(segment_length)  # 一度に生成するフレーム数
-        assert valid_segment_frames > 0
-        query = copy.deepcopy(query)
-        query.accent_phrases = _apply_interrogative_upspeak(
-            query.accent_phrases, enable_interrogative_upspeak
-        )
-
-        phoneme, f0 = _query_to_decoder_feature(query)
+        phoneme, f0 = _query_to_decoder_feature(query, enable_interrogative_upspeak)
         # 中間表現を生成する。両端にマージンが付与されている点に注意
         audio_feature = self._core.safe_generate_full_intermediate(
             phoneme, f0, style_id
@@ -410,10 +403,6 @@ class TTSEngine:
         # オフセット分のフレーム数だけずらす
         audio_feature = audio_feature[_to_frame(start_offset) :]
         margin_width = self._core.margin_width
-        # オフセットが生成音声よりも長い場合は例外を投げる
-        assert len(audio_feature) - 2 * margin_width > 0, (
-            "start_offsetが生成音声の長さを超えています"
-        )
 
         def wave_generator() -> Iterator[NDArray[np.float32]]:
             # render_[start|end]: マージンを除いた有効部分の開始/終了位置

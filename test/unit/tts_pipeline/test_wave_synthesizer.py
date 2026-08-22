@@ -279,7 +279,7 @@ def test_query_to_decoder_feature() -> None:
     true_f0 = np.array(true1_f0 + true2_f0 + true3_f0, dtype=np.float32)
 
     # Outputs
-    phoneme, f0 = _query_to_decoder_feature(query)
+    phoneme, f0 = _query_to_decoder_feature(query, False)
 
     # Test
     assert np.array_equal(phoneme, true_phoneme)

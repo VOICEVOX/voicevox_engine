@@ -13,11 +13,11 @@ def encode_wave_stream_as_wav(
     output_stereo: bool,
 ) -> Iterator[bytes]:
     """Float32の音声ストリームを16bit PCMのWAVファイルストリームに変換する"""
-    data_size = wave_length * 2
-    file_size = data_size + 44
     channel_size = 2 if output_stereo else 1
     block_size = 16 * channel_size // 8
     block_rate = sampling_rate * block_size
+    data_size = wave_length * block_size
+    file_size = data_size + 44
     # WAVファイル冒頭部分（RIFFヘッダ、fmtチャンク、dataチャンクのヘッダ）をyieldする
     yield (
         b"RIFF"
