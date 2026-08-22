@@ -359,7 +359,12 @@ jobs:
 
       - name: <Setup> Decode P12 certificate (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
-        run: echo "$APPLE_P12_BASE64" | base64 --decode > /tmp/codesign.p12
+        run: |
+          if [ -z "$APPLE_P12_BASE64" ]; then
+            echo "APPLE_P12_BASE64が未定義または空です"
+            exit 1
+          fi
+          echo "$APPLE_P12_BASE64" | base64 --decode > /tmp/codesign.p12
         env:
           APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
 
