@@ -7,7 +7,7 @@ from typing import Annotated, Self
 
 import soundfile
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
@@ -46,6 +46,7 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
     TTSEngineManager,
 )
+from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
 from voicevox_engine.utility.file_utility import try_delete_file
 
 
@@ -393,6 +394,66 @@ def generate_tts_pipeline_router(
 
         background_tasks.add_task(try_delete_file, f.name)
         return FileResponse(f.name, media_type="application/zip")
+
+    @router.post(
+        "/streaming_synthesis",
+        response_class=StreamingResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
+    )
+    def streaming_synthesis(
+        query: AudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        start_offset: Annotated[
+            float,
+            Query(description="生成開始位置（秒）。省略時は先頭から生成する"),
+        ] = 0,
+        segment_length: Annotated[
+            float,
+            Query(
+                description="一度に生成されるセグメントの長さ（秒）",
+                gt=0,
+            ),
+        ] = 0.3,
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> StreamingResponse:
+        if query.outputSamplingRate != 24000:
+            raise HTTPException(
+                status_code=422,
+                detail="24kHz以外のサンプリングレートはサポートされていません",
+            )
+        if query.outputStereo:
+            raise HTTPException(
+                status_code=422,
+                detail="ステレオ出力はサポートされていません",
+            )
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_tts_engine(version)
+        wave_length, wave_generator = engine.synthesize_wave_stream(
+            query,
+            style_id,
+            start_offset=start_offset,
+            segment_length=segment_length,
+            enable_interrogative_upspeak=enable_interrogative_upspeak,
+        )
+        wavfile_generator = encode_wave_stream_as_wav(
+            wave_length, wave_generator, query.outputSamplingRate, query.outputStereo
+        )
+
+        return StreamingResponse(wavfile_generator, media_type="audio/wav")
 
     @router.post(
         "/sing_frame_audio_query",

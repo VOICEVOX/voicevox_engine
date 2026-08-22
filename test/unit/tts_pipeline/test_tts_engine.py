@@ -275,6 +275,25 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 
 
+def test_mocked_synthesize_wave_stream_output(snapshot_json: SnapshotAssertion) -> None:
+    """モックされた `TTSEngine.synthesize_wave_stream()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_query()
+    hello_hiho.outputSamplingRate = 24000
+    # Outputs
+    wave_length, result_gen = tts_engine.synthesize_wave_stream(
+        hello_hiho,
+        StyleId(0),
+        start_offset=0,
+        segment_length=0.3,
+        enable_interrogative_upspeak=True,
+    )
+    result = np.concatenate(list(result_gen))
+    # Tests
+    assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
+
+
 def test_mocked_create_phoneme_and_f0_and_volume_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:

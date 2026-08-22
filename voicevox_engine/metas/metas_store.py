@@ -39,7 +39,7 @@ class Character:
     supported_features: SpeakerSupportedFeatures
 
 
-_TALK_STYLE_TYPES: Final = ["talk"]
+_TALK_STYLE_TYPES: Final = ["talk", "streaming_talk"]
 _SING_STYLE_TYPES: Final = ["singing_teacher", "frame_decode", "sing"]
 
 
