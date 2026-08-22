@@ -21,7 +21,7 @@ def _make_hash(file: Path) -> str:
     return digest.hex()
 
 
-def _walk_target_dir(target_dir: Path) -> Generator[Path, None, None]:
+def _walk_target_dir(target_dir: Path) -> Generator[Path]:
     for root, _, files in os.walk(target_dir):
         for file in files:
             yield Path(root, file)

@@ -9,7 +9,6 @@ import json
 from base64 import b64encode
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import TypeAlias
 
 from pydantic import BaseModel, Field, TypeAdapter
 from pydantic.json_schema import SkipJsonSchema
@@ -118,8 +117,8 @@ class SupportedFeatures(BaseModel):
     )
 
 
-EngineName: TypeAlias = str
-BrandName: TypeAlias = str
+type EngineName = str
+type BrandName = str
 
 
 class EngineManifest(BaseModel):

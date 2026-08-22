@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, TypeAlias, assert_never
+from typing import Final, Literal, assert_never
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +16,7 @@ from voicevox_engine.metas.metas import (
 )
 from voicevox_engine.resource_manager import ResourceManager, ResourceManagerError
 
-ResourceFormat: TypeAlias = Literal["base64", "url"]
+type ResourceFormat = Literal["base64", "url"]
 
 
 def cast_styles(cores: list[CoreCharacterStyle]) -> list[SpeakerStyle]:
@@ -51,7 +51,7 @@ class _EngineCharacter(BaseModel):
     )
 
 
-GetCoreCharacters: TypeAlias = Callable[[str | None], list[CoreCharacter]]
+type GetCoreCharacters = Callable[[str | None], list[CoreCharacter]]
 
 
 class CharacterNotFoundError(Exception):
