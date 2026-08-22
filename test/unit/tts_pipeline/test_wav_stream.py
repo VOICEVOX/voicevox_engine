@@ -24,7 +24,7 @@ def _generate_sine_wave_ndarray(
 
 def chunk_generator(
     wave: NDArray[np.float32], chunk_size: int
- ) -> Iterator[NDArray[np.float32]]:
+) -> Iterator[NDArray[np.float32]]:
     for i in range(0, len(wave), chunk_size):
         yield wave[i : i + chunk_size]
 
