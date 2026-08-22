@@ -208,7 +208,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         ),
         _License(
             package_name="ONNX Runtime",
-            package_version="1.17.3",
+            package_version="1.23.2",
             license_name="MIT license",
             license_text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
             license_text_type="remote_address",
@@ -285,13 +285,12 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="tools/licenses/cuda/EULA.txt",
             license_text_type="local_address",
         ),
-        # license text from cuDNN v8.9.7 (December 5th, 2023), for CUDA 12.x, cuDNN Library for Windows
-        # https://developer.nvidia.com/rdp/cudnn-archive
-        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-8.9.7.29_cuda12-archive.zip
-        # cudnn-windows-x86_64-8.9.7.29_cuda12-archive.zip (cudnn-windows-x86_64-8.9.7.29_cuda12-archive/LICENSE)
+        # license text from cuDNN 9.8.0.87 for CUDA 12.x
+        # https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_9.8.0.json
+        # https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/LICENSE.txt
         _License(
             package_name="cuDNN",
-            package_version="8.9.7",
+            package_version="9.8.0.87",
             license_name=None,
             license_text="tools/licenses/cudnn/LICENSE",
             license_text_type="local_address",

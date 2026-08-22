@@ -2,7 +2,7 @@
 
 import copy
 import math
-from typing import Any, Final, Literal, TypeAlias
+from typing import Any, Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -406,7 +406,7 @@ class MockTTSEngineNotFound(Exception):
     """モック TTSEngine が見つからないエラー"""
 
 
-LatestVersion: TypeAlias = Literal["LATEST_VERSION"]
+type LatestVersion = Literal["LATEST_VERSION"]
 LATEST_VERSION: Final[LatestVersion] = "LATEST_VERSION"
 
 

@@ -4,7 +4,7 @@ import warnings
 from pathlib import Path
 from typing import Literal, assert_never
 
-import httpx
+import httpx2
 from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
@@ -55,7 +55,7 @@ ServerType = Literal["localhost", "fake"]
 
 def generate_client(
     server: ServerType, root_dir: Path | None
-) -> TestClient | httpx.Client:
+) -> TestClient | httpx2.Client:
     """
     VOICEVOX ENGINE へアクセス可能なクライアントを生成する。
 
@@ -69,6 +69,6 @@ def generate_client(
             root_dir = Path("VOICEVOX/vv-engine")
         return _generate_engine_fake_server(root_dir)
     elif server == "localhost":
-        return httpx.Client(base_url="http://localhost:50021")
+        return httpx2.Client(base_url="http://localhost:50021")
     else:
         assert_never(server)

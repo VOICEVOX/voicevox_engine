@@ -5,10 +5,9 @@ from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 import soundfile
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
-from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
 
 from voicevox_engine.metas.metas import StyleId
 from voicevox_engine.metas.metas_store import MetasStore
@@ -81,6 +80,7 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -132,10 +132,7 @@ def generate_morphing_router(
                 format="WAV",
             )
 
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f.name),
-        )
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="audio/wav")
 
     return router

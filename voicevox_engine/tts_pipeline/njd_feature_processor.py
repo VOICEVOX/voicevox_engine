@@ -28,7 +28,7 @@ class NjdFeature:
     chain_flag: int
 
     @classmethod
-    def from_english_kana(cls, english: str, kana: str) -> "NjdFeature":
+    def from_english_kana(cls, english: str, kana: str) -> NjdFeature:
         """英語のカタカナ読みからNjdFeatureを作成する"""
         return cls(
             string=english,
