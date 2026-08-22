@@ -5,23 +5,37 @@
 
 set -eu
 
-if [ ! -v CODESIGN_IDENTITY_PATH ]; then
-    echo "CODESIGN_IDENTITY_PATHが未定義です"
+if [ -z "${P12_PATH:-}" ]; then
+    echo "P12_PATHが未定義または空です"
     exit 1
 fi
-if [ ! -v KEYCHAIN_PATH_PATH ]; then
-    echo "KEYCHAIN_PATH_PATHが未定義です"
+if [ -z "${CODESIGN_IDENTITY_PATH:-}" ]; then
+    echo "CODESIGN_IDENTITY_PATHが未定義または空です"
+    exit 1
+fi
+if [ -z "${KEYCHAIN_PATH_PATH:-}" ]; then
+    echo "KEYCHAIN_PATH_PATHが未定義または空です"
     exit 1
 fi
 
-KEYCHAIN_PATH="$(head -n 1 "$KEYCHAIN_PATH_PATH")"
+rm -f "$P12_PATH"
 
-# キーチェーンリストから除外
-security list-keychains -d user -s "$(security list-keychains -d user | tr -d '"' | grep -v "$KEYCHAIN_PATH" | xargs)"
+if [ -f "$CODESIGN_IDENTITY_PATH" ] && [ ! -f "$KEYCHAIN_PATH_PATH" ]; then
+    echo "キーチェーンパスの出力ファイルが見つかりません"
+    exit 1
+fi
 
-# キーチェーンを削除
-security delete-keychain "$KEYCHAIN_PATH"
+if [ -f "$KEYCHAIN_PATH_PATH" ]; then
+    KEYCHAIN_PATH="$(head -n 1 "$KEYCHAIN_PATH_PATH")"
+    if [ -z "$KEYCHAIN_PATH" ]; then
+        echo "キーチェーンパスが空です"
+        exit 1
+    fi
+
+    # キーチェーンを削除
+    security delete-keychain "$KEYCHAIN_PATH"
+fi
 
 # 出力ファイルを削除
-rm "$CODESIGN_IDENTITY_PATH"
-rm "$KEYCHAIN_PATH_PATH"
+rm -f "$CODESIGN_IDENTITY_PATH"
+rm -f "$KEYCHAIN_PATH_PATH"
