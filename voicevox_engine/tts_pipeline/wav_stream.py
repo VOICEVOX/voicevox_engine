@@ -1,16 +1,17 @@
 """WAVファイルストリームの生成"""
 
-from collections.abc import Generator
+from collections.abc import Iterator
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 def encode_wave_stream_as_wav(
     wave_length: int,
-    wave_generator: Generator[np.ndarray, None, None],
+    wave_generator: Iterator[NDArray[np.float32]],
     sampling_rate: int,
     output_stereo: bool,
-) -> Generator[bytes, None, None]:
+) -> Iterator[bytes]:
     """Float32の音声ストリームを16bit PCMのWAVファイルストリームに変換する"""
     data_size = wave_length * 2
     file_size = data_size + 44
