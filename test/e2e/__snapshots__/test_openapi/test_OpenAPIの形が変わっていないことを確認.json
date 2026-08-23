@@ -884,7 +884,7 @@
           },
           "type": {
             "default": "talk",
-            "description": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。streaming_talk:talkの機能に加えてストリーミング音声合成が可能。",
+            "description": "スタイルの種類。talk:音声合成クエリの作成と音声合成が可能。singing_teacher:歌唱音声合成用のクエリの作成が可能。frame_decode:歌唱音声合成が可能。sing:歌唱音声合成用のクエリの作成と歌唱音声合成が可能。streaming_talk:音声合成クエリの作成と音声合成とストリーミング音声合成が可能。",
             "enum": [
               "talk",
               "singing_teacher",
@@ -2988,26 +2988,25 @@
             }
           },
           {
-            "description": "生成開始位置（秒）。省略時は先頭から生成する",
+            "description": "音声の開始位置",
             "in": "query",
             "name": "start_offset",
             "required": false,
             "schema": {
               "default": 0,
-              "description": "生成開始位置（秒）。省略時は先頭から生成する",
+              "description": "音声の開始位置",
               "title": "Start Offset",
               "type": "number"
             }
           },
           {
-            "description": "一度に生成されるセグメントの長さ（秒）",
+            "description": "一度に生成する音声の長さ",
             "in": "query",
             "name": "segment_length",
             "required": false,
             "schema": {
               "default": 0.3,
-              "description": "一度に生成されるセグメントの長さ（秒）",
-              "exclusiveMinimum": 0,
+              "description": "一度に生成する音声の長さ",
               "title": "Segment Length",
               "type": "number"
             }
@@ -3067,7 +3066,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "ストリーミングで音声合成し、wavバイナリを逐次的に返す。24kHzモノラルのみ対応",
+        "summary": "ストリーミングで音声合成する。24kHzモノラルのみ対応",
         "tags": [
           "音声合成"
         ]

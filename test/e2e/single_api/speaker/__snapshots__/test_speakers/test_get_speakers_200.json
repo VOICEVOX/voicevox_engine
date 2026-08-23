@@ -6,7 +6,7 @@
       {
         "id": 0,
         "name": "style0",
-        "type": "streaming_talk"
+        "type": "talk"
       },
       {
         "id": 2,
@@ -26,12 +26,12 @@
       {
         "id": 1,
         "name": "style0",
-        "type": "talk"
+        "type": "streaming_talk"
       },
       {
         "id": 3,
         "name": "style1",
-        "type": "talk"
+        "type": "streaming_talk"
       }
     ],
     "supported_features": {

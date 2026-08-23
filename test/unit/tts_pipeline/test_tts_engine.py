@@ -284,7 +284,7 @@ def test_mocked_synthesize_wave_stream_output(snapshot_json: SnapshotAssertion) 
     # Outputs
     wave_length, result_gen = tts_engine.synthesize_wave_stream(
         hello_hiho,
-        StyleId(0),
+        StyleId(1),
         start_offset=0,
         segment_length=0.3,
         enable_interrogative_upspeak=True,

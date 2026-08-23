@@ -28,11 +28,11 @@ class MockCoreWrapper(CoreWrapper):
         """キャラクターメタ情報を文字列として取得する。"""
         return json.dumps(
             [
-                # トーク２つ（１つはストリーミング用）・ハミング２つ
+                # トーク２つ・ハミング２つ
                 {
                     "name": "dummy1",
                     "styles": [
-                        {"name": "style0", "id": 0, "type": "streaming_talk"},
+                        {"name": "style0", "id": 0},
                         {"name": "style1", "id": 2},
                         {"name": "style2", "id": 4, "type": "frame_decode"},
                         {"name": "style3", "id": 6, "type": "frame_decode"},
@@ -40,12 +40,12 @@ class MockCoreWrapper(CoreWrapper):
                     "speaker_uuid": "7ffcb7ce-00ec-4bdc-82cd-45a8889e43ff",
                     "version": "mock",
                 },
-                # トーク２つ・ハミング１つ・ソング１つ
+                # ストリーミングトーク２つ・ハミング１つ・ソング１つ
                 {
                     "name": "dummy2",
                     "styles": [
-                        {"name": "style0", "id": 1},
-                        {"name": "style1", "id": 3},
+                        {"name": "style0", "id": 1, "type": "streaming_talk"},
+                        {"name": "style1", "id": 3, "type": "streaming_talk"},
                         {"name": "style2", "id": 5, "type": "frame_decode"},
                         {"name": "style3", "id": 7, "type": "sing"},
                     ],

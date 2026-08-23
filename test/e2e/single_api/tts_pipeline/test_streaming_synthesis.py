@@ -35,7 +35,7 @@ def test_post_streaming_synthesis_200(
         "outputStereo": False,
         "kana": "テ'_スト",
     }
-    response = client.post("/streaming_synthesis", params={"speaker": 0}, json=query)
+    response = client.post("/streaming_synthesis", params={"speaker": 1}, json=query)
     assert response.status_code == 200
 
     # 音声波形が一致する
