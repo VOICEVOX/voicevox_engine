@@ -498,22 +498,38 @@ jobs:
 
           verify_code_signature() {
             local TARGET_PATH="$1"
-            shift
+            local DISPLAY_PATH="$2"
+            shift 2
 
             codesign --verify --strict --verbose=2 "$@" "$TARGET_PATH"
             local SIGNATURE_INFO
             SIGNATURE_INFO="$(codesign --display --verbose=4 "$TARGET_PATH" 2>&1)"
             if echo "$SIGNATURE_INFO" | grep -q "^Signature=adhoc$"; then
-              echo "アドホック署名の対象があります: $TARGET_PATH"
+              echo "アドホック署名の対象があります: $DISPLAY_PATH"
               exit 1
             fi
-            echo "署名を確認しました: $TARGET_PATH"
+            echo "署名を確認しました: $DISPLAY_PATH"
+          }
+
+          verify_main_executable_signature() {
+            local TARGET_PATH="$1"
+            local VERIFY_TEMP_DIR
+            VERIFY_TEMP_DIR="$(mktemp -d)"
+            cp -p "$TARGET_PATH" "$VERIFY_TEMP_DIR/run"
+            verify_code_signature "$VERIFY_TEMP_DIR/run" "$TARGET_PATH"
+            rm "$VERIFY_TEMP_DIR/run"
+            rmdir "$VERIFY_TEMP_DIR"
           }
 
           SIGNED_TARGET_COUNT=0
           while IFS= read -r -d '' TARGET_FILE; do
             case "$TARGET_FILE" in
               *.framework/*) continue ;;
+              dist/run/run)
+                SIGNED_TARGET_COUNT=$((SIGNED_TARGET_COUNT + 1))
+                verify_main_executable_signature "$TARGET_FILE"
+                continue
+                ;;
             esac
 
             if ! file "$TARGET_FILE" | grep -q "Mach-O"; then
@@ -521,12 +537,12 @@ jobs:
             fi
 
             SIGNED_TARGET_COUNT=$((SIGNED_TARGET_COUNT + 1))
-            verify_code_signature "$TARGET_FILE"
+            verify_code_signature "$TARGET_FILE" "$TARGET_FILE"
           done < <(find dist/run -type f -print0)
 
           while IFS= read -r -d '' TARGET_FRAMEWORK; do
             SIGNED_TARGET_COUNT=$((SIGNED_TARGET_COUNT + 1))
-            verify_code_signature "$TARGET_FRAMEWORK" --deep
+            verify_code_signature "$TARGET_FRAMEWORK" "$TARGET_FRAMEWORK" --deep
           done < <(find dist/run -type d -name "*.framework" -print0)
 
           if [ "$SIGNED_TARGET_COUNT" -eq 0 ]; then
