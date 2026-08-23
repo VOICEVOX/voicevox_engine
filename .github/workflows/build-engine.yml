@@ -424,6 +424,31 @@ jobs:
 
           uv run pyinstaller --noconfirm run.spec -- "${PYINSTALLER_ARGS[@]}"
 
+      - name: <Build> Complete code signing (macOS)
+        if: inputs.code_signing == true && runner.os == 'macOS'
+        run: |
+          set -eu
+
+          CODESIGN_IDENTITY="$(head -n 1 /tmp/codesign_identity.txt)"
+          while IFS= read -r -d '' TARGET_FRAMEWORK; do
+            codesign \
+              --sign "$CODESIGN_IDENTITY" \
+              --force \
+              --all-architectures \
+              --timestamp \
+              --options=runtime \
+              --deep \
+              "$TARGET_FRAMEWORK"
+          done < <(find dist/run -depth -type d -name "*.framework" -print0)
+
+          codesign \
+            --sign "$CODESIGN_IDENTITY" \
+            --force \
+            --all-architectures \
+            --timestamp \
+            --options=runtime \
+            dist/run/run
+
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
 
