@@ -443,7 +443,10 @@ def generate_tts_pipeline_router(
             enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
         wavfile_generator = encode_wave_stream_as_wav(
-            wave_length, wave_generator, query.outputSamplingRate, query.outputStereo
+            wave_length=wave_length,
+            wave_generator=wave_generator,
+            sampling_rate=query.outputSamplingRate,
+            output_stereo=query.outputStereo,
         )
         return StreamingResponse(wavfile_generator, media_type="audio/wav")
 
