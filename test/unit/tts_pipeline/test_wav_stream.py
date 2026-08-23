@@ -50,4 +50,6 @@ def test_encode() -> None:
     # Test
     assert samplerate_decoded == 16000
     assert wave_decoded.shape == wave.shape
-    numpy.testing.assert_allclose(wave_decoded, wave, rtol=0, atol=1 / 32768)
+    numpy.testing.assert_allclose(
+        wave_decoded, wave, rtol=0, atol=1 / 32768
+    )  # NOTE: 1/32768はPCM16へのfloor量子化で生じる誤差の上限
