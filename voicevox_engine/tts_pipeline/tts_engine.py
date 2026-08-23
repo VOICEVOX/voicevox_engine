@@ -395,7 +395,6 @@ class TTSEngine:
         enable_interrogative_upspeak: bool,
     ) -> tuple[int, Iterator[NDArray[np.float32]]]:
         """音声合成用のクエリ・スタイルID・開始位置・セグメント長・疑問文語尾自動調整フラグに基づいて、生成音声全体のサンプル数と音声波形の同期ストリームを生成する"""
-        valid_segment_frames = _to_frame(segment_length)  # 一度に生成するフレーム数
         phoneme, f0 = _query_to_decoder_feature(query, enable_interrogative_upspeak)
 
         # 中間表現を生成する。両端にマージンが付与されている点に注意
@@ -408,8 +407,9 @@ class TTSEngine:
         margin_width = self._core.margin_width
 
         def wave_generator() -> Iterator[NDArray[np.float32]]:
-            # render_[start|end]: マージンを除いた有効部分の開始/終了位置
-            # slice_[start|end]: マージンを含む全体の開始/終了位置
+            # render_start/render_endはマージンを除いた有効部分の開始/終了位置
+            # slice_start/slice_endはマージンを含む全体の開始/終了位置
+            valid_segment_frames = _to_frame(segment_length)  # 一度に生成するフレーム数
             for render_start in range(
                 margin_width, len(audio_feature) - margin_width, valid_segment_frames
             ):
