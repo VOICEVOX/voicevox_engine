@@ -57,6 +57,7 @@ jobs:
     permissions:
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         include:
           # Windows CPU
@@ -441,13 +442,17 @@ jobs:
               "$TARGET_FRAMEWORK"
           done < <(find dist/run -depth -type d -name "*.framework" -print0)
 
+          CODESIGN_TEMP_DIR="$(mktemp -d)"
+          cp -p dist/run/run "$CODESIGN_TEMP_DIR/run"
           codesign \
             --sign "$CODESIGN_IDENTITY" \
             --force \
             --all-architectures \
             --timestamp \
             --options=runtime \
-            dist/run/run
+            "$CODESIGN_TEMP_DIR/run"
+          mv -f "$CODESIGN_TEMP_DIR/run" dist/run/run
+          rmdir "$CODESIGN_TEMP_DIR"
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
