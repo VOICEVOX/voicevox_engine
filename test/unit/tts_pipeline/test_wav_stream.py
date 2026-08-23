@@ -30,8 +30,11 @@ def segment_generator(
 
 
 def test_encode() -> None:
+    # Inputs
     wave = _generate_sine_wave_ndarray(seconds=2, samplerate=16000, frequency=100)
     wave_generator = segment_generator(wave, segment_size=1000)
+
+    # Outputs
     wavfile_generator = encode_wave_stream_as_wav(
         wave_length=len(wave),
         wave_generator=wave_generator,
@@ -43,6 +46,8 @@ def test_encode() -> None:
         wavfile_bio.write(segment)
     wavfile_bio.seek(0)
     wave_decoded, samplerate_decoded = soundfile.read(wavfile_bio, dtype="float32")
+
+    # Test
     assert samplerate_decoded == 16000
     assert wave_decoded.shape == wave.shape
     numpy.testing.assert_allclose(wave_decoded, wave, rtol=0, atol=1 / 32768)

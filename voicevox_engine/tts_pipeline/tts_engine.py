@@ -210,6 +210,7 @@ def _query_to_decoder_feature(
     query.accent_phrases = _apply_interrogative_upspeak(
         query.accent_phrases, enable_interrogative_upspeak
     )
+
     moras = to_flatten_moras(query.accent_phrases)
 
     # 設定を適用する
@@ -396,10 +397,12 @@ class TTSEngine:
         """音声合成用のクエリ・スタイルID・開始位置・セグメント長・疑問文語尾自動調整フラグに基づいて、生成音声全体のサンプル数と音声波形の同期ストリームを生成する"""
         valid_segment_frames = _to_frame(segment_length)  # 一度に生成するフレーム数
         phoneme, f0 = _query_to_decoder_feature(query, enable_interrogative_upspeak)
+
         # 中間表現を生成する。両端にマージンが付与されている点に注意
         audio_feature = self._core.safe_generate_full_intermediate(
             phoneme, f0, style_id
         )
+
         # オフセット分のフレーム数だけずらす
         audio_feature = audio_feature[_to_frame(start_offset) :]
         margin_width = self._core.margin_width

@@ -432,6 +432,7 @@ def generate_tts_pipeline_router(
                 status_code=422,
                 detail="24kHz以外のサンプリングレートは非対応です。",
             )
+
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         wave_length, wave_generator = engine.synthesize_wave_stream(
@@ -444,7 +445,6 @@ def generate_tts_pipeline_router(
         wavfile_generator = encode_wave_stream_as_wav(
             wave_length, wave_generator, query.outputSamplingRate, query.outputStereo
         )
-
         return StreamingResponse(wavfile_generator, media_type="audio/wav")
 
     @router.post(
