@@ -466,24 +466,41 @@ jobs:
         run: |
           set -eu
 
-          MACH_O_COUNT=0
+          verify_code_signature() {
+            local TARGET_PATH="$1"
+            shift
+
+            codesign --verify --strict --verbose=2 "$@" "$TARGET_PATH"
+            local SIGNATURE_INFO
+            SIGNATURE_INFO="$(codesign --display --verbose=4 "$TARGET_PATH" 2>&1)"
+            if echo "$SIGNATURE_INFO" | grep -q "^Signature=adhoc$"; then
+              echo "アドホック署名の対象があります: $TARGET_PATH"
+              exit 1
+            fi
+            echo "署名を確認しました: $TARGET_PATH"
+          }
+
+          SIGNED_TARGET_COUNT=0
           while IFS= read -r -d '' TARGET_FILE; do
+            case "$TARGET_FILE" in
+              *.framework/*) continue ;;
+            esac
+
             if ! file "$TARGET_FILE" | grep -q "Mach-O"; then
               continue
             fi
 
-            MACH_O_COUNT=$((MACH_O_COUNT + 1))
-            codesign --verify --strict --verbose=2 "$TARGET_FILE"
-            SIGNATURE_INFO="$(codesign --display --verbose=4 "$TARGET_FILE" 2>&1)"
-            if echo "$SIGNATURE_INFO" | grep -q "^Signature=adhoc$"; then
-              echo "アドホック署名のバイナリがあります: $TARGET_FILE"
-              exit 1
-            fi
-            echo "署名を確認しました: $TARGET_FILE"
+            SIGNED_TARGET_COUNT=$((SIGNED_TARGET_COUNT + 1))
+            verify_code_signature "$TARGET_FILE"
           done < <(find dist/run -type f -print0)
 
-          if [ "$MACH_O_COUNT" -eq 0 ]; then
-            echo "署名を確認できるMach-Oファイルがありません"
+          while IFS= read -r -d '' TARGET_FRAMEWORK; do
+            SIGNED_TARGET_COUNT=$((SIGNED_TARGET_COUNT + 1))
+            verify_code_signature "$TARGET_FRAMEWORK" --deep
+          done < <(find dist/run -type d -name "*.framework" -print0)
+
+          if [ "$SIGNED_TARGET_COUNT" -eq 0 ]; then
+            echo "署名を確認できる対象がありません"
             exit 1
           fi
 
