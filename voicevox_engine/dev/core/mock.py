@@ -173,7 +173,7 @@ class MockCoreWrapper(CoreWrapper):
         """音声特徴量とスタイル ID から音声波形を生成する。"""
         output = np.zeros((length * 256,), dtype=np.float32)
         for i in range(length):
-            output[i * 256 : (i + 1) * 256] = audio_feature[i, 0] + style_id
+            output[i * 256 : (i + 1) * 256] = audio_feature[i, 0]
         return output
 
     def predict_sing_consonant_length_forward(
