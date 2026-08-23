@@ -150,7 +150,7 @@ class MockCoreWrapper(CoreWrapper):
         phoneme: NDArray[np.float32],
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
-        """フレームごとの音素と音高から音声特徴量を求める。"""
+        """フレームごとの音素と音高から音声特徴量を生成する。"""
         output = np.zeros(
             (
                 length + 2 * self.audio_feature_margin_width,
@@ -170,7 +170,7 @@ class MockCoreWrapper(CoreWrapper):
         audio_feature: NDArray[np.float32],
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
-        """音声特徴量とスタイル ID から音声波形を求める。"""
+        """音声特徴量とスタイル ID から音声波形を生成する。"""
         output = np.zeros((length * 256,), dtype=np.float32)
         for i in range(length):
             output[i * 256 : (i + 1) * 256] = audio_feature[i, 0] + style_id

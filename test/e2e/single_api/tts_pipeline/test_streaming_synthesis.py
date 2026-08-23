@@ -7,7 +7,7 @@ from test.e2e.single_api.utils import gen_mora
 from test.utility import hash_wave_floats_from_wav_bytes
 
 
-def test_post_stream_synthesis_200(
+def test_post_streaming_synthesis_200(
     client: TestClient, snapshot: SnapshotAssertion
 ) -> None:
     query = {

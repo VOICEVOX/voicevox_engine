@@ -22,16 +22,16 @@ def _generate_sine_wave_ndarray(
     return wave
 
 
-def chunk_generator(
-    wave: NDArray[np.float32], chunk_size: int
+def segment_generator(
+    wave: NDArray[np.float32], segment_size: int
 ) -> Iterator[NDArray[np.float32]]:
-    for i in range(0, len(wave), chunk_size):
-        yield wave[i : i + chunk_size]
+    for i in range(0, len(wave), segment_size):
+        yield wave[i : i + segment_size]
 
 
 def test_encode() -> None:
     wave = _generate_sine_wave_ndarray(seconds=2, samplerate=16000, frequency=100)
-    wave_generator = chunk_generator(wave, chunk_size=1000)
+    wave_generator = segment_generator(wave, segment_size=1000)
     wavfile_generator = encode_wave_stream_as_wav(
         wave_length=len(wave),
         wave_generator=wave_generator,
@@ -39,8 +39,8 @@ def test_encode() -> None:
         output_stereo=False,
     )
     wavfile_bio = io.BytesIO()
-    for chunk in wavfile_generator:
-        wavfile_bio.write(chunk)
+    for segment in wavfile_generator:
+        wavfile_bio.write(segment)
     wavfile_bio.seek(0)
     wave_decoded, samplerate_decoded = soundfile.read(wavfile_bio, dtype="float32")
     assert samplerate_decoded == 16000

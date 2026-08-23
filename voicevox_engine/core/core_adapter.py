@@ -275,6 +275,7 @@ class CoreAdapter:
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """フレームごとの音素と音高から音声特徴量を求める。"""
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self._assert_style_supports_feature(style_id, "streaming_talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
@@ -293,6 +294,7 @@ class CoreAdapter:
         style_id: StyleId,
     ) -> tuple[NDArray[np.float32], int]:
         """音声特徴量とスタイル ID から音声波形を求める。"""
+        # 「指定スタイルを初期化」「mutexによる安全性」「系列長・データ型に関するアダプター」を提供する
         self._assert_style_supports_feature(style_id, "streaming_talk")
         self.initialize_style_id_synthesis(style_id, skip_reinit=True)
         with self.mutex:
