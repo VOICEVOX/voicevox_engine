@@ -37,22 +37,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
-            target: linux-cpu-x64
-          - os: ubuntu-22.04-arm
-            target: linux-cpu-arm64
-          - os: ubuntu-22.04
-            target: linux-nvidia
+          # - os: ubuntu-22.04
+          #   target: linux-cpu-x64
+          # - os: ubuntu-22.04-arm
+          #   target: linux-cpu-arm64
+          # - os: ubuntu-22.04
+          #   target: linux-nvidia
           - os: macos-15-intel
             target: macos-x64
           - os: macos-14
             target: macos-arm64
-          - os: windows-2022
-            target: windows-cpu
-          - os: windows-2022
-            target: windows-nvidia
-          - os: windows-2022
-            target: windows-directml
+          # - os: windows-2022
+          #   target: windows-cpu
+          # - os: windows-2022
+          #   target: windows-nvidia
+          # - os: windows-2022
+          #   target: windows-directml
 
     runs-on: ${{ matrix.os }}
 

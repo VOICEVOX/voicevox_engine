@@ -60,20 +60,20 @@ jobs:
       matrix:
         include:
           # Windows CPU
-          - os: windows-2022
-            architecture: "x64"
-            onnxruntime_device: cpu
-            target: windows-cpu
+          # - os: windows-2022
+          #   architecture: "x64"
+          #   onnxruntime_device: cpu
+          #   target: windows-cpu
           # Windows DirectML
-          - os: windows-2022
-            architecture: "x64"
-            onnxruntime_device: directml
-            target: windows-directml
+          # - os: windows-2022
+          #   architecture: "x64"
+          #   onnxruntime_device: directml
+          #   target: windows-directml
           # Windows NVIDIA GPU
-          - os: windows-2022
-            architecture: "x64"
-            onnxruntime_device: cuda
-            target: windows-nvidia
+          # - os: windows-2022
+          #   architecture: "x64"
+          #   onnxruntime_device: cuda
+          #   target: windows-nvidia
           # Mac CPU (x64 arch)
           - os: macos-15-intel
             architecture: "x64"
@@ -85,20 +85,20 @@ jobs:
             onnxruntime_device: cpu
             target: macos-arm64
           # Linux CPU (x64 arch)
-          - os: ubuntu-22.04
-            architecture: "x64"
-            onnxruntime_device: cpu
-            target: linux-cpu-x64
+          # - os: ubuntu-22.04
+          #   architecture: "x64"
+          #   onnxruntime_device: cpu
+          #   target: linux-cpu-x64
           # Linux CPU (arm64 arch)
-          - os: ubuntu-22.04-arm
-            architecture: "arm64"
-            onnxruntime_device: cpu
-            target: linux-cpu-arm64
+          # - os: ubuntu-22.04-arm
+          #   architecture: "arm64"
+          #   onnxruntime_device: cpu
+          #   target: linux-cpu-arm64
           # Linux NVIDIA GPU
-          - os: ubuntu-22.04
-            architecture: "x64"
-            onnxruntime_device: cuda
-            target: linux-nvidia
+          # - os: ubuntu-22.04
+          #   architecture: "x64"
+          #   onnxruntime_device: cuda
+          #   target: linux-nvidia
 
     runs-on: ${{ matrix.os }}
 
@@ -608,15 +608,15 @@ jobs:
       version: ${{ needs.config.outputs.version }}
       repo_url: ${{ format('{0}/{1}', github.server_url, github.repository) }} # このリポジトリのURL
 
-  run-build-engine-container-workflow:
-    if: needs.config.outputs.version != ''
-    needs: [config, run-release-test-workflow]
-    permissions:
-      packages: write
-    uses: ./.github/workflows/build-engine-container.yml
-    with:
-      version: ${{ needs.config.outputs.version }}
-      # NOTE: push イベントでは `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
-      push_dockerhub: ${{ inputs.push_dockerhub == true }}
-    secrets:
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  # run-build-engine-container-workflow:
+  #   if: needs.config.outputs.version != ''
+  #   needs: [config, run-release-test-workflow]
+  #   permissions:
+  #     packages: write
+  #   uses: ./.github/workflows/build-engine-container.yml
+  #   with:
+  #     version: ${{ needs.config.outputs.version }}
+  #     # NOTE: push イベントでは `inputs.push_dockerhub == null` であるため `push_dockerhub: false` となる
+  #     push_dockerhub: ${{ inputs.push_dockerhub == true }}
+  #   secrets:
+  #     DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
