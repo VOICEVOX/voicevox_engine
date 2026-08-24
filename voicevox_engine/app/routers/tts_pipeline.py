@@ -406,7 +406,7 @@ def generate_tts_pipeline_router(
             }
         },
         tags=["音声合成"],
-        summary="ストリーミングで音声合成する。24kHzのみ対応",
+        summary="ストリーミングで音声合成する",
     )
     def streaming_synthesis(
         query: AudioQuery,
@@ -427,12 +427,6 @@ def generate_tts_pipeline_router(
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> StreamingResponse:
-        if query.outputSamplingRate != 24000:
-            raise HTTPException(
-                status_code=422,
-                detail="24kHz以外のサンプリングレートは非対応です。",
-            )
-
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         wave_length, wave_generator = engine.synthesize_wave_stream(
