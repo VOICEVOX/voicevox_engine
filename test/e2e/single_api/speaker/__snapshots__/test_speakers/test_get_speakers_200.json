@@ -26,12 +26,12 @@
       {
         "id": 1,
         "name": "style0",
-        "type": "talk"
+        "type": "streaming_talk"
       },
       {
         "id": 3,
         "name": "style1",
-        "type": "talk"
+        "type": "streaming_talk"
       }
     ],
     "supported_features": {
