@@ -406,6 +406,11 @@ class TTSEngine:
         audio_feature = audio_feature[_to_frame(start_offset) :]
         margin_width = self._core.margin_width
 
+        if len(audio_feature) - 2 * margin_width <= 0:
+            raise TalkInvalidInputError(
+                "start_offsetを適用すると生成対象の音声が残りません"
+            )
+
         def wave_generator() -> Iterator[NDArray[np.float32]]:
             # render_start/render_endはマージンを除いた有効部分の開始/終了位置
             # slice_start/slice_endはマージンを含む全体の開始/終了位置

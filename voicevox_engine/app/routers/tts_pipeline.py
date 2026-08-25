@@ -44,6 +44,7 @@ from voicevox_engine.tts_pipeline.song_engine import (
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
+    TalkInvalidInputError,
     TTSEngineManager,
 )
 from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
@@ -435,13 +436,16 @@ def generate_tts_pipeline_router(
 
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        wave_length, wave_generator = engine.synthesize_wave_stream(
-            query,
-            style_id,
-            start_offset=start_offset,
-            segment_length=segment_length,
-            enable_interrogative_upspeak=enable_interrogative_upspeak,
-        )
+        try:
+            wave_length, wave_generator = engine.synthesize_wave_stream(
+                query,
+                style_id,
+                start_offset=start_offset,
+                segment_length=segment_length,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+            )
+        except TalkInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         wavfile_generator = encode_wave_stream_as_wav(
             wave_length=wave_length,
             wave_generator=wave_generator,

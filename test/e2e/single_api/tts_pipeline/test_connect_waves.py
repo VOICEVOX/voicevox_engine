@@ -1,8 +1,11 @@
 """/connect_waves API のテスト。"""
 
 import base64
+import io
 from pathlib import Path
 
+import numpy as np
+import soundfile
 from fastapi.testclient import TestClient
 from syrupy.assertion import SnapshotAssertion
 
@@ -30,6 +33,29 @@ def test_post_connect_waves_422(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     wavs: list[None] = []
+
+    response = client.post("/connect_waves", json=wavs)
+
+    assert response.status_code == 422
+    assert snapshot_json == response.json()
+
+
+def test_post_connect_waves_invalid_channels_422(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    wavs = []
+    for data in [
+        np.zeros(1, dtype=np.float32),
+        np.zeros((1, 3), dtype=np.float32),
+    ]:
+        wave = io.BytesIO()
+        soundfile.write(
+            file=wave,
+            data=data,
+            samplerate=24000,
+            format="WAV",
+        )
+        wavs.append(base64.b64encode(wave.getvalue()).decode())
 
     response = client.post("/connect_waves", json=wavs)
 

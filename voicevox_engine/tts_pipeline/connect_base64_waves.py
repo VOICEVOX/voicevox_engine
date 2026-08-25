@@ -55,8 +55,7 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
     waves_nparray_sr = decode_base64_waves(waves)
 
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
-    max_channels = max([x.ndim for x, _ in waves_nparray_sr])
-    assert 0 < max_channels <= 2
+    max_channels = max([nparray.ndim for nparray, _ in waves_nparray_sr])
 
     waves_nparray_list = []
     for nparray, sr in waves_nparray_sr:
@@ -65,5 +64,11 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
         if nparray.ndim < max_channels:
             nparray = np.array([nparray, nparray]).T
         waves_nparray_list.append(nparray)
+
+    channels = [
+        nparray.shape[1] if nparray.ndim == 2 else 1 for nparray in waves_nparray_list
+    ]
+    if len(set(channels)) != 1:
+        raise ConnectBase64WavesException("wavファイルのチャンネル数が一致していません")
 
     return np.concatenate(waves_nparray_list), max_sampling_rate

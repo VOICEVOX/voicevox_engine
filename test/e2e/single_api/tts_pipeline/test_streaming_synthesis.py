@@ -41,3 +41,21 @@ def test_post_streaming_synthesis_200(
     # 音声波形が一致する
     assert response.headers["content-type"] == "audio/wav"
     assert snapshot == hash_wave_floats_from_wav_bytes(response.read())
+
+
+def test_post_streaming_synthesis_start_offset_400(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    query_response = client.post(
+        "/audio_query", params={"text": "テスト", "speaker": 1}
+    )
+    query = query_response.json()
+
+    response = client.post(
+        "/streaming_synthesis",
+        params={"speaker": 1, "start_offset": 100},
+        json=query,
+    )
+
+    assert response.status_code == 400
+    assert snapshot_json == response.json()
