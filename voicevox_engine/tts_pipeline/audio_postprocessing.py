@@ -26,9 +26,6 @@ def raw_wave_stream_to_output_wave(
         # NOTE: 正確な計算式は不明
         wave_length = round(frame_length * output_rate / sr_wave)
 
-    if query.outputStereo:
-        wave_length *= 2
-
     def volume_scale(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
