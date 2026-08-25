@@ -35,7 +35,7 @@ def test_encode() -> None:
     wave_generator = segment_generator(wave, segment_size=1000)
 
     # Outputs
-    wavfile_generator = encode_wave_stream_as_wav(
+    file_size, wavfile_generator = encode_wave_stream_as_wav(
         wave_length=len(wave),
         wave_generator=wave_generator,
         sampling_rate=16000,
@@ -48,6 +48,7 @@ def test_encode() -> None:
     wave_decoded, samplerate_decoded = soundfile.read(wavfile_bio, dtype="float32")
 
     # Test
+    assert file_size == len(wavfile_bio.getvalue())
     assert samplerate_decoded == 16000
     assert wave_decoded.shape == wave.shape
     numpy.testing.assert_allclose(

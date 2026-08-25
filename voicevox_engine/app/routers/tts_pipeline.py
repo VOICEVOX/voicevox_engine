@@ -442,13 +442,17 @@ def generate_tts_pipeline_router(
             segment_length=segment_length,
             enable_interrogative_upspeak=enable_interrogative_upspeak,
         )
-        wavfile_generator = encode_wave_stream_as_wav(
+        file_size, wavfile_generator = encode_wave_stream_as_wav(
             wave_length=wave_length,
             wave_generator=wave_generator,
             sampling_rate=query.outputSamplingRate,
             output_stereo=query.outputStereo,
         )
-        return StreamingResponse(wavfile_generator, media_type="audio/wav")
+        return StreamingResponse(
+            wavfile_generator,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     @router.post(
         "/sing_frame_audio_query",
