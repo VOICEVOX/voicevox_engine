@@ -4,6 +4,8 @@
 モデルの注意点は `voicevox_engine/model.py` の module docstring を確認すること。
 """
 
+from typing import Annotated
+
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
 
@@ -17,15 +19,15 @@ class Preset(BaseModel):
     name: str = Field(description="プリセット名")
     speaker_uuid: str = Field(description="キャラクターのUUID")
     style_id: StyleId = Field(description="スタイルID")
-    speedScale: float = Field(description="全体の話速")
+    speedScale: float = Field(description="全体の話速", gt=0)
     pitchScale: float = Field(description="全体の音高")
     intonationScale: float = Field(description="全体の抑揚")
     volumeScale: float = Field(description="全体の音量")
-    prePhonemeLength: float = Field(description="音声の前の無音時間")
-    postPhonemeLength: float = Field(description="音声の後の無音時間")
-    pauseLength: float | SkipJsonSchema[None] = Field(
+    prePhonemeLength: float = Field(description="音声の前の無音時間", ge=0)
+    postPhonemeLength: float = Field(description="音声の後の無音時間", ge=0)
+    pauseLength: Annotated[float, Field(ge=0)] | SkipJsonSchema[None] = Field(
         default=None, description="句読点などの無音時間"
     )
     pauseLengthScale: float = Field(
-        default=1, description="句読点などの無音時間（倍率）"
+        default=1, description="句読点などの無音時間（倍率）", ge=0
     )

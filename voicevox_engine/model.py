@@ -17,20 +17,23 @@ class AudioQuery(BaseModel):
     """音声合成用のクエリ。"""
 
     accent_phrases: list[AccentPhrase] = Field(description="アクセント句のリスト")
-    speedScale: float = Field(description="全体の話速")
+    speedScale: float = Field(description="全体の話速", gt=0)
     pitchScale: float = Field(description="全体の音高")
     intonationScale: float = Field(description="全体の抑揚")
     volumeScale: float = Field(description="全体の音量")
-    prePhonemeLength: float = Field(description="音声の前の無音時間")
-    postPhonemeLength: float = Field(description="音声の後の無音時間")
+    prePhonemeLength: float = Field(description="音声の前の無音時間", ge=0)
+    postPhonemeLength: float = Field(description="音声の後の無音時間", ge=0)
     pauseLength: float | None = Field(
         default=None,
         description="句読点などの無音時間。nullのときは無視される。デフォルト値はnull",
+        ge=0,
     )
     pauseLengthScale: float = Field(
-        default=1, description="句読点などの無音時間（倍率）。デフォルト値は1"
+        default=1, description="句読点などの無音時間（倍率）。デフォルト値は1", ge=0
     )
-    outputSamplingRate: int = Field(description="音声データの出力サンプリングレート")
+    outputSamplingRate: int = Field(
+        description="音声データの出力サンプリングレート", gt=0
+    )
     outputStereo: bool = Field(description="音声データをステレオ出力するか否か")
     kana: str | SkipJsonSchema[None] = Field(
         default=None,

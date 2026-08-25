@@ -5,9 +5,9 @@
 """
 
 from enum import Enum
-from typing import NewType
+from typing import Annotated, NewType, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 NoteId = NewType("NoteId", str)
@@ -22,11 +22,11 @@ class Mora(BaseModel):
     consonant: str | SkipJsonSchema[None] = Field(
         default=None, description="子音の音素"
     )
-    consonant_length: float | SkipJsonSchema[None] = Field(
+    consonant_length: Annotated[float, Field(ge=0)] | SkipJsonSchema[None] = Field(
         default=None, description="子音の長さ"
     )
     vowel: str = Field(description="母音の音素")
-    vowel_length: float = Field(description="母音の長さ")
+    vowel_length: float = Field(description="母音の長さ", ge=0)
     pitch: float = Field(description="音高")
 
     def __hash__(self) -> int:
@@ -43,12 +43,20 @@ class AccentPhrase(BaseModel):
     """アクセント句ごとの情報。"""
 
     moras: list[Mora] = Field(description="モーラのリスト")
-    accent: int = Field(description="アクセント箇所")
+    accent: int = Field(description="アクセント箇所", ge=1)
     pause_mora: Mora | SkipJsonSchema[None] = Field(
         default=None,
         description="アクセント句の末尾につく無音モーラ。null の場合は無音モーラを付けない。",
     )
     is_interrogative: bool = Field(default=False, description="疑問系かどうか")
+
+    @model_validator(mode="after")
+    def validate_accent(self) -> Self:
+        """アクセント箇所を検証する。"""
+        if self.accent > len(self.moras):
+            msg = f"アクセント箇所はモーラ数以下でなければいけません: {self.accent}"
+            raise ValueError(msg)
+        return self
 
     def __hash__(self) -> int:
         """内容に対して一意なハッシュ値を返す。"""
