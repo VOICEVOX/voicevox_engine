@@ -23,8 +23,7 @@ def raw_wave_stream_to_output_wave(
     output_rate = query.outputSamplingRate
 
     if sr_wave != output_rate:
-        # NOTE: 正確な計算式は不明
-        wave_length = round(frame_length * output_rate / sr_wave)
+        wave_length = (frame_length * output_rate + sr_wave // 2) // sr_wave
 
     def volume_scale(
         stream: Iterator[NDArray[np.float32]],
@@ -45,27 +44,12 @@ def raw_wave_stream_to_output_wave(
             sr_wave, query.outputSamplingRate, buffer.ndim, buffer.dtype
         )
 
-        remmend_length = wave_length
         for raw_wave in stream:
             chunk = resampler.resample_chunk(buffer)
-            chunk_length = len(chunk)
-            if chunk_length >= remmend_length:
-                # 計算したリサンプリング後の長さが実際より大幅に短かった場合
-                yield chunk[0:remmend_length]
-                return
-            remmend_length -= chunk_length
             buffer = raw_wave
             yield chunk
 
-        last_chunk = resampler.resample_chunk(buffer, True)
-        last_chunk_length = len(last_chunk)
-        # 事前に計算したリサンプリング後の長さに誤差があった場合、事前に計算した長さに合わせる
-        if last_chunk_length < remmend_length:
-            yield np.pad(last_chunk, (0, remmend_length - last_chunk_length), "edge")
-        elif last_chunk_length > remmend_length:
-            yield last_chunk[0:remmend_length]
-        else:
-            yield last_chunk
+        yield resampler.resample_chunk(buffer, True)
 
     def output_stereo(
         stream: Iterator[NDArray[np.float32]],

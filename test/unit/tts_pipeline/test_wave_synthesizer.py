@@ -344,6 +344,6 @@ def test_raw_wave_stream_to_output_wave() -> None:
     )
     actual = np.concat([i for i in actual_stream])
 
-    # raw_wave_stream_to_output_waveが事前計算した出力サイズに合わせて出力を変更した部分は比較しない
-    last_index = min(len(expect), wave_size)
-    assert np.allclose(expect[0:last_index], actual[0:last_index])
+    assert wave_size == len(expect) == len(actual)
+    assert expect.shape == actual.shape
+    assert np.allclose(expect, actual)
