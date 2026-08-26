@@ -64,12 +64,13 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
     """複数の base64 エンコードされた音声波形を1つに結合する。"""
     waves_nparray_sr = decode_base64_waves(waves)
 
-    max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
     channels_list = [_get_channels(x) for x, _ in waves_nparray_sr]
     if not all(0 < channels <= 2 for channels in channels_list):
-        msg = "wavファイルのチャンネル数は1または2である必要があります"
+        msg = "チャンネル数が1または2のwavファイルを指定してください"
         raise ConnectBase64WavesException(msg)
     max_channels = max(channels_list)
+
+    max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
 
     waves_nparray_list = []
     for (nparray, sr), channels in zip(waves_nparray_sr, channels_list, strict=True):

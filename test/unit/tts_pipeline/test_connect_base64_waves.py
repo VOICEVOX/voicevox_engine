@@ -133,4 +133,4 @@ def test_unsupported_channels_error() -> None:
     with pytest.raises(ConnectBase64WavesException) as e:
         connect_base64_waves(waves=[wave_3ch_base64])
 
-    assert e.value.message == "wavファイルのチャンネル数は1または2である必要があります"
+    assert e.value.message == "チャンネル数が1または2のwavファイルを指定してください"
