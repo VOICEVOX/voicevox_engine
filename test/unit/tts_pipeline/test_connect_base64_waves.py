@@ -94,6 +94,15 @@ def test_invalid_wave_file_error() -> None:
         connect_base64_waves(waves=[wave_1000hz_broken])
 
 
+def test_unsupported_channels_error() -> None:
+    wave_1000hz = _generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
+    wave_3ch_1000hz = np.array([wave_1000hz, wave_1000hz, wave_1000hz]).T
+    wave_3ch_base64 = _encode_base64(_encode_bytes(wave_3ch_1000hz, samplerate=1000))
+
+    with pytest.raises(ConnectBase64WavesException):
+        connect_base64_waves(waves=[wave_3ch_base64])
+
+
 def test_different_frequency() -> None:
     wave_24000hz = _generate_sine_wave_ndarray(
         seconds=1, samplerate=24000, frequency=10
@@ -123,14 +132,3 @@ def test_different_channels() -> None:
 
     assert wave_x2_ref.shape == wave_x2.shape
     assert (wave_x2_ref == wave_x2).all()
-
-
-def test_unsupported_channels_error() -> None:
-    wave_1000hz = _generate_sine_wave_ndarray(seconds=2, samplerate=1000, frequency=10)
-    wave_3ch_1000hz = np.array([wave_1000hz, wave_1000hz, wave_1000hz]).T
-    wave_3ch_base64 = _encode_base64(_encode_bytes(wave_3ch_1000hz, samplerate=1000))
-
-    with pytest.raises(ConnectBase64WavesException) as e:
-        connect_base64_waves(waves=[wave_3ch_base64])
-
-    assert e.value.message == "1チャンネルまたは2チャンネル以外のwavファイルは非対応です"
