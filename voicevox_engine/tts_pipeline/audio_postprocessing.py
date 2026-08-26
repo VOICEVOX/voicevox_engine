@@ -14,16 +14,16 @@ from .model import (
 
 def raw_wave_stream_to_output_wave(
     query: AudioQuery | FrameAudioQuery,
-    frame_length: int,
+    raw_wave_length: int,
     stream: Iterator[NDArray[np.float32]],
     sr_wave: int,
 ) -> tuple[int, Iterator[NDArray[np.float32]]]:
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する（ストリーミング用）"""
-    wave_length = frame_length
+    wave_length = raw_wave_length
     output_rate = query.outputSamplingRate
 
     if sr_wave != output_rate:
-        wave_length = (frame_length * output_rate + sr_wave // 2) // sr_wave
+        wave_length = (raw_wave_length * output_rate + sr_wave // 2) // sr_wave
 
     def volume_scale(
         stream: Iterator[NDArray[np.float32]],
