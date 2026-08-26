@@ -323,7 +323,7 @@ def test_raw_wave_to_output_wave_without_resample() -> None:
 
 
 def test_raw_wave_stream_to_output_wave() -> None:
-    """raw_waveto_output_waveとraw_wave_stream_to_output_waveの出力が一致する"""
+    """`raw_wave_to_output_wave`と`raw_wave_stream_to_output_wave`の出力が一致する"""
     # Inputs
     query = _gen_query(volumeScale=2, outputSamplingRate=44100, outputStereo=True)
     raw_wave = np.random.default_rng().random(24000).astype(np.float32)
