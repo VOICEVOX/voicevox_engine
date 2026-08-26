@@ -21,8 +21,9 @@ def raw_wave_stream_to_output_wave(
     """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する（ストリーミング用）"""
     wave_length = raw_wave_length
     output_rate = query.outputSamplingRate
+    resample_required = sr_wave != output_rate
 
-    if sr_wave != output_rate:
+    if resample_required:
         wave_length = (raw_wave_length * output_rate + sr_wave // 2) // sr_wave
 
     def volume_scale_stream(
@@ -34,10 +35,6 @@ def raw_wave_stream_to_output_wave(
     def resample_stream(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
-        # サンプリングレート一致のときはスルー
-        if sr_wave == output_rate:
-            yield from stream
-            return
         # ResampleStreamには最後の入力を明示する必要があるので予め取り出しておく
         buffer = next(stream)
         resampler = ResampleStream(sr_wave, output_rate, 1, buffer.dtype)
@@ -55,9 +52,12 @@ def raw_wave_stream_to_output_wave(
         for wave in stream:
             yield _apply_output_stereo(wave, query)
 
-    return wave_length, output_stereo_stream(
-        resample_stream(volume_scale_stream(stream))
-    )
+    processed_stream = volume_scale_stream(stream)
+    if resample_required:
+        processed_stream = resample_stream(processed_stream)
+    processed_stream = output_stereo_stream(processed_stream)
+
+    return wave_length, processed_stream
 
 
 def raw_wave_to_output_wave(
