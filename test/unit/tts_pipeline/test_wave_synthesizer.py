@@ -339,11 +339,11 @@ def test_raw_wave_stream_to_output_wave() -> None:
     expect = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     # Outputs
-    wave_size, actual_stream = raw_wave_stream_to_output_wave(
+    wave_length, actual_stream = raw_wave_stream_to_output_wave(
         query, len(raw_wave), stream(), sr_raw_wave
     )
     actual = np.concat([i for i in actual_stream])
 
-    assert wave_size == len(expect) == len(actual)
+    assert wave_length == len(expect) == len(actual)
     assert expect.shape == actual.shape
     assert np.allclose(expect, actual)
