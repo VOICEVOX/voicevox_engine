@@ -330,10 +330,10 @@ def test_raw_wave_stream_to_output_wave() -> None:
     sr_raw_wave = 24000
 
     def stream() -> Iterator[np.typing.NDArray[np.float32]]:
-        chunk = np.array_split(
+        chunks = np.array_split(
             raw_wave, math.floor(len(raw_wave) / (0.3 * sr_raw_wave))
         )
-        yield from chunk
+        yield from chunks
 
     # Expects
     expect = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
