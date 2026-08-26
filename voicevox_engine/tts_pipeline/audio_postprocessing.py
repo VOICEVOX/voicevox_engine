@@ -25,7 +25,7 @@ def raw_wave_stream_to_output_wave(
     if sr_wave != output_rate:
         wave_length = (raw_wave_length * output_rate + sr_wave // 2) // sr_wave
 
-    def volume_scale(
+    def volume_scale_stream(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
         for wave in stream:
@@ -57,7 +57,7 @@ def raw_wave_stream_to_output_wave(
         for wave in stream:
             yield _apply_output_stereo(wave, query)
 
-    return wave_length, output_stereo(resample(volume_scale(stream)))
+    return wave_length, output_stereo(resample(volume_scale_stream(stream)))
 
 
 def raw_wave_to_output_wave(
