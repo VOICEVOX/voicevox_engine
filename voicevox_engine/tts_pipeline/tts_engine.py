@@ -399,7 +399,7 @@ class TTSEngine:
         phoneme, f0 = _query_to_decoder_feature(query, enable_interrogative_upspeak)
 
         if start_offset_frames >= len(f0):
-            msg = "start_offsetには生成する音声の長さ未満の値を指定してください"
+            msg = "start_offsetには合成する音声の長さ未満の値を指定してください"
             raise TalkInvalidInputError(msg)
 
         # 中間表現を生成する。両端にマージンが付与されている点に注意

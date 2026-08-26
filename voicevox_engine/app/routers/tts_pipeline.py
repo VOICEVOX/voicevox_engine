@@ -418,7 +418,7 @@ def generate_tts_pipeline_router(
         ] = 0,
         segment_length: Annotated[
             float,
-            Query(description="一度に生成する音声の長さ"),
+            Query(description="一度に合成する音声の長さ"),
         ] = 0.3,
         enable_interrogative_upspeak: Annotated[
             bool,
@@ -446,6 +446,7 @@ def generate_tts_pipeline_router(
             )
         except TalkInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
+
         wavfile_generator = encode_wave_stream_as_wav(
             wave_length=wave_length,
             wave_generator=wave_generator,
