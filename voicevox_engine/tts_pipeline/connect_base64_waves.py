@@ -54,7 +54,7 @@ def _get_channels(nparray: NDArray[np.float64]) -> int:
     if nparray.ndim == 1:
         return 1
     if nparray.ndim == 2:
-        return nparray.shape[1]
+        return int(nparray.shape[1])
 
     msg = "1次元または2次元以外の音声データは非対応です"
     raise ConnectBase64WavesException(msg)
