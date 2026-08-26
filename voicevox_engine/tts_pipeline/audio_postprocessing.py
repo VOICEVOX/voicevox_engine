@@ -18,7 +18,7 @@ def raw_wave_stream_to_output_wave(
     stream: Iterator[NDArray[np.float32]],
     sr_wave: int,
 ) -> tuple[int, Iterator[NDArray[np.float32]]]:
-    """生音声波形に音声合成用のクエリを適用して出力音声波形を生成する（ストリーミング用）"""
+    """生音声波形ストリームにクエリを適用して出力音声波形を生成し、サンプル数とストリームを返す"""
     # TODO: 大半の処理が`raw_wave_to_output_wave()`と同じなので共通化する
     wave_length = raw_wave_length
     output_rate = query.outputSamplingRate
