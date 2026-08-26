@@ -31,7 +31,7 @@ def raw_wave_stream_to_output_wave(
         for wave in stream:
             yield _apply_volume_scale(wave, query)
 
-    def resample(
+    def resample_stream(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
         # サンプリングレート一致のときはスルー
@@ -57,7 +57,7 @@ def raw_wave_stream_to_output_wave(
         for wave in stream:
             yield _apply_output_stereo(wave, query)
 
-    return wave_length, output_stereo(resample(volume_scale_stream(stream)))
+    return wave_length, output_stereo(resample_stream(volume_scale_stream(stream)))
 
 
 def raw_wave_to_output_wave(
