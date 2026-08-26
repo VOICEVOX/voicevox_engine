@@ -424,8 +424,8 @@ class TTSEngine:
                 slice_start = render_start - margin_width
                 slice_end = render_end + margin_width
                 feature_segment = audio_feature[slice_start:slice_end, :]
-                raw_wave_with_margin, sr_raw_wave = (
-                    self._core.safe_render_audio_segment(feature_segment, style_id)
+                raw_wave_with_margin, _ = self._core.safe_render_audio_segment(
+                    feature_segment, style_id
                 )
                 raw_wave = raw_wave_with_margin[
                     margin_width * 256 : -margin_width * 256
