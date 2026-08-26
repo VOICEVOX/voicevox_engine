@@ -8,6 +8,8 @@ import soundfile
 from numpy.typing import NDArray
 from soxr import resample
 
+from ..utility.error_utility import UnreachableError
+
 
 class ConnectBase64WavesException(Exception):
     """Base64 エンコードされた音声波形の結合に失敗した。"""
@@ -53,11 +55,11 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
 def _get_channels(nparray: NDArray[np.float64]) -> int:
     if nparray.ndim == 1:
         return 1
-    if nparray.ndim == 2:
+    elif nparray.ndim == 2:
         return int(nparray.shape[1])
-
-    msg = "1チャンネルまたは2チャンネル以外のwavファイルは非対応です"
-    raise ConnectBase64WavesException(msg)
+    else:
+        msg = f"soundfileの読み込み結果のndimは1か2のはずですが、実際には{nparray.ndim}でした"
+        raise UnreachableError(msg)
 
 
 def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
