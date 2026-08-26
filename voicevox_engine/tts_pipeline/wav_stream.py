@@ -12,7 +12,7 @@ def encode_wave_stream_as_wav(
     sampling_rate: int,
     output_stereo: bool,
 ) -> tuple[int, Iterator[bytes]]:
-    """Float32の音声ストリームを16bit PCMのWAVファイルストリームに変換する"""
+    """Float32の音声ストリームを16bit PCMのWAVファイルに変換し、サイズとストリームを返す"""
     channel_size = 2 if output_stereo else 1
     block_size = 16 * channel_size // 8
     block_rate = sampling_rate * block_size
