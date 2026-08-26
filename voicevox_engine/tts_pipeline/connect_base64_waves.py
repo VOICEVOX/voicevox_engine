@@ -66,10 +66,9 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
             nparray = np.array([nparray, nparray]).T
         waves_nparray_list.append(nparray)
 
-    channels = [
-        nparray.shape[1] if nparray.ndim == 2 else 1 for nparray in waves_nparray_list
-    ]
-    if not all(channel == channels[0] for channel in channels):
-        raise ConnectBase64WavesException("wavファイルのチャンネル数が一致していません")
+    channels = [x.shape[1] if x.ndim == 2 else 1 for x in waves_nparray_list]
+    if len(set(channels)) != 1:
+        msg = "結合するwavファイル間でチャンネル数が一致していません"
+        raise ConnectBase64WavesException(msg)
 
     return np.concatenate(waves_nparray_list), max_sampling_rate
