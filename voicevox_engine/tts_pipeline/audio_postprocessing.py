@@ -35,7 +35,7 @@ def raw_wave_stream_to_output_wave(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
         # サンプリングレート一致のときはスルー
-        if sr_wave == query.outputSamplingRate:
+        if sr_wave == output_rate:
             yield from stream
             return
         # ResampleStreamには最後の入力を明示する必要があるので予め取り出しておく
