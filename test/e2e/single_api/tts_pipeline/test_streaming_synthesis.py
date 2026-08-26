@@ -46,6 +46,7 @@ def test_post_streaming_synthesis_200(
 def test_post_streaming_synthesis_400(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
+    too_large_start_offset = 100
     query = {
         "accent_phrases": [
             {
@@ -71,12 +72,10 @@ def test_post_streaming_synthesis_400(
         "outputStereo": False,
         "kana": "テ'_スト",
     }
-
     response = client.post(
         "/streaming_synthesis",
-        params={"speaker": 1, "start_offset": 100},
+        params={"speaker": 1, "start_offset": too_large_start_offset},
         json=query,
     )
-
     assert response.status_code == 400
     assert snapshot_json == response.json()
