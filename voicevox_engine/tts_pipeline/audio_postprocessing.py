@@ -40,9 +40,7 @@ def raw_wave_stream_to_output_wave(
             return
         # ResampleStreamには最後の入力を明示する必要があるので予め取り出しておく
         buffer = next(stream)
-        resampler = ResampleStream(
-            sr_wave, output_rate, 1, buffer.dtype
-        )
+        resampler = ResampleStream(sr_wave, output_rate, 1, buffer.dtype)
 
         for raw_wave in stream:
             chunk = resampler.resample_chunk(buffer)
@@ -57,7 +55,9 @@ def raw_wave_stream_to_output_wave(
         for wave in stream:
             yield _apply_output_stereo(wave, query)
 
-    return wave_length, output_stereo_stream(resample_stream(volume_scale_stream(stream)))
+    return wave_length, output_stereo_stream(
+        resample_stream(volume_scale_stream(stream))
+    )
 
 
 def raw_wave_to_output_wave(
