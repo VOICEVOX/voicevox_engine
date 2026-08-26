@@ -36,16 +36,13 @@ def raw_wave_stream_to_output_wave(
     def resample_stream(
         stream: Iterator[NDArray[np.float32]],
     ) -> Iterator[NDArray[np.float32]]:
-        # ResampleStreamには最後の入力を明示する必要があるので予め取り出しておく
-        buffer = next(stream)
-        resampler = ResampleStream(sr_wave, output_rate, 1, buffer.dtype)
+        resampler = ResampleStream(sr_wave, output_rate, 1)
 
-        for raw_wave in stream:
-            chunk = resampler.resample_chunk(buffer)
-            buffer = raw_wave
-            yield chunk
+        for wave in stream:
+            yield resampler.resample_chunk(wave)
 
-        yield resampler.resample_chunk(buffer, True)
+        # NOTE: 最後の出力を空配列でフラッシュする
+        yield resampler.resample_chunk(np.empty(0, dtype=np.float32), True)
 
     def output_stereo_stream(
         stream: Iterator[NDArray[np.float32]],
