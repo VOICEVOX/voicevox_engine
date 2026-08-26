@@ -408,7 +408,7 @@ class TTSEngine:
         # オフセット分のフレーム数だけずらす
         audio_feature = audio_feature[_to_frame(start_offset) :]
         margin_width = self._core.margin_width
-        frame_length = (len(audio_feature) - 2 * margin_width) * 256
+        raw_wave_length = (len(audio_feature) - 2 * margin_width) * 256
 
         def wave_generator() -> Iterator[NDArray[np.float32]]:
             # render_start/render_endはマージンを除いた有効部分の開始/終了位置
