@@ -56,7 +56,7 @@ def _get_channels(nparray: NDArray[np.float64]) -> int:
     if nparray.ndim == 2:
         return nparray.shape[1]
 
-    msg = "wavファイルから読み込んだ音声データは1次元または2次元である必要があります"
+    msg = "1次元または2次元以外の音声データは非対応です"
     raise ConnectBase64WavesException(msg)
 
 
@@ -66,7 +66,7 @@ def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
 
     channels_list = [_get_channels(x) for x, _ in waves_nparray_sr]
     if not all(0 < channels <= 2 for channels in channels_list):
-        msg = "チャンネル数が1または2のwavファイルを指定してください"
+        msg = "1チャンネルまたは2チャンネル以外のwavファイルは非対応です"
         raise ConnectBase64WavesException(msg)
     max_channels = max(channels_list)
 
