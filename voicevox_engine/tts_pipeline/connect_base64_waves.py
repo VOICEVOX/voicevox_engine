@@ -8,6 +8,8 @@ import soundfile
 from numpy.typing import NDArray
 from soxr import resample
 
+from ..utility.error_utility import UnreachableError
+
 
 class ConnectBase64WavesException(Exception):
     """Base64 エンコードされた音声波形の結合に失敗した。"""
@@ -50,19 +52,33 @@ def decode_base64_waves(waves: list[str]) -> list[tuple[NDArray[np.float64], int
     return waves_nparray_sr
 
 
+def _get_channels(nparray: NDArray[np.float64]) -> int:
+    if nparray.ndim == 1:
+        return 1
+    elif nparray.ndim == 2:
+        return int(nparray.shape[1])
+    else:
+        msg = f"soundfileの読み込み結果のndimは1か2のはずですが、実際には{nparray.ndim}でした"
+        raise UnreachableError(msg)
+
+
 def connect_base64_waves(waves: list[str]) -> tuple[NDArray[np.float64], int]:
     """複数の base64 エンコードされた音声波形を1つに結合する。"""
     waves_nparray_sr = decode_base64_waves(waves)
 
+    channels_list = [_get_channels(x) for x, _ in waves_nparray_sr]
+    if not all(0 < channels <= 2 for channels in channels_list):
+        msg = "1チャンネルまたは2チャンネル以外のwavファイルは非対応です"
+        raise ConnectBase64WavesException(msg)
+    max_channels = max(channels_list)
+
     max_sampling_rate = max([sr for _, sr in waves_nparray_sr])
-    max_channels = max([x.ndim for x, _ in waves_nparray_sr])
-    assert 0 < max_channels <= 2
 
     waves_nparray_list = []
-    for nparray, sr in waves_nparray_sr:
+    for (nparray, sr), channels in zip(waves_nparray_sr, channels_list, strict=True):
         if sr != max_sampling_rate:
             nparray = resample(nparray, sr, max_sampling_rate)
-        if nparray.ndim < max_channels:
+        if channels < max_channels:
             nparray = np.array([nparray, nparray]).T
         waves_nparray_list.append(nparray)
 

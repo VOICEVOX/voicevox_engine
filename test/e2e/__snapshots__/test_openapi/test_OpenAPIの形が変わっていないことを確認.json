@@ -3000,13 +3000,13 @@
             }
           },
           {
-            "description": "一度に生成する音声の長さ",
+            "description": "一度に合成する音声の長さ",
             "in": "query",
             "name": "segment_length",
             "required": false,
             "schema": {
               "default": 0.3,
-              "description": "一度に生成する音声の長さ",
+              "description": "一度に合成する音声の長さ",
               "title": "Segment Length",
               "type": "number"
             }
