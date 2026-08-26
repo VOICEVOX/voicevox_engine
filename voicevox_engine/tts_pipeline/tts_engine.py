@@ -433,7 +433,7 @@ class TTSEngine:
                 yield raw_wave
 
         return raw_wave_stream_to_output_wave(
-            query, frame_length, wave_generator(), self._core.default_sampling_rate
+            query, raw_wave_length, wave_generator(), self._core.default_sampling_rate
         )
 
     def initialize_synthesis(self, style_id: StyleId, skip_reinit: bool) -> None:
