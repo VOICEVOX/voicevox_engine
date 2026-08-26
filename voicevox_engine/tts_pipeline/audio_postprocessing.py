@@ -41,7 +41,7 @@ def raw_wave_stream_to_output_wave(
         # ResampleStreamには最後の入力を明示する必要があるので予め取り出しておく
         buffer = next(stream)
         resampler = ResampleStream(
-            sr_wave, query.outputSamplingRate, buffer.ndim, buffer.dtype
+            sr_wave, output_rate, buffer.ndim, buffer.dtype
         )
 
         for raw_wave in stream:
