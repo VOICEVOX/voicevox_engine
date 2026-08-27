@@ -65,6 +65,7 @@ def generate_app(
         title=engine_manifest.name,
         description=f"{engine_manifest.brand_name} の音声合成エンジンです。",
         version=__version__,
+        generate_unique_id_function=simplify_operation_ids,
         separate_input_output_schemas=False,  # Pydantic V1 のときのスキーマに合わせるため
     )
     app = configure_middlewares(app, cors_policy_mode, allow_origin)
@@ -109,7 +110,6 @@ def generate_app(
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
 
-    app = simplify_operation_ids(app)
     app = configure_openapi_schema(
         app, engine_manifest.supported_features.manage_library
     )

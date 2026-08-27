@@ -371,7 +371,7 @@ def test_post_sing_frame_f0_200(
 
     response = client.post(
         "/sing_frame_f0",
-        params={"speaker": 0},
+        params={"speaker": 7},
         json={"score": score, "frame_audio_query": frame_audio_query},
     )
     assert response.status_code == 200
