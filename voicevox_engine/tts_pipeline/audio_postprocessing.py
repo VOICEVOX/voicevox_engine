@@ -20,42 +20,31 @@ def raw_wave_stream_to_output_wave(
 ) -> tuple[int, Iterator[NDArray[np.float32]]]:
     """生音声波形ストリームにクエリを適用して出力音声波形を生成し、サンプル数とストリームを返す"""
     # TODO: 大半の処理が`raw_wave_to_output_wave()`と同じなので共通化する
-    wave_length = raw_wave_length
     output_rate = query.outputSamplingRate
-    resample_required = sr_wave != output_rate
+    wave_length = (raw_wave_length * output_rate + sr_wave // 2) // sr_wave
 
-    if resample_required:
-        wave_length = (raw_wave_length * output_rate + sr_wave // 2) // sr_wave
+    stream = map(lambda wave: _apply_volume_scale(wave, query), stream)
+    stream = _apply_output_sampling_rate_stream(stream, sr_wave, query)
+    stream = map(lambda wave: _apply_output_stereo(wave, query), stream)
 
-    def volume_scale_stream(
-        stream: Iterator[NDArray[np.float32]],
-    ) -> Iterator[NDArray[np.float32]]:
-        for wave in stream:
-            yield _apply_volume_scale(wave, query)
+    return wave_length, stream
 
-    def resample_stream(
-        stream: Iterator[NDArray[np.float32]],
-    ) -> Iterator[NDArray[np.float32]]:
-        resampler = ResampleStream(sr_wave, output_rate, 1)
 
-        for wave in stream:
-            yield resampler.resample_chunk(wave)
+def _apply_output_sampling_rate_stream(
+    stream: Iterator[NDArray[np.float32]],
+    sr_wave: float,
+    query: AudioQuery | FrameAudioQuery,
+) -> Iterator[NDArray[np.float32]]:
+    """音声波形ストリームへ音声合成用のクエリがもつ出力サンプリングレート（`outputSamplingRate`）を適用する"""
+    if sr_wave == query.outputSamplingRate:
+        yield from stream
+        return
 
-        # NOTE: 最後の出力を空配列でフラッシュする
-        yield resampler.resample_chunk(np.empty(0, dtype=np.float32), True)
+    resampler = ResampleStream(sr_wave, query.outputSamplingRate, 1)
+    yield from map(resampler.resample_chunk, stream)
 
-    def output_stereo_stream(
-        stream: Iterator[NDArray[np.float32]],
-    ) -> Iterator[NDArray[np.float32]]:
-        for wave in stream:
-            yield _apply_output_stereo(wave, query)
-
-    processed_stream = volume_scale_stream(stream)
-    if resample_required:
-        processed_stream = resample_stream(processed_stream)
-    processed_stream = output_stereo_stream(processed_stream)
-
-    return wave_length, processed_stream
+    # NOTE: 最後の出力を空配列でフラッシュする
+    yield resampler.resample_chunk(np.empty(0, dtype=np.float32), True)
 
 
 def raw_wave_to_output_wave(
