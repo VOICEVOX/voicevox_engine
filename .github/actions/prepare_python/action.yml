@@ -20,6 +20,7 @@ runs:
         if [[ -n "${{ inputs.dependency-group }}" ]]; then
           args+=(--group "${{ inputs.dependency-group }}")
         fi
+
         # NOTE: macOSでインストールするwheelのバージョンを制限するために`--python-platform`と`MACOSX_DEPLOYMENT_TARGET`を設定する
         case "$RUNNER_OS,$RUNNER_ARCH" in
           macOS,X64)
@@ -31,5 +32,6 @@ runs:
             export MACOSX_DEPLOYMENT_TARGET="13.0"
             ;;
         esac
+
         uv sync "${args[@]}"
       shell: bash
