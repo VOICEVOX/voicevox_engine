@@ -489,55 +489,6 @@ jobs:
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
-      # TODO: macOSコード署名の動作確認が完了したら、この検証ステップを削除する
-      - name: <Test> Verify code signing (macOS)
-        if: inputs.code_signing == true && runner.os == 'macOS'
-        run: |
-          set -eu
-
-          verify_code_signature() {
-            local TARGET_PATH="$1"
-            local DISPLAY_PATH="$2"
-            shift 2
-
-            if codesign -dv "$TARGET_PATH" 2>&1 | grep -q "^Signature=adhoc"; then
-              echo "アドホック署名の対象があります: $DISPLAY_PATH"
-              exit 1
-            fi
-            codesign --verify "$@" "$TARGET_PATH"
-            echo "署名を確認しました: $DISPLAY_PATH"
-          }
-
-          verify_main_executable_signature() {
-            local TARGET_PATH="$1"
-            local VERIFY_TEMP_DIR
-            VERIFY_TEMP_DIR="$(mktemp -d)"
-            cp -p "$TARGET_PATH" "$VERIFY_TEMP_DIR/run"
-            verify_code_signature "$VERIFY_TEMP_DIR/run" "$TARGET_PATH"
-            rm "$VERIFY_TEMP_DIR/run"
-            rmdir "$VERIFY_TEMP_DIR"
-          }
-
-          while IFS= read -r -d '' TARGET_FILE; do
-            case "$TARGET_FILE" in
-              *.framework/*) continue ;;
-              dist/run/run)
-                verify_main_executable_signature "$TARGET_FILE"
-                continue
-                ;;
-            esac
-
-            if ! file "$TARGET_FILE" | grep -q "Mach-O"; then
-              continue
-            fi
-
-            verify_code_signature "$TARGET_FILE" "$TARGET_FILE"
-          done < <(find dist/run -type f -print0)
-
-          while IFS= read -r -d '' TARGET_FRAMEWORK; do
-            verify_code_signature "$TARGET_FRAMEWORK" "$TARGET_FRAMEWORK" --deep
-          done < <(find dist/run -type d -name "*.framework" -print0)
-
       - name: <Build> Code signing cleanup (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: bash tools/codesign_cleanup_macos.bash
