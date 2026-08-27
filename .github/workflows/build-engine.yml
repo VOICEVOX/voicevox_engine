@@ -481,7 +481,7 @@ jobs:
           # CUDA, cuDNN
           mv download/core/additional_libraries/*.so* dist/run/
 
-      - name: <Build> Code signing
+      - name: <Build> Code signing (Windows)
         if: inputs.code_signing == true && runner.os == 'Windows'
         run: bash tools/codesign.bash "dist/run/run.exe"
         env:
