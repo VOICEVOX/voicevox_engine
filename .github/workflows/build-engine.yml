@@ -419,32 +419,38 @@ jobs:
 
           uv run pyinstaller --noconfirm run.spec -- "${PYINSTALLER_ARGS[@]}"
 
-      - name: <Build> Code signing framework bundles (macOS)
+      - name: <Build> Code signing Python.framework (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: |
           set -eu
 
+          # NOTE: PyInstallerがPython.frameworkを再構成して既存署名を無効にするため、
+          # 生成された場合はフレームワーク全体を再署名する。
+          # 非アドホック署名が存在するが検証に失敗する状態だけを修復する。
+          # 参考: https://github.com/pyinstaller/pyinstaller/issues/9072
+          TARGET_FRAMEWORK="dist/run/engine_internal/Python.framework"
+          if [[ ! -d "$TARGET_FRAMEWORK" ]]; then
+            echo "Python.frameworkは生成されていません"
+            exit 0
+          fi
+
+          if ! SIGNATURE_INFO="$(codesign -dv "$TARGET_FRAMEWORK" 2>&1)"; then
+            echo "Python.frameworkに既存署名がありません"
+            exit 1
+          fi
+          if grep -q "^Signature=adhoc" <<< "$SIGNATURE_INFO"; then
+            echo "Python.frameworkがアドホック署名されています"
+            exit 1
+          fi
+          if codesign --verify "$TARGET_FRAMEWORK"; then
+            echo "Python.frameworkの署名が有効です。再署名処理が不要になった可能性があります"
+            exit 1
+          fi
+
+          echo "無効な署名を再署名します: $TARGET_FRAMEWORK"
           IDENTITY="$(head -n 1 /tmp/codesign_identity.txt)"
-
-          function codesign_file() {
-            TARGET="$1"
-            codesign --force --sign "$IDENTITY" --timestamp "$TARGET"
-          }
-
-          function is_signed() {
-            TARGET="$1"
-            codesign -dv "$TARGET" 2>&1 | grep -q "^Signature=adhoc" && return 1
-            codesign --verify "$TARGET" >/dev/null 2>&1 || return 1
-          }
-
-          while IFS= read -r -d '' TARGET_FRAMEWORK; do
-            if is_signed "$TARGET_FRAMEWORK"; then
-              echo "署名済み: $TARGET_FRAMEWORK"
-            else
-              echo "署名開始: $TARGET_FRAMEWORK"
-              codesign_file "$TARGET_FRAMEWORK"
-            fi
-          done < <(find dist/run -depth -type d -name "*.framework" -print0)
+          codesign --force --sign "$IDENTITY" --timestamp "$TARGET_FRAMEWORK"
+          codesign --verify "$TARGET_FRAMEWORK"
 
       # Because PyInstaller does not copy dynamic loaded libraries,
       # manually move DLL dependencies into `dist/run/` (cache already saved)
