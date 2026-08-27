@@ -419,6 +419,21 @@ jobs:
 
           uv run pyinstaller --noconfirm run.spec -- "${PYINSTALLER_ARGS[@]}"
 
+      # Because PyInstaller does not copy dynamic loaded libraries,
+      # manually move DLL dependencies into `dist/run/` (cache already saved)
+
+      - name: <Build> Gather DLL dependencies (Windows)
+        if: runner.os == 'Windows' && matrix.onnxruntime_device != 'cpu'
+        run: |
+          set -eux
+
+          mv download/core/additional_libraries/*.dll dist/run/
+          if ${{ matrix.onnxruntime_device == 'cuda' }}; then
+
+            # ONNX Runtime providers
+            mv download/core/onnxruntime/lib/voicevox_onnxruntime_*.dll dist/run/
+          fi
+
       - name: <Build> Code signing Python.framework (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: |
@@ -451,21 +466,6 @@ jobs:
           IDENTITY="$(head -n 1 /tmp/codesign_identity.txt)"
           codesign --force --sign "$IDENTITY" --timestamp "$TARGET_FRAMEWORK"
           codesign --verify "$TARGET_FRAMEWORK"
-
-      # Because PyInstaller does not copy dynamic loaded libraries,
-      # manually move DLL dependencies into `dist/run/` (cache already saved)
-
-      - name: <Build> Gather DLL dependencies (Windows)
-        if: runner.os == 'Windows' && matrix.onnxruntime_device != 'cpu'
-        run: |
-          set -eux
-
-          mv download/core/additional_libraries/*.dll dist/run/
-          if ${{ matrix.onnxruntime_device == 'cuda' }}; then
-
-            # ONNX Runtime providers
-            mv download/core/onnxruntime/lib/voicevox_onnxruntime_*.dll dist/run/
-          fi
 
       - name: <Build> Gather DLL dependencies (Linux CUDA)
         if: runner.os == 'Linux' && matrix.onnxruntime_device == 'cuda'
