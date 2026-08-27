@@ -368,7 +368,7 @@ jobs:
         run: bash tools/codesign_setup_macos.bash
         env:
           P12_PATH: /tmp/codesign.p12
-          P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
+          APPLE_P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
           CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
           KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
 
