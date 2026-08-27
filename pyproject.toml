@@ -25,6 +25,7 @@ dependencies = [
 [tool.uv]
 default-groups = []
 exclude-newer = "1 week"
+python-preference = "only-managed"
 
 [tool.uv.sources]
 pyopenjtalk = { git = "https://github.com/VOICEVOX/pyopenjtalk", rev = "74703b034dd90a1f199f49bb70bf3b66b1728a86" }
