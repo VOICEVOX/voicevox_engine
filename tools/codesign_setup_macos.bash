@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 # !!! コードサイニング証明書を取り扱うので取り扱い注意 !!!
 
-# .p12証明書を使って一時キーチェーンをセットアップし、署名用Identityを出力する
+# macOS上で.p12証明書を使って一時キーチェーンをセットアップし、署名用Identityを出力する
 
 set -eu
 
-if [ ! -v P12_PATH ]; then
+if [ ! -v P12_PATH ]; then # .p12証明書のパス
     echo "P12_PATHが未定義です"
     exit 1
 fi
-if [ ! -v P12_PASSWORD ]; then
+if [ ! -v P12_PASSWORD ]; then # .p12証明書のパスワード
     echo "P12_PASSWORDが未定義です"
     exit 1
 fi
-if [ ! -v CODESIGN_IDENTITY_PATH ]; then
+if [ ! -v CODESIGN_IDENTITY_PATH ]; then # 署名用Identityの出力先
     echo "CODESIGN_IDENTITY_PATHが未定義です"
     exit 1
 fi
-if [ ! -v KEYCHAIN_PATH_PATH ]; then
+if [ ! -v KEYCHAIN_PATH_PATH ]; then # 一時キーチェーンのパスの出力先
     echo "KEYCHAIN_PATH_PATHが未定義です"
     exit 1
 fi
@@ -26,12 +26,22 @@ fi
 KEYCHAIN_PATH="$(mktemp -d)/codesign.keychain-db"
 KEYCHAIN_PASSWORD="$(uuidgen)"
 security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+# 証明書を破棄
+cleanup() {
+    security delete-keychain "$KEYCHAIN_PATH"
+    rm -f "$P12_PATH"
+    rm -f "$CODESIGN_IDENTITY_PATH"
+    rm -f "$KEYCHAIN_PATH_PATH"
+}
+trap cleanup EXIT
+
 security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
 security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
 # Apple中間証明書のインポート
 DEVELOPER_ID_G2_CA="$(mktemp)"
-curl -fsSL -o "$DEVELOPER_ID_G2_CA" "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer"
+curl -fsSL -o "$DEVELOPER_ID_G2_CA" --retry 3 --retry-delay 5 "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer"
 security import "$DEVELOPER_ID_G2_CA" -k "$KEYCHAIN_PATH"
 rm "$DEVELOPER_ID_G2_CA"
 
@@ -48,7 +58,6 @@ while IFS= read -r line; do
 done < <(security list-keychains -d user)
 security list-keychains -d user -s "$KEYCHAIN_PATH" "${ORIGINAL_KEYCHAINS[@]}"
 
-# 署名用Identityの取得
 IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | awk 'match($0,/[0-9A-F]{40}/){print substr($0,RSTART,RLENGTH); exit}')
 if [ -z "$IDENTITY" ]; then
     echo "署名用の有効なIdentityが見つかりません"
@@ -60,3 +69,6 @@ echo "$IDENTITY" >"$CODESIGN_IDENTITY_PATH"
 
 # キーチェーンパスを出力
 echo "$KEYCHAIN_PATH" >"$KEYCHAIN_PATH_PATH"
+
+# ビルド後のクリーンアップまで証明書を維持
+trap - EXIT

@@ -5,15 +5,15 @@
 
 set -eu
 
-if [ ! -v P12_PATH ]; then
+if [ ! -v P12_PATH ]; then # .p12証明書のパス
     echo "P12_PATHが未定義です"
     exit 1
 fi
-if [ ! -v CODESIGN_IDENTITY_PATH ]; then
+if [ ! -v CODESIGN_IDENTITY_PATH ]; then # 署名用Identityの出力先
     echo "CODESIGN_IDENTITY_PATHが未定義です"
     exit 1
 fi
-if [ ! -v KEYCHAIN_PATH_PATH ]; then
+if [ ! -v KEYCHAIN_PATH_PATH ]; then # 一時キーチェーンのパスの出力先
     echo "KEYCHAIN_PATH_PATHが未定義です"
     exit 1
 fi
