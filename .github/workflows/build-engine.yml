@@ -483,6 +483,7 @@ jobs:
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
           ESIGNERCKA_TOTP_SECRET: ${{ secrets.ESIGNERCKA_TOTP_SECRET }}
 
+      # TODO: macOSコード署名の動作確認が完了したら、この検証ステップを削除する
       - name: <Test> Verify code signing (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: |
