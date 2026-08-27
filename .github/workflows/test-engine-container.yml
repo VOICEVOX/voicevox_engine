@@ -100,7 +100,7 @@ jobs:
       - name: <Test> Verify README display in container logs
         run: |
           LOGS=$(docker logs "${{ steps.run_container.outputs.container_id }}" 2>&1)
-          if echo "$LOGS" | grep -q "利用規約"; then
+          if [[ "$LOGS" == *"利用規約"* ]]; then
             echo "README display check: PASSED"
           else
             echo "README display check: FAILED"
