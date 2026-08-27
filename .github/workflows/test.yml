@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
@@ -31,20 +31,6 @@ jobs:
         run: |
           uv lock
           git diff --exit-code
-
-      - name: <Test> Check dependency lists
-        run: |
-          uv export --no-annotate --no-hashes --no-header -o requirements.txt.check
-          uv export --group dev --no-annotate --no-hashes --no-header -o requirements-dev.txt.check
-          uv export --group build --no-annotate --no-hashes --no-header -o requirements-build.txt.check
-
-          diff -q requirements.txt requirements.txt.check || \
-          diff -q requirements-dev.txt requirements-dev.txt.check || \
-          diff -q requirements-build.txt requirements-build.txt.check > /dev/null
-          if [ $? = 1 ]; then
-            echo "uv export has some diff"
-            exit 1
-          fi
 
       - name: <Test> Check linting
         run: uv run ruff check
@@ -76,7 +62,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: <Setup> Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: <Setup> Install ShellCheck
         run: |
@@ -84,9 +70,18 @@ jobs:
           sudo apt-get install -y shellcheck
 
       - name: <Test> Check shell files
-        run: git ls-files | grep -E '\.(ba)?sh' | xargs shellcheck
+        run: git ls-files | grep -E '\.(bash|sh)' | xargs shellcheck
 
       - name: <Test> Check workflow files
         run: |
-          bash <(curl -f --retry 3 --retry-delay 5 https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          curl -fLO --retry 3 --retry-delay 5 \
+              "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint_1.7.12_linux_amd64.tar.gz" | sha256sum --check
+          tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
           ./actionlint
+
+      - name: <Test> Check pinact
+        uses: suzuki-shunsuke/pinact-action@896d595f299e71d65b9d28349d6956abe144390a # v3.0.0
+        with:
+          fix: false
+          min_age: "7"

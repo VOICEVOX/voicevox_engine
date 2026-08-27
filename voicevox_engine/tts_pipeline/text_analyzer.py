@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Final, Literal, Self, TypeAlias, TypeGuard
+from typing import Any, Final, Literal, Self, TypeGuard
 
 from .model import AccentPhrase, Mora
 from .mora_mapping import mora_phonemes_to_mora_kana
@@ -232,8 +232,8 @@ def mora_to_text(mora_phonemes: str) -> str:
         return mora_phonemes
 
 
-AccentPhaseLabels: TypeAlias = list[_Label]
-PauseGroup: TypeAlias = list[AccentPhaseLabels]
+type AccentPhaseLabels = list[_Label]
+type PauseGroup = list[AccentPhaseLabels]
 
 
 def full_context_labels_to_accent_phrases(

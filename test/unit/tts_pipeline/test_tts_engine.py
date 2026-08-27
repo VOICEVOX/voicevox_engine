@@ -275,6 +275,25 @@ def test_mocked_synthesize_wave_output(snapshot_json: SnapshotAssertion) -> None
     assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
 
 
+def test_mocked_synthesize_wave_stream_output(snapshot_json: SnapshotAssertion) -> None:
+    """モックされた `TTSEngine.synthesize_wave_stream()` の出力スナップショットが一定である"""
+    # Inputs
+    tts_engine = TTSEngine(MockCoreWrapper())
+    hello_hiho = _gen_hello_hiho_query()
+    hello_hiho.outputSamplingRate = 24000
+    # Outputs
+    wave_length, result_gen = tts_engine.synthesize_wave_stream(
+        hello_hiho,
+        StyleId(1),
+        start_offset=0,
+        segment_length=0.3,
+        enable_interrogative_upspeak=True,
+    )
+    result = np.concatenate(list(result_gen))
+    # Tests
+    assert snapshot_json == summarize_big_ndarray(round_floats(result, round_value=2))
+
+
 def test_mocked_create_phoneme_and_f0_and_volume_output(
     snapshot_json: SnapshotAssertion,
 ) -> None:
@@ -283,7 +302,7 @@ def test_mocked_create_phoneme_and_f0_and_volume_output(
     song_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     # Outputs
-    result = song_engine.create_phoneme_and_f0_and_volume(doremi_srore, StyleId(1))
+    result = song_engine.create_phoneme_and_f0_and_volume(doremi_srore, StyleId(7))
     # Tests
     assert snapshot_json(name="query") == round_floats(
         pydantic_to_native_type(result), round_value=2
@@ -299,11 +318,11 @@ def test_mocked_create_volume_from_phoneme_and_f0_output(
     song_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     phonemes, f0s, _ = song_engine.create_phoneme_and_f0_and_volume(
-        doremi_srore, StyleId(1)
+        doremi_srore, StyleId(7)
     )
     # Outputs
     result = song_engine.create_volume_from_phoneme_and_f0(
-        doremi_srore, phonemes, f0s, StyleId(1)
+        doremi_srore, phonemes, f0s, StyleId(7)
     )
     # Tests
     assert snapshot_json == round_floats(result, round_value=2)
@@ -318,7 +337,7 @@ def test_mocked_frame_synthesize_wave_output(
     song_engine = SongEngine(MockCoreWrapper())
     doremi_srore = _gen_doremi_score()
     phonemes, f0, volume = song_engine.create_phoneme_and_f0_and_volume(
-        doremi_srore, StyleId(1)
+        doremi_srore, StyleId(7)
     )
     doremi_query = FrameAudioQuery(
         f0=f0,
@@ -329,7 +348,7 @@ def test_mocked_frame_synthesize_wave_output(
         outputStereo=False,
     )
     # Outputs
-    result_wave = song_engine.frame_synthesize_wave(doremi_query, StyleId(1))
+    result_wave = song_engine.frame_synthesize_wave(doremi_query, StyleId(7))
     # Tests
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2

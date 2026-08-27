@@ -37,7 +37,7 @@ def test_喋れるキャラクター一覧が取得できる(
 def test_喋れるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    talkers = _speaker_list_adapter.validate_python(client.get("/speakers").json())
+    talkers = _speaker_list_adapter.validate_json(client.get("/speakers").content)
     for talker in talkers:
         response = client.get(
             "/speaker_info", params={"speaker_uuid": talker.speaker_uuid}
@@ -86,7 +86,7 @@ def test_歌えるキャラクター一覧が取得できる(
 def test_歌えるキャラクターの情報を取得できる(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
-    singers = _speaker_list_adapter.validate_python(client.get("/singers").json())
+    singers = _speaker_list_adapter.validate_json(client.get("/singers").content)
     for singer in singers:
         response = client.get(
             "/singer_info", params={"speaker_uuid": singer.speaker_uuid}

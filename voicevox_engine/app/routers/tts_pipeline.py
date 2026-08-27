@@ -6,11 +6,10 @@ from traceback import print_exception
 from typing import Annotated, Self
 
 import soundfile
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
-from starlette.background import BackgroundTask
-from starlette.responses import FileResponse
 
 from voicevox_engine.cancellable_engine import (
     CancellableEngine,
@@ -45,8 +44,10 @@ from voicevox_engine.tts_pipeline.song_engine import (
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
+    TalkInvalidInputError,
     TTSEngineManager,
 )
+from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
 from voicevox_engine.utility.file_utility import try_delete_file
 
 
@@ -271,6 +272,7 @@ def generate_tts_pipeline_router(
     def synthesis(
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -290,11 +292,8 @@ def generate_tts_pipeline_router(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f.name),
-        )
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="audio/wav")
 
     @router.post(
         "/cancellable_synthesis",
@@ -311,8 +310,9 @@ def generate_tts_pipeline_router(
     )
     def cancellable_synthesis(
         query: AudioQuery,
-        request: Request,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        request: Request,
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
@@ -337,11 +337,8 @@ def generate_tts_pipeline_router(
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-        return FileResponse(
-            f_name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f_name),
-        )
+        background_tasks.add_task(try_delete_file, f_name)
+        return FileResponse(f_name, media_type="audio/wav")
 
     @router.post(
         "/multi_synthesis",
@@ -361,6 +358,7 @@ def generate_tts_pipeline_router(
     def multi_synthesis(
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -395,10 +393,70 @@ def generate_tts_pipeline_router(
                         wav_file.seek(0)
                         zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
-        return FileResponse(
-            f.name,
-            media_type="application/zip",
-            background=BackgroundTask(try_delete_file, f.name),
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="application/zip")
+
+    @router.post(
+        "/streaming_synthesis",
+        response_class=StreamingResponse,
+        responses={
+            200: {
+                "content": {
+                    "audio/wav": {"schema": {"type": "string", "format": "binary"}}
+                },
+            }
+        },
+        tags=["音声合成"],
+        summary="ストリーミングで音声合成する。24kHzのみ対応",
+    )
+    def streaming_synthesis(
+        query: AudioQuery,
+        style_id: Annotated[StyleId, Query(alias="speaker")],
+        start_offset: Annotated[
+            float,
+            Query(description="音声の開始位置"),
+        ] = 0,
+        segment_length: Annotated[
+            float,
+            Query(description="一度に合成する音声の長さ"),
+        ] = 0.3,
+        enable_interrogative_upspeak: Annotated[
+            bool,
+            Query(
+                description="疑問系のテキストが与えられたら語尾を自動調整する",
+            ),
+        ] = True,
+        core_version: str | SkipJsonSchema[None] = None,
+    ) -> StreamingResponse:
+        if query.outputSamplingRate != 24000:
+            raise HTTPException(
+                status_code=422,
+                detail="24kHz以外のサンプリングレートは非対応です。",
+            )
+
+        version = core_version or LATEST_VERSION
+        engine = tts_engines.get_tts_engine(version)
+        try:
+            wave_length, wave_generator = engine.synthesize_wave_stream(
+                query,
+                style_id,
+                start_offset=start_offset,
+                segment_length=segment_length,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+            )
+        except TalkInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        file_size, wavfile_generator = encode_wave_stream_as_wav(
+            wave_length=wave_length,
+            wave_generator=wave_generator,
+            sampling_rate=query.outputSamplingRate,
+            output_stereo=query.outputStereo,
+        )
+        return StreamingResponse(
+            wavfile_generator,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
         )
 
     @router.post(
@@ -485,6 +543,7 @@ def generate_tts_pipeline_router(
     def frame_synthesis(
         query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
+        background_tasks: BackgroundTasks,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """歌唱音声合成を行います。"""
@@ -500,11 +559,8 @@ def generate_tts_pipeline_router(
                 file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
             )
 
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f.name),
-        )
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="audio/wav")
 
     @router.post(
         "/connect_waves",
@@ -519,7 +575,9 @@ def generate_tts_pipeline_router(
         tags=["その他"],
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
-    def connect_waves(waves: list[str]) -> FileResponse:
+    def connect_waves(
+        waves: list[str], background_tasks: BackgroundTasks
+    ) -> FileResponse:
         """base64エンコードされたwavデータを一纏めにし、wavファイルで返します。"""
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
@@ -534,11 +592,8 @@ def generate_tts_pipeline_router(
                 format="WAV",
             )
 
-        return FileResponse(
-            f.name,
-            media_type="audio/wav",
-            background=BackgroundTask(try_delete_file, f.name),
-        )
+        background_tasks.add_task(try_delete_file, f.name)
+        return FileResponse(f.name, media_type="audio/wav")
 
     @router.post(
         "/validate_kana",
