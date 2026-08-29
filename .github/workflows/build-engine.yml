@@ -451,7 +451,7 @@ jobs:
 
       - name: <Build> Code signing (Windows)
         if: inputs.code_signing == true && runner.os == 'Windows'
-        run: bash tools/codesign.bash "dist/run/run.exe"
+        run: bash tools/codesign_windows.bash "dist/run/run.exe"
         env:
           ESIGNERCKA_USERNAME: ${{ secrets.ESIGNERCKA_USERNAME }}
           ESIGNERCKA_PASSWORD: ${{ secrets.ESIGNERCKA_PASSWORD }}
