@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# !!! コードサイニング証明書を取り扱うので取り扱い注意 !!!
+
+# macOS上で.p12証明書を使って一時キーチェーンをセットアップし、署名用Identityを出力する
+
+set -eu
+
+if [ ! -v APPLE_P12_BASE64 ]; then # .p12証明書のbase64エンコードされた内容
+    echo "APPLE_P12_BASE64が未定義です"
+    exit 1
+fi
+if [ ! -v APPLE_P12_PASSWORD ]; then # .p12証明書のパスワード
+    echo "APPLE_P12_PASSWORDが未定義です"
+    exit 1
+fi
+if [ ! -v CODESIGN_IDENTITY_PATH ]; then # 署名用Identityの出力先
+    echo "CODESIGN_IDENTITY_PATHが未定義です"
+    exit 1
+fi
+if [ ! -v KEYCHAIN_PATH_PATH ]; then # 一時キーチェーンのパスの出力先
+    echo "KEYCHAIN_PATH_PATHが未定義です"
+    exit 1
+fi
+
+# .p12証明書のデコード
+P12_PATH="$(mktemp -d)/codesign.p12"
+echo "$APPLE_P12_BASE64" | base64 --decode > "$P12_PATH"
+
+# 一時キーチェーンのセットアップ
+KEYCHAIN_PATH="$(mktemp -d)/codesign.keychain-db"
+KEYCHAIN_PASSWORD="$(uuidgen)"
+security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+# 失敗時に証明書を破棄
+cleanup() {
+    security delete-keychain "$KEYCHAIN_PATH"
+    rm -f "$P12_PATH"
+    rm -f "$CODESIGN_IDENTITY_PATH"
+    rm -f "$KEYCHAIN_PATH_PATH"
+}
+trap cleanup EXIT
+
+security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+# Apple中間証明書のインポート
+DEVELOPER_ID_G2_CA="$(mktemp)"
+curl -fsSL -o "$DEVELOPER_ID_G2_CA" --retry 3 --retry-delay 5 "https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer"
+security import "$DEVELOPER_ID_G2_CA" -k "$KEYCHAIN_PATH"
+rm "$DEVELOPER_ID_G2_CA"
+
+# .p12証明書のインポート
+security import "$P12_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_P12_PASSWORD" -T /usr/bin/codesign -A
+rm "$P12_PATH"
+security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+
+ORIGINAL_KEYCHAINS=()
+while IFS= read -r line; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line#\"}"
+    line="${line%\"}"
+    [ -n "$line" ] && ORIGINAL_KEYCHAINS+=("$line")
+done < <(security list-keychains -d user)
+security list-keychains -d user -s "$KEYCHAIN_PATH" "${ORIGINAL_KEYCHAINS[@]}"
+
+IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | awk 'match($0,/[0-9A-F]{40}/){print substr($0,RSTART,RLENGTH); exit}')
+if [ -z "$IDENTITY" ]; then
+    echo "署名用の有効なIdentityが見つかりません"
+    exit 1
+fi
+
+# 署名用Identityを出力
+echo "$IDENTITY" >"$CODESIGN_IDENTITY_PATH"
+
+# キーチェーンパスを出力
+echo "$KEYCHAIN_PATH" >"$KEYCHAIN_PATH_PATH"
+
+# 証明書の破棄は後処理に任せる
+trap - EXIT

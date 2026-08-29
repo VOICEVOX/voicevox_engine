@@ -40,6 +40,12 @@ if [ ! -d "$INSTALL_DIR" ]; then
     rm SSL.COM-eSigner-CKA_1.0.6.zip eSigner_CKA_Installer.exe
 fi
 
+# 証明書を破棄
+function cleanup() {
+    powershell "& '$INSTALL_DIR\eSignerCKATool.exe' unload"
+}
+trap cleanup EXIT
+
 # 証明書を読み込む
 powershell "& '$INSTALL_DIR\eSignerCKATool.exe' load"
 
@@ -76,6 +82,3 @@ ls $target_file_glob | while read -r target_file; do
         codesign "$target_file"
     fi
 done
-
-# 証明書を破棄
-powershell "& '$INSTALL_DIR\eSignerCKATool.exe' unload"
