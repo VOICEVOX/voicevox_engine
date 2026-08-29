@@ -1,7 +1,6 @@
 """波形合成のテスト"""
 
 import math
-from collections.abc import Iterator
 
 import numpy as np
 
@@ -328,21 +327,18 @@ def test_raw_wave_stream_to_output_wave() -> None:
     query = _gen_query(volumeScale=2, outputSamplingRate=44100, outputStereo=True)
     raw_wave = np.random.default_rng().random(24000).astype(np.float32)
     sr_raw_wave = 24000
-
-    def stream() -> Iterator[np.typing.NDArray[np.float32]]:
-        chunks = np.array_split(
-            raw_wave, math.floor(len(raw_wave) / (0.3 * sr_raw_wave))
-        )
-        yield from chunks
+    chunks = np.array_split(
+        raw_wave, math.floor(len(raw_wave) / (0.3 * sr_raw_wave))
+    )
 
     # Expects
     expect = raw_wave_to_output_wave(query, raw_wave, sr_raw_wave)
 
     # Outputs
     wave_length, actual_stream = raw_wave_stream_to_output_wave(
-        query, len(raw_wave), stream(), sr_raw_wave
+        query, len(raw_wave), iter(chunks), sr_raw_wave
     )
-    actual = np.concat([i for i in actual_stream])
+    actual = np.concatenate(list(actual_stream))
 
     assert wave_length == len(expect) == len(actual)
     assert expect.shape == actual.shape
