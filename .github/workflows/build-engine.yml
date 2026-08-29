@@ -414,7 +414,7 @@ jobs:
             "--core_model_dir_path=download/core/models/vvms"
           )
           if [[ "$RUNNER_OS" == "macOS" ]] && [[ -f /tmp/codesign_identity.txt ]]; then
-            PYINSTALLER_ARGS+=("--codesign_identity=$(head -n 1 /tmp/codesign_identity.txt)")
+            PYINSTALLER_ARGS+=("--codesign_identity=$(</tmp/codesign_identity.txt)")
           fi
 
           uv run pyinstaller --noconfirm run.spec -- "${PYINSTALLER_ARGS[@]}"
@@ -440,30 +440,20 @@ jobs:
           set -eu
 
           # NOTE: PyInstallerがPython.frameworkを再構成して既存署名を無効にするため、
-          # 生成された場合はフレームワーク全体を再署名する。
-          # 非アドホック署名が存在するが検証に失敗する状態だけを修復する。
+          # フレームワーク全体を再署名する。
           # 参考: https://github.com/pyinstaller/pyinstaller/issues/9072
           TARGET_FRAMEWORK="dist/run/engine_internal/Python.framework"
           if [[ ! -d "$TARGET_FRAMEWORK" ]]; then
             echo "Python.frameworkは生成されていません"
-            exit 0
+            exit 1
           fi
 
-          if ! SIGNATURE_INFO="$(codesign -dv "$TARGET_FRAMEWORK" 2>&1)"; then
-            echo "Python.frameworkに既存署名がありません"
-            exit 1
-          fi
-          if grep -q "^Signature=adhoc" <<< "$SIGNATURE_INFO"; then
-            echo "Python.frameworkがアドホック署名されています"
-            exit 1
-          fi
           if codesign --verify "$TARGET_FRAMEWORK"; then
             echo "Python.frameworkの署名が有効です。再署名処理が不要になった可能性があります"
             exit 1
           fi
 
-          echo "無効な署名を再署名します: $TARGET_FRAMEWORK"
-          IDENTITY="$(head -n 1 /tmp/codesign_identity.txt)"
+          IDENTITY="$(</tmp/codesign_identity.txt)"
           codesign --force --sign "$IDENTITY" --timestamp "$TARGET_FRAMEWORK"
           codesign --verify "$TARGET_FRAMEWORK"
 

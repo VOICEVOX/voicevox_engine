@@ -18,7 +18,7 @@ if [ ! -v KEYCHAIN_PATH_PATH ]; then # 一時キーチェーンのパスの出�
     exit 1
 fi
 
-KEYCHAIN_PATH="$(head -n 1 "$KEYCHAIN_PATH_PATH")"
+KEYCHAIN_PATH="$(<"$KEYCHAIN_PATH_PATH")"
 
 # キーチェーンを削除
 security delete-keychain "$KEYCHAIN_PATH"

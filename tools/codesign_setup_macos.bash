@@ -70,5 +70,5 @@ echo "$IDENTITY" >"$CODESIGN_IDENTITY_PATH"
 # キーチェーンパスを出力
 echo "$KEYCHAIN_PATH" >"$KEYCHAIN_PATH_PATH"
 
-# ビルド後のクリーンアップまで証明書を維持
+# 正常終了時は証明書の破棄を後続処理に任せる
 trap - EXIT
