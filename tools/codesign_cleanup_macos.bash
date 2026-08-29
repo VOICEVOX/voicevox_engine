@@ -5,10 +5,6 @@
 
 set -eu
 
-if [ ! -v P12_PATH ]; then # .p12証明書のパス
-    echo "P12_PATHが未定義です"
-    exit 1
-fi
 if [ ! -v CODESIGN_IDENTITY_PATH ]; then # 署名用Identityの出力先
     echo "CODESIGN_IDENTITY_PATHが未定義です"
     exit 1
@@ -23,7 +19,6 @@ KEYCHAIN_PATH="$(<"$KEYCHAIN_PATH_PATH")"
 # キーチェーンを削除
 security delete-keychain "$KEYCHAIN_PATH"
 
-# 証明書と出力ファイルを削除
-rm "$P12_PATH"
+# 出力ファイルを削除
 rm "$CODESIGN_IDENTITY_PATH"
 rm "$KEYCHAIN_PATH_PATH"

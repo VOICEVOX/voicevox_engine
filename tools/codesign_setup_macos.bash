@@ -5,8 +5,8 @@
 
 set -eu
 
-if [ ! -v P12_PATH ]; then # .p12証明書のパス
-    echo "P12_PATHが未定義です"
+if [ ! -v APPLE_P12_BASE64 ]; then # .p12証明書のbase64エンコードされた内容
+    echo "APPLE_P12_BASE64が未定義です"
     exit 1
 fi
 if [ ! -v APPLE_P12_PASSWORD ]; then # .p12証明書のパスワード
@@ -21,6 +21,10 @@ if [ ! -v KEYCHAIN_PATH_PATH ]; then # 一時キーチェーンのパスの出�
     echo "KEYCHAIN_PATH_PATHが未定義です"
     exit 1
 fi
+
+# .p12証明書のデコード
+P12_PATH="$(mktemp -d)/codesign.p12"
+echo "$APPLE_P12_BASE64" | base64 --decode > "$P12_PATH"
 
 # 一時キーチェーンのセットアップ
 KEYCHAIN_PATH="$(mktemp -d)/codesign.keychain-db"
@@ -47,6 +51,7 @@ rm "$DEVELOPER_ID_G2_CA"
 
 # .p12証明書のインポート
 security import "$P12_PATH" -k "$KEYCHAIN_PATH" -P "$APPLE_P12_PASSWORD" -T /usr/bin/codesign -A
+rm "$P12_PATH"
 security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
 
 ORIGINAL_KEYCHAINS=()

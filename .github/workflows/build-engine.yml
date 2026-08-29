@@ -357,17 +357,11 @@ jobs:
           DOWNLOAD_RESOURCE_PATH: download/resource
         run: bash tools/process_voicevox_resource.bash
 
-      - name: <Setup> Decode P12 certificate (macOS)
-        if: inputs.code_signing == true && runner.os == 'macOS'
-        run: echo "$APPLE_P12_BASE64" | base64 --decode > /tmp/codesign.p12
-        env:
-          APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
-
       - name: <Setup> Code signing keychain (macOS)
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: bash tools/codesign_setup_macos.bash
         env:
-          P12_PATH: /tmp/codesign.p12
+          APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
           APPLE_P12_PASSWORD: ${{ secrets.APPLE_P12_PASSWORD }}
           CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
           KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
@@ -483,7 +477,6 @@ jobs:
         if: inputs.code_signing == true && runner.os == 'macOS'
         run: bash tools/codesign_cleanup_macos.bash
         env:
-          P12_PATH: /tmp/codesign.p12
           CODESIGN_IDENTITY_PATH: /tmp/codesign_identity.txt
           KEYCHAIN_PATH_PATH: /tmp/codesign_keychain_path.txt
 
