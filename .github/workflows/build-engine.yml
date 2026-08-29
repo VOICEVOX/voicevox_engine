@@ -407,7 +407,7 @@ jobs:
             "--libonnxruntime_path=$LIBONNXRUNTIME_PATH"
             "--core_model_dir_path=download/core/models/vvms"
           )
-          if [[ "$RUNNER_OS" == "macOS" ]] && [[ -f /tmp/codesign_identity.txt ]]; then
+          if [[ "$RUNNER_OS" == "macOS" ]] && ${{ inputs.code_signing == true }}; then
             PYINSTALLER_ARGS+=("--codesign_identity=$(</tmp/codesign_identity.txt)")
           fi
 
@@ -433,8 +433,8 @@ jobs:
         run: |
           set -eu
 
-          # NOTE: PyInstallerがPython.frameworkを再構成して既存署名を無効にするため、
-          # フレームワーク全体を再署名する。
+          # NOTE: PyInstallerがPython.frameworkを再構成すると既存の署名が無効になるため、
+          # 再署名する。
           # 参考: https://github.com/pyinstaller/pyinstaller/issues/9072
           TARGET_FRAMEWORK="dist/run/engine_internal/Python.framework"
           if [[ ! -d "$TARGET_FRAMEWORK" ]]; then
