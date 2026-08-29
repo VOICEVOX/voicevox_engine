@@ -44,6 +44,7 @@ from voicevox_engine.tts_pipeline.song_engine import (
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     LATEST_VERSION,
+    TalkInvalidInputError,
     TTSEngineManager,
 )
 from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
@@ -406,7 +407,7 @@ def generate_tts_pipeline_router(
             }
         },
         tags=["音声合成"],
-        summary="ストリーミングで音声合成する。24kHzのみ対応",
+        summary="ストリーミングで音声合成する",
     )
     def streaming_synthesis(
         query: AudioQuery,
@@ -417,7 +418,7 @@ def generate_tts_pipeline_router(
         ] = 0,
         segment_length: Annotated[
             float,
-            Query(description="一度に生成する音声の長さ"),
+            Query(description="一度に合成する音声の長さ"),
         ] = 0.3,
         enable_interrogative_upspeak: Annotated[
             bool,
@@ -427,28 +428,30 @@ def generate_tts_pipeline_router(
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> StreamingResponse:
-        if query.outputSamplingRate != 24000:
-            raise HTTPException(
-                status_code=422,
-                detail="24kHz以外のサンプリングレートは非対応です。",
-            )
-
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
-        wave_length, wave_generator = engine.synthesize_wave_stream(
-            query,
-            style_id,
-            start_offset=start_offset,
-            segment_length=segment_length,
-            enable_interrogative_upspeak=enable_interrogative_upspeak,
-        )
-        wavfile_generator = encode_wave_stream_as_wav(
+        try:
+            wave_length, wave_generator = engine.synthesize_wave_stream(
+                query,
+                style_id,
+                start_offset=start_offset,
+                segment_length=segment_length,
+                enable_interrogative_upspeak=enable_interrogative_upspeak,
+            )
+        except TalkInvalidInputError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        file_size, wavfile_generator = encode_wave_stream_as_wav(
             wave_length=wave_length,
             wave_generator=wave_generator,
             sampling_rate=query.outputSamplingRate,
             output_stereo=query.outputStereo,
         )
-        return StreamingResponse(wavfile_generator, media_type="audio/wav")
+        return StreamingResponse(
+            wavfile_generator,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     @router.post(
         "/sing_frame_audio_query",
