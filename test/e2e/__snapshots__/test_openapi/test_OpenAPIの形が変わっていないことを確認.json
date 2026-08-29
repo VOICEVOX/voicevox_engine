@@ -3066,7 +3066,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "ストリーミングで音声合成する。24kHzのみ対応",
+        "summary": "ストリーミングで音声合成する",
         "tags": [
           "音声合成"
         ]
