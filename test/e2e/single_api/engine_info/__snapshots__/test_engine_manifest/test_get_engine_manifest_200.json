@@ -26,6 +26,7 @@
     "manage_library": true,
     "return_resource_url": true,
     "sing": true,
+    "streaming_synthesis": true,
     "synthesis_morphing": true
   },
   "supported_vvlib_manifest_version": null,

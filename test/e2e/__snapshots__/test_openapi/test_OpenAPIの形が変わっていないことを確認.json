@@ -1046,6 +1046,11 @@
             "title": "Sing",
             "type": "boolean"
           },
+          "streaming_synthesis": {
+            "description": "ストリーミング音声合成",
+            "title": "Streaming Synthesis",
+            "type": "boolean"
+          },
           "synthesis_morphing": {
             "description": "2種類のスタイルでモーフィングした音声を合成",
             "title": "Synthesis Morphing",

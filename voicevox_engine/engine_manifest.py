@@ -40,6 +40,7 @@ class SupportedFeaturesJson:
     manage_library: FeatureSupportJson
     return_resource_url: FeatureSupportJson
     apply_katakana_english: FeatureSupportJson
+    streaming_synthesis: FeatureSupportJson
 
 
 @dataclass(frozen=True)
@@ -114,6 +115,9 @@ class SupportedFeatures(BaseModel):
     )
     apply_katakana_english: bool | SkipJsonSchema[None] = Field(
         default=None, description="未知の英単語をカタカナ読みに変換"
+    )
+    streaming_synthesis: bool | SkipJsonSchema[None] = Field(
+        default=None, description="ストリーミング音声合成"
     )
 
 
