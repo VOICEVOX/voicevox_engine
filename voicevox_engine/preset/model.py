@@ -22,7 +22,7 @@ class Preset(BaseModel):
     speedScale: float = Field(gt=0, description="全体の話速")
     pitchScale: float = Field(description="全体の音高")
     intonationScale: float = Field(description="全体の抑揚")
-    volumeScale: float = Field(description="全体の音量")
+    volumeScale: float = Field(ge=0, description="全体の音量")
     prePhonemeLength: float = Field(ge=0, description="音声の前の無音時間")
     postPhonemeLength: float = Field(ge=0, description="音声の後の無音時間")
     pauseLength: Annotated[float, Field(ge=0)] | SkipJsonSchema[None] = Field(

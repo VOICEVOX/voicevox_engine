@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 
 from test.e2e.single_api.utils import gen_mora
@@ -71,6 +72,19 @@ def test_audio_query_ranges_422(client: TestClient) -> None:
         assert response.status_code == 422
 
 
+@pytest.mark.parametrize(("volume_scale", "expected_status"), [(-1.0, 422), (0.0, 200)])
+def test_audio_query_volume_scale(
+    client: TestClient, volume_scale: float, expected_status: int
+) -> None:
+    """音量の負数を拒否し、無音を表す0を受け付ける。"""
+    query = _gen_audio_query()
+    query["volumeScale"] = volume_scale
+    response = client.post("/synthesis", params={"speaker": 0}, json=query)
+    assert response.status_code == expected_status
+    if expected_status == 422:
+        assert response.json()["detail"][0]["loc"] == ["body", "volumeScale"]
+
+
 def test_mora_and_accent_phrase_ranges_422(client: TestClient) -> None:
     """モーラとアクセント句の範囲外の値を拒否する。"""
     invalid_queries = []
@@ -103,6 +117,22 @@ def test_preset_ranges_422(client: TestClient) -> None:
         preset[field] = value
         response = client.post("/add_preset", json=preset)
         assert response.status_code == 422
+
+
+@pytest.mark.parametrize("endpoint", ["/add_preset", "/update_preset"])
+@pytest.mark.parametrize(("volume_scale", "expected_status"), [(-1.0, 422), (0.0, 200)])
+def test_preset_volume_scale(
+    client: TestClient, endpoint: str, volume_scale: float, expected_status: int
+) -> None:
+    """プリセットの追加・更新で音量の下限を検証する。"""
+    preset = _gen_preset()
+    if endpoint == "/update_preset":
+        preset["id"] = 1
+    preset["volumeScale"] = volume_scale
+    response = client.post(endpoint, json=preset)
+    assert response.status_code == expected_status
+    if expected_status == 422:
+        assert response.json()["detail"][0]["loc"] == ["body", "volumeScale"]
 
 
 def test_streaming_synthesis_ranges_422(client: TestClient) -> None:

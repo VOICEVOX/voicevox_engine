@@ -114,6 +114,7 @@
           },
           "volumeScale": {
             "description": "全体の音量",
+            "minimum": 0.0,
             "title": "Volumescale",
             "type": "number"
           }
@@ -776,6 +777,7 @@
           },
           "volumeScale": {
             "description": "全体の音量",
+            "minimum": 0.0,
             "title": "Volumescale",
             "type": "number"
           }
