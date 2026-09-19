@@ -594,29 +594,11 @@ uv run run.py --output_log_utf8
   uv run run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
-未指定または `0` は自動指定です。明示的に指定する場合は `1` 以上 `65535` 以下の整数を使います。
-範囲外の値は起動エラーになります。
+未指定または `0` の場合は、システム全体の論理 CPU 数の半分を小数点以下切り捨てで使います。`1` 以上 `65535` 以下の整数を指定した場合は、その値を使います。
+自動指定で論理 CPU 数を取得できない場合は、`0` を VOICEVOX CORE に渡します。
 
-Windows・Linux で利用可能な CPU に高性能な P コアと省電力な E コアの混在を検出できた場合、エンジンはプロセスの CPU affinity と VOICEVOX CORE に渡すスレッド数を一緒に決めます。
-CPU affinity は、そのプロセスが実行可能な論理 CPU の集合です。
-既存の cpuset や CPU affinity による制限は広げません。
-
-- 未指定または `0` の場合は、システム全体の論理 CPU 数の半分を小数点以下切り捨てで `N` とします。正数を指定した場合は、その値を `N` とします。
-- 利用可能な論理 P CPU 数を `P` とし、`P > N` の場合だけ、利用可能な全論理 P CPU を CPU affinity に設定し、`N` を VOICEVOX CORE に渡します。
-- `P <= N` の場合は CPU affinity を変更せず、`N` を VOICEVOX CORE に渡します。`N` が利用可能な全論理 CPU 数を超えていても起動エラーにはなりません。
-
-`N` の計算はシステム全体の論理 CPU 数を使い、`P` の数え上げと CPU affinity の対象だけは起動時に許可されている CPU の集合を使います。
-
-Windows の P/E コア対応はシステム全体の `EfficiencyClass` から P クラスを決めた後、現在の許可 CPU に絞って判定します。現在の許可範囲に真の P コアと E コアの両方がない場合や、複数の Processor Group を扱えない場合は CPU affinity を変更しません。
-Linux の P/E コア対応は、x86 で sysfs の `/sys/devices/cpu_core/cpus` と `/sys/devices/cpu_atom/cpus` を取得できる環境に限られます。
-P/E コアを分離できない場合も CPU affinity を変更しません。
-
-macOS や利用可能な CPU に P/E コアの混在がない環境では、CPU affinity を変更せず、スレッド数だけを VOICEVOX CORE に渡します。
-Windows で必要な CPU Set API がない、または未対応と判断される場合や、Linux で上記の sysfs が欠損・空の場合も同様です。
-検出情報の形式不正、権限エラー、I/O エラーは起動エラーとして扱います。
-論理 CPU 数を取得できない場合の自動指定は `0` を渡して音声合成ランタイムに決定を任せます。
-
-通常の起動と、キャンセル可能な音声合成に使う子プロセスには、同じ CPU affinity とスレッド数の決定を適用します。
+Windows・Linux で起動時に利用可能な CPU に P コアと E コアの混在を検出でき、利用可能な論理 P コア数がスレッド数より多い場合だけ、利用可能な全論理 P コアに CPU affinity を制限します。
+それ以外は CPU affinity を変更せず、起動時の CPU 制限を広げることはありません。
 
 #### 過去のバージョンのコアを使う
 
