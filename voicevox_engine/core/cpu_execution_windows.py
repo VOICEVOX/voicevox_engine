@@ -11,6 +11,8 @@ from voicevox_engine.core.cpu_execution import (
 )
 
 _ERROR_INSUFFICIENT_BUFFER = 122
+_ERROR_NOT_SUPPORTED = 50
+_ERROR_CALL_NOT_IMPLEMENTED = 120
 _CPU_SET_INFORMATION_TYPE_CPU_SET = 0
 _MAX_PROCESSOR_GROUP_SIZE = 64
 _DWORD = ctypes.c_uint32
@@ -19,7 +21,7 @@ _HANDLE = ctypes.c_void_p
 _BOOL = ctypes.c_int32
 
 
-class _WindowsCpuSetApiUnavailable(RuntimeError):
+class _WindowsHybridCpuDetectionUnavailable(RuntimeError):
     pass
 
 
@@ -55,7 +57,6 @@ class _WindowsCpuSetRecord:
     cpu_set_id: int
     group: int
     logical_processor_index: int
-    core_index: int
     efficiency_class: int
     allocated: bool
     allocated_to_target_process: bool
@@ -65,9 +66,11 @@ class _WindowsApi:
     def __init__(self) -> None:
         windll = getattr(ctypes, "WinDLL", None)
         if windll is None:
-            raise _WindowsCpuSetApiUnavailable("WindowsのCPU Set APIを読み込めません。")
+            raise _WindowsHybridCpuDetectionUnavailable(
+                "WindowsのCPU Set APIを読み込めません。"
+            )
+        kernel32 = windll("kernel32", use_last_error=True)
         try:
-            kernel32 = windll("kernel32", use_last_error=True)
             self._get_current_process: Any = _get_library_function(
                 kernel32, "GetCurrentProcess"
             )
@@ -86,8 +89,8 @@ class _WindowsApi:
             self._get_process_group_affinity: Any = _get_library_function(
                 kernel32, "GetProcessGroupAffinity"
             )
-        except (AttributeError, OSError) as error:
-            raise _WindowsCpuSetApiUnavailable(
+        except AttributeError as error:
+            raise _WindowsHybridCpuDetectionUnavailable(
                 "WindowsのCPU Set APIが利用できません。"
             ) from error
 
@@ -155,7 +158,7 @@ class _WindowsApi:
                 if required_length.value == 0:
                     raise ValueError("WindowsのCPU Set情報の長さを取得できません。")
             if required_length.value == 0:
-                return b""
+                raise ValueError("WindowsのCPU Set情報の長さが不正です。")
             buffer = (ctypes.c_ubyte * required_length.value)()
             returned_length = _DWORD()
             result = self._get_system_cpu_set_information(
@@ -168,10 +171,14 @@ class _WindowsApi:
             if result:
                 if returned_length.value > required_length.value:
                     raise ValueError("WindowsのCPU Set情報の長さが不正です。")
+                if returned_length.value == 0:
+                    raise ValueError("WindowsのCPU Set情報の長さが不正です。")
                 return bytes(buffer[: returned_length.value])
             if self._last_error_code() != _ERROR_INSUFFICIENT_BUFFER:
                 raise self._last_error()
-        raise RuntimeError("WindowsのCPU Set情報の長さが安定しないため取得できません。")
+        raise _WindowsHybridCpuDetectionUnavailable(
+            "WindowsのCPU Set情報の長さが安定しないため取得できません。"
+        )
 
     def get_process_affinity_mask(self) -> tuple[int, int]:
         """現在のプロセスとシステムのhard affinity maskを取得する。"""
@@ -253,7 +260,6 @@ def _parse_cpu_set_records(buffer: bytes) -> tuple[_WindowsCpuSetRecord, ...]:
                     int(cpu_set.Id),
                     int(cpu_set.Group),
                     int(cpu_set.LogicalProcessorIndex),
-                    int(cpu_set.CoreIndex),
                     int(cpu_set.EfficiencyClass),
                     bool(cpu_set.Flags & 0b10),
                     bool(cpu_set.Flags & 0b100),
@@ -268,7 +274,6 @@ def _validate_cpu_set_records(
 ) -> tuple[_WindowsCpuSetRecord, ...]:
     cpu_set_ids: set[int] = set()
     processor_keys: set[tuple[int, int]] = set()
-    core_efficiency_classes: dict[tuple[int, int], int] = {}
     available_records: list[_WindowsCpuSetRecord] = []
     for record in records:
         if record.logical_processor_index >= _MAX_PROCESSOR_GROUP_SIZE:
@@ -282,14 +287,6 @@ def _validate_cpu_set_records(
         processor_keys.add(processor_key)
         if record.allocated and not record.allocated_to_target_process:
             continue
-        core_key = (record.group, record.core_index)
-        previous_efficiency_class = core_efficiency_classes.get(core_key)
-        if (
-            previous_efficiency_class is not None
-            and previous_efficiency_class != record.efficiency_class
-        ):
-            raise ValueError("Windowsの同一P/EコアのEfficiencyClassが不一致です。")
-        core_efficiency_classes[core_key] = record.efficiency_class
         available_records.append(record)
     return tuple(available_records)
 
@@ -310,71 +307,120 @@ def _filter_process_records(
     )
 
 
+def _validate_process_groups(
+    active_group_count: int,
+    process_groups: tuple[int, ...],
+) -> None:
+    if active_group_count < 1:
+        raise ValueError("WindowsのProcessor Group数が不正です。")
+    if len(process_groups) == 0:
+        raise ValueError("WindowsのプロセスProcessor Groupが空です。")
+    if any(
+        isinstance(group, bool) or not isinstance(group, int)
+        for group in process_groups
+    ):
+        raise ValueError("WindowsのプロセスProcessor Group番号が不正です。")
+    if len(set(process_groups)) != len(process_groups):
+        raise ValueError("WindowsのプロセスProcessor Groupに重複があります。")
+    if any(not 0 <= group < active_group_count for group in process_groups):
+        raise RuntimeError("WindowsのプロセスProcessor Group番号が不正です。")
+
+
+def _windows_error_code(error: OSError) -> int | None:
+    winerror = getattr(error, "winerror", None)
+    if isinstance(winerror, int) and not isinstance(winerror, bool):
+        return winerror
+    error_number = getattr(error, "errno", None)
+    if isinstance(error_number, int) and not isinstance(error_number, bool):
+        return error_number
+    return None
+
+
+def _is_windows_hybrid_detection_unavailable_error(error: OSError) -> bool:
+    return _windows_error_code(error) in {
+        _ERROR_NOT_SUPPORTED,
+        _ERROR_CALL_NOT_IMPLEMENTED,
+    }
+
+
 def _topology_from_records(
     records: tuple[_WindowsCpuSetRecord, ...],
+    p_efficiency_class: int,
 ) -> HybridCpuTopology | None:
-    efficiency_classes = {record.efficiency_class for record in records}
+    p_logical_cpu_ids = tuple(
+        sorted(
+            record.logical_processor_index
+            for record in records
+            if record.efficiency_class == p_efficiency_class
+        )
+    )
+    e_logical_cpu_ids = tuple(
+        sorted(
+            record.logical_processor_index
+            for record in records
+            if record.efficiency_class != p_efficiency_class
+        )
+    )
+    if len(p_logical_cpu_ids) == 0 or len(e_logical_cpu_ids) == 0:
+        return None
+    return HybridCpuTopology(p_logical_cpu_ids, e_logical_cpu_ids)
+
+
+def _detect_windows_hybrid_cpu_topology() -> HybridCpuTopology | None:
+    api = _get_windows_api()
+    system_records = _parse_cpu_set_records(api.get_system_cpu_set_information())
+    records = _validate_cpu_set_records(system_records)
+    if len(system_records) == 0:
+        warnings.warn(
+            "WindowsのCPU Set情報が空のため、CPU affinityを変更しません。",
+            stacklevel=2,
+        )
+        return None
+    process_mask, system_mask = api.get_process_affinity_mask()
+    _validate_process_system_masks(process_mask, system_mask)
+    efficiency_classes = {record.efficiency_class for record in system_records}
     if len(efficiency_classes) <= 1:
         return None
     p_efficiency_class = max(efficiency_classes)
-    p_cores_by_index: dict[tuple[int, int], list[int]] = {}
-    e_cores_by_efficiency: dict[int, dict[tuple[int, int], list[int]]] = {}
-    for record in records:
-        if record.efficiency_class == p_efficiency_class:
-            p_cores_by_index.setdefault((record.group, record.core_index), []).append(
-                record.logical_processor_index
-            )
-        else:
-            e_cores_by_efficiency.setdefault(record.efficiency_class, {}).setdefault(
-                (record.group, record.core_index), []
-            ).append(record.logical_processor_index)
-    if len(p_cores_by_index) == 0 or len(e_cores_by_efficiency) == 0:
-        raise ValueError("WindowsのP/Eコア構成が不正です。")
-    p_cores = tuple(
-        tuple(sorted(logical_processor_indices))
-        for _, logical_processor_indices in sorted(p_cores_by_index.items())
-    )
-    e_core_tiers = tuple(
-        tuple(
-            tuple(sorted(logical_processor_indices))
-            for _, logical_processor_indices in sorted(cores.items())
+    process_groups = api.get_process_group_affinity()
+    active_group_count = api.get_active_processor_group_count()
+    _validate_process_groups(active_group_count, process_groups)
+    if active_group_count != 1 or len(process_groups) != 1:
+        warnings.warn(
+            "Windowsの複数Processor Groupには対応していないため、"
+            " CPU affinityを変更しません。",
+            stacklevel=2,
         )
-        for _, cores in sorted(e_cores_by_efficiency.items(), reverse=True)
-    )
-    return HybridCpuTopology(p_cores, e_core_tiers)
+        return None
+    process_records = _filter_process_records(records, process_mask, process_groups)
+    process_efficiency_classes = {record.efficiency_class for record in process_records}
+    if (
+        p_efficiency_class not in process_efficiency_classes
+        or len(process_efficiency_classes - {p_efficiency_class}) == 0
+    ):
+        return None
+    topology = _topology_from_records(process_records, p_efficiency_class)
+    return topology
 
 
 def detect_windows_hybrid_cpu_topology() -> HybridCpuTopology | None:
     """WindowsのCPU Set情報からP/Eコア構成を検出する。"""
     try:
-        api = _get_windows_api()
-    except _WindowsCpuSetApiUnavailable:
+        return _detect_windows_hybrid_cpu_topology()
+    except _WindowsHybridCpuDetectionUnavailable:
         warnings.warn(
-            "WindowsのCPU Set APIが利用できないため、CPU affinityを変更しません。",
+            "WindowsのP/Eコア情報を取得できないため、CPU affinityを変更しません。",
             stacklevel=2,
         )
         return None
-    records = _validate_cpu_set_records(
-        _parse_cpu_set_records(api.get_system_cpu_set_information())
-    )
-    process_mask, system_mask = api.get_process_affinity_mask()
-    _validate_process_system_masks(process_mask, system_mask)
-    efficiency_classes = {record.efficiency_class for record in records}
-    if len(efficiency_classes) <= 1:
-        return None
-    process_groups = api.get_process_group_affinity()
-    active_group_count = api.get_active_processor_group_count()
-    _validate_single_processor_group(
-        active_group_count,
-        process_groups,
-        "WindowsのP/Eコア構成で複数のProcessor Groupは初版では対応していません。",
-    )
-    process_records = _filter_process_records(records, process_mask, process_groups)
-    process_efficiency_classes = {record.efficiency_class for record in process_records}
-    if len(process_efficiency_classes) <= 1:
-        return None
-    topology = _topology_from_records(process_records)
-    return topology
+    except OSError as error:
+        if _is_windows_hybrid_detection_unavailable_error(error):
+            warnings.warn(
+                "WindowsのP/Eコア情報を取得できないため、CPU affinityを変更しません。",
+                stacklevel=2,
+            )
+            return None
+        raise
 
 
 def _logical_processor_indices_to_mask(
@@ -444,9 +490,9 @@ def _validate_windows_plan_invariants(plan: WindowsCpuExecutionPlan) -> None:
         raise ValueError("Windowsの論理プロセッサ番号が不正です。") from error
     if len(unique_indices) != len(plan.logical_processor_indices):
         raise ValueError("Windowsの論理プロセッサ番号に重複があります。")
-    if len(unique_indices) != plan.cpu_num_threads:
+    if len(unique_indices) <= plan.cpu_num_threads:
         raise ValueError(
-            "WindowsのCPUスレッド数と論理プロセッサ番号の数が一致しません。"
+            "Windowsの対象論理プロセッサ数はCPUスレッド数より多い必要があります。"
         )
 
 

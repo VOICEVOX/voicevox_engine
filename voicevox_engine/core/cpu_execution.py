@@ -7,16 +7,13 @@ import psutil
 
 from voicevox_engine.utility.error_utility import UnreachableError
 
-type PhysicalCore = tuple[int, ...]
-type ECoreTier = tuple[PhysicalCore, ...]
-
 
 @dataclass(frozen=True)
 class HybridCpuTopology:
-    """Pコアと高性能順に並べたEコア性能階層の論理CPU構成を表す。"""
+    """PコアとEコアの論理CPU構成を表す。"""
 
-    p_cores: tuple[PhysicalCore, ...]
-    e_core_tiers: tuple[ECoreTier, ...]
+    p_logical_cpu_ids: tuple[int, ...]
+    e_logical_cpu_ids: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -67,174 +64,101 @@ def _validate_cpu_count(cpu_count: int | None, name: str) -> int | None:
     return cpu_count
 
 
-def _normalize_physical_core(core: PhysicalCore, name: str) -> PhysicalCore:
-    if len(core) == 0:
-        raise ValueError(f"{name}には論理CPUが1つ以上必要です。")
+def _normalize_logical_cpu_ids(
+    logical_cpu_ids: tuple[int, ...], name: str
+) -> tuple[int, ...]:
+    if len(logical_cpu_ids) == 0:
+        raise ValueError(f"{name}の論理CPUが1つ以上必要です。")
     if any(
         isinstance(logical_cpu_id, bool)
         or not isinstance(logical_cpu_id, int)
         or logical_cpu_id < 0
-        for logical_cpu_id in core
+        for logical_cpu_id in logical_cpu_ids
     ):
         raise ValueError(f"{name}の論理CPU IDは0以上の整数で指定してください。")
-    normalized_core = tuple(sorted(core))
-    if len(set(normalized_core)) != len(normalized_core):
+    normalized_ids = tuple(sorted(logical_cpu_ids))
+    if len(set(normalized_ids)) != len(normalized_ids):
         raise ValueError(f"{name}の論理CPU IDに重複があります。")
-    return normalized_core
+    return normalized_ids
 
 
 def _normalize_topology(
     topology: HybridCpuTopology,
-) -> tuple[tuple[PhysicalCore, ...], tuple[ECoreTier, ...]]:
-    if len(topology.p_cores) == 0:
-        raise ValueError("Pコアが1つ以上必要です。")
-    p_cores = tuple(
-        sorted(
-            (_normalize_physical_core(core, "Pコア") for core in topology.p_cores),
-            key=lambda core: core[0],
-        )
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    p_logical_cpu_ids = _normalize_logical_cpu_ids(
+        topology.p_logical_cpu_ids,
+        "Pコア",
     )
-    if len(topology.e_core_tiers) == 0:
-        raise ValueError("Eコアの性能階層が1つ以上必要です。")
-    e_core_tiers: list[ECoreTier] = []
-    for tier_index, tier in enumerate(topology.e_core_tiers):
-        if len(tier) == 0:
-            raise ValueError(
-                f"Eコア性能階層{tier_index}には物理コアが1つ以上必要です。"
-            )
-        e_core_tiers.append(
-            tuple(
-                sorted(
-                    (
-                        _normalize_physical_core(
-                            core, f"Eコア性能階層{tier_index}の物理コア"
-                        )
-                        for core in tier
-                    ),
-                    key=lambda core: core[0],
-                )
-            )
-        )
-    normalized_e_core_tiers = tuple(e_core_tiers)
-    logical_cpu_ids = tuple(
-        logical_cpu_id for core in p_cores for logical_cpu_id in core
-    ) + tuple(
-        logical_cpu_id
-        for tier in normalized_e_core_tiers
-        for core in tier
-        for logical_cpu_id in core
+    e_logical_cpu_ids = _normalize_logical_cpu_ids(
+        topology.e_logical_cpu_ids,
+        "Eコア",
     )
-    if len(set(logical_cpu_ids)) != len(logical_cpu_ids):
-        raise ValueError("論理CPU IDに重複があります。")
-    return p_cores, normalized_e_core_tiers
+    if set(p_logical_cpu_ids) & set(e_logical_cpu_ids):
+        raise ValueError("PコアとEコアの論理CPU IDに重複があります。")
+    return p_logical_cpu_ids, e_logical_cpu_ids
 
 
-def _ordered_hybrid_logical_cpu_ids(
-    p_cores: tuple[PhysicalCore, ...],
-    e_core_tiers: tuple[ECoreTier, ...],
-) -> tuple[int, ...]:
-    p_primary_ids = tuple(core[0] for core in p_cores)
-    p_sibling_ids = tuple(
-        logical_cpu_id for core in p_cores for logical_cpu_id in core[1:]
-    )
-    e_ids_list: list[int] = []
-    for tier in e_core_tiers:
-        e_ids_list.extend(core[0] for core in tier)
-        e_ids_list.extend(
-            logical_cpu_id for core in tier for logical_cpu_id in core[1:]
-        )
-    e_ids = tuple(e_ids_list)
-    return p_primary_ids + p_sibling_ids + e_ids
-
-
-def _resolve_hybrid_cpu_num_threads(
+def _resolve_cpu_num_threads(
     requested_cpu_num_threads: int | None,
-    p_cores: tuple[PhysicalCore, ...],
-    ordered_logical_cpu_ids: tuple[int, ...],
+    logical_cpu_count: int | None,
 ) -> int:
-    if requested_cpu_num_threads is not None:
-        if requested_cpu_num_threads > len(ordered_logical_cpu_ids):
-            raise ValueError(
-                "指定されたCPUスレッド数が利用可能な論理CPU数を超えています。"
-            )
-        return requested_cpu_num_threads
+    validated_cpu_num_threads = _validate_cpu_num_threads(requested_cpu_num_threads)
+    if validated_cpu_num_threads is not None:
+        return validated_cpu_num_threads
+    if logical_cpu_count is None:
+        return 0
+    return logical_cpu_count // 2
 
-    p_physical_count = len(p_cores)
-    if p_physical_count == 1:
-        raise ValueError("Pコアが1つの場合はCPUスレッド数を自動決定できません。")
-    p_logical_count = sum(len(core) for core in p_cores)
-    if p_logical_count > p_physical_count:
-        base_cpu_num_threads = p_physical_count
-    elif p_logical_count == p_physical_count:
-        base_cpu_num_threads = p_logical_count // 2
-    else:
-        raise ValueError("Pコアの論理CPU数が物理コア数を下回っています。")
-    return min(base_cpu_num_threads, p_physical_count - 1)
+
+def _create_hybrid_cpu_execution_values(
+    cpu_num_threads: int | None,
+    topology: HybridCpuTopology,
+) -> tuple[int, tuple[int, ...] | None]:
+    p_logical_cpu_ids, e_logical_cpu_ids = _normalize_topology(topology)
+    resolved_cpu_num_threads = _resolve_cpu_num_threads(
+        cpu_num_threads,
+        len(p_logical_cpu_ids) + len(e_logical_cpu_ids),
+    )
+    if len(p_logical_cpu_ids) <= resolved_cpu_num_threads:
+        return resolved_cpu_num_threads, None
+    return resolved_cpu_num_threads, p_logical_cpu_ids
 
 
 def create_legacy_cpu_execution_plan(
     cpu_num_threads: int | None,
     logical_cpu_count: int | None,
-    physical_cpu_count: int | None,
 ) -> LegacyCpuExecutionPlan:
     """レガシーCPU実行計画を生成する。"""
     validated_cpu_num_threads = _validate_cpu_num_threads(cpu_num_threads)
     if validated_cpu_num_threads is not None:
         return LegacyCpuExecutionPlan(validated_cpu_num_threads)
     logical_cpu_count = _validate_cpu_count(logical_cpu_count, "logical_cpu_count")
-    physical_cpu_count = _validate_cpu_count(physical_cpu_count, "physical_cpu_count")
-    if (
-        logical_cpu_count is not None
-        and physical_cpu_count is not None
-        and physical_cpu_count > logical_cpu_count
-    ):
-        raise ValueError("物理CPU数が論理CPU数を超えています。")
-    if logical_cpu_count is None:
-        resolved_cpu_num_threads = 0
-    elif physical_cpu_count is not None and physical_cpu_count != logical_cpu_count:
-        resolved_cpu_num_threads = 0
-    else:
-        resolved_cpu_num_threads = logical_cpu_count // 2
-    return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
-
-
-def _create_hybrid_cpu_execution_values(
-    cpu_num_threads: int | None,
-    topology: HybridCpuTopology,
-) -> tuple[int, tuple[int, ...]]:
-    validated_cpu_num_threads = _validate_cpu_num_threads(cpu_num_threads)
-    p_cores, e_core_tiers = _normalize_topology(topology)
-    ordered_logical_cpu_ids = _ordered_hybrid_logical_cpu_ids(p_cores, e_core_tiers)
-    resolved_cpu_num_threads = _resolve_hybrid_cpu_num_threads(
-        validated_cpu_num_threads,
-        p_cores,
-        ordered_logical_cpu_ids,
-    )
-    return resolved_cpu_num_threads, ordered_logical_cpu_ids[:resolved_cpu_num_threads]
+    return LegacyCpuExecutionPlan(_resolve_cpu_num_threads(None, logical_cpu_count))
 
 
 def create_windows_cpu_execution_plan(
     cpu_num_threads: int | None,
     topology: HybridCpuTopology,
-) -> WindowsCpuExecutionPlan:
+) -> CpuExecutionPlan:
     """WindowsのCPU実行計画を生成する。"""
     resolved_cpu_num_threads, logical_processor_indices = (
         _create_hybrid_cpu_execution_values(cpu_num_threads, topology)
     )
-    return WindowsCpuExecutionPlan(
-        resolved_cpu_num_threads,
-        logical_processor_indices,
-    )
+    if logical_processor_indices is None:
+        return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
+    return WindowsCpuExecutionPlan(resolved_cpu_num_threads, logical_processor_indices)
 
 
 def create_linux_cpu_execution_plan(
     cpu_num_threads: int | None,
     topology: HybridCpuTopology,
-) -> LinuxCpuExecutionPlan:
+) -> CpuExecutionPlan:
     """LinuxのCPU実行計画を生成する。"""
     resolved_cpu_num_threads, logical_cpu_ids = _create_hybrid_cpu_execution_values(
         cpu_num_threads, topology
     )
+    if logical_cpu_ids is None:
+        return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
     return LinuxCpuExecutionPlan(resolved_cpu_num_threads, logical_cpu_ids)
 
 
@@ -246,7 +170,6 @@ def _create_legacy_cpu_execution_plan_from_system(
     return create_legacy_cpu_execution_plan(
         cpu_num_threads,
         psutil.cpu_count(logical=True),
-        psutil.cpu_count(logical=False),
     )
 
 
@@ -280,7 +203,7 @@ def create_cpu_execution_plan(
         return create_linux_cpu_execution_plan(validated_cpu_num_threads, topology)
     if system == "Darwin":
         return _create_legacy_cpu_execution_plan_from_system(validated_cpu_num_threads)
-    raise RuntimeError(f"対応していないOSです: {system}")
+    return _create_legacy_cpu_execution_plan_from_system(validated_cpu_num_threads)
 
 
 def apply_cpu_execution_plan(plan: CpuExecutionPlan) -> None:

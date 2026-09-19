@@ -3,12 +3,24 @@
 from __future__ import annotations
 
 import ctypes
+import warnings
 from unittest.mock import patch
 
 import pytest
 
 from voicevox_engine.core import cpu_execution_windows as windows
 from voicevox_engine.core.cpu_execution import WindowsCpuExecutionPlan
+
+
+class _WindowsApiError(OSError):
+    winerror: int
+
+
+def _os_error(errno_value: int, winerror: int | None = None) -> OSError:
+    error = _WindowsApiError(errno_value, "Windows API error")
+    if winerror is not None:
+        error.winerror = winerror
+    return error
 
 
 class _FakeWindowsApi:
@@ -140,8 +152,8 @@ def test_detect_uses_logical_processor_index_not_cpu_set_id() -> None:
         topology = windows.detect_windows_hybrid_cpu_topology()
 
     assert topology is not None
-    assert topology.p_cores == ((1, 4),)
-    assert topology.e_core_tiers == (((7,),), ((9, 11),))
+    assert topology.p_logical_cpu_ids == (1, 4)
+    assert topology.e_logical_cpu_ids == (7, 9, 11)
 
 
 def test_detect_excludes_foreign_allocated_cpu_set_but_keeps_parked() -> None:
@@ -161,8 +173,8 @@ def test_detect_excludes_foreign_allocated_cpu_set_but_keeps_parked() -> None:
         topology = windows.detect_windows_hybrid_cpu_topology()
 
     assert topology is not None
-    assert 15 in topology.p_cores[1]
-    assert all(13 not in core for core in topology.e_core_tiers[0])
+    assert 15 in topology.p_logical_cpu_ids
+    assert 13 not in topology.e_logical_cpu_ids
 
 
 def test_detect_rejects_duplicate_allocated_cpu_set_id() -> None:
@@ -177,22 +189,62 @@ def test_detect_rejects_duplicate_allocated_cpu_set_id() -> None:
             windows.detect_windows_hybrid_cpu_topology()
 
 
-def test_detect_rejects_efficiency_class_mismatch_within_core() -> None:
-    """同一物理コアのSMT siblingでEfficiencyClassが異なる場合を拒否する。"""
-    records = _record(1, 0, 0, 0, 20, 0, None, 0) + _record(2, 0, 1, 0, 10, 0, None, 0)
-    api = _FakeWindowsApi(records, 0b11, 0b11, (0,), 1)
-
-    with patch.object(windows, "_get_windows_api", return_value=api):
-        with pytest.raises(ValueError, match="不一致"):
-            windows.detect_windows_hybrid_cpu_topology()
-
-
 def test_detect_warns_when_cpu_set_api_is_unavailable() -> None:
     """CPU Set APIがない場合は警告してlegacy扱いにする。"""
-    error = windows._WindowsCpuSetApiUnavailable("利用できません")
+    error = windows._WindowsHybridCpuDetectionUnavailable("利用できません")
     with patch.object(windows, "_get_windows_api", side_effect=error):
-        with pytest.warns(UserWarning, match="利用できない"):
+        with pytest.warns(UserWarning, match="取得できない"):
             assert windows.detect_windows_hybrid_cpu_topology() is None
+
+
+def test_windows_api_missing_required_export_raises_dedicated_error() -> None:
+    """必須APIのexport欠如を検出不能専用例外へ変換する。"""
+    with patch.object(ctypes, "WinDLL", return_value=object(), create=True):
+        with patch.object(
+            windows,
+            "_get_library_function",
+            side_effect=AttributeError("exportがありません"),
+        ):
+            with pytest.raises(windows._WindowsHybridCpuDetectionUnavailable):
+                windows._WindowsApi()
+
+
+def test_windows_api_kernel32_load_error_is_not_converted() -> None:
+    """kernel32の読み込みエラーを検出不能へ変換しない。"""
+    error = _os_error(5)
+    with patch.object(ctypes, "WinDLL", side_effect=error, create=True):
+        with pytest.raises(OSError, match="Windows API error"):
+            windows._WindowsApi()
+
+
+@pytest.mark.parametrize(
+    ("errno_value", "winerror"),
+    [(5, 50), (5, 120), (50, None), (120, None)],
+)
+def test_detect_downgrades_known_unsupported_api_errors(
+    errno_value: int,
+    winerror: int | None,
+) -> None:
+    """既知の未対応APIエラーを警告して検出不能にする。"""
+    error = _os_error(errno_value, winerror)
+    with patch.object(windows, "_get_windows_api", side_effect=error):
+        with pytest.warns(UserWarning, match="取得できない"):
+            assert windows.detect_windows_hybrid_cpu_topology() is None
+
+
+@pytest.mark.parametrize(
+    ("errno_value", "winerror"),
+    [(5, None), (50, 5), (123, None)],
+)
+def test_detect_propagates_other_api_errors(
+    errno_value: int,
+    winerror: int | None,
+) -> None:
+    """未知またはアクセス拒否のAPIエラーを伝播する。"""
+    error = _os_error(errno_value, winerror)
+    with patch.object(windows, "_get_windows_api", side_effect=error):
+        with pytest.raises(OSError, match="Windows API error"):
+            windows.detect_windows_hybrid_cpu_topology()
 
 
 def test_detect_returns_none_for_homogeneous_efficiency_class() -> None:
@@ -201,13 +253,25 @@ def test_detect_returns_none_for_homogeneous_efficiency_class() -> None:
     api = _FakeWindowsApi(records, 0b110, 0b111111, (0,), 1)
 
     with patch.object(windows, "_get_windows_api", return_value=api):
-        topology = windows.detect_windows_hybrid_cpu_topology()
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            topology = windows.detect_windows_hybrid_cpu_topology()
 
     assert topology is None
+    assert caught == []
 
 
-def test_detect_rejects_multiple_processor_groups_for_hybrid() -> None:
-    """P/E混在時の複数Processor Groupを拒否する。"""
+def test_detect_warns_for_empty_system_records() -> None:
+    """空のCPU Set情報を警告して検出不能にする。"""
+    api = _FakeWindowsApi(b"", 0b1, 0b1, (0,), 1)
+
+    with patch.object(windows, "_get_windows_api", return_value=api):
+        with pytest.warns(UserWarning, match="空"):
+            assert windows.detect_windows_hybrid_cpu_topology() is None
+
+
+def test_detect_returns_none_for_multiple_processor_groups() -> None:
+    """P/E混在時の複数Processor Groupをaffinityなしにする。"""
     api = _FakeWindowsApi(
         _hybrid_records(),
         (1 << 12) - 1,
@@ -217,7 +281,57 @@ def test_detect_rejects_multiple_processor_groups_for_hybrid() -> None:
     )
 
     with patch.object(windows, "_get_windows_api", return_value=api):
-        with pytest.raises(RuntimeError, match="Processor Group"):
+        with pytest.warns(UserWarning, match="複数Processor Group"):
+            assert windows.detect_windows_hybrid_cpu_topology() is None
+
+
+def test_detect_rejects_invalid_process_group() -> None:
+    """Windowsの不正なプロセスProcessor Group番号を拒否する。"""
+    api = _FakeWindowsApi(
+        _hybrid_records(),
+        (1 << 12) - 1,
+        (1 << 12) - 1,
+        (1,),
+        1,
+    )
+
+    with patch.object(windows, "_get_windows_api", return_value=api):
+        with pytest.raises(RuntimeError, match="番号"):
+            windows.detect_windows_hybrid_cpu_topology()
+
+
+def test_detect_does_not_treat_allowed_e_cores_as_p_cores() -> None:
+    """許可範囲に真のPコアがなければP/E検出不能にする。"""
+    api = _FakeWindowsApi(
+        _hybrid_records(),
+        (1 << 7) | (1 << 9) | (1 << 11),
+        (1 << 12) - 1,
+        (0,),
+        1,
+    )
+
+    with patch.object(windows, "_get_windows_api", return_value=api):
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            assert windows.detect_windows_hybrid_cpu_topology() is None
+    assert caught == []
+
+
+@pytest.mark.parametrize("process_groups", [(), (0, 0), (2,)])
+def test_detect_rejects_invalid_process_groups(
+    process_groups: tuple[int, ...],
+) -> None:
+    """空、重複、範囲外のProcessor Groupを拒否する。"""
+    api = _FakeWindowsApi(
+        _hybrid_records(),
+        (1 << 12) - 1,
+        (1 << 12) - 1,
+        process_groups,
+        2,
+    )
+
+    with patch.object(windows, "_get_windows_api", return_value=api):
+        with pytest.raises((ValueError, RuntimeError)):
             windows.detect_windows_hybrid_cpu_topology()
 
 
@@ -240,7 +354,7 @@ def test_detect_intersects_current_process_mask() -> None:
 def test_apply_builds_mask_from_logical_processor_indices() -> None:
     """Windowsの適用がCPU Set IDではなく論理プロセッサ番号をmaskへ変換する。"""
     api = _FakeWindowsApi(b"", (1 << 1) | (1 << 3), 0b1111, (0,), 1)
-    plan = WindowsCpuExecutionPlan(2, (1, 3))
+    plan = WindowsCpuExecutionPlan(1, (1, 3))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         windows.apply_windows_cpu_execution_plan(plan)
@@ -248,10 +362,21 @@ def test_apply_builds_mask_from_logical_processor_indices() -> None:
     assert api.set_masks == [(1 << 1) | (1 << 3)]
 
 
+def test_apply_allows_affinity_target_with_more_cpus_than_threads() -> None:
+    """Windowsの適用がNより多いP論理CPU集合を受け入れる。"""
+    api = _FakeWindowsApi(b"", (1 << 1) | (1 << 3) | (1 << 5), 0b111111, (0,), 1)
+    plan = WindowsCpuExecutionPlan(2, (1, 3, 5))
+
+    with patch.object(windows, "_get_windows_api", return_value=api):
+        windows.apply_windows_cpu_execution_plan(plan)
+
+    assert api.set_masks == [(1 << 1) | (1 << 3) | (1 << 5)]
+
+
 def test_apply_rejects_target_that_expands_existing_mask() -> None:
     """現在のhard maskを広げる計画を拒否する。"""
     api = _FakeWindowsApi(b"", 0b0011, 0b1111, (0,), 1)
-    plan = WindowsCpuExecutionPlan(2, (0, 2))
+    plan = WindowsCpuExecutionPlan(1, (0, 2))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         with pytest.raises(ValueError, match="広げます"):
@@ -269,7 +394,7 @@ def test_apply_rejects_invalid_process_group() -> None:
         (1,),
         1,
     )
-    plan = WindowsCpuExecutionPlan(1, (0,))
+    plan = WindowsCpuExecutionPlan(1, (0, 1))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         with pytest.raises(RuntimeError, match="Group"):
@@ -277,7 +402,7 @@ def test_apply_rejects_invalid_process_group() -> None:
 
 
 def test_apply_rejects_plan_invariant_before_api_access() -> None:
-    """CPUスレッド数と一意な論理プロセッサ数が一致しない計画を拒否する。"""
+    """重複した論理プロセッサを持つ計画をAPIアクセス前に拒否する。"""
     plan = WindowsCpuExecutionPlan(2, (0, 0))
 
     with patch.object(
@@ -302,11 +427,24 @@ def test_validate_rejects_plan_invariant_before_api_access() -> None:
             windows.validate_windows_cpu_execution_plan(plan)
 
 
+def test_apply_rejects_target_not_larger_than_threads_before_api_access() -> None:
+    """対象論理CPU数がN以下の計画をAPIアクセス前に拒否する。"""
+    plan = WindowsCpuExecutionPlan(2, (0, 1))
+
+    with patch.object(
+        windows,
+        "_get_windows_api",
+        side_effect=AssertionError("APIは呼び出されません"),
+    ):
+        with pytest.raises(ValueError, match="より多い"):
+            windows.apply_windows_cpu_execution_plan(plan)
+
+
 def test_apply_rolls_back_when_postcondition_does_not_match() -> None:
     """適用後のmask不一致時に元のmaskへ戻す。"""
     api = _FakeWindowsApi(b"", 0b1111, 0b1111, (0,), 1)
     api.report_masks = [0b1111, 0b1000]
-    plan = WindowsCpuExecutionPlan(2, (0, 1))
+    plan = WindowsCpuExecutionPlan(1, (0, 1))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         with pytest.raises(RuntimeError, match="一致しません"):
@@ -319,7 +457,7 @@ def test_apply_reports_rollback_failure() -> None:
     """ロールバック失敗時に状態不定のエラーを返す。"""
     api = _FakeWindowsApi(b"", 0b1111, 0b1111, (0,), 1)
     api.fail_set = True
-    plan = WindowsCpuExecutionPlan(2, (0, 1))
+    plan = WindowsCpuExecutionPlan(1, (0, 1))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         with pytest.raises(RuntimeError, match="ロールバック"):
@@ -329,7 +467,7 @@ def test_apply_reports_rollback_failure() -> None:
 def test_validate_requires_exact_process_mask() -> None:
     """Windowsの検証が計画集合との完全一致を要求する。"""
     api = _FakeWindowsApi(b"", 0b0011, 0b1111, (0,), 1)
-    plan = WindowsCpuExecutionPlan(2, (0, 1))
+    plan = WindowsCpuExecutionPlan(1, (0, 1))
 
     with patch.object(windows, "_get_windows_api", return_value=api):
         windows.validate_windows_cpu_execution_plan(plan)
@@ -384,3 +522,104 @@ def test_get_system_cpu_set_information_retries_second_insufficient_buffer() -> 
         ):
             assert api.get_system_cpu_set_information() == bytes(32)
     assert calls == [True, False, True, False]
+
+
+def test_get_system_cpu_set_information_raises_after_three_unstable_retries() -> None:
+    """三回連続の容量不足を検出不能専用例外へ変換する。"""
+    api = object.__new__(windows._WindowsApi)
+    calls: list[bool] = []
+
+    def get_information(
+        information: object,
+        buffer_size: int,
+        returned_length: ctypes._CArgObject,
+        process: object,
+        flags: int,
+    ) -> int:
+        del buffer_size, process, flags
+        calls.append(information is None)
+        returned_length_pointer = ctypes.cast(
+            returned_length,
+            ctypes.POINTER(windows._DWORD),
+        )
+        returned_length_pointer.contents.value = 32
+        return 0
+
+    api._get_system_cpu_set_information = get_information
+    with patch.object(
+        windows._WindowsApi,
+        "_current_process",
+        return_value=windows._HANDLE(1),
+    ):
+        with patch.object(
+            windows._WindowsApi,
+            "_last_error_code",
+            side_effect=[122] * 6,
+        ):
+            with pytest.raises(windows._WindowsHybridCpuDetectionUnavailable):
+                api.get_system_cpu_set_information()
+    assert calls == [True, False, True, False, True, False]
+
+
+@pytest.mark.parametrize("returned_length", [0, 33])
+def test_get_system_cpu_set_information_rejects_malformed_size(
+    returned_length: int,
+) -> None:
+    """CPU Set情報のサイズ0または返却長超過を拒否する。"""
+    api = object.__new__(windows._WindowsApi)
+
+    def get_information(
+        information: object,
+        buffer_size: int,
+        returned_length_pointer: ctypes._CArgObject,
+        process: object,
+        flags: int,
+    ) -> int:
+        del buffer_size, process, flags
+        pointer = ctypes.cast(
+            returned_length_pointer,
+            ctypes.POINTER(windows._DWORD),
+        )
+        if information is None:
+            pointer.contents.value = 32
+        else:
+            pointer.contents.value = returned_length
+        return 1
+
+    api._get_system_cpu_set_information = get_information
+    with patch.object(
+        windows._WindowsApi,
+        "_current_process",
+        return_value=windows._HANDLE(1),
+    ):
+        with pytest.raises(ValueError, match="長さ"):
+            api.get_system_cpu_set_information()
+
+
+def test_get_system_cpu_set_information_rejects_zero_required_size() -> None:
+    """CPU Set情報の要求サイズ0を拒否する。"""
+    api = object.__new__(windows._WindowsApi)
+
+    def get_information(
+        information: object,
+        buffer_size: int,
+        returned_length_pointer: ctypes._CArgObject,
+        process: object,
+        flags: int,
+    ) -> int:
+        del information, buffer_size, process, flags
+        pointer = ctypes.cast(
+            returned_length_pointer,
+            ctypes.POINTER(windows._DWORD),
+        )
+        pointer.contents.value = 0
+        return 1
+
+    api._get_system_cpu_set_information = get_information
+    with patch.object(
+        windows._WindowsApi,
+        "_current_process",
+        return_value=windows._HANDLE(1),
+    ):
+        with pytest.raises(ValueError, match="長さ"):
+            api.get_system_cpu_set_information()

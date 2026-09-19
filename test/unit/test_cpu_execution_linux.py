@@ -1,6 +1,7 @@
 """`cpu_execution_linux.py` のテスト"""
 
 import errno
+import os
 from contextlib import ExitStack
 from pathlib import Path
 from unittest.mock import patch
@@ -70,7 +71,6 @@ def _write_topology(
     p_cpus: str,
     e_cpus: str,
     online: str,
-    siblings: dict[int, str],
 ) -> None:
     (root / "cpu_core").mkdir(parents=True)
     (root / "cpu_atom").mkdir(parents=True)
@@ -78,13 +78,6 @@ def _write_topology(
     (root / "cpu_core" / "cpus").write_text(p_cpus, encoding="ascii")
     (root / "cpu_atom" / "cpus").write_text(e_cpus, encoding="ascii")
     (root / "system_cpu" / "online").write_text(online, encoding="ascii")
-    for cpu_id, sibling_list in siblings.items():
-        topology_path = root / "cpu" / f"cpu{cpu_id}" / "topology"
-        topology_path.mkdir(parents=True)
-        (topology_path / "thread_siblings_list").write_text(
-            sibling_list,
-            encoding="ascii",
-        )
 
 
 def _patch_topology_paths(root: Path) -> ExitStack:
@@ -98,7 +91,6 @@ def _patch_topology_paths(root: Path) -> ExitStack:
     patches.enter_context(
         patch.object(linux, "_ONLINE_CPUS_PATH", root / "system_cpu" / "online")
     )
-    patches.enter_context(patch.object(linux, "_CPU_SYSFS_PATH", root / "cpu"))
     return patches
 
 
@@ -111,7 +103,6 @@ def test_detect_linux_topology_intersects_online_and_all_thread_masks(
         "0-3",
         "4-5",
         "0-5",
-        {0: "0-1", 1: "0-1", 2: "2", 3: "3", 4: "4", 5: "5"},
     )
     threads = _FakeThreads(
         (100, 101),
@@ -129,8 +120,8 @@ def test_detect_linux_topology_intersects_online_and_all_thread_masks(
                     topology = linux.detect_linux_hybrid_cpu_topology()
 
     assert topology is not None
-    assert topology.p_cores == ((0, 1), (2,), (3,))
-    assert topology.e_core_tiers == (((4,), (5,)),)
+    assert topology.p_logical_cpu_ids == (0, 1, 2, 3)
+    assert topology.e_logical_cpu_ids == (4, 5)
 
 
 def test_detect_retries_when_topology_changes_during_detection(
@@ -142,7 +133,6 @@ def test_detect_retries_when_topology_changes_during_detection(
         "0-1",
         "2-3",
         "0-3",
-        {0: "0", 1: "1", 2: "2", 3: "3"},
     )
     threads = _FakeThreads((100,), {100: {0, 1, 2, 3}})
     path_patches = _patch_topology_paths(tmp_path)
@@ -163,6 +153,96 @@ def test_detect_retries_when_topology_changes_during_detection(
     assert ensure_stable.call_count == 2
 
 
+def test_detect_returns_none_after_retries_when_topology_is_unstable() -> None:
+    """Linuxの構成が安定しない場合は警告してaffinityなしにする。"""
+    with patch.object(linux, "_is_x86", return_value=True):
+        with patch.object(
+            linux,
+            "_detect_linux_hybrid_cpu_topology_once",
+            side_effect=[linux._LinuxAffinityRace() for _ in range(linux._MAX_RETRIES)],
+        ) as detect_once:
+            with pytest.warns(UserWarning, match="安定しない"):
+                assert linux.detect_linux_hybrid_cpu_topology() is None
+
+    assert detect_once.call_count == linux._MAX_RETRIES
+
+
+def test_detect_retries_hybrid_sysfs_loss_then_downgrades() -> None:
+    """検出途中のP/E sysfs消失を再試行し、継続時は検出不能にする。"""
+    with patch.object(linux, "_is_x86", return_value=True):
+        with patch.object(
+            linux,
+            "_read_hybrid_cpu_list",
+            side_effect=[
+                {0},
+                {1},
+                linux._LinuxHybridCpuDetectionUnavailable(),
+                linux._LinuxHybridCpuDetectionUnavailable(),
+            ],
+        ) as read_hybrid:
+            with patch.object(
+                linux,
+                "_snapshot_detection_state",
+                return_value=({0, 1}, {100: frozenset({0, 1})}),
+            ):
+                with pytest.warns(UserWarning, match="取得できない"):
+                    assert linux.detect_linux_hybrid_cpu_topology() is None
+
+    assert read_hybrid.call_count == 4
+
+
+@pytest.mark.parametrize("error_number", [errno.ENOSYS, errno.EOPNOTSUPP])
+def test_detect_downgrades_unavailable_sched_getaffinity(
+    tmp_path: Path,
+    error_number: int,
+) -> None:
+    """未実装のsched_getaffinityを警告して検出不能にする。"""
+    _write_topology(tmp_path, "0", "1", "0-1")
+    path_patches = _patch_topology_paths(tmp_path)
+    with patch.object(linux, "_is_x86", return_value=True):
+        with path_patches:
+            with patch.object(linux, "_list_thread_ids", return_value=(100,)):
+                with patch.object(
+                    os,
+                    "sched_getaffinity",
+                    side_effect=OSError(error_number, "unsupported"),
+                ):
+                    with pytest.warns(UserWarning, match="取得できない"):
+                        assert linux.detect_linux_hybrid_cpu_topology() is None
+
+
+def test_detect_downgrades_when_sched_getaffinity_is_missing(tmp_path: Path) -> None:
+    """sched_getaffinity属性がない場合を警告して検出不能にする。"""
+    _write_topology(tmp_path, "0", "1", "0-1")
+    path_patches = _patch_topology_paths(tmp_path)
+    with patch.object(linux, "_is_x86", return_value=True):
+        with path_patches:
+            with patch.object(linux, "_list_thread_ids", return_value=(100,)):
+                with patch.object(os, "sched_getaffinity", None):
+                    with pytest.warns(UserWarning, match="取得できない"):
+                        assert linux.detect_linux_hybrid_cpu_topology() is None
+
+
+@pytest.mark.parametrize("error_number", [errno.EPERM, errno.EACCES, errno.EIO])
+def test_detect_propagates_sched_getaffinity_errors(
+    tmp_path: Path,
+    error_number: int,
+) -> None:
+    """権限エラーやI/Oエラーのsched_getaffinityを伝播する。"""
+    _write_topology(tmp_path, "0", "1", "0-1")
+    path_patches = _patch_topology_paths(tmp_path)
+    with patch.object(linux, "_is_x86", return_value=True):
+        with path_patches:
+            with patch.object(linux, "_list_thread_ids", return_value=(100,)):
+                with patch.object(
+                    os,
+                    "sched_getaffinity",
+                    side_effect=OSError(error_number, "failure"),
+                ):
+                    with pytest.raises(OSError, match="failure"):
+                        linux.detect_linux_hybrid_cpu_topology()
+
+
 def test_detect_returns_none_on_non_x86_without_reading_hybrid_sysfs(
     tmp_path: Path,
 ) -> None:
@@ -180,37 +260,75 @@ def test_detect_returns_none_when_both_hybrid_sysfs_files_are_missing(
     path_patches = _patch_topology_paths(tmp_path)
     with patch.object(linux, "_is_x86", return_value=True):
         with path_patches:
-            assert linux.detect_linux_hybrid_cpu_topology() is None
+            with pytest.warns(UserWarning, match="取得できない"):
+                assert linux.detect_linux_hybrid_cpu_topology() is None
 
 
-def test_detect_rejects_only_one_hybrid_sysfs_file(tmp_path: Path) -> None:
-    """Linuxのhybrid sysfsが片方だけの場合は拒否する。"""
+def test_detect_returns_none_for_only_one_hybrid_sysfs_file(tmp_path: Path) -> None:
+    """Linuxのhybrid sysfsが片方だけの場合はaffinityなしにする。"""
     (tmp_path / "cpu_core").mkdir()
     (tmp_path / "cpu_core" / "cpus").write_text("0", encoding="ascii")
     path_patches = _patch_topology_paths(tmp_path)
     with patch.object(linux, "_is_x86", return_value=True):
         with path_patches:
-            with pytest.raises(ValueError, match="片方"):
-                linux.detect_linux_hybrid_cpu_topology()
+            with pytest.warns(UserWarning, match="取得できない"):
+                assert linux.detect_linux_hybrid_cpu_topology() is None
 
 
-@pytest.mark.parametrize("p_cpus", ["", "2-1", "0,0"])
+@pytest.mark.parametrize("empty_path", ["p", "e"])
+def test_detect_warns_for_empty_hybrid_sysfs_file(
+    tmp_path: Path,
+    empty_path: str,
+) -> None:
+    """空のP/E sysfsを警告してlegacy扱いにする。"""
+    _write_topology(
+        tmp_path,
+        "" if empty_path == "p" else "0",
+        "" if empty_path == "e" else "1",
+        "0-1",
+    )
+    path_patches = _patch_topology_paths(tmp_path)
+    with patch.object(linux, "_is_x86", return_value=True):
+        with path_patches:
+            with pytest.warns(UserWarning, match="取得できない"):
+                assert linux.detect_linux_hybrid_cpu_topology() is None
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        PermissionError(errno.EPERM, "permission denied"),
+        OSError(errno.EIO, "I/O error"),
+    ],
+)
+def test_read_hybrid_cpu_list_propagates_non_detection_errors(
+    tmp_path: Path,
+    error: OSError,
+) -> None:
+    """P/E sysfsの権限エラーやI/Oエラーを伝播する。"""
+    path = tmp_path / "cpus"
+    with patch.object(Path, "read_text", side_effect=error):
+        with pytest.raises(type(error)):
+            linux._read_hybrid_cpu_list(path)
+
+
+@pytest.mark.parametrize("p_cpus", ["2-1", "0,0"])
 def test_detect_rejects_invalid_hybrid_sysfs_cpu_list(
     tmp_path: Path,
     p_cpus: str,
 ) -> None:
     """LinuxのP/E sysfsにある不正なCPUリストを拒否する。"""
-    _write_topology(tmp_path, p_cpus, "2", "0-2", {2: "2"})
+    _write_topology(tmp_path, p_cpus, "2", "0-2")
     path_patches = _patch_topology_paths(tmp_path)
     with patch.object(linux, "_is_x86", return_value=True):
         with path_patches:
-            with pytest.raises(ValueError, match="CPUリスト|空|範囲|重複"):
+            with pytest.raises(ValueError, match="CPUリスト|範囲|重複"):
                 linux.detect_linux_hybrid_cpu_topology()
 
 
 def test_detect_rejects_unknown_available_cpu(tmp_path: Path) -> None:
     """Linuxの利用可能集合に分類不能CPUがある場合は拒否する。"""
-    _write_topology(tmp_path, "0", "2", "0-2", {0: "0", 2: "2"})
+    _write_topology(tmp_path, "0", "2", "0-2")
     path_patches = _patch_topology_paths(tmp_path)
     threads = _FakeThreads((100,), {100: {0, 1, 2}})
     with patch.object(linux, "_is_x86", return_value=True):
@@ -225,7 +343,7 @@ def test_detect_rejects_unknown_available_cpu(tmp_path: Path) -> None:
 
 def test_detect_returns_none_when_one_class_is_not_allowed(tmp_path: Path) -> None:
     """Linuxの交差集合でPまたはEの一方が空ならlegacy扱いにする。"""
-    _write_topology(tmp_path, "0-1", "2-3", "0-3", {0: "0", 1: "1"})
+    _write_topology(tmp_path, "0-1", "2-3", "0-3")
     path_patches = _patch_topology_paths(tmp_path)
     threads = _FakeThreads((100,), {100: {0, 1}})
     with patch.object(linux, "_is_x86", return_value=True):
@@ -237,11 +355,9 @@ def test_detect_returns_none_when_one_class_is_not_allowed(tmp_path: Path) -> No
                     assert linux.detect_linux_hybrid_cpu_topology() is None
 
 
-def test_detect_keeps_only_allowed_smt_siblings(tmp_path: Path) -> None:
-    """Linuxの部分的に許可されたSMT siblingをcore tupleへ反映する。"""
-    _write_topology(
-        tmp_path, "0-1", "2-3", "0-3", {0: "0-1", 1: "0-1", 2: "2-3", 3: "2-3"}
-    )
+def test_detect_keeps_only_cpus_in_all_thread_affinities(tmp_path: Path) -> None:
+    """Linuxの検出が全TID affinityの共通CPU集合を使う。"""
+    _write_topology(tmp_path, "0-1", "2-3", "0-3")
     path_patches = _patch_topology_paths(tmp_path)
     threads = _FakeThreads((100,), {100: {0, 2}})
     with patch.object(linux, "_is_x86", return_value=True):
@@ -253,29 +369,14 @@ def test_detect_keeps_only_allowed_smt_siblings(tmp_path: Path) -> None:
                     topology = linux.detect_linux_hybrid_cpu_topology()
 
     assert topology is not None
-    assert topology.p_cores == ((0,),)
-    assert topology.e_core_tiers == (((2,),),)
-
-
-def test_detect_rejects_inconsistent_or_cross_class_siblings(tmp_path: Path) -> None:
-    """LinuxのSMT sibling不整合とP/E跨ぎを拒否する。"""
-    _write_topology(tmp_path, "0", "1", "0-1", {0: "0-1", 1: "1"})
-    path_patches = _patch_topology_paths(tmp_path)
-    threads = _FakeThreads((100,), {100: {0, 1}})
-    with patch.object(linux, "_is_x86", return_value=True):
-        with path_patches:
-            with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
-                with patch.object(
-                    linux, "_get_thread_affinity", side_effect=threads.get
-                ):
-                    with pytest.raises(ValueError, match="P/E"):
-                        linux.detect_linux_hybrid_cpu_topology()
+    assert topology.p_logical_cpu_ids == (0,)
+    assert topology.e_logical_cpu_ids == (2,)
 
 
 def test_apply_linux_plan_updates_all_threads() -> None:
     """Linuxの適用が全TIDを計画集合へ制限する。"""
     threads = _FakeThreads((100, 101), {100: {0, 1, 2}, 101: {0, 1, 2}})
-    plan = LinuxCpuExecutionPlan(2, (0, 1))
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
     with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
         with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
             with patch.object(linux, "_set_thread_affinity", side_effect=threads.set):
@@ -284,10 +385,35 @@ def test_apply_linux_plan_updates_all_threads() -> None:
     assert threads.masks == {100: frozenset({0, 1}), 101: frozenset({0, 1})}
 
 
+def test_apply_propagates_detection_unavailable_without_catching() -> None:
+    """affinity適用は検出不能専用例外を握りつぶさない。"""
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
+    with patch.object(linux, "_list_thread_ids", return_value=(100,)):
+        with patch.object(
+            linux,
+            "_get_thread_affinity",
+            side_effect=linux._LinuxHybridCpuDetectionUnavailable(),
+        ):
+            with pytest.raises(linux._LinuxHybridCpuDetectionUnavailable):
+                linux.apply_linux_cpu_execution_plan(plan)
+
+
+def test_apply_linux_plan_targets_all_p_cpus_when_target_exceeds_threads() -> None:
+    """Linuxの適用がNより多い全P論理CPUを各TIDへ設定する。"""
+    threads = _FakeThreads((100, 101), {100: {0, 1, 2}, 101: {0, 1, 2}})
+    plan = LinuxCpuExecutionPlan(2, (0, 1, 2))
+    with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
+        with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
+            with patch.object(linux, "_set_thread_affinity", side_effect=threads.set):
+                linux.apply_linux_cpu_execution_plan(plan)
+
+    assert threads.masks == {100: frozenset({0, 1, 2}), 101: frozenset({0, 1, 2})}
+
+
 def test_apply_rejects_target_that_is_not_subset_of_any_thread() -> None:
     """Linuxの適用が既存affinityを広げる計画を拒否する。"""
     threads = _FakeThreads((100,), {100: {0, 2}})
-    plan = LinuxCpuExecutionPlan(2, (0, 1))
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
     with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
         with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
             with patch.object(linux, "_set_thread_affinity", side_effect=threads.set):
@@ -301,7 +427,7 @@ def test_apply_rolls_back_after_partial_failure() -> None:
     """Linuxの適用が途中失敗時に変更済みTIDを戻す。"""
     threads = _FakeThreads((100, 101), {100: {0, 1, 2}, 101: {0, 1, 2}})
     threads.fail_after = 1
-    plan = LinuxCpuExecutionPlan(2, (0, 1))
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
     with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
         with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
             with patch.object(linux, "_set_thread_affinity", side_effect=threads.set):
@@ -325,7 +451,7 @@ def test_apply_reports_rollback_failure() -> None:
             raise OSError(errno.EPERM, "ロールバックに失敗しました")
         original_set(thread_id, affinity)
 
-    plan = LinuxCpuExecutionPlan(2, (0, 1))
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
     with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
         with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
             with patch.object(linux, "_set_thread_affinity", side_effect=fail_rollback):
@@ -336,7 +462,7 @@ def test_apply_reports_rollback_failure() -> None:
 def test_validate_linux_plan_requires_exact_affinity() -> None:
     """Linuxの検証が全TIDと計画集合の完全一致を要求する。"""
     threads = _FakeThreads((100, 101), {100: {0, 1}, 101: {0, 2}})
-    plan = LinuxCpuExecutionPlan(2, (0, 1))
+    plan = LinuxCpuExecutionPlan(1, (0, 1))
     with patch.object(linux, "_list_thread_ids", side_effect=threads.list_ids):
         with patch.object(linux, "_get_thread_affinity", side_effect=threads.get):
             with pytest.raises(RuntimeError, match="一致しません"):
@@ -347,14 +473,15 @@ def test_validate_linux_plan_requires_exact_affinity() -> None:
     "plan",
     [
         LinuxCpuExecutionPlan(0, (0,)),
-        LinuxCpuExecutionPlan(2, (0,)),
+        LinuxCpuExecutionPlan(2, ()),
+        LinuxCpuExecutionPlan(2, (0, 1)),
         LinuxCpuExecutionPlan(2, (0, 0)),
     ],
 )
 def test_apply_rejects_plan_invariant_before_thread_access(
     plan: LinuxCpuExecutionPlan,
 ) -> None:
-    """LinuxのCPUスレッド数と一意な論理CPU数が一致しない計画を拒否する。"""
+    """Linuxの対象論理CPU数がN以下の計画を拒否する。"""
     with patch.object(
         linux,
         "_list_thread_ids",
