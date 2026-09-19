@@ -47,6 +47,7 @@ def test_configure_linux_cpu_execution_returns_without_hybrid_sysfs(
                 os,
                 "sched_getaffinity",
                 side_effect=AssertionError("affinityを取得しません"),
+                create=True,
             ):
                 linux.configure_linux_cpu_execution(1)
 
@@ -64,6 +65,7 @@ def test_configure_linux_cpu_execution_returns_without_e_cpus(
                 os,
                 "sched_getaffinity",
                 side_effect=AssertionError("affinityを取得しません"),
+                create=True,
             ):
                 linux.configure_linux_cpu_execution(1)
 
@@ -81,8 +83,9 @@ def test_configure_linux_cpu_execution_sets_all_available_p_cpus_once(
                 os,
                 "sched_getaffinity",
                 return_value={0, 1, 2, 3, 6},
+                create=True,
             ) as get_affinity:
-                with patch.object(os, "sched_setaffinity") as set_affinity:
+                with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
                     linux.configure_linux_cpu_execution(2)
 
     get_affinity.assert_called_once_with(0)
@@ -102,8 +105,9 @@ def test_configure_linux_cpu_execution_does_not_set_without_available_e_cpus(
                 os,
                 "sched_getaffinity",
                 return_value={0, 1, 2, 3},
+                create=True,
             ):
-                with patch.object(os, "sched_setaffinity") as set_affinity:
+                with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
                     linux.configure_linux_cpu_execution(1)
 
     set_affinity.assert_not_called()
@@ -124,8 +128,9 @@ def test_configure_linux_cpu_execution_does_not_set_when_p_is_not_larger(
                 os,
                 "sched_getaffinity",
                 return_value={0, 1, 2, 3, 4, 5},
+                create=True,
             ) as get_affinity:
-                with patch.object(os, "sched_setaffinity") as set_affinity:
+                with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
                     linux.configure_linux_cpu_execution(cpu_num_threads)
 
     get_affinity.assert_called_once_with(0)
@@ -142,7 +147,7 @@ def test_configure_linux_cpu_execution_propagates_sched_getaffinity_error(
     error = FileNotFoundError("affinity error")
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
         with patch.object(linux, "_CPU_ATOM_CPUS_PATH", e_path):
-            with patch.object(os, "sched_getaffinity", side_effect=error):
+            with patch.object(os, "sched_getaffinity", side_effect=error, create=True):
                 with pytest.raises(FileNotFoundError, match="affinity error"):
                     linux.configure_linux_cpu_execution(1)
 
@@ -161,7 +166,10 @@ def test_configure_linux_cpu_execution_propagates_sched_setaffinity_error(
                 os,
                 "sched_getaffinity",
                 return_value={0, 1, 2, 3, 4},
+                create=True,
             ):
-                with patch.object(os, "sched_setaffinity", side_effect=error):
+                with patch.object(
+                    os, "sched_setaffinity", side_effect=error, create=True
+                ):
                     with pytest.raises(OSError, match="affinity error"):
                         linux.configure_linux_cpu_execution(1)
