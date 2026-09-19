@@ -9,11 +9,7 @@ from fastapi.testclient import TestClient
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.core.cpu_execution import (
-    apply_cpu_execution_plan,
-    create_cpu_execution_plan,
-    validate_cpu_execution_plan,
-)
+from voicevox_engine.core.cpu_execution import configure_cpu_execution
 from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
@@ -25,15 +21,13 @@ from voicevox_engine.utility.path_utility import engine_manifest_path, get_save_
 
 
 def _generate_engine_fake_server(root_dir: Path) -> TestClient:
-    cpu_execution_plan = create_cpu_execution_plan(None)
-    apply_cpu_execution_plan(cpu_execution_plan)
+    cpu_num_threads = configure_cpu_execution(None)
     core_manager = initialize_cores(
         voicevox_dir=root_dir,
         use_gpu=False,
         enable_mock=False,
-        cpu_num_threads=cpu_execution_plan.cpu_num_threads,
+        cpu_num_threads=cpu_num_threads,
     )
-    validate_cpu_execution_plan(cpu_execution_plan)
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
     setting_loader = SettingHandler(Path("./not_exist.yaml"))

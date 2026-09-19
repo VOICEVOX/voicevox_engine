@@ -17,11 +17,6 @@ import soundfile
 from fastapi import Request
 
 from .core.core_initializer import initialize_cores
-from .core.cpu_execution import (
-    CpuExecutionPlan,
-    apply_cpu_execution_plan,
-    validate_cpu_execution_plan,
-)
 from .metas.metas import StyleId
 from .model import AudioQuery
 from .tts_pipeline.tts_engine import LatestVersion, make_tts_engines_from_cores
@@ -45,15 +40,15 @@ class CancellableEngine:
         runtime_dirs: list[Path] | None = None,
         enable_mock: bool = True,
         *,
-        cpu_execution_plan: CpuExecutionPlan,
+        cpu_num_threads: int,
     ) -> None:
-        """init_processesの数だけ同時処理できるエンジンを立ち上げ、指定されたCPU実行計画を各子プロセスで使う。"""
+        """init_processesの数だけ同時処理できるエンジンを立ち上げる。"""
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
         self.runtime_dirs = runtime_dirs
         self.enable_mock = enable_mock
-        self.cpu_execution_plan = cpu_execution_plan
+        self.cpu_num_threads = cpu_num_threads
 
         # 実行中プール
         # 「実行されているリクエスト」と「そのリクエストを処理しているプロセス」のペアのリスト
@@ -77,7 +72,7 @@ class CancellableEngine:
                 "voicelib_dirs": self.voicelib_dirs,
                 "voicevox_dir": self.voicevox_dir,
                 "runtime_dirs": self.runtime_dirs,
-                "cpu_execution_plan": self.cpu_execution_plan,
+                "cpu_num_threads": self.cpu_num_threads,
                 "enable_mock": self.enable_mock,
                 "connection": connection_inner,
             },
@@ -186,7 +181,7 @@ def start_synthesis_subprocess(
     voicelib_dirs: list[Path] | None,
     voicevox_dir: Path | None,
     runtime_dirs: list[Path] | None,
-    cpu_execution_plan: CpuExecutionPlan,
+    cpu_num_threads: int,
     enable_mock: bool,
     connection: ConnectionType,
 ) -> None:
@@ -194,7 +189,7 @@ def start_synthesis_subprocess(
     コネクションへの入力に応答して音声合成するループを実行する
 
     引数 use_gpu, voicelib_dirs, voicevox_dir, runtime_dirs, enable_mock は、
-    core_initializer を参照。cpu_execution_plan は親プロセスで作成したCPU実行計画
+    core_initializer を参照。
 
     Parameters
     ----------
@@ -202,16 +197,14 @@ def start_synthesis_subprocess(
         メインプロセスと通信するためのコネクション
     """
     # 音声合成エンジンを用意する
-    apply_cpu_execution_plan(cpu_execution_plan)
     core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=voicelib_dirs,
         voicevox_dir=voicevox_dir,
         runtime_dirs=runtime_dirs,
-        cpu_num_threads=cpu_execution_plan.cpu_num_threads,
+        cpu_num_threads=cpu_num_threads,
         enable_mock=enable_mock,
     )
-    validate_cpu_execution_plan(cpu_execution_plan)
     tts_engines = make_tts_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
 

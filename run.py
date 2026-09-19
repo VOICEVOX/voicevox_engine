@@ -16,11 +16,7 @@ from pydantic import TypeAdapter
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.core.cpu_execution import (
-    apply_cpu_execution_plan,
-    create_cpu_execution_plan,
-    validate_cpu_execution_plan,
-)
+from voicevox_engine.core.cpu_execution import configure_cpu_execution
 from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
@@ -353,18 +349,16 @@ def main() -> None:
 
     use_gpu = select_first_not_none([args.use_gpu, envs.use_gpu])
 
-    cpu_execution_plan = create_cpu_execution_plan(args.cpu_num_threads)
-    apply_cpu_execution_plan(cpu_execution_plan)
+    cpu_num_threads = configure_cpu_execution(args.cpu_num_threads)
     core_manager = initialize_cores(
         use_gpu=use_gpu,
         voicelib_dirs=args.voicelib_dirs,
         voicevox_dir=args.voicevox_dir,
         runtime_dirs=args.runtime_dirs,
-        cpu_num_threads=cpu_execution_plan.cpu_num_threads,
+        cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
         load_all_models=args.load_all_models,
     )
-    validate_cpu_execution_plan(cpu_execution_plan)
     tts_engines = make_tts_engines_from_cores(core_manager)
     song_engines = make_song_engines_from_cores(core_manager)
     assert len(tts_engines.versions()) != 0, "音声合成エンジンがありません。"
@@ -378,7 +372,7 @@ def main() -> None:
             voicelib_dirs=args.voicelib_dirs,
             voicevox_dir=args.voicevox_dir,
             runtime_dirs=args.runtime_dirs,
-            cpu_execution_plan=cpu_execution_plan,
+            cpu_num_threads=cpu_num_threads,
             enable_mock=args.enable_mock,
         )
 
