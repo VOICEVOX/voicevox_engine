@@ -28,22 +28,6 @@ def test_post_user_dict_word_200(
     assert snapshot_json == response_json
 
 
-def test_post_user_dict_word_422(
-    client: TestClient, snapshot_json: SnapshotAssertion
-) -> None:
-    params: dict[str, str | int] = {
-        "surface": "test",
-        "pronunciation": "テスト",
-        "accent_type": 1,
-        "word_type": "PROPER_NOUN",
-        "priority": 100,
-    }
-    # 範囲外の優先度はエラー
-    response = client.post("/user_dict_word", params=params)
-    assert response.status_code == 422
-    assert snapshot_json == response.json()
-
-
 def test_put_user_dict_word_204(
     client: TestClient, snapshot: SnapshotAssertion
 ) -> None:

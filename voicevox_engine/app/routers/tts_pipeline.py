@@ -414,11 +414,11 @@ def generate_tts_pipeline_router(
         style_id: Annotated[StyleId, Query(alias="speaker")],
         start_offset: Annotated[
             float,
-            Query(description="音声の開始位置"),
+            Query(ge=0, description="音声の開始位置"),
         ] = 0,
         segment_length: Annotated[
             float,
-            Query(description="一度に合成する音声の長さ"),
+            Query(gt=0, description="一度に合成する音声の長さ"),
         ] = 0.3,
         enable_interrogative_upspeak: Annotated[
             bool,
