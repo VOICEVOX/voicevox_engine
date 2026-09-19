@@ -63,6 +63,11 @@ class _FakeWindowsApi:
         return self.active_group_count
 
 
+class _MaskAccessForbiddenWindowsApi(_FakeWindowsApi):
+    def get_process_affinity_mask(self) -> tuple[int, int]:
+        raise AssertionError("GetProcessAffinityMaskは呼び出されません")
+
+
 def _record(
     cpu_set_id: int,
     group: int,
@@ -272,7 +277,7 @@ def test_detect_warns_for_empty_system_records() -> None:
 
 def test_detect_returns_none_for_multiple_processor_groups() -> None:
     """P/E混在時の複数Processor Groupをaffinityなしにする。"""
-    api = _FakeWindowsApi(
+    api = _MaskAccessForbiddenWindowsApi(
         _hybrid_records(),
         (1 << 12) - 1,
         (1 << 12) - 1,
@@ -281,8 +286,25 @@ def test_detect_returns_none_for_multiple_processor_groups() -> None:
     )
 
     with patch.object(windows, "_get_windows_api", return_value=api):
-        with pytest.warns(UserWarning, match="複数Processor Group"):
+        with pytest.warns(UserWarning, match="取得できない"):
             assert windows.detect_windows_hybrid_cpu_topology() is None
+
+
+def test_detect_propagates_mask_error_for_single_processor_group() -> None:
+    """単一Processor Groupのmask取得エラーを検出不能へ変換しない。"""
+    api = _FakeWindowsApi(
+        _hybrid_records(),
+        (1 << 12) - 1,
+        (1 << 12) - 1,
+        (0,),
+        1,
+    )
+    error = _os_error(5)
+
+    with patch.object(api, "get_process_affinity_mask", side_effect=error):
+        with patch.object(windows, "_get_windows_api", return_value=api):
+            with pytest.raises(OSError, match="Windows API error"):
+                windows.detect_windows_hybrid_cpu_topology()
 
 
 def test_detect_rejects_invalid_process_group() -> None:

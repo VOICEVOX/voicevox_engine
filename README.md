@@ -601,9 +601,11 @@ Windows・Linux で利用可能な CPU に高性能な P コアと省電力な E
 CPU affinity は、そのプロセスが実行可能な論理 CPU の集合です。
 既存の cpuset や CPU affinity による制限は広げません。
 
-- 未指定または `0` の場合は、利用可能な全論理 CPU 数の半分を小数点以下切り捨てで `N` とします。正数を指定した場合は、その値を `N` とします。
+- 未指定または `0` の場合は、システム全体の論理 CPU 数の半分を小数点以下切り捨てで `N` とします。正数を指定した場合は、その値を `N` とします。
 - 利用可能な論理 P CPU 数を `P` とし、`P > N` の場合だけ、利用可能な全論理 P CPU を CPU affinity に設定し、`N` を VOICEVOX CORE に渡します。
 - `P <= N` の場合は CPU affinity を変更せず、`N` を VOICEVOX CORE に渡します。`N` が利用可能な全論理 CPU 数を超えていても起動エラーにはなりません。
+
+`N` の計算はシステム全体の論理 CPU 数を使い、`P` の数え上げと CPU affinity の対象だけは起動時に許可されている CPU の集合を使います。
 
 Windows の P/E コア対応はシステム全体の `EfficiencyClass` から P クラスを決めた後、現在の許可 CPU に絞って判定します。現在の許可範囲に真の P コアと E コアの両方がない場合や、複数の Processor Group を扱えない場合は CPU affinity を変更しません。
 Linux の P/E コア対応は、x86 で sysfs の `/sys/devices/cpu_core/cpus` と `/sys/devices/cpu_atom/cpus` を取得できる環境に限られます。

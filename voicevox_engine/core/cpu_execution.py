@@ -105,20 +105,20 @@ def _resolve_cpu_num_threads(
     validated_cpu_num_threads = _validate_cpu_num_threads(requested_cpu_num_threads)
     if validated_cpu_num_threads is not None:
         return validated_cpu_num_threads
-    if logical_cpu_count is None:
+    validated_cpu_count = _validate_cpu_count(logical_cpu_count, "logical_cpu_count")
+    if validated_cpu_count is None:
         return 0
-    return logical_cpu_count // 2
+    return validated_cpu_count // 2
 
 
 def _create_hybrid_cpu_execution_values(
-    cpu_num_threads: int | None,
+    cpu_num_threads: int,
     topology: HybridCpuTopology,
 ) -> tuple[int, tuple[int, ...] | None]:
-    p_logical_cpu_ids, e_logical_cpu_ids = _normalize_topology(topology)
-    resolved_cpu_num_threads = _resolve_cpu_num_threads(
-        cpu_num_threads,
-        len(p_logical_cpu_ids) + len(e_logical_cpu_ids),
-    )
+    resolved_cpu_num_threads = _validate_cpu_num_threads(cpu_num_threads)
+    if resolved_cpu_num_threads is None:
+        raise ValueError("CPU実行計画のcpu_num_threadsは1以上で指定してください。")
+    p_logical_cpu_ids, _ = _normalize_topology(topology)
     if len(p_logical_cpu_ids) <= resolved_cpu_num_threads:
         return resolved_cpu_num_threads, None
     return resolved_cpu_num_threads, p_logical_cpu_ids
@@ -129,15 +129,13 @@ def create_legacy_cpu_execution_plan(
     logical_cpu_count: int | None,
 ) -> LegacyCpuExecutionPlan:
     """レガシーCPU実行計画を生成する。"""
-    validated_cpu_num_threads = _validate_cpu_num_threads(cpu_num_threads)
-    if validated_cpu_num_threads is not None:
-        return LegacyCpuExecutionPlan(validated_cpu_num_threads)
-    logical_cpu_count = _validate_cpu_count(logical_cpu_count, "logical_cpu_count")
-    return LegacyCpuExecutionPlan(_resolve_cpu_num_threads(None, logical_cpu_count))
+    return LegacyCpuExecutionPlan(
+        _resolve_cpu_num_threads(cpu_num_threads, logical_cpu_count)
+    )
 
 
 def create_windows_cpu_execution_plan(
-    cpu_num_threads: int | None,
+    cpu_num_threads: int,
     topology: HybridCpuTopology,
 ) -> CpuExecutionPlan:
     """WindowsのCPU実行計画を生成する。"""
@@ -150,7 +148,7 @@ def create_windows_cpu_execution_plan(
 
 
 def create_linux_cpu_execution_plan(
-    cpu_num_threads: int | None,
+    cpu_num_threads: int,
     topology: HybridCpuTopology,
 ) -> CpuExecutionPlan:
     """LinuxのCPU実行計画を生成する。"""
@@ -162,22 +160,20 @@ def create_linux_cpu_execution_plan(
     return LinuxCpuExecutionPlan(resolved_cpu_num_threads, logical_cpu_ids)
 
 
-def _create_legacy_cpu_execution_plan_from_system(
-    cpu_num_threads: int | None,
-) -> LegacyCpuExecutionPlan:
-    if cpu_num_threads is not None:
-        return LegacyCpuExecutionPlan(cpu_num_threads)
-    return create_legacy_cpu_execution_plan(
-        cpu_num_threads,
-        psutil.cpu_count(logical=True),
-    )
-
-
 def create_cpu_execution_plan(
     cpu_num_threads: int | None,
 ) -> CpuExecutionPlan:
     """実行環境に応じたCPU実行計画を生成する。"""
     validated_cpu_num_threads = _validate_cpu_num_threads(cpu_num_threads)
+    if validated_cpu_num_threads is None:
+        resolved_cpu_num_threads = _resolve_cpu_num_threads(
+            None,
+            psutil.cpu_count(logical=True),
+        )
+    else:
+        resolved_cpu_num_threads = validated_cpu_num_threads
+    if resolved_cpu_num_threads == 0:
+        return LegacyCpuExecutionPlan(0)
     system = platform.system()
     if system == "Windows":
         from voicevox_engine.core.cpu_execution_windows import (
@@ -186,10 +182,8 @@ def create_cpu_execution_plan(
 
         topology = detect_windows_hybrid_cpu_topology()
         if topology is None:
-            return _create_legacy_cpu_execution_plan_from_system(
-                validated_cpu_num_threads
-            )
-        return create_windows_cpu_execution_plan(validated_cpu_num_threads, topology)
+            return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
+        return create_windows_cpu_execution_plan(resolved_cpu_num_threads, topology)
     if system == "Linux":
         from voicevox_engine.core.cpu_execution_linux import (
             detect_linux_hybrid_cpu_topology,
@@ -197,13 +191,11 @@ def create_cpu_execution_plan(
 
         topology = detect_linux_hybrid_cpu_topology()
         if topology is None:
-            return _create_legacy_cpu_execution_plan_from_system(
-                validated_cpu_num_threads
-            )
-        return create_linux_cpu_execution_plan(validated_cpu_num_threads, topology)
+            return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
+        return create_linux_cpu_execution_plan(resolved_cpu_num_threads, topology)
     if system == "Darwin":
-        return _create_legacy_cpu_execution_plan_from_system(validated_cpu_num_threads)
-    return _create_legacy_cpu_execution_plan_from_system(validated_cpu_num_threads)
+        return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
+    return LegacyCpuExecutionPlan(resolved_cpu_num_threads)
 
 
 def apply_cpu_execution_plan(plan: CpuExecutionPlan) -> None:

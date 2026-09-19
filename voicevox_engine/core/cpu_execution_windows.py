@@ -376,22 +376,19 @@ def _detect_windows_hybrid_cpu_topology() -> HybridCpuTopology | None:
             stacklevel=2,
         )
         return None
-    process_mask, system_mask = api.get_process_affinity_mask()
-    _validate_process_system_masks(process_mask, system_mask)
+    active_group_count = api.get_active_processor_group_count()
+    process_groups = api.get_process_group_affinity()
+    _validate_process_groups(active_group_count, process_groups)
+    if active_group_count != 1 or len(process_groups) != 1:
+        raise _WindowsHybridCpuDetectionUnavailable(
+            "Windowsの複数Processor Groupには対応していません。"
+        )
     efficiency_classes = {record.efficiency_class for record in system_records}
     if len(efficiency_classes) <= 1:
         return None
     p_efficiency_class = max(efficiency_classes)
-    process_groups = api.get_process_group_affinity()
-    active_group_count = api.get_active_processor_group_count()
-    _validate_process_groups(active_group_count, process_groups)
-    if active_group_count != 1 or len(process_groups) != 1:
-        warnings.warn(
-            "Windowsの複数Processor Groupには対応していないため、"
-            " CPU affinityを変更しません。",
-            stacklevel=2,
-        )
-        return None
+    process_mask, system_mask = api.get_process_affinity_mask()
+    _validate_process_system_masks(process_mask, system_mask)
     process_records = _filter_process_records(records, process_mask, process_groups)
     process_efficiency_classes = {record.efficiency_class for record in process_records}
     if (
