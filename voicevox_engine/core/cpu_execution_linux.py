@@ -39,7 +39,8 @@ def configure_linux_cpu_execution(cpu_num_threads: int) -> None:
     if not p_cpus or not e_cpus:
         return
 
-    available_cpus = os.sched_getaffinity(0)
+    sched_getaffinity_name = "sched_getaffinity"
+    available_cpus = getattr(os, sched_getaffinity_name)(0)
     available_p_cpus = available_cpus & p_cpus
     available_e_cpus = available_cpus & e_cpus
     if not available_p_cpus or not available_e_cpus:
@@ -47,4 +48,5 @@ def configure_linux_cpu_execution(cpu_num_threads: int) -> None:
     if len(available_p_cpus) <= cpu_num_threads:
         return
 
-    os.sched_setaffinity(0, available_p_cpus)
+    sched_setaffinity_name = "sched_setaffinity"
+    getattr(os, sched_setaffinity_name)(0, available_p_cpus)
