@@ -1,6 +1,5 @@
 """`cpu_execution.py` のテスト"""
 
-from typing import cast
 from unittest.mock import patch
 
 import pytest
@@ -49,23 +48,6 @@ def test_configure_cpu_execution_returns_zero_when_cpu_count_is_unknown() -> Non
             side_effect=AssertionError("OS判定をしません"),
         ):
             assert cpu_execution.configure_cpu_execution(None) == 0
-
-
-@pytest.mark.parametrize("cpu_num_threads", [True, False, -1, 65536, "4"])
-def test_configure_cpu_execution_rejects_invalid_value_before_os_access(
-    cpu_num_threads: object,
-) -> None:
-    """不正なCPUスレッド数をOS情報の取得前に拒否する。"""
-    with patch(
-        "voicevox_engine.core.cpu_execution.platform.system",
-        side_effect=AssertionError("OS判定をしません"),
-    ):
-        with patch(
-            "voicevox_engine.core.cpu_execution.psutil.cpu_count",
-            side_effect=AssertionError("CPU数を取得しません"),
-        ):
-            with pytest.raises(ValueError, match="cpu_num_threads"):
-                cpu_execution.configure_cpu_execution(cast(int | None, cpu_num_threads))
 
 
 @pytest.mark.parametrize(

@@ -8,8 +8,6 @@ import psutil
 
 def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
     if cpu_num_threads is not None:
-        if isinstance(cpu_num_threads, bool) or not isinstance(cpu_num_threads, int):
-            raise ValueError("cpu_num_threadsは整数、None、または0で指定してください。")
         if cpu_num_threads != 0:
             if not 1 <= cpu_num_threads <= 65535:
                 raise ValueError(
