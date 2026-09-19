@@ -207,7 +207,7 @@ def test_get_system_cpu_set_information_uses_two_stage_buffer() -> None:
 
 
 def test_get_system_cpu_set_information_propagates_bool_failure() -> None:
-    """二段階取得のBOOL失敗を変換せず伝播する。"""
+    """第一段階のBOOL失敗をctypes.WinErrorで例外化して伝播する。"""
     api = object.__new__(windows._WindowsApi)
 
     def get_information(
@@ -225,5 +225,9 @@ def test_get_system_cpu_set_information_propagates_bool_failure() -> None:
         windows._WindowsApi, "_current_process", return_value=windows._HANDLE(1)
     ):
         with patch.object(windows._WindowsApi, "_last_error_code", return_value=5):
-            with pytest.raises(OSError, match="5"):
-                api.get_system_cpu_set_information()
+            with patch.object(
+                ctypes, "WinError", return_value=OSError(5), create=True
+            ) as win_error:
+                with pytest.raises(OSError, match="5"):
+                    api.get_system_cpu_set_information()
+    win_error.assert_called_once_with()
