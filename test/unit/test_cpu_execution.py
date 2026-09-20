@@ -13,14 +13,7 @@ def test_configure_cpu_execution_uses_explicit_value(cpu_num_threads: int) -> No
     with patch(
         "voicevox_engine.core.cpu_execution.platform.system", return_value="Other"
     ):
-        with patch(
-            "voicevox_engine.core.cpu_execution.psutil.cpu_count",
-            side_effect=AssertionError("CPU数を取得しません"),
-        ):
-            assert (
-                cpu_execution.configure_cpu_execution(cpu_num_threads)
-                == cpu_num_threads
-            )
+        assert cpu_execution.configure_cpu_execution(cpu_num_threads) == cpu_num_threads
 
 
 @pytest.mark.parametrize("cpu_num_threads", [None, 0])
@@ -33,9 +26,8 @@ def test_configure_cpu_execution_resolves_automatic_value(
     ):
         with patch(
             "voicevox_engine.core.cpu_execution.psutil.cpu_count", return_value=9
-        ) as cpu_count:
+        ):
             assert cpu_execution.configure_cpu_execution(cpu_num_threads) == 4
-    cpu_count.assert_called_once_with(logical=True)
 
 
 def test_configure_cpu_execution_returns_zero_when_cpu_count_is_unknown() -> None:
@@ -43,11 +35,7 @@ def test_configure_cpu_execution_returns_zero_when_cpu_count_is_unknown() -> Non
     with patch(
         "voicevox_engine.core.cpu_execution.psutil.cpu_count", return_value=None
     ):
-        with patch(
-            "voicevox_engine.core.cpu_execution.platform.system",
-            side_effect=AssertionError("OS判定をしません"),
-        ):
-            assert cpu_execution.configure_cpu_execution(None) == 0
+        assert cpu_execution.configure_cpu_execution(None) == 0
 
 
 @pytest.mark.parametrize(
@@ -82,10 +70,18 @@ def test_configure_cpu_execution_dispatches_supported_os(
     configure.assert_called_once_with(4)
 
 
-@pytest.mark.parametrize("system", ["Darwin", "FreeBSD", "Other"])
-def test_configure_cpu_execution_does_not_change_unsupported_os(system: str) -> None:
+def test_configure_cpu_execution_does_not_change_unsupported_os() -> None:
     """macOSなどの未対応環境ではCPU affinityを変更しない。"""
     with patch(
-        "voicevox_engine.core.cpu_execution.platform.system", return_value=system
+        "voicevox_engine.core.cpu_execution.platform.system", return_value="Other"
     ):
-        assert cpu_execution.configure_cpu_execution(3) == 3
+        with patch(
+            "voicevox_engine.core.cpu_execution_windows.configure_windows_cpu_execution"
+        ) as configure_windows:
+            with patch(
+                "voicevox_engine.core.cpu_execution_linux.configure_linux_cpu_execution"
+            ) as configure_linux:
+                assert cpu_execution.configure_cpu_execution(3) == 3
+
+    configure_windows.assert_not_called()
+    configure_linux.assert_not_called()

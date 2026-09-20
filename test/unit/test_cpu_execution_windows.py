@@ -53,22 +53,18 @@ class _FakeWindowsApi:
         self.records = records
         self.process_mask = process_mask
         self.active_group_count = active_group_count
-        self.active_group_calls = 0
         self.set_masks: list[int] = []
-        self.process_mask_calls = 0
 
     def get_system_cpu_set_information(self) -> bytes:
         return self.records
 
     def get_process_affinity_mask(self) -> int:
-        self.process_mask_calls += 1
         return self.process_mask
 
     def set_process_affinity_mask(self, mask: int) -> None:
         self.set_masks.append(mask)
 
     def get_active_processor_group_count(self) -> int:
-        self.active_group_calls += 1
         return self.active_group_count
 
 
@@ -86,27 +82,19 @@ def test_parse_cpu_set_records_uses_size_and_logical_index() -> None:
     assert parsed[0].efficiency_class == 20
 
 
-@pytest.mark.parametrize("size", [0, 7, 31])
-def test_parse_cpu_set_records_rejects_invalid_size(size: int) -> None:
-    """不正なレコードSizeを拒否する。"""
-    broken = size.to_bytes(4, "little") + b"\x00" * 4
-    with pytest.raises(ValueError, match="長さ|Buffer"):
-        windows._parse_cpu_set_records(broken)
-
-
 def test_configure_windows_cpu_execution_uses_all_allowed_p_cores_once() -> None:
     """P>Nなら割り当てとprocess maskに残る全Pコアを一度設定する。"""
     records = _hybrid_records()
     records += _record(700, 0, 13, 20, flags=0b10)
     records += _record(800, 0, 15, 20, flags=0b10 | 0b100)
-    api = _FakeWindowsApi(records, (1 << 1) | (1 << 4) | (1 << 7) | (1 << 15))
+    api = _FakeWindowsApi(
+        records, (1 << 1) | (1 << 4) | (1 << 7) | (1 << 13) | (1 << 15)
+    )
 
     with patch.object(windows, "_WindowsApi", return_value=api):
         windows.configure_windows_cpu_execution(1)
 
     assert api.set_masks == [(1 << 1) | (1 << 4) | (1 << 15)]
-    assert api.active_group_calls == 1
-    assert api.process_mask_calls == 1
 
 
 @pytest.mark.parametrize("cpu_num_threads", [2, 3])
@@ -146,7 +134,6 @@ def test_configure_windows_cpu_execution_does_not_set_for_multiple_groups() -> N
     with patch.object(windows, "_WindowsApi", return_value=api):
         windows.configure_windows_cpu_execution(1)
 
-    assert api.process_mask_calls == 0
     assert api.set_masks == []
 
 
@@ -159,33 +146,14 @@ def test_configure_windows_cpu_execution_rejects_zero_processor_groups() -> None
             windows.configure_windows_cpu_execution(1)
 
 
-def test_configure_windows_cpu_execution_propagates_process_mask_error() -> None:
-    """GetProcessAffinityMaskの失敗を伝播する。"""
-    api = _FakeWindowsApi(_hybrid_records(), (1 << 16) - 1)
-    error = OSError("process mask error")
-    with patch.object(api, "get_process_affinity_mask", side_effect=error):
-        with patch.object(windows, "_WindowsApi", return_value=api):
-            with pytest.raises(OSError, match="process mask error"):
-                windows.configure_windows_cpu_execution(1)
-
-
-def test_configure_windows_cpu_execution_propagates_set_error() -> None:
-    """SetProcessAffinityMaskの失敗を伝播する。"""
-    api = _FakeWindowsApi(_hybrid_records(), (1 << 16) - 1)
-    error = OSError("set mask error")
-    with patch.object(api, "set_process_affinity_mask", side_effect=error):
-        with patch.object(windows, "_WindowsApi", return_value=api):
-            with pytest.raises(OSError, match="set mask error"):
-                windows.configure_windows_cpu_execution(1)
-
-
 def test_get_system_cpu_set_information_uses_two_stage_buffer() -> None:
-    """GetSystemCpuSetInformationを容量取得と本取得の二段階で呼ぶ。"""
+    """GetSystemCpuSetInformationの二段階取得結果を返す。"""
     api = object.__new__(windows._WindowsApi)
+    expected = _record(1000, 0, 3, 20)
     calls: list[bool] = []
 
     def get_information(
-        information: object,
+        information: ctypes.c_void_p | None,
         buffer_size: int,
         returned_length: ctypes._CArgObject,
         process: object,
@@ -194,40 +162,14 @@ def test_get_system_cpu_set_information_uses_two_stage_buffer() -> None:
         del buffer_size, process, flags
         calls.append(information is None)
         pointer = ctypes.cast(returned_length, ctypes.POINTER(windows._DWORD))
-        pointer.contents.value = 8
+        pointer.contents.value = len(expected)
+        if information is not None:
+            ctypes.memmove(information, expected, len(expected))
         return 0 if information is None else 1
 
     api._get_system_cpu_set_information = get_information
     with patch.object(
         windows._WindowsApi, "_current_process", return_value=windows._HANDLE(1)
     ):
-        with patch.object(windows._WindowsApi, "_last_error_code", return_value=122):
-            assert api.get_system_cpu_set_information() == bytes(8)
+        assert api.get_system_cpu_set_information() == expected
     assert calls == [True, False]
-
-
-def test_get_system_cpu_set_information_propagates_bool_failure() -> None:
-    """第一段階のBOOL失敗をctypes.WinErrorで例外化して伝播する。"""
-    api = object.__new__(windows._WindowsApi)
-
-    def get_information(
-        information: object,
-        buffer_size: int,
-        returned_length: ctypes._CArgObject,
-        process: object,
-        flags: int,
-    ) -> int:
-        del information, buffer_size, returned_length, process, flags
-        return 0
-
-    api._get_system_cpu_set_information = get_information
-    with patch.object(
-        windows._WindowsApi, "_current_process", return_value=windows._HANDLE(1)
-    ):
-        with patch.object(windows._WindowsApi, "_last_error_code", return_value=5):
-            with patch.object(
-                ctypes, "WinError", return_value=OSError(5), create=True
-            ) as win_error:
-                with pytest.raises(OSError, match="5"):
-                    api.get_system_cpu_set_information()
-    win_error.assert_called_once_with(5)

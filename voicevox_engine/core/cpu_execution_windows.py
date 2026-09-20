@@ -5,7 +5,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, cast
 
-_ERROR_INSUFFICIENT_BUFFER = 122
 _CPU_SET_INFORMATION_TYPE_CPU_SET = 0
 _DWORD = ctypes.c_uint32
 _WORD = ctypes.c_uint16
@@ -50,7 +49,7 @@ class _WindowsCpuSetRecord:
 
 class _WindowsApi:
     def __init__(self) -> None:
-        windll = cast(Callable[..., Any], ctypes.__dict__["WinDLL"])
+        windll = cast(Callable[..., Any], getattr(ctypes, "WinDLL"))  # noqa: B009
         kernel32 = windll("kernel32", use_last_error=True)
         self._get_current_process: Any = kernel32.GetCurrentProcess
         self._get_system_cpu_set_information: Any = kernel32.GetSystemCpuSetInformation
@@ -85,16 +84,12 @@ class _WindowsApi:
 
     @staticmethod
     def _last_error_code() -> int:
-        error_function_name = "get_last_error"
-        get_last_error = cast(Callable[[], int], getattr(ctypes, error_function_name))
-        return get_last_error()
+        return cast(Callable[[], int], getattr(ctypes, "get_last_error"))()  # noqa: B009
 
     @classmethod
     def _last_error(cls) -> OSError:
         error_code = cls._last_error_code()
-        error_function_name = "WinError"
-        win_error = cast(Callable[[int], OSError], getattr(ctypes, error_function_name))
-        return win_error(error_code)
+        return cast(Callable[[int], OSError], getattr(ctypes, "WinError"))(error_code)  # noqa: B009
 
     def _current_process(self) -> _HANDLE:
         return cast(_HANDLE, self._get_current_process())
@@ -102,15 +97,13 @@ class _WindowsApi:
     def get_system_cpu_set_information(self) -> bytes:
         """CPU Set情報を可変長レコード列として取得する。"""
         required_length = _DWORD()
-        result = self._get_system_cpu_set_information(
+        self._get_system_cpu_set_information(
             None,
             0,
             ctypes.byref(required_length),
             self._current_process(),
             0,
         )
-        if not result and self._last_error_code() != _ERROR_INSUFFICIENT_BUFFER:
-            raise self._last_error()
         if required_length.value == 0:
             return b""
 
@@ -154,16 +147,10 @@ class _WindowsApi:
 def _parse_cpu_set_records(buffer: bytes) -> tuple[_WindowsCpuSetRecord, ...]:
     records: list[_WindowsCpuSetRecord] = []
     offset = 0
-    header_size = ctypes.sizeof(_SystemCpuSetInformationHeader)
-    minimum_size = ctypes.sizeof(_SystemCpuSetInformation)
     while offset < len(buffer):
         header = _SystemCpuSetInformationHeader.from_buffer_copy(buffer, offset)
         size = int(header.Size)
-        if size < header_size or offset + size > len(buffer):
-            raise ValueError("WindowsのCPU Set情報レコードの長さが不正です。")
         if int(header.Type) == _CPU_SET_INFORMATION_TYPE_CPU_SET:
-            if size < minimum_size:
-                raise ValueError("WindowsのCPU Set情報レコードの長さが不正です。")
             information = _SystemCpuSetInformation.from_buffer_copy(buffer, offset)
             cpu_set = information.CpuSet
             records.append(
@@ -189,9 +176,6 @@ def configure_windows_cpu_execution(cpu_num_threads: int) -> None:
         return
 
     records = _parse_cpu_set_records(api.get_system_cpu_set_information())
-    if len(records) == 0:
-        return
-
     process_mask = api.get_process_affinity_mask()
     records = tuple(
         record

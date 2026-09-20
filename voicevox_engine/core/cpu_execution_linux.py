@@ -12,8 +12,6 @@ def _parse_cpu_list(value: str) -> set[int]:
     for item in value.split(","):
         if "-" in item:
             start, end = map(int, item.split("-"))
-            if start > end:
-                raise ValueError("LinuxのCPUリストの範囲が不正です。")
             result.update(range(start, end + 1))
         else:
             result.add(int(item))
@@ -36,11 +34,7 @@ def configure_linux_cpu_execution(cpu_num_threads: int) -> None:
     except FileNotFoundError:
         return
 
-    if not p_cpus or not e_cpus:
-        return
-
-    sched_getaffinity_name = "sched_getaffinity"
-    available_cpus = getattr(os, sched_getaffinity_name)(0)
+    available_cpus = getattr(os, "sched_getaffinity")(0)  # noqa: B009
     available_p_cpus = available_cpus & p_cpus
     available_e_cpus = available_cpus & e_cpus
     if not available_e_cpus:
@@ -48,5 +42,4 @@ def configure_linux_cpu_execution(cpu_num_threads: int) -> None:
     if len(available_p_cpus) <= cpu_num_threads:
         return
 
-    sched_setaffinity_name = "sched_setaffinity"
-    getattr(os, sched_setaffinity_name)(0, available_p_cpus)
+    getattr(os, "sched_setaffinity")(0, available_p_cpus)  # noqa: B009
