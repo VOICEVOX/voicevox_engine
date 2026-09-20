@@ -28,7 +28,7 @@ def test_parse_cpu_list_rejects_reversed_range() -> None:
         linux._parse_cpu_list("3-2")
 
 
-def _patch_paths(tmp_path: Path) -> tuple[Path, Path]:
+def _prepare_cpu_list_paths(tmp_path: Path) -> tuple[Path, Path]:
     p_path = tmp_path / "cpu_core" / "cpus"
     e_path = tmp_path / "cpu_atom" / "cpus"
     p_path.parent.mkdir()
@@ -40,7 +40,7 @@ def test_configure_linux_cpu_execution_returns_without_hybrid_sysfs(
     tmp_path: Path,
 ) -> None:
     """P/E sysfsがなければCPU affinityを変更しない。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
         with patch.object(linux, "_CPU_ATOM_CPUS_PATH", e_path):
             with patch.object(
@@ -56,7 +56,7 @@ def test_configure_linux_cpu_execution_returns_without_e_cpus(
     tmp_path: Path,
 ) -> None:
     """Eコアが検出できなければCPU affinityを変更しない。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-3", encoding="ascii")
     e_path.write_text("", encoding="ascii")
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
@@ -74,7 +74,7 @@ def test_configure_linux_cpu_execution_sets_all_available_p_cpus_once(
     tmp_path: Path,
 ) -> None:
     """利用可能なPコアがNより多ければ呼び出し元TIDへ一度設定する。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-5", encoding="ascii")
     e_path.write_text("6-7", encoding="ascii")
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
@@ -96,7 +96,7 @@ def test_configure_linux_cpu_execution_does_not_set_without_available_e_cpus(
     tmp_path: Path,
 ) -> None:
     """利用可能なEコアがなければCPU affinityを変更しない。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-3", encoding="ascii")
     e_path.write_text("4-5", encoding="ascii")
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
@@ -119,7 +119,7 @@ def test_configure_linux_cpu_execution_does_not_set_when_p_is_not_larger(
     cpu_num_threads: int,
 ) -> None:
     """利用可能なPコア数がN以下ならCPU affinityを変更しない。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-3", encoding="ascii")
     e_path.write_text("4-5", encoding="ascii")
     with patch.object(linux, "_CPU_CORE_CPUS_PATH", p_path):
@@ -141,7 +141,7 @@ def test_configure_linux_cpu_execution_propagates_sched_getaffinity_error(
     tmp_path: Path,
 ) -> None:
     """sysfs読取後のsched_getaffinityエラーを伝播する。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-3", encoding="ascii")
     e_path.write_text("4-5", encoding="ascii")
     error = FileNotFoundError("affinity error")
@@ -156,7 +156,7 @@ def test_configure_linux_cpu_execution_propagates_sched_setaffinity_error(
     tmp_path: Path,
 ) -> None:
     """sysfs読取後のsched_setaffinityエラーを伝播する。"""
-    p_path, e_path = _patch_paths(tmp_path)
+    p_path, e_path = _prepare_cpu_list_paths(tmp_path)
     p_path.write_text("0-3", encoding="ascii")
     e_path.write_text("4-5", encoding="ascii")
     error = OSError("affinity error")

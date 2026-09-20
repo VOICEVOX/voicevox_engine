@@ -230,4 +230,4 @@ def test_get_system_cpu_set_information_propagates_bool_failure() -> None:
             ) as win_error:
                 with pytest.raises(OSError, match="5"):
                     api.get_system_cpu_set_information()
-    win_error.assert_called_once_with()
+    win_error.assert_called_once_with(5)

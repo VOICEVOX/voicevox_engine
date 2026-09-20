@@ -89,11 +89,12 @@ class _WindowsApi:
         get_last_error = cast(Callable[[], int], getattr(ctypes, error_function_name))
         return get_last_error()
 
-    @staticmethod
-    def _last_error() -> OSError:
+    @classmethod
+    def _last_error(cls) -> OSError:
+        error_code = cls._last_error_code()
         error_function_name = "WinError"
-        win_error = cast(Callable[[], OSError], getattr(ctypes, error_function_name))
-        return win_error()
+        win_error = cast(Callable[[int], OSError], getattr(ctypes, error_function_name))
+        return win_error(error_code)
 
     def _current_process(self) -> _HANDLE:
         return cast(_HANDLE, self._get_current_process())
