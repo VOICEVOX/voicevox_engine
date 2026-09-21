@@ -24,13 +24,11 @@ class _FakeTopologyFlags(IntFlag):
 def _fake_topology(
     kinds: list[tuple[set[int], int, dict[str, str]]],
     available_cpus: set[int],
-    cpu_indices: set[int],
+    cpuset: set[int],
 ) -> MagicMock:
     topology = MagicMock()
     topology.get_cpubind.return_value = available_cpus
-    topology.iter_cpus.return_value = [
-        SimpleNamespace(os_index=index) for index in cpu_indices
-    ]
+    topology.cpuset = cpuset
     topology.get_cpukinds.return_value.n_kinds.return_value = len(kinds)
     topology.get_cpukinds.return_value.get_info.side_effect = lambda index: kinds[index]
     topology.get_support.return_value.cpubind = SimpleNamespace(
@@ -118,44 +116,6 @@ def test_select_linux_cpus_handles_zero_capacity_by_threshold() -> None:
 
 
 @pytest.mark.parametrize(
-    "kinds",
-    [[], [({0}, 0, {})]],
-)
-def test_select_linux_cpus_warns_when_capacity_is_unavailable(
-    kinds: list[tuple[set[int], int, dict[str, str]]],
-) -> None:
-    topology = _fake_topology(kinds, {0}, {0})
-
-    with pytest.warns(UserWarning, match="CPU capacityを取得できません"):
-        assert (
-            cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) is None
-        )
-
-
-def test_select_linux_cpus_warns_when_cpu_indices_are_sparse() -> None:
-    topology = _fake_topology(
-        [({0, 1, 3}, 0, {"LinuxCapacity": "1024"})],
-        {0, 1, 3},
-        {0, 1, 3},
-    )
-
-    with pytest.warns(UserWarning, match="CPU番号に欠番"):
-        assert (
-            cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) is None
-        )
-
-    topology.get_cpukinds.return_value.get_info.assert_not_called()
-
-
-def test_select_linux_cpus_propagates_topology_error() -> None:
-    topology = _fake_topology([], {0}, {0})
-    topology.iter_cpus.side_effect = PermissionError("読み取れません")
-
-    with pytest.raises(PermissionError, match="読み取れません"):
-        cpu_execution._select_linux_cpus(topology, topology.get_cpukinds())
-
-
-@pytest.mark.parametrize(
     ("num_threads", "available_cpus", "should_bind"),
     [(1, {0, 1, 2}, True), (2, {0, 1, 2}, False), (1, {0, 1}, False)],
 )
@@ -187,7 +147,7 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
 
 
 @pytest.mark.parametrize(
-    ("kinds", "cpu_indices", "warning"),
+    ("kinds", "cpuset", "warning"),
     [
         ([], {0, 1}, "CPU capacityを取得できません"),
         ([({0, 1}, 0, {})], {0, 1}, "CPU capacityを取得できません"),
@@ -200,10 +160,10 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
 )
 def test_configure_linux_cpu_execution_skips_unavailable_capacity(
     kinds: list[tuple[set[int], int, dict[str, str]]],
-    cpu_indices: set[int],
+    cpuset: set[int],
     warning: str,
 ) -> None:
-    topology = _fake_topology(kinds, cpu_indices, cpu_indices)
+    topology = _fake_topology(kinds, cpuset, cpuset)
     with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
         with patch.object(sys, "platform", "linux"):
             with pytest.warns(UserWarning, match=warning):

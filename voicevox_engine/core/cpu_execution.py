@@ -17,7 +17,8 @@ def _warn_affinity_unavailable(reason: str) -> None:
 
 
 def _select_linux_cpus(topology: Topology, kinds: CpuKinds) -> set[int] | None:
-    cpu_indices = {cpu.os_index for cpu in topology.iter_cpus()}
+    cpu_indices = set(topology.cpuset)
+    # NOTE: pyhwloc 3.0.1同梱hwlocはcapacity読取にOS CPU番号puでなく列挙添字iを使うため、修正版を含むpyhwlocへ更新後に見直す。https://github.com/open-mpi/hwloc/commit/db79bc4c5bda3b4e2e061a53b0e913ec2d683e22
     if cpu_indices != set(range(len(cpu_indices))):
         _warn_affinity_unavailable(
             "LinuxのCPU番号に欠番がありCPU capacityを正しく取得できません"
@@ -32,7 +33,7 @@ def _select_linux_cpus(topology: Topology, kinds: CpuKinds) -> set[int] | None:
         return None
 
     capacities = [
-        (set(cpuset), int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
+        (cpuset, int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
     ]
     highest_capacity = max(capacity for _, capacity in capacities)
     return {
