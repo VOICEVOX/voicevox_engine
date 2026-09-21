@@ -313,7 +313,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         #
     ]
 
-    if sys.platform == "win32":
+    if sys.platform in ("linux", "win32"):
         licenses.append(
             _License(
                 package_name="hwloc",

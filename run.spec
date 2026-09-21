@@ -28,18 +28,22 @@ if core_model_dir_path is not None and not core_model_dir_path.is_dir():
 
 codesign_identity: str | None = options.codesign_identity
 
+if sys.platform == "win32":
+    pyhwloc_binaries = collect_dynamic_libs(
+        "pyhwloc", search_patterns=["hwloc.dll", "pyhwloc.dll"]
+    )
+elif sys.platform == "linux":
+    pyhwloc_binaries = collect_dynamic_libs(
+        "pyhwloc", search_patterns=["libhwloc.so", "libpyhwloc.so"]
+    )
+else:
+    pyhwloc_binaries = []
+
 
 a = Analysis(
     ["run.py"],
     pathex=[],
-    binaries=(
-        collect_dynamic_libs(
-            "pyhwloc",
-            search_patterns=["hwloc.dll", "pyhwloc.dll"],
-        )
-        if sys.platform == "win32"
-        else []
-    ),
+    binaries=pyhwloc_binaries,
     datas=collect_data_files("pyopenjtalk"),
     hiddenimports=[],
     hookspath=[],

@@ -1,38 +1,45 @@
 """CPU実行設定の解決と適用"""
 
+from __future__ import annotations
+
 import os
 import sys
 import warnings
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pyhwloc.cpukinds import CpuKinds
+    from pyhwloc.topology import Topology
 
 
 def _warn_affinity_unavailable(reason: str) -> None:
     warnings.warn(f"{reason}。CPU affinityは変更しません。", stacklevel=2)
 
 
-def _select_linux_cpus() -> set[int] | None:
-    cpu_directory = Path("/sys/devices/system/cpu")
-    try:
-        online_cpu_ranges = (cpu_directory / "online").read_text().strip().split(",")
-        online_cpus: set[int] = set()
-        for cpu_range in online_cpu_ranges:
-            if "-" in cpu_range:
-                first_cpu, last_cpu = cpu_range.split("-")
-                online_cpus.update(range(int(first_cpu), int(last_cpu) + 1))
-            else:
-                online_cpus.add(int(cpu_range))
+def _select_linux_cpus(topology: Topology, kinds: CpuKinds) -> set[int] | None:
+    cpu_indices = {cpu.os_index for cpu in topology.iter_cpus()}
+    if cpu_indices != set(range(len(cpu_indices))):
+        _warn_affinity_unavailable(
+            "LinuxのCPU番号に欠番がありCPU capacityを正しく取得できません"
+        )
+        return None
 
-        capacities = {
-            cpu: int((cpu_directory / f"cpu{cpu}" / "cpu_capacity").read_text())
-            for cpu in online_cpus
-        }
-    except FileNotFoundError:
+    kind_infos = [kinds.get_info(index) for index in range(kinds.n_kinds())]
+    if len(kind_infos) == 0 or any(
+        "LinuxCapacity" not in info for _, _, info in kind_infos
+    ):
         _warn_affinity_unavailable("LinuxのCPU capacityを取得できません")
         return None
 
-    highest_capacity = max(capacities.values())
+    capacities = [
+        (set(cpuset), int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
+    ]
+    highest_capacity = max(capacity for _, capacity in capacities)
     return {
-        cpu for cpu, capacity in capacities.items() if capacity * 2 >= highest_capacity
+        cpu
+        for cpuset, capacity in capacities
+        if capacity * 2 >= highest_capacity
+        for cpu in cpuset
     }
 
 
@@ -53,41 +60,41 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
     if resolved_cpu_num_threads == 0:
         return resolved_cpu_num_threads
 
-    if sys.platform == "linux":
-        candidate_cpus = _select_linux_cpus()
-        if candidate_cpus is not None:
-            available_cpus = os.sched_getaffinity(0)
-            selected_linux_cpus = candidate_cpus & available_cpus
-            if (
-                selected_linux_cpus != available_cpus
-                and len(selected_linux_cpus) > resolved_cpu_num_threads
-            ):
-                os.sched_setaffinity(0, selected_linux_cpus)
-    elif sys.platform == "win32":
-        # NOTE: pyhwlocはWindowsだけで使用し、Linux/macOSには入らないため、Windows処理に入ってから読み込む。
-        from pyhwloc.topology import CpuBindFlags, Topology
+    if sys.platform not in ("linux", "win32"):
+        return resolved_cpu_num_threads
 
-        topology = Topology.from_this_system()
+    from pyhwloc.topology import CpuBindFlags, Topology, TopologyFlags
+
+    topology = Topology.from_this_system()
+    if sys.platform == "linux":
+        topology.set_flags(TopologyFlags.INCLUDE_DISALLOWED)
+        flags = CpuBindFlags.THREAD
+    else:
         # NOTE: x86検出はWindowsの初期affinityを変更しうるため無効にする。
         topology.set_components("x86")
+        flags = CpuBindFlags.PROCESS
 
-        with topology:
+    with topology:
+        if sys.platform == "win32":
             support = topology.get_support().cpubind
             if not (support.get_thisproc_cpubind and support.set_thisproc_cpubind):
                 _warn_affinity_unavailable("WindowsでCPU affinityを設定できません")
                 return resolved_cpu_num_threads
 
-            flags = CpuBindFlags.PROCESS
-            available_cpus = set(topology.get_cpubind(flags))
-            kinds = topology.get_cpukinds()
-            kind_count = kinds.n_kinds()
-            cpuset = kinds.get_info(kind_count - 1)[0]
-            selected_cpus = set(cpuset) & available_cpus
+        kinds = topology.get_cpukinds()
+        if sys.platform == "linux":
+            candidate_cpus = _select_linux_cpus(topology, kinds)
+            if candidate_cpus is None:
+                return resolved_cpu_num_threads
+        else:
+            candidate_cpus = set(kinds.get_info(kinds.n_kinds() - 1)[0])
 
-            if (
-                selected_cpus != available_cpus
-                and len(selected_cpus) > resolved_cpu_num_threads
-            ):
-                topology.set_cpubind(selected_cpus, flags)
+        available_cpus = set(topology.get_cpubind(flags))
+        selected_cpus = candidate_cpus & available_cpus
+        if (
+            selected_cpus != available_cpus
+            and len(selected_cpus) > resolved_cpu_num_threads
+        ):
+            topology.set_cpubind(selected_cpus, flags)
 
     return resolved_cpu_num_threads

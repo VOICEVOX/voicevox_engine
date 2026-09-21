@@ -9,7 +9,7 @@ dependencies = [
   "numpy==2.5.1",
   "platformdirs==4.11.0",
   "pydantic==2.13.4",
-  "pyhwloc==3.0.1; sys_platform == 'win32'", # NOTE: CPU affinityの設定にWindowsでのみ使用する
+  "pyhwloc==3.0.1; sys_platform == 'linux' or sys_platform == 'win32'", # NOTE: LinuxとWindowsのCPU affinity設定に使用する
   "pyopenjtalk",
   "python-multipart==0.0.32", # NOTE: required by fastapi.Form (fastapi's unmanaged dependency)
   "pyworld==0.3.5",

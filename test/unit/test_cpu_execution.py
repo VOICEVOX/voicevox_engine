@@ -4,9 +4,8 @@ import os
 import sys
 import warnings
 from enum import IntFlag
-from pathlib import Path
 from types import ModuleType, SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -15,11 +14,50 @@ from voicevox_engine.core import cpu_execution
 
 class _FakeCpuBindFlags(IntFlag):
     PROCESS = 1
+    THREAD = 2
 
 
-def test_configure_cpu_execution_uses_explicit_value() -> None:
-    with patch.object(sys, "platform", "darwin"):
-        assert cpu_execution.configure_cpu_execution(1) == 1
+class _FakeTopologyFlags(IntFlag):
+    INCLUDE_DISALLOWED = 1
+
+
+def _fake_topology(
+    kinds: list[tuple[set[int], int, dict[str, str]]],
+    available_cpus: set[int],
+    cpu_indices: set[int],
+) -> MagicMock:
+    topology = MagicMock()
+    topology.get_cpubind.return_value = available_cpus
+    topology.iter_cpus.return_value = [
+        SimpleNamespace(os_index=index) for index in cpu_indices
+    ]
+    topology.get_cpukinds.return_value.n_kinds.return_value = len(kinds)
+    topology.get_cpukinds.return_value.get_info.side_effect = lambda index: kinds[index]
+    topology.get_support.return_value.cpubind = SimpleNamespace(
+        get_thisproc_cpubind=True,
+        set_thisproc_cpubind=True,
+    )
+    return topology
+
+
+def _fake_pyhwloc_modules(topology: MagicMock) -> dict[str, ModuleType]:
+    package = ModuleType("pyhwloc")
+    topology_module = ModuleType("pyhwloc.topology")
+    topology_module.__dict__["CpuBindFlags"] = _FakeCpuBindFlags
+    topology_module.__dict__["TopologyFlags"] = _FakeTopologyFlags
+    topology_module.__dict__["Topology"] = SimpleNamespace(
+        from_this_system=MagicMock(return_value=topology)
+    )
+    return {
+        "pyhwloc": package,
+        "pyhwloc.topology": topology_module,
+    }
+
+
+def test_configure_cpu_execution_uses_explicit_value_without_pyhwloc_on_macos() -> None:
+    with patch.dict(sys.modules, {"pyhwloc": None, "pyhwloc.topology": None}):
+        with patch.object(sys, "platform", "darwin"):
+            assert cpu_execution.configure_cpu_execution(1) == 1
 
 
 @pytest.mark.parametrize("cpu_num_threads", [None, 0])
@@ -45,74 +83,76 @@ def test_configure_cpu_execution_warns_when_cpu_count_is_unknown() -> None:
             assert cpu_execution.configure_cpu_execution(None) == 0
 
 
-def test_select_linux_cpus_reads_actual_cpu_indices_and_half_capacity() -> None:
-    cpu_directory = Path("/sys/devices/system/cpu")
-    files = {
-        cpu_directory / "online": "0-1,3,5",
-        cpu_directory / "cpu0/cpu_capacity": "1024",
-        cpu_directory / "cpu1/cpu_capacity": "512",
-        cpu_directory / "cpu3/cpu_capacity": "511",
-        cpu_directory / "cpu5/cpu_capacity": "1024",
+def test_select_linux_cpus_uses_global_capacity_and_half_threshold() -> None:
+    topology = _fake_topology(
+        [
+            ({0, 1}, 0, {"LinuxCapacity": "512"}),
+            ({2}, 1, {"LinuxCapacity": "511"}),
+            ({3}, 2, {"LinuxCapacity": "1024"}),
+        ],
+        {0, 1, 2},
+        {0, 1, 2, 3},
+    )
+
+    assert cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) == {
+        0,
+        1,
+        3,
     }
-    with patch.object(Path, "read_text", autospec=True, side_effect=files.__getitem__):
-        assert cpu_execution._select_linux_cpus() == {0, 1, 5}
 
 
-@pytest.mark.parametrize("files", [{}, {"online": "0"}])
+def test_select_linux_cpus_handles_zero_capacity_by_threshold() -> None:
+    topology = _fake_topology(
+        [
+            ({0}, 0, {"LinuxCapacity": "0"}),
+            ({1}, 1, {"LinuxCapacity": "0"}),
+        ],
+        {0, 1},
+        {0, 1},
+    )
+
+    assert cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) == {
+        0,
+        1,
+    }
+
+
+@pytest.mark.parametrize(
+    "kinds",
+    [[], [({0}, 0, {})]],
+)
 def test_select_linux_cpus_warns_when_capacity_is_unavailable(
-    files: dict[str, str],
+    kinds: list[tuple[set[int], int, dict[str, str]]],
 ) -> None:
-    cpu_directory = Path("/sys/devices/system/cpu")
-    paths = {
-        cpu_directory / "online": files.get("online"),
-        cpu_directory / "cpu0/cpu_capacity": files.get("cpu0"),
-    }
+    topology = _fake_topology(kinds, {0}, {0})
 
-    def read_text(path: Path) -> str:
-        value = paths[path]
-        if value is None:
-            raise FileNotFoundError(path)
-        return value
-
-    with patch.object(Path, "read_text", autospec=True, side_effect=read_text):
-        with pytest.warns(UserWarning, match="CPU capacityを取得できません"):
-            assert cpu_execution._select_linux_cpus() is None
+    with pytest.warns(UserWarning, match="CPU capacityを取得できません"):
+        assert (
+            cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) is None
+        )
 
 
-def test_select_linux_cpus_propagates_permission_error() -> None:
-    with patch.object(Path, "read_text", side_effect=PermissionError("読み取れません")):
-        with pytest.raises(PermissionError, match="読み取れません"):
-            cpu_execution._select_linux_cpus()
-
-
-def _fake_topology(
-    kinds: list[tuple[set[int], int]], available_cpus: set[int]
-) -> MagicMock:
-    topology = MagicMock()
-    topology.get_cpubind.return_value = available_cpus
-    topology.get_cpukinds.return_value.n_kinds.return_value = len(kinds)
-    topology.get_cpukinds.return_value.get_info.side_effect = lambda index: (
-        *kinds[index],
-        {},
+def test_select_linux_cpus_warns_when_cpu_indices_are_sparse() -> None:
+    topology = _fake_topology(
+        [({0, 1, 3}, 0, {"LinuxCapacity": "1024"})],
+        {0, 1, 3},
+        {0, 1, 3},
     )
-    topology.get_support.return_value.cpubind = SimpleNamespace(
-        get_thisproc_cpubind=True,
-        set_thisproc_cpubind=True,
-    )
-    return topology
+
+    with pytest.warns(UserWarning, match="CPU番号に欠番"):
+        assert (
+            cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) is None
+        )
+
+    topology.get_cpukinds.return_value.get_info.assert_not_called()
 
 
-def _fake_pyhwloc_modules(topology: MagicMock) -> dict[str, ModuleType]:
-    package = ModuleType("pyhwloc")
-    topology_module = ModuleType("pyhwloc.topology")
-    topology_module.__dict__["CpuBindFlags"] = _FakeCpuBindFlags
-    topology_module.__dict__["Topology"] = SimpleNamespace(
-        from_this_system=MagicMock(return_value=topology)
-    )
-    return {
-        "pyhwloc": package,
-        "pyhwloc.topology": topology_module,
-    }
+def test_select_linux_cpus_propagates_topology_error() -> None:
+    topology = _fake_topology([], {0}, {0})
+    topology.iter_cpus.side_effect = PermissionError("読み取れません")
+
+    with pytest.raises(PermissionError, match="読み取れません"):
+        cpu_execution._select_linux_cpus(topology, topology.get_cpukinds())
 
 
 @pytest.mark.parametrize(
@@ -122,59 +162,72 @@ def _fake_pyhwloc_modules(topology: MagicMock) -> dict[str, ModuleType]:
 def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask(
     num_threads: int, available_cpus: set[int], should_bind: bool
 ) -> None:
-    cpu_directory = Path("/sys/devices/system/cpu")
-    files = {
-        cpu_directory / "online": "0-2,4",
-        cpu_directory / "cpu0/cpu_capacity": "512",
-        cpu_directory / "cpu1/cpu_capacity": "512",
-        cpu_directory / "cpu2/cpu_capacity": "256",
-        cpu_directory / "cpu4/cpu_capacity": "1024",
-    }
-    with patch.object(Path, "read_text", autospec=True, side_effect=files.__getitem__):
-        with patch.object(
-            os, "sched_getaffinity", return_value=available_cpus, create=True
-        ) as get:
-            with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
-                with patch.object(sys, "platform", "linux"):
-                    with patch.dict(
-                        sys.modules, {"pyhwloc": None, "pyhwloc.topology": None}
-                    ):
-                        assert (
-                            cpu_execution.configure_cpu_execution(num_threads)
-                            == num_threads
-                        )
+    topology = _fake_topology(
+        [
+            ({0, 1}, 0, {"LinuxCapacity": "512"}),
+            ({2}, 1, {"LinuxCapacity": "511"}),
+            ({3}, 2, {"LinuxCapacity": "1024"}),
+        ],
+        available_cpus,
+        {0, 1, 2, 3},
+    )
+    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
+        with patch.object(sys, "platform", "linux"):
+            assert cpu_execution.configure_cpu_execution(num_threads) == num_threads
 
-    get.assert_called_once_with(0)
+    topology.set_flags.assert_called_once_with(_FakeTopologyFlags.INCLUDE_DISALLOWED)
+    assert topology.mock_calls.index(
+        call.set_flags(_FakeTopologyFlags.INCLUDE_DISALLOWED)
+    ) < topology.mock_calls.index(call.__enter__())
+    topology.get_cpubind.assert_called_once_with(_FakeCpuBindFlags.THREAD)
     if should_bind:
-        set_affinity.assert_called_once_with(0, {0, 1})
+        topology.set_cpubind.assert_called_once_with({0, 1}, _FakeCpuBindFlags.THREAD)
     else:
-        set_affinity.assert_not_called()
+        topology.set_cpubind.assert_not_called()
 
 
-def test_configure_linux_cpu_execution_skips_unavailable_capacity() -> None:
-    with patch.object(Path, "read_text", side_effect=FileNotFoundError):
-        with patch.object(os, "sched_getaffinity", create=True) as get_affinity:
-            with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
-                with patch.object(sys, "platform", "linux"):
-                    with pytest.warns(
-                        UserWarning, match="CPU capacityを取得できません"
-                    ):
-                        assert cpu_execution.configure_cpu_execution(1) == 1
+@pytest.mark.parametrize(
+    ("kinds", "cpu_indices", "warning"),
+    [
+        ([], {0, 1}, "CPU capacityを取得できません"),
+        ([({0, 1}, 0, {})], {0, 1}, "CPU capacityを取得できません"),
+        (
+            [({0, 2}, 0, {"LinuxCapacity": "1024"})],
+            {0, 2},
+            "CPU番号に欠番",
+        ),
+    ],
+)
+def test_configure_linux_cpu_execution_skips_unavailable_capacity(
+    kinds: list[tuple[set[int], int, dict[str, str]]],
+    cpu_indices: set[int],
+    warning: str,
+) -> None:
+    topology = _fake_topology(kinds, cpu_indices, cpu_indices)
+    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
+        with patch.object(sys, "platform", "linux"):
+            with pytest.warns(UserWarning, match=warning):
+                assert cpu_execution.configure_cpu_execution(1) == 1
 
-    get_affinity.assert_not_called()
-    set_affinity.assert_not_called()
+    topology.get_cpubind.assert_not_called()
+    topology.set_cpubind.assert_not_called()
 
 
 @pytest.mark.parametrize(("num_threads", "should_bind"), [(1, True), (2, False)])
 def test_configure_windows_cpu_execution_binds_with_initial_mask(
     num_threads: int, should_bind: bool
 ) -> None:
-    topology = _fake_topology([({2, 3}, 0), ({0, 1, 4}, 1)], {0, 1, 2, 3})
+    topology = _fake_topology(
+        [({2, 3}, 0, {}), ({0, 1, 4}, 1, {})],
+        {0, 1, 2, 3},
+        {0, 1, 2, 3, 4},
+    )
     with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
         with patch.object(sys, "platform", "win32"):
             assert cpu_execution.configure_cpu_execution(num_threads) == num_threads
 
     topology.set_components.assert_called_once_with("x86")
+    topology.get_cpubind.assert_called_once_with(_FakeCpuBindFlags.PROCESS)
     if should_bind:
         topology.set_cpubind.assert_called_once_with({0, 1}, _FakeCpuBindFlags.PROCESS)
     else:
@@ -182,7 +235,11 @@ def test_configure_windows_cpu_execution_binds_with_initial_mask(
 
 
 def test_configure_windows_cpu_execution_does_not_choose_lower_kind() -> None:
-    topology = _fake_topology([({3}, 0), ({0, 1}, 1), ({2}, 2)], {0, 1, 3})
+    topology = _fake_topology(
+        [({3}, 0, {}), ({0, 1}, 1, {}), ({2}, 2, {})],
+        {0, 1, 3},
+        {0, 1, 2, 3},
+    )
     with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
         with patch.object(sys, "platform", "win32"):
             assert cpu_execution.configure_cpu_execution(1) == 1
@@ -191,7 +248,7 @@ def test_configure_windows_cpu_execution_does_not_choose_lower_kind() -> None:
 
 
 def test_configure_windows_cpu_execution_warns_when_binding_is_unsupported() -> None:
-    topology = _fake_topology([], {0, 1})
+    topology = _fake_topology([], {0, 1}, {0, 1})
     topology.get_support.return_value.cpubind.get_thisproc_cpubind = False
     topology.get_support.return_value.cpubind.set_thisproc_cpubind = False
     with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
