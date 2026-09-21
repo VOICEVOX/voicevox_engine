@@ -39,7 +39,7 @@ class CancellableEngine:
         voicevox_dir: Path | None = None,
         runtime_dirs: list[Path] | None = None,
         *,
-        cpu_num_threads: int,
+        cpu_num_threads: int = 0,
         enable_mock: bool = True,
     ) -> None:
         """init_processesの数だけ同時処理できるエンジンを立ち上げる。"""

@@ -8,10 +8,10 @@ import warnings
 from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TextIO
+from typing import Annotated, TextIO
 
 import uvicorn
-from pydantic import TypeAdapter
+from pydantic import Field, TypeAdapter
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
@@ -175,7 +175,7 @@ class _CLIArgs:
     enable_cancellable_synthesis: bool
     init_processes: int
     load_all_models: bool
-    cpu_num_threads: int | None
+    cpu_num_threads: Annotated[int | None, Field(ge=0, le=65535)]
     output_log_utf8: bool
     cors_policy_mode: CorsPolicyMode | None
     allow_origins: list[str] | None

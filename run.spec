@@ -35,9 +35,9 @@ a = Analysis(
     binaries=(
         collect_dynamic_libs(
             "pyhwloc",
-            search_patterns=["libhwloc.so", "libpyhwloc.so", "hwloc.dll", "pyhwloc.dll"],
+            search_patterns=["hwloc.dll", "pyhwloc.dll"],
         )
-        if sys.platform in ("win32", "linux")
+        if sys.platform == "win32"
         else []
     ),
     datas=collect_data_files("pyopenjtalk"),

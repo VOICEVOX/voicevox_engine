@@ -594,7 +594,7 @@ uv run run.py --output_log_utf8
   uv run run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
-未指定または `0` の場合は、論理 CPU 数の半分を使おうとします。
+未指定または `0` の場合は、論理 CPU 数の半分を小数点以下切り上げで使おうとします。
 Windows と Linux では、さらに性能の高い CPU を優先して使おうとします。
 
 #### 過去のバージョンのコアを使う
