@@ -82,7 +82,12 @@ def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
 
 
 def configure_cpu_execution(cpu_num_threads: int | None) -> int:
-    """CPUスレッド数を解決し、必要なら高性能CPUへCPU affinityを設定する。"""
+    """
+    CPUスレッド数を決定し、条件に合えば高性能CPUへCPU affinityを設定する。
+
+    未指定または0の場合は論理CPU数の半分を小数点以下切り捨てで使い、取得できなければ0を返す。
+    Windowsでは高いCPU性能クラス、Linuxでは最大のLinuxCapacityの半分以上を持つ論理CPUを候補とし、既存の許可CPUの範囲で候補数が決定したスレッド数を超える場合にaffinityを設定する。
+    """
     resolved_cpu_num_threads = _resolve_cpu_num_threads(cpu_num_threads)
     if resolved_cpu_num_threads == 0:
         _warn_affinity_unavailable("CPUスレッド数を決定できません")

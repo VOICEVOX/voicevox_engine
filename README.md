@@ -594,12 +594,8 @@ uv run run.py --output_log_utf8
   uv run run.py --voicevox_dir=$VOICEVOX_DIR
   ```
 
-未指定または `0` の場合は、システム全体の論理 CPU 数の半分を小数点以下切り捨てで使います。`1` 以上 `65535` 以下の整数を指定した場合は、その値を使います。
-自動指定で論理 CPU 数を取得できない場合は、`0` を VOICEVOX CORE に渡します。
-
-Windows では最も高い CPU 性能クラス、Linux では最大の `LinuxCapacity` の半分以上を持つ論理 CPU を候補にします。
-候補数が指定スレッド数より多い場合だけ、起動時に許可されている CPU の範囲内で affinity を制限します。
-性能情報を取得できない場合は警告を出し、affinity を変更しません。macOS でも affinity は変更しません。
+未指定または `0` の場合は、論理 CPU 数の半分を使おうとします。
+Windows と Linux では、さらに性能の高い CPU を優先して使おうとします。
 
 #### 過去のバージョンのコアを使う
 
