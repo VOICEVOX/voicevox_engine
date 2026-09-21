@@ -87,13 +87,13 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
     if system == "Linux":
         candidate_cpus = _select_linux_cpus()
         if candidate_cpus is not None:
-            available_cpus = os.sched_getaffinity(0)
+            available_cpus = getattr(os, "sched_getaffinity")(0)  # noqa: B009
             selected_linux_cpus = candidate_cpus & available_cpus
             if (
                 selected_linux_cpus != available_cpus
                 and len(selected_linux_cpus) > resolved_cpu_num_threads
             ):
-                os.sched_setaffinity(0, selected_linux_cpus)
+                getattr(os, "sched_setaffinity")(0, selected_linux_cpus)  # noqa: B009
         return resolved_cpu_num_threads
 
     if system != "Windows":
