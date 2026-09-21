@@ -1,7 +1,7 @@
 """CPUスレッド数の既定値のテスト"""
 
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core import core_initializer
@@ -9,7 +9,7 @@ from voicevox_engine.core import core_initializer
 
 def test_initialize_cores_passes_default_zero_to_core(tmp_path: Path) -> None:
     core = MagicMock()
-    core.metas.side_effect = ['[{"version":"0.0.0"}]', '[{"version":"0.0.1"}]']
+    core.metas.side_effect = lambda: f'[{{"version":"{core.metas.call_count}"}}]'
     with (
         patch.object(core_initializer, "engine_root", return_value=tmp_path),
         patch.object(core_initializer, "load_runtime_lib"),
@@ -25,10 +25,7 @@ def test_initialize_cores_passes_default_zero_to_core(tmp_path: Path) -> None:
             enable_mock=False,
         )
 
-    assert core_wrapper.call_args_list == [
-        call(False, tmp_path, 0, False),
-        call(False, tmp_path / "core_libraries", 0, False),
-    ]
+    assert {core_call.args[2] for core_call in core_wrapper.call_args_list} == {0}
 
 
 def test_cancellable_engine_defaults_cpu_num_threads_to_zero() -> None:

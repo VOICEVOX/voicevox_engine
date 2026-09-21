@@ -131,7 +131,7 @@ def _fake_pyhwloc_modules(topology: MagicMock) -> dict[str, ModuleType]:
     ("num_threads", "available_cpus", "should_bind"),
     [(1, {0, 1, 2}, True), (2, {0, 1, 2}, False), (1, {0, 1}, False)],
 )
-def test_configure_linux_cpu_execution_respects_initial_mask(
+def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask(
     num_threads: int, available_cpus: set[int], should_bind: bool
 ) -> None:
     cpu_directory = Path("/sys/devices/system/cpu")
@@ -139,7 +139,7 @@ def test_configure_linux_cpu_execution_respects_initial_mask(
         cpu_directory / "online": "0-2,4",
         cpu_directory / "cpu0/cpu_capacity": "1024",
         cpu_directory / "cpu1/cpu_capacity": "1024",
-        cpu_directory / "cpu2/cpu_capacity": "400",
+        cpu_directory / "cpu2/cpu_capacity": "512",
         cpu_directory / "cpu4/cpu_capacity": "2048",
     }
     with patch.object(Path, "read_text", autospec=True, side_effect=files.__getitem__):
