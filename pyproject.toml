@@ -8,7 +8,6 @@ dependencies = [
   "kanalizer==0.1.1",
   "numpy==2.5.1",
   "platformdirs==4.11.0",
-  "psutil==7.2.2",
   "pydantic==2.13.4",
   "pyhwloc==3.0.1; sys_platform == 'win32' or sys_platform == 'linux'", # NOTE: macOS用wheelがなくローカルビルドが必要なため、macOSでは利用しない
   "pyopenjtalk",

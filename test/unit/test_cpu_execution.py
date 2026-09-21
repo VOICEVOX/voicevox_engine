@@ -1,12 +1,13 @@
 """`cpu_execution.py` のテスト"""
 
+import os
 import platform
 import sys
+import warnings
 from enum import IntFlag
 from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import psutil
 import pytest
 
 from voicevox_engine.core import cpu_execution
@@ -29,7 +30,7 @@ def test_configure_cpu_execution_resolves_automatic_value(
     cpu_num_threads: int | None,
 ) -> None:
     with patch.object(platform, "system", return_value="Darwin"):
-        with patch.object(psutil, "cpu_count", return_value=9):
+        with patch.object(os, "cpu_count", return_value=9):
             assert cpu_execution.configure_cpu_execution(cpu_num_threads) == 4
 
 
@@ -40,22 +41,30 @@ def test_configure_cpu_execution_rejects_invalid_value(cpu_num_threads: int) -> 
 
 
 def test_configure_cpu_execution_warns_when_cpu_count_is_unknown() -> None:
-    with patch.object(psutil, "cpu_count", return_value=None):
+    with patch.object(os, "cpu_count", return_value=None):
         with pytest.warns(UserWarning, match="CPUスレッド数を決定できません"):
+            assert cpu_execution.configure_cpu_execution(None) == 0
+
+
+def test_configure_cpu_execution_does_not_warn_for_one_logical_cpu() -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with patch.object(os, "cpu_count", return_value=1):
             assert cpu_execution.configure_cpu_execution(None) == 0
 
 
 def test_select_windows_cpus_uses_highest_class_with_initial_mask() -> None:
     kinds: list[cpu_execution._CpuKind] = [
-        ({0, 1, 4}, 2, {}),
+        ({0, 1, 4}, 1, {}),
         ({2, 3}, 0, {}),
     ]
     assert cpu_execution._select_windows_cpus(kinds, {0, 1, 2, 3}) == {0, 1}
 
 
 def test_select_windows_cpus_warns_when_class_is_missing() -> None:
+    kinds: list[cpu_execution._CpuKind] = [({0}, 1, {}), ({1}, -1, {})]
     with pytest.warns(UserWarning, match="CPU性能クラスを取得できません"):
-        assert cpu_execution._select_windows_cpus([({0}, -1, {})], {0}) is None
+        assert cpu_execution._select_windows_cpus(kinds, {0, 1}) is None
 
 
 def test_select_linux_cpus_includes_half_capacity_with_initial_mask() -> None:
@@ -64,21 +73,44 @@ def test_select_linux_cpus_includes_half_capacity_with_initial_mask() -> None:
         ({2}, 0, {"LinuxCapacity": "512"}),
         ({3}, 0, {"LinuxCapacity": "511"}),
     ]
-    assert cpu_execution._select_linux_cpus(kinds, {0, 1, 2, 3}, [0, 1, 2, 3, 4]) == {
+    assert cpu_execution._select_linux_cpus(kinds, {0, 1, 2, 3}, [4, 2, 0, 3, 1]) == {
         0,
         1,
         2,
     }
 
 
-def test_select_linux_cpus_warns_when_capacity_is_missing() -> None:
+@pytest.mark.parametrize("info", [{}, {"LinuxCapacity": "0"}])
+def test_select_linux_cpus_warns_when_capacity_is_missing_or_zero(
+    info: dict[str, str],
+) -> None:
     with pytest.warns(UserWarning, match="LinuxCapacityを取得できません"):
-        assert cpu_execution._select_linux_cpus([({0}, 0, {})], {0}, [0]) is None
+        assert cpu_execution._select_linux_cpus([({0}, 0, info)], {0}, [0]) is None
 
 
-def test_select_linux_cpus_warns_when_cpu_indices_are_not_contiguous() -> None:
+def test_select_linux_cpus_rejects_negative_capacity() -> None:
+    with pytest.raises(ValueError, match="LinuxCapacity"):
+        cpu_execution._select_linux_cpus([({0}, 0, {"LinuxCapacity": "-1"})], {0}, [0])
+
+
+def test_select_linux_cpus_propagates_invalid_capacity() -> None:
+    with pytest.raises(ValueError, match="invalid literal"):
+        cpu_execution._select_linux_cpus(
+            [({0}, 0, {"LinuxCapacity": "invalid"})], {0}, [0]
+        )
+
+
+@pytest.mark.parametrize(
+    ("pu_os_indices", "available_cpus"),
+    [([0, 2], {0, 2}), ([0, 0, 1], {0, 1})],
+)
+def test_select_linux_cpus_warns_when_cpu_indices_have_gaps_or_duplicates(
+    pu_os_indices: list[int], available_cpus: set[int]
+) -> None:
     with pytest.warns(UserWarning, match="論理CPU番号の対応を確認できません"):
-        assert cpu_execution._select_linux_cpus([], {1}, [1]) is None
+        assert (
+            cpu_execution._select_linux_cpus([], available_cpus, pu_os_indices) is None
+        )
 
 
 def _fake_topology(
@@ -101,25 +133,16 @@ def _fake_topology(
     return topology
 
 
-def _fake_pyhwloc_modules(
-    topology: MagicMock, processor_groups: int
-) -> dict[str, ModuleType]:
+def _fake_pyhwloc_modules(topology: MagicMock) -> dict[str, ModuleType]:
     package = ModuleType("pyhwloc")
     topology_module = ModuleType("pyhwloc.topology")
     topology_module.__dict__["CpuBindFlags"] = _FakeCpuBindFlags
     topology_module.__dict__["Topology"] = SimpleNamespace(
         from_this_system=MagicMock(return_value=topology)
     )
-    hwloc_package = ModuleType("pyhwloc.hwloc")
-    windows_module = ModuleType("pyhwloc.hwloc.windows")
-    windows_module.__dict__["get_nr_processor_groups"] = MagicMock(
-        return_value=processor_groups
-    )
     return {
         "pyhwloc": package,
         "pyhwloc.topology": topology_module,
-        "pyhwloc.hwloc": hwloc_package,
-        "pyhwloc.hwloc.windows": windows_module,
     }
 
 
@@ -132,7 +155,7 @@ def test_configure_linux_cpu_execution_respects_initial_mask(
         ({2}, 0, {"LinuxCapacity": "400"}),
     ]
     topology = _fake_topology(kinds, {0, 1, 2})
-    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology, 1)):
+    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
         with patch.object(platform, "system", return_value="Linux"):
             assert cpu_execution.configure_cpu_execution(num_threads) == num_threads
 
@@ -144,12 +167,13 @@ def test_configure_linux_cpu_execution_respects_initial_mask(
         topology.set_cpubind.assert_not_called()
 
 
-def test_configure_windows_cpu_execution_uses_process_binding() -> None:
+def test_configure_windows_cpu_execution_binds_with_ranking_variable() -> None:
     kinds: list[cpu_execution._CpuKind] = [({0, 1}, 1, {}), ({2}, 0, {})]
     topology = _fake_topology(kinds, {0, 1, 2})
-    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology, 1)):
-        with patch.object(platform, "system", return_value="Windows"):
-            assert cpu_execution.configure_cpu_execution(1) == 1
+    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
+        with patch.dict(os.environ, {"HWLOC_CPUKINDS_RANKING": "coretype"}):
+            with patch.object(platform, "system", return_value="Windows"):
+                assert cpu_execution.configure_cpu_execution(1) == 1
 
     topology.set_components.assert_called_once_with("x86")
     topology.set_cpubind.assert_called_once_with(
@@ -157,19 +181,18 @@ def test_configure_windows_cpu_execution_uses_process_binding() -> None:
     )
 
 
-def test_configure_windows_cpu_execution_warns_for_multiple_groups() -> None:
+@pytest.mark.parametrize(
+    ("get_supported", "set_supported"), [(False, True), (True, False)]
+)
+def test_configure_windows_cpu_execution_warns_when_binding_is_unsupported(
+    get_supported: bool, set_supported: bool
+) -> None:
     topology = _fake_topology([], {0, 1})
-    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology, 2)):
+    topology.get_support.return_value.cpubind.get_thisproc_cpubind = get_supported
+    topology.get_support.return_value.cpubind.set_thisproc_cpubind = set_supported
+    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology)):
         with patch.object(platform, "system", return_value="Windows"):
-            with pytest.warns(UserWarning, match="Processor Group"):
+            with pytest.warns(UserWarning, match="CPU affinityを設定できません"):
                 assert cpu_execution.configure_cpu_execution(1) == 1
 
     topology.set_cpubind.assert_not_called()
-
-
-def test_configure_windows_cpu_execution_rejects_missing_group() -> None:
-    topology = _fake_topology([], {0, 1})
-    with patch.dict(sys.modules, _fake_pyhwloc_modules(topology, 0)):
-        with patch.object(platform, "system", return_value="Windows"):
-            with pytest.raises(RuntimeError, match="Processor Group"):
-                cpu_execution.configure_cpu_execution(1)
