@@ -81,13 +81,7 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
             available_cpus = set(topology.get_cpubind(flags))
             kinds = topology.get_cpukinds()
             kind_count = kinds.n_kinds()
-            if kind_count == 0:
-                _warn_affinity_unavailable("WindowsのCPU性能クラスを取得できません")
-                return resolved_cpu_num_threads
-            cpuset, efficiency, _ = kinds.get_info(kind_count - 1)
-            if efficiency < 0:
-                _warn_affinity_unavailable("WindowsのCPU性能クラスを取得できません")
-                return resolved_cpu_num_threads
+            cpuset = kinds.get_info(kind_count - 1)[0]
             selected_cpus = set(cpuset) & available_cpus
 
             if (
