@@ -10,6 +10,7 @@ dependencies = [
   "platformdirs==4.11.0",
   "psutil==7.2.2",
   "pydantic==2.13.4",
+  "pyhwloc==3.0.1; sys_platform == 'win32' or sys_platform == 'linux'",
   "pyopenjtalk",
   "python-multipart==0.0.32", # NOTE: required by fastapi.Form (fastapi's unmanaged dependency)
   "pyworld==0.3.5",

@@ -3,7 +3,7 @@ revision = 3
 requires-python = "==3.14.6"
 
 [options]
-exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer = "2026-09-14T07:15:46.361442136Z"
 exclude-newer-span = "P1W"
 
 [[package]]
@@ -899,6 +899,17 @@ wheels = [
 ]
 
 [[package]]
+name = "pyhwloc"
+version = "3.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/67/257e9f4744a21c9fe7136cc639aafce618bd675fa69377c7ba0e8c60e1b0/pyhwloc-3.0.1.tar.gz", hash = "sha256:7a068f72d6ed15708bd507f062017c6f3da7d778d748958e3702a0759070cca8", size = 95011, upload-time = "2026-05-12T05:46:14.142Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/f6/0ac13a2c439ee79f63eb373bf3d6c81e549165523dc75a7168e180d79fff/pyhwloc-3.0.1-py3-none-manylinux_2_34_aarch64.whl", hash = "sha256:4d27294f2b9a6930b46802b047a429786664ee13963557890afa6c9bce6deaff", size = 2422000, upload-time = "2026-05-12T05:46:08.36Z" },
+    { url = "https://files.pythonhosted.org/packages/23/6b/b6967a4d58f99e9ff2464753ab218df407e841534615624847130c40445e/pyhwloc-3.0.1-py3-none-manylinux_2_34_x86_64.whl", hash = "sha256:527d297708238072453de68e73084545bf98ac0c2f07ce25176ceaf761fa19e6", size = 2506457, upload-time = "2026-05-12T05:46:10.806Z" },
+    { url = "https://files.pythonhosted.org/packages/10/f5/ec8ec9e59c163912d7741d277eee7f4f31b82aa59574fe1611ce45def010/pyhwloc-3.0.1-py3-none-win_amd64.whl", hash = "sha256:07ef6ffcde04c77c35c4184f6ef050864376b44f0a47af31e12817dc0b849673", size = 674274, upload-time = "2026-05-12T05:46:12.805Z" },
+]
+
+[[package]]
 name = "pyinstaller"
 version = "6.21.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1361,6 +1372,7 @@ dependencies = [
     { name = "platformdirs" },
     { name = "psutil" },
     { name = "pydantic" },
+    { name = "pyhwloc", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pyopenjtalk" },
     { name = "python-multipart" },
     { name = "pyworld" },
@@ -1402,6 +1414,7 @@ requires-dist = [
     { name = "platformdirs", specifier = "==4.11.0" },
     { name = "psutil", specifier = "==7.2.2" },
     { name = "pydantic", specifier = "==2.13.4" },
+    { name = "pyhwloc", marker = "sys_platform == 'linux' or sys_platform == 'win32'", specifier = "==3.0.1" },
     { name = "pyopenjtalk", git = "https://github.com/VOICEVOX/pyopenjtalk?rev=74703b034dd90a1f199f49bb70bf3b66b1728a86" },
     { name = "python-multipart", specifier = "==0.0.32" },
     { name = "pyworld", specifier = "==0.3.5" },

@@ -1,10 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 # このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from shutil import copy2, copytree
 
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 parser = ArgumentParser()
 parser.add_argument("--libcore_path", type=Path)
@@ -31,7 +32,14 @@ codesign_identity: str | None = options.codesign_identity
 a = Analysis(
     ["run.py"],
     pathex=[],
-    binaries=[],
+    binaries=(
+        collect_dynamic_libs(
+            "pyhwloc",
+            search_patterns=["libhwloc.so", "libpyhwloc.so", "hwloc.dll", "pyhwloc.dll"],
+        )
+        if sys.platform in ("win32", "linux")
+        else []
+    ),
     datas=collect_data_files("pyopenjtalk"),
     hiddenimports=[],
     hookspath=[],
