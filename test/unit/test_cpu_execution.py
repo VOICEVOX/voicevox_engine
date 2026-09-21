@@ -143,8 +143,10 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
         cpu_directory / "cpu4/cpu_capacity": "2048",
     }
     with patch.object(Path, "read_text", autospec=True, side_effect=files.__getitem__):
-        with patch.object(os, "sched_getaffinity", return_value=available_cpus) as get:
-            with patch.object(os, "sched_setaffinity") as set_affinity:
+        with patch.object(
+            os, "sched_getaffinity", return_value=available_cpus, create=True
+        ) as get:
+            with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
                 with patch.object(platform, "system", return_value="Linux"):
                     with patch.dict(
                         sys.modules, {"pyhwloc": None, "pyhwloc.topology": None}
@@ -163,8 +165,10 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
 
 def test_configure_linux_cpu_execution_propagates_binding_failure() -> None:
     with patch.object(cpu_execution, "_select_linux_cpus", return_value={0, 1}):
-        with patch.object(os, "sched_getaffinity", return_value={0, 1, 2}):
-            with patch.object(os, "sched_setaffinity", side_effect=OSError("失敗")):
+        with patch.object(os, "sched_getaffinity", return_value={0, 1, 2}, create=True):
+            with patch.object(
+                os, "sched_setaffinity", side_effect=OSError("失敗"), create=True
+            ):
                 with patch.object(platform, "system", return_value="Linux"):
                     with pytest.raises(OSError, match="失敗"):
                         cpu_execution.configure_cpu_execution(1)
@@ -172,8 +176,8 @@ def test_configure_linux_cpu_execution_propagates_binding_failure() -> None:
 
 def test_configure_linux_cpu_execution_skips_unavailable_capacity() -> None:
     with patch.object(Path, "read_text", side_effect=FileNotFoundError):
-        with patch.object(os, "sched_getaffinity") as get_affinity:
-            with patch.object(os, "sched_setaffinity") as set_affinity:
+        with patch.object(os, "sched_getaffinity", create=True) as get_affinity:
+            with patch.object(os, "sched_setaffinity", create=True) as set_affinity:
                 with patch.object(platform, "system", return_value="Linux"):
                     with pytest.warns(
                         UserWarning, match="CPU capacityを取得できません"

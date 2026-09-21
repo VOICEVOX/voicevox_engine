@@ -3,7 +3,9 @@
 import os
 import platform
 import warnings
+from collections.abc import Callable, Iterable
 from pathlib import Path
+from typing import cast
 
 type _CpuKind = tuple[set[int], int, dict[str, str]]
 
@@ -87,13 +89,21 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
     if system == "Linux":
         candidate_cpus = _select_linux_cpus()
         if candidate_cpus is not None:
-            available_cpus = getattr(os, "sched_getaffinity")(0)  # noqa: B009
+            get_affinity = cast(
+                Callable[[int], set[int]],
+                getattr(os, "sched_getaffinity"),  # noqa: B009
+            )
+            available_cpus = get_affinity(0)
             selected_linux_cpus = candidate_cpus & available_cpus
             if (
                 selected_linux_cpus != available_cpus
                 and len(selected_linux_cpus) > resolved_cpu_num_threads
             ):
-                getattr(os, "sched_setaffinity")(0, selected_linux_cpus)  # noqa: B009
+                set_affinity = cast(
+                    Callable[[int, Iterable[int]], None],
+                    getattr(os, "sched_setaffinity"),  # noqa: B009
+                )
+                set_affinity(0, selected_linux_cpus)
         return resolved_cpu_num_threads
 
     if system != "Windows":
