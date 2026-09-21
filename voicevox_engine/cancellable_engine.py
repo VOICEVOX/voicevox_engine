@@ -39,10 +39,10 @@ class CancellableEngine:
         voicevox_dir: Path | None = None,
         runtime_dirs: list[Path] | None = None,
         *,
-        cpu_num_threads: int = 0,
+        cpu_num_threads: int,
         enable_mock: bool = True,
     ) -> None:
-        """init_processesの数だけ同時処理できるエンジンを立ち上げる。"""
+        """init_processesの数だけ同時処理できるエンジンを立ち上げる。その他の引数はcore_initializerを参照。"""
         self.use_gpu = use_gpu
         self.voicelib_dirs = voicelib_dirs
         self.voicevox_dir = voicevox_dir
@@ -188,8 +188,8 @@ def start_synthesis_subprocess(
     """
     コネクションへの入力に応答して音声合成するループを実行する
 
-    引数 use_gpu, voicelib_dirs, voicevox_dir, runtime_dirs, cpu_num_threads, enable_mock は、
-    core_initializer を参照。
+    引数 use_gpu, voicelib_dirs, voicevox_dir,
+    runtime_dirs, cpu_num_threads, enable_mock は、 core_initializer を参照
 
     Parameters
     ----------

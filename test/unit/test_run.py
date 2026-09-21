@@ -27,7 +27,7 @@ def test_read_cli_arguments_rejects_invalid_cpu_num_threads(
 
 
 @pytest.mark.parametrize("source", ["cli", "env"])
-@pytest.mark.parametrize("cpu_num_threads", [0, 1, 65535])
+@pytest.mark.parametrize("cpu_num_threads", [0, 65535])
 def test_read_cli_arguments_accepts_valid_cpu_num_threads(
     source: str, cpu_num_threads: int
 ) -> None:

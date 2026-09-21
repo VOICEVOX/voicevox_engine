@@ -55,7 +55,7 @@ def initialize_cores(
     voicevox_dir: Path | None = None,
     runtime_dirs: list[Path] | None = None,
     *,
-    cpu_num_threads: int = 0,
+    cpu_num_threads: int,
     enable_mock: bool = True,
     load_all_models: bool = False,
 ) -> CoreManager:
