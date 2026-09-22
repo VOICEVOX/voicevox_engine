@@ -66,7 +66,7 @@ def initialize_cores(
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
     cpu_num_threads:
-        音声ライブラリが推論に用いるCPUスレッド数。0の場合はコアにスレッド数の決定を委ねる
+        音声ライブラリが推論に用いるCPUスレッド数。0の場合はランタイムによって自動的に決定される
     voicelib_dirs:
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir:
