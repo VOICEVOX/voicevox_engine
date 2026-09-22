@@ -422,7 +422,7 @@ VOICEVOX ではセキュリティ保護のため`localhost`・`127.0.0.1`・`app
 
 ### データを変更する API を無効化する
 
-実行時引数`--disable_mutable_api`か環境変数`VV_DISABLE_MUTABLE_API=1`を指定することで、エンジンの設定や辞書などを変更する API を無効にできます。
+コマンドライン引数`--disable_mutable_api`か環境変数`VV_DISABLE_MUTABLE_API=1`を指定することで、エンジンの設定や辞書などを変更する API を無効にできます。
 
 ### 文字コード
 
@@ -581,10 +581,12 @@ uv run run.py --output_log_utf8
 
 #### CPU スレッド数を指定する
 
-音声合成を行う CPU スレッド数は、実行時引数または環境変数で指定できます。
-両方を指定した場合は実行時引数が優先されます。
+CPU スレッド数が未指定の場合は、論理コア数の半分が使われます。  
+Windows と Linux では性能の高い CPU を優先して使おうとします。  
+もし IaaS 上で実行していたり、専用サーバーで実行している場合など、  
+エンジンが使う処理能力を調節したい場合は、CPU スレッド数を指定することで実現できます。
 
-- 実行時引数で指定する
+- コマンドライン引数で指定する
   ```bash
   uv run run.py --voicevox_dir=$VOICEVOX_DIR --cpu_num_threads=4
   ```
@@ -593,9 +595,6 @@ uv run run.py --output_log_utf8
   export VV_CPU_NUM_THREADS=4
   uv run run.py --voicevox_dir=$VOICEVOX_DIR
   ```
-
-未指定または `0` の場合は、論理 CPU 数の半分を小数点以下切り上げで使おうとします。
-Windows と Linux では、さらに性能の高い CPU を優先して使おうとします。
 
 #### 過去のバージョンのコアを使う
 
