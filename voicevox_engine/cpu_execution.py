@@ -5,8 +5,25 @@ import sys
 import warnings
 
 
-def _warn_affinity_unavailable(reason: str) -> None:
-    warnings.warn(f"{reason}。CPU affinityは変更しません。", stacklevel=2)
+def configure_cpu_execution(cpu_num_threads: int | None) -> int:
+    """
+    CPUスレッド数を決定して返し、実行環境とCPU構成に応じてCPU affinityを制限する。
+
+    解決後のCPUスレッド数が`0`でなく、OSがLinuxまたはWindowsの場合に、CPU affinityの変更を検討する。
+    Linuxでは、CPU番号が`0`から連続し、すべてのCPU種別でLinuxCapacityを取得できる場合に、最大値の半分以上のcapacityを持つCPUを候補とする。
+    Windowsでは、現在のプロセスのCPU affinityを取得・設定できる場合に、hwlocが返す最後のCPU種別を候補とする。
+    候補と現在のCPU affinityの共通部分を選び、現在よりCPUの範囲が狭まり、かつ選んだ論理CPU数が解決後のスレッド数を上回る場合にだけ変更する。
+    変更対象はLinuxでは現在のスレッド、Windowsでは現在のプロセスとする。
+    """
+    resolved_cpu_num_threads = _resolve_cpu_num_threads(cpu_num_threads)
+    if resolved_cpu_num_threads == 0:
+        return resolved_cpu_num_threads
+
+    if sys.platform not in ("linux", "win32"):
+        return resolved_cpu_num_threads
+
+    _configure_cpu_affinity(resolved_cpu_num_threads)
+    return resolved_cpu_num_threads
 
 
 def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
@@ -29,23 +46,8 @@ def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
     return (logical_cpu_count + 1) // 2
 
 
-def configure_cpu_execution(cpu_num_threads: int | None) -> int:
-    """
-    CPUスレッド数を決定して返し、実行環境とCPU構成に応じてCPU affinityを制限する。
-
-    解決後のCPUスレッド数が`0`でなく、OSがLinuxまたはWindowsの場合に、CPU affinityの変更を検討する。
-    Linuxでは、CPU番号が`0`から連続し、すべてのCPU種別でLinuxCapacityを取得できる場合に、最大値の半分以上のcapacityを持つCPUを候補とする。
-    Windowsでは、現在のプロセスのCPU affinityを取得・設定できる場合に、hwlocが返す最後のCPU種別を候補とする。
-    候補と現在のCPU affinityの共通部分を選び、現在よりCPUの範囲が狭まり、かつ選んだ論理CPU数が解決後のスレッド数を上回る場合にだけ変更する。
-    変更対象はLinuxでは現在のスレッド、Windowsでは現在のプロセスとする。
-    """
-    resolved_cpu_num_threads = _resolve_cpu_num_threads(cpu_num_threads)
-    if resolved_cpu_num_threads == 0:
-        return resolved_cpu_num_threads
-
-    if sys.platform not in ("linux", "win32"):
-        return resolved_cpu_num_threads
-
+def _configure_cpu_affinity(resolved_cpu_num_threads: int) -> None:
+    """条件を満たす場合にCPU affinityを制限する。"""
     from pyhwloc.topology import CpuBindFlags, Topology, TopologyFlags
 
     topology = Topology.from_this_system()
@@ -63,7 +65,7 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
             support = topology.get_support().cpubind
             if not (support.get_thisproc_cpubind and support.set_thisproc_cpubind):
                 _warn_affinity_unavailable("WindowsでCPU affinityを設定できません")
-                return resolved_cpu_num_threads
+                return
 
         kinds = topology.get_cpukinds()
         if sys.platform == "linux":
@@ -73,14 +75,14 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
                 _warn_affinity_unavailable(
                     "LinuxのCPU番号に欠番がありCPU capacityを正しく取得できません"
                 )
-                return resolved_cpu_num_threads
+                return
 
             kind_infos = [kinds.get_info(index) for index in range(kinds.n_kinds())]
             if len(kind_infos) == 0 or any(
                 "LinuxCapacity" not in info for _, _, info in kind_infos
             ):
                 _warn_affinity_unavailable("LinuxのCPU capacityを取得できません")
-                return resolved_cpu_num_threads
+                return
 
             capacities = [
                 (cpuset, int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
@@ -89,7 +91,7 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
             candidate_cpus = {
                 cpu
                 for cpuset, capacity in capacities
-                if capacity * 2 >= highest_capacity
+                if capacity >= highest_capacity / 2
                 for cpu in cpuset
             }
         else:
@@ -103,4 +105,6 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
         ):
             topology.set_cpubind(selected_cpus, flags)
 
-    return resolved_cpu_num_threads
+
+def _warn_affinity_unavailable(reason: str) -> None:
+    warnings.warn(f"{reason}。CPU affinityは変更しません。", stacklevel=2)
