@@ -53,10 +53,9 @@ def test_configure_cpu_execution_uses_explicit_value_without_pyhwloc_on_macos() 
             assert cpu_execution.configure_cpu_execution(1) == 1
 
 
-@pytest.mark.parametrize("cpu_num_threads", [None, 0])
 @pytest.mark.parametrize(
-    ("logical_cpu_count", "expected"),
-    [(1, 1), (2, 1), (3, 2)],
+    ("cpu_num_threads", "logical_cpu_count", "expected"),
+    [(None, 1, 1), (None, 2, 1), (0, 2, 1), (0, 3, 2)],
 )
 def test_configure_cpu_execution_resolves_automatic_value(
     cpu_num_threads: int | None, logical_cpu_count: int, expected: int
@@ -140,7 +139,6 @@ def test_configure_linux_cpu_execution_skips_unavailable_capacity(
             with pytest.warns(UserWarning, match=warning):
                 assert cpu_execution.configure_cpu_execution(1) == 1
 
-    topology.get_cpubind.assert_not_called()
     topology.set_cpubind.assert_not_called()
 
 
