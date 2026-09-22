@@ -69,7 +69,7 @@ def _configure_cpu_affinity(resolved_cpu_num_threads: int) -> None:
             candidate_cpus = set(kinds.get_info(kinds.n_kinds() - 1)[0])
         else:
             cpu_indices = set(topology.cpuset)
-            # NOTE: 同梱されるhwlocにバグがあり、capacityファイルパスに実OS CPU番号でなく列挙添字を使うためのワークアラウンド。
+            # NOTE: hwlocはCPU番号が0から連続していないとLinuxCapacityを正しく取得できないバグがあるため見送る
             if cpu_indices != set(range(len(cpu_indices))):
                 _warn_affinity_unavailable(
                     "gaps in Linux CPU numbering prevent CPU capacity from being read correctly"
