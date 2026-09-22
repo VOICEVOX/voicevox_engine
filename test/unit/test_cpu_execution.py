@@ -15,7 +15,7 @@ from voicevox_engine.cpu_execution import _resolve_cpu_num_threads
 def test_resolve_cpu_num_threads(
     cpu_num_threads: int | None, logical_cpu_count: int, true_num_threads: int
 ) -> None:
-    """`cpu_num_threads`が未指定または0の場合、論理CPU数の半分を切り上げた値を返す。"""
+    """`cpu_num_threads`が未指定または0の場合、論理コア数の半分を切り上げた値を返す。"""
     # Outputs
     with patch.object(os, "cpu_count", return_value=logical_cpu_count):
         num_threads = _resolve_cpu_num_threads(cpu_num_threads)
