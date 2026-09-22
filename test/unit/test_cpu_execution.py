@@ -76,19 +76,18 @@ def test_configure_cpu_execution_warns_when_cpu_count_is_unknown() -> None:
 
 
 @pytest.mark.parametrize(
-    ("num_threads", "available_cpus", "should_bind", "expected_selected_cpus"),
+    ("num_threads", "available_cpus", "expected_selected_cpus"),
     [
-        (1, {0, 1, 2}, True, {0, 1}),
-        (2, {0, 1, 2}, False, {0, 1}),
-        (1, {0, 1}, False, {0, 1}),
-        (1, {0, 1, 2, 3}, True, {0, 1, 3}),
+        (1, {0, 1, 2}, {0, 1}),
+        (2, {0, 1, 2}, None),
+        (1, {0, 1}, None),
+        (1, {0, 1, 2, 3}, {0, 1, 3}),
     ],
 )
 def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask(
     num_threads: int,
     available_cpus: set[int],
-    should_bind: bool,
-    expected_selected_cpus: set[int],
+    expected_selected_cpus: set[int] | None,
 ) -> None:
     topology = _fake_topology(
         [
@@ -108,7 +107,7 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
         call.set_flags(_FakeTopologyFlags.INCLUDE_DISALLOWED)
     ) < topology.mock_calls.index(call.__enter__())
     topology.get_cpubind.assert_called_once_with(_FakeCpuBindFlags.THREAD)
-    if should_bind:
+    if expected_selected_cpus is not None:
         topology.set_cpubind.assert_called_once_with(
             expected_selected_cpus, _FakeCpuBindFlags.THREAD
         )
