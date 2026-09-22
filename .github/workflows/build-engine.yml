@@ -132,10 +132,6 @@ jobs:
       - name: <Setup> Create download directory
         run: mkdir -p download/core
 
-      - name: <Setup> Set up MSVC
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
-
       - name: <Setup> Prepare Python Runtime / Python Dependencies
         uses: ./.github/actions/prepare_python
         with:
