@@ -33,6 +33,7 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
 
     topology = Topology.from_this_system()
     if sys.platform == "linux":
+        # NOTE: システム全体のCPU種類と能力から候補を選び、起動時のCPU affinityとの共通部分に絞るため、制限されたCPUもトポロジーに含める。
         topology.set_flags(TopologyFlags.INCLUDE_DISALLOWED)
         flags = CpuBindFlags.THREAD
     else:
