@@ -3,7 +3,6 @@
 import os
 import sys
 import warnings
-from enum import IntFlag
 from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock, call, patch
 
@@ -11,14 +10,10 @@ import pytest
 
 from voicevox_engine.core import cpu_execution
 
-
-class _FakeCpuBindFlags(IntFlag):
-    PROCESS = 1
-    THREAD = 2
+_FakeCpuBindFlags = SimpleNamespace(PROCESS=object(), THREAD=object())
 
 
-class _FakeTopologyFlags(IntFlag):
-    INCLUDE_DISALLOWED = 1
+_FakeTopologyFlags = SimpleNamespace(INCLUDE_DISALLOWED=object())
 
 
 def _fake_topology(
@@ -81,46 +76,20 @@ def test_configure_cpu_execution_warns_when_cpu_count_is_unknown() -> None:
             assert cpu_execution.configure_cpu_execution(None) == 0
 
 
-def test_select_linux_cpus_uses_global_capacity_and_half_threshold() -> None:
-    topology = _fake_topology(
-        [
-            ({0, 1}, 0, {"LinuxCapacity": "512"}),
-            ({2}, 1, {"LinuxCapacity": "511"}),
-            ({3}, 2, {"LinuxCapacity": "1024"}),
-        ],
-        {0, 1, 2},
-        {0, 1, 2, 3},
-    )
-
-    assert cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) == {
-        0,
-        1,
-        3,
-    }
-
-
-def test_select_linux_cpus_handles_zero_capacity_by_threshold() -> None:
-    topology = _fake_topology(
-        [
-            ({0}, 0, {"LinuxCapacity": "0"}),
-            ({1}, 1, {"LinuxCapacity": "0"}),
-        ],
-        {0, 1},
-        {0, 1},
-    )
-
-    assert cpu_execution._select_linux_cpus(topology, topology.get_cpukinds()) == {
-        0,
-        1,
-    }
-
-
 @pytest.mark.parametrize(
-    ("num_threads", "available_cpus", "should_bind"),
-    [(1, {0, 1, 2}, True), (2, {0, 1, 2}, False), (1, {0, 1}, False)],
+    ("num_threads", "available_cpus", "should_bind", "expected_selected_cpus"),
+    [
+        (1, {0, 1, 2}, True, {0, 1}),
+        (2, {0, 1, 2}, False, {0, 1}),
+        (1, {0, 1}, False, {0, 1}),
+        (1, {0, 1, 2, 3}, True, {0, 1, 3}),
+    ],
 )
 def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask(
-    num_threads: int, available_cpus: set[int], should_bind: bool
+    num_threads: int,
+    available_cpus: set[int],
+    should_bind: bool,
+    expected_selected_cpus: set[int],
 ) -> None:
     topology = _fake_topology(
         [
@@ -141,7 +110,9 @@ def test_configure_linux_cpu_execution_respects_global_capacity_and_initial_mask
     ) < topology.mock_calls.index(call.__enter__())
     topology.get_cpubind.assert_called_once_with(_FakeCpuBindFlags.THREAD)
     if should_bind:
-        topology.set_cpubind.assert_called_once_with({0, 1}, _FakeCpuBindFlags.THREAD)
+        topology.set_cpubind.assert_called_once_with(
+            expected_selected_cpus, _FakeCpuBindFlags.THREAD
+        )
     else:
         topology.set_cpubind.assert_not_called()
 

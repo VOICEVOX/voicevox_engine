@@ -1,47 +1,12 @@
 """CPU実行設定の解決と適用"""
 
-from __future__ import annotations
-
 import os
 import sys
 import warnings
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pyhwloc.cpukinds import CpuKinds
-    from pyhwloc.topology import Topology
 
 
 def _warn_affinity_unavailable(reason: str) -> None:
     warnings.warn(f"{reason}。CPU affinityは変更しません。", stacklevel=2)
-
-
-def _select_linux_cpus(topology: Topology, kinds: CpuKinds) -> set[int] | None:
-    cpu_indices = set(topology.cpuset)
-    # NOTE: pyhwloc 3.0.1同梱hwlocはcapacity読取にOS CPU番号puでなく列挙添字iを使うため、修正版を含むpyhwlocへ更新後に見直す。https://github.com/open-mpi/hwloc/commit/db79bc4c5bda3b4e2e061a53b0e913ec2d683e22
-    if cpu_indices != set(range(len(cpu_indices))):
-        _warn_affinity_unavailable(
-            "LinuxのCPU番号に欠番がありCPU capacityを正しく取得できません"
-        )
-        return None
-
-    kind_infos = [kinds.get_info(index) for index in range(kinds.n_kinds())]
-    if len(kind_infos) == 0 or any(
-        "LinuxCapacity" not in info for _, _, info in kind_infos
-    ):
-        _warn_affinity_unavailable("LinuxのCPU capacityを取得できません")
-        return None
-
-    capacities = [
-        (cpuset, int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
-    ]
-    highest_capacity = max(capacity for _, capacity in capacities)
-    return {
-        cpu
-        for cpuset, capacity in capacities
-        if capacity * 2 >= highest_capacity
-        for cpu in cpuset
-    }
 
 
 def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
@@ -84,9 +49,31 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
 
         kinds = topology.get_cpukinds()
         if sys.platform == "linux":
-            candidate_cpus = _select_linux_cpus(topology, kinds)
-            if candidate_cpus is None:
+            cpu_indices = set(topology.cpuset)
+            # NOTE: pyhwloc 3.0.1同梱hwlocはcapacityファイルパスに実OS CPU番号でなく列挙添字を使うため、上流修正コミットdb79bc4c5bda3b4e2e061a53b0e913ec2d683e22を含むpyhwlocへ更新後にこのガードを除去できる。https://github.com/open-mpi/hwloc/commit/db79bc4c5bda3b4e2e061a53b0e913ec2d683e22
+            if cpu_indices != set(range(len(cpu_indices))):
+                _warn_affinity_unavailable(
+                    "LinuxのCPU番号に欠番がありCPU capacityを正しく取得できません"
+                )
                 return resolved_cpu_num_threads
+
+            kind_infos = [kinds.get_info(index) for index in range(kinds.n_kinds())]
+            if len(kind_infos) == 0 or any(
+                "LinuxCapacity" not in info for _, _, info in kind_infos
+            ):
+                _warn_affinity_unavailable("LinuxのCPU capacityを取得できません")
+                return resolved_cpu_num_threads
+
+            capacities = [
+                (cpuset, int(info["LinuxCapacity"])) for cpuset, _, info in kind_infos
+            ]
+            highest_capacity = max(capacity for _, capacity in capacities)
+            candidate_cpus = {
+                cpu
+                for cpuset, capacity in capacities
+                if capacity * 2 >= highest_capacity
+                for cpu in cpuset
+            }
         else:
             candidate_cpus = set(kinds.get_info(kinds.n_kinds() - 1)[0])
 
