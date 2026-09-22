@@ -8,15 +8,15 @@ import warnings
 from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Annotated, TextIO
+from typing import TextIO
 
 import uvicorn
-from pydantic import Field, TypeAdapter
+from pydantic import TypeAdapter
 
 from voicevox_engine.app.application import generate_app
 from voicevox_engine.cancellable_engine import CancellableEngine
 from voicevox_engine.core.core_initializer import initialize_cores
-from voicevox_engine.core.cpu_execution import configure_cpu_execution
+from voicevox_engine.cpu_execution import configure_cpu_execution
 from voicevox_engine.engine_manifest import load_manifest
 from voicevox_engine.library.library_manager import LibraryManager
 from voicevox_engine.preset.preset_manager import PresetManager
@@ -175,7 +175,7 @@ class _CLIArgs:
     enable_cancellable_synthesis: bool
     init_processes: int
     load_all_models: bool
-    cpu_num_threads: Annotated[int | None, Field(ge=0, le=65535)]
+    cpu_num_threads: int | None
     output_log_utf8: bool
     cors_policy_mode: CorsPolicyMode | None
     allow_origins: list[str] | None
@@ -352,10 +352,10 @@ def main() -> None:
     cpu_num_threads = configure_cpu_execution(args.cpu_num_threads)
     core_manager = initialize_cores(
         use_gpu=use_gpu,
+        cpu_num_threads=cpu_num_threads,
         voicelib_dirs=args.voicelib_dirs,
         voicevox_dir=args.voicevox_dir,
         runtime_dirs=args.runtime_dirs,
-        cpu_num_threads=cpu_num_threads,
         enable_mock=args.enable_mock,
         load_all_models=args.load_all_models,
     )
@@ -369,10 +369,10 @@ def main() -> None:
         cancellable_engine = CancellableEngine(
             init_processes=args.init_processes,
             use_gpu=use_gpu,
+            cpu_num_threads=cpu_num_threads,
             voicelib_dirs=args.voicelib_dirs,
             voicevox_dir=args.voicevox_dir,
             runtime_dirs=args.runtime_dirs,
-            cpu_num_threads=cpu_num_threads,
             enable_mock=args.enable_mock,
         )
 

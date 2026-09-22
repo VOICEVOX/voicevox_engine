@@ -1,4 +1,4 @@
-"""CPU実行設定の解決と適用"""
+"""CPUスレッド数の決定とCPU affinityの設定"""
 
 import os
 import sys
@@ -10,8 +10,17 @@ def _warn_affinity_unavailable(reason: str) -> None:
 
 
 def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
+    """
+    指定値からCPUスレッド数を決定して返す。
+
+    指定値が`None`または`0`なら警告を出し、論理CPU数の半分を小数点以下切り上げで返す。
+    論理CPU数を取得できない場合は追加の警告を出して`0`を返す。それ以外は指定値をそのまま返す。
+    """
     if cpu_num_threads is not None and cpu_num_threads != 0:
         return cpu_num_threads
+
+    msg = "cpu_num_threads is set to 0. Setting it to an appropriate value."
+    warnings.warn(msg, stacklevel=1)
 
     logical_cpu_count = os.cpu_count()
     if logical_cpu_count is None:
@@ -21,7 +30,15 @@ def _resolve_cpu_num_threads(cpu_num_threads: int | None) -> int:
 
 
 def configure_cpu_execution(cpu_num_threads: int | None) -> int:
-    """未指定または0なら論理CPU数の半分を切り上げ、条件に合えば高性能CPUへaffinityを設定する。"""
+    """
+    CPUスレッド数を決定して返し、実行環境とCPU構成に応じてCPU affinityを制限する。
+
+    解決後のCPUスレッド数が`0`でなく、OSがLinuxまたはWindowsの場合に、CPU affinityの変更を検討する。
+    Linuxでは、CPU番号が`0`から連続し、すべてのCPU種別でLinuxCapacityを取得できる場合に、最大値の半分以上のcapacityを持つCPUを候補とする。
+    Windowsでは、現在のプロセスのCPU affinityを取得・設定できる場合に、hwlocが返す最後のCPU種別を候補とする。
+    候補と現在のCPU affinityの共通部分を選び、現在よりCPUの範囲が狭まり、かつ選んだ論理CPU数が解決後のスレッド数を上回る場合にだけ変更する。
+    変更対象はLinuxでは現在のスレッド、Windowsでは現在のプロセスとする。
+    """
     resolved_cpu_num_threads = _resolve_cpu_num_threads(cpu_num_threads)
     if resolved_cpu_num_threads == 0:
         return resolved_cpu_num_threads

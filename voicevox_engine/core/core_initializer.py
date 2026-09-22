@@ -51,11 +51,10 @@ class CoreManager:
 
 def initialize_cores(
     use_gpu: bool,
+    cpu_num_threads: int,
     voicelib_dirs: list[Path] | None = None,
     voicevox_dir: Path | None = None,
     runtime_dirs: list[Path] | None = None,
-    *,
-    cpu_num_threads: int,
     enable_mock: bool = True,
     load_all_models: bool = False,
 ) -> CoreManager:
@@ -66,6 +65,8 @@ def initialize_cores(
     ----------
     use_gpu: bool
         音声ライブラリに GPU を使わせるか否か
+    cpu_num_threads:
+        音声ライブラリが推論に用いるCPUスレッド数。0の場合はコアにスレッド数の決定を委ねる
     voicelib_dirs:
         音声ライブラリ自体があるディレクトリのリスト
     voicevox_dir:
@@ -73,8 +74,6 @@ def initialize_cores(
     runtime_dirs:
         コアで使用するライブラリのあるディレクトリのリスト
         None のとき、voicevox_dir、カレントディレクトリになる
-    cpu_num_threads:
-        音声ライブラリが推論に用いるCPUスレッド数。0の場合はコアにスレッド数の決定を委ねる
     enable_mock:
         コア読み込みに失敗したとき、代わりにmockを使用するかどうか
     load_all_models:
