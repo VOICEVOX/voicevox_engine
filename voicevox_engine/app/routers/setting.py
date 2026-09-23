@@ -58,9 +58,13 @@ def generate_setting_router(
         allow_origin: Annotated[str | SkipJsonSchema[None], Form()] = None,
     ) -> None:
         """設定を更新します。"""
+        # この API では変更しない項目（起動時のみ参照する設定）は既存の値を引き継ぐ
+        previous_settings = setting_loader.load()
         settings = Setting(
             cors_policy_mode=cors_policy_mode,
             allow_origin=allow_origin,
+            load_all_models=previous_settings.load_all_models,
+            disable_mutable_api=previous_settings.disable_mutable_api,
         )
 
         # 更新した設定へ上書き
