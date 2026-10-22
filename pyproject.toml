@@ -23,7 +23,6 @@ dependencies = [
 ]
 
 [tool.uv]
-required-version = "==0.13.5"
 default-groups = []
 exclude-newer = "1 week"
 python-preference = "only-managed"
