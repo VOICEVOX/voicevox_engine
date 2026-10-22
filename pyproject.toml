@@ -1,7 +1,7 @@
 [project]
 name = "voicevox_engine"
 version = "0.24.0" # TODO: できればversionを自動管理する
-requires-python = "==3.14.6"
+requires-python = "==3.14.9"
 dependencies = [
   "fastapi==0.140.7",
   "jinja2==3.1.6", # NOTE: required by fastapi.templating.Jinja2Templates (fastapi's unmanaged dependency)
@@ -23,6 +23,7 @@ dependencies = [
 ]
 
 [tool.uv]
+required-version = "==0.13.5"
 default-groups = []
 exclude-newer = "1 week"
 python-preference = "only-managed"
