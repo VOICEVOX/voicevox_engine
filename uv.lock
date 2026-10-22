@@ -6,11 +6,6 @@ requires-python = "==3.14.9"
 exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
 exclude-newer-span = "P1W"
 
-[options.exclude-newer-package]
-certifi = false
-pip = false
-virtualenv = false
-
 [manifest]
 constraints = [
     { name = "certifi", specifier = ">=2026.10.19" },
