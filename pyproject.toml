@@ -30,7 +30,6 @@ constraint-dependencies = [
 ]
 default-groups = []
 exclude-newer = "1 week"
-exclude-newer-package = { certifi = false, pip = false, virtualenv = false }
 python-preference = "only-managed"
 
 [tool.uv.sources]
