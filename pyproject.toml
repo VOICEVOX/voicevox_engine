@@ -23,8 +23,14 @@ dependencies = [
 ]
 
 [tool.uv]
+constraint-dependencies = [
+  "certifi>=2026.10.19",
+  "pip>=26.2.2",
+  "virtualenv>=21.14.12",
+]
 default-groups = []
 exclude-newer = "1 week"
+exclude-newer-package = { certifi = false, pip = false, virtualenv = false }
 python-preference = "only-managed"
 
 [tool.uv.sources]
