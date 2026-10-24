@@ -72,8 +72,10 @@ class Note(BaseModel):
     """音符ごとの情報。"""
 
     id: NoteId | None = Field(default=None, description="ID")
-    key: int | SkipJsonSchema[None] = Field(default=None, description="音階")
-    frame_length: int = Field(description="音符のフレーム長")
+    key: Annotated[int, Field(ge=0, le=127)] | SkipJsonSchema[None] = Field(
+        default=None, description="音階"
+    )
+    frame_length: int = Field(ge=0, description="音符のフレーム長")
     lyric: str = Field(description="音符の歌詞")
 
 
@@ -87,18 +89,22 @@ class FramePhoneme(BaseModel):
     """音素の情報。"""
 
     phoneme: str = Field(description="音素")
-    frame_length: int = Field(description="音素のフレーム長")
+    frame_length: int = Field(ge=0, description="音素のフレーム長")
     note_id: NoteId | None = Field(default=None, description="音符のID")
 
 
 class FrameAudioQuery(BaseModel):
     """フレームごとの音声合成用のクエリ。"""
 
-    f0: list[float] = Field(description="フレームごとの基本周波数")
+    f0: list[Annotated[float, Field(ge=0)]] = Field(
+        description="フレームごとの基本周波数"
+    )
     volume: list[float] = Field(description="フレームごとの音量")
     phonemes: list[FramePhoneme] = Field(description="音素のリスト")
     volumeScale: float = Field(description="全体の音量")
-    outputSamplingRate: int = Field(description="音声データの出力サンプリングレート")
+    outputSamplingRate: int = Field(
+        gt=0, description="音声データの出力サンプリングレート"
+    )
     outputStereo: bool = Field(description="音声データをステレオ出力するか否か")
 
 
