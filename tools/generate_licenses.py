@@ -146,7 +146,7 @@ def _validate_license_compliance(licenses: list[_License]) -> None:
 
 
 def _add_licenses_manually(licenses: list[_License]) -> None:
-    python_version = "3.11.9"
+    python_version = "3.14.6"
 
     licenses += [
         # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
