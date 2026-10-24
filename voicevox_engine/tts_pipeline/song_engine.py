@@ -228,6 +228,10 @@ class SongEngine:
         """歌声合成用の楽譜・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
 
+        if len(notes) > 0 and notes[0].lyric != "":
+            msg = "先頭のノートは休符（lyricが空文字列）である必要があります。"
+            raise SongInvalidInputError(msg)
+
         (
             note_lengths_array,
             note_consonants_array,
