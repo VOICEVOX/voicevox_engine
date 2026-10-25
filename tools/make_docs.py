@@ -67,9 +67,9 @@ def _generate_api_docs_html(schema: str) -> str:
 </head>
 <body>
     <div id="redoc-container"></div>
-    <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
-    <script>
-        Redoc.init({schema}, {{"hideHostname": true}}, document.getElementById("redoc-container"));
+    <script type="module">
+        import { init } from "https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js";
+        init({schema}, {{"hideHostname": true}}, document.getElementById("redoc-container"));
     </script>
 </body>
 </html>"""
