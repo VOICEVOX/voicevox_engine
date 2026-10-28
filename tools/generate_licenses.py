@@ -151,6 +151,7 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
         [sys.executable, "-X", "utf8", "-c", "license()"],
         capture_output=True,
         text=True,
+        check=True,
     ).stdout
 
     licenses += [
