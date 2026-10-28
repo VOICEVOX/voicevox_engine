@@ -146,7 +146,12 @@ def _validate_license_compliance(licenses: list[_License]) -> None:
 
 
 def _add_licenses_manually(licenses: list[_License]) -> None:
-    python_version = "3.14.6"
+    python_version = "{}.{}.{}".format(*sys.version_info)
+    python_license_text = subprocess.run(
+        [sys.executable, "-X", "utf8", "-c", "license()"],
+        capture_output=True,
+        text=True,
+    ).stdout
 
     licenses += [
         # https://sourceforge.net/projects/open-jtalk/files/Open%20JTalk/open_jtalk-1.11/
@@ -217,8 +222,8 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             package_name="Python",
             package_version=python_version,
             license_name="Python Software Foundation License",
-            license_text=f"https://raw.githubusercontent.com/python/cpython/v{python_version}/LICENSE",
-            license_text_type="remote_address",
+            license_text=python_license_text,
+            license_text_type="raw",
         ),
         _License(
             package_name="libsndfile-binaries",
