@@ -4,6 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from test.unit.tts_pipeline.tts_utils import gen_mora, sec
@@ -20,6 +21,7 @@ from voicevox_engine.tts_pipeline.model import (
 )
 from voicevox_engine.tts_pipeline.song_engine import (
     SongEngine,
+    SongInvalidInputError,
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -353,6 +355,17 @@ def test_mocked_frame_synthesize_wave_output(
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2
     )
+
+
+def test_create_phoneme_and_f0_and_volume_non_rest_first_note_error() -> None:
+    """`SongEngine.create_phoneme_and_f0_and_volume()` で先頭のノートが休符でない楽譜を渡すとエラーになる。"""
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    score = _gen_doremi_score()
+    score.notes[0] = Note(key=60, frame_length=10, lyric="あ")
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.create_phoneme_and_f0_and_volume(score, StyleId(7))
 
 
 def _koreha_arimasuka_base_expected() -> list[AccentPhrase]:
