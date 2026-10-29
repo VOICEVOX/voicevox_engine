@@ -28,10 +28,27 @@ class SongInvalidInputError(Exception):
     pass
 
 
+def _validate_frame_feature_length(
+    name: str, feature: NDArray[np.float32], frame_length: int
+) -> None:
+    """フレームごとの特徴量の長さが音素のフレーム長の合計と一致することを確認する"""
+    # 長さが不一致のままコアへ渡すと、不足分は未初期化メモリが読み出され、超過分は無視される
+    if feature.shape[0] != frame_length:
+        msg = (
+            f"{name}の長さ（{feature.shape[0]}）が"
+            f"音素のフレーム長の合計（{frame_length}）と一致しません。"
+        )
+        raise SongInvalidInputError(msg)
+
+
 def _frame_query_to_sf_decoder_feature(
     query: FrameAudioQuery,
 ) -> tuple[NDArray[np.int64], NDArray[np.float32], NDArray[np.float32]]:
     """歌声合成用のクエリからフレームごとの音素・音高・音量を得る"""
+    if len(query.phonemes) == 0:
+        msg = "phonemesが空です。"
+        raise SongInvalidInputError(msg)
+
     # 各データを分解・numpy配列に変換する
     phonemes = []
     phoneme_lengths = []
@@ -50,6 +67,9 @@ def _frame_query_to_sf_decoder_feature(
     frame_phonemes = np.repeat(phonemes_array, phoneme_lengths_array)
     f0s = np.array(query.f0, dtype=np.float32)
     volumes = np.array(query.volume, dtype=np.float32)
+
+    _validate_frame_feature_length("f0", f0s, frame_phonemes.shape[0])
+    _validate_frame_feature_length("volume", volumes, frame_phonemes.shape[0])
 
     return frame_phonemes, f0s, volumes
 
@@ -87,6 +107,10 @@ def _notes_to_keys_and_phonemes(
     phoneme_note_ids : list[NoteId]
         音素ごとのノートID列
     """
+    if len(notes) == 0:
+        msg = "notesが空です。"
+        raise SongInvalidInputError(msg)
+
     note_lengths: list[int] = []
     note_consonants: list[int] = []
     note_vowels: list[int] = []
@@ -368,6 +392,8 @@ class SongEngine:
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
+
+        _validate_frame_feature_length("f0", f0_array, frame_phonemes.shape[0])
 
         # コアを用いて音量を生成する
         volumes = self._core.safe_predict_sing_volume_forward(
