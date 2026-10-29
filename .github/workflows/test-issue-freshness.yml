@@ -24,7 +24,7 @@ jobs:
           any-of-labels: "状態：必要性議論"
           days-before-stale: 30
           days-before-close: -1
-          stale-issue-message: "本 Issue は直近 30 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。"
+          stale-issue-message: "本 Issue は直近 30 日間更新がなく、情報が古い可能性があります。取り組む前に現在の実装・方針と合っているか再確認してください。"
           stale-issue-label: "非アクティブ"
 
       - name: <Test> Notify inactive 設計/実装者募集/実装 issues
@@ -35,5 +35,5 @@ jobs:
           any-of-labels: "状態：設計,状態：実装者募集,状態：実装"
           days-before-stale: 180
           days-before-close: -1
-          stale-issue-message: "本 Issue は直近 180 日間で活動がありません。今後の方針について VOICEVOX チームによる再検討がおこなわれる予定です。"
+          stale-issue-message: "本 Issue は直近 180 日間更新がなく、情報が古い可能性があります。取り組む前に現在の実装・方針と合っているか再確認してください。"
           stale-issue-label: "非アクティブ"
