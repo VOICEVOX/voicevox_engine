@@ -105,7 +105,11 @@ def generate_app(
     app.include_router(generate_engine_info_router(core_version_list, engine_manifest))
     app.include_router(
         generate_setting_router(
-            setting_loader, engine_manifest.brand_name, verify_mutability_allowed
+            setting_loader,
+            engine_manifest.brand_name,
+            verify_mutability_allowed,
+            cors_policy_mode,
+            allow_origin,
         )
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))
