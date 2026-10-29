@@ -31,8 +31,6 @@ codesign_identity: str | None = options.codesign_identity
 
 entitlements_file: str | None = None
 if sys.platform == "darwin" and platform.machine() == "x86_64" and codesign_identity:
-    # macOS x64ではHardened Runtimeがlibffiの実行可能メモリ確保を拒否し、ctypesの初期化が止まる（#1909）。
-    # target_arch=Noneのため、PyInstallerと同じくplatform.machine()で対象アーキテクチャを判定する。
     entitlements_file = str(Path(SPECPATH) / "macos_x64_entitlements.plist")
 
 if sys.platform == "win32":
