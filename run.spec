@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 # このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
+import platform
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -27,6 +28,12 @@ if core_model_dir_path is not None and not core_model_dir_path.is_dir():
     raise Exception(f"core_model_dir_path: {core_model_dir_path} is not dir")
 
 codesign_identity: str | None = options.codesign_identity
+
+entitlements_file: str | None = None
+if sys.platform == "darwin" and platform.machine() == "x86_64" and codesign_identity:
+    # macOS x64ではHardened Runtimeがlibffiの実行可能メモリ確保を拒否し、ctypesの初期化が止まる（#1909）。
+    # target_arch=Noneのため、PyInstallerと同じくplatform.machine()で対象アーキテクチャを判定する。
+    entitlements_file = str(Path(SPECPATH) / "macos_x64_entitlements.plist")
 
 if sys.platform == "win32":
     pyhwloc_binaries = collect_dynamic_libs(
@@ -70,7 +77,7 @@ exe = EXE(
     argv_emulation=False,
     target_arch=None,
     codesign_identity=codesign_identity,
-    entitlements_file=None,
+    entitlements_file=entitlements_file,
     contents_directory="engine_internal",  # 実行時に"sys._MEIPASS"が参照するディレクトリ名
 )
 
