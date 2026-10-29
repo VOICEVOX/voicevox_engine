@@ -30,13 +30,12 @@ if core_model_dir_path is not None and not core_model_dir_path.is_dir():
 codesign_identity: str | None = options.codesign_identity
 
 entitlements_file: str | None = None
-# NOTE: Hardened Runtime 下で libffi が実行可能メモリを確保できず、ctypes の初期化が停止するのを防ぐ
+# NOTE: macOS x64 環境で ctypes の初期化が停止するのを防ぐ
 # https://github.com/VOICEVOX/voicevox_engine/issues/1909
 if (
     sys.platform == "darwin"
     and platform.machine() == "x86_64"
     and codesign_identity is not None
-    and codesign_identity != ""
 ):
     entitlements_file = str(Path(SPECPATH) / "tools" / "macos_x64_entitlements.plist")
 
