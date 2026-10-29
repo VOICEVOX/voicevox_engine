@@ -18,3 +18,18 @@ def test_post_delete_preset_422(
     response = client.post("/delete_preset", params={"id": 4040000000})
     assert response.status_code == 422
     assert snapshot_json == response.json()
+
+
+def test_delete_presets_204(client: TestClient) -> None:
+    response = client.delete("/presets/1")
+    assert response.status_code == 204
+    assert response.content == b""
+    assert all(p["id"] != 1 for p in client.get("/presets").json())
+
+
+def test_delete_presets_422(
+    client: TestClient, snapshot_json: SnapshotAssertion
+) -> None:
+    response = client.delete("/presets/4040000000")
+    assert response.status_code == 422
+    assert snapshot_json == response.json()

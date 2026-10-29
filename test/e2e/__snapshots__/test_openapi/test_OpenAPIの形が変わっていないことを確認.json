@@ -1449,7 +1449,8 @@
     },
     "/add_preset": {
       "post": {
-        "description": "新しいプリセットを追加します。",
+        "deprecated": true,
+        "description": "新しいプリセットを追加します。代わりに `POST /presets` を利用してください。",
         "operationId": "add_preset",
         "requestBody": {
           "content": {
@@ -1780,7 +1781,8 @@
     },
     "/delete_preset": {
       "post": {
-        "description": "既存のプリセットを削除します。",
+        "deprecated": true,
+        "description": "既存のプリセットを削除します。代わりに `DELETE /presets/{preset_id}` を利用してください。",
         "operationId": "delete_preset",
         "parameters": [
           {
@@ -2524,6 +2526,133 @@
           }
         },
         "summary": "Get Presets",
+        "tags": [
+          "その他"
+        ]
+      },
+      "post": {
+        "description": "新しいプリセットを追加します。",
+        "operationId": "create_preset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preset",
+                "description": "新しいプリセット。プリセットIDが既存のものと重複している場合は、新規のプリセットIDが採番されます。"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Create Preset",
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "追加したプリセットのプリセットID"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Preset",
+        "tags": [
+          "その他"
+        ]
+      }
+    },
+    "/presets/{preset_id}": {
+      "delete": {
+        "description": "既存のプリセットを削除します。",
+        "operationId": "remove_preset",
+        "parameters": [
+          {
+            "description": "削除するプリセットのプリセットID",
+            "in": "path",
+            "name": "preset_id",
+            "required": true,
+            "schema": {
+              "description": "削除するプリセットのプリセットID",
+              "title": "Preset Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Preset",
+        "tags": [
+          "その他"
+        ]
+      },
+      "put": {
+        "description": "既存のプリセットを更新します。",
+        "operationId": "replace_preset",
+        "parameters": [
+          {
+            "description": "更新するプリセットのプリセットID",
+            "in": "path",
+            "name": "preset_id",
+            "required": true,
+            "schema": {
+              "description": "更新するプリセットのプリセットID",
+              "title": "Preset Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preset",
+                "description": "更新するプリセット。プリセットIDがパスのプリセットIDと一致している必要があります。"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replace Preset",
         "tags": [
           "その他"
         ]
@@ -3347,7 +3476,8 @@
     },
     "/update_preset": {
       "post": {
-        "description": "既存のプリセットを更新します。",
+        "deprecated": true,
+        "description": "既存のプリセットを更新します。代わりに `PUT /presets/{preset_id}` を利用してください。",
         "operationId": "update_preset",
         "requestBody": {
           "content": {
