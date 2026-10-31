@@ -33,6 +33,13 @@
   "terms_of_service": "dummy teams of service",
   "update_infos": [
     {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「ブイブイ・コバコ」を追加"
+      ],
+      "version": "0.26.1"
+    },
+    {
       "contributors": [
         "Arata1202",
         "Copilot",
