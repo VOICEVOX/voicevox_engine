@@ -80,7 +80,7 @@ jobs:
             onnxruntime_device: cpu
             target: macos-x64
           # Mac CPU (arm64 arch)
-          - os: macos-14
+          - os: macos-15
             architecture: "arm64"
             onnxruntime_device: cpu
             target: macos-arm64
