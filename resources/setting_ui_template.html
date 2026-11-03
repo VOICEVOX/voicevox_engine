@@ -190,7 +190,7 @@
             const corsPolicyMode = ref(
               "<JINJA_PRE>cors_policy_mode<JINJA_POST>",
             );
-            const allowOrigin = ref("<JINJA_PRE>allow_origin<JINJA_POST>");
+            const allowOrigin = ref(<JINJA_PRE>allow_origin | tojson<JINJA_POST>);
 
             // 設定が変更されたら自動保存
             watch([corsPolicyMode, allowOrigin], () => {
