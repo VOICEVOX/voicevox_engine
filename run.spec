@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 # このファイルはPyInstallerによって自動生成されたもので、それをカスタマイズして使用しています。
+import platform
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -27,6 +28,16 @@ if core_model_dir_path is not None and not core_model_dir_path.is_dir():
     raise Exception(f"core_model_dir_path: {core_model_dir_path} is not dir")
 
 codesign_identity: str | None = options.codesign_identity
+
+entitlements_file: str | None = None
+# NOTE: macOS x64 環境で ctypes の初期化が停止するのを防ぐ
+# https://github.com/VOICEVOX/voicevox_engine/issues/1909
+if (
+    sys.platform == "darwin"
+    and platform.machine() == "x86_64"
+    and codesign_identity is not None
+):
+    entitlements_file = str(Path(SPECPATH) / "tools" / "macos_x64_entitlements.plist")
 
 if sys.platform == "win32":
     pyhwloc_binaries = collect_dynamic_libs(
@@ -70,7 +81,7 @@ exe = EXE(
     argv_emulation=False,
     target_arch=None,
     codesign_identity=codesign_identity,
-    entitlements_file=None,
+    entitlements_file=entitlements_file,
     contents_directory="engine_internal",  # 実行時に"sys._MEIPASS"が参照するディレクトリ名
 )
 

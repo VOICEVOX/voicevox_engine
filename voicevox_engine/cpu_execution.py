@@ -21,10 +21,9 @@ def configure_cpu_execution(cpu_num_threads: int | None) -> int:
     if resolved_cpu_num_threads == 0:
         return resolved_cpu_num_threads
 
-    if sys.platform not in ("linux", "win32"):
-        return resolved_cpu_num_threads
+    if sys.platform in ("linux", "win32"):
+        _configure_cpu_affinity(resolved_cpu_num_threads)
 
-    _configure_cpu_affinity(resolved_cpu_num_threads)
     return resolved_cpu_num_threads
 
 
