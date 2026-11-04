@@ -188,7 +188,7 @@
           setup() {
             // 設定値周り
             const corsPolicyMode = ref(
-              "<JINJA_PRE>cors_policy_mode<JINJA_POST>",
+              <JINJA_PRE>cors_policy_mode | tojson<JINJA_POST>,
             );
             const allowOrigin = ref(<JINJA_PRE>allow_origin | tojson<JINJA_POST>);
 
@@ -264,7 +264,7 @@
             };
 
             // 表示用の情報
-            const brandName = ref("<JINJA_PRE>brand_name<JINJA_POST>");
+            const brandName = ref(<JINJA_PRE>brand_name | tojson<JINJA_POST>);
 
             // Vueの準備が完了したら表示・非表示を切り替える
             onMounted(() => {
