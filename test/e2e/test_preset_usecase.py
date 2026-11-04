@@ -15,8 +15,8 @@ def test_登録したプリセットで音声を合成できる(client: TestClie
         "volumeScale": 0.8,
         "prePhonemeLength": 0.2,
         "postPhonemeLength": 0.3,
-        "pauseLength": None,
-        "pauseLengthScale": 1,
+        "pauseLength": 0.4,
+        "pauseLengthScale": 1.5,
     }
 
     # プリセットを登録する
@@ -42,6 +42,8 @@ def test_登録したプリセットで音声を合成できる(client: TestClie
         "volumeScale",
         "prePhonemeLength",
         "postPhonemeLength",
+        "pauseLength",
+        "pauseLengthScale",
     ]:
         assert audio_query[key] == preset[key]
 
