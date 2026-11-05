@@ -5,10 +5,10 @@ from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 import soundfile
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
-from pydantic.json_schema import SkipJsonSchema
 
+from voicevox_engine.app.dependencies import GetTTSEngine, get_core_version
 from voicevox_engine.metas.metas import StyleId
 from voicevox_engine.metas.metas_store import MetasStore
 from voicevox_engine.model import AudioQuery
@@ -22,7 +22,7 @@ from voicevox_engine.morphing.morphing import (
 from voicevox_engine.morphing.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
-from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
+from voicevox_engine.tts_pipeline.tts_engine import TTSEngine
 from voicevox_engine.utility.file_utility import try_delete_file
 
 # キャッシュを有効化
@@ -32,7 +32,7 @@ synthesis_morphing_parameter = lru_cache(maxsize=4)(_synthesis_morphing_paramete
 
 
 def generate_morphing_router(
-    tts_engines: TTSEngineManager, metas_store: MetasStore
+    get_tts_engine: GetTTSEngine, metas_store: MetasStore
 ) -> APIRouter:
     """モーフィング API Router を生成する"""
     router = APIRouter(tags=["音声合成"])
@@ -42,7 +42,8 @@ def generate_morphing_router(
         summary="指定したスタイルに対してエンジン内のキャラクターがモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
+        base_style_ids: list[StyleId],
+        core_version: Annotated[str | None, Depends(get_core_version)],
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
@@ -80,6 +81,8 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
+        engine: Annotated[TTSEngine, Depends(get_tts_engine)],
+        core_version: Annotated[str | None, Depends(get_core_version)],
         background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
@@ -87,16 +90,12 @@ def generate_morphing_router(
                 description="疑問系のテキストが与えられたら語尾を自動調整する",
             ),
         ] = True,
-        core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
 
         モーフィングの割合は`morph_rate`で指定でき、0.0でベースのスタイル、1.0でターゲットのスタイルに近づきます。
         """
-        version = core_version or LATEST_VERSION
-        engine = tts_engines.get_tts_engine(version)
-
         # モーフィングが許可されないキャラクターペアを拒否する
         characters = metas_store.characters(core_version)
         try:
