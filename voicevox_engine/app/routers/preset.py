@@ -1,7 +1,7 @@
 """プリセット機能を提供する API Router"""
 
 from traceback import print_exception
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
@@ -13,6 +13,33 @@ from voicevox_engine.preset.preset_manager import (
 )
 
 from ..dependencies import VerifyMutabilityAllowed
+
+
+def _preset_input_error_response(description: str) -> dict[str, Any]:
+    """
+    プリセットの入力エラーによる HTTP 422 の OpenAPI レスポンス定義を生成する。
+
+    HTTP 422 はリクエストのバリデーションエラーでも返るため、FastAPI 標準のスキーマと併記する。
+    """
+    return {
+        "description": description,
+        "content": {
+            "application/json": {
+                "schema": {
+                    "anyOf": [
+                        {"$ref": "#/components/schemas/HTTPValidationError"},
+                        {
+                            "type": "object",
+                            "properties": {
+                                "detail": {"type": "string", "title": "Detail"}
+                            },
+                            "required": ["detail"],
+                        },
+                    ]
+                }
+            }
+        },
+    }
 
 
 def generate_preset_router(
@@ -63,6 +90,11 @@ def generate_preset_router(
         "/update_preset",
         response_description="更新したプリセットのプリセットID",
         dependencies=[Depends(verify_mutability)],
+        responses={
+            422: _preset_input_error_response(
+                "リクエストが不正な場合、または更新先のプリセットが存在しない場合"
+            )
+        },
     )
     def update_preset(
         preset: Annotated[
@@ -86,6 +118,11 @@ def generate_preset_router(
         "/delete_preset",
         status_code=204,
         dependencies=[Depends(verify_mutability)],
+        responses={
+            422: _preset_input_error_response(
+                "リクエストが不正な場合、または削除対象のプリセットが存在しない場合"
+            )
+        },
     )
     def delete_preset(
         id: Annotated[int, Query(description="削除するプリセットのプリセットID")],
