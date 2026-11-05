@@ -3,7 +3,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.user_dict.model import (
@@ -16,6 +16,37 @@ from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import UserDictInputError, WordProperty
 
 from ..dependencies import VerifyMutabilityAllowed
+
+
+class UserDictParam(BaseModel):
+    """user_dictの共通パラメーター"""
+
+    surface: Annotated[str, Query(description="言葉の表層形")]
+    pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")]
+    accent_type: Annotated[
+        int, Query(description="アクセント型（音が下がる場所を指す）")
+    ]
+    word_type: Annotated[
+        WordTypes | SkipJsonSchema[None],
+        Query(
+            description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
+        ),
+    ] = None
+    priority: Annotated[
+        int | SkipJsonSchema[None],
+        Query(
+            ge=USER_DICT_MIN_PRIORITY,
+            le=USER_DICT_MAX_PRIORITY,
+            description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
+            # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
+            json_schema_extra={
+                "le": None,
+                "ge": None,
+                "maximum": USER_DICT_MAX_PRIORITY,
+                "minimum": USER_DICT_MIN_PRIORITY,
+            },
+        ),
+    ] = None
 
 
 def generate_user_dict_router(
@@ -45,43 +76,16 @@ def generate_user_dict_router(
 
     # TODO: CsvSafeStrを使う
     @router.post("/user_dict_word", dependencies=[Depends(verify_mutability)])
-    def add_user_dict_word(
-        surface: Annotated[str, Query(description="言葉の表層形")],
-        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
-        accent_type: Annotated[
-            int, Query(description="アクセント型（音が下がる場所を指す）")
-        ],
-        word_type: Annotated[
-            WordTypes | SkipJsonSchema[None],
-            Query(
-                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
-            ),
-        ] = None,
-        priority: Annotated[
-            int | SkipJsonSchema[None],
-            Query(
-                ge=USER_DICT_MIN_PRIORITY,
-                le=USER_DICT_MAX_PRIORITY,
-                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨",
-                # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
-                json_schema_extra={
-                    "le": None,
-                    "ge": None,
-                    "maximum": USER_DICT_MAX_PRIORITY,
-                    "minimum": USER_DICT_MIN_PRIORITY,
-                },
-            ),
-        ] = None,
-    ) -> str:
+    def add_user_dict_word(dict_param: Annotated[UserDictParam, Query()]) -> str:
         """ユーザー辞書に言葉を追加します。"""
         try:
             word_uuid = user_dict.apply_word(
                 WordProperty(
-                    surface=surface,
-                    pronunciation=pronunciation,
-                    accent_type=accent_type,
-                    word_type=word_type,
-                    priority=priority,
+                    surface=dict_param.surface,
+                    pronunciation=dict_param.pronunciation,
+                    accent_type=dict_param.accent_type,
+                    word_type=dict_param.word_type,
+                    priority=dict_param.priority,
                 )
             )
             return word_uuid
@@ -102,44 +106,19 @@ def generate_user_dict_router(
         dependencies=[Depends(verify_mutability)],
     )
     def rewrite_user_dict_word(
-        surface: Annotated[str, Query(description="言葉の表層形")],
-        pronunciation: Annotated[str, Query(description="言葉の発音（カタカナ）")],
-        accent_type: Annotated[
-            int, Query(description="アクセント型（音が下がる場所を指す）")
-        ],
         word_uuid: Annotated[str, Path(description="更新する言葉のUUID")],
-        word_type: Annotated[
-            WordTypes | SkipJsonSchema[None],
-            Query(
-                description="PROPER_NOUN（固有名詞）、COMMON_NOUN（普通名詞）、VERB（動詞）、ADJECTIVE（形容詞）、SUFFIX（語尾）のいずれか"
-            ),
-        ] = None,
-        priority: Annotated[
-            int | SkipJsonSchema[None],
-            Query(
-                ge=USER_DICT_MIN_PRIORITY,
-                le=USER_DICT_MAX_PRIORITY,
-                description="単語の優先度（0から10までの整数）。数字が大きいほど優先度が高くなる。1から9までの値を指定することを推奨。",
-                # "SkipJsonSchema[None]"の副作用でスキーマーが欠落する問題に対するワークアラウンド
-                json_schema_extra={
-                    "le": None,
-                    "ge": None,
-                    "maximum": USER_DICT_MAX_PRIORITY,
-                    "minimum": USER_DICT_MIN_PRIORITY,
-                },
-            ),
-        ] = None,
+        dict_param: Annotated[UserDictParam, Query()],
     ) -> None:
         """ユーザー辞書に登録されている言葉を更新します。"""
         try:
             user_dict.rewrite_word(
                 word_uuid,
                 WordProperty(
-                    surface=surface,
-                    pronunciation=pronunciation,
-                    accent_type=accent_type,
-                    word_type=word_type,
-                    priority=priority,
+                    surface=dict_param.surface,
+                    pronunciation=dict_param.pronunciation,
+                    accent_type=dict_param.accent_type,
+                    word_type=dict_param.word_type,
+                    priority=dict_param.priority,
                 ),
             )
         except ValidationError as e:
