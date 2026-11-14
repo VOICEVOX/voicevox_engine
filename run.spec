@@ -3,6 +3,7 @@
 import platform
 import sys
 from argparse import ArgumentParser
+from ctypes.util import find_library
 from pathlib import Path
 from shutil import copy2, copytree
 
@@ -40,21 +41,23 @@ if (
     entitlements_file = str(Path(SPECPATH) / "tools" / "macos_x64_entitlements.plist")
 
 if sys.platform == "win32":
-    pyhwloc_binaries = collect_dynamic_libs(
+    binaries = collect_dynamic_libs(
         "pyhwloc", search_patterns=["hwloc.dll", "pyhwloc.dll"]
     )
+    # NOTE: voicevox_onnxruntimeに必要な`MSVCP140_1.dll`をPyInstallerが収集しないため追加する
+    binaries.append((find_library("MSVCP140_1.dll"), "."))
 elif sys.platform == "linux":
-    pyhwloc_binaries = collect_dynamic_libs(
+    binaries = collect_dynamic_libs(
         "pyhwloc", search_patterns=["libhwloc.so", "libpyhwloc.so"]
     )
 else:
-    pyhwloc_binaries = []
+    binaries = []
 
 
 a = Analysis(
     ["run.py"],
     pathex=[],
-    binaries=pyhwloc_binaries,
+    binaries=binaries,
     datas=collect_data_files("pyopenjtalk"),
     hiddenimports=[],
     hookspath=[],
