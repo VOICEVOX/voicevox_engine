@@ -44,7 +44,7 @@ if sys.platform == "win32":
     binaries = collect_dynamic_libs(
         "pyhwloc", search_patterns=["hwloc.dll", "pyhwloc.dll"]
     )
-    # NOTE: voicevox_onnxruntime 1.23.2で必要な`MSVCP140_1.dll`をPyInstallerは収集しないため手動で追加する
+    # NOTE: voicevox_onnxruntimeに必要な`MSVCP140_1.dll`をPyInstallerが収集しないため追加する
     binaries.append((find_library("MSVCP140_1.dll"), "."))
 elif sys.platform == "linux":
     binaries = collect_dynamic_libs(
