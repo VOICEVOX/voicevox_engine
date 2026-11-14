@@ -27,8 +27,14 @@ def generate_setting_router(
     setting_loader: SettingHandler,
     brand_name: BrandName,
     verify_mutability: VerifyMutabilityAllowed,
+    applied_cors_policy_mode: CorsPolicyMode,
+    applied_allow_origin: list[str] | None,
 ) -> APIRouter:
-    """設定 API Router を生成する"""
+    """
+    設定 API Router を生成する
+
+    `applied_*` はエンジン起動時に実際に適用された値。起動引数が設定ファイルより優先されるため、設定ファイルの値と異なることがある。
+    """
     router = APIRouter(tags=["設定"])
 
     @router.get("/setting", response_class=Response)
@@ -49,6 +55,8 @@ def generate_setting_router(
                 "brand_name": brand_name,
                 "cors_policy_mode": cors_policy_mode.value,
                 "allow_origin": allow_origin,
+                "applied_cors_policy_mode": applied_cors_policy_mode.value,
+                "applied_allow_origin": " ".join(applied_allow_origin or []),
             },
         )
 
