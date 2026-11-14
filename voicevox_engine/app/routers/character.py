@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from pydantic.json_schema import SkipJsonSchema
 
@@ -52,7 +52,11 @@ def generate_character_router(
     router = APIRouter(tags=["その他"])
 
     @router.get("/speakers")
-    def speakers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
+    def speakers(
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
+    ) -> list[Speaker]:
         """喋れるキャラクターの情報の一覧を返します。"""
         characters = metas_store.talk_characters(core_version)
         return _characters_to_speakers(characters)
@@ -60,9 +64,11 @@ def generate_character_router(
     @router.get("/speaker_info")
     def speaker_info(
         resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
-        speaker_uuid: str,
+        speaker_uuid: Annotated[str, Query(description="キャラクターのUUID")],
         resource_format: ResourceFormat = "base64",
-        core_version: str | SkipJsonSchema[None] = None,
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
     ) -> SpeakerInfo:
         """
         UUID で指定された喋れるキャラクターの情報を返します。
@@ -83,7 +89,11 @@ def generate_character_router(
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     @router.get("/singers")
-    def singers(core_version: str | SkipJsonSchema[None] = None) -> list[Speaker]:
+    def singers(
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
+    ) -> list[Speaker]:
         """歌えるキャラクターの情報の一覧を返します。"""
         characters = metas_store.sing_characters(core_version)
         return _characters_to_speakers(characters)
@@ -91,9 +101,11 @@ def generate_character_router(
     @router.get("/singer_info")
     def singer_info(
         resource_baseurl: Annotated[str, Depends(_get_resource_baseurl)],
-        speaker_uuid: str,
+        speaker_uuid: Annotated[str, Query(description="キャラクターのUUID")],
         resource_format: ResourceFormat = "base64",
-        core_version: str | SkipJsonSchema[None] = None,
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
     ) -> SpeakerInfo:
         """
         UUID で指定された歌えるキャラクターの情報を返します。
