@@ -5,7 +5,11 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from voicevox_engine import __version__
-from voicevox_engine.app.dependencies import generate_mutability_allowed_verifier
+from voicevox_engine.app.dependencies import (
+    generate_mutability_allowed_verifier,
+    generate_song_engine_getter,
+    generate_tts_engine_getter,
+)
 from voicevox_engine.app.global_exceptions import configure_global_exception_handlers
 from voicevox_engine.app.middlewares import configure_middlewares
 from voicevox_engine.app.openapi_schema import (
@@ -60,6 +64,8 @@ def generate_app(
     verify_mutability_allowed = generate_mutability_allowed_verifier(
         disable_mutable_api
     )
+    get_tts_engine = generate_tts_engine_getter(tts_engines)
+    get_song_engine = generate_song_engine_getter(song_engines)
 
     app = FastAPI(
         title=engine_manifest.name,
@@ -89,10 +95,10 @@ def generate_app(
 
     app.include_router(
         generate_tts_pipeline_router(
-            tts_engines, song_engines, preset_manager, cancellable_engine
+            get_tts_engine, get_song_engine, preset_manager, cancellable_engine
         )
     )
-    app.include_router(generate_morphing_router(tts_engines, metas_store))
+    app.include_router(generate_morphing_router(get_tts_engine, metas_store))
     app.include_router(
         generate_preset_router(preset_manager, verify_mutability_allowed)
     )
