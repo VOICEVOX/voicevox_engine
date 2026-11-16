@@ -1,5 +1,13 @@
 [
   {
+    "version": "0.26.2",
+    "descriptions": [
+      "Windows版で音声合成できないことがある問題を修正",
+      "セキュリティアップデート"
+    ],
+    "contributors": ["Hiroshiba", "sabonerune"]
+  },
+  {
     "version": "0.26.1",
     "descriptions": ["キャラクター「ブイブイ・コバコ」を追加"],
     "contributors": []
