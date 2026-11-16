@@ -42,7 +42,10 @@ def generate_morphing_router(
         summary="指定したスタイルに対してエンジン内のキャラクターがモーフィングが可能か判定する",
     )
     def morphable_targets(
-        base_style_ids: list[StyleId], core_version: str | SkipJsonSchema[None] = None
+        base_style_ids: list[StyleId],
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
     ) -> list[dict[str, MorphableTargetInfo]]:
         """
         指定されたベーススタイルに対してエンジン内の各キャラクターがモーフィング機能を利用可能か返します。
@@ -77,9 +80,20 @@ def generate_morphing_router(
     )
     def _synthesis_morphing(
         query: AudioQuery,
-        base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
-        target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
-        morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
+        base_style_id: Annotated[
+            StyleId, Query(alias="base_speaker", description="ベースのスタイルID")
+        ],
+        target_style_id: Annotated[
+            StyleId, Query(alias="target_speaker", description="ターゲットのスタイルID")
+        ],
+        morph_rate: Annotated[
+            float,
+            Query(
+                ge=0.0,
+                le=1.0,
+                description="モーフィングの割合。0.0でベースのスタイル、1.0でターゲットのスタイルに近づく",
+            ),
+        ],
         background_tasks: BackgroundTasks,
         enable_interrogative_upspeak: Annotated[
             bool,
@@ -87,7 +101,9 @@ def generate_morphing_router(
                 description="疑問系のテキストが与えられたら語尾を自動調整する",
             ),
         ] = True,
-        core_version: str | SkipJsonSchema[None] = None,
+        core_version: Annotated[
+            str | SkipJsonSchema[None], Query(description="コアのバージョン")
+        ] = None,
     ) -> FileResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
