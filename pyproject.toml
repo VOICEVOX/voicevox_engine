@@ -14,6 +14,7 @@ dependencies = [
   "python-multipart==0.0.32", # NOTE: required by fastapi.Form (fastapi's unmanaged dependency)
   "pyworld==0.3.5",
   "pyyaml==6.0.3",
+  "scipy==1.18.1",
   "semver==3.1.0",
   "setuptools<82", # NOTE: pyworldがpkg_resourcesを使っている。
   "soundfile==0.14.0",
