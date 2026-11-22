@@ -107,9 +107,9 @@ def generate_app(
         generate_setting_router(
             setting_loader,
             engine_manifest.brand_name,
-            verify_mutability_allowed,
             cors_policy_mode,
             allow_origin,
+            verify_mutability_allowed,
         )
     )
     app.include_router(generate_portal_page_router(engine_manifest.name))

@@ -47,7 +47,7 @@
 
       <div class="alert alert-warning" role="alert">
         このページでは設定ファイルの値を変更します。変更を反映するにはエンジンの再起動が必要です。<br />
-        起動引数で指定された値は設定ファイルより優先されるため、現在適用中の値と異なることがあります。
+        同じ項目を起動引数で指定すると、入力欄の値よりも起動引数の値が優先されます。
       </div>
 
       <div class="mb-3">
@@ -70,7 +70,7 @@
           <p class="mb-1">
             allはすべてを許可します。危険性を理解した上でご利用ください。
           </p>
-          <p class="mb-0">現在適用中の値：{{appliedCorsPolicyMode}}</p>
+          <p>適用中の値：{{appliedCorsPolicyMode}}</p>
         </div>
       </div>
 
@@ -85,8 +85,8 @@
           <p class="mb-1">
             許可するオリジンを指定します。スペースで区切ることで複数指定できます。
           </p>
-          <p class="mb-0">
-            現在適用中の値：{{appliedAllowOrigin || "（指定なし）"}}
+          <p>
+            適用中の値：{{appliedAllowOrigin || "（指定なし）"}}
           </p>
         </div>
       </div>

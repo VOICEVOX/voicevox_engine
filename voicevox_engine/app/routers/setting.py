@@ -26,9 +26,9 @@ _setting_ui_template = Jinja2Templates(
 def generate_setting_router(
     setting_loader: SettingHandler,
     brand_name: BrandName,
-    verify_mutability: VerifyMutabilityAllowed,
     applied_cors_policy_mode: CorsPolicyMode,
     applied_allow_origin: list[str] | None,
+    verify_mutability: VerifyMutabilityAllowed,
 ) -> APIRouter:
     """
     設定 API Router を生成する
