@@ -1,7 +1,8 @@
 """FastAPI dependencies"""
 
-from collections.abc import Callable, Coroutine
-from typing import Any
+from collections.abc import Callable, Coroutine, Iterator
+from tempfile import TemporaryFile
+from typing import Any, BinaryIO, cast
 
 from fastapi import HTTPException
 
@@ -21,3 +22,9 @@ def generate_mutability_allowed_verifier(
             pass
 
     return verify_mutability_allowed
+
+
+def get_tempfile() -> Iterator[BinaryIO]:
+    """レスポンスを返した後に自動的にcloseされる一時ファイルを作成する。"""
+    with TemporaryFile() as f:
+        yield cast(BinaryIO, f)

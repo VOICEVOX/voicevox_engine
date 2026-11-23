@@ -1,12 +1,13 @@
 """音声合成機能を提供する API Router"""
 
+import os
 import zipfile
-from tempfile import NamedTemporaryFile, TemporaryFile
+from tempfile import TemporaryFile
 from traceback import print_exception
-from typing import Annotated, Self
+from typing import Annotated, BinaryIO, Self
 
 import soundfile
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
@@ -49,6 +50,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
 )
 from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
 from voicevox_engine.utility.file_utility import try_delete_file
+
+from ..dependencies import get_tempfile
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -258,7 +261,7 @@ def generate_tts_pipeline_router(
 
     @router.post(
         "/synthesis",
-        response_class=FileResponse,
+        response_class=StreamingResponse,
         responses={
             200: {
                 "content": {
@@ -272,7 +275,7 @@ def generate_tts_pipeline_router(
     def synthesis(
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        background_tasks: BackgroundTasks,
+        temp_file: Annotated[BinaryIO, Depends(get_tempfile)],
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -280,20 +283,24 @@ def generate_tts_pipeline_router(
             ),
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
-    ) -> FileResponse:
+    ) -> StreamingResponse:
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         wave = engine.synthesize_wave(
             query, style_id, enable_interrogative_upspeak=enable_interrogative_upspeak
         )
 
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-            )
+        soundfile.write(
+            file=temp_file, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+        )
+        file_size = os.fstat(temp_file.fileno()).st_size
+        temp_file.seek(0)
 
-        background_tasks.add_task(try_delete_file, f.name)
-        return FileResponse(f.name, media_type="audio/wav")
+        return StreamingResponse(
+            temp_file,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     @router.post(
         "/cancellable_synthesis",
@@ -342,7 +349,7 @@ def generate_tts_pipeline_router(
 
     @router.post(
         "/multi_synthesis",
-        response_class=FileResponse,
+        response_class=StreamingResponse,
         responses={
             200: {
                 "content": {
@@ -358,7 +365,7 @@ def generate_tts_pipeline_router(
     def multi_synthesis(
         queries: list[AudioQuery],
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        background_tasks: BackgroundTasks,
+        temp_file: Annotated[BinaryIO, Depends(get_tempfile)],
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -366,35 +373,40 @@ def generate_tts_pipeline_router(
             ),
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
-    ) -> FileResponse:
+    ) -> StreamingResponse:
         version = core_version or LATEST_VERSION
         engine = tts_engines.get_tts_engine(version)
         sampling_rate = queries[0].outputSamplingRate
 
-        with NamedTemporaryFile(delete=False) as f:
-            with zipfile.ZipFile(f, mode="a") as zip_file:
-                for i in range(len(queries)):
-                    if queries[i].outputSamplingRate != sampling_rate:
-                        msg = "サンプリングレートが異なるクエリがあります"
-                        raise HTTPException(status_code=422, detail=msg)
+        with zipfile.ZipFile(temp_file, mode="a") as zip_file:
+            for i in range(len(queries)):
+                if queries[i].outputSamplingRate != sampling_rate:
+                    msg = "サンプリングレートが異なるクエリがあります"
+                    raise HTTPException(status_code=422, detail=msg)
 
-                    with TemporaryFile() as wav_file:
-                        wave = engine.synthesize_wave(
-                            queries[i],
-                            style_id,
-                            enable_interrogative_upspeak=enable_interrogative_upspeak,
-                        )
-                        soundfile.write(
-                            file=wav_file,
-                            data=wave,
-                            samplerate=sampling_rate,
-                            format="WAV",
-                        )
-                        wav_file.seek(0)
-                        zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
+                with TemporaryFile() as wav_file:
+                    wave = engine.synthesize_wave(
+                        queries[i],
+                        style_id,
+                        enable_interrogative_upspeak=enable_interrogative_upspeak,
+                    )
+                    soundfile.write(
+                        file=wav_file,
+                        data=wave,
+                        samplerate=sampling_rate,
+                        format="WAV",
+                    )
+                    wav_file.seek(0)
+                    zip_file.writestr(f"{str(i + 1).zfill(3)}.wav", wav_file.read())
 
-        background_tasks.add_task(try_delete_file, f.name)
-        return FileResponse(f.name, media_type="application/zip")
+        file_size = os.fstat(temp_file.fileno()).st_size
+        temp_file.seek(0)
+
+        return StreamingResponse(
+            temp_file,
+            headers={"content-length": str(file_size)},
+            media_type="application/zip",
+        )
 
     @router.post(
         "/streaming_synthesis",
@@ -524,7 +536,7 @@ def generate_tts_pipeline_router(
 
     @router.post(
         "/frame_synthesis",
-        response_class=FileResponse,
+        response_class=StreamingResponse,
         responses={
             200: {
                 "content": {
@@ -537,9 +549,9 @@ def generate_tts_pipeline_router(
     def frame_synthesis(
         query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
-        background_tasks: BackgroundTasks,
+        temp_file: Annotated[BinaryIO, Depends(get_tempfile)],
         core_version: str | SkipJsonSchema[None] = None,
-    ) -> FileResponse:
+    ) -> StreamingResponse:
         """歌唱音声合成を行います。"""
         version = core_version or LATEST_VERSION
         engine = song_engines.get_song_engine(version)
@@ -548,17 +560,21 @@ def generate_tts_pipeline_router(
         except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
-            )
+        soundfile.write(
+            file=temp_file, data=wave, samplerate=query.outputSamplingRate, format="WAV"
+        )
+        file_size = os.fstat(temp_file.fileno()).st_size
+        temp_file.seek(0)
 
-        background_tasks.add_task(try_delete_file, f.name)
-        return FileResponse(f.name, media_type="audio/wav")
+        return StreamingResponse(
+            temp_file,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     @router.post(
         "/connect_waves",
-        response_class=FileResponse,
+        response_class=StreamingResponse,
         responses={
             200: {
                 "content": {
@@ -570,24 +586,28 @@ def generate_tts_pipeline_router(
         summary="base64エンコードされた複数のwavデータを一つに結合する",
     )
     def connect_waves(
-        waves: list[str], background_tasks: BackgroundTasks
-    ) -> FileResponse:
+        waves: list[str], temp_file: Annotated[BinaryIO, Depends(get_tempfile)]
+    ) -> StreamingResponse:
         """base64エンコードされたwavデータを一纏めにし、wavファイルで返します。"""
         try:
             waves_nparray, sampling_rate = connect_base64_waves(waves)
         except ConnectBase64WavesException as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
 
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f,
-                data=waves_nparray,
-                samplerate=sampling_rate,
-                format="WAV",
-            )
+        soundfile.write(
+            file=temp_file,
+            data=waves_nparray,
+            samplerate=sampling_rate,
+            format="WAV",
+        )
+        file_size = os.fstat(temp_file.fileno()).st_size
+        temp_file.seek(0)
 
-        background_tasks.add_task(try_delete_file, f.name)
-        return FileResponse(f.name, media_type="audio/wav")
+        return StreamingResponse(
+            temp_file,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     @router.post(
         "/validate_kana",

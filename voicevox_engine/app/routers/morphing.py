@@ -1,12 +1,12 @@
 """モーフィング機能を提供する API Router"""
 
+import os
 from functools import lru_cache
-from tempfile import NamedTemporaryFile
-from typing import Annotated
+from typing import Annotated, BinaryIO
 
 import soundfile
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic.json_schema import SkipJsonSchema
 
 from voicevox_engine.metas.metas import StyleId
@@ -23,7 +23,8 @@ from voicevox_engine.morphing.morphing import (
     synthesis_morphing_parameter as _synthesis_morphing_parameter,
 )
 from voicevox_engine.tts_pipeline.tts_engine import LATEST_VERSION, TTSEngineManager
-from voicevox_engine.utility.file_utility import try_delete_file
+
+from ..dependencies import get_tempfile
 
 # キャッシュを有効化
 # モジュール側でlru_cacheを指定するとキャッシュを制御しにくいため、HTTPサーバ側で指定する
@@ -65,7 +66,7 @@ def generate_morphing_router(
 
     @router.post(
         "/synthesis_morphing",
-        response_class=FileResponse,
+        response_class=StreamingResponse,
         responses={
             200: {
                 "content": {
@@ -80,7 +81,7 @@ def generate_morphing_router(
         base_style_id: Annotated[StyleId, Query(alias="base_speaker")],
         target_style_id: Annotated[StyleId, Query(alias="target_speaker")],
         morph_rate: Annotated[float, Query(ge=0.0, le=1.0)],
-        background_tasks: BackgroundTasks,
+        temp_file: Annotated[BinaryIO, Depends(get_tempfile)],
         enable_interrogative_upspeak: Annotated[
             bool,
             Query(
@@ -88,7 +89,7 @@ def generate_morphing_router(
             ),
         ] = True,
         core_version: str | SkipJsonSchema[None] = None,
-    ) -> FileResponse:
+    ) -> StreamingResponse:
         """
         指定された2種類のスタイルで音声を合成、指定した割合でモーフィングした音声を得ます。
 
@@ -124,15 +125,20 @@ def generate_morphing_router(
             output_stereo=query.outputStereo,
         )
 
-        with NamedTemporaryFile(delete=False) as f:
-            soundfile.write(
-                file=f,
-                data=morph_wave,
-                samplerate=query.outputSamplingRate,
-                format="WAV",
-            )
+        soundfile.write(
+            file=temp_file,
+            data=morph_wave,
+            samplerate=query.outputSamplingRate,
+            format="WAV",
+        )
 
-        background_tasks.add_task(try_delete_file, f.name)
-        return FileResponse(f.name, media_type="audio/wav")
+        file_size = os.fstat(temp_file.fileno()).st_size
+        temp_file.seek(0)
+
+        return StreamingResponse(
+            temp_file,
+            headers={"content-length": str(file_size)},
+            media_type="audio/wav",
+        )
 
     return router
