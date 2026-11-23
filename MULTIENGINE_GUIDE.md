@@ -43,4 +43,6 @@ VOICEVOX エディターにうまく読み込ませられないときは、エ�
 これはファイル容量が大きくて配布が困難な場合に有用です。
 インストールに必要な`vvpp`および`vvppp`ファイルは`vvpp.txt`ファイルにリストアップしています。
 
-開発の詳しい手順は [CONTRIBUTING.md](./CONTRIBUTING.md) を御覧ください。
+## エンジンの開発方法
+
+エンジン開発の詳しい手順は [CONTRIBUTING.md](./CONTRIBUTING.md) をご覧ください。

@@ -24,7 +24,7 @@
 - [ユーザーガイド](#ユーザーガイド): 音声合成をしたい方向け
 - [貢献者ガイド](#貢献者ガイド): コントリビュートしたい方向け
 - [開発者ガイド](#開発者ガイド): コードを利用したい方向け
-- [マルチエンジン機能ガイド](./MULTIENGINE_GUIDE.md): VOICEVOX エディターで動く音声合成エンジンを作りたい方向け
+- [マルチエンジン機能ガイド](./MULTIENGINE_GUIDE.md): 自作などの音声合成エンジンを VOICEVOX エディターで動かしたい方向け
 
 ## ユーザーガイド
 
@@ -670,7 +670,8 @@ Actions を ON にし、workflow_dispatch で`build-engine.yml`を起動すれ�
 ### マルチエンジン機能に関して
 
 VOICEVOX エディターでは、複数のエンジンを同時に起動することができます。
-自作の音声合成エンジンを VOICEVOX エディター上で動かす方法は [MULTIENGINE_GUIDE.md](./MULTIENGINE_GUIDE.md) を御覧ください。
+この機能を利用することで、自作の音声合成エンジンや既存の音声合成エンジンを VOICEVOX エディター上で動かすことが可能です。
+詳しくは [MULTIENGINE_GUIDE.md](./MULTIENGINE_GUIDE.md) をご覧ください。
 
 ## 事例紹介
 
