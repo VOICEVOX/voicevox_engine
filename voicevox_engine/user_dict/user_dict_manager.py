@@ -15,7 +15,7 @@ from ..utility.path_utility import get_save_dir, resource_root
 from .model import UserDictWord
 from .user_dict_word import (
     SaveFormatUserDictWord,
-    UserDictInputError,
+    UserDictWordNotFoundError,
     WordProperty,
     convert_from_save_format,
     convert_to_save_format,
@@ -313,7 +313,9 @@ class UserDictionary:
         # 既存単語の上書きによる辞書データの更新
         user_dict = self.read_dict()
         if word_uuid not in user_dict:
-            raise UserDictInputError("UUIDに該当するワードが見つかりませんでした")
+            raise UserDictWordNotFoundError(
+                "UUIDに該当するワードが見つかりませんでした"
+            )
         user_dict[word_uuid] = create_word(word_property)
 
         # 更新された辞書データの保存と適用
@@ -325,7 +327,7 @@ class UserDictionary:
         # 既存単語の削除による辞書データの更新
         user_dict = self.read_dict()
         if word_uuid not in user_dict:
-            raise UserDictInputError("IDに該当するワードが見つかりませんでした")
+            raise UserDictWordNotFoundError("IDに該当するワードが見つかりませんでした")
         del user_dict[word_uuid]
 
         # 更新された辞書データの保存と適用

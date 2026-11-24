@@ -132,6 +132,12 @@ class UserDictInputError(Exception):
     pass
 
 
+class UserDictWordNotFoundError(Exception):
+    """指定された単語が存在しないエラー"""
+
+    pass
+
+
 def _search_cost_candidates(context_id: int) -> list[int]:
     for value in part_of_speech_data.values():
         if value.context_id == context_id:

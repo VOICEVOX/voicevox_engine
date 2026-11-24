@@ -13,7 +13,11 @@ from voicevox_engine.user_dict.model import (
     WordTypes,
 )
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
-from voicevox_engine.user_dict.user_dict_word import UserDictInputError, WordProperty
+from voicevox_engine.user_dict.user_dict_word import (
+    UserDictInputError,
+    UserDictWordNotFoundError,
+    WordProperty,
+)
 
 from ..dependencies import VerifyMutabilityAllowed
 
@@ -146,6 +150,8 @@ def generate_user_dict_router(
             raise HTTPException(
                 status_code=422, detail="パラメータに誤りがあります。\n" + str(e)
             ) from e
+        except UserDictWordNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except UserDictInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except Exception as e:
@@ -164,6 +170,8 @@ def generate_user_dict_router(
         """ユーザー辞書に登録されている言葉を削除します。"""
         try:
             user_dict.delete_word(word_uuid=word_uuid)
+        except UserDictWordNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except UserDictInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except Exception as e:

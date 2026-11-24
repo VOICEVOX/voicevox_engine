@@ -14,7 +14,7 @@ from voicevox_engine.user_dict.model import (
 )
 from voicevox_engine.user_dict.user_dict_manager import UserDictionary
 from voicevox_engine.user_dict.user_dict_word import (
-    UserDictInputError,
+    UserDictWordNotFoundError,
     WordProperty,
     create_word,
     part_of_speech_data,
@@ -142,7 +142,7 @@ def test_rewrite_word_invalid_id(tmp_path: Path) -> None:
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
     user_dict = UserDictionary(user_dict_path=user_dict_path)
-    with pytest.raises(UserDictInputError):
+    with pytest.raises(UserDictWordNotFoundError):
         user_dict.rewrite_word(
             "c2be4dc5-d07d-4767-8be1-04a1bb3f05a9",
             WordProperty(surface="test2", pronunciation="テストツー", accent_type=2),
@@ -173,7 +173,7 @@ def test_delete_word_invalid_id(tmp_path: Path) -> None:
         json.dumps(valid_dict_dict_json, ensure_ascii=False), encoding="utf-8"
     )
     user_dict = UserDictionary(user_dict_path=user_dict_path)
-    with pytest.raises(UserDictInputError):
+    with pytest.raises(UserDictWordNotFoundError):
         user_dict.delete_word(word_uuid="c2be4dc5-d07d-4767-8be1-04a1bb3f05a9")
 
 

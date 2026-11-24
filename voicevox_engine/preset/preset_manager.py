@@ -17,6 +17,12 @@ class PresetInputError(Exception):
     pass
 
 
+class PresetNotFoundError(Exception):
+    """指定されたプリセットが存在しないエラー"""
+
+    pass
+
+
 class PresetInternalError(Exception):
     """プリセットマネージャーに起因するエラー"""
 
@@ -127,7 +133,7 @@ class PresetManager:
                 self.presets[i] = preset
                 break
         else:
-            raise PresetInputError("更新先のプリセットが存在しません")
+            raise PresetNotFoundError("更新先のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:
@@ -155,7 +161,7 @@ class PresetManager:
                 buf_index = i
                 break
         else:
-            raise PresetInputError("削除対象のプリセットが存在しません")
+            raise PresetNotFoundError("削除対象のプリセットが存在しません")
 
         # 変更の反映。失敗時はリバート。
         try:

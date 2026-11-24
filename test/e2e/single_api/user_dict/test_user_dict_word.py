@@ -64,7 +64,7 @@ def test_put_user_dict_word_contents(
     assert snapshot_json == response.json()
 
 
-def test_put_user_dict_word_422(
+def test_put_user_dict_word_404(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     word_uuid = "40400000"
@@ -78,7 +78,7 @@ def test_put_user_dict_word_422(
     }
     # 存在しない word はエラー
     response = client.put(f"/user_dict_word/{word_uuid}", params=params)
-    assert response.status_code == 422
+    assert response.status_code == 404
     assert snapshot_json == response.json()
 
 
@@ -101,11 +101,11 @@ def test_delete_user_dict_word_contents(
     assert snapshot_json == response.json()
 
 
-def test_delete_user_dict_word_422(
+def test_delete_user_dict_word_404(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     word_uuid = "40400000"
     # 存在しない word はエラー
     response = client.delete(f"/user_dict_word/{word_uuid}", params={})
-    assert response.status_code == 422
+    assert response.status_code == 404
     assert snapshot_json == response.json()
