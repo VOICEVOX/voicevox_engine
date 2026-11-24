@@ -120,6 +120,7 @@ class CancellableEngine:
         enable_interrogative_upspeak: bool,
         request: Request,
         version: str | LatestVersion,
+        output_dir: Path,
     ) -> str:
         """
         サブプロセスで音声合成用のクエリ・スタイルIDから音声を生成し、音声ファイル名を返す。
@@ -130,6 +131,8 @@ class CancellableEngine:
             HTTP 接続状態に関するオブジェクト
         version:
             合成に用いる TTSEngine のバージョン
+        output_dir:
+            出力先のディレクトリ
         """
         # 待機中プールのペアを実行中プールへ移動する
         synth_process, synth_connection = self._idles_pool.get()
@@ -138,7 +141,7 @@ class CancellableEngine:
         # プロセスへ入力を渡して音声を合成する
         try:
             synth_connection.send(
-                (query, style_id, enable_interrogative_upspeak, version)
+                (query, style_id, enable_interrogative_upspeak, version, output_dir)
             )
             audio_file_name = synth_connection.recv()
 
@@ -212,7 +215,9 @@ def start_synthesis_subprocess(
     while True:
         try:
             # キューの入力を受け取る
-            query, style_id, enable_interrogative_upspeak, version = connection.recv()
+            query, style_id, enable_interrogative_upspeak, version, output_dir = (
+                connection.recv()
+            )
 
             # 音声を合成しファイルへ保存する
             try:
@@ -226,7 +231,7 @@ def start_synthesis_subprocess(
                 style_id,
                 enable_interrogative_upspeak=enable_interrogative_upspeak,
             )
-            with NamedTemporaryFile(delete=False) as f:
+            with NamedTemporaryFile(dir=output_dir, delete=False) as f:
                 soundfile.write(
                     file=f, data=wave, samplerate=query.outputSamplingRate, format="WAV"
                 )

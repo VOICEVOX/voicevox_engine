@@ -1,7 +1,8 @@
 """FastAPI dependencies"""
 
 from collections.abc import Callable, Coroutine, Iterator
-from tempfile import TemporaryFile
+from pathlib import Path
+from tempfile import TemporaryDirectory, TemporaryFile
 from typing import Any, BinaryIO, cast
 
 from fastapi import HTTPException
@@ -28,3 +29,9 @@ def get_tempfile() -> Iterator[BinaryIO]:
     """レスポンスを返した後に自動的にcloseされる一時ファイルを作成する。"""
     with TemporaryFile() as f:
         yield cast(BinaryIO, f)
+
+
+def get_tempdir() -> Iterator[Path]:
+    """レスポンスを返した後に自動的に削除される一時ディレクトリを作成する。"""
+    with TemporaryDirectory() as td:
+        yield Path(td)

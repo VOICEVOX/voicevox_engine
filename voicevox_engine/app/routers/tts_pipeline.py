@@ -2,12 +2,13 @@
 
 import os
 import zipfile
+from pathlib import Path
 from tempfile import TemporaryFile
 from traceback import print_exception
 from typing import Annotated, BinaryIO, Self
 
 import soundfile
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from pydantic.json_schema import SkipJsonSchema
@@ -49,9 +50,8 @@ from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngineManager,
 )
 from voicevox_engine.tts_pipeline.wav_stream import encode_wave_stream_as_wav
-from voicevox_engine.utility.file_utility import try_delete_file
 
-from ..dependencies import get_tempfile
+from ..dependencies import get_tempdir, get_tempfile
 
 
 class ParseKanaBadRequest(BaseModel):
@@ -319,7 +319,7 @@ def generate_tts_pipeline_router(
         query: AudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         request: Request,
-        background_tasks: BackgroundTasks,
+        temp_dir: Annotated[Path, Depends(get_tempdir)],
         enable_interrogative_upspeak: bool = True,
         core_version: str | SkipJsonSchema[None] = None,
     ) -> FileResponse:
@@ -336,6 +336,7 @@ def generate_tts_pipeline_router(
                 enable_interrogative_upspeak=enable_interrogative_upspeak,
                 request=request,
                 version=version,
+                output_dir=temp_dir,
             )
         except CancellableEngineInternalError as e:
             print_exception(e)
@@ -344,7 +345,6 @@ def generate_tts_pipeline_router(
         if f_name == "":
             raise HTTPException(status_code=422, detail="不明なバージョンです")
 
-        background_tasks.add_task(try_delete_file, f_name)
         return FileResponse(f_name, media_type="audio/wav")
 
     @router.post(
