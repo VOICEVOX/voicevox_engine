@@ -212,12 +212,13 @@ def _add_licenses_manually(licenses: list[_License]) -> None:
             license_text="https://raw.githubusercontent.com/pytorch/pytorch/master/LICENSE",
             license_text_type="remote_address",
         ),
+        # https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.23.2/voicevox_onnxruntime-linux-x64-1.23.2.tgz
         _License(
             package_name="ONNX Runtime",
             package_version="1.23.2",
             license_name="MIT license",
-            license_text="https://raw.githubusercontent.com/microsoft/onnxruntime/master/LICENSE",
-            license_text_type="remote_address",
+            license_text="tools/licenses/onnxruntime/LICENSE",
+            license_text_type="local_address",
         ),
         _License(
             package_name="Python",
