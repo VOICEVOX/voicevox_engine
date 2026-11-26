@@ -4,6 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from test.unit.tts_pipeline.tts_utils import gen_mora, sec
@@ -20,6 +21,7 @@ from voicevox_engine.tts_pipeline.model import (
 )
 from voicevox_engine.tts_pipeline.song_engine import (
     SongEngine,
+    SongInvalidInputError,
 )
 from voicevox_engine.tts_pipeline.tts_engine import (
     TTSEngine,
@@ -353,6 +355,94 @@ def test_mocked_frame_synthesize_wave_output(
     assert snapshot_json(name="wave") == round_floats(
         result_wave.tolist(), round_value=2
     )
+
+
+def test_create_phoneme_and_f0_and_volume_empty_notes_error() -> None:
+    """`SongEngine.create_phoneme_and_f0_and_volume()` で空の notes を渡すとエラーになる。"""
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    empty_score = Score(notes=[])
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.create_phoneme_and_f0_and_volume(empty_score, StyleId(7))
+
+
+def test_frame_synthesize_wave_empty_phonemes_error() -> None:
+    """`SongEngine.frame_synthesize_wave()` で空の phonemes を渡すとエラーになる。"""
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    empty_query = FrameAudioQuery(
+        f0=[],
+        volume=[],
+        phonemes=[],
+        volumeScale=1.3,
+        outputSamplingRate=1200,
+        outputStereo=False,
+    )
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.frame_synthesize_wave(empty_query, StyleId(7))
+
+
+def test_frame_synthesize_wave_f0_length_mismatch_error() -> None:
+    """`SongEngine.frame_synthesize_wave()` で f0 の長さがフレーム長の合計と異なるクエリを渡すとエラーになる。"""
+    # NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    doremi_score = _gen_doremi_score()
+    phonemes, f0, volume = song_engine.create_phoneme_and_f0_and_volume(
+        doremi_score, StyleId(7)
+    )
+    short_f0_query = FrameAudioQuery(
+        f0=f0[:-1],
+        volume=volume,
+        phonemes=phonemes,
+        volumeScale=1.3,
+        outputSamplingRate=1200,
+        outputStereo=False,
+    )
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.frame_synthesize_wave(short_f0_query, StyleId(7))
+
+
+def test_frame_synthesize_wave_volume_length_mismatch_error() -> None:
+    """`SongEngine.frame_synthesize_wave()` で volume の長さがフレーム長の合計と異なるクエリを渡すとエラーになる。"""
+    # NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    doremi_score = _gen_doremi_score()
+    phonemes, f0, volume = song_engine.create_phoneme_and_f0_and_volume(
+        doremi_score, StyleId(7)
+    )
+    short_volume_query = FrameAudioQuery(
+        f0=f0,
+        volume=volume[:-1],
+        phonemes=phonemes,
+        volumeScale=1.3,
+        outputSamplingRate=1200,
+        outputStereo=False,
+    )
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.frame_synthesize_wave(short_volume_query, StyleId(7))
+
+
+def test_create_volume_from_phoneme_and_f0_f0_length_mismatch_error() -> None:
+    """`SongEngine.create_volume_from_phoneme_and_f0()` で f0 の長さがフレーム長の合計と異なる入力を渡すとエラーになる。"""
+    # NOTE: 入力生成の簡略化に別関数を呼び出すため、別関数が正しく動作しない場合テストが落ちる
+    # Inputs
+    song_engine = SongEngine(MockCoreWrapper())
+    doremi_score = _gen_doremi_score()
+    phonemes, f0, _ = song_engine.create_phoneme_and_f0_and_volume(
+        doremi_score, StyleId(7)
+    )
+    short_f0 = f0[:-1]
+    # Test
+    with pytest.raises(SongInvalidInputError):
+        song_engine.create_volume_from_phoneme_and_f0(
+            doremi_score, phonemes, short_f0, StyleId(7)
+        )
 
 
 def _koreha_arimasuka_base_expected() -> list[AccentPhrase]:
