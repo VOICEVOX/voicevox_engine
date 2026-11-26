@@ -34,6 +34,24 @@
   "update_infos": [
     {
       "contributors": [
+        "Hiroshiba",
+        "sabonerune"
+      ],
+      "descriptions": [
+        "Windows版で音声合成できないことがある問題を修正",
+        "セキュリティアップデート"
+      ],
+      "version": "0.26.2"
+    },
+    {
+      "contributors": [],
+      "descriptions": [
+        "キャラクター「ブイブイ・コバコ」を追加"
+      ],
+      "version": "0.26.1"
+    },
+    {
+      "contributors": [
         "Arata1202",
         "Copilot",
         "Hiroshiba",

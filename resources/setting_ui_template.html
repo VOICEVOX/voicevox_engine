@@ -46,7 +46,8 @@
       <h1 class="mb-3">{{brandName}} エンジン 設定</h1>
 
       <div class="alert alert-warning" role="alert">
-        変更を反映するにはエンジンの再起動が必要です。
+        このページでは設定ファイルの値を変更します。変更を反映するにはエンジンの再起動が必要です。<br />
+        同じ項目を起動引数で指定すると、入力欄の値よりも起動引数の値が優先されます。
       </div>
 
       <div class="mb-3">
@@ -66,7 +67,10 @@
           <p class="mb-1">
             その他のオリジンはAllow Originオプションで追加できます。
           </p>
-          <p>allはすべてを許可します。危険性を理解した上でご利用ください。</p>
+          <p class="mb-1">
+            allはすべてを許可します。危険性を理解した上でご利用ください。
+          </p>
+          <p>適用中の値：{{appliedCorsPolicyMode}}</p>
         </div>
       </div>
 
@@ -78,7 +82,12 @@
           v-model.trim.lazy="allowOrigin"
         />
         <div class="form-text">
-          許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+          <p class="mb-1">
+            許可するオリジンを指定します。スペースで区切ることで複数指定できます。
+          </p>
+          <p>
+            適用中の値：{{appliedAllowOrigin || "（指定なし）"}}
+          </p>
         </div>
       </div>
 
@@ -188,9 +197,9 @@
           setup() {
             // 設定値周り
             const corsPolicyMode = ref(
-              "<JINJA_PRE>cors_policy_mode<JINJA_POST>",
+              <JINJA_PRE>cors_policy_mode | tojson<JINJA_POST>,
             );
-            const allowOrigin = ref("<JINJA_PRE>allow_origin<JINJA_POST>");
+            const allowOrigin = ref(<JINJA_PRE>allow_origin | tojson<JINJA_POST>);
 
             // 設定が変更されたら自動保存
             watch([corsPolicyMode, allowOrigin], () => {
@@ -264,7 +273,13 @@
             };
 
             // 表示用の情報
-            const brandName = ref("<JINJA_PRE>brand_name<JINJA_POST>");
+            const brandName = ref(<JINJA_PRE>brand_name | tojson<JINJA_POST>);
+            const appliedCorsPolicyMode = ref(
+              <JINJA_PRE>applied_cors_policy_mode | tojson<JINJA_POST>,
+            );
+            const appliedAllowOrigin = ref(
+              <JINJA_PRE>applied_allow_origin | tojson<JINJA_POST>,
+            );
 
             // Vueの準備が完了したら表示・非表示を切り替える
             onMounted(() => {
@@ -282,6 +297,8 @@
               toastType,
               showToastWithMessage,
               brandName,
+              appliedCorsPolicyMode,
+              appliedAllowOrigin,
             };
           },
         }).mount("#app");
