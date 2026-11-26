@@ -387,6 +387,7 @@
           "f0": {
             "description": "フレームごとの基本周波数",
             "items": {
+              "minimum": 0.0,
               "type": "number"
             },
             "title": "F0",
@@ -394,6 +395,7 @@
           },
           "outputSamplingRate": {
             "description": "音声データの出力サンプリングレート",
+            "exclusiveMinimum": 0.0,
             "title": "Outputsamplingrate",
             "type": "integer"
           },
@@ -440,6 +442,7 @@
         "properties": {
           "frame_length": {
             "description": "音素のフレーム長",
+            "minimum": 0.0,
             "title": "Frame Length",
             "type": "integer"
           },
@@ -648,6 +651,7 @@
         "properties": {
           "frame_length": {
             "description": "音符のフレーム長",
+            "minimum": 0.0,
             "title": "Frame Length",
             "type": "integer"
           },
@@ -665,6 +669,8 @@
           },
           "key": {
             "description": "音階",
+            "maximum": 127.0,
+            "minimum": 0.0,
             "title": "Key",
             "type": "integer"
           },
