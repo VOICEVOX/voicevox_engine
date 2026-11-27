@@ -21,6 +21,7 @@ from .model import (
 )
 from .mora_mapping import mora_kana_to_mora_phonemes
 from .phoneme import Phoneme
+from .pitch_correction import DEFAULT_CORRECT_F0_ALPHA, correct_pitch
 
 mid_to_hz = np.concatenate([
     np.array([0]),
@@ -304,6 +305,7 @@ class SongEngine:
         self,
         score: Score,
         style_id: StyleId,
+        correct_f0_alpha: float = DEFAULT_CORRECT_F0_ALPHA,
     ) -> tuple[list[FramePhoneme], list[float], list[float]]:
         """歌声合成用の楽譜・スタイルIDに基づいてフレームごとの音素・音高・音量を生成する"""
         notes = score.notes
@@ -336,20 +338,32 @@ class SongEngine:
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
-        base_f0s = self._calc_interp_base_f0s(frame_keys)
-
         # コアを用いて音高を生成する
+        base_f0s = self._calc_interp_base_f0s(frame_keys)
         diff_f0s = self._core.safe_predict_sing_f0_forward(
             frame_phonemes, frame_keys, initial_noises, style_id
         )
-        f0s = (base_f0s * np.exp(diff_f0s))
-        # キャストしないとvolumeがNaNになる
-        f0s = np.convolve(f0s, self.f0_window, mode='same').astype(np.float32)
+        # 5frame未満が来ても大丈夫なようにmode=sameではなくfullにし、切り出す
+        f0s = np.convolve(base_f0s * np.exp(diff_f0s), self.f0_window, mode="full")
+        half_window = len(self.f0_window) // 2
+        # 音量モデルは F0 を float32 として読むため、型が違うと NaN になり得る。
+        f0s = f0s[half_window : half_window + len(frame_keys)].astype(
+            np.float32
+        )
 
         # コアを用いて音量を生成する
         # FIXME: 変数名のsいらない？
         volumes = self._core.safe_predict_sing_volume_forward(
             frame_phonemes, frame_keys, f0s, initial_noises, style_id
+        )
+        # 音量予測後にピッチ補正を適用する
+        f0s = correct_pitch(
+            f0s,
+            frame_phonemes,
+            frame_keys,
+            note_lengths_array,
+            consonant_lengths,
+            tukey_alpha=correct_f0_alpha,
         )
 
         phoneme_data_list = [
@@ -374,6 +388,7 @@ class SongEngine:
         score: Score,
         phonemes: list[FramePhoneme],
         style_id: StyleId,
+        correct_f0_alpha: float = DEFAULT_CORRECT_F0_ALPHA,
     ) -> list[float]:
         """歌声合成用の音素・スタイルIDに基づいて基本周波数を生成する"""
         notes = score.notes
@@ -425,15 +440,25 @@ class SongEngine:
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
-        base_f0s = self._calc_interp_base_f0s(frame_keys)
-
         # コアを用いて音高を生成する
+        base_f0s = self._calc_interp_base_f0s(frame_keys)
         diff_f0s = self._core.safe_predict_sing_f0_forward(
             frame_phonemes, frame_keys, initial_noises_array, style_id
         )
-        f0s = (base_f0s * np.exp(diff_f0s))
-        # キャストしないとNaNになる
-        f0s = np.convolve(f0s, self.f0_window, mode='same').astype(np.float32)
+        # 5frame未満が来ても大丈夫なようにmode=sameではなくfullにし、切り出す
+        f0s = np.convolve(base_f0s * np.exp(diff_f0s), self.f0_window, mode="full")
+        half_window = len(self.f0_window) // 2
+        f0s = f0s[half_window : half_window + len(frame_keys)].astype(
+            np.float32
+        )
+        f0s = correct_pitch(
+            f0s,
+            frame_phonemes,
+            frame_keys,
+            note_lengths_array,
+            consonant_lengths,
+            tukey_alpha=correct_f0_alpha,
+        )
 
         # mypyの型チェックを通すために明示的に型を付ける
         f0_list: list[float] = f0s.tolist()
