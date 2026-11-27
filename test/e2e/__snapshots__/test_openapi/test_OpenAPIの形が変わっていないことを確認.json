@@ -2599,6 +2599,18 @@
               "title": "Core Version",
               "type": "string"
             }
+          },
+          {
+            "description": "F0 補正に使うαパラメータ",
+            "in": "query",
+            "name": "correct_f0_alpha",
+            "required": false,
+            "schema": {
+              "default": 0.5,
+              "description": "F0 補正に使うαパラメータ",
+              "title": "Correct F0 Alpha",
+              "type": "number"
+            }
           }
         ],
         "requestBody": {
@@ -2659,6 +2671,18 @@
             "schema": {
               "title": "Core Version",
               "type": "string"
+            }
+          },
+          {
+            "description": "F0 補正に使うαパラメータ",
+            "in": "query",
+            "name": "correct_f0_alpha",
+            "required": false,
+            "schema": {
+              "default": 0.5,
+              "description": "F0 補正に使うαパラメータ",
+              "title": "Correct F0 Alpha",
+              "type": "number"
             }
           }
         ],

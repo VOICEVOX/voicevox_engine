@@ -38,6 +38,7 @@ from voicevox_engine.tts_pipeline.model import (
     ParseKanaErrorCode,
     Score,
 )
+from voicevox_engine.tts_pipeline.pitch_correction import DEFAULT_CORRECT_F0_ALPHA
 from voicevox_engine.tts_pipeline.song_engine import (
     SongEngineManager,
     SongInvalidInputError,
@@ -462,13 +463,16 @@ def generate_tts_pipeline_router(
         score: Score,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
+        correct_f0_alpha: Annotated[
+            float, Query(description="F0 補正に使うαパラメータ", allow_inf_nan=False)
+        ] = DEFAULT_CORRECT_F0_ALPHA,
     ) -> FrameAudioQuery:
         """歌唱音声合成用のクエリの初期値を得ます。ここで得られたクエリはそのまま歌唱音声合成に利用できます。各値の意味は`Schemas`を参照してください。"""
         version = core_version or LATEST_VERSION
         engine = song_engines.get_song_engine(version)
         try:
             phonemes, f0, volume = engine.create_phoneme_and_f0_and_volume(
-                score, style_id
+                score, style_id, correct_f0_alpha=correct_f0_alpha
             )
         except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
@@ -492,12 +496,18 @@ def generate_tts_pipeline_router(
         frame_audio_query: FrameAudioQuery,
         style_id: Annotated[StyleId, Query(alias="speaker")],
         core_version: str | SkipJsonSchema[None] = None,
+        correct_f0_alpha: Annotated[
+            float, Query(description="F0 補正に使うαパラメータ", allow_inf_nan=False)
+        ] = DEFAULT_CORRECT_F0_ALPHA,
     ) -> list[float]:
         version = core_version or LATEST_VERSION
         engine = song_engines.get_song_engine(version)
         try:
             return engine.create_f0_from_phoneme(
-                score, frame_audio_query.phonemes, style_id
+                score,
+                frame_audio_query.phonemes,
+                style_id,
+                correct_f0_alpha=correct_f0_alpha,
             )
         except SongInvalidInputError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
