@@ -535,6 +535,7 @@ _CORE_API_TYPES = {
             c_int,
             POINTER(c_long),
             POINTER(c_long),
+            POINTER(c_float),
             POINTER(c_long),
             POINTER(c_float),
         ),
@@ -545,6 +546,7 @@ _CORE_API_TYPES = {
             c_int,
             POINTER(c_long),
             POINTER(c_long),
+            POINTER(c_float),
             POINTER(c_float),
             POINTER(c_long),
             POINTER(c_float),
@@ -944,6 +946,7 @@ class CoreWrapper:
         length: int,
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
+        initial_noises: NDArray[np.float32],
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
@@ -972,6 +975,7 @@ class CoreWrapper:
                     c_int(length),
                     phoneme.ctypes.data_as(POINTER(c_long)),
                     note.ctypes.data_as(POINTER(c_long)),
+                    initial_noises.ctypes.data_as(POINTER(c_float)),
                     style_id.ctypes.data_as(POINTER(c_long)),
                     output.ctypes.data_as(POINTER(c_float)),
                 )
@@ -985,6 +989,7 @@ class CoreWrapper:
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         f0: NDArray[np.float32],
+        initial_noises: NDArray[np.float32],
         style_id: NDArray[np.int64],
     ) -> NDArray[np.float32]:
         """
@@ -1016,6 +1021,7 @@ class CoreWrapper:
                     phoneme.ctypes.data_as(POINTER(c_long)),
                     note.ctypes.data_as(POINTER(c_long)),
                     f0.ctypes.data_as(POINTER(c_float)),
+                    initial_noises.ctypes.data_as(POINTER(c_float)),
                     style_id.ctypes.data_as(POINTER(c_long)),
                     output.ctypes.data_as(POINTER(c_float)),
                 )

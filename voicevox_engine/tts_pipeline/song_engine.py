@@ -4,6 +4,7 @@ from typing import Any, Final, Literal
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.interpolate import interp1d
 
 from ..core.core_adapter import CoreAdapter, DeviceSupport
 from ..core.core_initializer import CoreManager
@@ -20,6 +21,66 @@ from .model import (
 )
 from .mora_mapping import mora_kana_to_mora_phonemes
 from .phoneme import Phoneme
+
+mid_to_hz = np.concatenate([
+    np.array([0]),
+    440.0 * (2.0 ** ((np.arange(0, 300) - 69.0) / 12.0)),
+])
+
+
+def standard_normal_with_offset(
+    seed: int,
+    offset: int,
+    size: int,
+) -> NDArray[np.float32]:
+    bit_generator = np.random.PCG64(seed)
+    # float32 の standard_normal は 1 advance で 2個分進む想定
+    bit_generator.advance(offset // 2)
+    rng = np.random.Generator(bit_generator)
+
+    # 奇数 offset のときは 1個捨てる
+    if offset % 2:
+        rng.standard_normal(1, dtype=np.float32)
+
+    return rng.standard_normal(size, dtype=np.float32)
+
+
+def noise_generate_by_phoneme(
+    phoneme_array: NDArray[np.int64],
+    phoneme_length: NDArray[np.int64],
+    offset_array: NDArray[np.int64],
+    sample_len: int,
+) -> NDArray[np.float32]:
+    if not (len(phoneme_array) == len(phoneme_length) == len(offset_array)):
+        raise ValueError("phoneme_array, phoneme_length, offsets must have same length")
+
+    initial_noises_np = np.zeros((1, sample_len), dtype=np.float32)
+    cursor = 0
+
+    for phoneme_id, duration, offset in zip(phoneme_array, phoneme_length, offset_array):
+        duration = int(duration)
+        end = min(cursor + duration, sample_len)
+        # if end <= cursor:
+        #     break
+
+        # 音素ID seed + offset で区間ノイズを生成
+        segment_noise = standard_normal_with_offset(
+            seed=int(phoneme_id),
+            offset=int(offset),
+            size=(end - cursor),
+        )
+        initial_noises_np[0, cursor:end] = segment_noise
+
+        cursor = end
+        if cursor >= sample_len:
+            break
+
+    if cursor < sample_len:
+        raise ValueError(
+            f"phoneme durations sum to less than frame_f0_len: cursor={cursor}, frame_f0_len={sample_len}"
+        )
+
+    return initial_noises_np
 
 
 class SongInvalidInputError(Exception):
@@ -210,6 +271,9 @@ class SongEngine:
         super().__init__()
         self._core = CoreAdapter(core)
 
+        self.f0_window = np.blackman(5).astype(np.float32)
+        self.f0_window = self.f0_window / self.f0_window.sum()
+
     @property
     def default_sampling_rate(self) -> int:
         """合成される音声波形のデフォルトサンプリングレートを取得する。"""
@@ -219,6 +283,22 @@ class SongEngine:
     def supported_devices(self) -> DeviceSupport | None:
         """合成時に各デバイスが利用可能か否かの一覧を取得する。"""
         return self._core.supported_devices
+
+    def _calc_interp_base_f0s(
+        self,
+        frame_keys: NDArray[np.int64],
+    ) -> NDArray[np.float32]:
+        """音素ごとのキー列から補間済みの基本周波数列を計算する"""
+        base_f0s = mid_to_hz[frame_keys + 1]
+        nonzero_ids = np.where(base_f0s != 0)[0]
+        interp_fn = interp1d(
+            nonzero_ids,
+            base_f0s[nonzero_ids],
+            fill_value=(base_f0s[nonzero_ids[0]], base_f0s[nonzero_ids[-1]]),
+            bounds_error=False,
+        )
+        base_f0s = interp_fn(np.arange(0, len(base_f0s)))
+        return base_f0s.astype(np.float32)
 
     def create_phoneme_and_f0_and_volume(
         self,
@@ -244,20 +324,32 @@ class SongEngine:
 
         # 予測した子音長を元に、すべての音素長を計算する
         phoneme_lengths = _calc_phoneme_lengths(consonant_lengths, note_lengths_array)
+        offset_array = np.zeros_like(phoneme_lengths)
+        initial_noises = noise_generate_by_phoneme(
+            phoneme_array=phonemes_array,
+            phoneme_length=phoneme_lengths,
+            offset_array=offset_array,
+            sample_len=phoneme_lengths.sum(),
+        )
 
         # 時間スケールを変更する（音素 → フレーム）
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
+        base_f0s = self._calc_interp_base_f0s(frame_keys)
+
         # コアを用いて音高を生成する
-        f0s = self._core.safe_predict_sing_f0_forward(
-            frame_phonemes, frame_keys, style_id
+        diff_f0s = self._core.safe_predict_sing_f0_forward(
+            frame_phonemes, frame_keys, initial_noises, style_id
         )
+        f0s = (base_f0s * np.exp(diff_f0s))
+        # キャストしないとvolumeがNaNになる
+        f0s = np.convolve(f0s, self.f0_window, mode='same').astype(np.float32)
 
         # コアを用いて音量を生成する
         # FIXME: 変数名のsいらない？
         volumes = self._core.safe_predict_sing_volume_forward(
-            frame_phonemes, frame_keys, f0s, style_id
+            frame_phonemes, frame_keys, f0s, initial_noises, style_id
         )
 
         phoneme_data_list = [
@@ -287,9 +379,9 @@ class SongEngine:
         notes = score.notes
 
         (
-            _,
-            _,
-            _,
+            note_lengths_array,
+            note_consonants_array,
+            note_vowels_array,
             phonemes_array_from_notes,
             phoneme_keys_array,
             _,
@@ -298,7 +390,23 @@ class SongEngine:
         phonemes_array = np.array(
             [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
         )
-        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+        score_phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+
+        # コアを用いて子音長を生成する
+        # 今のところコアの子音長予測は決定的であるため、この仕様を活用
+        consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
+            note_consonants_array, note_vowels_array, note_lengths_array, style_id
+        )
+        phoneme_lengths = _calc_phoneme_lengths(consonant_lengths, note_lengths_array)
+        # 渡ってきた音素の長さのcumsumと計算で得られたcumsumの差分をオフセットとする
+        offset_array = np.cumsum(score_phoneme_lengths[:-1]) - np.cumsum(phoneme_lengths[:-1])
+        offset_array = np.concatenate([np.array([0]), offset_array])
+        initial_noises_array = noise_generate_by_phoneme(
+            phoneme_array=phonemes_array,
+            phoneme_length=phoneme_lengths,
+            offset_array=offset_array,
+            sample_len=phoneme_lengths.sum(),
+        )
 
         # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
         # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
@@ -317,10 +425,15 @@ class SongEngine:
         frame_phonemes = np.repeat(phonemes_array, phoneme_lengths)
         frame_keys = np.repeat(phoneme_keys_array, phoneme_lengths)
 
+        base_f0s = self._calc_interp_base_f0s(frame_keys)
+
         # コアを用いて音高を生成する
-        f0s = self._core.safe_predict_sing_f0_forward(
-            frame_phonemes, frame_keys, style_id
+        diff_f0s = self._core.safe_predict_sing_f0_forward(
+            frame_phonemes, frame_keys, initial_noises_array, style_id
         )
+        f0s = (base_f0s * np.exp(diff_f0s))
+        # キャストしないとNaNになる
+        f0s = np.convolve(f0s, self.f0_window, mode='same').astype(np.float32)
 
         # mypyの型チェックを通すために明示的に型を付ける
         f0_list: list[float] = f0s.tolist()
@@ -338,9 +451,9 @@ class SongEngine:
         notes = score.notes
 
         (
-            _,
-            _,
-            _,
+            note_lengths_array,
+            note_consonants_array,
+            note_vowels_array,
             phonemes_array_from_notes,
             phoneme_keys_array,
             _,
@@ -349,8 +462,24 @@ class SongEngine:
         phonemes_array = np.array(
             [Phoneme(p.phoneme).id for p in phonemes], dtype=np.int64
         )
-        phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
+        score_phoneme_lengths = np.array([p.frame_length for p in phonemes], dtype=np.int64)
         f0_array = np.array(f0s, dtype=np.float32)
+
+        # コアを用いて子音長を生成する
+        # 今のところコアの子音長予測は決定的であるため、この仕様を活用
+        consonant_lengths = self._core.safe_predict_sing_consonant_length_forward(
+            note_consonants_array, note_vowels_array, note_lengths_array, style_id
+        )
+        phoneme_lengths = _calc_phoneme_lengths(consonant_lengths, note_lengths_array)
+        # 渡ってきた音素の長さのcumsumと計算で得られたcumsumの差分をオフセットとする
+        offset_array = np.cumsum(score_phoneme_lengths[:-1]) - np.cumsum(phoneme_lengths[:-1])
+        offset_array = np.concatenate([np.array([0]), offset_array])
+        initial_noises_array = noise_generate_by_phoneme(
+            phoneme_array=phonemes_array,
+            phoneme_length=phoneme_lengths,
+            offset_array=offset_array,
+            sample_len=phoneme_lengths.sum(),
+        )
 
         # notesから生成した音素系列と、FrameAudioQueryが持つ音素系列が一致しているか確認
         # この確認によって、phoneme_keys_arrayが使用可能かを間接的に確認する
@@ -371,7 +500,7 @@ class SongEngine:
 
         # コアを用いて音量を生成する
         volumes = self._core.safe_predict_sing_volume_forward(
-            frame_phonemes, frame_keys, f0_array, style_id
+            frame_phonemes, frame_keys, f0_array, initial_noises_array, style_id
         )
 
         # mypyの型チェックを通すために明示的に型を付ける
