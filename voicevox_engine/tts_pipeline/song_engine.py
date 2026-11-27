@@ -340,7 +340,7 @@ class SongEngine:
 
         # コアを用いて音高を生成する
         diff_f0s = self._core.safe_predict_sing_f0_forward(
-            frame_phonemes, frame_keys, initial_noises, base_f0s, style_id
+            frame_phonemes, frame_keys, initial_noises, style_id
         )
         f0s = (base_f0s * np.exp(diff_f0s))
         # キャストしないとvolumeがNaNになる
@@ -429,7 +429,7 @@ class SongEngine:
 
         # コアを用いて音高を生成する
         diff_f0s = self._core.safe_predict_sing_f0_forward(
-            frame_phonemes, frame_keys, initial_noises_array, base_f0s, style_id
+            frame_phonemes, frame_keys, initial_noises_array, style_id
         )
         f0s = (base_f0s * np.exp(diff_f0s))
         # キャストしないとNaNになる

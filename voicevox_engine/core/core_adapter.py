@@ -334,7 +334,6 @@ class CoreAdapter:
         phoneme: NDArray[np.int64],
         note: NDArray[np.int64],
         initial_noises: NDArray[np.float32],
-        base_f0s: NDArray[np.float32],
         style_id: StyleId,
     ) -> NDArray[np.float32]:
         """フレームごとの音素・ノートとスタイル ID からフレームごとの音高を求める。"""
@@ -348,7 +347,6 @@ class CoreAdapter:
                 phoneme=phoneme[np.newaxis],
                 note=note[np.newaxis],
                 initial_noises=initial_noises[np.newaxis],
-                base_f0s=base_f0s[np.newaxis],
                 style_id=np.array(style_id, dtype=np.int64).reshape(-1),
             )
 
