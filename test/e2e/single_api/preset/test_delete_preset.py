@@ -12,9 +12,9 @@ def test_post_delete_preset_204(
     assert snapshot == response.content
 
 
-def test_post_delete_preset_422(
+def test_post_delete_preset_404(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.post("/delete_preset", params={"id": 4040000000})
-    assert response.status_code == 422
+    assert response.status_code == 404
     assert snapshot_json == response.json()

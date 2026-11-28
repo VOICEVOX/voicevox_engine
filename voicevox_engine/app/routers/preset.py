@@ -10,6 +10,7 @@ from voicevox_engine.preset.preset_manager import (
     PresetInputError,
     PresetInternalError,
     PresetManager,
+    PresetNotFoundError,
 )
 
 from ..dependencies import VerifyMutabilityAllowed
@@ -75,6 +76,8 @@ def generate_preset_router(
         """既存のプリセットを更新します。"""
         try:
             id = preset_manager.update_preset(preset)
+        except PresetNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:
@@ -93,6 +96,8 @@ def generate_preset_router(
         """既存のプリセットを削除します。"""
         try:
             preset_manager.delete_preset(id)
+        except PresetNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e)) from e
         except PresetInputError as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
         except PresetInternalError as e:

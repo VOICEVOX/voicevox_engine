@@ -151,7 +151,7 @@ def generate_tts_pipeline_router(
                 break
         else:
             raise HTTPException(
-                status_code=422, detail="該当するプリセットIDが見つかりません"
+                status_code=404, detail="該当するプリセットIDが見つかりません"
             )
 
         accent_phrases = engine.create_accent_phrases(

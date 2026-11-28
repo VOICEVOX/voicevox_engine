@@ -35,11 +35,11 @@ def test_post_audio_query_from_preset_200(
     assert snapshot_json == round_floats(response.json(), 2)
 
 
-def test_post_audio_query_from_preset_422(
+def test_post_audio_query_from_preset_404(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     response = client.post(
         "/audio_query_from_preset", params={"text": "テストです", "preset_id": 404}
     )
-    assert response.status_code == 422
+    assert response.status_code == 404
     assert snapshot_json == response.json()

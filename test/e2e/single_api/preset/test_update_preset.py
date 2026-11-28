@@ -26,7 +26,7 @@ def test_post_update_preset_200(
     assert snapshot_json == response.json()
 
 
-def test_post_update_preset_422(
+def test_post_update_preset_404(
     client: TestClient, snapshot_json: SnapshotAssertion
 ) -> None:
     preset = {
@@ -44,5 +44,5 @@ def test_post_update_preset_422(
         "pauseLengthScale": 404,
     }
     response = client.post("/update_preset", params={}, json=preset)
-    assert response.status_code == 422
+    assert response.status_code == 404
     assert snapshot_json == response.json()

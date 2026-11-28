@@ -8,9 +8,9 @@ import pytest
 
 from voicevox_engine.preset.model import Preset
 from voicevox_engine.preset.preset_manager import (
-    PresetInputError,
     PresetInternalError,
     PresetManager,
+    PresetNotFoundError,
 )
 from voicevox_engine.utility.path_utility import engine_root
 
@@ -276,7 +276,7 @@ def test_update_preset_not_found(tmp_path: Path) -> None:
         }
     )
     true_msg = "更新先のプリセットが存在しません"
-    with pytest.raises(PresetInputError, match=true_msg):
+    with pytest.raises(PresetNotFoundError, match=true_msg):
         preset_manager.update_preset(preset)
     assert len(preset_manager.presets) == 2
     remove(preset_path)
@@ -335,7 +335,7 @@ def test_delete_preset_not_found(tmp_path: Path) -> None:
     copyfile(presets_test_1_yaml_path, preset_path)
     preset_manager = PresetManager(preset_path=preset_path)
     true_msg = "削除対象のプリセットが存在しません"
-    with pytest.raises(PresetInputError, match=true_msg):
+    with pytest.raises(PresetNotFoundError, match=true_msg):
         preset_manager.delete_preset(10)
     assert len(preset_manager.presets) == 2
     remove(preset_path)
